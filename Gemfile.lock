@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/dpaola2/user-auth
-  revision: 401c2a3f493c1313489eeba8429290f72806a735
+  revision: e5e48a4810b261b22160f4b760fa218e24688c9c
   specs:
     user-auth (0.0.1)
 
@@ -53,7 +53,6 @@ GEM
     archive-zip (0.11.0)
       io-like (~> 0.3.0)
     arel (9.0.0)
-    bcrypt (3.1.12)
     better_errors (2.4.0)
       coderay (>= 1.0.0)
       erubi (>= 1.0.0)
@@ -189,7 +188,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  bcrypt
   better_errors
   byebug
   capybara (>= 2.15, < 4.0)
