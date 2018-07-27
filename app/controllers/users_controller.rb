@@ -17,8 +17,6 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
 
-    admin_hook # If first user, it's an admin
-
     if @user.save
       log_in(@user)
       redirect_to root_path
