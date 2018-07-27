@@ -17,6 +17,7 @@ group :development do
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'better_errors'
+  gem 'binding_of_caller'
   gem 'user-auth', git: "https://github.com/dpaola2/user-auth"
 end
 
