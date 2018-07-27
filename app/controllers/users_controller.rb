@@ -1,6 +1,10 @@
 class UsersController < ApplicationController
   before_action :authenticate!, except: [:new, :create]
 
+  def index
+    find_users
+  end
+
   def show
     find_user
   end
@@ -52,5 +56,9 @@ class UsersController < ApplicationController
 
   def find_user(key=:id)
     @user = User.find(params[key])
+  end
+
+  def find_users
+    @users = User
   end
 end

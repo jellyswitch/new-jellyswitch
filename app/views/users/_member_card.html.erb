@@ -1,0 +1,10 @@
+<div class="card border-light">
+  <div class="card-body">
+    <%= image_tag "profile.jpg", class: "img-thumbnail", style: "height: 50px; width: 50px;" %>
+    <%= member.name %>
+    <%- if member.admin? %>
+      <span class="badge badge-success">Admininstrator</span>
+    <%- end %>
+    <span class="badge badge-info">Member</span>
+  </div>
+</div>

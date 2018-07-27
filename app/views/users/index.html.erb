@@ -1,0 +1,13 @@
+<%- @users.in_batches(of: 3) do |users| %>
+  <div class="row">
+    <%- [0,1,2].each do |i| %>
+      <%- if users[i].present? %>
+        <div class="col-sm">
+          <%= render "users/member_card", member: users[i] %>
+        </div>
+      <%- else %>
+        <div class="col-sm"></div>
+      <%- end %>
+    <%- end %>
+  </div>
+<%- end %>

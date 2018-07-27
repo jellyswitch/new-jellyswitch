@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   get 'landing/index'
-  resources :users, except: [:index]
+  resources :users
   delete '/logout',  to: 'sessions#destroy'
   post '/login',     to: 'sessions#create'
   get '/login',      to: 'sessions#new'
