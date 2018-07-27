@@ -7,12 +7,24 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 admins = ["dpaola2@gmail.com"]
-members = ["alice@foo.com", "bob@foo.com", "curtis@foo.com", "dave@foo.com"]
 
 admins.each do |email|
-  User.create! email: email, password: "password", admin: true
+  User.create!(
+    name: "Dave Paola",
+    email: email,
+    password: "pizza123",
+    admin: true
+  )
 end
 
-members.each do |email|
-  User.create! email: email, password: "password"
+25.times do
+  name = Faker::Name.name
+  email = Faker::Internet.safe_email
+  password = "password"
+
+  User.create!(
+    name: name, 
+    email: email, 
+    password: password
+  )
 end

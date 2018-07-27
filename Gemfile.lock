@@ -4,6 +4,14 @@ GIT
   specs:
     user-auth (0.0.2)
 
+GIT
+  remote: https://github.com/stympy/faker.git
+  revision: 48669f6e3e16dbe9b2a307da6743a6e37017b3c5
+  branch: master
+  specs:
+    faker (1.9.1)
+      i18n (>= 0.7)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -198,6 +206,7 @@ DEPENDENCIES
   byebug
   capybara (>= 2.15, < 4.0)
   chromedriver-helper
+  faker!
   jbuilder (~> 2.5)
   listen (>= 3.0.5, < 3.2)
   pg
