@@ -1,8 +1,8 @@
 GIT
   remote: https://github.com/dpaola2/user-auth
-  revision: e5e48a4810b261b22160f4b760fa218e24688c9c
+  revision: f791c1e13db9c0fae4dedd5f6f4c8fb24795a92a
   specs:
-    user-auth (0.0.1)
+    user-auth (0.0.2)
 
 GEM
   remote: https://rubygems.org/
