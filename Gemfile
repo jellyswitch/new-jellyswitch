@@ -26,3 +26,4 @@ group :test do
   gem 'chromedriver-helper'
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
 end
+gem 'bcrypt'
