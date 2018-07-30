@@ -1,0 +1,14 @@
+<%- if admin? %>
+  <h2>Sensitive Info <small class="text-muted">This data is only visible to administrators.</small></h2>
+  <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary" %>
+  <table class="table">
+    <tr>
+      <th>Email</th>
+      <td><%= mail_to @user.email %></td>
+    </tr>
+    <tr>
+      <th>Join Date</th>
+      <td><%= @user.created_at.strftime("%F") %></td>
+    </tr>
+  </table>
+<%- end %>
