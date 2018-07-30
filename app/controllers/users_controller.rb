@@ -21,6 +21,13 @@ class UsersController < ApplicationController
 
   def edit
     find_user
+
+    # TODO: Replace this with a policy
+    unless @user == current_user || current_user.admin?
+      flash[:error] = "Permission denied."
+      redirect_to root_path
+      return
+    end
   end
 
   def create
@@ -36,6 +43,13 @@ class UsersController < ApplicationController
 
   def update
     find_user
+
+    # TODO: Replace this with a policy
+    unless @user == current_user || current_user.admin?
+      flash[:error] = "Permission denied."
+      redirect_to root_path
+      return
+    end
 
     @user.update_attributes(user_params)
 
