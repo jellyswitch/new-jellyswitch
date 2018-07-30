@@ -7,6 +7,7 @@ class UsersController < ApplicationController
 
   def show
     find_user
+
     if @user == current_user
       render :show
     else

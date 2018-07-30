@@ -10,6 +10,7 @@ gem 'jbuilder', '~> 2.5'
 gem 'jquery-turbolinks' # This fixes an issue with Bootstrap dropdowns & turbolinks not playing nicely with each other
 gem 'pg'
 gem 'puma', '~> 3.11'
+gem 'pundit'
 gem 'rails', '~> 5.2.0'
 gem 'sass-rails', '~> 5.0'
 gem 'turbolinks', '~> 5'
