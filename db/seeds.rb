@@ -13,7 +13,8 @@ admins.each do |email|
     name: "Dave Paola",
     email: email,
     password: "pizza123",
-    admin: true
+    admin: true,
+    bio: Faker::GameOfThrones.quote
   )
 end
 
@@ -21,10 +22,13 @@ end
   name = Faker::Name.name
   email = Faker::Internet.safe_email
   password = "password"
+  bio = Faker::GameOfThrones.quote
+
 
   User.create!(
     name: name, 
     email: email, 
-    password: password
+    password: password,
+    bio: bio
   )
 end

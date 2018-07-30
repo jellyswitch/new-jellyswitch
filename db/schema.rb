@@ -21,6 +21,10 @@ ActiveRecord::Schema.define(version: 2018_07_27_000453) do
     t.string "password_digest"
     t.boolean "admin", default: false, null: false
     t.string "remember_digest"
+    t.text "bio"
+    t.string "linkedin"
+    t.string "twitter"
+    t.string "website"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

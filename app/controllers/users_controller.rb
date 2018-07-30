@@ -7,6 +7,11 @@ class UsersController < ApplicationController
 
   def show
     find_user
+    if @user == current_user
+      render :show
+    else
+      render :profile
+    end
   end
 
   def new
@@ -45,7 +50,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:email, :password, :password_confirmation)
+    params.require(:user).permit(:name, :email, :password, :password_confirmation, :bio, :linkedin, :twitter, :website)
   end
 
   def admin_hook
