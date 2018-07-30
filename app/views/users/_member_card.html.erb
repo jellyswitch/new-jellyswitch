@@ -1,11 +1,25 @@
 <div class="card border-light">
   <div class="card-body">
-    <%= image_tag "profile.jpg", class: "img-thumbnail", style: "height: 50px; width: 50px;" %>
-    <%= link_to member.name, user_path(member) %>
-    <%- if member.admin? %>
-      <span class="badge badge-success">Admininstrator</span>
-    <%- end %>
-    <span class="badge badge-info">Member</span>
-    <p><%= member.bio %></p>
+    <div class="row">
+      <div>
+        <%- if member.has_profile_photo? %>
+          <%= image_tag member.square_profile_photo, class: "img-thumbnail" %>
+        <%- else %>
+          <%= image_tag "profile.jpg", class: "img-thumbnail", style: "height: 100px;" %>
+        <%- end %>
+      </div>
+      <div class="ml-2">
+        <%= link_to member.name, user_path(member) %>
+        <br />
+        <%- if member.admin? %>
+          <span class="badge badge-success">Admininstrator</span>
+        <%- end %>
+        <span class="badge badge-info">Member</span>
+      </div>
+      
+    </div>
+    <div class="row">
+      <p><%= member.bio %></p>
+    </div>
   </div>
 </div>

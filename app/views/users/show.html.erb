@@ -19,6 +19,16 @@
         <td><%= link_to "Change Password", user_change_password_path(current_user), class: 'btn-sm btn-primary' %></td>
       </tr>
       <tr>
+        <th>Profile Photo</th>
+        <td>
+          <%- if @user.has_profile_photo? %>
+            <%= image_tag @user.square_profile_photo, class: "img-thumbnail" %>
+          <%- else %>
+            (none set)
+          <%- end %>
+        </td>
+      </tr>
+      <tr>
         <th>Bio</th>
         <td><%= @user.bio %></td>
       </tr>

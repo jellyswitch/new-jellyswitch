@@ -3,9 +3,11 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.4.4'
 
+gem "aws-sdk-s3", require: false
 gem 'bcrypt'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
+gem 'image_processing', '~> 1.2'
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-turbolinks' # This fixes an issue with Bootstrap dropdowns & turbolinks not playing nicely with each other
 gem 'pg'
