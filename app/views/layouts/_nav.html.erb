@@ -26,6 +26,7 @@
           </a>
           <div class="dropdown-menu" aria-labelledby="accountDropdownLink">
             <%= link_to "My Account", user_path(current_user), class: "dropdown-item" %>
+            <%= link_to "Change Password", user_change_password_path(current_user), class: "dropdown-item" %>
             <%= link_to "Log out", logout_path, method: :delete, class: "dropdown-item" %>
           </div>
         </li>

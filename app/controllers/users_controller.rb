@@ -36,21 +36,43 @@ class UsersController < ApplicationController
   def update
     find_user
 
-    @user.admin = params[:admin] if current_user.admin?
-
     @user.update_attributes(user_params)
-    
+
     if @user.save
+      flash[:notice] = "Your profile has been updated."
       redirect_to user_path(@user)
     else
-      render :show
+      render :edit
+    end
+  end
+
+  def change_password
+    find_user(:user_id)
+  end
+
+  def update_password
+    find_user(:user_id)
+
+    @user.update_attributes(user_password_params)
+    
+    if @user.save
+      flash[:notice] = "Your password has been changed."
+      redirect_to user_path(@user)
+    else
+      render :change_password
     end
   end
 
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :password_confirmation, :bio, :linkedin, :twitter, :website)
+    result = params.require(:user).permit(:name, :email, :password, :password_confirmation, :bio, :linkedin, :twitter, :website)
+    result[:admin] = @user.admin
+    result
+  end
+
+  def user_password_params
+    params.require(:user).permit(:password, :password_confirmation)
   end
 
   def admin_hook

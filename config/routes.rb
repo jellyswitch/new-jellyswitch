@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   get 'landing/index'
-  resources :users
+  resources :users do
+    get 'change_password', to: 'users#change_password'
+    patch 'update_password', to: 'users#update_password'
+  end
   delete '/logout',  to: 'sessions#destroy'
   post '/login',     to: 'sessions#create'
   get '/login',      to: 'sessions#new'

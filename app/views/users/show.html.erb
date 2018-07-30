@@ -4,6 +4,9 @@
 
     <table class="table table-bordered">
       <tr>
+        <th colspan=2>Basic Information</th>
+      </tr>
+      <tr>
         <th>Name</th>
         <td><%= @user.name %></td>
       </tr>
@@ -13,10 +16,28 @@
       </tr>
       <tr>
         <th>Password</th>
-        <td><%= link_to "Change Password", edit_user_path(@user), class: 'btn-sm btn-primary' %></td>
+        <td><%= link_to "Change Password", user_change_password_path(current_user), class: 'btn-sm btn-primary' %></td>
+      </tr>
+      <tr>
+        <th>Bio</th>
+        <td><%= @user.bio %></td>
+      </tr>
+      <tr>
+        <th colspan=2>Contact Information</th>
+      </tr>
+      <tr>
+        <th>LinkedIn</th>
+        <td><%= @user.linkedin %></td>
+      </tr>
+      <tr>
+        <th>Twitter</th>
+        <td><%= @user.twitter %></td>
+      </tr>
+      <tr>
+        <th>Website</th>
+        <td><%= @user.website %></td>
       </tr>
     </table>
-
   </div>
   <div class="col-sm"></div>
 </div>
