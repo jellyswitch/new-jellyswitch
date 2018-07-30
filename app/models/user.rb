@@ -1,10 +1,13 @@
 class User < ApplicationRecord
+  # Slugs
+  extend FriendlyId
+  friendly_id :name, use: :slugged
+
+  # Auth stuff
   attr_accessor :remember_token
   before_save { self.email = email.downcase }
-
   validates :password, length: { minimum: 6 }, on: :create
   validates :email, uniqueness: true
-
   has_secure_password
 
   def admin?

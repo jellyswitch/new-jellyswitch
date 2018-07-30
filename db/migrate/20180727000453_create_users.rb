@@ -6,6 +6,8 @@ class CreateUsers < ActiveRecord::Migration[5.2]
       t.string :password_digest
       t.boolean :admin, default: false, null: false
       t.string :remember_digest
+      t.string :slug, unique: true
+
       t.text :bio
       t.string :linkedin
       t.string :twitter

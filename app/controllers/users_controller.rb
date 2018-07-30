@@ -82,7 +82,7 @@ class UsersController < ApplicationController
   end
 
   def find_user(key=:id)
-    @user = User.find(params[key])
+    @user = User.friendly.find(params[key])
   end
 
   def find_users
