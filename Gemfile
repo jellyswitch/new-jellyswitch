@@ -9,7 +9,6 @@ gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
 gem 'image_processing', '~> 1.2'
 gem 'jbuilder', '~> 2.5'
-gem 'jquery-turbolinks' # This fixes an issue with Bootstrap dropdowns & turbolinks not playing nicely with each other
 gem 'pg'
 gem 'puma', '~> 3.11'
 gem 'pundit'
