@@ -5,5 +5,8 @@
     </p>
     <p>When: <%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
     <p>Room: <%= link_to reservation.room.name, room_path(reservation.room) %>
+    <%- if (current_user == reservation.user) || admin? %>
+      <p><%= link_to "Cancel this reservation", reservation_path(reservation), method: :delete %></p>
+    <%- end %>
   </div>
 </div>

@@ -25,6 +25,19 @@ class ReservationsController < ApplicationController
     end
   end
 
+  def destroy
+    find_reservation
+    authorize @reservation
+
+    if @reservation.destroy
+      flash[:notice] = "Reservation cancelled."
+      redirect_to root_path
+    else
+      flash[:error] = "There was a problem cancelling your reservation."
+      redirect_to reservation_path(@reservation)
+    end
+  end
+
   private
 
   def find_reservation(key=:id)
