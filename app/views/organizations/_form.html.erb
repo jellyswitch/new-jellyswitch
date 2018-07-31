@@ -1,0 +1,15 @@
+<%= form_for(@organization) do |f| %>
+  <%= render "shared/error_messages" , model: @organization %>
+
+  <%= f.label :name %>
+  <%= f.text_field :name, class: "form-control" %>
+
+  <%= f.label :website %>
+  <%= f.text_field :website, class: "form-control" %>
+  
+  <%= f.label :owner %>
+  <%= f.select :owner_id, User.options_for_select, class: "form-control" %>
+  <br />
+  <br />
+  <%= f.submit label, class: "form-control btn btn-primary" %>
+<%- end %>

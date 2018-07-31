@@ -1,0 +1,18 @@
+<div class="row">
+  <div class="col-sm">
+    <h1><%= @organization.name %> <span><%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-sm btn-primary" %></span></h1>
+    <p class="lead">
+      <strong>Owner: </strong><%= link_to @organization.owner.name, user_path(@organization.owner) %>
+    </p>
+    <p>
+      Created <%= time_ago_in_words(@organization.created_at) %> ago
+    </p>
+  </div>
+
+  <div class="col-sm">
+    <h2>Members</h2>
+    <%- @organization.users.each do |member| %>
+      <%= render "users/member_card", member: member %>
+    <%- end %>
+  </div>
+</div>

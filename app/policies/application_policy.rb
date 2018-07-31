@@ -46,4 +46,10 @@ class ApplicationPolicy
       scope.all
     end
   end
+
+  protected
+
+  def admin?
+    user.admin?
+  end
 end

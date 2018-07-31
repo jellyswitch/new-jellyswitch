@@ -1,0 +1,18 @@
+<div class="row mt-2">
+  <div class="col mr-auto">
+    <%= link_to "Add a new organization", new_organization_path, class: "btn btn-primary" %>
+  </div>
+</div>
+<%- @organizations.in_batches(of: 3) do |orgs| %>
+  <div class="row">
+    <%- [0,1,2].each do |i| %>
+      <%- if orgs[i].present? %>
+        <div class="col-sm">
+          <%= render "organizations/org_card", organization: orgs[i] %>
+        </div>
+      <%- else %>
+        <div class="col-sm"></div>
+      <%- end %>
+    <%- end %>
+  </div>
+<%- end %>

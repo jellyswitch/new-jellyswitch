@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  # Relationships
+  belongs_to :organization, optional: true
+
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
@@ -53,4 +56,15 @@ class User < ApplicationRecord
   def forget
     update_attribute(:remember_digest, nil)
   end
+
+    # Form and view helpers
+    def self.options_for_select
+      User.all.map do |user|
+        if user.organization.blank?
+          [user.name, user.id]
+        else
+          ["#{user.name} (Organization: #{user.organization.name})", user.id]
+        end
+      end
+    end
 end
