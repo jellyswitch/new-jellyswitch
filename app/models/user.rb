@@ -13,6 +13,11 @@ class User < ApplicationRecord
   validates :email, uniqueness: true
   has_secure_password
 
+  # Relationship Helpers
+  def owned_organization
+    Organization.where(owner_id: self.id).first
+  end
+
   # Attachments
   has_one_attached :profile_photo
 
@@ -57,14 +62,14 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, nil)
   end
 
-    # Form and view helpers
-    def self.options_for_select
-      User.all.map do |user|
-        if user.organization.blank?
-          [user.name, user.id]
-        else
-          ["#{user.name} (Organization: #{user.organization.name})", user.id]
-        end
+  # Form and view helpers
+  def self.options_for_select
+    User.all.map do |user|
+      if user.organization.blank?
+        [user.name, user.id]
+      else
+        ["#{user.name} (Organization: #{user.organization.name})", user.id]
       end
     end
+  end
 end
