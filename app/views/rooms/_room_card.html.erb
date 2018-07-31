@@ -1,6 +1,7 @@
 <div class="card border-light">
   <div class="card-body">
     <%= link_to room.name, room_path(room) %>
+    <small><%= link_to "View availability", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year) %></small>
     <p>Seats <strong><%= room.capacity %></strong> people</p>        
     <%- if room.whiteboard? %>
       <span class="badge badge-info">Has Whiteboard</span>

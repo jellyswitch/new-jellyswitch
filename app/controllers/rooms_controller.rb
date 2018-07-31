@@ -45,6 +45,21 @@ class RoomsController < ApplicationController
     end
   end
 
+  def day
+    find_room(:room_id)
+    authorize @room
+
+    @day = params[:day].to_i
+    @month = params[:month].to_i
+    @year = params[:year].to_i
+
+    @day_start = DateTime.new(@year, @month, @day).beginning_of_hour
+    @previous_day = @day_start - 1.day
+    @next_day = @day_start + 1.day
+    
+    @hours = @room.availability_for_day(@day_start)
+  end
+
   private
 
   def find_rooms

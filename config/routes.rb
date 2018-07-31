@@ -16,7 +16,9 @@ Rails.application.routes.draw do
 
   resources :reservations
 
-  resources :rooms
+  resources :rooms do
+    get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
+  end
   
   resources :users do
     get 'change_password', to: 'users#change_password'

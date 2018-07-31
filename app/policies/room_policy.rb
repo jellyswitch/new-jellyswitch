@@ -22,4 +22,8 @@ class RoomPolicy < ApplicationPolicy
   def update?
     admin?
   end
+
+  def day?
+    admin_or_member?
+  end
 end

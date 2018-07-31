@@ -1,0 +1,31 @@
+<div class="row">
+  <div class="col-sm">
+    <p class="lead">
+      <%= link_to @room.name, room_path(@room) %> availability on:
+    </p>
+    <p>
+      <%= link_to "<", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info" %>
+      <%= @month %>/<%= @day %>/<%= @year %>
+      <%= link_to ">", room_day_availability_path(@room, day: @next_day.day, month: @next_day.month, year: @next_day.year), class: "btn btn-info" %>
+    </p>
+    <table class="table table-sm">
+      <%- @hours.each do |hour| %>
+        <%- if hour[:reserved] %>
+          <tr class="table-danger">
+        <%- else %>
+          <tr class="table-success">
+        <%- end %>
+          <td><%= hour[:hour].strftime("%l%P") %></td>
+          <td>
+            <%- if hour[:reserved] %>
+              RESERVED
+            <%- else %>
+              AVAILABLE
+            <%- end %>
+          </td>
+        </tr>
+      <%- end %>
+    </table>
+  </div>
+  <div class="col-sm"></div>
+</div>
