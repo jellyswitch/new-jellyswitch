@@ -1,4 +1,4 @@
-<%= form_for(:session, url: login_path, remote: true) do |f| %>
+<%= form_for(:session, url: login_path) do |f| %>
   <%= f.label :email %>
   <%= f.email_field :email, class: "form-control" %>
   <%= f.label :password %>
