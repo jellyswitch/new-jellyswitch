@@ -23,11 +23,7 @@
     <tr>
       <th>Member of</th>
       <td>
-        <%- if @user.organization.present? %>
-          <%= link_to @user.organization.name, organization_path(@user.organization) %>
-        <%- else %>
-          (none)
-        <%- end %>
+        <%= render "organization_form" %>
       </td>
     </tr>
   </table>

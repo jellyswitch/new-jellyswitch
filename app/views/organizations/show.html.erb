@@ -10,7 +10,7 @@
   </div>
 
   <div class="col-sm">
-    <h2>Members</h2>
+    <h2>Members <span><%= link_to "Add Member", "#", class: "btn btn-primary btn-sm" %></span></h2>
     <%- @organization.users.each do |member| %>
       <%= render "users/member_card", member: member %>
     <%- end %>

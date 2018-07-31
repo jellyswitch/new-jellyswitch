@@ -11,6 +11,6 @@ class Organization < ApplicationRecord
   def self.options_for_select
     Organization.all.map do |org|
       [org.name, org.id]
-    end
+    end.prepend(["", nil])
   end
 end

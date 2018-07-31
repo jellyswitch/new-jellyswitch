@@ -17,5 +17,7 @@ Rails.application.routes.draw do
   resources :users do
     get 'change_password', to: 'users#change_password'
     patch 'update_password', to: 'users#update_password'
+
+    patch 'update_organization', to: 'users#update_organization'
   end
 end
