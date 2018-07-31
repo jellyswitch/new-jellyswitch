@@ -78,6 +78,26 @@ class UsersController < ApplicationController
     end
   end
 
+  def update_organization
+    find_user(:user_id)
+
+    # TODO: move this to a policy
+    unless current_user.admin?
+      flash[:error] = "Permission denied."
+      redirect_to user_path(@user)
+      return
+    end
+
+    @user.update_attributes(user_organization_params)
+
+    if @user.save
+      flash[:notice] = "Updated organization."
+      redirect_to user_path(@user)
+    else
+      render :show
+    end
+  end
+
   private
 
   def user_params
@@ -89,6 +109,12 @@ class UsersController < ApplicationController
   def user_password_params
     params.require(:user).permit(:password, :password_confirmation)
   end
+
+  def user_organization_params
+    params.require(:user).permit(:organization_id)
+  end
+
+  def 
 
   def admin_hook
     if User.count < 1

@@ -10,5 +10,21 @@
       <th>Join Date</th>
       <td><%= @user.created_at.strftime("%F") %></td>
     </tr>
+    <tr>
+      <th>Owner of</th>
+      <td>
+        <%- if @user.owned_organization.present? %>
+          <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
+        <%- else %>
+          (none)
+        <%- end %>
+      </td>
+    </tr>
+    <tr>
+      <th>Member of</th>
+      <td>
+        <%= render "organization_form" %>
+      </td>
+    </tr>
   </table>
 <%- end %>

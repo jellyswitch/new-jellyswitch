@@ -9,6 +9,9 @@
     <p>
       Joined <%= time_ago_in_words(@user.created_at) %> ago
     </p>
+    <%- if @user.organization.present? %>
+      <p>Member of <%= @user.organization.name %></p>
+    <%- end %>
     <p class="lead">
       <strong>Bio:</strong>
       <%= @user.bio %>

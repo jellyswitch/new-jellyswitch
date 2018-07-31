@@ -8,6 +8,32 @@
 
 admins = ["dpaola2@gmail.com"]
 
+def fake_user
+  name = Faker::Name.name
+  email = Faker::Internet.safe_email
+  password = "password"
+  bio = Faker::GameOfThrones.quote
+
+  User.create!(
+    name: name, 
+    email: email, 
+    password: password,
+    bio: bio
+  )
+end
+
+def fake_org
+  name = Faker::Company.name
+  owner = fake_user
+  website = Faker::Internet.url
+
+  Organization.create!(
+    name: name,
+    owner: owner,
+    website: website
+  )
+end
+
 admins.each do |email|
   User.create!(
     name: "Dave Paola",
@@ -19,16 +45,13 @@ admins.each do |email|
 end
 
 25.times do
-  name = Faker::Name.name
-  email = Faker::Internet.safe_email
-  password = "password"
-  bio = Faker::GameOfThrones.quote
+  puts fake_user.name
+end
 
-
-  User.create!(
-    name: name, 
-    email: email, 
-    password: password,
-    bio: bio
-  )
+3.times do
+  org = fake_org
+  3.times do 
+    org.users << fake_user
+  end
+  puts org.name
 end
