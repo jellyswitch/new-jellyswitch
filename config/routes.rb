@@ -14,6 +14,8 @@ Rails.application.routes.draw do
   # Alphabetized Resources
   resources :organizations
 
+  resources :reservations
+
   resources :rooms
   
   resources :users do

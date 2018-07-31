@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   # Relationships
   belongs_to :organization, optional: true
+  has_many :reservations
 
   # Slugs
   extend FriendlyId

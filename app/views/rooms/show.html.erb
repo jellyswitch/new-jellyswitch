@@ -7,4 +7,18 @@
   <div class="col-sm">
     <%= render "rooms/room_card", room: @room %>
   </div>
+  <div class="col-sm">
+    <h2>Reservations</h2>
+    <%- if @room.reservations.count < 1 %>
+      (none)
+    <%- else %>
+      <%- @room.reservations.each do |reservation| %>
+        <div class="row">
+          <div class="col-sm">
+            <%= render "reservations/reservation_card", reservation: reservation %>
+          </div>
+        </div>
+      <%- end %>
+    <%- end %>
+  </div>
 </div>

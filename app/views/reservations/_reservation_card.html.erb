@@ -1,0 +1,9 @@
+<div class="card border-light">
+  <div class="card-body">
+    <p>
+      Who: <%= link_to reservation.user.name, user_path(reservation.user) %>
+    </p>
+    <p>When: <%= reservation.pretty_datetime %></p>
+    <p>Room: <%= link_to reservation.room.name, room_path(reservation.room) %>
+  </div>
+</div>
