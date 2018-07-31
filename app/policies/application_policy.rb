@@ -52,4 +52,8 @@ class ApplicationPolicy
   def admin?
     user.admin?
   end
+
+  def admin_or_member?
+    user.admin? || user.member?
+  end
 end

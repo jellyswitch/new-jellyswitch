@@ -34,6 +34,15 @@ def fake_org
   )
 end
 
+def fake_room
+  Room.create!(
+    name: Faker::Ancient.god,
+    description: Faker::Company.catch_phrase,
+    capacity: rand(1..5),
+    whiteboard: true
+  )
+end
+
 admins.each do |email|
   User.create!(
     name: "Dave Paola",
@@ -54,4 +63,9 @@ end
     org.users << fake_user
   end
   puts org.name
+end
+
+5.times do
+  room = fake_room
+  puts room.name
 end

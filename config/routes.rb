@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   # Alphabetized Resources
   resources :organizations
+
+  resources :rooms
   
   resources :users do
     get 'change_password', to: 'users#change_password'

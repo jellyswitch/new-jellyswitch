@@ -1,0 +1,17 @@
+<%= form_for(@room) do |f| %>
+  <%= render "shared/error_messages" , model: @room %>
+
+  <%= f.label :name %>
+  <%= f.text_field :name, class: "form-control" %>
+
+  <%= f.label :description %>
+  <%= f.text_area :description, class: "form-control" %>
+  
+  <%= f.label :capacity %>
+  <%= f.text_field :capacity, class: "form-control" %>
+
+  <%= f.label :whiteboard %>
+  <%= f.check_box :whiteboard %>
+  <br />
+  <%= f.submit label, class: "form-control btn btn-primary" %>
+<%- end %>

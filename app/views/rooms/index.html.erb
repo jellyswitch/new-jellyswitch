@@ -1,0 +1,19 @@
+<div class="row mt-2">
+  <div class="col mr-auto">
+    <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>
+  </div>
+</div>
+
+<%- @rooms.in_batches(of: 3) do |rooms| %>
+  <div class="row">
+    <%- [0,1,2].each do |i| %>
+      <%- if rooms[i].present? %>
+        <div class="col-sm">
+          <%= render "rooms/room_card", room: rooms[i] %>
+        </div>
+      <%- else %>
+        <div class="col-sm"></div>
+      <%- end %>
+    <%- end %>
+  </div>
+<%- end %>
