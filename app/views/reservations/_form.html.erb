@@ -1,14 +1,25 @@
 <%= form_for(@reservation) do |f| %>
   <%= render "shared/error_messages" , model: @reservation %>
-
-  <%= f.label :room %>
-  <%= f.select :room_id, Room.options_for_select, class: "form-control" %>
-
-  <%= f.label :datetime_in, "Day & Time" %>
-  <%= f.text_field :datetime_in, value: DateTime.now, class: "form-control" %>
-
-  <%= f.label :hours %>
-  <%= f.text_field :hours, value: 1 %>
+  <table class="table">
+    <tr>
+      <th>Room</th>
+      <td>
+        <%= f.select :room_id, Room.options_for_select, class: "form-control" %>
+      </td>
+    </tr>
+    <tr>
+      <th>Day and Time</th>
+      <td>
+        <%= f.datetime_select :datetime_in, default: (DateTime.now + 1.hour).beginning_of_hour, ampm: true, order: [:month, :day, :year], discard_minute: true, class: "form-control" %>
+      </td>
+    </tr>
+    <tr>
+      <th>How many hours?</th>
+      <td>
+        <%= f.number_field :hours, value: 1 %>
+      </td>
+    </tr>
+  </table>
   <br />
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <%- end %>

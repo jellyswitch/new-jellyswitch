@@ -4,6 +4,6 @@ class Reservation < ApplicationRecord
   belongs_to :user
 
   def pretty_datetime
-    datetime_in.strftime("%m/%d%Y at %l:%M%P")
+    datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
 end

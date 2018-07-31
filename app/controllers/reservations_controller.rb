@@ -14,6 +14,7 @@ class ReservationsController < ApplicationController
     authorize @reservation
 
     @reservation.user = current_user
+    @reservation.datetime_in = @reservation.datetime_in.beginning_of_hour
     # TODO: Make sure the room isn't already booked here
 
     if @reservation.save
