@@ -1,3 +1,7 @@
+<%- if admin? %>
+  <%= link_to "New Member", add_member_users_path, class: "btn btn-primary btn-sm" %>
+<%- end %>
+
 <%- @users.in_batches(of: 3) do |users| %>
   <div class="row">
     <%- [0,1,2].each do |i| %>

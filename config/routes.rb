@@ -25,5 +25,9 @@ Rails.application.routes.draw do
     patch 'update_password', to: 'users#update_password'
 
     patch 'update_organization', to: 'users#update_organization'
+
+    collection do
+      get 'add_member', to: 'users#add_member'
+    end
   end
 end

@@ -3,10 +3,12 @@ class UsersController < ApplicationController
 
   def index
     find_users
+    authorize @users
   end
 
   def show
     find_user
+    authorize @user
 
     if @user == current_user
       render :show
@@ -17,21 +19,28 @@ class UsersController < ApplicationController
 
   def new
     @user = User.new
+    authorize @user
+
+    if logged_in? && !admin?
+      # this is a normal user creating another user
+      flash[:notice] = "Please log out first."
+      redirect_to root_path
+    end
+  end
+
+  def add_member
+    @user = User.new
+    authorize @user
   end
 
   def edit
     find_user
-
-    # TODO: Replace this with a policy
-    unless @user == current_user || current_user.admin?
-      flash[:error] = "Permission denied."
-      redirect_to root_path
-      return
-    end
+    authorize @user
   end
 
   def create
     @user = User.new(user_params)
+    authorize @user
 
     if @user.save
       log_in(@user)
@@ -43,13 +52,7 @@ class UsersController < ApplicationController
 
   def update
     find_user
-
-    # TODO: Replace this with a policy
-    unless @user == current_user || current_user.admin?
-      flash[:error] = "Permission denied."
-      redirect_to root_path
-      return
-    end
+    authorize @user
 
     @user.update_attributes(user_params)
 
@@ -63,10 +66,12 @@ class UsersController < ApplicationController
 
   def change_password
     find_user(:user_id)
+    authorize @user
   end
 
   def update_password
     find_user(:user_id)
+    authorize @user
 
     @user.update_attributes(user_password_params)
     
@@ -80,13 +85,7 @@ class UsersController < ApplicationController
 
   def update_organization
     find_user(:user_id)
-
-    # TODO: move this to a policy
-    unless current_user.admin?
-      flash[:error] = "Permission denied."
-      redirect_to user_path(@user)
-      return
-    end
+    authorize @user
 
     @user.update_attributes(user_organization_params)
 
@@ -102,7 +101,7 @@ class UsersController < ApplicationController
 
   def user_params
     result = params.require(:user).permit(:name, :email, :password, :password_confirmation, :bio, :linkedin, :twitter, :website, :profile_photo)
-    result[:admin] = @user.admin
+    result[:admin] = @user.admin if @user.present?
     result
   end
 
