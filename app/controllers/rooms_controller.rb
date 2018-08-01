@@ -60,6 +60,10 @@ class RoomsController < ApplicationController
     @hours = @room.availability_for_day(@day_start)
   end
 
+  def reserve
+    
+  end
+
   private
 
   def find_rooms

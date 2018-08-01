@@ -1,8 +1,10 @@
-<div class="row mt-2">
-  <div class="col mr-auto">
-    <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>
+<%- if admin? %>
+  <div class="row mt-2">
+    <div class="col mr-auto">
+      <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>
+    </div>
   </div>
-</div>
+<%- end %>
 
 <%- @rooms.in_batches(of: 3) do |rooms| %>
   <div class="row">

@@ -6,6 +6,13 @@ class Room < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
+  # Predicates
+
+  def available_now?
+    start = DateTime.now.beginning_of_hour
+    reservations.all.map(&:datetime_in).index(start).blank?
+  end
+
   def self.options_for_select
     Room.all.map do |room|
       [room.name, room.id]

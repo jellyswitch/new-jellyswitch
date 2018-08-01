@@ -20,7 +20,7 @@
             <%- if hour[:reserved] %>
               RESERVED
             <%- else %>
-              AVAILABLE
+              <%= render "reservation_button", room: @room, datetime_in: hour[:hour], label: "Reserve" %>
             <%- end %>
           </td>
         </tr>

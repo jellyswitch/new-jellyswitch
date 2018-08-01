@@ -1,6 +1,6 @@
 class RoomPolicy < ApplicationPolicy
   def index?
-    admin?
+    admin_or_member?
   end
 
   def show?
