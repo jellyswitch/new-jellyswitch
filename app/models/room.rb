@@ -23,10 +23,8 @@ class Room < ApplicationRecord
     # Return one datetime item per hour booked
     result = []
     reservations.each do |reservation|
-      result.push(reservation.datetime_in)
-      (reservation.hours-1).times do |i|
-        new_datetime = reservation.datetime_in + (i+1).hours
-        result.push(new_datetime)
+      reservation.reserved_hours.each do |hour|
+        result.push(hour)
       end
     end
     result
