@@ -8,7 +8,7 @@
     <small><%= link_to "View availability", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year) %></small>
     <p>Seats <strong><%= room.capacity %></strong> people</p>        
     <%- if room.available_now? %>
-      <%= render "reservation_button", room: room, datetime_in: DateTime.now.beginning_of_hour, label: "Reserve Now" %>
+      <%= render "reservation_button", room: room, datetime_in: (DateTime.now + 1.hour).beginning_of_hour, label: "Reserve Now" %>
     <%- end %>
   </div>
 </div>

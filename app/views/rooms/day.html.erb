@@ -1,31 +1,32 @@
+<div class="row mt-2">
+  <div class="col-sm"></div>
+  <div class="col-sm text-center">
+    <h2>Room Availability: <%= @room.name %></h2>
+    <div class="btn-group" role="group" aria-label="date-select">
+      <%= link_to "Previous Day", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info" %>
+      <button>
+        <%= @month %>/<%= @day %>/<%= @year %>
+      </button>
+      <%= link_to "Next Day", room_day_availability_path(@room, day: @next_day.day, month: @next_day.month, year: @next_day.year), class: "btn btn-info" %>
+    </div>
+  </div>
+  <div class="col-sm"></div>
+</div>
 <div class="row">
-  <div class="col-sm">
-    <p class="lead">
-      <%= link_to @room.name, room_path(@room) %> availability on:
-    </p>
-    <p>
-      <%= link_to "<", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info" %>
-      <%= @month %>/<%= @day %>/<%= @year %>
-      <%= link_to ">", room_day_availability_path(@room, day: @next_day.day, month: @next_day.month, year: @next_day.year), class: "btn btn-info" %>
-    </p>
-    <table class="table table-sm">
-      <%- @hours.each do |hour| %>
-        <%- if hour[:reserved] %>
-          <tr class="table-danger">
-        <%- else %>
-          <tr class="table-success">
-        <%- end %>
-          <td><%= hour[:hour].strftime("%l%P") %></td>
-          <td>
-            <%- if hour[:reserved] %>
-              RESERVED
-            <%- else %>
-              <%= render "reservation_button", room: @room, datetime_in: hour[:hour], label: "Reserve" %>
-            <%- end %>
-          </td>
-        </tr>
+  <div class="col-sm text-center">
+    Morning
+    <table class="table table-sm table-borderless table-hover">
+      <%- @hours.slice(0,12).each do |hour| %>
+        <%= render "hour_table", hour: hour %>
       <%- end %>
     </table>
   </div>
-  <div class="col-sm"></div>
+  <div class="col-sm text-center">
+    Afternoon / Evening
+    <table class="table table-sm table-borderless table-hover">
+      <%- @hours.slice(12,24).each do |hour| %>
+        <%= render "hour_table", hour: hour %>
+      <%- end %>
+    </table>
+  </div>
 </div>

@@ -10,13 +10,16 @@
     <tr>
       <th>Day and Time</th>
       <td>
-        <%= f.datetime_select :datetime_in, default: (DateTime.now + 1.hour).beginning_of_hour, ampm: true, order: [:month, :day, :year], discard_minute: true, class: "form-control" %>
+        <%= f.datetime_select :datetime_in, default: (DateTime.now + 1.hour).beginning_of_hour, ampm: true, order: [:month, :day, :year], disabled: true, discard_minute: true, class: "form-control" %>
+        <%= f.hidden_field :datetime_in, value: (DateTime.now + 1.hour).beginning_of_hour %>
+        <br />
+        <i>Want a different time? <%= link_to "View availability", room_day_availability_path(@reservation.room, day: Date.today.day, month: Date.today.month, year: Date.today.year)%></i>
       </td>
     </tr>
     <tr>
       <th>How many hours?</th>
       <td>
-        <%= f.number_field :hours, value: 1 %>
+        <%= f.number_field :hours, value: 1, class: "form-control" %>
       </td>
     </tr>
   </table>

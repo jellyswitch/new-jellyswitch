@@ -1,0 +1,14 @@
+<%- if hour[:reserved] %>
+  <tr class="table-danger">
+<%- else %>
+  <tr class="table-success">
+<%- end %>
+  <td><%= hour[:hour].strftime("%l%P") %></td>
+  <td>
+    <%- if hour[:reserved] %>
+      <a href="#" class="btn btn-danger btn-sm disabled">RESERVED</a>
+    <%- else %>
+      <%= render "reservation_button", room: @room, datetime_in: hour[:hour], label: "Reserve" %>
+    <%- end %>
+  </td>
+</tr>
