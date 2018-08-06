@@ -1,0 +1,24 @@
+<div class="row mt-2">
+  <div class="col mr-auto">
+    <%= link_to "Add a new plan", new_plan_path, class: "btn btn-primary" %>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm">
+    <table class="table table-sm">
+      <%- @plans.each do |plan| %>
+        <tr>
+          <td><%= link_to plan.name, plan_path(plan) %></td>
+          <td>
+            <%= link_to "Edit", edit_plan_path(plan), class: "btn btn-sm btn-info" %>
+            <%- if plan.available? %>
+              <%= link_to "Archive", plan_path(plan), method: :delete, class: "btn btn-sm btn-danger" %>
+            <%- end %>
+          </td>
+        </tr>
+      <%- end %>
+    </table>  
+  </div>
+  <div class="col-sm">
+</div>

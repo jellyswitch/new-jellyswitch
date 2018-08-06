@@ -1,0 +1,75 @@
+class PlansController < ApplicationController
+  def index
+    find_plans
+    authorize @plans
+  end
+
+  def new
+    @plan = Plan.new
+    authorize @plan
+  end
+
+  def create
+    @plan = Plan.new(plan_params)
+    authorize @plan
+
+    if @plan.save
+      flash[:notice] = "Plan saved."
+      redirect_to plan_path(@plan)
+    else
+      render :new
+    end
+  end
+
+  def show
+    find_plan
+    authorize @plan
+  end
+
+  def edit
+    find_plan
+    authorize @plan
+  end
+
+  def update
+    find_plan
+    authorize @plan
+
+    @plan.update_attributes(plan_params)
+    
+    if @plan.save
+      flash[:notice] = "Plan updated."
+      redirect_to plan_path(@plan)
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    find_plan
+    authorize @plan
+
+    @plan.update_attributes({available: false})
+    if @plan.save
+      flash[:info] = "Plan archived."
+      redirect_to plans_path
+    else
+      flash[:error] = "Unable to archive plan: #{@plan.name}"
+      redirect_to :back
+    end
+  end
+
+  private
+
+  def find_plans
+    @plans = Plan.all
+  end
+
+  def find_plan(key=:id)
+    @plan = Plan.friendly.find(params[key])
+  end
+
+  def plan_params
+    params.require(:plan).permit(:name, :interval, :amount_in_cents, :visible, :available)
+  end
+end

@@ -1,0 +1,30 @@
+<div class="row">
+  <div class="col-sm">
+    <%= link_to "Edit this plan", edit_plan_path(@plan) %>
+  </div>
+  <div class="col-sm"></div>
+</div>
+<div class="row">
+  <div class="col-sm">
+    <h2><%= @plan.name %></h2>
+    <table class="table table-sm">
+      <tr>
+        <th>Amount</th>
+        <td><%= dollar_amount(@plan.amount_in_cents) %></td>
+      </tr>
+      <tr>
+        <th>Interval</th>
+        <td><%= @plan.interval %></td>
+      </tr>
+      <tr>
+        <th>Visible?</th>
+        <td><%= @plan.visible? %></td>
+      </tr>
+      <tr>
+        <th>Available?</th>
+        <td><%= @plan.available? %></td>
+      </tr>
+    </table>
+  </div>
+    <div class="col-sm"></div>
+</div>
