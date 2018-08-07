@@ -61,6 +61,9 @@
             <%= subscription.plan.pretty_name %>
             <%- if subscription.active? %>
               <span class="badge badge-success">Active</span>
+              <%= link_to "Switch my membership", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
+            <%- else %>
+              <span class="badge badge-warning">Deactivated <%= subscription.pretty_datetime %></span>
             <%- end %>
           </td>
         </tr>

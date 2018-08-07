@@ -2,20 +2,47 @@ class SubscriptionsController < ApplicationController
   def new
     @subscription = Subscription.new
     authorize @subscription
+    background_image
   end
 
   def create
-    @subscription = Subscription.new(subscription_params)
-    @subscription.user = current_user
-    @subscription.active = true
+    @subscription = new_subscription
     authorize @subscription
 
     if @subscription.save
-      flash[:notice] = "You've successfully subscribed."
+      flash[:notice] = "Your membership is complete!"
       redirect_to root_path
     else
-      flash[:error] = "Error subscribing"
+      flash[:error] = "An error occurred."
       render :new
+    end
+  end
+
+  def edit
+    find_subscription
+    authorize @subscription
+  end
+
+  def update
+    find_subscription
+    authorize @subscription
+
+    
+    @subscription.active = false
+    @new_subscription = new_subscription
+    @new_subscription.user = @subscription.user # in case this is an admin
+
+    if @new_subscription.save
+      if @subscription.save
+        flash[:notice] = "Your membership has been updated."
+        redirect_to root_path
+      else
+        flash[:warning] = "An error occurred."
+        render :edit  
+      end
+    else
+      flash[:warning] = "An error occurred."
+      render :edit
     end
   end
 
@@ -23,5 +50,16 @@ class SubscriptionsController < ApplicationController
 
   def subscription_params
     params.require(:subscription).permit(:plan_id)
+  end
+
+  def find_subscription(key=:id)
+    @subscription = Subscription.find(params[key])
+  end
+
+  def new_subscription
+    subscription = Subscription.new(subscription_params)
+    subscription.user = current_user
+    subscription.active = true
+    subscription
   end
 end

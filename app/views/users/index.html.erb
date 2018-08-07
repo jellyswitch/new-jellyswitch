@@ -1,5 +1,9 @@
 <%- if admin? %>
-  <%= link_to "New Member", add_member_users_path, class: "btn btn-primary btn-sm" %>
+  <div class="row mt-3">
+    <div class="col">
+      <%= link_to "New Member", add_member_users_path, class: "btn btn-primary btn-sm" %>
+        </div>
+  </div>
 <%- end %>
 
 <%- @users.in_batches(of: 3) do |users| %>

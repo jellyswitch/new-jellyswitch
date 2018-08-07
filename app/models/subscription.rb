@@ -5,4 +5,8 @@ class Subscription < ApplicationRecord
 
   # Scopes
   scope :active, ->() { where(active: true) }
+
+  def pretty_datetime
+    updated_at.strftime("%m/%d/%Y at %l:%M%P")
+  end
 end

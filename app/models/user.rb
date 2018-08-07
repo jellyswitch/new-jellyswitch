@@ -37,7 +37,7 @@ class User < ApplicationRecord
   end
 
   def member?
-    subscriptions.active.count > 1
+    subscriptions.active.count > 0
   end
 
   def authenticated?(remember_token)

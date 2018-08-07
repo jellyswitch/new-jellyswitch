@@ -26,5 +26,17 @@
         <%= render "organization_form" %>
       </td>
     </tr>
+    <tr>
+      <td>Memberships</td>
+      <td></td>
+    </tr>
+    <%- @user.subscriptions.active.each do |subscription| %>
+      <tr>
+        <td></td>
+        <td>
+          <%= render "subscriptions/form", subscription: subscription, label: "Update membership" %>
+        </td>
+      </tr>
+    <%- end %>
   </table>
 <%- end %>
