@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_08_06_211954) do
+ActiveRecord::Schema.define(version: 2018_08_06_231211) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -83,6 +83,14 @@ ActiveRecord::Schema.define(version: 2018_08_06_211954) do
     t.boolean "whiteboard", default: false, null: false
     t.integer "capacity", default: 1, null: false
     t.string "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "subscriptions", force: :cascade do |t|
+    t.integer "plan_id", null: false
+    t.integer "user_id", null: false
+    t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end

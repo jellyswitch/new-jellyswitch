@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :authenticate!, except: [:new, :create]
+  before_action :ensure_subscribed, except: [:new, :create]
 
   def index
     find_users

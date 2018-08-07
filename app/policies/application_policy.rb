@@ -53,6 +53,10 @@ class ApplicationPolicy
     user.admin?
   end
 
+  def is_user?
+    user.present?
+  end
+
   def admin_or_member?
     user.admin? || user.member?
   end

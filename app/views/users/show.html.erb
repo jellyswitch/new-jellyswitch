@@ -47,6 +47,24 @@
         <th>Website</th>
         <td><%= @user.website %></td>
       </tr>
+      <tr>
+        <th colspan=2>Billing Information</th>
+      </tr>
+      <tr>
+        <th>Plans</th>
+        <td></td>
+      </tr>
+      <%- @user.subscriptions.each do |subscription| %>
+        <tr>
+          <td></td>
+          <td>
+            <%= subscription.plan.pretty_name %>
+            <%- if subscription.active? %>
+              <span class="badge badge-success">Active</span>
+            <%- end %>
+          </td>
+        </tr>
+      <%- end %>
     </table>
   </div>
   <div class="col-sm"></div>

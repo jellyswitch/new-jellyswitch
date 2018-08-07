@@ -2,6 +2,7 @@ class User < ApplicationRecord
   # Relationships
   belongs_to :organization, optional: true
   has_many :reservations
+  has_many :subscriptions
 
   # Slugs
   extend FriendlyId
@@ -36,7 +37,7 @@ class User < ApplicationRecord
   end
 
   def member?
-    !admin
+    subscriptions.active.count > 1
   end
 
   def authenticated?(remember_token)
