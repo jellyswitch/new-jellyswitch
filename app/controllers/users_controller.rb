@@ -47,6 +47,7 @@ class UsersController < ApplicationController
       log_in(@user)
       redirect_to root_path
     else
+      background_image
       render :new
     end
   end
