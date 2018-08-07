@@ -3,7 +3,7 @@
     <%- if @user.has_profile_photo? %>
       <%= image_tag @user.normal_profile_photo, class: "img-thumbnail" %>
     <%- else %>
-      <%= image_tag "profile.jpg", class: "img-thumbnail" %>
+      <%= image_tag "profile-125x125.jpg", class: "img-thumbnail" %>
     <%- end %>
     <h1><%= @user.name %></h1>
     <p>
