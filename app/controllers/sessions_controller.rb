@@ -1,5 +1,6 @@
 class SessionsController < ApplicationController
   def new
+    background_image
   end
 
   def create

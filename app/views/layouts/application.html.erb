@@ -17,7 +17,11 @@
     <title>Bristlecone</title>
   </head>
 
-  <body>
+  <%- if @background_image %>
+    <body style="background-image: url(<%= asset_url(@background_image) %>)">
+  <%- else %>
+    <body>
+  <%- end %>
     <div class="container-fluid">
       <%= render "layouts/nav" %>
       <%= render "layouts/flash" %>

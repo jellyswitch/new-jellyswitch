@@ -26,6 +26,7 @@ class UsersController < ApplicationController
       flash[:notice] = "Please log out first."
       redirect_to root_path
     end
+    background_image
   end
 
   def add_member

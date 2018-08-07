@@ -8,4 +8,10 @@ class ApplicationController < ActionController::Base
     flash[:warning] = "You are not authorized to perform that action."
     redirect_to(request.referrer || root_path)
   end
+
+  protected
+
+  def background_image
+    @background_image = Rails.application.config.x.customization.background
+  end
 end
