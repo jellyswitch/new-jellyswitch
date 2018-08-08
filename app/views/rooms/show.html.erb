@@ -1,8 +1,10 @@
-<div class="row mt-1">
-  <div class="col-sm">
-    <%= link_to "Edit Room", edit_room_path(@room), class: "btn btn-primary" %>
-  </div>  
-</div>
+<%- if admin? %>
+  <div class="row mt-1">
+    <div class="col-sm">
+      <%= link_to "Edit Room", edit_room_path(@room), class: "btn btn-primary" %>
+    </div>  
+  </div>
+<%- end %>
 <div class="row mt-1">
   <div class="col-sm">
     <%= render "rooms/room_card", room: @room %>

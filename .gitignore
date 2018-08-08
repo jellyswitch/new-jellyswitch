@@ -31,3 +31,4 @@
 
 # Mine
 /vendor/*
+.DS_Store
