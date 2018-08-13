@@ -15,6 +15,6 @@ module Bristlecone
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
-    config.time_zone = "Pacific Time (US & Canada)"
+    config.time_zone = ENV['TIME_ZONE'] || "Pacific Time (US & Canada)"
   end
 end
