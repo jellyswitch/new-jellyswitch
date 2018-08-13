@@ -1,14 +1,24 @@
 <div class="card border-light">
   <div class="card-body">
-    <%= link_to room.name, room_path(room) %>
+    <div class="row">
+      <h3><%= link_to room.name, room_path(room) %></h3>
+    </div>
     <%- if room.whiteboard? %>
-      <span class="badge badge-info">Has Whiteboard</span>
-    <%- end %>
-    <br />
-    <small><%= link_to "View availability", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year) %></small>
-    <p>Seats <strong><%= room.capacity %></strong> people</p>        
-    <%- if room.available_now? %>
-      <%= render "reservation_button", room: room, datetime_in: (DateTime.now + 1.hour).beginning_of_hour, label: "Reserve Now" %>
-    <%- end %>
+      <div class="row">
+        <span class="badge badge-info">Has Whiteboard</span>
+      </div>
+    <%- end   %>
+    <div class="row">
+      <p>
+        Seats <strong><%= room.capacity %></strong> people
+      </p>
+    </div>
+    <div class="row">
+      <%- if room.available_now? %>
+        <%= render "reservation_button", room: room, datetime_in: (DateTime.now + 1.hour).beginning_of_hour, label: "Reserve Now" %>
+      <%- end %>
+      &nbsp;
+      <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "btn btn-sm btn-primary" %>
+    </div>
   </div>
 </div>

@@ -19,8 +19,8 @@ class FakeData
   end
 
   def fake_user
-    name = Faker::Name.name
-    email = Faker::Internet.safe_email
+    name = Faker::Name.unique.name
+    email = Faker::Internet.unique.safe_email
     password = "password"
     bio = Faker::GameOfThrones.quote
     path = photo_paths.shuffle.sample
@@ -40,7 +40,7 @@ class FakeData
   end
 
   def fake_org
-    name = Faker::Company.name
+    name = Faker::Company.unique.name
     owner = fake_user
     website = Faker::Internet.url
 
@@ -53,7 +53,7 @@ class FakeData
 
   def fake_room
     Room.create!(
-      name: Faker::Ancient.god,
+      name: Faker::Ancient.unique.god,
       description: Faker::Company.catch_phrase,
       capacity: rand(1..5),
       whiteboard: true
