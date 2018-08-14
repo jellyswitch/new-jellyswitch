@@ -4,6 +4,7 @@ class UsersController < ApplicationController
   def index
     find_users
     authorize @users
+    background_image
   end
 
   def show
