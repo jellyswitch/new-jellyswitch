@@ -1,4 +1,6 @@
 class LandingController < ApplicationController
+  before_action :ensure_subscribed, except: [:index]
+
   def index
     if logged_in?
       redirect_to home_path

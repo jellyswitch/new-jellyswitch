@@ -50,6 +50,7 @@ class RoomsController < ApplicationController
   def day
     find_room(:room_id)
     authorize @room
+    background_image
 
     @day = params[:day].to_i
     @month = params[:month].to_i

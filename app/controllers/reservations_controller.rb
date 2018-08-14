@@ -10,6 +10,7 @@ class ReservationsController < ApplicationController
   def new
     @reservation = Reservation.new(reservation_params)
     authorize @reservation
+    background_image
   end
 
   def create

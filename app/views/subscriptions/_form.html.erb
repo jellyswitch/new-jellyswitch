@@ -2,7 +2,7 @@
   <%= render "shared/error_messages", model: subscription %>
   
   <div class="form-group row">
-    <%= f.label :plan_id, class: "col-sm-3 text-right mt-2" %>
+    <%= f.label "Membership", class: "col-sm-3 text-right mt-2" %>
     <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control col" }%>
   </div>
 

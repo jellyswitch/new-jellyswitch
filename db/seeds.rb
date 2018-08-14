@@ -61,7 +61,7 @@ class FakeData
   end
 
   def fake_plans
-    Plan.create!(interval: "monthly", amount_in_cents: 0, name: "Free membership")
+    Plan.create!(interval: "monthly", amount_in_cents: 0, name: "Free membership", visible: false)
     Plan.create!(interval: "once", amount_in_cents: 3500, name: "Day Pass")
     Plan.create!(interval: "monthly", amount_in_cents: 16000, name: "Part-time Membership")
     Plan.create!(interval: "monthly", amount_in_cents: 35000, name: "Full-time Membership")
