@@ -6,6 +6,9 @@ class Room < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
+  # Attachments
+  has_one_attached :photo
+
   # Predicates
 
   def available_now?
@@ -13,10 +16,23 @@ class Room < ApplicationRecord
     reservations.all.map(&:datetime_in).index(start).blank?
   end
 
+  # Class Methods
+
   def self.options_for_select
     Room.all.map do |room|
       [room.name, room.id]
     end
+  end
+
+
+  # Instance Methods
+
+  def square_photo
+    photo.variant(resize: "300x300")
+  end
+
+  def card_photo
+    photo.variant(resize: "100x180")
   end
 
   def reserved_hours

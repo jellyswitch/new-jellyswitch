@@ -46,7 +46,7 @@ class UsersController < ApplicationController
 
     if @user.save
       log_in(@user)
-      redirect_to root_path
+      redirect_to home_path
     else
       background_image
       render :new

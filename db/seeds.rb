@@ -10,12 +10,21 @@ class FakeData
   def admins 
     ["dpaola2@gmail.com"]
   end
-  def photos
+
+  def user_photos
     [0,1,2,3,4,5,6,7,8,14,15,21,24,27,37,42,44,57,60,61,71,72,77,79,81]
   end
 
-  def photo_paths
-    photos.map {|num| "#{num}.jpg" }
+  def room_photos
+    [1,2,3,4,5]
+  end
+
+  def user_photo_paths
+    user_photos.map {|num| "#{num}.jpg" }
+  end
+
+  def room_photo_paths
+    room_photos.map {|num| "#{num}.jpg" }
   end
 
   def fake_user
@@ -23,7 +32,7 @@ class FakeData
     email = Faker::Internet.unique.safe_email
     password = "password"
     bio = Faker::GameOfThrones.quote
-    path = photo_paths.shuffle.sample
+    path = user_photo_paths.shuffle.sample
 
 
     user = User.create!(
@@ -44,20 +53,28 @@ class FakeData
     owner = fake_user
     website = Faker::Internet.url
 
-    Organization.create!(
+    org = Organization.create!(
       name: name,
       owner: owner,
       website: website
     )
+    org
   end
 
   def fake_room
-    Room.create!(
+    room = Room.create!(
       name: Faker::Ancient.unique.god,
       description: Faker::Company.catch_phrase,
       capacity: rand(1..5),
       whiteboard: true
     )
+
+    path = room_photo_paths.shuffle.sample
+    room.photo.attach(
+      io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
+      filename: path
+    )
+    room
   end
 
   def fake_plans
