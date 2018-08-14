@@ -10,7 +10,7 @@ class SubscriptionsController < ApplicationController
     authorize @subscription
 
     if @subscription.save
-      flash[:notice] = "Your membership is complete!"
+      flash[:notice] = "Success! Welcome to #{Rails.application.config.x.customization.name}."
       redirect_to root_path
     else
       flash[:error] = "An error occurred."

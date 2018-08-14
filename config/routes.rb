@@ -10,6 +10,7 @@ Rails.application.routes.draw do
 
   # Landing
   get 'landing/index'
+  get '/home',      to: 'landing#home'
 
   # Alphabetized Resources
   resources :organizations

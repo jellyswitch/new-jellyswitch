@@ -18,7 +18,7 @@
   </head>
 
   <%- if @background_image %>
-    <body style="background-image: url(<%= asset_url(@background_image) %>)">
+    <body style="background-image: url(<%= asset_url(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
   <%- else %>
     <body>
   <%- end %>
