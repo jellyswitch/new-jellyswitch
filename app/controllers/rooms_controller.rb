@@ -9,6 +9,12 @@ class RoomsController < ApplicationController
   def show
     find_room
     authorize @room
+    respond_to do |format|
+      format.html
+      format.ics do
+        render plain: @room.calendar.to_ical
+      end
+    end
   end
 
   def new

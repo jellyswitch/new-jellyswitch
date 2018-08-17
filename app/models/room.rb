@@ -56,4 +56,19 @@ class Room < ApplicationRecord
     end
     result
   end
+
+  def calendar
+    cal = Icalendar::Calendar.new
+    cal.x_wr_calname = "Reservations: #{name}"
+    reservations.each do |reservation|
+      cal.event do |e|
+        e.dtstart = reservation.datetime_in
+        e.dtend = reservation.datetime_in + 1.hour
+        e.summary = reservation.user.name
+        e.description = "#{reservation.user.name} has reserved #{name} for an hour."
+      end
+    end
+    cal.publish
+    cal
+  end
 end

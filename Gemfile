@@ -7,6 +7,7 @@ gem "aws-sdk-s3", require: false
 gem 'bcrypt'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
+gem 'icalendar'
 gem 'image_processing', '~> 1.2'
 gem 'jbuilder', '~> 2.5'
 gem 'octicons_helper'
