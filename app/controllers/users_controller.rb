@@ -33,6 +33,7 @@ class UsersController < ApplicationController
   def add_member
     @user = User.new
     authorize @user
+    background_image
   end
 
   def edit
@@ -49,7 +50,11 @@ class UsersController < ApplicationController
       redirect_to home_path
     else
       background_image
-      render :new
+      if admin?
+        render :add_member
+      else
+        render :new
+      end
     end
   end
 

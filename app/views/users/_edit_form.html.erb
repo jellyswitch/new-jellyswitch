@@ -1,35 +1,46 @@
 <%= form_for(@user) do |f| %>
   <%= render "shared/error_messages" , model: @user %>
 
-  <h2>Basic Information <small class="text-muted">(required)</small></h2>
-  <%= f.label :name %>
-  <%= f.text_field :name, class: "form-control" %>
+  <h2>Basic Information</h2>
+  <div class="form-group">
+    <%= f.label :name %><small class="text-muted"> (required)</small>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :email %><small class="text-muted"> (required)</small>
+    <%= f.email_field :email, class: "form-control" %>
+  </div>
 
-  <%= f.label :email %>
-  <%= f.email_field :email, class: "form-control" %>
-
-  <%= f.label :password %>
-  <%= f.password_field :password, class: "form-control" %>
-
-  <%= f.label :password_confirmation, "Confirm password" %>
-  <%= f.password_field :password_confirmation, class: "form-control" %>
-
-  <%= f.label :profile_photo %>
-  <%= f.file_field :profile_photo, class: "form-control" %>
-
-  <%= f.label :bio %>
-  <%= f.text_area :bio, class: "form-control" %>
+  <div class="form-group">
+    <%= f.label :password %><small class="text-muted"> (required)</small>
+    <%= f.password_field :password, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :password_confirmation, "Confirm password" %><small class="text-muted"> (required)</small>
+    <%= f.password_field :password_confirmation, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :profile_photo %>
+    <%= f.file_field :profile_photo, class: "form-control-file" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :bio %>
+    <%= f.text_area :bio, class: "form-control" %>
+  </div>
 
   <h2>Contact Information</h2>
 
-  <%= f.label :linkedin %>
-  <%= f.text_field :linkedin, class: "form-control" %>
-
-  <%= f.label :twitter %>
-  <%= f.text_field :twitter, class: "form-control" %>
-
-  <%= f.label :website %>
-  <%= f.text_field :website, class: "form-control" %>
-  <br />
+  <div class="form-group">
+    <%= f.label :linkedin %>
+    <%= f.text_field :linkedin, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :twitter %>
+    <%= f.text_field :twitter, class: "form-control" %>
+  </div>
+  <div class="form-group">
+    <%= f.label :website %>
+    <%= f.text_field :website, class: "form-control" %>
+  </div>
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <%- end %>
