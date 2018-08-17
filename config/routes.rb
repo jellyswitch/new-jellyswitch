@@ -11,6 +11,7 @@ Rails.application.routes.draw do
   # Landing
   get 'landing/index'
   get '/home',      to: 'landing#home'
+  get '/wait',      to: 'landing#wait'
 
   # Alphabetized Resources
   resources :organizations

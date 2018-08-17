@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  before_action :ensure_subscribed, except: [:new, :create]
+  before_action :ensure_subscribed, except: [:new, :create, :show]
 
   def index
     find_users
@@ -112,7 +112,10 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    result = params.require(:user).permit(:name, :email, :password, :password_confirmation, :bio, :linkedin, :twitter, :website, :profile_photo)
+    result = params.require(:user).permit(
+      :name, :email, :password, :password_confirmation, 
+      :bio, :linkedin, :twitter, :website, :profile_photo,
+      :approved)
     result[:admin] = @user.admin if @user.present?
     result
   end

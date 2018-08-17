@@ -25,6 +25,14 @@ module SessionsHelper
     logged_in? && current_user.admin?
   end
 
+  def member?
+    current_user.present? && current_user.member?
+  end
+
+  def approved?
+    current_user.present? && current_user.approved?
+  end
+
   def log_out
     forget(current_user)
     session.delete(:user_id)

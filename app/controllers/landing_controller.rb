@@ -1,16 +1,20 @@
 class LandingController < ApplicationController
-  before_action :ensure_subscribed, except: [:index]
+  before_action :ensure_subscribed, except: [:index, :wait]
 
   def index
-    if logged_in?
+    if member? && approved?
       redirect_to home_path
     end
     background_image
   end
 
   def home
-    if !logged_in?
-      redirect_to root_path
+    background_image
+  end
+
+  def wait
+    if member? && approved?
+      redirect_to home_path
     end
     background_image
   end

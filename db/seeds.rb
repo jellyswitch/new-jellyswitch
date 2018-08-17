@@ -39,7 +39,8 @@ class FakeData
       name: name, 
       email: email, 
       password: password,
-      bio: bio
+      bio: bio,
+      approved: true
     )
     user.profile_photo.attach(
       io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
@@ -93,7 +94,8 @@ class FakeData
           email: email,
           password: "pizza123",
           admin: true,
-          bio: Faker::GameOfThrones.quote
+          bio: Faker::GameOfThrones.quote,
+          approved: true
         )
         admin.profile_photo.attach(
           io: File.open(Rails.root.join("app/assets/images/avatars/dave.png")),
