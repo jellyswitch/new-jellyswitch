@@ -19,7 +19,6 @@ class ReservationsController < ApplicationController
 
     @reservation.user = current_user
     @reservation.datetime_in = @reservation.datetime_in.beginning_of_hour
-    # TODO: Make sure the room isn't already booked here
 
     if @reservation.save
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"

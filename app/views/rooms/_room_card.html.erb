@@ -1,5 +1,5 @@
 <div class="card border-light">
-  <%= image_tag(room.card_photo, class: "card-img-top") %>
+  <%= image_tag(room.photo, class: "card-img-top") %>
   <div class="card-body">
     <div class="row">
       <h3><%= link_to room.name, room_path(room) %></h3>
@@ -16,7 +16,7 @@
     </div>
     <div class="row">
       <%- if room.available_now? %>
-        <%= render "reservation_button", room: room, datetime_in: (DateTime.now + 1.hour).beginning_of_hour, label: "Reserve Now" %>
+        <%= render "reservation_button", room: room, datetime_in: Time.current.beginning_of_hour, label: "Reserve Now" %>
       <%- end %>
       &nbsp;
       <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "btn btn-sm btn-primary" %>

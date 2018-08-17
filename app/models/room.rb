@@ -12,7 +12,7 @@ class Room < ApplicationRecord
   # Predicates
 
   def available_now?
-    start = (Time.current + 1.hour).beginning_of_hour
+    start = Time.current.beginning_of_hour
     reservations.all.map(&:datetime_in).index(start).blank?
   end
 

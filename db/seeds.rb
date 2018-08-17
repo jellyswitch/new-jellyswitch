@@ -70,7 +70,7 @@ class FakeData
       whiteboard: true
     )
 
-    path = room_photo_paths.shuffle.sample
+    path = "2.jpg" # room_photo_paths.shuffle.sample
     room.photo.attach(
       io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
       filename: path
