@@ -27,6 +27,12 @@
     <%= f.label :bio %>
     <%= f.text_area :bio, class: "form-control" %>
   </div>
+  <%- if admin? %>
+    <div class="form-group">
+      <%= f.label :approved, class: "form-check-label" %>
+      <%= f.check_box :approved, class: "form-check-box" %>
+    </div>
+  <%- end %>
 
   <h2>Contact Information</h2>
 

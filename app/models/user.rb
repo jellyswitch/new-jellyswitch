@@ -15,6 +15,10 @@ class User < ApplicationRecord
   validates :email, uniqueness: true
   has_secure_password
 
+  # Scopes
+  scope :approved, ->() { where(approved: true) }
+  scope :members, ->() { where(admin: false) }
+
   # Relationship Helpers
   def owned_organization
     Organization.where(owner_id: self.id).first

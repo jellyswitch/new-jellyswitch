@@ -18,6 +18,9 @@
         <%- if member.admin? %>
           <span class="badge badge-success">Admininstrator</span>
         <%- end %>
+        <%- if !member.approved? %>
+          <span class="badge badge-danger">Not Approved</span>
+        <%- end %>
         <span class="badge badge-info">Member</span>
       </div>
     </div>
