@@ -4,3 +4,4 @@ Rails.application.config.x.customization.background = ENV['INSTANCE_BACKGROUND']
 Rails.application.config.x.customization.wifi_name = ENV['WIFI_NAME'] || "not set"
 Rails.application.config.x.customization.wifi_password = ENV['WIFI_PASSWORD'] || "not set"
 Rails.application.config.x.customization.building_address = ENV['BUILDING_ADDRESS'] || "not set"
+Rails.application.config.x.customization.logo = ENV['INSTANCE_LOGO']

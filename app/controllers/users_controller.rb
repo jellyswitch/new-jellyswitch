@@ -32,6 +32,7 @@ class UsersController < ApplicationController
 
   def add_member
     @user = User.new
+    @user.approved = true
     authorize @user
     background_image
   end
