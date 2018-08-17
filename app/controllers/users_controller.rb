@@ -46,11 +46,15 @@ class UsersController < ApplicationController
     authorize @user
 
     if @user.save
-      log_in(@user)
-      redirect_to home_path
+      if admin? # Admin is creating a user
+        redirect_to user_path(@user)
+      else
+        log_in(@user)
+        redirect_to home_path
+      end
     else
       background_image
-      if admin?
+      if admin? # Admin is creating a user
         render :add_member
       else
         render :new
