@@ -1,21 +1,6 @@
 <div class="row">
   <div class="col-sm">
-    <%- if @user.has_profile_photo? %>
-      <%= image_tag @user.normal_profile_photo, class: "img-thumbnail" %>
-    <%- else %>
-      <%= image_tag "profile-125x125.jpg", class: "img-thumbnail" %>
-    <%- end %>
-    <h1><%= @user.name %></h1>
-    <p>
-      Joined <%= time_ago_in_words(@user.created_at) %> ago
-    </p>
-    <%- if @user.organization.present? %>
-      <p>Member of <%= @user.organization.name %></p>
-    <%- end %>
-    <p class="lead">
-      <strong>Bio:</strong>
-      <%= @user.bio %>
-    </p>
+    <%= render "users/member_card", member: @user %>
   </div>
   <div class="col-sm">
     <%= render "admin" %>

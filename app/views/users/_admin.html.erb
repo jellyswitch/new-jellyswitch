@@ -1,42 +1,48 @@
 <%- if admin? %>
-  <h2>Sensitive Info <small class="text-muted">This data is only visible to administrators.</small></h2>
-  <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary" %>
-  <table class="table">
-    <tr>
-      <th>Email</th>
-      <td><%= mail_to @user.email %></td>
-    </tr>
-    <tr>
-      <th>Join Date</th>
-      <td><%= @user.created_at.strftime("%F") %></td>
-    </tr>
-    <tr>
-      <th>Owner of</th>
-      <td>
-        <%- if @user.owned_organization.present? %>
-          <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
-        <%- else %>
-          (none)
+  <div class="card bg-light">
+    <div class="card-body">
+      <h5 class="card-title">Administrative Actions <small class="text-muted">This data is only visible to administrators.</small></h5>
+      <p class="card-text">
+        <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary btn-sm" %>
+      </p>
+      <table class="table">
+        <tr>
+          <th>Email</th>
+          <td><%= mail_to @user.email %></td>
+        </tr>
+        <tr>
+          <th>Join Date</th>
+          <td><%= @user.created_at.strftime("%F") %></td>
+        </tr>
+        <tr>
+          <th>Owner of</th>
+          <td>
+            <%- if @user.owned_organization.present? %>
+              <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
+            <%- else %>
+              (none)
+            <%- end %>
+          </td>
+        </tr>
+        <tr>
+          <th>Member of</th>
+          <td>
+            <%= render "organization_form" %>
+          </td>
+        </tr>
+        <tr>
+          <td>Memberships</td>
+          <td></td>
+        </tr>
+        <%- @user.subscriptions.active.each do |subscription| %>
+          <tr>
+            <td></td>
+            <td>
+              <%= render "subscriptions/form", subscription: subscription, label: "Update membership" %>
+            </td>
+          </tr>
         <%- end %>
-      </td>
-    </tr>
-    <tr>
-      <th>Member of</th>
-      <td>
-        <%= render "organization_form" %>
-      </td>
-    </tr>
-    <tr>
-      <td>Memberships</td>
-      <td></td>
-    </tr>
-    <%- @user.subscriptions.active.each do |subscription| %>
-      <tr>
-        <td></td>
-        <td>
-          <%= render "subscriptions/form", subscription: subscription, label: "Update membership" %>
-        </td>
-      </tr>
-    <%- end %>
-  </table>
+      </table>
+    </div>
+  </div>
 <%- end %>
