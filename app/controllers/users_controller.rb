@@ -1,6 +1,4 @@
 class UsersController < ApplicationController
-  before_action :ensure_subscribed, except: [:new, :create, :show]
-
   def index
     find_users
     authorize @users

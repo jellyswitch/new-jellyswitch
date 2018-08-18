@@ -4,7 +4,7 @@ class UserPolicy < ApplicationPolicy
   end
 
   def show?
-    owner_or_admin?
+    owner_or_admin? 
   end
 
   def new?
@@ -42,6 +42,7 @@ class UserPolicy < ApplicationPolicy
   private
 
   def owner_or_admin?
+    # Needed because the record itself is the user
     (user == record) || admin?
   end
 end
