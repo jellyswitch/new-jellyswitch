@@ -46,6 +46,7 @@ class FakeData
       io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
       filename: path
     )
+    Subscription.create!(plan_id: [3,4,5].sample, user_id: user.id)
     user
   end
 
@@ -87,6 +88,7 @@ class FakeData
   end
 
   def run
+    fake_plans
     ActiveRecord::Base.transaction do
       admins.each do |email|
         admin = User.create!(
@@ -119,8 +121,6 @@ class FakeData
         room = fake_room
         puts room.name
       end
-
-      fake_plans
     end
   end
 end
