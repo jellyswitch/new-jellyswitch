@@ -8,10 +8,10 @@ class SubscriptionPolicy < ApplicationPolicy
   end
 
   def edit?
-    owner_or_admin?
+    admin? || (owner? && member? && approved?)
   end
 
   def update?
-    owner_or_admin?
+    admin? || (owner? && member? && approved?)
   end
 end

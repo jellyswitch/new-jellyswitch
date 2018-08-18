@@ -1,6 +1,6 @@
 class UserPolicy < ApplicationPolicy
   def index?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def show?
@@ -43,6 +43,6 @@ class UserPolicy < ApplicationPolicy
 
   def owner_or_admin?
     # Needed because the record itself is the user
-    (user == record) || admin?
+    admin? || (member? && approved? && user == record)
   end
 end

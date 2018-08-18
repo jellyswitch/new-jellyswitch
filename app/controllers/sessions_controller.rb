@@ -1,9 +1,11 @@
 class SessionsController < ApplicationController
   def new
+    authorize :session, :new?
     background_image
   end
 
   def create
+    authorize :session, :create?
     user = User.find_by(email: params[:session][:email].downcase)
     if user && user.authenticate(params[:session][:password])
       log_in(user)

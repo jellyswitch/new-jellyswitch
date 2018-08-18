@@ -1,10 +1,10 @@
 class RoomPolicy < ApplicationPolicy
   def index?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def show?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def new?
@@ -24,6 +24,6 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def day?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 end

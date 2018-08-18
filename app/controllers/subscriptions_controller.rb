@@ -37,11 +37,11 @@ class SubscriptionsController < ApplicationController
         flash[:notice] = "Your membership has been updated."
         redirect_to root_path
       else
-        flash[:warning] = "An error occurred."
+        flash[:error] = "An error occurred."
         render :edit  
       end
     else
-      flash[:warning] = "An error occurred."
+      flash[:error] = "An error occurred."
       render :edit
     end
   end

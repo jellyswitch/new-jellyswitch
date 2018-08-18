@@ -60,7 +60,7 @@ class ApplicationPolicy
   def member?
     is_user? && user.member?
   end
-  
+
   def approved?
     is_user? && user.approved?
   end
@@ -70,10 +70,10 @@ class ApplicationPolicy
   end
   
   def admin_or_member?
-    admin? || member?
+    raise "Use individual permission predicates instead"
   end
 
   def owner_or_admin?
-    owner? || admin?
+    raise "Use individual permission predicates instead"
   end
 end

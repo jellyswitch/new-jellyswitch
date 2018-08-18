@@ -1,17 +1,17 @@
 class ReservationPolicy < ApplicationPolicy
   def new?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def create?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def show?
-    admin_or_member?
+    admin? || (member? && approved?)
   end
 
   def destroy?
-    member? && owner_or_admin?
+    (member? && approved? && owner?) || admin?
   end
 end
