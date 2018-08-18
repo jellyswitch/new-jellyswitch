@@ -16,7 +16,7 @@ Rails.application.routes.draw do
   # Alphabetized Resources
   resources :organizations
   resources :plans
-  resources :reservations
+  resources :reservations, except: [:index]
   resources :rooms do
     get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
   end

@@ -58,10 +58,22 @@ class ApplicationPolicy
   end
 
   def admin_or_member?
-    user.admin? || user.member?
+    admin? || member?
   end
 
   def owner_or_admin?
-    (user == record.user) || admin?
+    owner? || admin?
+  end
+
+  def owner?
+    user == record.user
+  end
+
+  def approved?
+    user.approved?
+  end
+
+  def member?
+    user.member?
   end
 end

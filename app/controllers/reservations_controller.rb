@@ -1,7 +1,4 @@
 class ReservationsController < ApplicationController
-  include SubscriptionsHelper
-  before_action :ensure_subscribed
-
   def show
     find_reservation
     authorize @reservation
