@@ -1,6 +1,14 @@
 <div class="card border-light">
-  <%= image_tag(room.photo, class: "card-img-top") %>
   <div class="card-body">
+    <div class="row">
+      <div>
+        <%- if room.has_photo? %>
+          <%= image_tag(room.card_photo, class: "img-thumbnail", style: "height: 200px;") %>
+        <%- else %>
+          <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 200px;" %>
+        <%- end %>
+      </div>
+    </div>
     <div class="row">
       <h3><%= link_to room.name, room_path(room) %></h3>
       <%- if admin? %>

@@ -16,6 +16,10 @@ class Room < ApplicationRecord
     reservations.all.map(&:datetime_in).index(start).blank?
   end
 
+  def has_photo?
+    photo.attached?
+  end
+
   # Class Methods
 
   def self.options_for_select
@@ -32,7 +36,7 @@ class Room < ApplicationRecord
   end
 
   def card_photo
-    photo.variant(resize: "100x180")
+    photo.variant(resize: "x200")
   end
 
   def reserved_hours
