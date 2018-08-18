@@ -1,6 +1,4 @@
 class LandingController < ApplicationController
-  before_action :ensure_subscribed, except: [:index, :wait]
-
   def index
     if member? 
       if approved?
@@ -13,6 +11,7 @@ class LandingController < ApplicationController
   end
 
   def home
+    authorize :landing, :home?
     background_image
   end
 
