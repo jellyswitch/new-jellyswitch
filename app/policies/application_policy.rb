@@ -49,31 +49,31 @@ class ApplicationPolicy
 
   protected
 
-  def admin?
-    user.admin?
-  end
-
   def is_user?
     user.present?
   end
 
+  def admin?
+    is_user? && user.admin?
+  end
+
+  def member?
+    is_user? && user.member?
+  end
+  
+  def approved?
+    is_user? && user.approved?
+  end
+  
+  def owner?
+    is_user? && (user == record.user)
+  end
+  
   def admin_or_member?
     admin? || member?
   end
 
   def owner_or_admin?
     owner? || admin?
-  end
-
-  def owner?
-    user == record.user
-  end
-
-  def approved?
-    user.approved?
-  end
-
-  def member?
-    user.member?
   end
 end

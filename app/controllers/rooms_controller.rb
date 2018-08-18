@@ -1,6 +1,5 @@
 class RoomsController < ApplicationController
-  before_action :ensure_subscribed
-  
+ 
   def index
     find_rooms
     authorize @rooms

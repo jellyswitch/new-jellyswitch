@@ -12,6 +12,6 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    owner_or_admin?
+    member? && owner_or_admin?
   end
 end
