@@ -3,6 +3,7 @@
     <h1><%= @organization.name %> <span><%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-sm btn-primary" %></span></h1>
     <p class="lead">
       <strong>Owner: </strong><%= link_to @organization.owner.name, user_path(@organization.owner) %>
+      <p class="text-muted">(Edit the organization to change the owner)</p>
     </p>
     <p>
       Created <%= time_ago_in_words(@organization.created_at) %> ago
@@ -10,7 +11,8 @@
   </div>
 
   <div class="col-sm">
-    <h2>Members <span><%= link_to "Add Member", "#", class: "btn btn-primary btn-sm" %></span></h2>
+    <h2>Members</h2>
+    <p class="text-muted">(Add members by editing their profiles)</p>
     <%- @organization.users.each do |member| %>
       <%= render "users/member_card", member: member %>
     <%- end %>

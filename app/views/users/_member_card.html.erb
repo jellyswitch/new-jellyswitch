@@ -10,7 +10,11 @@
       </div>
       <div class="ml-2">
         <p class="mb-1">
-          <%= link_to member.name, user_path(member) %>
+          <%- if admin? %>
+            <%= link_to member.name, user_path(member) %>
+          <%- else %>
+            <%= member.name %>
+          <%- end %>
         </p>
         <%= octicon "mail" %>
         <%= octicon "mark-github" %>

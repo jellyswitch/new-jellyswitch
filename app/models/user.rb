@@ -41,7 +41,7 @@ class User < ApplicationRecord
   end
 
   def member?
-    (subscriptions.active.count > 0) && approved?
+    subscriptions.active.count > 0
   end
 
   def approved?

@@ -1,13 +1,19 @@
 class LandingController < ApplicationController
   def index
-    if member? 
-      if approved?
-        redirect_to home_path
+    background_image
+    if admin?
+      render :index
+    else
+      if member?
+        if approved?
+          redirect_to home_path
+        else
+          redirect_to wait_path
+        end
       else
-        redirect_to wait_path
+        render :index
       end
     end
-    background_image
   end
 
   def home
@@ -28,12 +34,12 @@ class LandingController < ApplicationController
   end
 
   def wait
+    background_image
     if !logged_in?
       redirect_to root_path
     end
-    if member? && approved?
+    if (member? && approved?) || admin?
       redirect_to home_path
     end
-    background_image
   end
 end
