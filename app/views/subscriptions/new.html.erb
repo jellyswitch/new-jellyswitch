@@ -2,8 +2,11 @@
   <div class="col-sm-3"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <h2 class="text-center mb-5 mt-5">Welcome! Please choose your membership to proceed:</h2>
+      <h2 class="text-center mb-5 mt-5">Please choose your membership to proceed:</h2>
       <%= render "form", subscription: @subscription, label: "Join #{Rails.application.config.x.customization.name}!", cc: true %>
+      <p class="text-muted">
+        <%= link_to "Go Back", choose_path %>
+      </p>
     </div>
   </div>
   <div class="col-sm-3"></div>

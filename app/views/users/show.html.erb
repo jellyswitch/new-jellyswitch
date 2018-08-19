@@ -68,6 +68,16 @@
           </td>
         </tr>
       <%- end %>
+      <tr>
+        <th>Day Passes</th>
+        <td></td>
+      </tr>
+      <%- @user.day_passes.each do |day_pass| %>
+        <td></td>
+        <td>
+          <%= day_pass.pretty_day %>
+        </td>
+      <%- end %>
     </table>
   </div>
   <div class="col-sm"></div>

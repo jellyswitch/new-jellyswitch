@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   # Relationships
+  has_many :day_passes
   belongs_to :organization, optional: true
   has_many :reservations
   has_many :subscriptions
@@ -41,7 +42,7 @@ class User < ApplicationRecord
   end
 
   def member?
-    subscriptions.active.count > 0
+    (subscriptions.active.count > 0) || (day_passes.today.count > 0)
   end
 
   def approved?

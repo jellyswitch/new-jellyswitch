@@ -12,8 +12,10 @@ Rails.application.routes.draw do
   get 'landing/index'
   get '/home',      to: 'landing#home'
   get '/wait',      to: 'landing#wait'
+  get '/choose',    to: 'landing#choose'
 
   # Alphabetized Resources
+  resources :day_passes
   resources :organizations
   resources :plans
   resources :reservations, except: [:index]

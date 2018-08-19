@@ -43,6 +43,6 @@ class UserPolicy < ApplicationPolicy
 
   def owner_or_admin?
     # Needed because the record itself is the user
-    admin? || (member? && user == record)
+    admin? || (is_user? && user == record)
   end
 end

@@ -1,0 +1,29 @@
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h2 class="text-center mb-5 mt-5">When would you like to use your day pass?</h2>
+      <%= form_for(@day_pass, class: "form") do |f| %>
+        <div class="form-group row">
+          <label class="col-sm-3 text-right mt-2">Day</label>
+          <%= f.date_select :day, {}, class: "form-control col ml-0 pl-0 pr-0" %>
+        </div>
+        <div class="form-group row">
+          <label class="col-sm-3 text-right mt-2">Billing</label>
+          <div class="col ml-0 pl-0 pr-0">
+            <input type="text" class="form-control" placeholder="Credit Card" />
+          </div>
+        </div>
+        <div class="form-group row">
+          <%= f.submit "Purchase", class: "form-control btn btn-primary col" %>
+        </div>
+      <%- end %>
+      <p class="text-muted">
+        <%= link_to "Go Back", choose_path %>
+      </p>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>
+
+
