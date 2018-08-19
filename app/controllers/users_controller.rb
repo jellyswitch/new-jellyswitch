@@ -8,6 +8,7 @@ class UsersController < ApplicationController
   def show
     find_user
     authorize @user
+    background_image
 
     if @user == current_user
       render :show
@@ -38,6 +39,7 @@ class UsersController < ApplicationController
   def edit
     find_user
     authorize @user
+    background_image
   end
 
   def create
