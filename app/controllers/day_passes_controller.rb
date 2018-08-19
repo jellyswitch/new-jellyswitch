@@ -18,7 +18,17 @@ class DayPassesController < ApplicationController
     end
   end
 
+  def show
+    find_day_pass
+    authorize @day_pass
+    background_image
+  end
+
   private
+
+  def find_day_pass(key=:id)
+    @day_pass = DayPass.find(params[:id])
+  end
 
   def day_pass_params
     params.require(:day_pass).permit(:day)

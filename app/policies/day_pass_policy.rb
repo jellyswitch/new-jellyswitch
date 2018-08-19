@@ -6,4 +6,8 @@ class DayPassPolicy < ApplicationPolicy
   def create?
     is_user? && !member?
   end
+
+  def show?
+    owner? || admin?
+  end
 end

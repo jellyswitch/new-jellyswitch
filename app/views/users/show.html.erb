@@ -75,7 +75,7 @@
       <%- @user.day_passes.each do |day_pass| %>
         <td></td>
         <td>
-          <%= day_pass.pretty_day %>
+          <%= link_to day_pass.pretty_day, day_pass_path(day_pass) %>
         </td>
       <%- end %>
     </table>
