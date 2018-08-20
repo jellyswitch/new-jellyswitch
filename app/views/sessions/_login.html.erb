@@ -1,4 +1,4 @@
-<%= form_for(:session, url: login_path) do |f| %>
+<%= form_for(:session, url: login_path, remote: true) do |f| %>
   <div class="form-group row">
     <%= f.label :email, class: "col-sm-2 text-right mt-2" %>
     <%= f.email_field :email, placeholder: "Email", class: "form-control col" %>

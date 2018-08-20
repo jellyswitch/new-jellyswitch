@@ -1,6 +1,1 @@
-<%= form_for(Reservation.new, method: :get, url: new_reservation_path(room)) do |f| %>
-  <%= f.hidden_field :room_id, value: room.id %>
-  <%= f.hidden_field :datetime_in, value: datetime_in %>
-  <%= f.hidden_field :hours, value: 1 %>
-  <%= f.submit label, class: "btn btn-success btn-sm" %>
-<%- end %>
+<%= link_to label, new_reservation_path(reservation: {hours: 1, datetime_in: datetime_in, room_id: room.id}), class: "btn btn-success btn-sm" %>
