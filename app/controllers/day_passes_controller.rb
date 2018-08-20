@@ -11,7 +11,12 @@ class DayPassesController < ApplicationController
   end
 
   def create
-    @day_pass = new_day_pass
+    if admin?
+      @day_pass = new_day_pass(admin_day_pass_params)
+    else
+      @day_pass = new_day_pass(day_pass_params)
+    end
+
     authorize @day_pass
 
     if @day_pass.save
@@ -43,9 +48,13 @@ class DayPassesController < ApplicationController
     params.require(:day_pass).permit(:day)
   end
 
-  def new_day_pass
-    day_pass = DayPass.new(day_pass_params)
-    day_pass.user = current_user
+  def admin_day_pass_params
+    params.require(:day_pass).permit(:day, :user_id)
+  end
+
+  def new_day_pass(params)
+    day_pass = DayPass.new(params)
+    day_pass.user = current_user unless admin?
     day_pass
   end
 end

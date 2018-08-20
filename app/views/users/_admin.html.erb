@@ -44,7 +44,9 @@
         <%- end %>
         <tr>
           <th>Day Passes</th>
-          <td></td>
+          <td>
+            <%= render "day_passes/admin_form", day_pass: DayPass.new, user: @user %>
+          </td>
         </tr>
         <%- @user.day_passes.each do |day_pass| %>
           <tr>

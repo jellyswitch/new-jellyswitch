@@ -1,0 +1,7 @@
+<%= form_for(day_pass, class: "form") do |f| %>
+  <div class="form-group row">
+    <%= f.hidden_field :user_id, value: user.id %>
+    <%= f.date_select :day, {}, class: "form-control col" %>
+    <%= f.submit "Add day pass", class: "btn btn-sm btn-info" %>
+  </div>
+<%- end %>  
