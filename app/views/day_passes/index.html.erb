@@ -1,0 +1,18 @@
+<div class="row">
+  <div class="col-sm">
+    <h2>Day Passes</h2>
+    <table class="table table-sm">
+      <%- @day_passes.each do |day_pass| %>
+        <tr>
+          <td>
+            <%= day_pass.pretty_day %>
+          </td>
+          <td>
+            <%= link_to day_pass.user.name, user_path(day_pass.user) %>
+          </td>
+        </tr>
+      <%- end %>
+    </table>  
+  </div>
+  <div class="col-sm">
+</div>

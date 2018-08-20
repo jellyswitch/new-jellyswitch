@@ -1,4 +1,8 @@
 class DayPassPolicy < ApplicationPolicy
+  def index?
+    admin?
+  end
+
   def new?
     is_user? && !member?
   end

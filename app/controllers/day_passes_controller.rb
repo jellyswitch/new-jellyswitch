@@ -1,4 +1,9 @@
 class DayPassesController < ApplicationController
+  def index
+    find_day_passes
+    authorize @day_passes
+  end
+
   def new
     @day_pass = DayPass.new
     authorize @day_pass
@@ -25,6 +30,10 @@ class DayPassesController < ApplicationController
   end
 
   private
+
+  def find_day_passes
+    @day_passes = DayPass.order('created_at DESC')
+  end
 
   def find_day_pass(key=:id)
     @day_pass = DayPass.find(params[:id])
