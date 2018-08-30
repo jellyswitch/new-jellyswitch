@@ -16,7 +16,12 @@ Rails.application.routes.draw do
 
   # Alphabetized Resources
   resources :day_passes
-  resources :doors
+  resources :doors do
+    get 'open', to: 'doors#open'
+    collection do
+      get 'keys', to: 'doors#keys'
+    end
+  end
   resources :organizations
   resources :plans
   resources :reservations, except: [:index]

@@ -44,6 +44,18 @@ class DoorsController < ApplicationController
     end
   end
 
+  def keys
+    find_doors
+    authorize @doors
+    background_image
+  end
+
+  def open
+    find_door(:door_id)
+    authorize @door
+
+  end
+
   private
 
   def find_doors

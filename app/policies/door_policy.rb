@@ -4,7 +4,7 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def show?
-    admin? || (approved? && member?)
+    admin?
   end
 
   def new?
@@ -21,5 +21,13 @@ class DoorPolicy < ApplicationPolicy
 
   def edit?
     admin?
+  end
+
+  def open?
+    admin? || (approved? && member?)
+  end
+
+  def keys?
+    admin? || (approved? && member?)
   end
 end
