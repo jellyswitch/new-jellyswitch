@@ -16,5 +16,8 @@ module Bristlecone
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
     config.time_zone = ENV['TIME_ZONE'] || "Pacific Time (US & Canada)"
+
+    # Background jobs
+    config.active_job.queue_adapter = :sidekiq
   end
 end

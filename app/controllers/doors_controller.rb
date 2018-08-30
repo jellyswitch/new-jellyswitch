@@ -53,7 +53,8 @@ class DoorsController < ApplicationController
   def open
     find_door(:door_id)
     authorize @door
-
+    OpenDoorJob.perform_later(@door, current_user)
+    redirect_to keys_doors_path
   end
 
   private
