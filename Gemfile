@@ -3,6 +3,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.4.4'
 
+gem 'activejob-traffic_control'
 gem "aws-sdk-s3", require: false
 gem 'bcrypt'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'

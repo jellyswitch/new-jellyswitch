@@ -41,6 +41,10 @@ GEM
     activejob (5.2.0)
       activesupport (= 5.2.0)
       globalid (>= 0.3.6)
+    activejob-traffic_control (0.1.3)
+      activejob (>= 4.2)
+      activesupport (>= 4.2)
+      suo
     activemodel (5.2.0)
       activesupport (= 5.2.0)
     activerecord (5.2.0)
@@ -102,6 +106,7 @@ GEM
     concurrent-ruby (1.0.5)
     connection_pool (2.2.2)
     crass (1.0.4)
+    dalli (2.7.8)
     debug_inspector (0.0.3)
     erubi (1.7.1)
     execjs (2.7.0)
@@ -142,6 +147,7 @@ GEM
     mini_mime (1.0.0)
     mini_portile2 (2.3.0)
     minitest (5.11.3)
+    msgpack (1.2.4)
     multi_json (1.13.1)
     nio4r (2.3.1)
     nokogiri (1.8.4)
@@ -219,6 +225,10 @@ GEM
       actionpack (>= 4.0)
       activesupport (>= 4.0)
       sprockets (>= 3.0.0)
+    suo (0.3.2)
+      dalli
+      msgpack
+      redis
     thor (0.20.0)
     thread_safe (0.3.6)
     tilt (2.0.8)
@@ -244,6 +254,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  activejob-traffic_control
   aws-sdk-s3
   bcrypt
   better_errors
