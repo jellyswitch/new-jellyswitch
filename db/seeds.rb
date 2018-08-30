@@ -46,7 +46,7 @@ class FakeData
       io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
       filename: path
     )
-    Subscription.create!(plan_id: [3,4,5].sample, user_id: user.id)
+    Subscription.create!(plan_id: [1,2,3,4].sample, user_id: user.id)
     user
   end
 
@@ -81,7 +81,6 @@ class FakeData
 
   def fake_plans
     Plan.create!(interval: "monthly", amount_in_cents: 0, name: "Free membership", visible: false)
-    Plan.create!(interval: "once", amount_in_cents: 3500, name: "Day Pass")
     Plan.create!(interval: "monthly", amount_in_cents: 16000, name: "Part-time Membership")
     Plan.create!(interval: "monthly", amount_in_cents: 35000, name: "Full-time Membership")
     Plan.create!(interval: "monthly", amount_in_cents: 50000, name: "Full time office membership")

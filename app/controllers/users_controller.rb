@@ -56,9 +56,9 @@ class UsersController < ApplicationController
     else
       background_image
       if admin? # Admin is creating a user
-        render :add_member
+        render :add_member, status: 422
       else
-        render :new
+        render :new, status: 422
       end
     end
   end
@@ -73,7 +73,7 @@ class UsersController < ApplicationController
       flash[:notice] = "Your profile has been updated."
       redirect_to user_path(@user)
     else
-      render :edit
+      render :edit, status: 422
     end
   end
 
@@ -92,7 +92,7 @@ class UsersController < ApplicationController
       flash[:notice] = "Your password has been changed."
       redirect_to user_path(@user)
     else
-      render :change_password
+      render :change_password, status: 422
     end
   end
 
@@ -106,7 +106,7 @@ class UsersController < ApplicationController
       flash[:notice] = "Updated organization."
       redirect_to user_path(@user)
     else
-      render :show
+      render :show, status: 422
     end
   end
 

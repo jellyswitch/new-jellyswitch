@@ -14,7 +14,7 @@ class SessionsController < ApplicationController
     else
       flash[:error] = "Invalid email/password combination."
       background_image
-      render 'new'
+      render 'new', status: 422
     end
   end
 
