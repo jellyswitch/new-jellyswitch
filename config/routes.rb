@@ -16,6 +16,7 @@ Rails.application.routes.draw do
 
   # Alphabetized Resources
   resources :day_passes
+  resources :doors
   resources :organizations
   resources :plans
   resources :reservations, except: [:index]
