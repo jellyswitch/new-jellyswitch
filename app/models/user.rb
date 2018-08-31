@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   # Relationships
   has_many :day_passes
+  has_many :door_punches
   belongs_to :organization, optional: true
   has_many :reservations
   has_many :subscriptions

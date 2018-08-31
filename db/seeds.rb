@@ -86,7 +86,13 @@ class FakeData
     Plan.create!(interval: "monthly", amount_in_cents: 50000, name: "Full time office membership")
   end
 
+  def fake_doors
+    Door.create!(name: "Front Door")
+    Door.create!(name: "Back Door")
+  end
+
   def run
+    fake_doors
     fake_plans
     ActiveRecord::Base.transaction do
       admins.each do |email|

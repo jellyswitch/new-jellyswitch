@@ -53,7 +53,8 @@ class DoorsController < ApplicationController
   def open
     find_door(:door_id)
     authorize @door
-    OpenDoorJob.perform_later(@door, current_user)
+    log_door_punch
+    OpenDoorJob.perform_later(@door)
     redirect_to keys_doors_path
   end
 
@@ -69,5 +70,9 @@ class DoorsController < ApplicationController
 
   def door_params
     params.require(:door).permit(:name)
+  end
+
+  def log_door_punch
+    DoorPunch.create!(user: current_user, door: @door)
   end
 end
