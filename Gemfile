@@ -6,6 +6,7 @@ ruby '2.4.4'
 gem 'activejob-traffic_control'
 gem "aws-sdk-s3", require: false
 gem 'bcrypt'
+gem 'bootstrap', '~> 4.1.3'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
 gem 'icalendar'
