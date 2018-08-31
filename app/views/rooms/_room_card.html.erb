@@ -18,11 +18,14 @@
         
       <%- end %>
     </div>
-    <%- if room.whiteboard? %>
-      <div class="row">
-        <span class="badge badge-info">Has Whiteboard</span>
-      </div>
-    <%- end   %>
+    <div class="row">
+      <%- if room.whiteboard? %>
+        <span class="badge badge-info mr-1">Whiteboard</span>
+      <%- end  %>
+      <%- if room.av? %>
+        <span class="badge badge-success mr-1">AV equipment</span>
+      <%- end   %>
+    </div>
     <div class="row">
       <p>
         Seats <strong><%= room.capacity %></strong> people

@@ -68,7 +68,8 @@ class FakeData
       name: Faker::Ancient.unique.god,
       description: Faker::Company.catch_phrase,
       capacity: rand(1..5),
-      whiteboard: true
+      whiteboard: [true, false].sample,
+      av: [true, false].sample
     )
 
     path = "2.jpg" # room_photo_paths.shuffle.sample

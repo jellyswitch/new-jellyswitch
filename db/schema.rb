@@ -103,6 +103,7 @@ ActiveRecord::Schema.define(version: 2018_08_31_001012) do
     t.string "name", null: false
     t.text "description"
     t.boolean "whiteboard", default: false, null: false
+    t.boolean "av", default: false, null: false
     t.integer "capacity", default: 1, null: false
     t.string "slug"
     t.datetime "created_at", null: false
