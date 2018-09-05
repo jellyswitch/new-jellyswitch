@@ -16,6 +16,8 @@
 //= require bootstrap-sprockets
 //= require activestorage
 //= require turbolinks
+//= require Chart.bundle
+//= require chartkick
 //= require_tree .
 
 // This is required to get Turbolinks 5 to work with non-GET form errors

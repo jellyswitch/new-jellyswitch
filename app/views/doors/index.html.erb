@@ -7,6 +7,7 @@
         <th>Door</th>
         <th>Configuration Slug</th>
         <th>Actions</th>
+        <th>Last 30 days</th>
       </tr>
       <%- @doors.each do |door| %>
         <tr>
@@ -19,6 +20,9 @@
           <td>
             <%= link_to "View Punches", door_path(door), class: "btn btn-primary btn-sm" %>
             <%= link_to "Edit", edit_door_path(door), class: "btn btn-info btn-sm" %>
+          </td>
+          <td>
+            <%= column_chart door.door_punches.group_by_day(:created_at, last: 30).count, width: "350px", height: "100px", label: "Punches" %>
           </td>
         </tr>
       <%- end %>
