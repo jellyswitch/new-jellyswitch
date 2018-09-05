@@ -33,7 +33,14 @@ class Plan < ApplicationRecord
 
   # Instance methods
   def pretty_name
-    pretty_amount = number_to_currency(amount_in_cents / 100.0)
-    "#{name} (#{pretty_amount} / #{interval})"
+    "#{name} (#{pretty_price})"
+  end
+
+  def pretty_amount
+    number_to_currency(amount_in_cents / 100.0)
+  end
+
+  def pretty_price
+    "#{pretty_amount} / #{interval}"
   end
 end
