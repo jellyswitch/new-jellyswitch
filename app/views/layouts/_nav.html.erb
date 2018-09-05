@@ -19,17 +19,16 @@
           <%= link_to "Building Access", keys_doors_path, class: "nav-link" %>
         </li>
         <%- if admin? %>
-          <li class="nav-item">
-            <%= link_to "Organizations", organizations_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Plans", plans_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Day Passes", day_passes_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Doors", doors_path, class: "nav-link" %>
+          <li class="nav-item dropdown data-turbolinks-permanent">
+            <a class="nav-link dropdown-toggle" href="#" id="adminDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expandable="false">
+              Admin
+            </a>
+            <div class="dropdown-menu" aria-labelledby="adminDropdownLink">
+              <%= link_to "Organizations", organizations_path, class: "dropdown-item" %>
+              <%= link_to "Plans", plans_path, class: "dropdown-item" %>
+              <%= link_to "Day Passes", day_passes_path, class: "dropdown-item" %>
+              <%= link_to "Doors", doors_path, class: "dropdown-item" %>
+            </div>
           </li>
         <%- end %>
       <%- else %>
