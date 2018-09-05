@@ -21,6 +21,7 @@ class SubscriptionsController < ApplicationController
   def edit
     find_subscription
     authorize @subscription
+    background_image
   end
 
   def update

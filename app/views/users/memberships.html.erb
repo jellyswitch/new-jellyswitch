@@ -4,13 +4,13 @@
     <div class="card-body">
       <h1>My Membership</h1>
       <table class="table table-sm">
-        <%- @user.subscriptions.each do |subscription| %>
+        <%- @user.subscriptions.order('created_at DESC').each do |subscription| %>
           <tr>
             <td>
               <%= subscription.plan.pretty_name %>
               <%- if subscription.active? %>
                 <span class="badge badge-success">Active</span>
-                <%= link_to "Switch my membership", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
+                <%= link_to "Switch", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
               <%- else %>
                 <span class="badge badge-warning">Deactivated <%= subscription.pretty_datetime %></span>
               <%- end %>
