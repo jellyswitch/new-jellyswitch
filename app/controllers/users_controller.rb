@@ -110,6 +110,18 @@ class UsersController < ApplicationController
     end
   end
 
+  def memberships
+    find_user(:user_id)
+    authorize @user
+    background_image
+  end
+
+  def day_passes
+    find_user(:user_id)
+    authorize @user
+    background_image
+  end
+
   private
 
   def user_params

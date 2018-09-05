@@ -49,6 +49,8 @@
           </a>
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdownLink">
             <%= link_to "My Account", user_path(current_user), class: "dropdown-item" %>
+            <%= link_to "My Memberships", user_memberships_path(current_user), class: "dropdown-item" %>
+            <%= link_to "My Day Passes", user_day_passes_path(current_user), class: "dropdown-item" %>
             <%= link_to "Change Password", user_change_password_path(current_user), class: "dropdown-item" %>
             <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "dropdown-item" %>
           </div>

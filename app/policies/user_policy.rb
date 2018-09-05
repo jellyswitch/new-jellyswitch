@@ -39,6 +39,14 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def memberships?
+    owner_or_admin?
+  end
+
+  def day_passes?
+    owner_or_admin?
+  end
+
   private
 
   def owner_or_admin?

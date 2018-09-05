@@ -33,6 +33,8 @@ Rails.application.routes.draw do
     get 'change_password', to: 'users#change_password'
     patch 'update_password', to: 'users#update_password'
     patch 'update_organization', to: 'users#update_organization'
+    get :memberships, to: 'users#memberships'
+    get :day_passes, to: 'users#day_passes'
     collection do
       get 'add_member', to: 'users#add_member'
     end

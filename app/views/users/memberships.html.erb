@@ -1,0 +1,30 @@
+<div class="row mt-3 mb-3">
+  <div class="col-sm-3"></div>
+  <div class="card col-sm bg-light p-3">
+    <div class="card-body">
+      <h1>My Membership</h1>
+      <table class="table table-sm">
+        <%- @user.subscriptions.each do |subscription| %>
+          <tr>
+            <td>
+              <%= subscription.plan.pretty_name %>
+              <%- if subscription.active? %>
+                <span class="badge badge-success">Active</span>
+                <%= link_to "Switch my membership", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
+              <%- else %>
+                <span class="badge badge-warning">Deactivated <%= subscription.pretty_datetime %></span>
+              <%- end %>
+            </td>
+          </tr>
+        <%- end %>
+      </table>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>
+
+
+
+
+
+

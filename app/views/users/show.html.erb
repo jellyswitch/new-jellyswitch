@@ -49,39 +49,6 @@
           <th>Website</th>
           <td><%= @user.website %></td>
         </tr>
-        <tr>
-          <th colspan=2>Billing Information</th>
-        </tr>
-        <tr>
-          <th>Plans</th>
-          <td></td>
-        </tr>
-        <%- @user.subscriptions.each do |subscription| %>
-          <tr>
-            <td></td>
-            <td>
-              <%= subscription.plan.pretty_name %>
-              <%- if subscription.active? %>
-                <span class="badge badge-success">Active</span>
-                <%= link_to "Switch my membership", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
-              <%- else %>
-                <span class="badge badge-warning">Deactivated <%= subscription.pretty_datetime %></span>
-              <%- end %>
-            </td>
-          </tr>
-        <%- end %>
-        <tr>
-          <th>Day Passes</th>
-          <td></td>
-        </tr>
-        <%- @user.day_passes.each do |day_pass| %>
-          <tr>
-            <td></td>
-            <td>
-              <%= link_to day_pass.pretty_day, day_pass_path(day_pass) %>
-            </td>
-          </tr>
-        <%- end %>
       </table>
     </div>
   </div>
