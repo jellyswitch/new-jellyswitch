@@ -1,12 +1,13 @@
-<div class="card border-light">
+<div class="card border-light mb-3">
   <div class="card-body">
-    <p>
-      Who: <%= link_to reservation.user.name, user_path(reservation.user) %>
-    </p>
-    <p>When: <%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
-    <p>Room: <%= link_to reservation.room.name, room_path(reservation.room) %>
-    <%- if (current_user == reservation.user) || admin? %>
-      <p><%= link_to "Cancel this reservation", reservation_path(reservation), method: :delete %></p>
+    <h5 class="card-title">
+      <%= link_to reservation.user.name, user_path(reservation.user) %>
+       in 
+       <%= reservation.room.name %>
+    </h5>
+    <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
+    <%- if policy(reservation).cancel? %>
+      <p><%= link_to "Cancel this reservation", reservation_path(reservation), method: :delete, class: "btn btn-sm btn-danger" %></p>
     <%- end %>
   </div>
 </div>

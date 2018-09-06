@@ -122,6 +122,14 @@ class UsersController < ApplicationController
     background_image
   end
 
+  def reservations
+    find_user(:user_id)
+    authorize @user
+
+    @reservations = @user.reservations.order('created_at DESC').all
+    background_image
+  end
+
   private
 
   def user_params

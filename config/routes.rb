@@ -35,6 +35,7 @@ Rails.application.routes.draw do
     patch 'update_organization', to: 'users#update_organization'
     get :memberships, to: 'users#memberships'
     get :day_passes, to: 'users#day_passes'
+    get :reservations, to: 'users#reservations'
     collection do
       get 'add_member', to: 'users#add_member'
     end
