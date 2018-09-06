@@ -1,8 +1,8 @@
 class RoomsController < ApplicationController
- 
   def index
     find_rooms
     authorize @rooms
+    @rooms = @rooms.decorate
   end
 
   def show
@@ -71,11 +71,11 @@ class RoomsController < ApplicationController
   private
 
   def find_rooms
-    @rooms = Room
+    @rooms = Room.all
   end
 
   def find_room(key=:id)
-    @room = Room.friendly.find(params[key])
+    @room = Room.friendly.find(params[key]).decorate
   end
 
   def room_params

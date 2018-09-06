@@ -126,7 +126,7 @@ class UsersController < ApplicationController
     find_user(:user_id)
     authorize @user
 
-    @reservations = @user.reservations.order('created_at DESC').all
+    @reservations = @user.reservations.order('created_at DESC').all.decorate
     background_image
   end
 

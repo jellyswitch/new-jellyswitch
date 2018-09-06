@@ -8,6 +8,7 @@ gem "aws-sdk-s3", require: false
 gem 'bcrypt'
 gem 'bootstrap', '~> 4.1.3'
 gem 'chartkick'
+gem 'draper'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
 gem 'groupdate'

@@ -2,11 +2,7 @@
   <div class="card-body">
     <div class="row">
       <div>
-        <%- if room.has_photo? %>
-          <%= image_tag(room.card_photo, class: "img-thumbnail", style: "height: 200px;") %>
-        <%- else %>
-          <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 200px;" %>
-        <%- end %>
+        <%= room.smart_photo %>
       </div>
     </div>
     <div class="row">

@@ -3,7 +3,7 @@
     <h5 class="card-title">
       <%= link_to reservation.user.name, user_path(reservation.user) %>
        in 
-       <%= reservation.room.name %>
+       <%= reservation.room.smart_link %>
     </h5>
     <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
     <%- if policy(reservation).cancel? %>
