@@ -4,7 +4,7 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, shrink-to-fit=no">
     <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
     <title>Bristlecone</title>
@@ -15,7 +15,7 @@
   <%- else %>
     <body>
   <%- end %>
-    <div class="container-fluid">
+    <div class="container-fluid" style="min-height: 100vh;">
       <%= render "layouts/nav" %>
       <%= render "layouts/flash" %>
       <%= yield %>
