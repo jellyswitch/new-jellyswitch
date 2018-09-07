@@ -2,6 +2,7 @@ class ReservationsController < ApplicationController
   def show
     find_reservation
     authorize @reservation
+    background_image
   end
 
   def new
