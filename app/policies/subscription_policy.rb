@@ -14,4 +14,8 @@ class SubscriptionPolicy < ApplicationPolicy
   def update?
     admin? || (owner? && member? && approved?)
   end
+
+  def destroy?
+    admin? || (owner? && member? && approved?)
+  end
 end

@@ -13,6 +13,7 @@
     </p>
     <%- if subscription.active? %>
       <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-sm btn-primary" %>
+      <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
     <%- end %>
   </div>
 </div>

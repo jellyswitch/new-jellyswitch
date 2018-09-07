@@ -47,6 +47,18 @@ class SubscriptionsController < ApplicationController
     end
   end
 
+  def destroy
+    find_subscription
+    authorize @subscription
+
+    if @subscription.destroy
+      redirect_to home_path
+    else
+      flash[:error] = "An error occurred."
+      redirect_to user_memberships_path(@subscription.user)
+    end
+  end
+
   private
 
   def subscription_params
