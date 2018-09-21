@@ -30,7 +30,6 @@ class SubscriptionsController < ApplicationController
   def update
     find_subscription
     authorize @subscription
-
     
     @subscription.active = false
     @new_subscription = new_subscription
