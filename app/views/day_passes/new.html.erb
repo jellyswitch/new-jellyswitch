@@ -9,10 +9,7 @@
           <%= f.date_select :day, {}, class: "form-control col ml-0 pl-0 pr-0" %>
         </div>
         <div class="form-group row">
-          <label class="col-sm-3 text-right mt-2">Billing</label>
-          <div class="col ml-0 pl-0 pr-0">
-            <input type="text" class="form-control" placeholder="Credit Card" />
-          </div>
+          <%= render "shared/billing", show_check_option: false %>
         </div>
         <div class="form-group row">
           <%= f.submit "Purchase", class: "form-control btn btn-primary col" %>

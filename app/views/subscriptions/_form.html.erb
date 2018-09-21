@@ -8,14 +8,7 @@
 
   <%- if cc %>
     <div class="form-group row">
-      <label class="col-sm-3 text-right mt-2">Billing</label>
-      <div class="col ml-0 pl-0 pr-0">
-        <input type="text" class="form-control" placeholder="Credit Card" />
-        <div class="form-check">
-          <input type="checkbox" class="form-check-input" />
-          <label class="form-check-label">I want to pay via ACH / Check</label>
-        </div>
-      </div>
+      <%= render "shared/billing", show_check_option: true %>
     </div>
   <%- end %>
   <div class="form-group row">
