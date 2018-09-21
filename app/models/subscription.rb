@@ -3,6 +3,23 @@ class Subscription < ApplicationRecord
   belongs_to :user
   belongs_to :plan
 
+  # Stripe Stuff
+  after_create :subscribe_in_stripe
+  def subscribe_in_stripe
+    subscription = Stripe::Subscription.create({
+      customer: user.stripe_customer_id,
+      items: [
+        { plan: plan.stripe_plan_id }
+      ]
+    })
+    self.stripe_subscription_id = subscription.id
+    self.save
+  end
+
+  def stripe_subscription
+    Stripe::Subscription.retrieve(self.stripe_subscription_id)
+  end
+
   # Scopes
   scope :active, ->() { where(active: true) }
 

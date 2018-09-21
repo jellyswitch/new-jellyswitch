@@ -3,12 +3,15 @@ class SubscriptionsController < ApplicationController
     @subscription = Subscription.new
     authorize @subscription
     background_image
+    include_stripe
   end
 
   def create
     @subscription = new_subscription
     authorize @subscription
 
+    token = params[:stripeToken]
+    current_user.ensure_stripe_customer(token)
     if @subscription.save
       flash[:notice] = "Success! Welcome to #{Rails.application.config.x.customization.name}."
       redirect_to root_path
