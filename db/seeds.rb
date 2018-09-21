@@ -130,5 +130,8 @@ class FakeData
     end
   end
 end
+
 f = FakeData.new
-f.run()
+ApplicationRecord.transaction do
+  f.run()
+end
