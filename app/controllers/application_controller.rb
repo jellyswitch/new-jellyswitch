@@ -14,4 +14,8 @@ class ApplicationController < ActionController::Base
   def background_image
     @background_image = Rails.application.config.x.customization.background
   end
+
+  def include_stripe
+    @include_stripe = true
+  end
 end

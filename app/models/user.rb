@@ -88,4 +88,25 @@ class User < ApplicationRecord
       end
     end
   end
+
+  # Stripe Stuff
+  def ensure_stripe_customer(token)
+    puts "ENSURE_STRIPE_CUSTOMER(#{token}) from #{caller[0]}"
+    if self.stripe_customer_id.nil?
+      customer = Stripe::Customer.create({
+        email: email,
+        source: token
+      })
+      self.stripe_customer_id = customer.id
+      self.save
+    end
+  end
+
+  def stripe_customer
+    Stripe::Customer.retrieve(self.stripe_customer_id)
+  end
+
+  def has_billing?
+    stripe_customer_id.present?
+  end
 end

@@ -15,3 +15,6 @@ Rails.application.config.x.customization.info = ENV['THEME_INFO']
 Rails.application.config.x.customization.warning = ENV['THEME_WARNING']
 Rails.application.config.x.customization.light = ENV['THEME_LIGHT']
 Rails.application.config.x.customization.dark = ENV['THEME_DARK']
+
+# Stripe
+Rails.application.config.x.customization.day_pass_cents = ENV['DAY_PASS_COST_CENTS'].to_i

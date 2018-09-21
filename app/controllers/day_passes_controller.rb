@@ -8,6 +8,7 @@ class DayPassesController < ApplicationController
     @day_pass = DayPass.new
     authorize @day_pass
     background_image
+    include_stripe
   end
 
   def create
@@ -18,8 +19,10 @@ class DayPassesController < ApplicationController
     end
 
     authorize @day_pass
-
-    if @day_pass.save
+    
+    token = params[:stripeToken]
+    current_user.ensure_stripe_customer(token)
+    if @day_pass.save 
       flash[:notice] = "Success! Welcome to #{Rails.application.config.x.customization.name}."
       redirect_to root_path
     else
