@@ -46,7 +46,6 @@ class FakeData
       io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
       filename: path
     )
-    Subscription.create!(plan_id: [1,2,3,4].sample, user_id: user.id)
     user
   end
 
