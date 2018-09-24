@@ -5,58 +5,44 @@
       <p class="card-text">
         <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary btn-sm" %>
       </p>
-      <table class="table">
-        <tr>
-          <th>Email</th>
-          <td><%= mail_to @user.email %></td>
-        </tr>
-        <tr>
-          <th>Join Date</th>
-          <td><%= @user.created_at.strftime("%F") %></td>
-        </tr>
-        <tr>
-          <th>Owner of</th>
-          <td>
-            <%- if @user.owned_organization.present? %>
-              <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
-            <%- else %>
-              (none)
-            <%- end %>
-          </td>
-        </tr>
-        <tr>
-          <th>Member of</th>
-          <td>
-            <%= render "organization_form" %>
-          </td>
-        </tr>
-        <tr>
-          <th>Memberships</th>
-          <td></td>
-        </tr>
-        <%- @user.subscriptions.active.each do |subscription| %>
-          <tr>
-            <td></td>
-            <td>
-              <%= render "subscriptions/form", subscription: subscription, label: "Update membership", cc: false %>
-            </td>
-          </tr>
-        <%- end %>
-        <tr>
-          <th>Day Passes</th>
-          <td>
-            <%= render "day_passes/admin_form", day_pass: DayPass.new, user: @user %>
-          </td>
-        </tr>
-        <%- @user.day_passes.each do |day_pass| %>
-          <tr>
-            <td></td>
-            <td>
-              <%= day_pass.pretty_day %>
-            </td>
-          </tr>
-        <%- end %>
-      </table>
+      <dl class="row">
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm"><%= mail_to @user.email %></dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm-3">Join Date</dt>
+        <dd class="col"><%= @user.created_at.strftime("%F") %></dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm-3">Owner of</dt>
+        <dd class="col">
+          <%- if @user.owned_organization.present? %>
+            <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
+          <%- else %>
+            (none)
+          <%- end %>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm-3">Member Of</dt>
+        <dd class="col"><%= render "organization_form" %></dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm-3">Memberships</dt>
+        <dd class="col">
+          <%- @user.subscriptions.active.each do |subscription| %>
+            <%= render "subscriptions/form", subscription: subscription, label: "Update membership", cc: false %>
+          <%- end %>
+        </dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm-3">Day Passes</dt>
+        <dd class="col">
+          <%- @user.day_passes.each do |day_pass| %>
+            <%= day_pass.pretty_day %>
+          <%- end %>
+        </dd>
+      </dl>
     </div>
   </div>
 <%- end %>
