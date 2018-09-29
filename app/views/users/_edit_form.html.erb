@@ -1,5 +1,4 @@
-<div data-turbolinks="false">
-<%= form_for(@user, local: true) do |f| %>
+<%= form_for(@user, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages" , model: @user %>
 
   <h2>Basic Information</h2>
@@ -51,4 +50,3 @@
   </div>
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <%- end %>
-</div>
