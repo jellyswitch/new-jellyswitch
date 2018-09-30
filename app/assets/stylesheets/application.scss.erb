@@ -45,3 +45,12 @@ $theme-colors: (
 
 /* finally, import Bootstrap */
 @import "bootstrap";
+
+@include media-breakpoint-up(xs) {
+  .display-4 {
+    font-size: 2.5rem;
+  }
+  .lead {
+    font-size: 1rem;
+  }
+}

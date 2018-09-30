@@ -19,18 +19,25 @@ function doStripe() {
     }
   });
 
+  window.has_token = false;
   var form = document.getElementById('stripe-form');
-  form.addEventListener('submit', function(event) {
-    event.preventDefault();
+  document.addEventListener('ajax:before', function(event) {
+  /*form.addEventListener('submit', function(event) {*/
+    console.log("ajax:before");
+    if (window.has_token == false) {
+      console.log("has_token is false")
+      console.log(window.has_token);
+      event.preventDefault();
     
-    stripe.createToken(card).then(function(result) {
-      if (result.error) {
-        var errorElement = document.getElementById('card-errors');
-        errorElement.textContent = result.error.message;
-      } else {
-        stripeTokenHandler(result.token);
-      }
-    });
+      stripe.createToken(card).then(function(result) {
+        if (result.error) {
+          var errorElement = document.getElementById('card-errors');
+          errorElement.textContent = result.error.message;
+        } else {
+          stripeTokenHandler(result.token);
+        }
+      });
+    }
   });
 
   function stripeTokenHandler(token) {
@@ -40,8 +47,11 @@ function doStripe() {
     hiddenInput.setAttribute('name', 'stripeToken');
     hiddenInput.setAttribute('value', token.id);
     form.appendChild(hiddenInput);
-
-    form.submit();
+    window.has_token = true;
+    console.log("setting has_token=true")
+    console.log(window.has_token);
+    
+    Rails.fire(form, 'submit');
   };
 };
 
