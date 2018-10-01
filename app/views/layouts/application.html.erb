@@ -22,8 +22,8 @@
   <%- else %>
     <body>
   <%- end %>
+    <%= render "layouts/nav" %>
     <div class="container-fluid" style="min-height: 100vh;">
-      <%= render "layouts/nav" %>
       <%= render "layouts/flash" %>
       <%= yield %>
     </div>
