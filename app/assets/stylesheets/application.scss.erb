@@ -46,7 +46,15 @@ $theme-colors: (
 /* finally, import Bootstrap */
 @import "bootstrap";
 
+/* Fix zoom issue on iOS */
 
+@media screen and (-webkit-min-device-pixel-ratio:0) { 
+  select,
+  textarea,
+  input {
+    font-size: 16px;
+  }
+}
 
 /* Mobile specific styles */
 
