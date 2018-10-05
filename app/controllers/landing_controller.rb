@@ -20,6 +20,7 @@ class LandingController < ApplicationController
 
   def home
     background_image
+    @doors = Door.all
     if member? || admin?
       if !approved? && !admin?
         redirect_to wait_path

@@ -3,12 +3,9 @@
     <h5 class="card-title">
       Building Access
     </h5>
+    <%= render "doors/keys", doors: @doors %>
     <p class="card-text">
       <%= Rails.application.config.x.customization.name %> is located at <%= link_to Rails.application.config.x.customization.building_address, "https://maps.google.com/?q=#{Rails.application.config.x.customization.building_address}", target: "_blank" %>. Please download the Tahoe Mountain Lab mobile app for building access once your membership or day pass has been approved.
-    </p>
-    <p class="card-text">
-      <%= link_to image_tag("appstorelink.png", height: 50), "https://itunes.apple.com/us/app/kisi/id687291321?mt=8", target: "_blank" %>
-      <%= link_to image_tag("googleplaylink.png", height: 50), "https://play.google.com/store/apps/details?id=de.kisi.android&hl=en", target: "_blank" %>
     </p>
   </div>
 </div>
