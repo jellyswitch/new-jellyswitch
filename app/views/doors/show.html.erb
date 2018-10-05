@@ -1,17 +1,28 @@
-<div class="row">
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
   <div class="col-sm">
-    <h2><%= @door.name %> Log</h2>
-    <table class="table">
-      <tr>
-        <th>When</th>
-        <th>Who</th>
-      </tr>
-      <%- @door.door_punches.order(:created_at).limit(100).each do |punch| %>
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4"><%= @door.name %> access log</h4>
+      <div class="row">
+        <div class="col"></div>
+        <div class="col">
+          <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, width: "350px", height: "100px", label: "Punches" %>
+        </div>
+        <div class="col"></div>
+      </div>
+      <table class="table">
         <tr>
-          <td><%= punch.pretty_datetime %></td>
-          <td><%= link_to punch.user.name, user_path(punch.user) %></td>
+          <th>When</th>
+          <th>Who</th>
         </tr>
-      <%- end %>
-    </table>
+        <%- @door.door_punches.order(:created_at).limit(100).each do |punch| %>
+          <tr>
+            <td><%= punch.pretty_datetime %></td>
+            <td><%= link_to punch.user.name, user_path(punch.user) %></td>
+          </tr>
+        <%- end %>
+      </table>
+    </div>
   </div>
+  <div class="col-sm-3"></div>
 </div>

@@ -2,11 +2,13 @@ class DoorsController < ApplicationController
   def index
     find_doors
     authorize @doors
+    background_image
   end
 
   def show
     find_door
     authorize @door
+    background_image
   end
 
   def new

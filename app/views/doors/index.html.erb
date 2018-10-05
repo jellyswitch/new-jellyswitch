@@ -1,32 +1,31 @@
-<div class="row">
+<div class="row mt-3">
+  <div class="col-sm-2"></div>
   <div class="col-sm">
-    <h2>Doors</h2>
-    <%= link_to "Add a Door", new_door_path, class: "btn btn-primary" %>
-    <table class="table table-sm">
-      <tr>
-        <th>Door</th>
-        <th>Configuration Slug</th>
-        <th>Actions</th>
-        <th>Last 30 days</th>
-      </tr>
-      <%- @doors.each do |door| %>
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">Doors</h4>
+      <%= link_to "Add a Door", new_door_path, class: "btn btn-primary" %>
+      <table class="table table-sm">
         <tr>
-          <td>
-            <%= door.name %>
-          </td>
-          <td>
-            <code><%= door.slug %></code>
-          </td>
-          <td>
-            <%= link_to "View Punches", door_path(door), class: "btn btn-primary btn-sm" %>
-            <%= link_to "Edit", edit_door_path(door), class: "btn btn-info btn-sm" %>
-          </td>
-          <td>
-            <%= column_chart door.door_punches.group_by_day(:created_at, last: 30).count, width: "350px", height: "100px", label: "Punches" %>
-          </td>
+          <th>Door</th>
+          <th>Configuration Slug</th>
+          <th>Actions</th>
         </tr>
-      <%- end %>
-    </table>  
+        <%- @doors.each do |door| %>
+          <tr>
+            <td>
+              <%= door.name %>
+            </td>
+            <td>
+              <code><%= door.slug %></code>
+            </td>
+            <td>
+              <%= link_to "View Punches", door_path(door), class: "btn btn-primary btn-sm" %>
+              <%= link_to "Edit", edit_door_path(door), class: "btn btn-info btn-sm" %>
+            </td>
+          </tr>
+        <%- end %>
+      </table>
+    </div>
   </div>
-  <div class="col-sm-6"></div>
+  <div class="col-sm-2"></div>
 </div>
