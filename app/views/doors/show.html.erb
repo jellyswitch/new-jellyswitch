@@ -15,7 +15,7 @@
           <th>When</th>
           <th>Who</th>
         </tr>
-        <%- @door.door_punches.order(:created_at).limit(100).each do |punch| %>
+        <%- @door.door_punches.order('created_at DESC').limit(100).each do |punch| %>
           <tr>
             <td><%= punch.pretty_datetime %></td>
             <td><%= link_to punch.user.name, user_path(punch.user) %></td>
