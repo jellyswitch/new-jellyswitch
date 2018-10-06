@@ -44,6 +44,9 @@ class UsersController < ApplicationController
 
   def create
     @user = User.new(user_params)
+    if Rails.application.config.x.customization.approval_required == :false
+      @user.approved = true
+    end
     authorize @user
 
     if @user.save

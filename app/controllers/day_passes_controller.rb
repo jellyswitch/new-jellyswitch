@@ -23,7 +23,7 @@ class DayPassesController < ApplicationController
     token = params[:stripeToken]
     current_user.ensure_stripe_customer(token)
     if @day_pass.save 
-      flash[:notice] = "Success! Welcome to #{Rails.application.config.x.customization.name}."
+      flash[:success] = "Welcome to #{Rails.application.config.x.customization.name}!"
       redirect_to root_path
     else
       flash[:error] = "An error occurred."

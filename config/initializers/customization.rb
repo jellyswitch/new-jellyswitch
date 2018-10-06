@@ -6,6 +6,7 @@ Rails.application.config.x.customization.wifi_name = ENV['WIFI_NAME'] || "not se
 Rails.application.config.x.customization.wifi_password = ENV['WIFI_PASSWORD'] || "not set"
 Rails.application.config.x.customization.building_address = ENV['BUILDING_ADDRESS'] || "not set"
 Rails.application.config.x.customization.logo = ENV['INSTANCE_LOGO']
+Rails.application.config.x.customization.approval_required = (ENV['APPROVAL_REQUIRED'] || "true").to_sym
 
 # Theming
 Rails.application.config.x.customization.primary = ENV['THEME_PRIMARY']
