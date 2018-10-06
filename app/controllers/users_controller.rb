@@ -1,6 +1,12 @@
 class UsersController < ApplicationController
   def index
-    find_users
+    find_approved_users
+    authorize @users
+    background_image
+  end
+
+  def unapproved
+    find_unapproved_users
     authorize @users
     background_image
   end
@@ -164,7 +170,11 @@ class UsersController < ApplicationController
     @user = User.friendly.find(params[key])
   end
 
-  def find_users
-    @users = User
+  def find_approved_users
+    @users = User.approved
+  end
+
+  def find_unapproved_users
+    @users = User.unapproved
   end
 end

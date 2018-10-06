@@ -3,6 +3,10 @@ class UserPolicy < ApplicationPolicy
     admin? || (member? && approved?)
   end
 
+  def unapproved?
+    admin?
+  end
+
   def show?
     owner_or_admin? 
   end

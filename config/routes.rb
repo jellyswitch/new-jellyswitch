@@ -38,6 +38,7 @@ Rails.application.routes.draw do
     get :reservations, to: 'users#reservations'
     collection do
       get 'add_member', to: 'users#add_member'
+      get 'unapproved', to: 'users#unapproved'
     end
   end
 end

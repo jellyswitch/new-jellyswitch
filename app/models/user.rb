@@ -19,6 +19,7 @@ class User < ApplicationRecord
 
   # Scopes
   scope :approved, ->() { where(approved: true) }
+  scope :unapproved, ->() { where(approved: false) }
   scope :members, ->() { where(admin: false) }
 
   # Relationship Helpers

@@ -1,0 +1,13 @@
+<%- @users.in_batches(of: 3) do |users| %>
+  <div class="mt-3">
+    <div class="card-deck">
+      <%- [0,1,2].each do |i| %>
+        <%- if users[i].present? %>
+          <%= render "users/member_card", member: users[i] %>
+        <%- else %>
+          <div class="card border-light"></div>
+        <%- end %>
+      <%- end %>
+    </div>
+  </div>
+<%- end %>
