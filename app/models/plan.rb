@@ -38,6 +38,15 @@ class Plan < ApplicationRecord
     }[interval]
   end
 
+  def short_interval
+    {
+      "daily" => "day",
+      "weekly" => "wk",
+      "monthly" => "mo",
+      "annualy" => "yr"
+    }[interval]
+  end
+
   def plan_slug
     "#{Rails.application.config.x.customization.slug}-#{slug}"
   end
@@ -75,6 +84,6 @@ class Plan < ApplicationRecord
   end
 
   def pretty_price
-    "#{pretty_amount} / #{interval}"
+    "#{pretty_amount} / #{short_interval}"
   end
 end

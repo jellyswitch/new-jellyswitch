@@ -2,7 +2,8 @@
   <div class="col-sm-3"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <h2 class="text-center mb-5 mt-5">Please choose your membership to proceed:</h2>
+      <h4 class="display-4 text-center mt-4">Become a Member</h4>
+      <p class="lead text-center mb-3 mt-3">Please select a membership</p>
       <%= render "form", subscription: @subscription, label: "Join #{Rails.application.config.x.customization.name}!", cc: !current_user.has_billing? %>
       <p class="text-muted">
         <%= link_to "Go Back", choose_path %>
