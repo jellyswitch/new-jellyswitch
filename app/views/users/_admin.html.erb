@@ -1,49 +1,45 @@
 <%- if admin? %>
-  <div class="card bg-light">
-    <div class="card-body">
-      <h5 class="card-title">Administrative Actions <small class="text-muted">This data is only visible to administrators.</small></h5>
-      <p class="card-text">
-        <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary btn-sm" %>
-        <%= render "approval_toggle", user: @user %>
-      </p>
-      <dl class="row">
-        <dt class="col-sm-3">Email</dt>
-        <dd class="col-sm"><%= mail_to @user.email %></dd>
-      </dl>
-      <dl class="row">
-        <dt class="col-sm-3">Join Date</dt>
-        <dd class="col"><%= @user.created_at.strftime("%F") %></dd>
-      </dl>
-      <dl class="row">
-        <dt class="col-sm-3">Owner of</dt>
-        <dd class="col">
-          <%- if @user.owned_organization.present? %>
-            <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
-          <%- else %>
-            (none)
-          <%- end %>
-        </dd>
-      </dl>
-      <dl class="row">
-        <dt class="col-sm-3">Member Of</dt>
-        <dd class="col"><%= render "organization_form" %></dd>
-      </dl>
-      <dl class="row">
-        <dt class="col-sm-3">Memberships</dt>
-        <dd class="col">
-          <%- @user.subscriptions.active.each do |subscription| %>
-            <%= render "subscriptions/form", subscription: subscription, label: "Update membership", cc: false %>
-          <%- end %>
-        </dd>
-      </dl>
-      <dl class="row">
-        <dt class="col-sm-3">Day Passes</dt>
-        <dd class="col">
-          <%- @user.day_passes.each do |day_pass| %>
-            <%= day_pass.pretty_day %>
-          <%- end %>
-        </dd>
-      </dl>
-    </div>
-  </div>
+  <dl class="row">
+    <dt class="col-sm-3">Actions</dt>
+    <dd class="col-sm">
+      <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary btn-sm" %>
+      <%= render "approval_toggle", user: @user %>
+    </dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm"><%= mail_to @user.email %></dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Join Date</dt>
+    <dd class="col">
+      <%= time_ago_in_words(@user.created_at) %> ago (<%= @user.created_at.strftime("%F") %>)
+    </dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Owner of</dt>
+    <dd class="col">
+      <%- if @user.owned_organization.present? %>
+        <%= link_to @user.owned_organization.name, organization_path(@user.owned_organization) %>
+      <%- else %>
+        No organizations owned.
+      <%- end %>
+    </dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Member Of</dt>
+    <dd class="col"><%= render "organization_form" %></dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Memberships</dt>
+    <dd class="col">
+      <%= render "memberships", user: @user %>
+    </dd>
+  </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Day Passes</dt>
+    <dd class="col">
+      <%= render "day_passes", user: @user %>
+    </dd>
+  </dl>    
 <%- end %>

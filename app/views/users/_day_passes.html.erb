@@ -1,0 +1,7 @@
+<%- if @user.day_passes.count < 1 %>
+  No day passes.
+<%- else %>
+  <%- user.day_passes.each do |day_pass| %>
+    <%= day_pass.pretty_day %>
+  <%- end %>
+<%- end %>
