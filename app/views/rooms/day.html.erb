@@ -5,7 +5,7 @@
       <div class="card-body">
         <div class="row">
           <div class="col-sm text-center">
-            <h2>Room Availability: <%= @room.name %></h2>
+            <h4 class="display-4 text-center mt-1 mb-4">Room Availability: <%= @room.name %></h4>
             <div class="btn-group" role="group" aria-label="date-select">
               <%= link_to "Previous Day", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info" %>
               <button>
