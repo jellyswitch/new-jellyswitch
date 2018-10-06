@@ -1,11 +1,10 @@
-<label class="col-sm-3 text-right mt-2">Billing</label>
-<div class="col ml-0 pl-0 pr-0">
-  <div id="card-element" class="form-control">
+<div class="col col pr-0 pl-4">
+  <div id="card-element" class="form-control row">
     <!-- a Stripe Element will be inserted here. -->
   </div>
-  <div id="card-errors" role="alert"></div>
+  <div id="card-errors" role="alert" class="row"></div>
   <%- if show_check_option %>
-    <div class="form-check">
+    <div class="form-check row">
       <input type="checkbox" class="form-check-input" />
       <label class="form-check-label">I want to pay via ACH / Check</label>
     </div>

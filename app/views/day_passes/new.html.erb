@@ -2,21 +2,29 @@
   <div class="col-sm-3"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <h2 class="text-center mb-5 mt-5">When would you like to use your day pass?</h2>
+      <h4 class="display-4 text-center mt-4">New Day Pass</h4>
+      <p class="lead text-center mb-3 mt-3">When would you like to use your day pass?</p>
+
       <%= form_for(@day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
         <div class="form-group row">
-          <label class="col-sm-3 text-right mt-2">Day</label>
-          <%= f.date_select :day, {}, class: "form-control col ml-0 pl-0 pr-0" %>
+          <div class="col-1"></div>
+          <%= f.date_select :day, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+          <div class="col-1"></div>
         </div>
         <%- if !current_user.has_billing? %>
           <div class="form-group row">
+            <div class="col-1"></div>
             <%= render "shared/billing", show_check_option: false %>
+            <div class="col-1"></div>
           </div>
         <%- end %>
         <div class="form-group row">
+          <div class="col-1"></div>
           <%= f.submit "Purchase", class: "form-control btn btn-primary col" %>
+          <div class="col-1"></div>
         </div>
       <%- end %>
+      
       <p class="text-muted">
         <%= link_to "Go Back", choose_path %>
       </p>
