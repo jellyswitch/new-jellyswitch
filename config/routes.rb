@@ -30,6 +30,8 @@ Rails.application.routes.draw do
   end
   resources :subscriptions
   resources :users do
+    post 'approve', to: "users#approve"
+    post 'unapprove', to: "users#unapprove"
     get 'change_password', to: 'users#change_password'
     patch 'update_password', to: 'users#update_password'
     patch 'update_organization', to: 'users#update_organization'

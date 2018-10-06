@@ -4,6 +4,7 @@
       <h5 class="card-title">Administrative Actions <small class="text-muted">This data is only visible to administrators.</small></h5>
       <p class="card-text">
         <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-primary btn-sm" %>
+        <%= render "approval_toggle", user: @user %>
       </p>
       <dl class="row">
         <dt class="col-sm-3">Email</dt>

@@ -55,6 +55,14 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin?
   end
 
+  def approve?
+    admin?
+  end
+
+  def unapprove?
+    admin?
+  end
+
   private
 
   def owner_or_admin?

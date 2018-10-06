@@ -29,7 +29,7 @@ class UsersController < ApplicationController
 
     if logged_in? && !admin?
       # this is a normal user creating another user
-      flash[:notice] = "Please log out first."
+      flash[:success] = "Please log out first."
       redirect_to root_path
     end
     background_image
@@ -79,7 +79,7 @@ class UsersController < ApplicationController
     @user.update_attributes(user_params)
 
     if @user.save
-      flash[:notice] = "Your profile has been updated."
+      flash[:success] = "Your profile has been updated."
       redirect_to user_path(@user)
     else
       render :edit, status: 422
@@ -98,7 +98,7 @@ class UsersController < ApplicationController
     @user.update_attributes(user_password_params)
     
     if @user.save
-      flash[:notice] = "Your password has been changed."
+      flash[:success] = "Your password has been changed."
       redirect_to user_path(@user)
     else
       render :change_password, status: 422
@@ -112,7 +112,7 @@ class UsersController < ApplicationController
     @user.update_attributes(user_organization_params)
 
     if @user.save
-      flash[:notice] = "Updated organization."
+      flash[:success] = "Updated organization."
       redirect_to user_path(@user)
     else
       render :show, status: 422
@@ -139,6 +139,28 @@ class UsersController < ApplicationController
     background_image
   end
 
+  def approve
+    find_user(:user_id)
+    @user.update_attributes(user_approval_params)
+    if @user.save
+      flash[:success] = "User approved."
+    else
+      flash[:error] = "Couldn't approve user."
+    end
+    redirect_to user_path(@user)
+  end
+
+  def unapprove
+    find_user(:user_id)
+    @user.update_attributes(user_approval_params)
+    if @user.save
+      flash[:success] = "User unapproved."
+    else
+      flash[:error] = "Couldn't unapprove user."
+    end
+    redirect_to user_path(@user)
+  end
+
   private
 
   def user_params
@@ -158,7 +180,9 @@ class UsersController < ApplicationController
     params.require(:user).permit(:organization_id)
   end
 
-  def 
+  def user_approval_params
+      params.require(:user).permit(:approved)
+  end
 
   def admin_hook
     if User.count < 1

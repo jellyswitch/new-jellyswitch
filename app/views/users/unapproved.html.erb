@@ -1,13 +1,28 @@
-<%- @users.in_batches(of: 3) do |users| %>
-  <div class="mt-3">
-    <div class="card-deck">
-      <%- [0,1,2].each do |i| %>
-        <%- if users[i].present? %>
-          <%= render "users/member_card", member: users[i] %>
-        <%- else %>
-          <div class="card border-light"></div>
-        <%- end %>
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">Approval Queue</h4>
+      <p class="lead text-center mb-3 mt-3">These users are currently awaiting approval.</p>
+      <%- if @users.count < 1 %>
+        <p>(none)</p>
+      <%- else %>
+        <table class="table">
+          <tr>
+            <th>Name</th>
+            <th>Signed Up</th>
+            <th></th>
+          </tr>
+          <%- @users.each do |user| %>
+            <tr>
+              <td><%= link_to user.name, user_path(user) %></td>
+              <td><%= time_ago_in_words(user.created_at) %> ago</td>
+              <td><%= render "approval_toggle", user: user %></td>
+            </tr>
+          <%- end %>
+        </table>
       <%- end %>
     </div>
   </div>
-<%- end %>
+  <div class="col-sm-3"></div>
+</div>
