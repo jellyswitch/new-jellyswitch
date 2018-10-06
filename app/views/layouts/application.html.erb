@@ -14,7 +14,7 @@
         window.stripe_key = "<%= Rails.configuration.stripe[:publishable_key] %>";
       </script>
     <%- end %>
-    <title>Bristlecone</title>
+    <title><%= Rails.application.config.x.customization.name %></title>
   </head>
 
   <%- if @background_image %>
