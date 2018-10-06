@@ -2,11 +2,13 @@ class PlansController < ApplicationController
   def index
     find_plans
     authorize @plans
+    background_image
   end
 
   def new
     @plan = Plan.new
     authorize @plan
+    background_image
   end
 
   def create
@@ -24,11 +26,13 @@ class PlansController < ApplicationController
   def show
     find_plan
     authorize @plan
+    background_image
   end
 
   def edit
     find_plan
     authorize @plan
+    background_image
   end
 
   def update

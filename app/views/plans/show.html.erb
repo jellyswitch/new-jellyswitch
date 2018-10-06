@@ -1,30 +1,26 @@
-<div class="row">
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
   <div class="col-sm">
-    <%= link_to "Edit this plan", edit_plan_path(@plan) %>
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4"><%= @plan.name %></h4>
+      <%= link_to "Edit this plan", edit_plan_path(@plan), class: "btn btn-primary btn-sm" %>
+      <dl class="row">
+        <dt class="col-sm">Amount</dt>
+        <dd class="col-sm"><%= dollar_amount(@plan.amount_in_cents) %></dd>
+      </dl> 
+      <dl class="row">
+        <dt class="col-sm">Interval</dt>
+        <dd class="col-sm"><%= @plan.interval %></dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm">Visible?</dt>
+        <dd class="col-sm"><%= @plan.visible? %></dd>
+      </dl> 
+      <dl class="row">
+        <dt class="col-sm">Available</dt>
+        <dd class="col-sm"><%= @plan.available? %></dd>
+      </dl> 
+    </div>
   </div>
-  <div class="col-sm"></div>
-</div>
-<div class="row">
-  <div class="col-sm">
-    <h2><%= @plan.name %></h2>
-    <table class="table table-sm">
-      <tr>
-        <th>Amount</th>
-        <td><%= dollar_amount(@plan.amount_in_cents) %></td>
-      </tr>
-      <tr>
-        <th>Interval</th>
-        <td><%= @plan.interval %></td>
-      </tr>
-      <tr>
-        <th>Visible?</th>
-        <td><%= @plan.visible? %></td>
-      </tr>
-      <tr>
-        <th>Available?</th>
-        <td><%= @plan.available? %></td>
-      </tr>
-    </table>
-  </div>
-    <div class="col-sm"></div>
+  <div class="col-sm-3"></div>
 </div>
