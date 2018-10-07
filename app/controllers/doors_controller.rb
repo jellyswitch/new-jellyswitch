@@ -14,6 +14,7 @@ class DoorsController < ApplicationController
   def new
     @door = Door.new
     authorize @door
+    background_image
   end
 
   def create
@@ -24,6 +25,7 @@ class DoorsController < ApplicationController
       flash[:notice] = "Door created."
       redirect_to doors_path(@door)
     else
+      background_image
       render :new
     end
   end
@@ -31,6 +33,7 @@ class DoorsController < ApplicationController
   def edit
     find_door
     authorize @door
+    background_image
   end
 
   def update
@@ -42,6 +45,7 @@ class DoorsController < ApplicationController
       flash[:notice] = "Door updated."
       redirect_to doors_path(@door)
     else
+      background_image
       render :edit
     end
   end
