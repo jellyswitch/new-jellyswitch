@@ -1,18 +1,29 @@
-<div class="row mt-2">
-  <div class="col mr-auto">
-    <%= link_to "Add a new organization", new_organization_path, class: "btn btn-primary" %>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">Organizations</h4>
+      <div class="row mb-3 mt-3">
+        <%- if admin? %>
+          <%= link_to "Add a new organization", new_organization_path, class: "btn btn-primary" %>
+        <%- end %>
+      </div>
+      <table class="table">
+        <tr>
+          <th>Organization</th>
+          <th>Owner</th>
+          <th>Members</th>
+        </tr>
+        <%- @organizations.all.each do |org| %>
+          <tr>
+            <td><%= link_to org.name, organization_path(org) %></td>
+            <td><%= link_to org.owner.name, user_path(org.owner) %></td>
+            <td><%= org.users.count %></td>
+          </tr>
+        <%- end %>
+      </table>
+    </div>
   </div>
+  <div class="col-sm-3"></div>
 </div>
-<%- @organizations.in_batches(of: 3) do |orgs| %>
-  <div class="row">
-    <%- [0,1,2].each do |i| %>
-      <%- if orgs[i].present? %>
-        <div class="col-sm">
-          <%= render "organizations/org_card", organization: orgs[i] %>
-        </div>
-      <%- else %>
-        <div class="col-sm"></div>
-      <%- end %>
-    <%- end %>
-  </div>
-<%- end %>

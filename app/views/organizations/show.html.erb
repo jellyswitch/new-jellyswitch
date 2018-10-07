@@ -1,20 +1,31 @@
-<div class="row">
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
   <div class="col-sm">
-    <h1><%= @organization.name %> <span><%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-sm btn-primary" %></span></h1>
-    <p class="lead">
-      <strong>Owner: </strong><%= link_to @organization.owner.name, user_path(@organization.owner) %>
-      <p class="text-muted">(Edit the organization to change the owner)</p>
-    </p>
-    <p>
-      Created <%= time_ago_in_words(@organization.created_at) %> ago
-    </p>
-  </div>
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4"><%= @organization.name %></h4>
+      <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-sm btn-primary" %>
 
-  <div class="col-sm">
-    <h2>Members</h2>
-    <p class="text-muted">(Add members by editing their profiles)</p>
-    <%- @organization.users.each do |member| %>
-      <%= render "users/member_card", member: member %>
-    <%- end %>
+      <dl class="row">
+        <dt class="col-sm-3">Owner</dt>
+        <dd class="col-sm">
+          <%= link_to @organization.owner.name, user_path(@organization.owner) %>
+        </dd>
+      </dl> 
+
+      <dl class="row">
+        <dt class="col-sm-3">Created</dt>
+        <dd class="col-sm">
+          <%= time_ago_in_words(@organization.created_at) %> ago
+        </dd>
+      </dl> 
+
+      <h4 class="display-4 text-center mt-4">Members</h4>
+      <p class="text-muted text-center">(Add members by editing their profiles)</p>
+      <%- @organization.users.each do |member| %>
+        <%= render "users/member_card", member: member %>
+      <%- end %>
+
+    </div>
   </div>
+  <div class="col-sm-3"></div>
 </div>

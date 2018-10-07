@@ -2,16 +2,19 @@ class OrganizationsController < ApplicationController
   def index
     find_organizations
     authorize @organizations.all
+    background_image
   end
 
   def show
     find_organization
     authorize @organization
+    background_image
   end
 
   def new
     @organization = Organization.new
     authorize @organization
+    background_image
   end
 
   def create
@@ -22,6 +25,7 @@ class OrganizationsController < ApplicationController
       flash[:notice] = "Organization #{@organization.name} has been created."
       redirect_to organization_path(@organization)
     else
+      background_image
       render :new
     end
   end
@@ -29,6 +33,7 @@ class OrganizationsController < ApplicationController
   def edit
     find_organization
     authorize @organization
+    background_image
   end
 
   def update
@@ -41,6 +46,7 @@ class OrganizationsController < ApplicationController
       flash[:notice] = "The organization #{@organization.name} has been updated."
       redirect_to organization_path(@organization)
     else
+      background_image
       render :edit
     end
   end
