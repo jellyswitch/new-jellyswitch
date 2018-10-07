@@ -19,6 +19,7 @@ class RoomsController < ApplicationController
   def new
     @room = Room.new
     authorize @room
+    background_image
   end
 
   def create

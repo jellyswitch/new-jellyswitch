@@ -71,7 +71,7 @@ class FakeData
       av: [true, false].sample
     )
 
-    path = "2.jpg" # room_photo_paths.shuffle.sample
+    path = room_photo_paths.shuffle.sample # "2.jpg"
     room.photo.attach(
       io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
       filename: path
