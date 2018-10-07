@@ -1,23 +1,39 @@
 <%= form_for(@room, remote: true) do |f| %>
   <%= render "shared/error_messages" , model: @room %>
 
-  <%= f.label :name %>
-  <%= f.text_field :name, class: "form-control" %>
+  <div class="form-group">
+    <%= f.label :name %>
+    <%= f.text_field :name, class: "form-control" %>
+  </div>
 
-  <%= f.label :description %>
-  <%= f.text_area :description, class: "form-control" %>
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control" %>
+  </div>
   
-  <%= f.label :capacity %>
-  <%= f.text_field :capacity, class: "form-control" %>
+  <div class="form-group">
+    <%= f.label :capacity %>
+    <%= f.text_field :capacity, class: "form-control" %>
+  </div>
 
-  <%= f.label :whiteboard %>
-  <%= f.check_box :whiteboard %>
+  <div class="form-group">
+    <div class="form-check">
+      <%= f.check_box :whiteboard, class: "form-check-input" %>
+      <%= f.label :whiteboard, class: "form-check-label" %>
+    </div>
+  </div>
 
-  <%= f.label :av, "Has AV equipment" %>
-  <%= f.check_box :av %>
+  <div class="form-group">
+    <div class="form-check">
+      <%= f.check_box :av, class: "form-check-input" %>
+      <%= f.label :av, "Has AV equipment", {class: "form-check-label"} %>
+    </div>
+  </div>
 
-   <%= f.label :photo %>
-  <%= f.file_field :photo, class: "form-control" %>
-  <br />
+  <div class="form-group">
+    <%= f.label :photo %>
+    <%= f.file_field :photo, class: "form-control-file" %>
+  </div>
+  
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <%- end %>

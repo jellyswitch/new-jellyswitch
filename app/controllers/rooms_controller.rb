@@ -8,6 +8,7 @@ class RoomsController < ApplicationController
   def show
     find_room
     authorize @room
+    background_image
     respond_to do |format|
       format.html
       format.ics do
@@ -37,6 +38,7 @@ class RoomsController < ApplicationController
   def edit
     find_room
     authorize @room
+    background_image
   end
 
   def update

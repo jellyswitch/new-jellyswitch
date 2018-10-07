@@ -1,26 +1,41 @@
-<%- if admin? %>
-  <div class="row mt-1">
-    <div class="col-sm">
-      <%= link_to "Edit Room", edit_room_path(@room), class: "btn btn-primary" %>
-    </div>  
-  </div>
-<%- end %>
-<div class="row mt-1">
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
   <div class="col-sm">
-    <%= render "rooms/room_card", room: @room %>
-  </div>
-  <div class="col-sm">
-    <h2>Reservations</h2>
-    <%- if @room.reservations.count < 1 %>
-      (none)
-    <%- else %>
-      <%- @room.reservations.each do |reservation| %>
-        <div class="row">
-          <div class="col-sm">
-            <%= render "reservations/reservation_card", reservation: reservation %>
-          </div>
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <div class="row">
+        <%- if admin? %>
+          <%= link_to "Edit Room", edit_room_path(@room), class: "btn btn-primary btn-sm" %>
+        <%- end %>
+      </div>
+      <div class="row">
+        <div class="col-3"></div>
+        <div class="col">
+          <%= render "rooms/room_card", room: @room %>
         </div>
-      <%- end %>
-    <%- end %>
+        <div class="col-3"></div>
+      </div>
+    </div>
   </div>
+  <div class="col-sm-3"></div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">Reservations</h4>
+      <%- if @room.reservations.count < 1 %>
+        (none)
+      <%- else %>
+        <%- @room.reservations.each do |reservation| %>
+          <div class="row">
+            <div class="col-sm">
+              <%= render "reservations/reservation_card", reservation: reservation %>
+            </div>
+          </div>
+        <%- end %>
+      <%- end %>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
 </div>
