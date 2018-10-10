@@ -9,10 +9,7 @@
         <dl class="row">
           <dt class="col-sm"><%= link_to plan.name, plan_path(plan) %></dt>
           <dd class="col-sm">
-            <%= link_to "Edit", edit_plan_path(plan), class: "btn btn-sm btn-info" %>
-            <%- if plan.available? %>
-              <%= link_to "Archive", plan_path(plan), method: :delete, class: "btn btn-sm btn-danger" %>
-            <%- end %>
+            <%= render "actions", plan: plan %>
           </dd>
         </dl> 
       <%- end %>

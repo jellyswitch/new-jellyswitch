@@ -3,7 +3,7 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4"><%= @plan.name %></h4>
-      <%= link_to "Edit this plan", edit_plan_path(@plan), class: "btn btn-primary btn-sm" %>
+      <%= render "actions", plan: @plan %>
       <dl class="row">
         <dt class="col-sm">Amount</dt>
         <dd class="col-sm"><%= dollar_amount(@plan.amount_in_cents) %></dd>

@@ -14,6 +14,7 @@ gem 'friendly_id'
 gem 'groupdate'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
+gem "interactor-rails", "~> 2.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'octicons_helper'

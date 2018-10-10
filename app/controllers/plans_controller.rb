@@ -55,12 +55,23 @@ class PlansController < ApplicationController
 
     @plan.update_attributes({available: false})
     if @plan.save
-      flash[:info] = "Plan archived."
+      flash[:notice] = "Plan archived."
       redirect_to plans_path
     else
       flash[:error] = "Unable to archive plan: #{@plan.name}"
       redirect_to :back
     end
+  end
+
+  def unarchive
+    find_plan(:plan_id)
+    result = UnarchivePlan.call(plan: @plan)
+    if result.success?
+      flash[:success] = "Plan unarchived."
+    else
+      flash[:error] = result.message
+    end
+    redirect_to plan_path(@plan)
   end
 
   private
