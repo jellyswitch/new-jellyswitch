@@ -26,4 +26,8 @@ class PlanPolicy < ApplicationPolicy
   def destroy?
     admin?
   end
+
+  def unarchive?
+    admin?
+  end
 end

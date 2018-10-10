@@ -65,6 +65,7 @@ class PlansController < ApplicationController
 
   def unarchive
     find_plan(:plan_id)
+    authorize @plan
     result = UnarchivePlan.call(plan: @plan)
     if result.success?
       flash[:success] = "Plan unarchived."
