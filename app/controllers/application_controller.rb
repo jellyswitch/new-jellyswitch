@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base
 
   def user_not_authorized
     flash[:alert] = "Sorry! You are not authorized to do that."
-    redirect_to(request.referrer || root_path)
+    redirect_to referrer_or_root
   end
 
   protected
@@ -17,5 +17,9 @@ class ApplicationController < ActionController::Base
 
   def include_stripe
     @include_stripe = true
+  end
+
+  def referrer_or_root
+    request.referrer || root_path
   end
 end
