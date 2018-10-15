@@ -8,6 +8,7 @@ class DoorsController < ApplicationController
   def show
     find_door
     authorize @door
+    @punches = @door.door_punches.order('created_at DESC').paginate(:page => params[:page], per_page: 50)
     background_image
   end
 

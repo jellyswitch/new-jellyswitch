@@ -29,6 +29,7 @@ gem 'sidekiq'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
+gem 'will_paginate', '~> 3.1.0'
 
 group :development do
   # Access an interactive console on exception pages or by calling 'console' anywhere in the code.

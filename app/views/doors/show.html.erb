@@ -9,13 +9,14 @@
           <th>When</th>
           <th>Who</th>
         </tr>
-        <%- @door.door_punches.order('created_at DESC').limit(100).each do |punch| %>
+        <%- @punches.each do |punch| %>
           <tr>
             <td><%= punch.pretty_datetime %></td>
             <td><%= link_to punch.user.name, user_path(punch.user) %></td>
           </tr>
         <%- end %>
       </table>
+      <%= will_paginate @punches, page_links: false, class: "text-center" %>
     </div>
   </div>
   <div class="col-sm-2"></div>
