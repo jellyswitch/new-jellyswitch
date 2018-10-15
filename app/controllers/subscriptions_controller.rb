@@ -53,7 +53,8 @@ class SubscriptionsController < ApplicationController
     find_subscription
     authorize @subscription
 
-    if @subscription.destroy
+    @subscription.active = false
+    if @subscription.save
       redirect_to home_path
     else
       flash[:error] = "An error occurred."
