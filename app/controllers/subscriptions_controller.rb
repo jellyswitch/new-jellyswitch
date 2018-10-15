@@ -7,16 +7,20 @@ class SubscriptionsController < ApplicationController
   end
 
   def create
-    @subscription = new_subscription
-    authorize @subscription
+    authorize Subscription, :new?
 
-    token = params[:stripeToken]
-    current_user.ensure_stripe_customer(token)
-    if @subscription.save
+    @subscription = new_subscription
+    result = CreateSubscription.call(
+      subscription: @subscription,
+      token: params[:stripeToken],
+      user: current_user
+    )
+
+    if result.success?
       flash[:success] = "Welcome to #{Rails.application.config.x.customization.name}!"
       redirect_to root_path
     else
-      flash[:error] = "An error occurred."
+      flash[:error] = result.message
       render :new
     end
   end
@@ -68,6 +72,10 @@ class SubscriptionsController < ApplicationController
     params.require(:subscription).permit(:plan_id)
   end
 
+  def admin_subscription_params
+    params.require(:subscription).permit(:plan_id, :user_id)
+  end
+
   def find_subscription(key=:id)
     @subscription = Subscription.find(params[key])
   end
@@ -75,6 +83,12 @@ class SubscriptionsController < ApplicationController
   def new_subscription
     subscription = Subscription.new(subscription_params)
     subscription.user = current_user
+    subscription.active = true
+    subscription
+  end
+
+  def new_admin_subscription
+    subscription = Subscription.new(admin_subscription_params)
     subscription.active = true
     subscription
   end

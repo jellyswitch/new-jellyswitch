@@ -4,8 +4,7 @@ class Subscription < ApplicationRecord
   belongs_to :plan
 
   # Stripe Stuff
-  after_create :subscribe_in_stripe
-  def subscribe_in_stripe
+  def subscribe_in_stripe!
     subscription = Stripe::Subscription.create({
       customer: user.stripe_customer_id,
       items: [
@@ -16,8 +15,8 @@ class Subscription < ApplicationRecord
     self.save
   end
 
-  after_destroy :cancel_stripe
-  def cancel_stripe
+  after_destroy :cancel_stripe!
+  def cancel_stripe!
     stripe_subscription.delete
   end
 

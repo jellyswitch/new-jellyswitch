@@ -1,5 +1,6 @@
 <%- if user.subscriptions.active.count < 1 %>
   No active memberships.
+    <%= render "subscriptions/form", subscription: Subscription.new, label: "Create membership", cc: false, user_id: user.id %>
 <%- else %>
   <%- @user.subscriptions.active.each do |subscription| %>
     <%= render "subscriptions/form", subscription: subscription, label: "Update membership", cc: false %>
