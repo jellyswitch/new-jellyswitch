@@ -16,9 +16,7 @@
             <%= member.name %>
           <%- end %>
         </p>
-        <%= octicon "mail" %>
-        <%= octicon "mark-github" %>
-        <%= octicon "globe" %>
+        <%= render "users/social", user: member %>
         <%- if member.admin? %>
           <span class="badge badge-success">Admininstrator</span>
         <%- end %>
