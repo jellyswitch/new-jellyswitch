@@ -2,6 +2,8 @@ class Room < ApplicationRecord
   # Relationships
   has_many :reservations
 
+  scope :visible, ->() { where(visible: true) }
+
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged

@@ -27,7 +27,7 @@ Rails.application.routes.draw do
     post 'unarchive', to: 'plans#unarchive'
   end
   resources :reservations, except: [:index]
-  resources :rooms do
+  resources :rooms, except: [:destroy] do
     get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
   end
   resources :subscriptions

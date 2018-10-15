@@ -77,7 +77,7 @@ class RoomsController < ApplicationController
   private
 
   def find_rooms
-    @rooms = Room.all
+    @rooms = Room.visible.all
   end
 
   def find_room(key=:id)
@@ -85,6 +85,6 @@ class RoomsController < ApplicationController
   end
 
   def room_params
-    params.require(:room).permit(:name, :description, :whiteboard, :capacity, :photo)
+    params.require(:room).permit(:name, :description, :whiteboard, :capacity, :photo, :visible)
   end
 end
