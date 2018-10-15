@@ -7,7 +7,9 @@ class RoomsController < ApplicationController
 
   def show
     find_room
-    authorize @room
+    if request.format != :ics
+      authorize @room
+    end
     background_image
     respond_to do |format|
       format.html
