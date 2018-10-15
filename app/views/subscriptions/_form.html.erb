@@ -1,6 +1,6 @@
 <%= javascript_include_tag "stripe_handler.js" %>
 
-<%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
+<%= form_for(subscription, remote: false, html: {id: "stripe-form" }) do |f| %>
   <%= render "shared/error_messages", model: subscription %>
   
   <div class="form-group row">
@@ -8,6 +8,9 @@
     <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control form-control-sm col" }%>
     <div class="col-1"></div>
   </div>
+  <%- if user_id %>
+    <%= f.hidden_field :user_id, value: user_id %>
+  <%- end %>
 
   <%- if cc %>
     <div class="form-group row">
