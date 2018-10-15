@@ -57,11 +57,15 @@ class SubscriptionsController < ApplicationController
     find_subscription
     authorize @subscription
 
-    @subscription.active = false
-    if @subscription.save
+    result = CancelSubscription.call(
+      subscription: @subscription
+    )
+
+    if result.success?
+      flash[:success] = "Membership cancelled."
       redirect_to home_path
     else
-      flash[:error] = "An error occurred."
+      flash[:error] = result.message
       redirect_to user_memberships_path(@subscription.user)
     end
   end

@@ -15,7 +15,6 @@ class Subscription < ApplicationRecord
     self.save
   end
 
-  after_destroy :cancel_stripe!
   def cancel_stripe!
     stripe_subscription.delete
   end

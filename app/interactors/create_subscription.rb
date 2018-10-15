@@ -4,7 +4,7 @@ class CreateSubscription
   def call
     subscription = context.subscription
 
-    if context.token.nil?
+    if context.token.nil? && !context.user.has_billing?
       context.fail!(message: "Unable to create new stripe customer with nil token.")
     end
 
