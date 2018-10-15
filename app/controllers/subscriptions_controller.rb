@@ -9,11 +9,16 @@ class SubscriptionsController < ApplicationController
   def create
     authorize Subscription, :new?
 
-    @subscription = new_subscription
+    if admin?
+      @subscription = new_admin_subscription
+    else
+      @subscription = new_subscription
+    end
+
     result = CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
-      user: current_user
+      user: @subscription.user
     )
 
     if result.success?
