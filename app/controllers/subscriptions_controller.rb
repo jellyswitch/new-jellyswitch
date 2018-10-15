@@ -21,7 +21,7 @@ class SubscriptionsController < ApplicationController
       redirect_to root_path
     else
       flash[:error] = result.message
-      render :new
+      redirect_to referrer_or_root
     end
   end
 
@@ -34,22 +34,19 @@ class SubscriptionsController < ApplicationController
   def update
     find_subscription
     authorize @subscription
-    
-    @subscription.active = false
     @new_subscription = new_subscription
-    @new_subscription.user = @subscription.user # in case this is an admin
 
-    if @new_subscription.save
-      if @subscription.save
-        flash[:notice] = "Your membership has been updated."
-        redirect_to root_path
-      else
-        flash[:error] = "An error occurred."
-        render :edit  
-      end
+    result = SwitchMembership.call(
+      old_subscription: @subscription,
+      new_subscription: @new_subscription
+    )
+
+    if result.success?
+      flash[:success] = "Your membership has been updated"
+      redirect_to home_path
     else
-      flash[:error] = "An error occurred."
-      render :edit
+      flash[:error] = result.message
+      redirect_to referrer_or_root
     end
   end
 
@@ -66,7 +63,7 @@ class SubscriptionsController < ApplicationController
       redirect_to home_path
     else
       flash[:error] = result.message
-      redirect_to user_memberships_path(@subscription.user)
+      redirect_to referrer_or_root
     end
   end
 
