@@ -55,6 +55,10 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin?
   end
 
+  def invoices?
+    owner_or_admin?
+  end
+
   def approve?
     admin?
   end

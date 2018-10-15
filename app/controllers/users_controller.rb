@@ -139,6 +139,14 @@ class UsersController < ApplicationController
     background_image
   end
 
+  def invoices
+    find_user(:user_id)
+    authorize @user
+
+    @invoices = @user.invoices
+    background_image
+  end
+
   def approve
     find_user(:user_id)
     @user.update_attributes(user_approval_params)

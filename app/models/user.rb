@@ -110,4 +110,8 @@ class User < ApplicationRecord
   def has_billing?
     stripe_customer_id.present?
   end
+
+  def invoices
+    @invoices ||= Stripe::Invoice.list
+  end
 end
