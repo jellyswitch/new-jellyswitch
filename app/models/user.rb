@@ -100,11 +100,6 @@ class User < ApplicationRecord
       })
       self.stripe_customer_id = customer.id
       self.save
-    else
-      # Update billing info
-      customer = stripe_customer
-      customer.source = token
-      customer.save
     end
   end
 
