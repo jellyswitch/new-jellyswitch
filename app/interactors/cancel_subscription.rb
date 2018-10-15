@@ -7,7 +7,7 @@ class CancelSubscription
     subscription.active = false
 
     if !subscription.save
-      context.fail!(message: "Unable to ")
+      context.fail!(message: "Unable to cancel subscription.")
     end
 
     begin
