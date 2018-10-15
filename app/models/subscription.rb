@@ -3,6 +3,9 @@ class Subscription < ApplicationRecord
   belongs_to :user
   belongs_to :plan
 
+  # Scopes
+  scope :active, ->() { where(active: true) }
+
   # Stripe Stuff
   def subscribe_in_stripe!
     subscription = Stripe::Subscription.create({
@@ -23,8 +26,7 @@ class Subscription < ApplicationRecord
     Stripe::Subscription.retrieve(self.stripe_subscription_id)
   end
 
-  # Scopes
-  scope :active, ->() { where(active: true) }
+  # Instance methods
 
   def pretty_datetime
     updated_at.strftime("%m/%d/%Y at %l:%M%P")
