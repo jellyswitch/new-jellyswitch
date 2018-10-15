@@ -67,6 +67,14 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def edit_billing?
+    owner_or_admin?
+  end
+
+  def update_billing?
+    owner_or_admin?
+  end
+
   private
 
   def owner_or_admin?

@@ -169,6 +169,25 @@ class UsersController < ApplicationController
     redirect_to user_path(@user)
   end
 
+  def edit_billing
+    find_user(:user_id)
+    background_image
+    include_stripe
+  end
+
+  def update_billing
+    find_user(:user_id)
+    token = params[:stripeToken]
+    result = UpdateCustomerBillingInfo.call(user: current_user, token: token)
+    if result.success?
+      flash[:success] = "Billing info updated."
+      redirect_to user_path(current_user)
+    else
+      flash[:error] = result.message
+      redirect_to user_billing_path(current_user)
+    end
+  end
+
   private
 
   def user_params

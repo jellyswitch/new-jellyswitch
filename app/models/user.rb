@@ -44,7 +44,7 @@ class User < ApplicationRecord
   end
 
   def member?
-    (subscriptions.active.count > 0) || (day_passes.today.count > 0)
+    (subscriptions.active.count > 0) || (day_passes.fulfilled.today.count > 0)
   end
 
   def approved?
@@ -92,7 +92,7 @@ class User < ApplicationRecord
 
   # Stripe Stuff
   def ensure_stripe_customer(token)
-    puts "ENSURE_STRIPE_CUSTOMER(#{token}) from #{caller[0]}"
+    # Set new billing info
     if self.stripe_customer_id.nil?
       customer = Stripe::Customer.create({
         email: email,
@@ -100,6 +100,11 @@ class User < ApplicationRecord
       })
       self.stripe_customer_id = customer.id
       self.save
+    else
+      # Update billing info
+      customer = stripe_customer
+      customer.source = token
+      customer.save
     end
   end
 

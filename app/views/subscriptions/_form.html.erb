@@ -1,3 +1,5 @@
+<%= javascript_include_tag "stripe_handler.js" %>
+
 <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
   <%= render "shared/error_messages", model: subscription %>
   
@@ -20,5 +22,3 @@
     <div class="col-1"></div>
   </div>
 <%- end %>
-
-<%= javascript_include_tag "stripe_handler.js" %>

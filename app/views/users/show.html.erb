@@ -31,6 +31,10 @@
           </td>
         </tr>
         <tr>
+          <th>Billing Info</th>
+          <td><%= link_to "Update billing info", user_billing_path(current_user), class: "btn-sm btn-primary" %></td>
+        </tr>
+        <tr>
           <th>Bio</th>
           <td><%= @user.bio %></td>
         </tr>

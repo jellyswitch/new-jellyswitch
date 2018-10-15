@@ -41,6 +41,8 @@ Rails.application.routes.draw do
     get :day_passes, to: 'users#day_passes'
     get :reservations, to: 'users#reservations'
     get :invoices, to: 'users#invoices'
+    get :billing, to: 'users#edit_billing'
+    post :billing, to: 'users#update_billing'
     collection do
       get 'add_member', to: 'users#add_member'
       get 'unapproved', to: 'users#unapproved'

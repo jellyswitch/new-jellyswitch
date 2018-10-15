@@ -25,9 +25,14 @@ class DayPass < ApplicationRecord
 
   # Scopes
   scope :today, ->() { where(day: Time.current) }
+  scope :fulfilled, ->() { where('stripe_charge_id IS NOT NULL') }
 
   # Instance methods
   def pretty_day
     day.strftime("%m/%d/%Y")
+  end
+
+  def fulfilled?
+    stripe_charge_id.present?
   end
 end
