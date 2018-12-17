@@ -32,3 +32,4 @@
 # Mine
 /vendor/*
 .DS_Store
+.env
