@@ -1,12 +1,12 @@
 <%- if user.subscriptions.active.count < 1 %>
   No active memberships.
   <%- if user.has_billing? %>
-    <%= render "subscriptions/form", subscription: Subscription.new, label: "Create membership", cc: false, user_id: user.id %>
+    <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Create membership", cc: false, user_id: user.id %>
   <%- else %>
     (Unable to create a membership on behalf of this user until they enter their billing info.)
   <%- end %>
 <%- else %>
   <%- user.subscriptions.active.each do |subscription| %>
-    <%= render "subscriptions/form", subscription: subscription, label: "Update membership", cc: false, user_id: user.id %>
+    <%= render "operator/subscriptions/form", subscription: subscription, label: "Update membership", cc: false, user_id: user.id %>
   <%- end %>
 <%- end %>
