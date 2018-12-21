@@ -10,7 +10,7 @@
       <div class="row">
         <div class="col-3"></div>
         <div class="col">
-          <%= render "rooms/room_card", room: @room %>
+          <%= render "room_card", room: @room %>
         </div>
         <div class="col-3"></div>
       </div>
@@ -30,7 +30,7 @@
         <%- @room.reservations.each do |reservation| %>
           <div class="row">
             <div class="col-sm">
-              <%= render "reservations/reservation_card", reservation: reservation %>
+              <%= render "operator/reservations/reservation_card", reservation: reservation %>
             </div>
           </div>
         <%- end %>

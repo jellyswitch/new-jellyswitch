@@ -11,7 +11,7 @@
     <div class="card-group">
       <%- [0,1,2].each do |i| %>
         <%- if rooms[i].present? %>
-          <%= render "rooms/room_card", room: rooms[i] %>
+          <%= render "room_card", room: rooms[i] %>
         <%- else %>
           <div class="card border-light"></div>
         <%- end %>
