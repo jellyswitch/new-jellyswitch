@@ -4,7 +4,7 @@
     <div class="card-body">
       <h1>My Reservations</h1>
       <%- @reservations.each do |reservation| %>
-        <%= render "reservations/reservation_card", reservation: reservation %>
+        <%= render "operator/reservations/reservation_card", reservation: reservation %>
       <%- end %>
     </div>
   </div>

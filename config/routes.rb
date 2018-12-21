@@ -23,10 +23,10 @@ Rails.application.routes.draw do
     end
   end
   resources :organizations, controller: 'operator/organizations'
-  resources :plans do
+  resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'plans#unarchive'
   end
-  resources :reservations, except: [:index]
+  resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, except: [:destroy] do
     get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
   end
