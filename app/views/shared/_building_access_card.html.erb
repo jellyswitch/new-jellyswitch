@@ -3,7 +3,7 @@
     <h5 class="card-title">
       Building Access
     </h5>
-    <%= render "doors/keys", doors: @doors %>
+    <%= render "operator/doors/keys", doors: @doors %>
     <p class="card-text">
       <%= Rails.application.config.x.customization.name %> is located at <%= link_to Rails.application.config.x.customization.building_address, "https://maps.google.com/?q=#{Rails.application.config.x.customization.building_address}", target: "_blank" %>. Please download the Tahoe Mountain Lab mobile app for building access once your membership or day pass has been approved.
     </p>

@@ -1,4 +1,4 @@
-class LandingController < ApplicationController
+class Operator::LandingController < Operator::ApplicationController
   def index
     background_image
     if logged_in?

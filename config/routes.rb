@@ -1,6 +1,6 @@
 Rails.application.routes.draw do
   # Root
-  root "landing#index"
+  root "operator/landing#index"
 
   # Authentication
   delete '/logout',  to: 'sessions#destroy'
@@ -9,10 +9,10 @@ Rails.application.routes.draw do
   get '/signup',     to: 'users#new'
 
   # Landing
-  get 'landing/index'
-  get '/home',      to: 'landing#home'
-  get '/wait',      to: 'landing#wait'
-  get '/choose',    to: 'landing#choose'
+  get 'landing/index', to: 'operator/landing#index'
+  get '/home',      to: 'operator/landing#home'
+  get '/wait',      to: 'operator/landing#wait'
+  get '/choose',    to: 'operator/landing#choose'
 
   # Alphabetized Resources
   resources :day_passes, controller: 'operator/day_passes'
