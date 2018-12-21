@@ -30,7 +30,7 @@ Rails.application.routes.draw do
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
     get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
   end
-  resources :subscriptions
+  resources :subscriptions, controller: 'operator/subscriptions'
   resources :users do
     post 'approve', to: "users#approve"
     post 'unapprove', to: "users#unapprove"

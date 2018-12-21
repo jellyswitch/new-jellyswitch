@@ -4,7 +4,7 @@
     <div class="card-body">
       <h1>My Membership</h1>
       <%- @user.subscriptions.order('created_at DESC').each do |subscription| %>
-        <%= render "subscriptions/membership_card", subscription: subscription %>
+        <%= render "operator/subscriptions/membership_card", subscription: subscription %>
       <%- end %>
     </div>
   </div>
