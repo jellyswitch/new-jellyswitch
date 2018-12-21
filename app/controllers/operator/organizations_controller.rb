@@ -1,4 +1,4 @@
-class OrganizationsController < ApplicationController
+class Operator::OrganizationsController < Operator::ApplicationController
   def index
     find_organizations
     authorize @organizations.all

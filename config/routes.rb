@@ -22,7 +22,7 @@ Rails.application.routes.draw do
       get 'keys', to: 'doors#keys'
     end
   end
-  resources :organizations
+  resources :organizations, controller: 'operator/organizations'
   resources :plans do
     post 'unarchive', to: 'plans#unarchive'
   end
