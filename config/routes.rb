@@ -15,8 +15,8 @@ Rails.application.routes.draw do
   get '/choose',    to: 'landing#choose'
 
   # Alphabetized Resources
-  resources :day_passes
-  resources :doors do
+  resources :day_passes, controller: 'operator/day_passes'
+  resources :doors, controller: 'operator/doors' do
     get 'open', to: 'doors#open'
     collection do
       get 'keys', to: 'doors#keys'
