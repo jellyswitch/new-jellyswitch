@@ -2,6 +2,7 @@ class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
   # Relationships
   has_many :subscriptions
+  belongs_to :operator
 
   # Slugs
   extend FriendlyId

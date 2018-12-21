@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_12_21_185844) do
+ActiveRecord::Schema.define(version: 2018_12_21_190155) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_charge_id"
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "door_punches", force: :cascade do |t|
@@ -49,6 +50,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "doors", force: :cascade do |t|
@@ -57,6 +59,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.boolean "available", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -72,8 +75,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
   end
 
   create_table "operators", force: :cascade do |t|
-    t.string "name"
-    t.string "subdomain"
+    t.string "name", null: false
+    t.string "subdomain", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -85,6 +88,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "plans", force: :cascade do |t|
@@ -97,6 +101,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_plan_id"
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "reservations", force: :cascade do |t|
@@ -118,6 +123,7 @@ ActiveRecord::Schema.define(version: 2018_12_21_185844) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
+    t.integer "operator_id", default: 1, null: false
   end
 
   create_table "subscriptions", force: :cascade do |t|

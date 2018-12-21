@@ -1,6 +1,7 @@
 class DayPass < ApplicationRecord
   # Relationships
   belongs_to :user
+  belongs_to :operator
 
   # Stripe stuff
   after_create :charge_in_stripe

@@ -2,6 +2,7 @@ class DoorPunch < ApplicationRecord
   # Relationships
   belongs_to :door
   belongs_to :user
+  belongs_to :operator
 
   # View helpers
   def pretty_datetime

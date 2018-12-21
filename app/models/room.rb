@@ -1,6 +1,7 @@
 class Room < ApplicationRecord
   # Relationships
   has_many :reservations
+  belongs_to :operator
 
   scope :visible, ->() { where(visible: true) }
 
