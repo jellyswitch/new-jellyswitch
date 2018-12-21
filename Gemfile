@@ -32,13 +32,13 @@ gem 'uglifier', '>= 1.3.0'
 gem 'will_paginate', '~> 3.1.0'
 
 group :development do
-  # Access an interactive console on exception pages or by calling 'console' anywhere in the code.
-  gem 'web-console', '>= 3.3.0'
-  gem 'listen', '>= 3.0.5', '< 3.2'
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'annotate'
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'user-auth', git: "https://github.com/dpaola2/user-auth"
+  gem 'web-console', '>= 3.3.0'
 end
 
 group :test do
