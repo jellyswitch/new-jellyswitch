@@ -42,7 +42,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_charge_id"
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
   create_table "door_punches", force: :cascade do |t|
@@ -50,7 +51,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_door_punches_on_operator_id"
   end
 
   create_table "doors", force: :cascade do |t|
@@ -59,7 +61,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.boolean "available", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_doors_on_operator_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -88,7 +91,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
   create_table "plans", force: :cascade do |t|
@@ -101,7 +105,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_plan_id"
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
   create_table "reservations", force: :cascade do |t|
@@ -123,7 +128,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
-    t.integer "operator_id", default: 1, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
 
   create_table "subscriptions", force: :cascade do |t|

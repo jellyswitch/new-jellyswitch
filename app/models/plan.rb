@@ -3,6 +3,7 @@ class Plan < ApplicationRecord
   # Relationships
   has_many :subscriptions
   belongs_to :operator
+  acts_as_tenant :operator
 
   # Slugs
   extend FriendlyId
