@@ -4,14 +4,20 @@ Rails.application.routes.draw do
     root "landing#index"
 
     # Authentication
-    delete '/logout',  to: 'sessions#destroy'
-    post '/login',     to: 'sessions#create'
-    get '/login',      to: 'sessions#new'
+    delete '/logout',  to: 'sessions#destroy', as: :operator_logout
+    post '/login',     to: 'sessions#create', as: :operator_login_create
+    get '/login',      to: 'sessions#new', as: :operator_login
     get '/signup',     to: 'users#new'
   end
 
   # Operator root
   root "operator/landing#index"
+
+  # Operator Authentication
+  delete '/logout',  to: 'operator/sessions#destroy'
+  post '/login',     to: 'operator/sessions#create'
+  get '/login',      to: 'operator/sessions#new'
+  get '/signup',     to: 'users#new'
 
   # Landing
   get 'landing/index', to: 'operator/landing#index'
