@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  constraints subdomain: 'www' do
+  constraints subdomain: 'app' do
     # Root
     root "landing#index"
 
@@ -7,7 +7,7 @@ Rails.application.routes.draw do
     delete '/logout',  to: 'sessions#destroy', as: :operator_logout
     post '/login',     to: 'sessions#create', as: :operator_login_create
     get '/login',      to: 'sessions#new', as: :operator_login
-    get '/signup',     to: 'users#new'
+    get '/signup',     to: 'users#new', as: :operator_signup
   end
 
   # Operator root
@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   delete '/logout',  to: 'operator/sessions#destroy'
   post '/login',     to: 'operator/sessions#create'
   get '/login',      to: 'operator/sessions#new'
-  get '/signup',     to: 'users#new'
+  get '/signup',     to: 'operator/users#new'
 
   # Landing
   get 'landing/index', to: 'operator/landing#index'
@@ -42,21 +42,21 @@ Rails.application.routes.draw do
     get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
   end
   resources :subscriptions, controller: 'operator/subscriptions'
-  resources :users do
-    post 'approve', to: "users#approve"
-    post 'unapprove', to: "users#unapprove"
-    get 'change_password', to: 'users#change_password'
-    patch 'update_password', to: 'users#update_password'
-    patch 'update_organization', to: 'users#update_organization'
-    get :memberships, to: 'users#memberships'
-    get :day_passes, to: 'users#day_passes'
-    get :reservations, to: 'users#reservations'
-    get :invoices, to: 'users#invoices'
-    get :billing, to: 'users#edit_billing'
-    post :billing, to: 'users#update_billing'
+  resources :users, controller: 'operator/users' do
+    post 'approve', to: "operator/users#approve"
+    post 'unapprove', to: "operator/users#unapprove"
+    get 'change_password', to: 'operator/users#change_password'
+    patch 'update_password', to: 'operator/users#update_password'
+    patch 'update_organization', to: 'operator/users#update_organization'
+    get :memberships, to: 'operator/users#memberships'
+    get :day_passes, to: 'operator/users#day_passes'
+    get :reservations, to: 'operator/users#reservations'
+    get :invoices, to: 'operator/users#invoices'
+    get :billing, to: 'operator/users#edit_billing'
+    post :billing, to: 'operator/users#update_billing'
     collection do
-      get 'add_member', to: 'users#add_member'
-      get 'unapproved', to: 'users#unapproved'
+      get 'add_member', to: 'operator/users#add_member'
+      get 'unapproved', to: 'operator/users#unapproved'
     end
   end
 end

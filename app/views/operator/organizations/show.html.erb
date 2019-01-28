@@ -22,7 +22,7 @@
       <h4 class="display-4 text-center mt-4">Members</h4>
       <p class="text-muted text-center">(Add members by editing their profiles)</p>
       <%- @organization.users.each do |member| %>
-        <%= render "users/member_card", member: member %>
+        <%= render "operator/users/member_card", member: member %>
       <%- end %>
 
     </div>
