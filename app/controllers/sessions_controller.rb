@@ -1,7 +1,6 @@
 class SessionsController < ApplicationController
   def new
     authorize :session, :new?
-    background_image
   end
 
   def create
@@ -10,16 +9,10 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
-      redirect_to home_path
+      redirect_to home_url(subdomain: user.operator.subdomain)
     else
       flash[:error] = "Invalid email/password combination."
-      background_image
       # render status: 422
     end
-  end
-
-  def destroy
-    log_out
-    redirect_to root_path
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_12_21_190155) do
+ActiveRecord::Schema.define(version: 2019_01_28_230510) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -157,6 +157,8 @@ ActiveRecord::Schema.define(version: 2018_12_21_190155) do
     t.integer "organization_id"
     t.boolean "approved", default: false, null: false
     t.string "stripe_customer_id"
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
 end

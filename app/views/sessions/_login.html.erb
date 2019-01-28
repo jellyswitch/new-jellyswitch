@@ -1,4 +1,4 @@
-<%= form_for(:session, url: operator_login_create_path, remote: true) do |f| %>
+<%= form_for(:session, url: operator_login_create_path, local: true) do |f| %>
   <%- if flash[:error] %>
     <%= render "layouts/flash" %>
   <%- end %>
