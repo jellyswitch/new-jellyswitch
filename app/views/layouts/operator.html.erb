@@ -17,7 +17,12 @@
     <title><%= Rails.application.config.x.customization.name %></title>
   </head>
 
-  <body>
+  <%- if @background_image %>
+    <body style="background-image: url(<%= asset_url(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
+  <%- else %>
+    <body>
+  <%- end %>
+    <%= render "layouts/nav" %>
     <div class="container-fluid" style="min-height: 100vh;">
       <%= render "layouts/flash" %>
       <%= yield %>
