@@ -1,12 +1,17 @@
 Rails.application.routes.draw do
-  # Root
-  root "operator/landing#index"
+  constraints subdomain: 'www' do
+    # Root
+    root "landing#index"
 
-  # Authentication
-  delete '/logout',  to: 'sessions#destroy'
-  post '/login',     to: 'sessions#create'
-  get '/login',      to: 'sessions#new'
-  get '/signup',     to: 'users#new'
+    # Authentication
+    delete '/logout',  to: 'sessions#destroy'
+    post '/login',     to: 'sessions#create'
+    get '/login',      to: 'sessions#new'
+    get '/signup',     to: 'users#new'
+  end
+
+  # Operator root
+  root "operator/landing#index"
 
   # Landing
   get 'landing/index', to: 'operator/landing#index'
