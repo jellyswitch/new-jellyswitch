@@ -2,7 +2,37 @@
   <div class="col"></div>
   <div class="col">
     <h2><%= @operator.name %></h2>
-    
+    <%= link_to "Edit", edit_operator_path(@operator), class: "btn btn-info" %>
+    <table class="table">
+      <tr>
+        <th>Snippet</th>
+        <td><%= @operator.snippet %></td>
+      </tr>
+      <tr>
+        <th>Background</th>
+        <td><%= @operator.background %></td>
+      </tr>
+      <tr>
+        <th>Wifi Name</th>
+        <td><%= @operator.wifi_name %></td>
+      </tr>
+      <tr>
+        <th>Wifi Password</th>
+        <td><%= @operator.wifi_password %></td>
+      </tr>
+      <tr>
+        <th>Building Address</th>
+        <td><%= @operator.building_address %></td>
+      </tr>
+      <tr>
+        <th>Logo</th>
+        <td><%= @operator.logo %></td>
+      </tr>
+      <tr>
+        <th>Approval required for new members</th>
+        <td><%= @operator.approval_required %></td>
+      </tr>
+    </table>
   </div>
   <div class="col"></div>
 </div>
