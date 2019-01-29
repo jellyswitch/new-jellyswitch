@@ -10,4 +10,12 @@ class OperatorPolicy < ApplicationPolicy
   def show?
     superadmin?
   end
+
+  def edit?
+    superadmin?
+  end
+
+  def update?
+    superadmin?
+  end
 end
