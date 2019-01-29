@@ -8,6 +8,8 @@ Rails.application.routes.draw do
     post '/login',     to: 'sessions#create', as: :operator_login_create
     get '/login',      to: 'sessions#new', as: :operator_login
     get '/signup',     to: 'users#new', as: :operator_signup
+
+    resources :operators
   end
 
   # Operator root

@@ -9,7 +9,11 @@ class SessionsController < ApplicationController
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
-      redirect_to home_url(subdomain: user.operator.subdomain)
+      if user.superadmin?
+        redirect_to operators_path
+      else
+        redirect_to home_url(subdomain: user.operator.subdomain)
+      end
     else
       flash[:error] = "Invalid email/password combination."
       # render status: 422

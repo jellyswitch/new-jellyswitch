@@ -44,6 +44,10 @@ class User < ApplicationRecord
     admin
   end
 
+  def superadmin?
+    superadmin
+  end
+
   def member?
     (subscriptions.active.count > 0) || (day_passes.fulfilled.today.count > 0)
   end

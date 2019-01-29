@@ -5,7 +5,7 @@
     </h5>
     <%= render "operator/doors/keys", doors: @doors %>
     <p class="card-text">
-      <%= Rails.application.config.x.customization.name %> is located at <%= link_to Rails.application.config.x.customization.building_address, "https://maps.google.com/?q=#{Rails.application.config.x.customization.building_address}", target: "_blank" %>. Please download the Tahoe Mountain Lab mobile app for building access once your membership or day pass has been approved.
+      <%= current_tenant.name %> is located at <%= link_to current_tenant.building_address, "https://maps.google.com/?q=#{current_tenant.building_address}", target: "_blank" %>. Please download the mobile app for building access once your membership or day pass has been approved.
     </p>
   </div>
 </div>

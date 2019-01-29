@@ -18,7 +18,7 @@ class DayPass < ApplicationRecord
   end
 
   def charge_description
-    "#{Rails.application.config.x.customization.name} Day Pass for #{pretty_day}"
+    "#{operator.name} Day Pass for #{pretty_day}"
   end
 
   def stripe_charge

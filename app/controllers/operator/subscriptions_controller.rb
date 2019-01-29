@@ -22,7 +22,7 @@ class Operator::SubscriptionsController < Operator::ApplicationController
     )
 
     if result.success?
-      flash[:success] = "Welcome to #{Rails.application.config.x.customization.name}!"
+      flash[:success] = "Welcome to #{current_tenant.name}!"
       redirect_to root_path
     else
       flash[:error] = result.message

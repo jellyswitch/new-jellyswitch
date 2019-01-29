@@ -28,7 +28,7 @@ class Plan < ApplicationRecord
   end
 
   def plan_name
-    "#{Rails.application.config.x.customization.name} #{name}"
+    "#{operator.name} #{name}"
   end
 
   def stripe_interval
@@ -50,7 +50,7 @@ class Plan < ApplicationRecord
   end
 
   def plan_slug
-    "#{Rails.application.config.x.customization.slug}-#{slug}"
+    "#{operator.name.parameterize}-#{slug}"
   end
 
   # Enumeration options

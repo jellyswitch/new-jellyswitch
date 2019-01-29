@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_28_230510) do
+ActiveRecord::Schema.define(version: 2019_01_29_001939) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -82,6 +82,13 @@ ActiveRecord::Schema.define(version: 2019_01_28_230510) do
     t.string "subdomain", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "snippet", default: "Generic snippet about the space", null: false
+    t.string "background", default: "defaultbackground.png", null: false
+    t.string "wifi_name", default: "not set", null: false
+    t.string "wifi_password", default: "not set", null: false
+    t.string "building_address", default: "not set", null: false
+    t.string "logo", default: "logo.png", null: false
+    t.boolean "approval_required", default: true, null: false
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -158,6 +165,7 @@ ActiveRecord::Schema.define(version: 2019_01_28_230510) do
     t.boolean "approved", default: false, null: false
     t.string "stripe_customer_id"
     t.integer "operator_id", default: 2, null: false
+    t.boolean "superadmin", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
