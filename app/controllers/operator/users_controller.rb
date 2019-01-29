@@ -53,6 +53,7 @@ class Operator::UsersController < Operator::ApplicationController
     if current_tenant.approval_required == :false
       @user.approved = true
     end
+    @user.operator = current_tenant
     authorize @user
 
     if @user.save
