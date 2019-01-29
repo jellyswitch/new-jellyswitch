@@ -1,0 +1,12 @@
+<div class="row">
+  <div class="col"></div>
+  <div class="col">
+    <h2>Operators</h2>
+    <ul>
+      <%- @operators.each do |operator| %>
+        <li><%= link_to operator.name, operator_path(operator) %></li>
+      <%- end %>
+    </ul>
+  </div>
+  <div class="col"></div>
+</div>

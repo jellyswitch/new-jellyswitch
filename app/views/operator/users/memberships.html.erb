@@ -1,0 +1,18 @@
+<div class="row mt-3 mb-3">
+  <div class="col-sm-3"></div>
+  <div class="card col-sm bg-light p-3">
+    <div class="card-body">
+      <h1>My Membership</h1>
+      <%- @user.subscriptions.order('created_at DESC').each do |subscription| %>
+        <%= render "operator/subscriptions/membership_card", subscription: subscription %>
+      <%- end %>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>
+
+
+
+
+
+

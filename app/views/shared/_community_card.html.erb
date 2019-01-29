@@ -4,7 +4,7 @@
       Community
     </h5>
     <p class="card-text">
-      As a member of <%= Rails.application.config.x.customization.name %>'s community, you'll have the opportunity to meet other members.
+      As a member of <%= current_tenant.name %>'s community, you'll have the opportunity to meet other members.
     </p>
     <p>
       <%= link_to "Explore the community", users_path, class: "btn btn-primary" %>

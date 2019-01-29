@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, shrink-to-fit=no">
+    <meta name="turbolinks-cache-control" content="no-cache">
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': 'reload' %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
+    <%- if @include_stripe %>
+      <script src="https://js.stripe.com/v3/" data-turbolinks-track=reload></script>
+      <script type="text/javascript">
+        window.stripe_key = "<%= Rails.configuration.stripe[:publishable_key] %>";
+      </script>
+    <%- end %>
+    <title><%= current_tenant.name %></title>
+  </head>
+
+  <%- if @background_image %>
+    <body style="background-image: url(<%= asset_url(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
+  <%- else %>
+    <body>
+  <%- end %>
+    <%= render "layouts/nav" %>
+    <div class="container-fluid" style="min-height: 100vh;">
+      <%= render "layouts/flash" %>
+      <%= yield %>
+    </div>
+  </body>
+</html>

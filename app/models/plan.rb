@@ -2,6 +2,8 @@ class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
   # Relationships
   has_many :subscriptions
+  belongs_to :operator
+  acts_as_tenant :operator
 
   # Slugs
   extend FriendlyId
@@ -26,7 +28,7 @@ class Plan < ApplicationRecord
   end
 
   def plan_name
-    "#{Rails.application.config.x.customization.name} #{name}"
+    "#{operator.name} #{name}"
   end
 
   def stripe_interval
@@ -48,7 +50,7 @@ class Plan < ApplicationRecord
   end
 
   def plan_slug
-    "#{Rails.application.config.x.customization.slug}-#{slug}"
+    "#{operator.name.parameterize}-#{slug}"
   end
 
   # Enumeration options

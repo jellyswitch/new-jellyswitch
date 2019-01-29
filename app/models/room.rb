@@ -1,7 +1,10 @@
 class Room < ApplicationRecord
   # Relationships
   has_many :reservations
+  belongs_to :operator
+  acts_as_tenant :operator
 
+  # Scopes
   scope :visible, ->() { where(visible: true) }
 
   # Slugs

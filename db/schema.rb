@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2018_10_15_212913) do
+ActiveRecord::Schema.define(version: 2019_01_29_001939) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,6 +42,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_charge_id"
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
   create_table "door_punches", force: :cascade do |t|
@@ -49,6 +51,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_door_punches_on_operator_id"
   end
 
   create_table "doors", force: :cascade do |t|
@@ -57,6 +61,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.boolean "available", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_doors_on_operator_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -71,6 +77,20 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
   end
 
+  create_table "operators", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "subdomain", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "snippet", default: "Generic snippet about the space", null: false
+    t.string "background", default: "defaultbackground.png", null: false
+    t.string "wifi_name", default: "not set", null: false
+    t.string "wifi_password", default: "not set", null: false
+    t.string "building_address", default: "not set", null: false
+    t.string "logo", default: "logo.png", null: false
+    t.boolean "approval_required", default: true, null: false
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string "name", null: false
     t.integer "owner_id"
@@ -78,6 +98,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
   create_table "plans", force: :cascade do |t|
@@ -90,6 +112,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_plan_id"
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
   create_table "reservations", force: :cascade do |t|
@@ -111,6 +135,8 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
+    t.integer "operator_id", default: 2, null: false
+    t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
 
   create_table "subscriptions", force: :cascade do |t|
@@ -138,6 +164,9 @@ ActiveRecord::Schema.define(version: 2018_10_15_212913) do
     t.integer "organization_id"
     t.boolean "approved", default: false, null: false
     t.string "stripe_customer_id"
+    t.integer "operator_id", default: 2, null: false
+    t.boolean "superadmin", default: false, null: false
+    t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
 end

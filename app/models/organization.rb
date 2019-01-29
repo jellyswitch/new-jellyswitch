@@ -6,6 +6,8 @@ class Organization < ApplicationRecord
   # Relationships
   has_many :users
   belongs_to :owner, class_name: "User", optional: true
+  belongs_to :operator
+  acts_as_tenant :operator
 
   # Form and view helpers
   def self.options_for_select

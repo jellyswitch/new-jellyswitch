@@ -1,17 +1,10 @@
-<div class="row">
-  <div class="col-sm-1"></div>
-  <div class="col">
-    <div class="jumbotron mt-3 pt-4 bg-light">
-      <h1 class="display-4 mt-1">Welcome to <%= Rails.application.config.x.customization.name %>!</h1>
-      <p class="lead mt-3">
-        Tahoe Mountain Lab is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.
-      </p>
-      <div class="row">
-        <%= link_to "Sign Up to get started", signup_path, class: "btn btn-lg btn-primary m-1" %>
-        <%= link_to "Sign in", login_path, class: "btn btn-lg btn-info m-1" %>
-      </div>
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">Sign In</h4>
+      <%= render "sessions/login" %>
     </div>
   </div>
-    <div class="col-sm-1"></div>
+  <div class="col-sm-3"></div>
 </div>
-

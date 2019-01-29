@@ -1,4 +1,4 @@
-<%= form_for(:session, url: login_path, remote: true) do |f| %>
+<%= form_for(:session, url: operator_login_create_path, local: true) do |f| %>
   <%- if flash[:error] %>
     <%= render "layouts/flash" %>
   <%- end %>
@@ -21,7 +21,7 @@
     <div class="col-1"></div>
     <div class="col-sm-7 text-right">
       <small>
-        Not a member? <%= link_to "Sign up", signup_path %>
+        Not a member? <%= link_to "Sign up", operator_signup_path %>
       </small>
     </div>
   <div class="col-1"></div>

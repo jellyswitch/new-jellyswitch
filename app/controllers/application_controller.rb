@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::Base
+  layout "application"
   include ApplicationHelper
   include Pundit
 
@@ -12,7 +13,7 @@ class ApplicationController < ActionController::Base
   protected
 
   def background_image
-    @background_image = Rails.application.config.x.customization.background
+    @background_image = current_tenant.background
   end
 
   def include_stripe

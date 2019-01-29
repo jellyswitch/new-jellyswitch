@@ -1,6 +1,8 @@
 class DayPass < ApplicationRecord
   # Relationships
   belongs_to :user
+  belongs_to :operator
+  acts_as_tenant :operator
 
   # Stripe stuff
   after_create :charge_in_stripe
@@ -16,7 +18,7 @@ class DayPass < ApplicationRecord
   end
 
   def charge_description
-    "#{Rails.application.config.x.customization.name} Day Pass for #{pretty_day}"
+    "#{operator.name} Day Pass for #{pretty_day}"
   end
 
   def stripe_charge

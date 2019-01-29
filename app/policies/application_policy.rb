@@ -57,6 +57,10 @@ class ApplicationPolicy
     is_user? && user.admin?
   end
 
+  def superadmin?
+    is_user? && user.superadmin?
+  end
+
   def member?
     is_user? && user.member?
   end

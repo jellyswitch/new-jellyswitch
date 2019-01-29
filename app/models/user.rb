@@ -3,6 +3,7 @@ class User < ApplicationRecord
   has_many :day_passes
   has_many :door_punches
   belongs_to :organization, optional: true
+  belongs_to :operator
   has_many :reservations
   has_many :subscriptions
 
@@ -41,6 +42,10 @@ class User < ApplicationRecord
   # Predicates
   def admin?
     admin
+  end
+
+  def superadmin?
+    superadmin
   end
 
   def member?
