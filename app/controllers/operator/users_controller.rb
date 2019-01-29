@@ -50,7 +50,7 @@ class Operator::UsersController < Operator::ApplicationController
 
   def create
     @user = User.new(user_params)
-    if current_tenant.approval_required == :false
+    if !current_tenant.approval_required
       @user.approved = true
     end
     @user.operator = current_tenant

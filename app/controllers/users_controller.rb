@@ -50,7 +50,7 @@ class UsersController < ApplicationController
 
   def create
     @user = User.new(user_params)
-    if current_tenant.approval_required == :false
+    if !current_tenant.approval_required
       @user.approved = true
     end
     authorize @user
