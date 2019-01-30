@@ -27,12 +27,18 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <%= link_to "Sign Up", operator_signup_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Sign In", operator_login_path, class: "nav-link" %>
-          </li>
+          <%- if !logged_in? %>
+            <li class="nav-item">
+              <%= link_to "Sign Up", operator_signup_path, class: "nav-link" %>
+            </li>
+            <li class="nav-item">
+              <%= link_to "Sign In", operator_login_path, class: "nav-link" %>
+            </li>
+          <%- else %>
+            <li class="nav-item">
+              <%= link_to "Sign Out", operator_logout_path, method: :delete, remote: true, class: "nav-link" %>
+            </li>
+          <%- end %>
         </ul>
       </div>
     </nav>

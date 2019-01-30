@@ -25,6 +25,10 @@ module SessionsHelper
     logged_in? && current_user.admin?
   end
 
+  def superadmin?
+    logged_in? && current_user.superadmin?
+  end
+
   def member?
     current_user.present? && current_user.member?
   end

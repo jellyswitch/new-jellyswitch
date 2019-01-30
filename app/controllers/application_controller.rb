@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   layout "application"
   include ApplicationHelper
+  include SessionsHelper
   include Pundit
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
