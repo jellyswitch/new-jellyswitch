@@ -12,10 +12,6 @@ class ApplicationController < ActionController::Base
 
   protected
 
-  def background_image
-    @background_image = current_tenant.background
-  end
-
   def include_stripe
     @include_stripe = true
   end
