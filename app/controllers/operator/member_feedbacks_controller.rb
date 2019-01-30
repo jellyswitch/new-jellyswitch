@@ -23,6 +23,7 @@ class Operator::MemberFeedbacksController < Operator::ApplicationController
   def index
     find_member_feedbacks
     authorize @member_feedbacks
+    background_image
   end
 
   def show
@@ -33,7 +34,7 @@ class Operator::MemberFeedbacksController < Operator::ApplicationController
   private
 
   def find_member_feedbacks
-    @member_feedbacks = MemberFeedback.all
+    @member_feedbacks = MemberFeedback.order("created_at DESC").all
   end
 
   def find_member_feedback(key=:id)
