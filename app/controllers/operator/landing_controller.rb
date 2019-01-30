@@ -21,6 +21,7 @@ class Operator::LandingController < Operator::ApplicationController
   def home
     background_image
     @doors = Door.all
+    @member_feedback = MemberFeedback.new
     if member? || admin?
       if !approved? && !admin?
         redirect_to wait_path
