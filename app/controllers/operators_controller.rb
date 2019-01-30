@@ -9,9 +9,26 @@ class OperatorsController < ApplicationController
     authorize @operator
   end
 
+  def new
+    @operator = Operator.new
+    authorize @operator
+  end
+
   def edit
     find_operator
     authorize @operator
+  end
+
+  def create
+    @operator = Operator.new(operator_params)
+    authorize @operator
+
+    if @operator.save
+      flash[:success] = "Operator created."
+      redirect_to operator_path(@operator)
+    else
+      render :new
+    end
   end
 
   def update
@@ -39,6 +56,6 @@ class OperatorsController < ApplicationController
   end
 
   def operator_params
-    params.require(:operator).permit(:name, :snippet, :background, :wifi_name, :wifi_password, :building_address, :logo, :approval_required)
+    params.require(:operator).permit(:name, :snippet, :background, :wifi_name, :wifi_password, :building_address, :logo, :approval_required, :subdomain)
   end
 end

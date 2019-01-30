@@ -2,37 +2,50 @@
   <%= render "shared/error_messages" , model: operator %>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :name %>
     <%= f.text_field :name, placeholder: "Name", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :snippet %>
     <%= f.text_field :snippet, placeholder: "Snippet", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :background %>
     <%= f.text_field :background, placeholder: "Background Image File Path", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :wifi_name %>
     <%= f.text_field :wifi_name, placeholder: "WiFi Name", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :wifi_password %>
     <%= f.text_field :wifi_password, placeholder: "WiFi Password", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :building_address %>
     <%= f.text_field :building_address, placeholder: "Building Address", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :logo %>
     <%= f.text_field :logo, placeholder: "Logo File Path", class: "form-control col" %>
+    <div class="col-1"></div>
+  </div>
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <%= f.label :subdomain %>
+    <%= f.text_field :subdomain, placeholder: "Subdomain", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">

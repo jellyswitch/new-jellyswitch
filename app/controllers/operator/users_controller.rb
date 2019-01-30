@@ -223,10 +223,10 @@ class Operator::UsersController < Operator::ApplicationController
   end
 
   def find_approved_users
-    @users = User.approved
+    @users = User.for_space(current_tenant).approved
   end
 
   def find_unapproved_users
-    @users = User.unapproved
+    @users = User.for_space(current_tenant).unapproved
   end
 end

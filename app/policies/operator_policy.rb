@@ -18,4 +18,8 @@ class OperatorPolicy < ApplicationPolicy
   def update?
     superadmin?
   end
+
+  def create?
+    superadmin?
+  end
 end
