@@ -85,6 +85,6 @@ class Operator::RoomsController < Operator::ApplicationController
   end
 
   def room_params
-    params.require(:room).permit(:name, :description, :whiteboard, :capacity, :photo, :visible)
+    params.require(:room).permit(:name, :description, :whiteboard, :capacity, :photo, :visible, :av)
   end
 end
