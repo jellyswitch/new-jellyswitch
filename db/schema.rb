@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_01_30_211949) do
+ActiveRecord::Schema.define(version: 2019_01_31_201513) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -42,7 +42,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_charge_id"
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
@@ -51,7 +51,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_door_punches_on_operator_id"
   end
 
@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.boolean "available", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_doors_on_operator_id"
   end
 
@@ -99,6 +99,9 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.string "building_address", default: "not set", null: false
     t.string "logo", default: "logo.png", null: false
     t.boolean "approval_required", default: true, null: false
+    t.string "contact_name"
+    t.string "contact_email"
+    t.string "contact_phone"
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -108,7 +111,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.string "slug"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
@@ -122,7 +125,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_plan_id"
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -145,7 +148,7 @@ ActiveRecord::Schema.define(version: 2019_01_30_211949) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
-    t.integer "operator_id", default: 2, null: false
+    t.integer "operator_id", default: 1, null: false
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
 
