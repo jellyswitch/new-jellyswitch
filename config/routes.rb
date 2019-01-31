@@ -30,19 +30,19 @@ Rails.application.routes.draw do
   # Alphabetized Resources
   resources :day_passes, controller: 'operator/day_passes'
   resources :doors, controller: 'operator/doors' do
-    get 'open', to: 'doors#open'
+    get 'open', to: 'operator/doors#open'
     collection do
-      get 'keys', to: 'doors#keys'
+      get 'keys', to: 'operator/doors#keys'
     end
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :organizations, controller: 'operator/organizations'
   resources :plans, controller: 'operator/plans' do
-    post 'unarchive', to: 'plans#unarchive'
+    post 'unarchive', to: 'operator/plans#unarchive'
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
-    get 'day/:day/:month/:year', to: 'rooms#day', as: :day_availability
+    get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability
   end
   resources :subscriptions, controller: 'operator/subscriptions'
   resources :users, controller: 'operator/users' do
