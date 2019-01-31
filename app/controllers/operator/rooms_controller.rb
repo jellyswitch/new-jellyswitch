@@ -3,6 +3,7 @@ class Operator::RoomsController < Operator::ApplicationController
     find_rooms
     authorize @rooms
     @rooms = @rooms.decorate
+    background_image
   end
 
   def show

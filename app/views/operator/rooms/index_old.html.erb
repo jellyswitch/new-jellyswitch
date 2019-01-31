@@ -1,0 +1,21 @@
+<%- if admin? %>
+  <div class="row mt-2">
+    <div class="col mr-auto">
+      <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>
+    </div>
+  </div>
+<%- end %>
+
+<%- @rooms.each_slice(3) do |rooms| %>
+  <div class="mt-3">
+    <div class="card-group">
+      <%- [0,1,2].each do |i| %>
+        <%- if rooms[i].present? %>
+          <%= render "room_card", room: rooms[i] %>
+        <%- else %>
+          <div class="card border-light"></div>
+        <%- end %>
+      <%- end %>
+    </div>
+  </div>
+<%- end %>
