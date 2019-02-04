@@ -35,6 +35,7 @@ Rails.application.routes.draw do
       get 'keys', to: 'operator/doors#keys'
     end
   end
+  resources :feed_items, controller: 'operator/feed_items'
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :organizations, controller: 'operator/organizations'
   resources :plans, controller: 'operator/plans' do

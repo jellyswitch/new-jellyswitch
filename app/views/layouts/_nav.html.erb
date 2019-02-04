@@ -27,6 +27,7 @@
               Admin
             </a>
             <div class="dropdown-menu" aria-labelledby="adminDropdownLink">
+              <%= link_to "Management Log", feed_items_path, class: "dropdown-item" %>
               <%= link_to "Approval Queue", unapproved_users_path, class: "dropdown-item" %>
               <%= link_to "Member Feedback", member_feedbacks_path, class: "dropdown-item" %>
               <%= link_to "Rooms", rooms_path, class: "dropdown-item" %>

@@ -3,7 +3,7 @@ class Operator::LandingController < Operator::ApplicationController
     background_image
     if logged_in?
       if admin?
-        redirect_to home_path
+        redirect_to feed_items_path
       else
         if member?
           if approved?
