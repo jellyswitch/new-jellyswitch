@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   get '/signup',     to: 'operator/users#new'
 
   # Landing
-  get 'landing/index', to: 'operator/landing#index'
+  get 'landing/index', to: 'operator/landing#index', as: :landing
   get '/home',      to: 'operator/landing#home'
   get '/wait',      to: 'operator/landing#wait'
   get '/choose',    to: 'operator/landing#choose'

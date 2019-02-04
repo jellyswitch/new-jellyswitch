@@ -12,7 +12,7 @@ class SessionsController < ApplicationController
       if user.superadmin?
         redirect_to operators_path
       else
-        redirect_to home_url(subdomain: user.operator.subdomain)
+        redirect_to landing_url(subdomain: user.operator.subdomain)
       end
     else
       flash[:error] = "Invalid email/password combination."
