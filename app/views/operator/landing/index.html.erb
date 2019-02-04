@@ -2,13 +2,25 @@
   <div class="col-sm-1"></div>
   <div class="col">
     <div class="jumbotron mt-3 pt-4 bg-light">
-      <h1 class="display-4 mt-1">Welcome to <%= current_tenant.name %>!</h1>
-      <p class="lead mt-3">
-        <%= current_tenant.snippet %>
-      </p>
+      <div class="row">
+        <div class="col">
+          <h1 class="display-4 mt-1">Welcome to <%= current_tenant.name %>!</h1>
+          <p class="lead mt-3">
+            <%= render "snippet", operator: current_tenant %>
+          </p>
+        </div>
+      </div>
       <div class="row">
         <%= link_to "Sign Up to get started", signup_path, class: "btn btn-lg btn-primary m-1" %>
         <%= link_to "Sign in", login_path, class: "btn btn-lg btn-info m-1" %>
+      </div>
+      <div class="row">
+        <div class="col-6">
+          map here
+        </div>
+        <div class="col-6">
+        
+        </div>
       </div>
     </div>
   </div>
