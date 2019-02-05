@@ -9,13 +9,9 @@
           </div>
         </div>
       <%- end %>
-      <ul class="list-group">
       <%- @rooms.each do |room| %>
-        <li class="list-group-item">
-          <%= link_to room.name, room_path(room) %>
-        </li>
+        <%= render "room_card", room: room %>
       <%- end %>
-      </ul>
     </div>
   </div>
   <div class="col-sm-3"></div>
