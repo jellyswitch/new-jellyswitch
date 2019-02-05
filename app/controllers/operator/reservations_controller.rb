@@ -12,13 +12,11 @@ class Operator::ReservationsController < Operator::ApplicationController
   end
 
   def create
-    @reservation = Reservation.new(reservation_params)
-    authorize @reservation
+    authorize Reservation.new
+    result = CreateRoomReservation.call(reservation_params: reservation_params, user: current_user)
+    @reservation = result.reservation
 
-    @reservation.user = current_user
-    @reservation.datetime_in = @reservation.datetime_in.beginning_of_hour
-
-    if @reservation.save
+    if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       redirect_to reservation_path(@reservation)
     else

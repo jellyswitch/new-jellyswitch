@@ -2,7 +2,7 @@
   <%= render "shared/error_messages" , model: feed_item %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.text_area :original_text, placeholder: "What's up at #{current_tenant.name}?", class: "form-control col" %>
+    <%= f.text_area :text, placeholder: "What's up at #{current_tenant.name}?", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">

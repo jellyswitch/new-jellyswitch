@@ -66,11 +66,12 @@ ActiveRecord::Schema.define(version: 2019_02_04_224415) do
   end
 
   create_table "feed_items", force: :cascade do |t|
-    t.integer "operator_id"
+    t.integer "operator_id", null: false
     t.integer "user_id"
-    t.text "original_text"
+    t.jsonb "blob", default: "{}", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|

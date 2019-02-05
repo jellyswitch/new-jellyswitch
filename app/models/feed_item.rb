@@ -6,4 +6,21 @@ class FeedItem < ApplicationRecord
   acts_as_tenant :operator
 
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
+
+  def text
+    blob["text"]
+  end
+
+  def type
+    blob["type"]
+  end
+
+  def reservation
+    reservation_id = blob["reservation_id"]
+    if reservation_id.nil?
+      nil
+    else
+      Reservation.find(reservation_id)
+    end
+  end
 end

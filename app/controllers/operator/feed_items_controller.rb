@@ -12,7 +12,8 @@ class Operator::FeedItemsController < Operator::ApplicationController
   end
 
   def create
-    @feed_item = FeedItem.new(feed_item_params)
+    @feed_item = FeedItem.new
+    @feed_item.blob = {text: feed_item_params[:text], type: "post"}
     @feed_item.operator = current_tenant
     @feed_item.user = current_user
 
@@ -43,7 +44,7 @@ class Operator::FeedItemsController < Operator::ApplicationController
   end
 
   def feed_item_params
-    params.require(:feed_item).permit(:original_text)
+    params.require(:feed_item).permit(:text)
   end
 
   def find_feed_item(key=:id)
