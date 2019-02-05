@@ -78,7 +78,7 @@ class Operator::RoomsController < Operator::ApplicationController
   private
 
   def find_rooms
-    @rooms = Room.visible.all
+    @rooms = Room.visible.order(:name).all
   end
 
   def find_room(key=:id)
