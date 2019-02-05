@@ -23,4 +23,13 @@ class FeedItem < ApplicationRecord
       Reservation.find(reservation_id)
     end
   end
+
+  def member_feedback
+    member_feedback_id = blob["member_feedback_id"]
+    if member_feedback_id.nil?
+      nil
+    else
+      MemberFeedback.find(member_feedback_id)
+    end
+  end
 end

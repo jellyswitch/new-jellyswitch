@@ -3,4 +3,6 @@
   <%= render "post_feed_item", feed_item: feed_item %>
 <%- when "reservation" %>
   <%= render "room_reservation_feed_item", feed_item: feed_item %>
+<%- when "feedback" %>
+  <%= render "member_feedback_feed_item", feed_item: feed_item %>
 <%- end %>

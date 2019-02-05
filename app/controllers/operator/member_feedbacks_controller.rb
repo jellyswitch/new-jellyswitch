@@ -6,15 +6,15 @@ class Operator::MemberFeedbacksController < Operator::ApplicationController
   end
 
   def create
-    @member_feedback = MemberFeedback.new(member_feedpack_params)
-    @member_feedback.user = current_user
-    @member_feedback.operator = current_tenant
-    authorize @member_feedback
-
-    if @member_feedback.save
+    authorize MemberFeedback.new
+    result = CreateMemberFeedback.call(member_feedpack_params: member_feedpack_params, user: current_user, operator: current_tenant)
+    @member_feedback = result.member_feedback
+    
+    if result.success?
       flash[:success] = "Your feedback has been submitted."
       redirect_to root_path
     else
+      flash[:error] = result.message
       background_image
       render :new
     end
