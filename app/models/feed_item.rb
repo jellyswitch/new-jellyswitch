@@ -1,4 +1,6 @@
 class FeedItem < ApplicationRecord
+  has_many_attached :photos
+
   # Relationships
   belongs_to :operator
   belongs_to :user
@@ -30,6 +32,16 @@ class FeedItem < ApplicationRecord
       nil
     else
       MemberFeedback.find(member_feedback_id)
+    end
+  end
+
+  def has_photos?
+    photos.count > 0
+  end
+
+  def thumbnails
+    photos.map do |photo|
+      photo.variant(resize: '180x135>')
     end
   end
 end

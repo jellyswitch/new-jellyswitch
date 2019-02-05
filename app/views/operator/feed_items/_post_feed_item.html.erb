@@ -3,6 +3,7 @@
   <div class="col-sm">
     <div class="card pl-2 pr-2">
       <div class="card-body">
+
         <div class="row">
           <div>
             <%- if feed_item.user.has_profile_photo? %>
@@ -21,11 +22,21 @@
             </p>
           </div>
         </div>
+
         <div class="row mt-2">
           <p class="lead">
             <%= feed_item.text %>
           </p>
         </div>
+        
+        <%- if feed_item.has_photos? %>
+          <div class="row mt-2">
+            <%- feed_item.thumbnails.each do |photo| %>
+              <%= image_tag photo, class: "img-fluid m-1", style: "max-height: 100px;" %>
+            <%- end %>
+          </div>
+        <%- end %>
+
       </div>
     </div>
   </div>

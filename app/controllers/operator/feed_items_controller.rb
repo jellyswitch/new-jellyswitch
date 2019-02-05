@@ -16,6 +16,7 @@ class Operator::FeedItemsController < Operator::ApplicationController
     @feed_item.blob = {text: feed_item_params[:text], type: "post"}
     @feed_item.operator = current_tenant
     @feed_item.user = current_user
+    @feed_item.photos.attach(feed_item_params[:photos])
 
     authorize @feed_item
 
@@ -44,7 +45,7 @@ class Operator::FeedItemsController < Operator::ApplicationController
   end
 
   def feed_item_params
-    params.require(:feed_item).permit(:text)
+    params.require(:feed_item).permit(:text, photos: [])
   end
 
   def find_feed_item(key=:id)
