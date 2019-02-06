@@ -1,15 +1,17 @@
 <%= form_for(feed_item, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages" , model: feed_item %>
-  <div class="form-group row">
+  <div class="form-group row mb-0">
     <div class="col-1"></div>
     <%= f.text_area :text, placeholder: "What's up at #{current_tenant.name}?", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
-  <div class="form-group row">
+  <div class="form-group row mb-0 mt-2">
     <div class="col-1"></div>
-    <div class="col">
-      <%= f.label :photos, "Attach photos" %>
-      <%= f.file_field :photos, multiple: true, direct_upload: false, class: "form-control-file" %>
+    <div class="col pl-0 m-0">
+      <%= f.label :photos, "Attach photos" do %>
+        <span class="btn btn-sm btn-info">Attach photos</span>
+        <%= f.file_field :photos, multiple: true, direct_upload: false, class: "form-control-file d-none" %>
+      <%- end %>
     </div>
     <div class="col-1"></div>
   </div>
