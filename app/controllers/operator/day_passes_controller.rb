@@ -13,7 +13,7 @@ class Operator::DayPassesController < Operator::ApplicationController
 
   def create
     authorize DayPass.new
-    puts day_pass_params.inspect
+    
     if admin?
       result = CreateDayPass.call(
         params: admin_day_pass_params,
@@ -32,10 +32,10 @@ class Operator::DayPassesController < Operator::ApplicationController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      redirect_to root_path
+      redirect_to home_path
     else
       flash[:error] = result.message
-      render :new
+      redirect_to root_path
     end
   end
 

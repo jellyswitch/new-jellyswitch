@@ -44,4 +44,13 @@ class FeedItem < ApplicationRecord
       photo.variant(resize: '180x135>')
     end
   end
+
+  def day_pass
+    day_pass_id = blob["day_pass_id"]
+    if day_pass_id.nil?
+      nil
+    else
+      DayPass.find(day_pass_id)
+    end
+  end
 end

@@ -5,4 +5,6 @@
   <%= render "room_reservation_feed_item", feed_item: feed_item %>
 <%- when "feedback" %>
   <%= render "member_feedback_feed_item", feed_item: feed_item %>
+<%- when "day-pass" %>
+  <%= render "day_pass_feed_item", feed_item: feed_item %>
 <%- end %>
