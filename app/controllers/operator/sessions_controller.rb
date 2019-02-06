@@ -10,7 +10,7 @@ class Operator::SessionsController < Operator::ApplicationController
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
-      redirect_to home_path
+      redirect_to landing_path
     else
       flash[:error] = "Invalid email/password combination."
       background_image
