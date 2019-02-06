@@ -11,7 +11,7 @@ class Operator::MemberFeedbacksController < Operator::ApplicationController
     @member_feedback = result.member_feedback
     
     if result.success?
-      flash[:success] = "Your feedback has been submitted."
+      flash[:success] = "Thank you for your feedback!"
       redirect_to root_path
     else
       flash[:error] = result.message

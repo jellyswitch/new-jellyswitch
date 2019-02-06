@@ -12,21 +12,29 @@ class Operator::DayPassesController < Operator::ApplicationController
   end
 
   def create
+    authorize DayPass.new
+    puts day_pass_params.inspect
     if admin?
-      @day_pass = new_day_pass(admin_day_pass_params)
+      result = CreateDayPass.call(
+        params: admin_day_pass_params,
+        user_id: admin_day_pass_params[:day_pass][:user_id],
+        token: params[:stripeToken]
+      )
     else
-      @day_pass = new_day_pass(day_pass_params)
+      result = CreateDayPass.call(
+        params: day_pass_params,
+        user_id: current_user.id,
+        token: params[:stripeToken]
+      )
     end
 
-    authorize @day_pass
-    
-    token = params[:stripeToken]
-    current_user.ensure_stripe_customer(token)
-    if @day_pass.save 
+    @day_pass = result.day_pass
+
+    if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
       redirect_to root_path
     else
-      flash[:error] = "An error occurred."
+      flash[:error] = result.message
       render :new
     end
   end
@@ -53,11 +61,5 @@ class Operator::DayPassesController < Operator::ApplicationController
 
   def admin_day_pass_params
     params.require(:day_pass).permit(:day, :user_id)
-  end
-
-  def new_day_pass(params)
-    day_pass = DayPass.new(params)
-    day_pass.user = current_user unless admin?
-    day_pass
   end
 end
