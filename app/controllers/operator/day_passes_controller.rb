@@ -2,6 +2,7 @@ class Operator::DayPassesController < Operator::ApplicationController
   def index
     find_day_passes
     authorize @day_passes
+    background_image
   end
 
   def new
