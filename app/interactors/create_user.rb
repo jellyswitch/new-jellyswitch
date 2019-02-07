@@ -14,6 +14,14 @@ class CreateUser
       context.fail!(message: "Unable to create user.")
     end
 
+    feed_item = FeedItem.new
+    feed_item.operator = @user.operator
+    feed_item.user = @user
+    feed_item.blob = {type: "new-user"}
+    if !feed_item.save
+      context.fail!(message: "Unable to generate feed item.")
+    end
+
     context.user = @user
   rescue Exception => e
     context.user = @user

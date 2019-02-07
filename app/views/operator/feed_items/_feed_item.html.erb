@@ -7,4 +7,6 @@
   <%= render "member_feedback_feed_item", feed_item: feed_item %>
 <%- when "day-pass" %>
   <%= render "day_pass_feed_item", feed_item: feed_item %>
+<%- when "new-user" %>
+  <%= render "new_user_feed_item", feed_item: feed_item %>
 <%- end %>
