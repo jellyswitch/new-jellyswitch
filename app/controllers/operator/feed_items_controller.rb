@@ -16,7 +16,10 @@ class Operator::FeedItemsController < Operator::ApplicationController
     @feed_item.blob = {text: feed_item_params[:text], type: "post"}
     @feed_item.operator = current_tenant
     @feed_item.user = current_user
-    @feed_item.photos.attach(feed_item_params[:photos])
+    photos = feed_item_params[:photos]
+    if photos.present?
+      @feed_item.photos.attach(feed_item_params[:photos])
+    end
 
     authorize @feed_item
 
@@ -25,7 +28,7 @@ class Operator::FeedItemsController < Operator::ApplicationController
       redirect_to feed_items_path
     else
       flash[:error] = "Something went wrong."
-      render_index
+      
     end
   end
 
