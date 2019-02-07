@@ -8,7 +8,7 @@ class DayPass < ApplicationRecord
   after_create :charge_in_stripe
   def charge_in_stripe
     charge = Stripe::Charge.create({
-      amount: Rails.application.config.x.customization.day_pass_cents,
+      amount: operator.day_pass_cost_in_cents,
       currency: 'usd',
       description: charge_description,
       customer: user.stripe_customer_id

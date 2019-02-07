@@ -33,6 +33,14 @@
         <td><%= @operator.approval_required %></td>
       </tr>
       <tr>
+        <th>Subdomain</th>
+        <td><%= @operator.subdomain %></td>
+      </tr>
+      <tr>
+        <th>Day Pass Cost</th>
+        <td><%= number_to_currency(@operator.day_pass_cost_in_cents.to_f / 100.0) %></td>
+      </tr>
+      <tr>
         <th>Contact Name</th>
         <td><%= @operator.contact_name %></td>
       </tr>

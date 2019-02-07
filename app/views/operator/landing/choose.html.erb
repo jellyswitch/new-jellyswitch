@@ -10,7 +10,7 @@
             Day Passes
           </strong>
           <p class="row mt-3" style="height: 100px;">
-            A day pass costs <%= number_to_currency(current_tenant.day_pass_cost.to_f / 100.0) %> and include access to the building, wifi, and a desk.
+            A day pass costs <%= number_to_currency(current_tenant.day_pass_cost_in_cents.to_f / 100.0) %> and include access to the building, wifi, and a desk.
           </p>
           <div class="row">
             <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2" %>
