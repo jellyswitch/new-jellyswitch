@@ -49,21 +49,18 @@ class Operator::UsersController < Operator::ApplicationController
   end
 
   def create
-    @user = User.new(user_params)
-    if !current_tenant.approval_required
-      @user.approved = true
-    end
-    @user.operator = current_tenant
-    authorize @user
+    authorize User.new
+    result = CreateUser.call(params: user_params, operator: current_tenant)
 
-    if @user.save
-      if admin? # Admin is creating a user
-        redirect_to user_path(@user)
+    if result.success?
+      if admin? # admin is creating the user
+        redirect_to user_path(result.user)
       else
-        log_in(@user)
+        log_in(result.user)
         redirect_to home_path
       end
     else
+      @user = result.user
       background_image
       if admin? # Admin is creating a user
         render :add_member, status: 422
