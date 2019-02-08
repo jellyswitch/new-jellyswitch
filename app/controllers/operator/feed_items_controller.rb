@@ -40,7 +40,7 @@ class Operator::FeedItemsController < Operator::BaseController
     find_feed_item
     authorize @feed_item
 
-    if feed_item.destroy
+    if @feed_item.destroy
       flash[:success] = "Deleted."
       redirect_to feed_items_path
     else

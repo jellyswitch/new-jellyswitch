@@ -14,12 +14,19 @@
       <small>
         <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
       </small>
-      <%- if feed_item.expense? %>
-        <span class="badge badge-danger">Expense: <%= number_to_currency(feed_item.amount.to_f / 100.0) %></span>
-      <%- end %>
     </p>
   </div>
+  <div class="ml-auto">
+    <%= render "common", feed_item: feed_item %>
+  </div>
 </div>
+
+<%- if feed_item.expense? %>
+  <div class="row mt-4">
+    <span class="badge badge-danger">Expense: <%= number_to_currency(feed_item.amount.to_f / 100.0) %></span>
+  </div>
+<%- end %>
+
 
 <div class="row mt-4">
   <p class="lead">
