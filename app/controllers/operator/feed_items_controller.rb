@@ -36,6 +36,19 @@ class Operator::FeedItemsController < Operator::BaseController
     end
   end
 
+  def destroy
+    find_feed_item
+    authorize @feed_item
+
+    if feed_item.destroy
+      flash[:success] = "Deleted."
+      redirect_to feed_items_path
+    else
+      flash[:error] = "Unable to delete that item."
+      redirect_to :back
+    end
+  end
+
   private
 
   def render_index
