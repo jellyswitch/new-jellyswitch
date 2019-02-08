@@ -13,6 +13,6 @@ module ApplicationHelper
   end
 
   def favicon(operator)
-    image_path(operator.logo)        
+    image_path("logos/#{operator.logo}")        
   end
 end
