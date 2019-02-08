@@ -1,5 +1,6 @@
 class FeedItem < ApplicationRecord
   has_many_attached :photos
+  before_save :parse_amount!
 
   # Relationships
   belongs_to :operator
@@ -15,6 +16,10 @@ class FeedItem < ApplicationRecord
 
   def type
     blob["type"]
+  end
+
+  def amount
+    blob["amount"]
   end
 
   def reservation
@@ -51,6 +56,13 @@ class FeedItem < ApplicationRecord
       nil
     else
       DayPass.find(day_pass_id)
+    end
+  end
+
+  def parse_amount!
+    if expense?
+      amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
+      blob["amount"] = amount
     end
   end
 end

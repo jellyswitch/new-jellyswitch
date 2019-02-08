@@ -12,6 +12,7 @@ class Operator::FeedItemsController < Operator::ApplicationController
   end
 
   def create
+
     @feed_item = FeedItem.new
     @feed_item.blob = {text: feed_item_params[:text], type: "post"}
     @feed_item.operator = current_tenant
@@ -21,6 +22,10 @@ class Operator::FeedItemsController < Operator::ApplicationController
       @feed_item.photos.attach(feed_item_params[:photos])
     end
 
+    if @feed_item.text.include?("spent")
+      @feed_item.expense = true
+    end
+
     authorize @feed_item
 
     if @feed_item.save
@@ -28,7 +33,6 @@ class Operator::FeedItemsController < Operator::ApplicationController
       redirect_to feed_items_path
     else
       flash[:error] = "Something went wrong."
-      
     end
   end
 

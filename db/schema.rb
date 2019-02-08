@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_07_221207) do
+ActiveRecord::Schema.define(version: 2019_02_07_235920) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -71,6 +71,7 @@ ActiveRecord::Schema.define(version: 2019_02_07_221207) do
     t.jsonb "blob", default: "{}", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "expense", default: false, null: false
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
   end
 
