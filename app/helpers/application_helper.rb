@@ -13,6 +13,10 @@ module ApplicationHelper
   end
 
   def favicon(operator)
-    url_for(operator.logo_image)        
+    if operator.logo_image.attached?
+      url_for(operator.logo_image)        
+    else
+      nil
+    end
   end
 end
