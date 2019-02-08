@@ -27,6 +27,9 @@ Rails.application.routes.draw do
   get '/wait',      to: 'operator/landing#wait'
   get '/choose',    to: 'operator/landing#choose'
 
+  # Accounting
+  get '/accounting', to: "operator/accounting#index", as: :accounting
+
   # Alphabetized Resources
   resources :day_passes, controller: 'operator/day_passes'
   resources :doors, controller: 'operator/doors' do

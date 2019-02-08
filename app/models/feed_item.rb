@@ -9,6 +9,7 @@ class FeedItem < ApplicationRecord
   acts_as_tenant :operator
 
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
+  scope :expenses, ->() { where(expense: true) }
 
   def text
     blob["text"]
