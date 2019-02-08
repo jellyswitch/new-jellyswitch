@@ -18,8 +18,8 @@
     <title><%= current_tenant.name %></title>
   </head>
 
-  <%- if @background_image %>
-    <body style="background-image: url(<%= asset_url(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
+  <%- if @background_image && @background_image.attached? %>
+    <body style="background-image: url(<%= url_for(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
   <%- else %>
     <body>
   <%- end %>

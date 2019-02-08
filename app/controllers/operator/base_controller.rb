@@ -3,6 +3,6 @@ class Operator::BaseController < ApplicationController
   layout "operator"
 
   def background_image
-    @background_image = current_tenant.background
+    @background_image = current_tenant.background_image
   end
 end

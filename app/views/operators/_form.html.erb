@@ -14,12 +14,6 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.label :background %>
-    <%= f.text_field :background, placeholder: "Background Image File Path", class: "form-control col" %>
-    <div class="col-1"></div>
-  </div>
-  <div class="form-group row">
-    <div class="col-1"></div>
     <%= f.label :wifi_name %>
     <%= f.text_field :wifi_name, placeholder: "WiFi Name", class: "form-control col" %>
     <div class="col-1"></div>
@@ -34,12 +28,6 @@
     <div class="col-1"></div>
     <%= f.label :building_address %>
     <%= f.text_field :building_address, placeholder: "Building Address", class: "form-control col" %>
-    <div class="col-1"></div>
-  </div>
-  <div class="form-group row">
-    <div class="col-1"></div>
-    <%= f.label :logo %>
-    <%= f.text_field :logo, placeholder: "Logo File Path", class: "form-control col" %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
@@ -74,9 +62,22 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :background_image %>
+    <%= f.file_field :background_image, placeholder: "Background Image File Path", class: "col" %>
+    <div class="col-1"></div>
+  </div>
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <%= f.label :logo_image %>
+    <%= f.file_field :logo_image, placeholder: "Logo File Path", class: "col" %>
+    <div class="col-1"></div>
+  </div>
+  <div class="form-group row">
+    <div class="col-1"></div>
     <%= f.label "Approval Required" %>
     <%= f.check_box :approval_required, class: "form-control col" %>
     <div class="col-1"></div>
   </div>
+
   <%= f.submit "Save/Update" %>
 <%- end %>

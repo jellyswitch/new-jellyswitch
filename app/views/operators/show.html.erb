@@ -9,10 +9,6 @@
         <td><%= @operator.snippet %></td>
       </tr>
       <tr>
-        <th>Background</th>
-        <td><%= @operator.background %></td>
-      </tr>
-      <tr>
         <th>Wifi Name</th>
         <td><%= @operator.wifi_name %></td>
       </tr>
@@ -23,10 +19,6 @@
       <tr>
         <th>Building Address</th>
         <td><%= @operator.building_address %></td>
-      </tr>
-      <tr>
-        <th>Logo</th>
-        <td><%= @operator.logo %></td>
       </tr>
       <tr>
         <th>Approval required for new members</th>
@@ -49,6 +41,26 @@
         <td><%= @operator.contact_email %></td>
       </tr>
       <tr>
+        <th>Logo</th>
+        <td>
+          <%- if @operator.logo_image.attached? %>
+            <%= image_tag(@operator.logo_image.variant(resize: "500x500")) %>
+          <%- else %>
+            <i>none</i>
+          <%- end %>
+        </td>
+      </tr>
+      <tr>
+        <th>Background</th>
+        <td>
+          <%- if @operator.background_image.attached? %>
+            <%= image_tag(@operator.background_image.variant(resize: "500x500")) %>
+          <%- else %>
+            <i>none</i>
+          <%- end %>
+        </td>
+      </tr>
+       <tr>
         <th>Contact phone number</th>
         <td><%= @operator.contact_phone %></td>
       </tr>
