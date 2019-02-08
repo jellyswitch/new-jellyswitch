@@ -1,4 +1,4 @@
-class Operator::SessionsController < Operator::ApplicationController
+class Operator::SessionsController < Operator::BaseController
   def new
     authorize :session, :new?
     background_image

@@ -11,10 +11,6 @@ class ApplicationController < ActionController::Base
     redirect_to referrer_or_root
   end
 
-  def background_image
-    @background_image = current_tenant.background
-  end
-
   protected
 
   def include_stripe

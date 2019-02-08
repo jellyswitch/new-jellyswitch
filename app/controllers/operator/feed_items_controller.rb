@@ -1,4 +1,4 @@
-class Operator::FeedItemsController < Operator::ApplicationController
+class Operator::FeedItemsController < Operator::BaseController
   def index
     render_index
     authorize @feed_items

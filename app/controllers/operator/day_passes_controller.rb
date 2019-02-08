@@ -1,4 +1,4 @@
-class Operator::DayPassesController < Operator::ApplicationController
+class Operator::DayPassesController < Operator::BaseController
   def index
     find_day_passes
     authorize @day_passes

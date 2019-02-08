@@ -1,4 +1,4 @@
-class Operator::RoomsController < Operator::ApplicationController
+class Operator::RoomsController < Operator::BaseController
   def index
     find_rooms
     authorize @rooms

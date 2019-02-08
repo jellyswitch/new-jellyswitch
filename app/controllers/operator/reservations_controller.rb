@@ -1,4 +1,4 @@
-class Operator::ReservationsController < Operator::ApplicationController
+class Operator::ReservationsController < Operator::BaseController
   def show
     find_reservation
     authorize @reservation

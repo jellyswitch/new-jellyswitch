@@ -1,4 +1,4 @@
-class Operator::MemberFeedbacksController < Operator::ApplicationController
+class Operator::MemberFeedbacksController < Operator::BaseController
   def new
     @member_feedback = MemberFeedback.new
     authorize @member_feedback

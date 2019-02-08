@@ -1,4 +1,4 @@
-class Operator::PlansController < Operator::ApplicationController
+class Operator::PlansController < Operator::BaseController
   def index
     find_plans
     authorize @plans

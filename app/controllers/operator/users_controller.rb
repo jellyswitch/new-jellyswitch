@@ -1,4 +1,4 @@
-class Operator::UsersController < Operator::ApplicationController
+class Operator::UsersController < Operator::BaseController
   def index
     find_approved_users
     authorize @users

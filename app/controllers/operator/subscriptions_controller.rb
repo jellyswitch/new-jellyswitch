@@ -1,4 +1,4 @@
-class Operator::SubscriptionsController < Operator::ApplicationController
+class Operator::SubscriptionsController < Operator::BaseController
   def new
     @subscription = Subscription.new
     authorize @subscription
