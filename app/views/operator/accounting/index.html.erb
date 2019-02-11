@@ -1,25 +1,49 @@
-<div class="row mt-3 mb-2">
-  <div class="col-sm-3"></div>
+<div class="row mt-3">
   <div class="col-sm">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="display-4 text-center">Expenses</h4>
-        <table class="table">
-          <%- @expenses.each do |expense| %>
-            <tr>
-              <td><small><%= link_to expense.text, feed_item_path(expense) %></small></td>
-              <td class="text-right"><%= number_to_currency(expense.amount.to_f / 100.0) %></td>
-            </tr>
-          <%- end %>
-          <tr>
-            <td class="text-right"><strong>Total</strong></td>
-            <td class="text-right">
-              <%= number_to_currency(@expenses.sum {|e| e.amount }.to_f / 100.0) %>
-            </td>
-          </tr>
-        </table>
+    <div class="card-group">
+ 
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Plans
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.plans.count %> membership plans available.
+          </p>
+          <p class="card-text">
+            <%= link_to "View plans", plans_path, class: "btn btn-primary" %>
+          </p>
+        </div>
       </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Day Passes
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.day_passes.count %> day passes.
+          </p>
+          <p class="card-text">
+            <%= link_to "View day passes", day_passes_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Expenses
+          </h5>
+          <p class="card-text">
+            This report contains expenses incurred by <%= current_tenant.name %>.
+          </p>
+          <p class="card-text">
+            <%= link_to "View expenses", expenses_accounting_index_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
     </div>
   </div>
-  <div class="col-sm-3"></div>
 </div>

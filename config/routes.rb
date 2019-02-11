@@ -27,11 +27,15 @@ Rails.application.routes.draw do
   get '/wait',      to: 'operator/landing#wait'
   get '/choose',    to: 'operator/landing#choose'
 
-  # Accounting
-  get '/accounting', to: "operator/accounting#index", as: :accounting
+  # Other
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
 
   # Alphabetized Resources
+  resources :accounting, controller: 'operator/accounting' do
+    collection do
+      get 'expenses', to: 'operator/accounting#expenses', as: :expenses
+    end
+  end
   resources :day_passes, controller: 'operator/day_passes'
   resources :doors, controller: 'operator/doors' do
     get 'open', to: 'operator/doors#open'

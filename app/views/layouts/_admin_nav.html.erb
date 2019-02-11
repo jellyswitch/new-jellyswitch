@@ -10,20 +10,7 @@
     <ul class="navbar-nav mr-auto">
       <%= link_to "Management Log", feed_items_path, class: "nav-link" %>
       <%= link_to "Members & Resources", members_resources_path, class: "nav-link" %>
-      <%= link_to "Finances", accounting_path, class: "nav-link" %>
-
-      <li class="nav-item dropdown data-turbolinks-permanent">
-        <a class="nav-link dropdown-toggle" href="#" id="adminDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expandable="false">
-          Old
-        </a>
-        <div class="dropdown-menu" aria-labelledby="adminDropdownLink">
-          <%= link_to "Accounting", accounting_path, class: "dropdown-item" %>
-          <%= link_to "Plans", plans_path, class: "dropdown-item" %>
-          <%= link_to "Day Passes", day_passes_path, class: "dropdown-item" %>
-        </div>
-      </li>
-    
-      
+      <%= link_to "Finances", accounting_index_path, class: "nav-link" %>  
     </ul>
 
     <%= render "layouts/user_account_nav" %>
