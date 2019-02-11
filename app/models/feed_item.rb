@@ -1,5 +1,5 @@
 class FeedItem < ApplicationRecord
-  has_many_attached :photos, convert_options: { all: '-auto-orient' }
+  has_many_attached :photos
   before_save :parse_amount!
 
   # Relationships
@@ -47,7 +47,7 @@ class FeedItem < ApplicationRecord
 
   def thumbnails
     photos.map do |photo|
-      photo.variant(resize: '180x180')
+      photo.variant(resize: '180x180', auto_orient: true)
     end
   end
 
