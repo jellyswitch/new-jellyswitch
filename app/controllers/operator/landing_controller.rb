@@ -57,4 +57,10 @@ class Operator::LandingController < Operator::BaseController
       end
     end
   end
+
+  def members_resources
+    authorize :dashboard, :show?
+    background_image
+    @doors = Door.all
+  end
 end

@@ -1,0 +1,80 @@
+<div class="row mt-3">
+  <div class="col-sm">
+    <div class="card-group">
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Member Directory
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.users.members.approved.count %> members.
+          </p>
+          <p class="card-text">
+            <%= link_to "View member directory", users_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Approval Queue
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.users.members.unapproved.count %> members awaiting approval.
+          </p>
+          <p class="card-text">
+            <%= link_to "View approval queue", unapproved_users_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Member Feedback
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.member_feedbacks.count %> feedback submissions from members.
+          </p>
+          <p class="card-text">
+            <%= link_to "View member feedback", member_feedbacks_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<div class="row mt-3">
+  <div class="col-sm">
+    <div class="card-group">
+      <%= render "shared/reservations_card" %>
+      
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Building Access
+          </h5>
+          <%= render "operator/doors/keys", doors: @doors %>
+          <%= link_to "Manage doors", doors_path, class: "btn btn-primary btn-sm" %>
+        </div>
+      </div>
+    
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Groups & Organizations
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.organizations.count %> groups.
+          </p>
+          <p class="card-text">
+            <%= link_to "View groups", organizations_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

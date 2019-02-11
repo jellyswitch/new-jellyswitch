@@ -2,6 +2,8 @@ class Operator < ApplicationRecord
   has_many :member_feedbacks
   has_many :feed_items
   has_many :plans
+  has_many :organizations
+  has_many :users
 
   has_one_attached :background_image
   has_one_attached :logo_image

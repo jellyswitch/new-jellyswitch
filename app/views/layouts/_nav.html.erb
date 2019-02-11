@@ -13,32 +13,11 @@
           <%= link_to "Home", home_path, class: "nav-link" %>
         </li>
         <li class="nav-item">
-          <%= link_to "Member Directory", users_path, class: "nav-link" %>
-        </li>
-        <li class="nav-item">
           <%= link_to "Reserve a room", rooms_path, class: "nav-link" %>
         </li>
         <li class="nav-item">
           <%= link_to "Building Access", keys_doors_path, class: "nav-link" %>
         </li>
-        <%- if admin? %>
-          <li class="nav-item dropdown data-turbolinks-permanent">
-            <a class="nav-link dropdown-toggle" href="#" id="adminDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expandable="false">
-              Admin
-            </a>
-            <div class="dropdown-menu" aria-labelledby="adminDropdownLink">
-              <%= link_to "Management Log", feed_items_path, class: "dropdown-item" %>
-              <%= link_to "Approval Queue", unapproved_users_path, class: "dropdown-item" %>
-              <%= link_to "Accounting", accounting_path, class: "dropdown-item" %>
-              <%= link_to "Member Feedback", member_feedbacks_path, class: "dropdown-item" %>
-              <%= link_to "Rooms", rooms_path, class: "dropdown-item" %>
-              <%= link_to "Organizations", organizations_path, class: "dropdown-item" %>
-              <%= link_to "Plans", plans_path, class: "dropdown-item" %>
-              <%= link_to "Day Passes", day_passes_path, class: "dropdown-item" %>
-              <%= link_to "Doors", doors_path, class: "dropdown-item" %>
-            </div>
-          </li>
-        <%- end %>
       <%- else %>
         <li class="nav-item">
           <%= link_to "Sign Up", signup_path, class: "nav-link" %>
@@ -48,24 +27,8 @@
         </li>
       <%- end %>
     </ul>
-    <%- if logged_in? %>
-      <ul class="navbar-nav ml-auto">
-        <li class="nav-item dropdown data-turbolinks-permanent">
-          <a class="nav-link dropdown-toggle" href="#" id="accountDropdownLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <%= current_user.name %>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdownLink">
-            <%= link_to "My Account", user_path(current_user), class: "dropdown-item" %>
-            <%= link_to "My Membership", user_memberships_path(current_user), class: "dropdown-item" %>
-            <%= link_to "My Day Passes", user_day_passes_path(current_user), class: "dropdown-item" %>
-            <%= link_to "My Reservations", user_reservations_path(current_user), class: "dropdown-item" %>
-            <%= link_to "My Invoices", user_invoices_path(current_user), class: "dropdown-item" %>
-            <%= link_to "Change Password", user_change_password_path(current_user), class: "dropdown-item" %>
-            <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "dropdown-item" %>
-          </div>
-        </li>
-      </ul>
-    <%- end %>
+
+    <%= render "layouts/user_account_nav" %>  
   </div>
 </nav>
 

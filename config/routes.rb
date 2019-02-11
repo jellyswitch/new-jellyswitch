@@ -29,6 +29,7 @@ Rails.application.routes.draw do
 
   # Accounting
   get '/accounting', to: "operator/accounting#index", as: :accounting
+  get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
 
   # Alphabetized Resources
   resources :day_passes, controller: 'operator/day_passes'
