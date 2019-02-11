@@ -47,7 +47,7 @@ class FeedItem < ApplicationRecord
 
   def thumbnails
     photos.map do |photo|
-      photo.variant(resize: '180x180>')
+      photo.variant(resize: '180x180')
     end
   end
 
