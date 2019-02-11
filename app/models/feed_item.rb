@@ -1,5 +1,5 @@
 class FeedItem < ApplicationRecord
-  has_many_attached :photos
+  has_many_attached :photos, convert_options: { all: '-auto-orient' }
   before_save :parse_amount!
 
   # Relationships
