@@ -1,9 +1,28 @@
 <div class="row mt-3">
+  <div class="col-3"></div>
+  <div class="col">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><%= link_to "Plans" %></li>
+        <li class="breadcrumb-item"><%= link_to @room.name, room_path(@room) %></li>
+        <li class="breadcrumb-item active">Edit</li>
+      </ol>
+    </nav>
+  </div>
+  <div class="col-3"></div>
+</div>
+
+<div class="row mt-3">
   <div class="col-sm-3"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">Edit Room</h4>
       <%= render "form", label: "Update" %>
+      <div class="row mt-3">
+        <div class="col-12">
+          <%= link_to "Cancel", room_path(@room), class: "btn btn-block btn-warning" %>
+        </div>
+      </div>
     </div>
   </div>
   <div class="col-sm-3"></div>
