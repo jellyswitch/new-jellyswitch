@@ -19,13 +19,15 @@ class Operator::DayPassesController < Operator::BaseController
       result = CreateDayPass.call(
         params: admin_day_pass_params,
         user_id: admin_day_pass_params[:day_pass][:user_id],
-        token: params[:stripeToken]
+        token: params[:stripeToken],
+        operator: current_tenant
       )
     else
       result = CreateDayPass.call(
         params: day_pass_params,
         user_id: current_user.id,
-        token: params[:stripeToken]
+        token: params[:stripeToken],
+        operator: current_tenant
       )
     end
 

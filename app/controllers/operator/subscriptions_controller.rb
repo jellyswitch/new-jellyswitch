@@ -45,10 +45,15 @@ class Operator::SubscriptionsController < Operator::BaseController
       old_subscription: @subscription,
       new_subscription: @new_subscription
     )
-
+    
     if result.success?
-      flash[:success] = "Your membership has been updated"
-      redirect_to home_path
+      if admin?
+        flash[:success] = "Membership updated."
+        redirect_to user_path(@subscription.user)
+      else
+        flash[:success] = "Your membership has been updated"
+        redirect_to home_path
+      end
     else
       flash[:error] = result.message
       redirect_to referrer_or_root

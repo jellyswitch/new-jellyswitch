@@ -2,12 +2,12 @@ class CreateUser
   include Interactor
 
   def call
-    # OLD
     @user = User.new(context.params)
 
     if !context.operator.approval_required
       @user.approved = true
     end
+
     @user.operator = context.operator
     
     if !@user.save
@@ -18,8 +18,15 @@ class CreateUser
     feed_item.operator = @user.operator
     feed_item.user = @user
     feed_item.blob = {type: "new-user"}
+
     if !feed_item.save
       context.fail!(message: "Unable to generate feed item.")
+    end
+
+    result = CreateStripeCustomer.call(user: @user)
+    
+    if !result.success?
+      context.fail!(message: result.message)
     end
 
     context.user = @user

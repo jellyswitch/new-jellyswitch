@@ -5,6 +5,51 @@
       <div class="card border-light">
         <div class="card-body">
           <h5 class="card-title">
+            Last month
+          </h5>
+          <p class="card-text">
+            <%= number_to_currency(@last_month_revenue.to_f / 100.0) %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            This month
+          </h5>
+          <p class="card-text">
+            <%= number_to_currency(@this_month_revenue.to_f / 100.0) %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
+            Expenses
+          </h5>
+          <p class="card-text">
+            This report contains expenses incurred by <%= current_tenant.name %>.
+          </p>
+          <p class="card-text">
+            <%= link_to "View expenses", expenses_accounting_index_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+<div class="row mt-3">
+  <div class="col-sm">
+    <div class="card-group">
+ 
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
             Plans
           </h5>
           <p class="card-text">
@@ -30,20 +75,8 @@
         </div>
       </div>
 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Expenses
-          </h5>
-          <p class="card-text">
-            This report contains expenses incurred by <%= current_tenant.name %>.
-          </p>
-          <p class="card-text">
-            <%= link_to "View expenses", expenses_accounting_index_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
-
+      <%= render "shared/empty_card" %>
     </div>
   </div>
 </div>
+

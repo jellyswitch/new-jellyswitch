@@ -1,12 +1,20 @@
 <%- if user.subscriptions.active.count < 1 %>
-  No active memberships.
-  <%- if user.has_billing? %>
-    <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Create membership", cc: false, user_id: user.id %>
-  <%- else %>
-    (Unable to create a membership on behalf of this user until they enter their billing info.)
-  <%- end %>
+  <div class="row">
+    No active memberships.
+  </div>
+  <div class="row mt-2">
+    <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id %>
+    <%- if !user.has_billing? %>    
+      <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
+    <%- end %>
+  </div>
 <%- else %>
   <%- user.subscriptions.active.each do |subscription| %>
-    <%= render "operator/subscriptions/form", subscription: subscription, label: "Update membership", cc: false, user_id: user.id %>
+    <div class="row">
+      <strong><%= subscription.plan.plan_name %></strong>
+    </div>
+    <div class="row mt-2">
+      <%= render "operator/subscriptions/form", subscription: subscription, label: "Update membership", cc: false, user_id: user.id %>
+    </div>
   <%- end %>
 <%- end %>

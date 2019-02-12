@@ -2,6 +2,7 @@ class CreateDayPass
   include Interactor
 
   def call
+    operator = context.operator
     user = User.find(context.user_id)
     if user.nil?
       context.fail!(message: "No such user with ID #{context.user_id}")
@@ -12,16 +13,36 @@ class CreateDayPass
 
     context.day_pass = day_pass
     
-    user.ensure_stripe_customer(context.token)
+    result = UpdateUserPayment.call(
+      user: user,
+      token: context.token
+    )
+    
+    if !result.success?
+      context.fail!(message: "Unable to update payment method.")
+    end
 
     if !day_pass.save
       context.fail!(message: "Unable to create day pass.")
+    end
+
+    charge = Stripe::Charge.create({
+      amount: operator.day_pass_cost_in_cents,
+      currency: 'usd',
+      description: day_pass.charge_description,
+      customer: user.stripe_customer_id
+    })
+
+    day_pass.stripe_charge_id = charge.id
+    if !day_pass.save
+      context.fail!(message: "There was a problem charging this day pass.")
     end
 
     feed_item = FeedItem.new
     feed_item.operator = user.operator
     feed_item.user = user
     feed_item.blob = {type: "day-pass", day_pass_id: day_pass.id}
+    
     if !feed_item.save
       context.fail!(message: "Unable to generate feed item.")
     end
