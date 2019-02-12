@@ -110,4 +110,8 @@ class User < ApplicationRecord
   def invoices
     @invoices ||= Stripe::Invoice.list
   end
+
+  def delinquent?
+    stripe_customer.delinquent == true
+  end
 end

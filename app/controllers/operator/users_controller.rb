@@ -186,6 +186,24 @@ class Operator::UsersController < Operator::BaseController
     end
   end
 
+  def update_payment_method
+    find_user(:user_id)
+    
+    if payment_method_params[:out_of_band] == "1"
+      result = MarkCustomerAsOutOfBand.call(user: @user)
+    else
+      result = UnmarkCustomerAsOutOfBand.call(user: @user)
+    end
+    
+    if result.success?
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = result.message
+    end
+    
+    redirect_to user_path(@user)
+  end
+
   private
 
   def user_params
@@ -206,7 +224,11 @@ class Operator::UsersController < Operator::BaseController
   end
 
   def user_approval_params
-      params.require(:user).permit(:approved)
+    params.require(:user).permit(:approved)
+  end
+
+  def payment_method_params
+    params.require(:user).permit(:out_of_band)
   end
 
   def admin_hook

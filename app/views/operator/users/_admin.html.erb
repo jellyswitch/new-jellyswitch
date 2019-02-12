@@ -31,6 +31,10 @@
     <dd class="col"><%= render "organization_form" %></dd>
   </dl>
   <dl class="row">
+    <dt class="col-sm-3">Payment Method</dt>
+    <dd class="col"><%= render "payment_method_form" %></dd>
+  </dl>
+  <dl class="row">
     <dt class="col-sm-3">Memberships</dt>
     <dd class="col">
       <%= render "memberships", user: @user %>
