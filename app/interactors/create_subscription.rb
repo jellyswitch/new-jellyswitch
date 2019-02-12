@@ -3,12 +3,16 @@ class CreateSubscription
 
   def call
     subscription = context.subscription
+    user = context.user
 
-    if context.token.nil? && !context.user.has_billing?
-      context.fail!(message: "Unable to create new stripe customer with nil token.")
+    result = UpdateUserPayment.call(
+      user: user,
+      token: context.token
+    )
+
+    if !result.success?
+      context.fail!(message: result.message)
     end
-
-    context.user.ensure_stripe_customer(context.token)
 
     if !subscription.save
       context.fail!(message: "Failed to create subscription.")
@@ -21,7 +25,9 @@ class CreateSubscription
           { plan: subscription.plan.stripe_plan_id }
         ]
       })
+
       subscription.stripe_subscription_id = stripe_subscription.id
+      
       if !subscription.save
         context.fail!(message: "There was a problem charging for this subscription.")
       end

@@ -19,7 +19,7 @@ class SwitchMembership
         context.fail!(message: "Unable to deactivate existing membership")
       end
     else
-      context.fail!(messager: "Unable to switch memberships.")
+      context.fail!(message: result.message)
     end
   end
 end

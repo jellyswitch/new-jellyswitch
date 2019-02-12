@@ -45,7 +45,7 @@ class Operator::SubscriptionsController < Operator::BaseController
       old_subscription: @subscription,
       new_subscription: @new_subscription
     )
-
+    
     if result.success?
       flash[:success] = "Your membership has been updated"
       redirect_to home_path

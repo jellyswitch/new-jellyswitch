@@ -13,7 +13,14 @@ class CreateDayPass
 
     context.day_pass = day_pass
     
-    user.ensure_stripe_customer(context.token)
+    result = UpdateUserPayment.call(
+      user: user,
+      token: context.token
+    )
+    
+    if !result.success?
+      context.fail!(message: "Unable to update payment method.")
+    end
 
     if !day_pass.save
       context.fail!(message: "Unable to create day pass.")
