@@ -18,14 +18,27 @@ class CreateSubscription
       context.fail!(message: "Failed to create subscription.")
     end
 
-    begin
+
+    if user.out_of_band?
       stripe_subscription = Stripe::Subscription.create({
         customer: context.user.stripe_customer_id,
+        billing: "send_invoice",
+        days_until_due: 30,
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]
       })
-
+    else
+      stripe_subscription = Stripe::Subscription.create({
+        customer: context.user.stripe_customer_id,
+        billing: "charge_automatically",
+        items: [
+          { plan: subscription.plan.stripe_plan_id }
+        ]
+      })
+    end
+    
+    begin
       subscription.stripe_subscription_id = stripe_subscription.id
       
       if !subscription.save

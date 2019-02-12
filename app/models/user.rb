@@ -108,7 +108,8 @@ class User < ApplicationRecord
   end
 
   def invoices
-    @invoices ||= Stripe::Invoice.list
+    @invoices ||= Stripe::Invoice.list({customer: stripe_customer_id})
+    @invoices
   end
 
   def delinquent?

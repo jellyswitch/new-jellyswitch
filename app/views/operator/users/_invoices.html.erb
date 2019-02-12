@@ -1,0 +1,18 @@
+<%- if @user.invoices.count < 1 %>
+  No day passes.
+<%- else %>
+  <table class="table">
+    <tr>
+      <th>Invoice</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+    <%- @user.invoices.each do |invoice| %>
+      <tr>
+        <td><%= invoice.number %></td>
+        <td><%= invoice.status %></td>
+        <td><%= link_to "Download PDF", invoice.invoice_pdf, class: "btn btn-sm btn-info", target: "_blank" %></td>
+      </tr>
+    <%- end %>
+  </table>
+<%- end %>
