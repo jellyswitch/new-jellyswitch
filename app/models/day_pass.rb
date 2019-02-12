@@ -4,27 +4,6 @@ class DayPass < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
-  # Stripe stuff
-  after_create :charge_in_stripe
-  def charge_in_stripe
-    charge = Stripe::Charge.create({
-      amount: operator.day_pass_cost_in_cents,
-      currency: 'usd',
-      description: charge_description,
-      customer: user.stripe_customer_id
-    })
-    self.stripe_charge_id = charge.id
-    self.save!
-  end
-
-  def charge_description
-    "#{operator.name} Day Pass for #{pretty_day}"
-  end
-
-  def stripe_charge
-    Stripe::Charge.retrieve(self.stripe_charge_id)
-  end
-
   # Scopes
   scope :today, ->() { where(day: Time.current) }
   scope :fulfilled, ->() { where('stripe_charge_id IS NOT NULL') }
@@ -36,5 +15,13 @@ class DayPass < ApplicationRecord
 
   def fulfilled?
     stripe_charge_id.present?
+  end
+
+  def charge_description
+    "#{operator.name} Day Pass for #{pretty_day}"
+  end
+
+  def stripe_charge
+    Stripe::Charge.retrieve(self.stripe_charge_id)
   end
 end
