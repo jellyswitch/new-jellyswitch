@@ -13,13 +13,14 @@ class Operator::AccountingController < Operator::BaseController
     end
 
     @last_month_revenue = @last_month_invoices.sum{|invoice| invoice.amount_paid }
+    @last_month_square_footage = (@last_month_revenue.to_f / 100.0) / current_tenant.square_footage.to_f
 
     @this_month_invoices = @invoices.select do |invoice|
       invoice.date > @this_month_start
     end
     
     @this_month_revenue = @this_month_invoices.sum {|invoice| invoice.amount_paid }
-
+    @this_month_square_footage = (@this_month_revenue.to_f / 100.0) / current_tenant.square_footage.to_f
   end
 
   def expenses

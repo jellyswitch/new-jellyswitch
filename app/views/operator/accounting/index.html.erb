@@ -10,6 +10,9 @@
           <p class="card-text">
             <%= number_to_currency(@last_month_revenue.to_f / 100.0) %>
           </p>
+          <p class="card-text">
+            <small><%= number_to_currency(@last_month_square_footage) %> per square foot</small>
+          </p>
         </div>
       </div>
 
@@ -20,6 +23,9 @@
           </h5>
           <p class="card-text">
             <%= number_to_currency(@this_month_revenue.to_f / 100.0) %>
+          </p>
+          <p class="card-text">
+            <small><%= number_to_currency(@this_month_square_footage) %> per square foot</small>
           </p>
         </div>
       </div>
