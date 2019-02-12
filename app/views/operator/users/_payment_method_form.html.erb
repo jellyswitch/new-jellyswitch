@@ -1,4 +1,4 @@
-<%= form_for(@user, url: user_update_payment_method_path(@user), remote: false, html: { class: "form-inline"}) do |f| %>
+<%= form_for(@user, url: user_update_payment_method_path(@user), remote: true, html: { class: "form-inline"}) do |f| %>
   <div class="form-check mr-3">
     <%= f.check_box(:out_of_band) %>
     <label class="form-check-label ml-3"><small>User pays out of band (check or otherwise)</small></label>
