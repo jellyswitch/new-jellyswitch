@@ -7,14 +7,18 @@
           <%= @unapproved_users.count %> members awaiting approval
         </a>
       <%- end %>
-      <a href="#" class="list-group-item list-group-item-action">
-        <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
-        3 upcoming invoices
-      </a>
-      <a href="#" class="list-group-item list-group-item-action">
-        <span class="far fa-clock text-center mr-3" style="width: 10px;"></span>
-        4 delinquent members
-      </a>
+      <%- if @due_invoices.count > 0 %>
+        <a href="<%= due_invoices_path %>" class="list-group-item list-group-item-action">
+          <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
+          <%= @due_invoices.count %> invoices due soon
+        </a>
+      <%- end %>
+      <%- if @delinquent_invoices.count > 0 %>
+        <a href="<%= delinquent_invoices_path %>" class="list-group-item list-group-item-action">
+          <span class="far fa-clock text-center mr-3" style="width: 10px;"></span>
+          <%= @delinquent_invoices.count %> delinquent members
+        </a>
+      <%- end %>
       <%- if @member_feedbacks.count > 0 %>
         <a href="<%= member_feedbacks_path %>" class="list-group-item list-group-item-action">
           <span class="fas fa-comments text-center mr-3" style="width: 10px;"></span>

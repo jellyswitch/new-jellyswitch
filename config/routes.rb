@@ -49,6 +49,13 @@ Rails.application.routes.draw do
     end
   end
   resources :feed_items, controller: 'operator/feed_items'
+  resources :invoices, only: [:index], controller: 'operator/invoices' do
+    collection do
+      get :due, to: 'operator/invoices#due'
+      get :recent, to: 'operator/invoices#recent'
+      get :delinquent, to: 'operator/invoices#delinquent'
+    end
+  end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :organizations, controller: 'operator/organizations'
   resources :plans, controller: 'operator/plans' do

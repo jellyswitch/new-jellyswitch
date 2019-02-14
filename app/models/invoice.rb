@@ -20,11 +20,28 @@ class Invoice < ApplicationRecord
   belongs_to :operator
   belongs_to :user
 
+  scope :recent, ->() { where('date > ?', Time.now - 30.days) }
+  scope :open, ->() { where("status = 'open'") }
+  scope :due, -> () { open.where('due_date >= ?', Time.now) }
+  scope :delinquent, ->() { due.where('due_date < ?', Time.now) }
+
   def stripe_invoice
     @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
   end
 
   def pdf_url
     stripe_invoice.invoice_pdf
+  end
+
+  def pretty_due_date
+    if due_date.nil?
+      nil
+    else
+      due_date.strftime("%m/%d/%Y")
+    end
+  end
+
+  def pretty_date
+    date.strftime("%m/%d/%Y")
   end
 end

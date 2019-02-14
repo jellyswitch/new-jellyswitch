@@ -6,6 +6,8 @@ class Operator::FeedItemsController < Operator::BaseController
 
     @member_feedbacks = current_tenant.member_feedbacks.recent
     @unapproved_users = current_tenant.users.members.unapproved
+    @due_invoices = current_tenant.invoices.due.order('date DESC')
+    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
   end
 
   def show
