@@ -18,6 +18,8 @@ class MemberFeedback < ApplicationRecord
 
   acts_as_tenant :operator
 
+  scope :recent, ->() { where('created_at > ?', Time.now - 7.days) }
+
   def anonymous?
     self.anonymous == true
   end

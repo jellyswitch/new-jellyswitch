@@ -3,6 +3,9 @@ class Operator::FeedItemsController < Operator::BaseController
     render_index
     authorize @feed_items
     new_feed_item
+
+    @member_feedbacks = current_tenant.member_feedbacks.recent
+    @unapproved_users = current_tenant.users.members.unapproved
   end
 
   def show
@@ -12,7 +15,6 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def create
-
     @feed_item = FeedItem.new
     @feed_item.blob = {text: feed_item_params[:text], type: "post"}
     @feed_item.operator = current_tenant

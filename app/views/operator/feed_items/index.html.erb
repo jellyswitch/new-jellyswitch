@@ -1,16 +1,50 @@
 <div class="row mt-3 mb-2">
-  <div class="col-sm-3"></div>
+  <div class="col-sm-2"></div>
   <div class="col-sm">
+
     <div class="card">
       <div class="card-body">
         <h4 class="display-4 text-center">Management Log</h4>
         <%= render "form", feed_item: @feed_item %>
       </div>
     </div>
+
+    <%- @feed_items.each do |feed_item| %>
+      <%= render "feed_item", feed_item: feed_item %>
+    <%- end %>
+
   </div>
-  <div class="col-sm-3"></div>
+  <div class="col-sm-3">
+
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          <%- if @unapproved_users.count > 0 %>
+            <a href="<%= unapproved_users_path %>" class="list-group-item list-group-item-action">
+              <span class="far fa-hand-paper text-center mr-3" style="width: 10px;"></span>
+              <%= @unapproved_users.count %> members awaiting approval
+            </a>
+          <%- end %>
+          <a href="#" class="list-group-item list-group-item-action">
+            <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
+            3 upcoming invoices
+          </a>
+          <a href="#" class="list-group-item list-group-item-action">
+            <span class="far fa-clock text-center mr-3" style="width: 10px;"></span>
+            4 delinquent members
+          </a>
+          <%- if @member_feedbacks.count > 0 %>
+            <a href="<%= member_feedbacks_path %>" class="list-group-item list-group-item-action">
+              <span class="fas fa-comments text-center mr-3" style="width: 10px;"></span>
+              <%= @member_feedbacks.count %> recent feedback
+            </a>
+          <%- end %>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="col-sm-1"></div>
 </div>
 
-<%- @feed_items.each do |feed_item| %>
-  <%= render "feed_item", feed_item: feed_item %>
-<%- end %>

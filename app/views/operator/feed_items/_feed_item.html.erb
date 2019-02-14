@@ -1,22 +1,16 @@
-<div class="row mb-0 mt-1">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="card pl-2 pr-2">
-      <div class="card-body">
-        <%- case feed_item.type
-            when "post" %>
-          <%= render "post_feed_item", feed_item: feed_item %>
-        <%- when "reservation" %>
-          <%= render "room_reservation_feed_item", feed_item: feed_item %>
-        <%- when "feedback" %>
-          <%= render "member_feedback_feed_item", feed_item: feed_item %>
-        <%- when "day-pass" %>
-          <%= render "day_pass_feed_item", feed_item: feed_item %>
-        <%- when "new-user" %>
-          <%= render "new_user_feed_item", feed_item: feed_item %>
-        <%- end %>
-      </div>
-    </div>
+<div class="card mt-2 pl-2 pr-2">
+  <div class="card-body">
+    <%- case feed_item.type
+        when "post" %>
+      <%= render "post_feed_item", feed_item: feed_item %>
+    <%- when "reservation" %>
+      <%= render "room_reservation_feed_item", feed_item: feed_item %>
+    <%- when "feedback" %>
+      <%= render "member_feedback_feed_item", feed_item: feed_item %>
+    <%- when "day-pass" %>
+      <%= render "day_pass_feed_item", feed_item: feed_item %>
+    <%- when "new-user" %>
+      <%= render "new_user_feed_item", feed_item: feed_item %>
+    <%- end %>
   </div>
-  <div class="col-sm-3"></div>
 </div>
