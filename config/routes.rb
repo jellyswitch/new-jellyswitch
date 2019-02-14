@@ -10,6 +10,11 @@ Rails.application.routes.draw do
     get '/signup',     to: 'users#new', as: :operator_signup
 
     resources :operators
+    resources :webhooks do
+      collection do
+        post :stripe, to: 'webhooks#stripe'
+      end
+    end
   end
 
   # Operator root
