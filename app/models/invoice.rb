@@ -22,4 +22,8 @@ class Invoice < ApplicationRecord
   def stripe_invoice
     @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
   end
+
+  def pdf_url
+    stripe_invoice.invoice_pdf
+  end
 end

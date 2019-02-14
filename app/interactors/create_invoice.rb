@@ -4,6 +4,15 @@ class CreateInvoice
   def call
     stripe_invoice = context.stripe_invoice
 
+    invoice = Invoice.find_by(stripe_invoice_id: stripe_invoice.id)
+    if invoice.present?
+      context.fail!(message: "Invoice #{invoice.number} already exists")
+    end
+
+    if stripe_invoice.status == "draft"
+      context.fail!(message: "Invoice #{stripe_invoice.number} has not been finalized")
+    end
+
     user = User.find_by(stripe_customer_id: stripe_invoice.customer)
     if user.nil?
       context.fail!(message: "Cannot find user with stripe customer id #{stripe_invoice.customer}")

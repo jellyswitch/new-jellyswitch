@@ -2,7 +2,7 @@ class MarkInvoiceAsPaid
   include Interactor
 
   def call
-    invoice = Stripe::Invoice.retrieve(context.invoice_id)
+    invoice = Invoice.find(context.invoice_id).stripe_invoice
 
     if invoice.customer != context.user.stripe_customer_id
       context.fail!(message: "Invalid invoice.")
