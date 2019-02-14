@@ -3,11 +3,15 @@
 # Table name: door_punches
 #
 #  id          :bigint(8)        not null, primary key
-#  door_id     :integer
-#  user_id     :integer
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  door_id     :integer
 #  operator_id :integer          default(1), not null
+#  user_id     :integer
+#
+# Indexes
+#
+#  index_door_punches_on_operator_id  (operator_id)
 #
 
 class DoorPunch < ApplicationRecord

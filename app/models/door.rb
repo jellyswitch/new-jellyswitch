@@ -3,12 +3,16 @@
 # Table name: doors
 #
 #  id          :bigint(8)        not null, primary key
+#  available   :boolean          default(TRUE), not null
 #  name        :string           not null
 #  slug        :string           not null
-#  available   :boolean          default(TRUE), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  operator_id :integer          default(1), not null
+#
+# Indexes
+#
+#  index_doors_on_operator_id  (operator_id)
 #
 
 class Door < ApplicationRecord

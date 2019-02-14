@@ -3,24 +3,28 @@
 # Table name: users
 #
 #  id                 :bigint(8)        not null, primary key
-#  name               :string
-#  email              :string           not null
-#  password_digest    :string
 #  admin              :boolean          default(FALSE), not null
+#  approved           :boolean          default(FALSE), not null
+#  bio                :text
+#  email              :string           not null
+#  linkedin           :string
+#  name               :string
+#  out_of_band        :boolean          default(FALSE), not null
+#  password_digest    :string
 #  remember_digest    :string
 #  slug               :string
-#  bio                :text
-#  linkedin           :string
+#  superadmin         :boolean          default(FALSE), not null
 #  twitter            :string
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  organization_id    :integer
-#  approved           :boolean          default(FALSE), not null
-#  stripe_customer_id :string
 #  operator_id        :integer          default(2), not null
-#  superadmin         :boolean          default(FALSE), not null
-#  out_of_band        :boolean          default(FALSE), not null
+#  organization_id    :integer
+#  stripe_customer_id :string
+#
+# Indexes
+#
+#  index_users_on_operator_id  (operator_id)
 #
 
 class User < ApplicationRecord
@@ -28,6 +32,7 @@ class User < ApplicationRecord
   has_many :day_passes
   has_many :door_punches
   has_many :feed_items
+  has_many :invoices
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator
@@ -130,11 +135,6 @@ class User < ApplicationRecord
 
   def has_billing?
     stripe_customer.sources["data"].count > 0
-  end
-
-  def invoices
-    @invoices ||= Stripe::Invoice.list({customer: stripe_customer_id})
-    @invoices
   end
 
   def delinquent?

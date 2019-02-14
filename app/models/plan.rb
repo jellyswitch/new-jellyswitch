@@ -3,16 +3,20 @@
 # Table name: plans
 #
 #  id              :bigint(8)        not null, primary key
-#  interval        :string           not null
 #  amount_in_cents :integer          not null
-#  name            :string           not null
-#  visible         :boolean          default(TRUE), not null
 #  available       :boolean          default(TRUE), not null
+#  interval        :string           not null
+#  name            :string           not null
 #  slug            :string
+#  visible         :boolean          default(TRUE), not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
-#  stripe_plan_id  :string
 #  operator_id     :integer          default(1), not null
+#  stripe_plan_id  :string
+#
+# Indexes
+#
+#  index_plans_on_operator_id  (operator_id)
 #
 
 class Plan < ApplicationRecord

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_12_224542) do
+ActiveRecord::Schema.define(version: 2019_02_14_205114) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -85,6 +85,19 @@ ActiveRecord::Schema.define(version: 2019_02_12_224542) do
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_id"
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.string "stripe_invoice_id"
+    t.integer "user_id"
+    t.integer "amount_due"
+    t.integer "amount_paid"
+    t.datetime "date"
+    t.string "status"
+    t.string "number"
+    t.integer "operator_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "member_feedbacks", force: :cascade do |t|

@@ -3,12 +3,16 @@
 # Table name: feed_items
 #
 #  id          :bigint(8)        not null, primary key
-#  operator_id :integer          not null
-#  user_id     :integer
 #  blob        :jsonb            not null
+#  expense     :boolean          default(FALSE), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  expense     :boolean          default(FALSE), not null
+#  operator_id :integer          not null
+#  user_id     :integer
+#
+# Indexes
+#
+#  index_feed_items_on_blob  (blob) USING gin
 #
 
 class FeedItem < ApplicationRecord
