@@ -6,6 +6,7 @@
 #  amount_due        :integer
 #  amount_paid       :integer
 #  date              :datetime
+#  due_date          :datetime
 #  number            :string
 #  status            :string
 #  created_at        :datetime         not null

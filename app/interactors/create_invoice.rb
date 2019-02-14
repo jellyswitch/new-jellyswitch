@@ -20,6 +20,11 @@ class CreateInvoice
 
     invoice_date = Time.at(stripe_invoice.date).to_datetime
 
+    due_date = nil
+    if stripe_invoice.due_date.present?
+      due_date = Time.at(stripe_invoice.due_date).to_datetime
+    end
+
     invoice = Invoice.create!(
       user_id: user.id,
       operator_id: user.operator.id,
@@ -28,6 +33,7 @@ class CreateInvoice
       number: stripe_invoice.number,
       stripe_invoice_id: stripe_invoice.id,
       date: invoice_date,
+      due_date: due_date,
       status: stripe_invoice.status
     )
 
