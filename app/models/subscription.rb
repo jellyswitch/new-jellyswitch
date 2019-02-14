@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: subscriptions
+#
+#  id                     :bigint(8)        not null, primary key
+#  plan_id                :integer          not null
+#  user_id                :integer          not null
+#  active                 :boolean          default(TRUE), not null
+#  created_at             :datetime         not null
+#  updated_at             :datetime         not null
+#  stripe_subscription_id :string
+#
+
 class Subscription < ApplicationRecord
   # Relationships
   belongs_to :user

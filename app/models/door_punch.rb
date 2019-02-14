@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: door_punches
+#
+#  id          :bigint(8)        not null, primary key
+#  door_id     :integer
+#  user_id     :integer
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  operator_id :integer          default(1), not null
+#
+
 class DoorPunch < ApplicationRecord
   # Relationships
   belongs_to :door

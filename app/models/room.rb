@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: rooms
+#
+#  id          :bigint(8)        not null, primary key
+#  name        :string           not null
+#  description :text
+#  whiteboard  :boolean          default(FALSE), not null
+#  av          :boolean          default(FALSE), not null
+#  capacity    :integer          default(1), not null
+#  slug        :string
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  visible     :boolean          default(TRUE), not null
+#  operator_id :integer          default(1), not null
+#
+
 class Room < ApplicationRecord
   # Relationships
   has_many :reservations

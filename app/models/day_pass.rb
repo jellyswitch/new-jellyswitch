@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: day_passes
+#
+#  id               :bigint(8)        not null, primary key
+#  day              :date             not null
+#  user_id          :integer          not null
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  stripe_charge_id :string
+#  operator_id      :integer          default(1), not null
+#
+
 class DayPass < ApplicationRecord
   # Relationships
   belongs_to :user

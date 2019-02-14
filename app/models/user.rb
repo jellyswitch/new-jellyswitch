@@ -1,3 +1,28 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                 :bigint(8)        not null, primary key
+#  name               :string
+#  email              :string           not null
+#  password_digest    :string
+#  admin              :boolean          default(FALSE), not null
+#  remember_digest    :string
+#  slug               :string
+#  bio                :text
+#  linkedin           :string
+#  twitter            :string
+#  website            :string
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  organization_id    :integer
+#  approved           :boolean          default(FALSE), not null
+#  stripe_customer_id :string
+#  operator_id        :integer          default(2), not null
+#  superadmin         :boolean          default(FALSE), not null
+#  out_of_band        :boolean          default(FALSE), not null
+#
+
 class User < ApplicationRecord
   # Relationships
   has_many :day_passes

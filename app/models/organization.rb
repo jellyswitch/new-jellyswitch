@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: organizations
+#
+#  id          :bigint(8)        not null, primary key
+#  name        :string           not null
+#  owner_id    :integer
+#  website     :string
+#  slug        :string
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  operator_id :integer          default(1), not null
+#
+
 class Organization < ApplicationRecord
   # Slugs
   extend FriendlyId

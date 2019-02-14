@@ -1,3 +1,16 @@
+# == Schema Information
+#
+# Table name: feed_items
+#
+#  id          :bigint(8)        not null, primary key
+#  operator_id :integer          not null
+#  user_id     :integer
+#  blob        :jsonb            not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  expense     :boolean          default(FALSE), not null
+#
+
 class FeedItem < ApplicationRecord
   has_many_attached :photos
   before_save :parse_amount!
