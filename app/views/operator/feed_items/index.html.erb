@@ -1,6 +1,9 @@
 <div class="row mt-3 mb-2">
-  <div class="col-sm-2"></div>
-  <div class="col-sm">
+  <div class="col-lg-2 d-none d-lg-block"></div>
+  <div class="col-lg-3 d-lg-none mb-3">
+    <%= render "sidebar" %>
+  </div>
+  <div class="col-lg-6">
 
     <div class="card">
       <div class="card-body">
@@ -14,37 +17,10 @@
     <%- end %>
 
   </div>
-  <div class="col-sm-3">
-
-    <div class="card">
-      <div class="card-body p-0">
-        <div class="list-group list-group-flush">
-          <%- if @unapproved_users.count > 0 %>
-            <a href="<%= unapproved_users_path %>" class="list-group-item list-group-item-action">
-              <span class="far fa-hand-paper text-center mr-3" style="width: 10px;"></span>
-              <%= @unapproved_users.count %> members awaiting approval
-            </a>
-          <%- end %>
-          <a href="#" class="list-group-item list-group-item-action">
-            <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
-            3 upcoming invoices
-          </a>
-          <a href="#" class="list-group-item list-group-item-action">
-            <span class="far fa-clock text-center mr-3" style="width: 10px;"></span>
-            4 delinquent members
-          </a>
-          <%- if @member_feedbacks.count > 0 %>
-            <a href="<%= member_feedbacks_path %>" class="list-group-item list-group-item-action">
-              <span class="fas fa-comments text-center mr-3" style="width: 10px;"></span>
-              <%= @member_feedbacks.count %> recent feedback
-            </a>
-          <%- end %>
-        </div>
-      </div>
-    </div>
-
+  <div class="col-lg-3 d-none d-lg-block">
+    <%= render "sidebar" %>
   </div>
 
-  <div class="col-sm-1"></div>
+  <div class="col-lg-1"></div>
 </div>
 
