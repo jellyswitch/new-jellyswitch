@@ -56,6 +56,20 @@
       <div class="card border-light">
         <div class="card-body">
           <h5 class="card-title">
+            Invoices
+          </h5>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.invoices.count %> invoices.
+          </p>
+          <p class="card-text">
+            <%= link_to "View invoices", invoices_path, class: "btn btn-primary" %>
+          </p>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
             Plans
           </h5>
           <p class="card-text">
@@ -80,8 +94,6 @@
           </p>
         </div>
       </div>
-
-      <%= render "shared/empty_card" %>
     </div>
   </div>
 </div>
