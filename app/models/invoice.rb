@@ -24,6 +24,17 @@ class Invoice < ApplicationRecord
   scope :open, ->() { where("status = 'open'") }
   scope :due, -> () { open.where('due_date >= ?', Time.now) }
   scope :delinquent, ->() { due.where('due_date < ?', Time.now) }
+  scope :last_month, -> () {
+    last_month_start = (Time.now.beginning_of_month - 1.day).beginning_of_month.to_time.to_i
+    this_month_start = Time.now.beginning_of_month.to_time.to_i
+
+    where("date >= to_timestamp(?) AND date < to_timestamp(?)", last_month_start, this_month_start)
+  }
+  scope :this_month, -> () {
+    this_month_start = Time.now.beginning_of_month.to_time.to_i
+
+    where("date >= to_timestamp(?)", this_month_start)
+  }
 
   def stripe_invoice
     @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
