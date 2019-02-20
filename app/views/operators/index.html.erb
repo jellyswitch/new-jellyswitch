@@ -3,11 +3,17 @@
   <div class="col">
     <h2>Operators</h2>
     <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
-    <ul>
+    <table class="table table-sm">
       <%- @operators.each do |operator| %>
-        <li><%= link_to operator.name, operator_path(operator) %></li>
+        <tr>
+          <td><%= link_to operator.name, operator_path(operator) %></td>
+          <td>
+            <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
+            <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>
+          </td>
+        </tr>
       <%- end %>
-    </ul>
+    </table>
   </div>
   <div class="col"></div>
 </div>
