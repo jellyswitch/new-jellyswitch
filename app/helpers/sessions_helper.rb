@@ -30,7 +30,7 @@ module SessionsHelper
   end
 
   def member?
-    current_user.present? && current_user.member?
+    current_user.present? && current_user.member?(current_tenant)
   end
 
   def approved?

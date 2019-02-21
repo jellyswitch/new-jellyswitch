@@ -9,7 +9,7 @@
     <%- end %>
   </div>
 <%- else %>
-  <%- user.subscriptions.active.each do |subscription| %>
+  <%- user.subscriptions.for_operator(current_tenant).active.each do |subscription| %>
     <div class="row">
       <strong><%= subscription.plan.plan_name %></strong>
     </div>

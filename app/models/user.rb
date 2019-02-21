@@ -81,8 +81,8 @@ class User < ApplicationRecord
     superadmin
   end
 
-  def member?
-    (subscriptions.active.count > 0) || (day_passes.fulfilled.today.count > 0)
+  def member?(operator)
+    (subscriptions.for_operator(operator).active.count > 0) || (day_passes.fulfilled.today.count > 0)
   end
 
   def approved?

@@ -14,7 +14,12 @@ module PolicyHelpers
   end
 
   def member?
-    is_user? && user.member?
+    if @operator.nil?
+      raise "got here"
+      false
+    else
+      is_user? && user.member?(@operator)
+    end
   end
 
   def approved?

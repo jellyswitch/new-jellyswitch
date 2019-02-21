@@ -3,8 +3,9 @@ class ApplicationPolicy
   include PolicyHelpers
 
   def initialize(user, record)
-    @user = user
+    @user = user.class == UserContext ? user.user : user
     @record = record
+    @operator = user.class == UserContext ? user.operator : nil
   end
 
   def index?

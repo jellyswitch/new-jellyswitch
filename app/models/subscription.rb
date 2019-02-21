@@ -18,6 +18,7 @@ class Subscription < ApplicationRecord
 
   # Scopes
   scope :active, ->() { where(active: true) }
+  scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
 
   # Instance methods
   def cancel_stripe!
