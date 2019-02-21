@@ -3,17 +3,14 @@ class Operator::FeedItemsController < Operator::BaseController
     render_index
     authorize @feed_items
     new_feed_item
-
-    @member_feedbacks = current_tenant.member_feedbacks.recent
-    @unapproved_users = current_tenant.users.members.unapproved
-    @due_invoices = current_tenant.invoices.due.order('date DESC')
-    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
+    sidebar_items
   end
 
   def show
     find_feed_item
     authorize @feed_item
     background_image
+    sidebar_items
   end
 
   def create
@@ -58,6 +55,13 @@ class Operator::FeedItemsController < Operator::BaseController
   def render_index
     background_image
     find_feed_items
+  end
+
+  def sidebar_items
+    @member_feedbacks = current_tenant.member_feedbacks.recent
+    @unapproved_users = current_tenant.users.members.unapproved
+    @due_invoices = current_tenant.invoices.due.order('date DESC')
+    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
   end
 
   def new_feed_item
