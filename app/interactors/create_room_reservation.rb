@@ -1,5 +1,6 @@
 class CreateRoomReservation
   include Interactor
+  include FeedItemCreator
 
   def call
     reservation = Reservation.new(context.reservation_params)
@@ -12,12 +13,7 @@ class CreateRoomReservation
       context.fail!(message: "Unable to save reservation.")
     end
 
-    feed_item = FeedItem.new
-    feed_item.operator = context.user.operator
-    feed_item.user = context.user
-    feed_item.blob = {type: "reservation", reservation_id: reservation.id}
-    if !feed_item.save
-      context.fail!(message: "Unable to generate feed item.")
-    end
+    blob = {type: "reservation", reservation_id: reservation.id}
+    create_feed_item(context.user.operator, context.user, blob)
   end
 end

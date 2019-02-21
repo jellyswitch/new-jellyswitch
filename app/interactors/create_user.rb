@@ -1,5 +1,6 @@
 class CreateUser
   include Interactor
+  include FeedItemCreator
 
   def call
     @user = User.new(context.params)
@@ -14,14 +15,8 @@ class CreateUser
       context.fail!(message: "Unable to create user.")
     end
 
-    feed_item = FeedItem.new
-    feed_item.operator = @user.operator
-    feed_item.user = @user
-    feed_item.blob = {type: "new-user"}
-
-    if !feed_item.save
-      context.fail!(message: "Unable to generate feed item.")
-    end
+    blob = {type: "new-user"}
+    create_feed_item(@user.operator, @user, blob)
 
     result = CreateStripeCustomer.call(user: @user)
     

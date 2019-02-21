@@ -1,5 +1,6 @@
 class CreateDayPass
   include Interactor
+  include FeedItemCreator
 
   def call
     operator = context.operator
@@ -38,14 +39,9 @@ class CreateDayPass
       context.fail!(message: "There was a problem charging this day pass.")
     end
 
-    feed_item = FeedItem.new
-    feed_item.operator = user.operator
-    feed_item.user = user
-    feed_item.blob = {type: "day-pass", day_pass_id: day_pass.id}
-    
-    if !feed_item.save
-      context.fail!(message: "Unable to generate feed item.")
-    end
+    blob = {type: "day-pass", day_pass_id: day_pass.id}
+    create_feed_item(user.operator, user, blob)
+
   rescue Exception => e
     context.fail!(message: e.message)
   end
