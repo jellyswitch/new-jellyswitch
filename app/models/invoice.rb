@@ -18,6 +18,7 @@
 
 class Invoice < ApplicationRecord
   belongs_to :operator
+  acts_as_tenant :operator
   belongs_to :user
 
   scope :recent, ->() { where('date > ?', Time.now - 30.days) }
