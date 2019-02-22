@@ -17,6 +17,10 @@ Rails.application.routes.draw do
     end
   end
 
+  # Privacy Policy
+
+  get '/privacy-policy', to: 'operator/landing#privacy_policy'
+
   # Operator root
   root "operator/landing#index"
 

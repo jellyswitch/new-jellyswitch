@@ -63,4 +63,8 @@ class Operator::LandingController < Operator::BaseController
     background_image
     @doors = Door.all
   end
+
+  def privacy_policy
+    background_image
+  end
 end
