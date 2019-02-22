@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.4.4'
+ruby '2.5.1'
 
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
@@ -25,6 +25,7 @@ gem 'pundit'
 gem 'rails', '~> 5.2.2'
 gem 'redis'
 gem 'remotipart', '~> 1.2'
+gem 'roadie-rails', '~> 2.0'
 gem 'rollbar'
 gem 'sass-rails', '~> 5.0'
 gem 'sidekiq'

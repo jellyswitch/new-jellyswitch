@@ -130,6 +130,8 @@ GEM
     concurrent-ruby (1.1.4)
     connection_pool (2.2.2)
     crass (1.0.4)
+    css_parser (1.7.0)
+      addressable
     dalli (2.7.8)
     debug_inspector (0.0.3)
     draper (3.0.1)
@@ -239,6 +241,12 @@ GEM
     remotipart (1.4.2)
     request_store (1.4.1)
       rack (>= 1.4)
+    roadie (3.4.0)
+      css_parser (~> 1.4)
+      nokogiri (~> 1.5)
+    roadie-rails (2.0.0)
+      railties (>= 5.1, < 5.3)
+      roadie (~> 3.1)
     rollbar (2.18.2)
       multi_json
     ruby-vips (2.0.12)
@@ -329,6 +337,7 @@ DEPENDENCIES
   rails (~> 5.2.2)
   redis
   remotipart (~> 1.2)
+  roadie-rails (~> 2.0)
   rollbar
   sass-rails (~> 5.0)
   selenium-webdriver
@@ -341,7 +350,7 @@ DEPENDENCIES
   will_paginate (~> 3.1.0)
 
 RUBY VERSION
-   ruby 2.4.4p296
+   ruby 2.5.1p57
 
 BUNDLED WITH
-   1.16.3
+   2.0.1
