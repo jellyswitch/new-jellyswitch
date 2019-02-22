@@ -5,4 +5,8 @@ class Operator::BaseController < ApplicationController
   def background_image
     @background_image = current_tenant.background_image
   end
+
+  def pundit_user
+    UserContext.new(current_user, current_tenant)
+  end
 end

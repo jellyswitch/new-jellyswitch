@@ -11,10 +11,6 @@ class ApplicationController < ActionController::Base
     redirect_to referrer_or_root
   end
 
-  def pundit_user
-    UserContext.new(current_user, current_tenant)
-  end
-
   protected
 
   def include_stripe
