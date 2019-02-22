@@ -28,6 +28,9 @@ class FeedItem < ApplicationRecord
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
   scope :expenses, ->() { where(expense: true) }
 
+  # Types of feed_items
+  scope :member_feedbacks, -> () { where("blob->> 'type' = ?", "feedback") }
+
   def text
     blob["text"]
   end
