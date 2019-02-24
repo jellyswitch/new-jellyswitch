@@ -5,13 +5,15 @@ class CreateSubscription
     subscription = context.subscription
     user = context.user
 
-    result = UpdateUserPayment.call(
-      user: user,
-      token: context.token
-    )
-
-    if !result.success?
-      context.fail!(message: result.message)
+    if !user.out_of_band?
+      result = UpdateUserPayment.call(
+        user: user,
+        token: context.token
+      )
+    
+      if !result.success?
+        context.fail!(message: result.message)
+      end
     end
 
     if !subscription.save
@@ -29,6 +31,9 @@ class CreateSubscription
         ]
       })
     else
+      if !user.has_billing?
+        context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
+      end
       stripe_subscription = Stripe::Subscription.create({
         customer: context.user.stripe_customer_id,
         billing: "charge_automatically",

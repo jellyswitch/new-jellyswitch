@@ -3,8 +3,9 @@
     No active memberships.
   </div>
   <div class="row mt-2">
-    <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id %>
-    <%- if !user.has_billing? %>    
+    <%- if user.has_billing? || user.out_of_band? %>    
+      <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id %>
+    <%- else %>
       <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
     <%- end %>
   </div>
