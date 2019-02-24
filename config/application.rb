@@ -22,5 +22,8 @@ module Bristlecone
 
     # Background jobs
     config.active_job.queue_adapter = :sidekiq
+
+
+    config.action_mailer.default_url_options = { host: ENV['HOST'] }
   end
 end
