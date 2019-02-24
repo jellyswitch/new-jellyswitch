@@ -1,5 +1,5 @@
 module HostValidator
   def validate_host
-    raise "No @subdomain defined" unless @subdomain.present?
+    raise "No @operator defined" unless @operator.present?
   end
 end

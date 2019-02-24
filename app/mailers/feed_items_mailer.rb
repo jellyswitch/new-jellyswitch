@@ -9,9 +9,8 @@ class FeedItemsMailer < ApplicationMailer
     @feed_item = params[:feed_item]
     @user = params[:user]
 
-    @subdomain = @feed_item.operator.subdomain
+    @operator = @feed_item.operator
 
-    validate_host
     mail to: @user.email, subject: "New member feedback", default_options: default_url_options
   end
 end

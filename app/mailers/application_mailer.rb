@@ -7,7 +7,16 @@ class ApplicationMailer < ActionMailer::Base
 
   def default_url_options
     {
-      host: "#{@subdomain}.#{ENV['HOST']}"
+      host: "#{@operator.subdomain}.#{ENV['HOST']}"
     }
+  end
+
+  def mail(headers = {}, &block)
+    validate_host
+    if @operator.email_enabled?
+      super(headers, &block)
+    else
+      false
+    end
   end
 end
