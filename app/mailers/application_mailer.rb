@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: 'from@example.com'
+  default from: 'Jellyswitch <noreply@jellyswitch.com>'
   layout 'mailer'
   include HostValidator
 
@@ -14,9 +14,15 @@ class ApplicationMailer < ActionMailer::Base
   def mail(headers = {}, &block)
     validate_host
     if @operator.email_enabled?
-      super(headers, &block)
+      super(headers.merge(default_options), &block)
     else
       false
     end
+  end
+
+  def default_options
+    {
+      from: "#{@operator.name} <noreply@#{@operator.subdomain}.#{ENV['HOST']}>"
+    }
   end
 end

@@ -54,6 +54,7 @@ class User < ApplicationRecord
   scope :approved, ->() { where(approved: true) }
   scope :unapproved, ->() { where(approved: false) }
   scope :members, ->() { where(admin: false) }
+  scope :admins, ->() { where(admin: true) }
   scope :for_space, ->(operator) { where('operator_id = ? OR superadmin = true', operator.id) }
 
   # Relationship Helpers

@@ -5,12 +5,11 @@ class FeedItemsMailer < ApplicationMailer
   #   en.feed_items_mailer.member_feedback.subject
   #
   def member_feedback(params = {})
-    
     @feed_item = params[:feed_item]
     @user = params[:user]
 
     @operator = @feed_item.operator
 
-    mail to: @user.email, subject: "New member feedback", default_options: default_url_options
+    mail to: @user.email, subject: "New member feedback"
   end
 end
