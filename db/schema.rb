@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_24_201442) do
+ActiveRecord::Schema.define(version: 2019_02_25_223728) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -127,6 +127,7 @@ ActiveRecord::Schema.define(version: 2019_02_24_201442) do
     t.integer "day_pass_cost_in_cents", default: 2500, null: false
     t.integer "square_footage", default: 0, null: false
     t.boolean "email_enabled", default: false, null: false
+    t.string "stripe_day_pass_product_id"
   end
 
   create_table "organizations", force: :cascade do |t|
