@@ -22,4 +22,8 @@ class OperatorPolicy < ApplicationPolicy
   def create?
     superadmin?
   end
+
+  def add_day_pass_product?
+    superadmin?
+  end
 end

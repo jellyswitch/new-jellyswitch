@@ -9,7 +9,9 @@ Rails.application.routes.draw do
     get '/login',      to: 'sessions#new', as: :operator_login
     get '/signup',     to: 'users#new', as: :operator_signup
 
-    resources :operators
+    resources :operators do
+      get :add_day_pass_product, to: 'operators#add_day_pass_product'
+    end
     resources :webhooks do
       collection do
         post :stripe, to: 'webhooks#stripe'

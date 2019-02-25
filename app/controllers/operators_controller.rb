@@ -45,6 +45,20 @@ class OperatorsController < ApplicationController
     end
   end
 
+  def add_day_pass_product
+    find_operator(:operator_id)
+    authorize @operator
+
+    result = CreateDayPassProductForOperator.call(operator: @operator)
+
+    if result.success?
+      flash[:success] = "Day Pass added."
+    else
+      flash[:error] = result.message
+    end
+    redirect_to operator_path(@operator)
+  end
+
   private
 
   def find_operators

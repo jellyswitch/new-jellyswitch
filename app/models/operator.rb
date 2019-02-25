@@ -40,4 +40,12 @@ class Operator < ApplicationRecord
   def email_enabled?
     email_enabled || Rails.env.development?
   end
+
+  def has_day_pass_product?
+    stripe_day_pass_product_id.present?
+  end
+
+  def day_pass_product
+    Stripe::Product.retrieve(stripe_day_pass_product_id)
+  end
 end
