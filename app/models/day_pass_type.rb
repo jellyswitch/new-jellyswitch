@@ -14,6 +14,16 @@
 #
 
 class DayPassType < ApplicationRecord
+  has_many :day_passes
   belongs_to :operator
+
   acts_as_tenant :operator
+
+  # Scopes
+  scope :available, ->() { where(available: true) }
+  scope :visible, ->() { where(visible: true) }
+
+  def name_for_select
+    "#{name} ($#{amount_in_cents.to_f / 100.0})"
+  end
 end

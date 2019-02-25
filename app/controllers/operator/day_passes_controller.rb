@@ -8,6 +8,7 @@ class Operator::DayPassesController < Operator::BaseController
   def new
     @day_pass = DayPass.new
     authorize @day_pass
+    @day_pass_types = DayPassType.available.visible.map {|d| [d.name_for_select, d.id] }
     background_image
     include_stripe
   end
@@ -63,6 +64,6 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   def admin_day_pass_params
-    params.require(:day_pass).permit(:day, :user_id)
+    params.require(:day_pass).permit(:day_pass_type, :day, :user_id)
   end
 end

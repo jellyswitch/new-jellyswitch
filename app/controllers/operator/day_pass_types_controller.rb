@@ -4,19 +4,23 @@ class Operator::DayPassTypesController < Operator::BaseController
   def index
     find_day_pass_types
     authorize @day_pass_types
+    background_image
   end
 
   def show
     authorize @day_pass_type
+    background_image
   end
 
   def new
     @day_pass_type = DayPassType.new
     authorize @day_pass_type
+    background_image
   end
 
   def edit
     authorize @day_pass_type
+    background_image
   end
 
   def create
