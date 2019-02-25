@@ -1,0 +1,28 @@
+<%= form_with(model: day_pass_type, remote: true) do |form| %>
+  <%= render "shared/error_messages" , model: day_pass_type %>
+
+  <div class="form-group">
+    <%= form.label :name %>
+    <%= form.text_field :name, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= form.label :amount_in_cents %>
+    <%= form.number_field :amount_in_cents, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= form.label :available %>
+    <%= form.check_box :available, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= form.label :visible %>
+    <%= form.check_box :visible, class: "form-control" %>
+  </div>
+
+  <%= form.submit "Create", class: "btn btn-primary" %>
+<% end %>
+
+
+

@@ -48,6 +48,7 @@ Rails.application.routes.draw do
     end
   end
   resources :day_passes, controller: 'operator/day_passes'
+  resources :day_pass_types, controller: 'operator/day_pass_types'
   resources :doors, controller: 'operator/doors' do
     get 'open', to: 'operator/doors#open'
     collection do
