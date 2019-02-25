@@ -65,9 +65,6 @@ Rails.application.routes.draw do
   resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'operator/plans#unarchive'
   end
-  resources :products, controller: 'operator/products' do
-    post 'unarchive', to: 'operator/products#unarchive'
-  end
   resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
     get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability
