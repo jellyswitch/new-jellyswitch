@@ -22,4 +22,8 @@ class OperatorPolicy < ApplicationPolicy
   def create?
     superadmin?
   end
+
+  def demo_instance?
+    superadmin?
+  end
 end

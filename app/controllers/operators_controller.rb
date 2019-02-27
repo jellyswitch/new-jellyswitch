@@ -44,11 +44,21 @@ class OperatorsController < ApplicationController
       render :edit, status: 422
     end
   end
+  
+  def demo_instance
+    authorize Operator
+    result = Demo::CreateOperator.call
+
+    if !result.success?
+      flash[:error] = result.message
+    end
+    redirect_to operators_path
+  end
 
   private
 
   def find_operators
-    @operators = Operator.all
+    @operators = Operator.order("created_at ASC").all
   end
 
   def find_operator(key=:id)
