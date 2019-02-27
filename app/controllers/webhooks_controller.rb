@@ -9,7 +9,7 @@ class WebhooksController < ApplicationController
     case event.type
     when "invoice.finalized"
       if Invoice.exists?(stripe_invoice_id: event.data.object.id)
-        update-status(event.data.object)
+        update_status(event.data.object)
       else
         result = CreateInvoice.call(stripe_invoice: event.data.object)
         if result.success?
