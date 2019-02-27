@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_24_201442) do
+ActiveRecord::Schema.define(version: 2019_02_27_182406) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -36,6 +36,16 @@ ActiveRecord::Schema.define(version: 2019_02_24_201442) do
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
+  create_table "day_pass_types", force: :cascade do |t|
+    t.string "name", null: false
+    t.integer "operator_id", null: false
+    t.integer "amount_in_cents", default: 0, null: false
+    t.boolean "available", default: true, null: false
+    t.boolean "visible", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "day_passes", force: :cascade do |t|
     t.date "day", null: false
     t.integer "user_id", null: false
@@ -43,6 +53,8 @@ ActiveRecord::Schema.define(version: 2019_02_24_201442) do
     t.datetime "updated_at", null: false
     t.string "stripe_charge_id"
     t.integer "operator_id", default: 1, null: false
+    t.integer "day_pass_type_id"
+    t.integer "invoice_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 

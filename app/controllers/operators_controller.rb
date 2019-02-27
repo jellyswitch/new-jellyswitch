@@ -57,7 +57,7 @@ class OperatorsController < ApplicationController
 
   def operator_params
     params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
-      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone, :day_pass_cost_in_cents, 
+      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
       :background_image, :logo_image, :square_footage, :email_enabled)
   end
 end

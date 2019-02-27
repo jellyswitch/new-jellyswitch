@@ -9,10 +9,6 @@ class CreateInvoice
       context.fail!(message: "Invoice #{invoice.number} already exists")
     end
 
-    if stripe_invoice.status == "draft"
-      context.fail!(message: "Invoice #{stripe_invoice.number} has not been finalized")
-    end
-
     user = User.find_by(stripe_customer_id: stripe_invoice.customer)
     if user.nil?
       context.fail!(message: "Cannot find user with stripe customer id #{stripe_invoice.customer}")

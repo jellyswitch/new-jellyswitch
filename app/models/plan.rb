@@ -30,6 +30,10 @@ class Plan < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
+  # Scopes
+  scope :available, ->() { where(available: true) }
+  scope :visible, ->() { where(visible: true) }
+
   # Stripe stuff
   after_create :create_stripe_plan
   def create_stripe_plan
@@ -81,10 +85,6 @@ class Plan < ApplicationRecord
     "monthly",
     "annually"
   ]
-
-  # Scopes
-  scope :available, ->() { where(available: true) }
-  scope :visible, ->() { where(visible: true) }
   
   # Class methods
   def self.options_for_interval

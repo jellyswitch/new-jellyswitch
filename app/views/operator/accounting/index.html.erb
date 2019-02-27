@@ -70,13 +70,15 @@
       <div class="card border-light">
         <div class="card-body">
           <h5 class="card-title">
-            Plans
+            Plans & Day Pass Types
           </h5>
           <p class="card-text">
-            <%= current_tenant.name %> has <%= current_tenant.plans.count %> membership plans available.
+            <%= current_tenant.name %> has <%= current_tenant.plans.count %> membership plans and <%= current_tenant.day_pass_types.count %> day pass types.
           </p>
           <p class="card-text">
             <%= link_to "View plans", plans_path, class: "btn btn-primary" %>
+            &nbsp;
+            <%= link_to "View day pass types", day_pass_types_path, class: "btn btn-primary" %>
           </p>
         </div>
       </div>
