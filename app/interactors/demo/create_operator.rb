@@ -27,5 +27,10 @@ class Demo::CreateOperator
     if !result.success?
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
+
+    result = Demo::CreatePlans.call(operator: op)
+    if !result.success?
+      context.fail!(message: "Error while creating operator: #{result.message}")
+    end
   end
 end
