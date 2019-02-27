@@ -10,7 +10,8 @@ class CreateDayPassProductForOperator
     stripe_product = Stripe::Product.create({
       name: product_name,
       type: 'good',
-      description: description
+      description: description,
+      attributes: ["name"]
     })
 
     @operator.stripe_day_pass_product_id = stripe_product.id

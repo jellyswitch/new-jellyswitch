@@ -24,12 +24,14 @@ class Operator::DayPassTypesController < Operator::BaseController
   end
 
   def create
-    @day_pass_type = DayPassType.new(day_pass_type_params)
-    authorize @day_pass_type
+    authorize DayPassType.new
+    result = CreateDayPassType.call(params: day_pass_type_params)
 
-    if @day_pass_type.save
+    @day_pass_type = result.day_pass_type
+    if result.success?
       redirect_to @day_pass_type, notice: 'Day pass type was successfully created.'
     else
+      flash[:error] = result.message
       render :new
     end
   end
