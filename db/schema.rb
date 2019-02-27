@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_02_25_235135) do
+ActiveRecord::Schema.define(version: 2019_02_27_181527) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -55,6 +55,7 @@ ActiveRecord::Schema.define(version: 2019_02_25_235135) do
     t.string "stripe_charge_id"
     t.integer "operator_id", default: 1, null: false
     t.integer "day_pass_type_id"
+    t.integer "invoice_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 

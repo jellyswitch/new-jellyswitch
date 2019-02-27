@@ -83,7 +83,7 @@ class User < ApplicationRecord
   end
 
   def member?(operator)
-    (subscriptions.for_operator(operator).active.count > 0) || (day_passes.fulfilled.today.count > 0)
+    (subscriptions.for_operator(operator).active.count > 0) || (day_passes.today.count > 0)
   end
 
   def approved?
@@ -134,8 +134,12 @@ class User < ApplicationRecord
     Stripe::Customer.retrieve(self.stripe_customer_id)
   end
 
+  def has_stripe_customer?
+    stripe_customer_id.present?
+  end
+
   def has_billing?
-    stripe_customer.sources["data"].count > 0
+    has_stripe_customer? && stripe_customer.sources["data"].count > 0
   end
 
   def delinquent?

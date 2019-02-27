@@ -8,8 +8,17 @@ class CreateDayPass
     if user.nil?
       context.fail!(message: "No such user with ID #{context.user_id}")
     end
+    
+    if !user.has_stripe_customer?
+      context.fail!(message: "Cannot create day pass for user without stripe customer.")
+    end
 
-    day_pass = DayPass.new(context.params)
+    day_pass_type = DayPassType.find(context.params[:day_pass_type].to_i)
+    if day_pass_type.nil?
+      context.fail!(message: "Invalid day pass type.")
+    end
+
+    day_pass = DayPass.new(context.params.merge({day_pass_type: day_pass_type}))
     day_pass.user = user
 
     context.day_pass = day_pass
@@ -27,22 +36,42 @@ class CreateDayPass
       context.fail!(message: "Unable to create day pass.")
     end
 
-    charge = Stripe::Charge.create({
-      amount: operator.day_pass_cost_in_cents,
+    @invoice_item = Stripe::InvoiceItem.create({
+      customer: user.stripe_customer_id,
       currency: 'usd',
-      description: day_pass.charge_description,
-      customer: user.stripe_customer_id
+      amount: day_pass_type.amount_in_cents,
+      description: day_pass.charge_description
     })
 
-    day_pass.stripe_charge_id = charge.id
+    if user.out_of_band?
+      @invoice = Stripe::Invoice.create({
+        customer: user.stripe_customer_id,
+        billing: 'send_invoice',
+        days_until_due: 30,
+        auto_advance: true
+      })
+    else
+      @invoice = Stripe::Invoice.create({
+        customer: user.stripe_customer_id,
+        billing: 'charge_automatically',
+        auto_advance: true
+      })
+    end
+
+    our_invoice = CreateInvoice.call(stripe_invoice: @invoice)
+    if !result.success?
+      context.fail!(message: result.message)
+    end
+
+    day_pass.invoice_id = our_invoice.id
     if !day_pass.save
-      context.fail!(message: "There was a problem charging this day pass.")
+      context.fail!(message: "There was a problem invoicing this day pass.")
     end
 
     blob = {type: "day-pass", day_pass_id: day_pass.id}
     create_feed_item(user.operator, user, blob)
 
-  rescue Exception => e
-    context.fail!(message: e.message)
+  #rescue Exception => e
+  #  context.fail!(message: e.message)
   end
 end

@@ -60,7 +60,7 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   def day_pass_params
-    params.require(:day_pass).permit(:day)
+    params.require(:day_pass).permit(:day, :day_pass_type)
   end
 
   def admin_day_pass_params
