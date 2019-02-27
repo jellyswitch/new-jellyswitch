@@ -29,20 +29,6 @@
         <td><%= @operator.subdomain %></td>
       </tr>
       <tr>
-        <th>Day Pass Product ID</th>
-        <td>
-          <%- if @operator.has_day_pass_product? %>
-            <pre><%= @operator.stripe_day_pass_product_id %></pre>
-          <%- else %>
-            <%= link_to "Add Day Pass Product", operator_add_day_pass_product_path(@operator), class: "btn btn-sm btn-primary" %>
-          <%- end %>
-        </td>
-      </tr>
-      <tr>
-        <th>Day Pass Cost</th>
-        <td><%= number_to_currency(@operator.day_pass_cost_in_cents.to_f / 100.0) %></td>
-      </tr>
-      <tr>
         <th>Contact Name</th>
         <td><%= @operator.contact_name %></td>
       </tr>

@@ -4,30 +4,23 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">Day Pass Types</h4>
-      <%- if current_tenant.has_day_pass_product? %>
-
-        <%= link_to "Add a new day pass type", new_day_pass_type_path, class: "btn btn-primary btn-sm" %>
-        <table class="table">
+      <%= link_to "Add a new day pass type", new_day_pass_type_path, class: "btn btn-primary btn-sm" %>
+      <table class="table">
+        <tr>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+        <% @day_pass_types.each do |day_pass_type| %>
           <tr>
-            <th>Name</th>
-            <th>Price</th>
-            <th>Actions</th>
+            <td><%= day_pass_type.name %></td>
+            <td><%= number_to_currency(day_pass_type.amount_in_cents.to_f / 100.0) %></td>
+            <td>
+              <%= render "actions", day_pass_type: day_pass_type %>
+            </td>
           </tr>
-          <% @day_pass_types.each do |day_pass_type| %>
-            <tr>
-              <td><%= day_pass_type.name %></td>
-              <td><%= number_to_currency(day_pass_type.amount_in_cents.to_f / 100.0) %></td>
-              <td>
-                <%= render "actions", day_pass_type: day_pass_type %>
-              </td>
-            </tr>
-          <% end %>
-        </table>
-      <%- else %>
-        <p class="lead">
-          This operator does not yet have a Day Pass product set up. Please talk to a Jellyswitch administrator.
-        </p>
-      <%- end %>
+        <% end %>
+      </table>
     </div>
   </div>
   <div class="col-sm-3"></div>

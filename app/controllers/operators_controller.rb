@@ -45,20 +45,6 @@ class OperatorsController < ApplicationController
     end
   end
 
-  def add_day_pass_product
-    find_operator(:operator_id)
-    authorize @operator
-
-    result = CreateDayPassProductForOperator.call(operator: @operator)
-
-    if result.success?
-      flash[:success] = "Day Pass added."
-    else
-      flash[:error] = result.message
-    end
-    redirect_to operator_path(@operator)
-  end
-
   private
 
   def find_operators
@@ -71,7 +57,7 @@ class OperatorsController < ApplicationController
 
   def operator_params
     params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
-      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone, :day_pass_cost_in_cents, 
+      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
       :background_image, :logo_image, :square_footage, :email_enabled)
   end
 end
