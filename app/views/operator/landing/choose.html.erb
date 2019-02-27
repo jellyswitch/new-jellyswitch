@@ -5,18 +5,20 @@
       <h4 class="display-4 text-center mt-4">Welcome!</h4>
       <p class="lead text-center mb-3 mt-3">To proceed, please purchase a day pass or become a member at <%= current_tenant.name %>.</p>
       <div class="row mb-2 mr-1 ml-1">
-        <div class="col mt-3">
-          <strong class="row">
-            Day Passes
-          </strong>
-          <p class="row mt-3" style="height: 100px;">
-            A day pass costs <%= number_to_currency(@day_pass_types.first.amount_in_cents.to_f / 100.0) %> and include access to the building, wifi, and a desk.
-          </p>
-          <div class="row">
-            <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2" %>
+        <%- if @day_pass_types.count > 0 %>
+          <div class="col mt-3">
+            <strong class="row">
+              Day Passes
+            </strong>
+            <p class="row mt-3" style="height: 100px;">
+              A day pass costs <%= number_to_currency(@day_pass_types.first.amount_in_cents.to_f / 100.0) %> and include access to the building, wifi, and a desk.
+            </p>
+            <div class="row">
+              <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2" %>
+            </div>
           </div>
-        </div>
-        <div class="col-1"></div>
+          <div class="col-1"></div>
+        <%- end %>
         <div class="col mt-3">
           <strong class="row">
             Memberships
