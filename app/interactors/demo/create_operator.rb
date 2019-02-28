@@ -33,6 +33,11 @@ class Demo::CreateOperator
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
 
+    result = Demo::CreateDayPassTypes.call(operator: op)
+    if !result.success?
+      context.fail!(message: "Error while creating operator: #{result.message}")
+    end
+
     5.times do
       result = Demo::CreateMember.call(operator: op)
       if !result.success?
