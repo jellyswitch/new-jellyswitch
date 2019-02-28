@@ -37,7 +37,10 @@ class Demo::DestroyOperator
     end
 
     # Destroy members
-    operator.users.members.destroy_all
+    operator.users.members.each do |member|
+      member.stripe_customer.delete
+      member.destroy
+    end
 
     # Delete operator
     if !operator.destroy
