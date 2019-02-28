@@ -55,6 +55,17 @@ class OperatorsController < ApplicationController
     redirect_to operators_path
   end
 
+  def destroy
+    find_operator
+    authorize @operator
+
+    result = Demo::DestroyOperator.call(operator: @operator)
+    if !result.success?
+      flash[:error] = result.message
+    end
+    redirect_to operators_path
+  end
+
   private
 
   def find_operators

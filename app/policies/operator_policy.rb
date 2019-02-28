@@ -26,4 +26,8 @@ class OperatorPolicy < ApplicationPolicy
   def demo_instance?
     superadmin?
   end
+
+  def destroy?
+    superadmin?
+  end
 end

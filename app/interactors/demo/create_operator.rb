@@ -6,7 +6,7 @@ class Demo::CreateOperator
     op.name = Faker::Company.unique.name
     op.snippet = Faker::GameOfThrones.quote
     op.wifi_name = op.name
-    op.wifi_password = Faker::Ancient.unique.god
+    op.wifi_password = Faker::Ancient.god
     op.building_address = Faker::Address.full_address
     op.approval_required = true
     op.contact_name = Faker::Name.unique.name
@@ -31,6 +31,13 @@ class Demo::CreateOperator
     result = Demo::CreatePlans.call(operator: op)
     if !result.success?
       context.fail!(message: "Error while creating operator: #{result.message}")
+    end
+
+    5.times do
+      result = Demo::CreateMember.call(operator: op)
+      if !result.success?
+        context.fail!(message: "Error creating members: #{result.message}")
+      end
     end
   end
 end

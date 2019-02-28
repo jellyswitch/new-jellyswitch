@@ -13,8 +13,23 @@ class Demo::DestroyOperator
     # Delete admins
     operator.users.admins.non_superadmins.destroy_all
 
-    # Destroy plans
-    operator.plans.destroy_all
+    # Destroy invoices
+    operator.invoices.destroy_all
+
+    # Destroy subscriptions
+    operator.plans.each do |plan|
+      plan.subscriptions.each do |subscription|
+        subscription.active = false
+        subscription.save!
+      end
+      plan.destroy
+    end
+
+    # Destroy members
+    operator.users.members.destroy_all
+
+    # Destroy day passes
+    operator.day_pass_types.destroy_all
 
     # Delete operator
     if !operator.destroy
