@@ -19,17 +19,25 @@ class Demo::DestroyOperator
     # Destroy subscriptions
     operator.plans.each do |plan|
       plan.subscriptions.each do |subscription|
-        subscription.active = false
-        subscription.save!
+        result = CancelSubscription.call(subscription: subscription)
+        if !result.success?
+          context.fail!(message: "Failed to cancel subscription: #{result.message}")
+        end
       end
       plan.destroy
     end
 
-    # Destroy members
-    operator.users.members.destroy_all
-
     # Destroy day passes
     operator.day_pass_types.destroy_all
+
+    # Reservations
+    operator.rooms.each do |room|
+      room.reservations.destroy_all
+      room.destroy
+    end
+
+    # Destroy members
+    operator.users.members.destroy_all
 
     # Delete operator
     if !operator.destroy

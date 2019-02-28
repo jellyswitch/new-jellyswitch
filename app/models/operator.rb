@@ -28,6 +28,7 @@ class Operator < ApplicationRecord
   has_many :member_feedbacks
   has_many :organizations
   has_many :plans
+  has_many :rooms
   has_many :users
 
   has_one_attached :background_image

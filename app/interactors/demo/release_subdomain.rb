@@ -5,16 +5,15 @@ class Demo::ReleaseSubdomain
     operator = context.operator
 
     subdomain = Subdomain.find_by(subdomain: operator.subdomain)
-    if subdomain.nil?
-      context.fail!(message: "No such subdomain: #{operator.subdomain}")
-    end
+    if subdomain.present?
 
-    ActiveRecord::Base.transaction do
-      subdomain.in_use = false
-      operator.subdomain = "placeholder"
+      ActiveRecord::Base.transaction do
+        subdomain.in_use = false
+        operator.subdomain = "placeholder"
 
-      subdomain.save!
-      operator.save!
+        subdomain.save!
+        operator.save!
+      end
     end
   rescue Exception => e
     context.fail!(e.message)

@@ -44,5 +44,12 @@ class Demo::CreateOperator
         context.fail!(message: "Error creating members: #{result.message}")
       end
     end
+
+    3.times do
+      result = Demo::CreateRoom.call(operator: op)
+      if !result.success?
+        context.fail!(message: "Error creating room: #{result.message}")
+      end
+    end
   end
 end
