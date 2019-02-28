@@ -48,6 +48,12 @@ class Plan < ApplicationRecord
     self.save
   end
 
+  before_destroy :destroy_stripe_plan
+  def destroy_stripe_plan
+    stripe_plan.delete
+  end
+
+
   def stripe_plan
     Stripe::Plan.retrieve(self.stripe_plan_id)
   end

@@ -23,11 +23,13 @@
 class Operator < ApplicationRecord
   has_many :day_passes
   has_many :day_pass_types
+  has_many :doors
   has_many :feed_items
   has_many :invoices
   has_many :member_feedbacks
   has_many :organizations
   has_many :plans
+  has_many :rooms
   has_many :users
 
   has_one_attached :background_image

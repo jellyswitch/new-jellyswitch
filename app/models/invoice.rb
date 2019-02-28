@@ -38,11 +38,19 @@ class Invoice < ApplicationRecord
   }
 
   def stripe_invoice
-    @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
+    if stripe_invoice_id.present?
+      @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
+    else
+      nil
+    end
   end
 
   def pdf_url
-    stripe_invoice.invoice_pdf
+    if stripe_invoice_id.present?
+      stripe_invoice.invoice_pdf
+    else
+      nil
+    end
   end
 
   def pretty_due_date

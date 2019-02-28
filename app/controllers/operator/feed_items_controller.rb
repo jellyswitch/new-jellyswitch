@@ -23,10 +23,6 @@ class Operator::FeedItemsController < Operator::BaseController
       @feed_item.photos.attach(feed_item_params[:photos])
     end
 
-    if @feed_item.text.downcase.include?("spent")
-      @feed_item.expense = true
-    end
-
     authorize @feed_item
 
     if @feed_item.save

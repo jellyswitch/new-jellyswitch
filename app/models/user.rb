@@ -55,7 +55,8 @@ class User < ApplicationRecord
   scope :unapproved, ->() { where(approved: false) }
   scope :members, ->() { where(admin: false) }
   scope :admins, ->() { where(admin: true) }
-  scope :for_space, ->(operator) { where('operator_id = ? OR superadmin = true', operator.id) }
+  scope :non_superadmins, ->() { where(superadmin: false) }
+  scope :for_space, ->(operator) { where('operator_id = ?', operator.id) }
 
   # Relationship Helpers
   def owned_organization

@@ -20,7 +20,6 @@ class CreateSubscription
       context.fail!(message: "Failed to create subscription.")
     end
 
-
     if user.out_of_band?
       stripe_subscription = Stripe::Subscription.create({
         customer: context.user.stripe_customer_id,

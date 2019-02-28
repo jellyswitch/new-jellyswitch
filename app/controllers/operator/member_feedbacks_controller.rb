@@ -7,7 +7,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
 
   def create
     authorize MemberFeedback.new
-    result = CreateMemberFeedback.call(member_feedpack_params: member_feedpack_params, user: current_user, operator: current_tenant)
+    result = CreateMemberFeedback.call(member_feedback_params: member_feedback_params, user: current_user, operator: current_tenant)
     @member_feedback = result.member_feedback
     
     if result.success?
@@ -41,7 +41,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     @member_feedback = MemberFeedback.find(params[key])
   end
 
-  def member_feedpack_params
+  def member_feedback_params
     params.require(:member_feedback).permit(:anonymous, :comment, :rating, :user_id)
   end
 end

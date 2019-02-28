@@ -32,14 +32,6 @@ class UsersController < ApplicationController
       flash[:success] = "Please log out first."
       redirect_to root_path
     end
-    background_image
-  end
-
-  def add_member
-    @user = User.new
-    @user.approved = true
-    authorize @user
-    background_image
   end
 
   def edit
@@ -49,26 +41,25 @@ class UsersController < ApplicationController
   end
 
   def create
+    # Create the admin user
+    # Create the operator instance
+    # Redirect them to the operator instance
+    
     @user = User.new(user_params)
-    if !current_tenant.approval_required
-      @user.approved = true
-    end
-    authorize @user
+    @user.admin = true
 
     if @user.save
-      if admin? # Admin is creating a user
-        redirect_to user_path(@user)
+      log_in(@user)
+      result = Demo::CreateOperator.call
+      if result.success?
+        @user.update(operator_id: result.operator.id)
+        redirect_to landing_url(subdomain: result.operator.subdomain)
       else
-        log_in(@user)
-        redirect_to home_path
+        flash[:error] = result.message
       end
     else
       background_image
-      if admin? # Admin is creating a user
-        render :add_member, status: 422
-      else
-        render :new, status: 422
-      end
+      render :new, status: 422
     end
   end
 
@@ -191,30 +182,7 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    result = params.require(:user).permit(
-      :name, :email, :password, :password_confirmation, 
-      :bio, :linkedin, :twitter, :website, :profile_photo,
-      :approved)
-    result[:admin] = @user.admin if @user.present?
-    result
-  end
-
-  def user_password_params
-    params.require(:user).permit(:password, :password_confirmation)
-  end
-
-  def user_organization_params
-    params.require(:user).permit(:organization_id)
-  end
-
-  def user_approval_params
-      params.require(:user).permit(:approved)
-  end
-
-  def admin_hook
-    if User.count < 1
-      @user.admin = true
-    end
+    params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 
   def find_user(key=:id)
