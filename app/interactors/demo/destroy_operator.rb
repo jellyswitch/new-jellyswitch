@@ -50,6 +50,9 @@ class Demo::DestroyOperator
     # Feed Items
     operator.feed_items.destroy_all
 
+    # Doors
+    operator.doors.destroy_all
+
     # Delete operator
     if !operator.destroy
       context.fail!(message: "Unable to destroy operator")

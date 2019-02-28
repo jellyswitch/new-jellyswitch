@@ -54,6 +54,13 @@ class Demo::CreateOperator
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
 
+    3.times do
+      result = Demo::CreateRoom.call(operator: op)
+      if !result.success?
+        context.fail!(message: "Error creating room: #{result.message}")
+      end
+    end
+
     6.times do
       # Sometime in the last 60 days
       day = Time.current - rand(60).days
@@ -91,17 +98,12 @@ class Demo::CreateOperator
       end
     end
 
-    3.times do
-      result = Demo::CreateRoom.call(operator: op)
-      if !result.success?
-        context.fail!(message: "Error creating room: #{result.message}")
-      end
-    end
-
     result = Demo::CreateFeedItems.call(operator: op)
     if !result.success?
       context.fail!(message: "Error creating feed items: #{result.message}")
     end
+
+    op.doors.create!(name: "Front Door")
   end
 
   def logo_paths

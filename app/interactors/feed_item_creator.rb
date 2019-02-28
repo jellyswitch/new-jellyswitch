@@ -11,7 +11,7 @@ module FeedItemCreator
     end
     
     if !feed_item.save
-      context.fail!(message: "Unable to generate feed item.")
+    context.fail!(message: "Unable to generate feed item.")
     end
 
     operator.users.admins.each do |admin_user|

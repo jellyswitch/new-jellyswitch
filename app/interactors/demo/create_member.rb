@@ -73,6 +73,20 @@ class Demo::CreateMember
       )
     end
 
+    if rand(10) < 5
+      room = operator.rooms.sample
+      result = CreateRoomReservation.call(
+        reservation_params: {
+          user_id: user.id,
+          datetime_in: day + rand(4).days,
+          hours: rand(3),
+          room_id: room.id,
+          created_at: day
+        },
+        user: user
+      )
+    end
+
     if rand(10) < 4
       result = CreateMemberFeedback.call(
         member_feedback_params: {
