@@ -3,7 +3,7 @@ class CreateMemberFeedback
   include FeedItemCreator
 
   def call
-    member_feedback = MemberFeedback.new(context.member_feedpack_params)
+    member_feedback = MemberFeedback.new(context.member_feedback_params)
     member_feedback.user = context.user
     member_feedback.operator = context.operator
 

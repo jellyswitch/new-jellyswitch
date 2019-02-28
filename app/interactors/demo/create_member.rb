@@ -78,7 +78,7 @@ class Demo::CreateMember
         member_feedback_params: {
           anonymous: false,
           user_id: user.id,
-          comment: Faker::Books::Dune.quote,
+          comment: Faker::Company.bs,
           created_at: day,
           updated_at: day
         },
