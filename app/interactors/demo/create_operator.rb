@@ -28,6 +28,12 @@ class Demo::CreateOperator
       filename: logo_path
     )
 
+    background_path = background_paths.shuffle.sample
+    op.background_image.attach(
+      io: File.open(Rails.root.join("app/assets/images/backgrounds/#{background_path}")),
+      filename: background_path
+    )
+
     result = Demo::ReserveSubdomain.call(operator: op)
     if !result.success?
       context.fail!(message: "Error while creating operator: #{result.message}")
@@ -61,6 +67,12 @@ class Demo::CreateOperator
   def logo_paths
     [1,2,3,4,5].map do |num|
       "#{num}.png"
+    end
+  end
+
+  def background_paths
+    [1,2,3,4,5,6,7,8,9,10,11,12].map do |num|
+      "#{num}.jpg"
     end
   end
 end
