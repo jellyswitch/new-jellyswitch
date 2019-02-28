@@ -38,6 +38,9 @@ class Demo::DestroyOperator
       room.destroy
     end
 
+    # Member Feedbacks
+    operator.member_feedbacks.destroy_all
+
     # Destroy members
     operator.users.members.each do |member|
       member.stripe_customer.delete

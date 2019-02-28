@@ -73,10 +73,21 @@ class Demo::CreateMember
       )
     end
 
-    # result = CreateSubscription.call(subscription: subscription, user: user, day: day)
-    # if !result.success?
-    #   context.fail!(message: "Error creating member subscription: #{result.message}")
-    # end
-
+    if rand(10) < 4
+      result = CreateMemberFeedback.call(
+        member_feedback_params: {
+          anonymous: false,
+          user_id: user.id,
+          comment: Faker::Books::Dune.quote,
+          created_at: day,
+          updated_at: day
+        },
+        operator: operator,
+        user: user
+      )
+      if !result.success?
+        context.fail!(message: "Error creating member feedback: #{result.message}")
+      end
+    end
   end
 end

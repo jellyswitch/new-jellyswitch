@@ -10,6 +10,9 @@
   <div class="ml-2">
     <p class="mb-1">
       <%= link_to feed_item.user.name, user_path(feed_item.user) %>
+      <%- if feed_item.user.admin? %>
+        <span class="badge badge-success">Operator</span>
+      <%- end %>
       <br />
       <small>
         <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
