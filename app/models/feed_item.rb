@@ -81,7 +81,9 @@ class FeedItem < ApplicationRecord
   end
 
   def parse_amount!
-    if expense?
+    if self.text && self.text.downcase.include?("spent")
+      self.expense = true
+
       amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
       blob["amount"] = amount
     end

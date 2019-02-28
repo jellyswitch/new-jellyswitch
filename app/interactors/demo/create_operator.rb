@@ -97,6 +97,11 @@ class Demo::CreateOperator
         context.fail!(message: "Error creating room: #{result.message}")
       end
     end
+
+    result = Demo::CreateFeedItems.call(operator: op)
+    if !result.success?
+      context.fail!(message: "Error creating feed items: #{result.message}")
+    end
   end
 
   def logo_paths

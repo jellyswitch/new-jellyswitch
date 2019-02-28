@@ -1,16 +1,20 @@
 module FeedItemCreator
-  def create_feed_item(operator, user, blob)
+  def create_feed_item(operator, user, blob, options = {})
     feed_item = FeedItem.new
     feed_item.operator = operator
     feed_item.user = user
     feed_item.blob = blob
+
+    if options[:day].present?
+      feed_item.created_at = options[:day]
+      feed_item.updated_at = options[:day]
+    end
     
     if !feed_item.save
       context.fail!(message: "Unable to generate feed item.")
     end
 
     operator.users.admins.each do |admin_user|
-      puts feed_item.inspect
       send_email_notification(admin_user, feed_item)
     end
   end

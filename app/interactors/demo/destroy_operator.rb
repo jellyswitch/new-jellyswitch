@@ -44,6 +44,8 @@ class Demo::DestroyOperator
       member.destroy
     end
 
+    # Feed Items
+    operator.feed_items.destroy_all
 
     # Delete operator
     if !operator.destroy
