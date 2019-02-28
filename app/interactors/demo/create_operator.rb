@@ -56,6 +56,13 @@ class Demo::CreateOperator
       end
     end
 
+    5.times do
+      result = Demo::CreateDayPasser.call(operator: op)
+      if !result.success?
+        context.fail!(message: "Error creating day passers: #{result.message}")
+      end
+    end
+
     3.times do
       result = Demo::CreateRoom.call(operator: op)
       if !result.success?

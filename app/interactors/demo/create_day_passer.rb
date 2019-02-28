@@ -1,4 +1,4 @@
-class Demo::CreateMember
+class Demo::CreateDayPasser
   include Interactor
   include Demo::Avatars
 
@@ -34,17 +34,21 @@ class Demo::CreateMember
       filename: path
     )
 
-    # Select a plan at random and subscribe them to it
-    plan = operator.plans.available.all.shuffle.sample
-    subscription = Subscription.new(
-      plan_id: plan.id,
-      user_id: user.id,
-      active: true
-    )
-    result = CreateSubscription.call(subscription: subscription, user: user)
-    if !result.success?
-      context.fail!(message: "Error creating member subscription: #{result.message}")
-    end
+    day_pass_type_id = operator.day_pass_types.available.visible.first.id
+    day = Time.current
 
+    result = CreateDayPass.call(
+      params: {
+        day_pass_type: day_pass_type_id,
+        day: day,
+        operator_id: operator.id
+      },
+      operator: operator,
+      user_id: user.id
+    )
+
+    if !result.success?
+      context.fail!(message: result.message)
+    end
   end
 end

@@ -23,13 +23,15 @@ class CreateDayPass
 
     context.day_pass = day_pass
     
-    result = UpdateUserPayment.call(
-      user: user,
-      token: context.token
-    )
+    if !user.out_of_band?
+      result = UpdateUserPayment.call(
+        user: user,
+        token: context.token
+      )
     
-    if !result.success?
-      context.fail!(message: "Unable to update payment method.")
+      if !result.success?
+        context.fail!(message: "Unable to update payment method.")
+      end
     end
 
     if !day_pass.save
@@ -58,12 +60,12 @@ class CreateDayPass
       })
     end
 
-    our_invoice = CreateInvoice.call(stripe_invoice: @invoice)
+    result = CreateInvoice.call(stripe_invoice: @invoice)
     if !result.success?
       context.fail!(message: result.message)
     end
 
-    day_pass.invoice_id = our_invoice.id
+    day_pass.invoice_id = result.invoice.id
     if !day_pass.save
       context.fail!(message: "There was a problem invoicing this day pass.")
     end
@@ -71,7 +73,7 @@ class CreateDayPass
     blob = {type: "day-pass", day_pass_id: day_pass.id}
     create_feed_item(user.operator, user, blob)
 
-  #rescue Exception => e
-  #  context.fail!(message: e.message)
+  rescue Exception => e
+    context.fail!(message: e.message)
   end
 end
