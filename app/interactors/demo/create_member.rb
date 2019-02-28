@@ -4,6 +4,7 @@ class Demo::CreateMember
 
   def call
     operator = context.operator
+    day = context.day
 
     name = Faker::Name.unique.name
     email = Faker::Internet.unique.safe_email
@@ -17,7 +18,9 @@ class Demo::CreateMember
         password: password,
         bio: bio,
         approved: true,
-        out_of_band: true
+        out_of_band: true,
+        created_at: day,
+        updated_at: day
       },
       operator: operator
     )
@@ -36,15 +39,30 @@ class Demo::CreateMember
 
     # Select a plan at random and subscribe them to it
     plan = operator.plans.available.all.shuffle.sample
-    subscription = Subscription.new(
+    subscription = Subscription.create!(
       plan_id: plan.id,
       user_id: user.id,
-      active: true
+      active: true,
+      created_at: day,
+      updated_at: day
     )
-    result = CreateSubscription.call(subscription: subscription, user: user)
-    if !result.success?
-      context.fail!(message: "Error creating member subscription: #{result.message}")
-    end
+
+    invoice = Invoice.create!(
+      user_id: user.id,
+      operator_id: user.operator.id,
+      amount_due: subscription.plan.amount_in_cents.to_i,
+      amount_paid: subscription.plan.amount_in_cents.to_i,
+      number: rand(5000).to_i,
+      stripe_invoice_id: nil,
+      date: day,
+      due_date: day + 30.days,
+      status: "paid"
+    )
+
+    # result = CreateSubscription.call(subscription: subscription, user: user, day: day)
+    # if !result.success?
+    #   context.fail!(message: "Error creating member subscription: #{result.message}")
+    # end
 
   end
 end

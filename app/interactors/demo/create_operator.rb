@@ -49,8 +49,11 @@ class Demo::CreateOperator
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
 
-    5.times do
-      result = Demo::CreateMember.call(operator: op)
+    10.times do
+      # Sometime in the last 30 days
+      day = Time.current - rand(30).days
+
+      result = Demo::CreateMember.call(operator: op, day: day)
       if !result.success?
         context.fail!(message: "Error creating members: #{result.message}")
       end

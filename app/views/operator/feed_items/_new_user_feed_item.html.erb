@@ -12,7 +12,7 @@
       <%= link_to feed_item.user.name, user_path(feed_item.user) %>
       <br />
       <small>
-        <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
+        <%= link_to "#{time_ago_in_words(feed_item.user.created_at)} ago", feed_item_path(feed_item) %>
       </small>
     </p>
   </div>

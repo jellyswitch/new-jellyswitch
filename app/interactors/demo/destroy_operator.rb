@@ -28,7 +28,10 @@ class Demo::DestroyOperator
     end
 
     # Destroy day passes
-    operator.day_pass_types.destroy_all
+    operator.day_pass_types.each do |day_pass_type|
+      day_pass_type.day_passes.destroy_all
+      day_pass_type.destroy
+    end
 
     # Reservations
     operator.rooms.each do |room|
@@ -41,6 +44,8 @@ class Demo::DestroyOperator
       member.stripe_customer.delete
       member.destroy
     end
+
+    
 
     # Delete operator
     if !operator.destroy
