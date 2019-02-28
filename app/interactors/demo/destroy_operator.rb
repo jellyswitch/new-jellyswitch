@@ -19,9 +19,8 @@ class Demo::DestroyOperator
     # Destroy subscriptions
     operator.plans.each do |plan|
       plan.subscriptions.each do |subscription|
-        result = CancelSubscription.call(subscription: subscription)
-        if !result.success?
-          context.fail!(message: "Failed to cancel subscription: #{result.message}")
+        if !subscription.destroy
+          context.fail!(message: "Unable to cancel subscription.")
         end
       end
       plan.destroy
@@ -45,7 +44,6 @@ class Demo::DestroyOperator
       member.destroy
     end
 
-    
 
     # Delete operator
     if !operator.destroy

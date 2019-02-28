@@ -47,17 +47,31 @@ class Demo::CreateMember
       updated_at: day
     )
 
-    invoice = Invoice.create!(
-      user_id: user.id,
-      operator_id: user.operator.id,
-      amount_due: subscription.plan.amount_in_cents.to_i,
-      amount_paid: subscription.plan.amount_in_cents.to_i,
-      number: rand(5000).to_i,
-      stripe_invoice_id: nil,
-      date: day,
-      due_date: day + 30.days,
-      status: "paid"
-    )
+    if day < Time.current
+      invoice = Invoice.create!(
+        user_id: user.id,
+        operator_id: user.operator.id,
+        amount_due: subscription.plan.amount_in_cents.to_i,
+        amount_paid: subscription.plan.amount_in_cents.to_i,
+        number: rand(5000).to_i,
+        stripe_invoice_id: nil,
+        date: day,
+        due_date: day + 30.days,
+        status: "paid"
+      )
+    else
+      invoice = Invoice.create!(
+        user_id: user.id,
+        operator_id: user.operator.id,
+        amount_due: subscription.plan.amount_in_cents.to_i,
+        amount_paid: 0,
+        number: rand(5000).to_i,
+        stripe_invoice_id: nil,
+        date: day,
+        due_date: day + 30.days,
+        status: "open"
+      )
+    end
 
     # result = CreateSubscription.call(subscription: subscription, user: user, day: day)
     # if !result.success?

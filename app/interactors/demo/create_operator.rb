@@ -12,7 +12,7 @@ class Demo::CreateOperator
     op.contact_name = Faker::Name.unique.name
     op.contact_email = Faker::Internet.unique.safe_email
     op.contact_phone = Faker::PhoneNumber.phone_number
-    op.square_footage = 5000
+    op.square_footage = 2000
     op.email_enabled = false
     op.subdomain = "placeholder"
 
@@ -39,6 +39,11 @@ class Demo::CreateOperator
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
 
+    result = Demo::CreateAdmins.call(operator: op)
+    if !result.success?
+      context.fail!(message: "Error while creating admins: #{result.message}")
+    end
+
     result = Demo::CreatePlans.call(operator: op)
     if !result.success?
       context.fail!(message: "Error while creating operator: #{result.message}")
@@ -49,13 +54,33 @@ class Demo::CreateOperator
       context.fail!(message: "Error while creating operator: #{result.message}")
     end
 
-    10.times do
-      # Sometime in the last 30 days
-      day = Time.current - rand(30).days
+    6.times do
+      # Sometime in the last 60 days
+      day = Time.current - rand(60).days
 
       result = Demo::CreateMember.call(operator: op, day: day)
       if !result.success?
         context.fail!(message: "Error creating members: #{result.message}")
+      end
+    end
+
+    6.times do
+      # Sometime in the next 30 days
+      day = Time.current + rand(60).days
+
+      result = Demo::CreateMember.call(operator: op, day: day)
+      if !result.success?
+        context.fail!(message: "Error creating members: #{result.message}")
+      end
+    end
+
+    2.times do
+      # Sometime in the last 30 days
+      day = Time.current - rand(30).days
+
+      result = Demo::CreateUnapprovedMember.call(operator: op, day: day)
+      if !result.success?
+        context.fail!(message: "Error creating unapproved members: #{result.message}")
       end
     end
 

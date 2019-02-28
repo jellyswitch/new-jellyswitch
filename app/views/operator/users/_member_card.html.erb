@@ -18,7 +18,7 @@
         </p>
         <%= render "operator/users/social", user: member %>
         <%- if member.admin? %>
-          <span class="badge badge-success">Admininstrator</span>
+          <span class="badge badge-success">Operator</span>
         <%- end %>
         <%- if !member.approved? %>
           <span class="badge badge-danger">Not Approved</span>
