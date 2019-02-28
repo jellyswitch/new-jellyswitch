@@ -19,6 +19,7 @@ Rails.application.routes.draw do
         post :stripe, to: 'webhooks#stripe'
       end
     end
+    resources :users
   end
 
   # Privacy Policy
