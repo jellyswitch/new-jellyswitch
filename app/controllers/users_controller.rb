@@ -50,13 +50,11 @@ class UsersController < ApplicationController
 
     if @user.save
       log_in(@user)
-      result = Demo::CreateOperator.call
-      if result.success?
-        @user.update(operator_id: result.operator.id)
-        redirect_to landing_url(subdomain: result.operator.subdomain)
-      else
-        flash[:error] = result.message
-      end
+
+      job = CreateOperatorJob.perform_later
+
+      @user.update(operator_id: result.operator.id)
+      redirect_to landing_url(subdomain: result.operator.subdomain)
     else
       background_image
       render :new, status: 422
