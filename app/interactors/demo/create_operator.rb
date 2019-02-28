@@ -15,13 +15,18 @@ class Demo::CreateOperator
     op.square_footage = 5000
     op.email_enabled = false
     op.subdomain = "placeholder"
-    # TODO: background_image and logo_image
 
     context.operator = op
 
     if !op.save
       context.fail!(message: "Unable to create operator.")
     end
+
+    logo_path = logo_paths.shuffle.sample
+    op.logo_image.attach(
+      io: File.open(Rails.root.join("app/assets/images/logos/#{logo_path}")),
+      filename: logo_path
+    )
 
     result = Demo::ReserveSubdomain.call(operator: op)
     if !result.success?
@@ -50,6 +55,12 @@ class Demo::CreateOperator
       if !result.success?
         context.fail!(message: "Error creating room: #{result.message}")
       end
+    end
+  end
+
+  def logo_paths
+    [1,2,3,4,5].map do |num|
+      "#{num}.png"
     end
   end
 end
