@@ -25,7 +25,7 @@ class WebhooksController < ApplicationController
       update_status(@event.data.object)
     when "invoice.marked_uncollectible"
       update_status(@event.data.object)
-    elseq
+    else
       error("Unrecognized webhook type: #{@event.type}")
     end
   rescue Exception => e
@@ -48,7 +48,7 @@ class WebhooksController < ApplicationController
     if result.success?
       ok
     else
-      Rollbar.error(result.message)
+      Rollbar.error(result.message) if @event.livemode
       error(result.message)
     end
   end
