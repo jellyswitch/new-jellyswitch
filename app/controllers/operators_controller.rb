@@ -61,10 +61,8 @@ class OperatorsController < ApplicationController
     find_operator
     authorize @operator
 
-    result = Demo::DestroyOperator.call(operator: @operator)
-    if !result.success?
-      flash[:error] = result.message
-    end
+    DestroyOperatorJob.perform_later(@operator)
+    flash[:success] = "Enqueued for deletion."
     redirect_to operators_path
   end
 

@@ -3,7 +3,7 @@ class Demo::DestroyOperator
 
   def call
     operator = context.operator
-
+    
     # Delete subdomain
     result = Demo::ReleaseSubdomain.call(operator: operator)
     if !result.success?
