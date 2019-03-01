@@ -14,7 +14,7 @@
 #  remember_digest    :string
 #  slug               :string
 #  superadmin         :boolean          default(FALSE), not null
-#  twitter            :string
+#  twitter             :string
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
@@ -48,7 +48,7 @@ class User < ApplicationRecord
   attr_accessor :remember_token
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create
-  validates :email, uniqueness: true
+  validates :email, uniqueness: { scope: :operator_id }
   has_secure_password
 
   # Scopes
