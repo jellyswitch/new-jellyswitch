@@ -3,7 +3,7 @@ class WebhooksController < ApplicationController
 
   def stripe
     payload = JSON.parse(request.body.read, symbolize_names: true)
-    @event = Stripe::@event.construct_from(payload)
+    @event = Stripe::Event.construct_from(payload)
 
     case @event.type
     when "invoice.finalized"
