@@ -9,7 +9,7 @@ class Demo::CreateAdmins
       name = Faker::Name.unique.name
       email = Faker::Internet.unique.safe_email
       password = "password"
-      bio = Faker::GameOfThrones.quote
+      bio = "demo"
   
       result = CreateUser.call(
         params: {

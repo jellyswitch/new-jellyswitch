@@ -11,7 +11,7 @@ class Demo::DestroyOperator
     end
 
     # Delete admins
-    operator.users.admins.non_superadmins.destroy_all
+    operator.users.admins.non_superadmins.where(bio: 'demo').destroy_all
 
     # Destroy invoices
     operator.invoices.destroy_all
