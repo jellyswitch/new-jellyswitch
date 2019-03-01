@@ -15,6 +15,8 @@ class OperatorSurveysController < ApplicationController
       op = current_user.operator
       op.update(name: @operator_survey.space_name, square_footage: @operator_survey.square_footage)
 
+      OperatorMailer.new_operator_survey(@operator_survey).deliver_later
+
       redirect_to wait_operator_surveys_path
     else
       render :new

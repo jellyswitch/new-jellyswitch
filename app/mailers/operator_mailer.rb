@@ -6,4 +6,11 @@ class OperatorMailer < ApplicationMailer
     
     mail to: @user.email, subject: "Your Jellyswitch demo is ready"
   end
+
+  def new_operator_survey(operator_survey)
+    @operator_survey = operator_survey
+
+    recipients = User.superadmins.all.map {|u| u.email }
+    mail to: recipients, subject: "New Jellyswitch demo"
+  end
 end
