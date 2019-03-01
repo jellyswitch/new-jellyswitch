@@ -31,7 +31,7 @@ class OperatorSurveysController < ApplicationController
 
   def operator_survey_params
     result = params.require(:operator_survey).permit(:square_footage, :location, :space_name, :number_of_members)
-    result[:square_footage] = result[:square_footage].gsub!(',','').to_i
+    result[:square_footage] = result[:square_footage].split(",").join().to_i
     result
   end
 end
