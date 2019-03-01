@@ -50,11 +50,16 @@ class UsersController < ApplicationController
 
     if @user.save
       log_in(@user)
+      result = Demo::CreateOperator.call(user: current_user)
 
-      job = CreateOperatorJob.perform_later
-
-      @user.update(operator_id: result.operator.id)
-      redirect_to landing_url(subdomain: result.operator.subdomain)
+      if !result.success?
+        flash[:error] = result.message
+        # TODO? what to do here?
+        redirect_to root_path(subdomain: 'app')
+      else
+        @user.update(operator_id: result.operator.id)
+        redirect_to new_operator_survey_path
+      end
     else
       background_image
       render :new, status: 422

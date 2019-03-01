@@ -1,0 +1,34 @@
+# == Schema Information
+#
+# Table name: operator_surveys
+#
+#  id                :bigint(8)        not null, primary key
+#  location          :string
+#  number_of_members :integer
+#  operator_email    :string
+#  operator_name     :string
+#  space_name        :string
+#  square_footage    :integer
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  operator_id       :integer
+#  user_id           :integer
+#
+
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user_id: 1
+  operator_id: 1
+  square_footage: 1
+  number_of_members: 1
+  space_name: MyString
+  operator_name: MyString
+
+two:
+  user_id: 1
+  operator_id: 1
+  square_footage: 1
+  number_of_members: 1
+  space_name: MyString
+  operator_name: MyString

@@ -27,6 +27,7 @@ class Operator < ApplicationRecord
   has_many :feed_items
   has_many :invoices
   has_many :member_feedbacks
+  has_many :operator_surveys
   has_many :organizations
   has_many :plans
   has_many :rooms

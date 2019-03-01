@@ -1,8 +1,8 @@
 class CreateOperatorJob < ApplicationJob
   queue_as :default
 
-  def perform
-    result = Demo::CreateOperator.call
+  def perform(operator, user)
+    result = Demo::FinishCreatingOperator.call(operator: operator, user: user)
     if !result.success?
       Rollbar.error(result.message)
     end

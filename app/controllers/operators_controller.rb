@@ -47,9 +47,13 @@ class OperatorsController < ApplicationController
   
   def demo_instance
     authorize Operator
-    CreateOperatorJob.perform_later
+    result = Demo::CreateOperator.call(user: current_user)
 
-    flash[:success] = "Creating operator. Please check back in a few minutes."
+    if result.success
+      flash[:success] = "Creating demo instance: #{result.operator.name}. Please check back in 30 seconds."
+    else
+      flash[:error] = result.message
+    end
     redirect_to operators_path
   end
 

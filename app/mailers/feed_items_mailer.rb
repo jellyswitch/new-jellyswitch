@@ -4,6 +4,8 @@ class FeedItemsMailer < ApplicationMailer
   #
   #   en.feed_items_mailer.member_feedback.subject
   #
+  include HostValidator
+  
   def member_feedback(params = {})
     @feed_item = params[:feed_item]
     @user = params[:user]

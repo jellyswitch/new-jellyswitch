@@ -14,6 +14,11 @@ Rails.application.routes.draw do
         get :demo_instance, to: 'operators#demo_instance'
       end
     end
+    resources :operator_surveys do
+      collection do
+        get :wait, to: 'operator_surveys#wait'
+      end
+    end
     resources :webhooks do
       collection do
         post :stripe, to: 'webhooks#stripe'

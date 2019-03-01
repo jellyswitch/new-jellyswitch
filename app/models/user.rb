@@ -36,6 +36,7 @@ class User < ApplicationRecord
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator
+  has_many :operator_surveys
   has_many :reservations
   has_many :subscriptions
 
