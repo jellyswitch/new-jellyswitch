@@ -3,15 +3,14 @@ class WebhooksController < ApplicationController
 
   def stripe
     payload = JSON.parse(request.body.read, symbolize_names: true)
-    puts payload.inspect
-    event = Stripe::Event.construct_from(payload)
+    @event = Stripe::@event.construct_from(payload)
 
-    case event.type
+    case @event.type
     when "invoice.finalized"
-      if Invoice.exists?(stripe_invoice_id: event.data.object.id)
-        update_status(event.data.object)
+      if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
+        update_status(@event.data.object)
       else
-        result = CreateInvoice.call(stripe_invoice: event.data.object)
+        result = CreateInvoice.call(stripe_invoice: @event.data.object)
         if result.success?
           ok
         else
@@ -19,18 +18,18 @@ class WebhooksController < ApplicationController
         end
       end
     when "invoice.payment_succeeded"
-      update_status(event.data.object)
+      update_status(@event.data.object)
     when "invoice.payment_failed"
-      update_status(event.data.object)
+      update_status(@event.data.object)
     when "invoice.voided"
-      update_status(event.data.object)
+      update_status(@event.data.object)
     when "invoice.marked_uncollectible"
-      update_status(event.data.object)
-    else
-      error("Unrecognized webhook type: #{event.type}")
+      update_status(@event.data.object)
+    elseq
+      error("Unrecognized webhook type: #{@event.type}")
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Rollbar.error(e) if @event.livemode
     error(e.message)
   end
 
