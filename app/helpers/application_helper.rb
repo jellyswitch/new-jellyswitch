@@ -19,4 +19,10 @@ module ApplicationHelper
       nil
     end
   end
+
+  def basic_card
+    render "layouts/basic_card" do
+      yield
+    end
+  end
 end
