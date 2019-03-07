@@ -14,7 +14,7 @@
 #  remember_digest    :string
 #  slug               :string
 #  superadmin         :boolean          default(FALSE), not null
-#  twitter             :string
+#  twitter            :string
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null

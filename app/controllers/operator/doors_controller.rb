@@ -76,7 +76,7 @@ class Operator::DoorsController < Operator::BaseController
   end
 
   def door_params
-    params.require(:door).permit(:name)
+    params.require(:door).permit(:name, :kisi_id)
   end
 
   def log_door_punch
