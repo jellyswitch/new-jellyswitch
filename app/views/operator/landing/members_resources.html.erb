@@ -5,6 +5,16 @@
       <div class="card border-light">
         <div class="card-body">
           <h5 class="card-title">
+            Building Access
+          </h5>
+          <%= render "operator/doors/keys", doors: @doors %>
+          <%= link_to "Manage doors", doors_path, class: "btn btn-primary btn-sm" %>
+        </div>
+      </div>
+
+      <div class="card border-light">
+        <div class="card-body">
+          <h5 class="card-title">
             Member Directory
           </h5>
           <p class="card-text">
@@ -30,20 +40,6 @@
         </div>
       </div>
 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Member Feedback
-          </h5>
-          <p class="card-text">
-            <%= current_tenant.name %> has <%= current_tenant.member_feedbacks.count %> feedback submissions from members.
-          </p>
-          <p class="card-text">
-            <%= link_to "View member feedback", member_feedbacks_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
-
     </div>
   </div>
 </div>
@@ -55,10 +51,14 @@
       <div class="card border-light">
         <div class="card-body">
           <h5 class="card-title">
-            Building Access
+            Member Feedback
           </h5>
-          <%= render "operator/doors/keys", doors: @doors %>
-          <%= link_to "Manage doors", doors_path, class: "btn btn-primary btn-sm" %>
+          <p class="card-text">
+            <%= current_tenant.name %> has <%= current_tenant.member_feedbacks.count %> feedback submissions from members.
+          </p>
+          <p class="card-text">
+            <%= link_to "View member feedback", member_feedbacks_path, class: "btn btn-primary" %>
+          </p>
         </div>
       </div>
     
