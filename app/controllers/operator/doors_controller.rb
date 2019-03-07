@@ -62,7 +62,7 @@ class Operator::DoorsController < Operator::BaseController
     authorize @door
     log_door_punch
     OpenDoorJob.perform_later(@door)
-    redirect_to keys_doors_path
+    redirect_to referrer_or_root
   end
 
   private
