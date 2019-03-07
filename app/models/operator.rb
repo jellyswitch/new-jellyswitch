@@ -36,6 +36,7 @@ class Operator < ApplicationRecord
 
   has_one_attached :background_image
   has_one_attached :logo_image
+  has_one_attached :terms_of_service
 
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?

@@ -64,6 +64,16 @@
           <%- end %>
         </td>
       </tr>
+      <tr>
+        <th>Terms of Service</th>
+        <td>
+          <%- if @operator.terms_of_service.attached? %>
+            <%= link_to "Download", rails_blob_path(@operator.terms_of_service, disposition: 'attachment') %>
+          <%- else %>
+            <i>none</i>
+          <%- end %>
+        </td>
+      </tr>
        <tr>
         <th>Contact phone number</th>
         <td><%= @operator.contact_phone %></td>

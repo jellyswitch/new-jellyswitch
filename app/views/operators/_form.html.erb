@@ -80,6 +80,12 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <%= f.label :terms_of_service %>
+    <%= f.file_field :terms_of_service, placeholder: "Terms of Service", class: "col" %>
+    <div class="col-1"></div>
+  </div>
+  <div class="form-group row">
+    <div class="col-1"></div>
     <%= f.label "Approval Required" %>
     <%= f.check_box :approval_required, class: "form-control col" %>
     <div class="col-1"></div>
