@@ -10,6 +10,7 @@
 #  contact_phone          :string
 #  day_pass_cost_in_cents :integer          default(2500), not null
 #  email_enabled          :boolean          default(FALSE), not null
+#  kisi_api_key           :string
 #  name                   :string           not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null

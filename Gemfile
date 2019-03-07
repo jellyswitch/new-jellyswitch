@@ -13,6 +13,7 @@ gem 'draper'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'friendly_id'
 gem 'groupdate'
+gem 'httparty'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
 gem "interactor-rails", "~> 2.0"

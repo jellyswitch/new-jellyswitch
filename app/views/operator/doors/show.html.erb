@@ -17,6 +17,7 @@
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4"><%= @door.name %> access log</h4>
       <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, label: "Punches" %>
+      <p>Kisi ID: <pre><%= @door.kisi_id %></pre></p>
       <table class="table">
         <tr>
           <th>When</th>

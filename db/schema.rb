@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_01_001442) do
+ActiveRecord::Schema.define(version: 2019_03_07_224401) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -74,6 +74,7 @@ ActiveRecord::Schema.define(version: 2019_03_01_001442) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "operator_id", default: 1, null: false
+    t.integer "kisi_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
   end
 
@@ -152,6 +153,7 @@ ActiveRecord::Schema.define(version: 2019_03_01_001442) do
     t.integer "day_pass_cost_in_cents", default: 2500, null: false
     t.integer "square_footage", default: 0, null: false
     t.boolean "email_enabled", default: false, null: false
+    t.string "kisi_api_key"
   end
 
   create_table "organizations", force: :cascade do |t|
