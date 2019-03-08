@@ -205,6 +205,7 @@ GEM
     octicons_helper (8.0.0)
       octicons (= 8.0.0)
       rails
+    pagy (2.0.1)
     pg (1.0.0)
     popper_js (1.14.3)
     public_suffix (3.0.2)
@@ -339,6 +340,7 @@ DEPENDENCIES
   jquery-rails
   listen (>= 3.0.5, < 3.2)
   octicons_helper
+  pagy
   pg
   puma (~> 3.11)
   pundit

@@ -65,7 +65,7 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_items
-    @feed_items = FeedItem.for_operator(current_tenant).order('created_at DESC').all
+    @pagy, @feed_items = pagy(FeedItem.for_operator(current_tenant).order('created_at DESC'))
   end
 
   def feed_item_params

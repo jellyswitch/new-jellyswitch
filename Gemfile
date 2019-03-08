@@ -20,6 +20,7 @@ gem "interactor-rails", "~> 2.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'octicons_helper'
+gem 'pagy'
 gem 'pg'
 gem 'puma', '~> 3.11'
 gem 'pundit'
