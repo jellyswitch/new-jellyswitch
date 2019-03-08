@@ -6,7 +6,7 @@ class Operator::SessionsController < Operator::BaseController
 
   def create
     authorize :session, :create?
-    user = User.find_by(email: params[:session][:email].downcase, operator_id: current_tenant.id)
+    user = User.find_by_operator(email: params[:session][:email].downcase, operator_id: current_tenant.id)
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)

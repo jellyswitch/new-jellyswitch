@@ -121,6 +121,18 @@ class User < ApplicationRecord
     update_attribute(:remember_digest, nil)
   end
 
+  def self.find_by_operator(params)
+    email = params[:email]
+    operator_id = params[:operator_id]
+
+    user = User.find_by(email: email)
+    if user.superadmin?
+      return user
+    else
+      return User.find_by(email: email, operator_id: operator_id)
+    end
+  end
+
   # Form and view helpers
   def self.options_for_select
     User.all.map do |user|
