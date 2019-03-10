@@ -26,4 +26,10 @@ module ApplicationHelper
       yield
     end
   end
+
+  def wide_card
+    render "layouts/wide_card" do
+      yield
+    end
+  end
 end

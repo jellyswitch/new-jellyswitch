@@ -73,6 +73,7 @@ Rails.application.routes.draw do
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :organizations, controller: 'operator/organizations'
+  resources :operators, controller: 'operator/operators'
   resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'operator/plans#unarchive'
   end
