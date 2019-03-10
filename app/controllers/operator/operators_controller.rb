@@ -26,6 +26,40 @@ class Operator::OperatorsController < Operator::BaseController
 
   def stripe_connect_setup
     find_operator
+    if params[:error].present?
+      flash[:error] = params[:error_description]
+    else
+      # TODO: put this into an interactor
+      stripe_code = params[:code]
+      response = HTTParty.post("https://connect.stripe.com/oauth/token", 
+        query: {
+          client_secret: ENV['STRIPE_SECRET_KEY'],
+          code: stripe_code,
+          grant_type: "authorization_code"
+        })
+      if response["error"].present?
+        flash[:error] = response["error_description"]
+      else
+        stripe_user_id = response["stripe_user_id"]
+        stripe_publishable_key = response["stripe_publishable_key"]
+        refresh_token = response["refresh_token"]
+        access_token = response["access_token"]
+
+        result = @operator.update(
+          stripe_user_id: stripe_user_id,
+          stripe_publishable_key: stripe_publishable_key,
+          stripe_refresh_token: refresh_token,
+          stripe_access_token: access_token
+        )
+
+        if result
+          flash[:success] = "Your account has been connected to Stripe."
+        else
+          flash[:error] = "There was a problem storing your Stripe credentials."
+        end
+      end
+    end
+    redirect_to operator_path(@operator, subdomain: @operator.subdomain)
   end
 
   private

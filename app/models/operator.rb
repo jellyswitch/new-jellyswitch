@@ -14,11 +14,15 @@
 #  name                   :string           not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null
+#  stripe_access_token    :string
+#  stripe_publishable_key :string
+#  stripe_refresh_token   :string
 #  subdomain              :string           not null
 #  wifi_name              :string           default("not set"), not null
 #  wifi_password          :string           default("not set"), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  stripe_user_id         :string
 #
 
 class Operator < ApplicationRecord
@@ -44,5 +48,12 @@ class Operator < ApplicationRecord
 
   def email_enabled?
     email_enabled || Rails.env.development?
+  end
+
+  def has_stripe_info?
+    stripe_user_id.present? &&
+    stripe_publishable_key.present? &&
+    stripe_refresh_token.present? && 
+    stripe_access_token.present?
   end
 end

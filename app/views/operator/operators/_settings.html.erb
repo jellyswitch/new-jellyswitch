@@ -32,9 +32,13 @@
 <hr />
 <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
 <dl>
-  <dt>Billing</dt>
+  <dt>Stripe Account ID</dt>
   <dd>
-    <%= link_to "Connect with Stripe", stripe_oauth_url(current_tenant), class: "btn btn-sm btn-primary" %>
+    <%- if operator.has_stripe_info? %>
+      <pre><%= operator.stripe_user_id %></pre>
+    <%- else %>
+      <%= link_to "Connect with Stripe", stripe_oauth_url(current_tenant), class: "btn btn-sm btn-primary" %>
+    <%- end %>
   </dd>
 
   <dt>Subdomain</dt>

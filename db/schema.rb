@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_07_224401) do
+ActiveRecord::Schema.define(version: 2019_03_10_213202) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -154,6 +154,10 @@ ActiveRecord::Schema.define(version: 2019_03_07_224401) do
     t.integer "square_footage", default: 0, null: false
     t.boolean "email_enabled", default: false, null: false
     t.string "kisi_api_key"
+    t.string "stripe_user_id"
+    t.string "stripe_publishable_key"
+    t.string "stripe_refresh_token"
+    t.string "stripe_access_token"
   end
 
   create_table "organizations", force: :cascade do |t|
