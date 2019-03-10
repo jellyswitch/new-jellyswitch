@@ -32,6 +32,11 @@
 <hr />
 <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
 <dl>
+  <dt>Billing</dt>
+  <dd>
+    <%= link_to "Connect with Stripe", stripe_oauth_url(current_tenant), class: "btn btn-sm btn-primary" %>
+  </dd>
+
   <dt>Subdomain</dt>
   <dd><pre><%= operator.subdomain %></pre></dd>
 

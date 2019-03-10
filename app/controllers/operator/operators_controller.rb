@@ -24,6 +24,10 @@ class Operator::OperatorsController < Operator::BaseController
     end
   end
 
+  def stripe_connect_setup
+    find_operator
+  end
+
   private
 
   def find_operator
