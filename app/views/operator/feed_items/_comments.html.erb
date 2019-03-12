@@ -5,7 +5,7 @@
       <%= render "comment", feed_item_comment: comment %>
     <%- end %>
 
-    <%= form_with(model: feed_item.feed_item_comments.new, url: feed_item_comments_path(feed_item, subdomain: current_tenant.subdomain), local: true) do |f| %>
+    <%= form_with(model: feed_item.feed_item_comments.new, url: feed_item_comments_path(feed_item, subdomain: current_tenant.subdomain), remote: true) do |f| %>
       <div class="row mt-4">
         <div class="col">
           <%= f.text_area :comment, class: "form-control", placeholder: "Write a comment" %>
