@@ -1,0 +1,3 @@
+<%= wide_card do %>
+  <%= render "form", operator: @operator, url: operator_path(@operator, subdomain: current_tenant.subdomain)%>
+<%- end %>

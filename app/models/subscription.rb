@@ -26,7 +26,7 @@ class Subscription < ApplicationRecord
   end
 
   def stripe_subscription
-    Stripe::Subscription.retrieve(self.stripe_subscription_id)
+    Stripe::Subscription.retrieve(self.stripe_subscription_id, {stripe_account: plan.operator.stripe_user_id})
   end
 
   def pretty_datetime

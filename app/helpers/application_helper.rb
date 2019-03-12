@@ -26,4 +26,16 @@ module ApplicationHelper
       yield
     end
   end
+
+  def wide_card
+    render "layouts/wide_card" do
+      yield
+    end
+  end
+
+  def stripe_oauth_url(operator)
+    client_id = ENV['STRIPE_CLIENT_ID']
+    redirect_uri = operator_operator_stripe_connect_setup_url(operator, subdomain: operator.subdomain)
+    "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}"
+  end
 end

@@ -29,6 +29,10 @@ module PolicyHelpers
   def owner?
     is_user? && (user == record.user)
   end
+
+  def operator?
+    admin? && (user.operator_id == record.id)
+  end
   
   def admin_or_member?
     raise "Use individual permission predicates instead"

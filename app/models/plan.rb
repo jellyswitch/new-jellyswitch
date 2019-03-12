@@ -43,7 +43,7 @@ class Plan < ApplicationRecord
       product: { name: plan_name },
       currency: 'usd',
       id: plan_slug
-    })
+    }, {stripe_account: operator.stripe_user_id})
     self.stripe_plan_id = plan.id
     self.save
   end
@@ -55,7 +55,7 @@ class Plan < ApplicationRecord
 
 
   def stripe_plan
-    Stripe::Plan.retrieve(self.stripe_plan_id)
+    Stripe::Plan.retrieve(self.stripe_plan_id, {stripe_account: operator.stripe_user_id})
   end
 
   def plan_name
@@ -67,7 +67,7 @@ class Plan < ApplicationRecord
       "daily" => "day",
       "weekly" => "week",
       "monthly" => "month",
-      "annualy" => "year"
+      "annually" => "year"
     }[interval]
   end
 
@@ -76,7 +76,7 @@ class Plan < ApplicationRecord
       "daily" => "day",
       "weekly" => "wk",
       "monthly" => "mo",
-      "annualy" => "yr"
+      "annually" => "yr"
     }[interval]
   end
 
@@ -86,7 +86,6 @@ class Plan < ApplicationRecord
 
   # Enumeration options
   INTERVAL_OPTIONS = [
-    "hourly",
     "daily",
     "monthly",
     "annually"

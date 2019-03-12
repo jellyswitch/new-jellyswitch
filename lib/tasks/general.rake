@@ -1,0 +1,10 @@
+task backfill_stripe_credentials: :environment do
+  Operator.where(stripe_user_id: nil).each do |op|
+    op.update(
+      stripe_user_id: ENV['STRIPE_ACCOUNT_ID'],
+      stripe_access_token: "bogus",
+      stripe_refresh_token: "bogus",
+      stripe_publishable_key: "bogus"
+    )
+  end
+end
