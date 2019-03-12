@@ -21,11 +21,5 @@
   </div>
 
 <%- else %>
-  <%- if feed_item.feed_item_comments.count == 0 %>
-    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comments" %>
-  <%- elsif feed_item.feed_item_comments.count == 1 %>
-    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comment" %>
-  <%- elsif feed_item.feed_item_comments.count > 1 %>
-    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comments" %>
-  <%- end %>
+  <%= render "comment_count", feed_item: feed_item, label: "Comment (#{feed_item.feed_item_comments.count})" %>
 <%- end %>
