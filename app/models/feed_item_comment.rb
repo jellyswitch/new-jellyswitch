@@ -12,5 +12,6 @@
 
 class FeedItemComment < ApplicationRecord
   belongs_to :feed_item
+  belongs_to :user
   validates :comment, presence: true
 end
