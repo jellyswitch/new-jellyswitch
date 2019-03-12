@@ -32,6 +32,7 @@ class User < ApplicationRecord
   has_many :day_passes
   has_many :door_punches
   has_many :feed_items
+  has_many :feed_item_comments
   has_many :invoices
   has_many :member_feedbacks
   belongs_to :organization, optional: true
