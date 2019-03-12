@@ -43,7 +43,7 @@ class CreateDayPass
       currency: 'usd',
       amount: day_pass_type.amount_in_cents,
       description: day_pass.charge_description
-    })
+    }, {stripe_account: operator.stripe_user_id})
 
     if user.out_of_band?
       @invoice = Stripe::Invoice.create({
@@ -51,13 +51,13 @@ class CreateDayPass
         billing: 'send_invoice',
         days_until_due: 30,
         auto_advance: true
-      })
+      }, {stripe_account: operator.stripe_user_id})
     else
       @invoice = Stripe::Invoice.create({
         customer: user.stripe_customer_id,
         billing: 'charge_automatically',
         auto_advance: true
-      })
+      }, {stripe_account: operator.stripe_user_id})
     end
 
     result = CreateInvoice.call(stripe_invoice: @invoice)

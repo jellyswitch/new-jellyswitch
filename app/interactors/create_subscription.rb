@@ -28,7 +28,7 @@ class CreateSubscription
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]
-      })
+      }, {stripe_account: subscription.plan.operator.stripe_user_id})
     else
       if !user.has_billing?
         context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
@@ -39,7 +39,7 @@ class CreateSubscription
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]
-      })
+      }, {stripe_account: subscription.plan.operator.stripe_user_id})
     end
     
     begin
