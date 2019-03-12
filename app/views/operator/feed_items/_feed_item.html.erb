@@ -2,15 +2,15 @@
   <div class="card-body">
     <%- case feed_item.type
         when "post" %>
-      <%= render "post_feed_item", feed_item: feed_item %>
+      <%= render "post_feed_item", feed_item: feed_item, comments: comments %>
     <%- when "reservation" %>
-      <%= render "room_reservation_feed_item", feed_item: feed_item %>
+      <%= render "room_reservation_feed_item", feed_item: feed_item, comments: comments %>
     <%- when "feedback" %>
-      <%= render "member_feedback_feed_item", feed_item: feed_item %>
+      <%= render "member_feedback_feed_item", feed_item: feed_item, comments: comments %>
     <%- when "day-pass" %>
-      <%= render "day_pass_feed_item", feed_item: feed_item %>
+      <%= render "day_pass_feed_item", feed_item: feed_item, comments: comments %>
     <%- when "new-user" %>
-      <%= render "new_user_feed_item", feed_item: feed_item %>
+      <%= render "new_user_feed_item", feed_item: feed_item, comments: comments %>
     <%- end %>
   </div>
 </div>

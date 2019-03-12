@@ -63,7 +63,9 @@ Rails.application.routes.draw do
       get 'keys', to: 'operator/doors#keys'
     end
   end
-  resources :feed_items, controller: 'operator/feed_items'
+  resources :feed_items, controller: 'operator/feed_items' do
+    resources :comments, controller: 'operator/feed_item_comments', only: [:create]
+  end
   resources :invoices, only: [:index], controller: 'operator/invoices' do
     collection do
       get :due, to: 'operator/invoices#due'

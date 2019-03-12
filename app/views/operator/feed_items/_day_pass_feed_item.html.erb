@@ -25,3 +25,5 @@
     Bought a day pass for <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>.
   </p>
 </div>
+
+<%= render "comments", feed_item: feed_item, show_comments: comments %>
