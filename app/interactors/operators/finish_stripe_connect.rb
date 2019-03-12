@@ -32,6 +32,17 @@ class Operators::FinishStripeConnect
       if !result
         context.fail!(message: "There was a problem storing your Stripe credentials.")
       end
+
+      # Overwrite existing user's stripe credentials with new stripe customer in new Stripe Connect account
+      results = []
+      operator.users.non_superadmins.each do |user|
+        result = CreateStripeCustomer.call(user: user)
+        results.push(result)
+      end
+      failures = results.select { |result| !result.success? }
+      if failures.count > 0
+        context.fail!(message: "Failed to create stripe customers for all users: #{failures.first.message}")
+      end
     end
   end
 end
