@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_10_213202) do
+ActiveRecord::Schema.define(version: 2019_03_12_210048) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -76,6 +76,14 @@ ActiveRecord::Schema.define(version: 2019_03_10_213202) do
     t.integer "operator_id", default: 1, null: false
     t.integer "kisi_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
+  end
+
+  create_table "feed_item_comments", force: :cascade do |t|
+    t.integer "feed_item_id", null: false
+    t.integer "user_id", null: false
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "feed_items", force: :cascade do |t|

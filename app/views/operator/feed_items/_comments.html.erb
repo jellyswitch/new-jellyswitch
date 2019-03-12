@@ -1,0 +1,31 @@
+<%- if show_comments %>
+
+  <div style="margin-right: -15px; margin-left:-15px;">
+    <%- feed_item.feed_item_comments.each do |comment| %>
+      <%= render "comment", feed_item_comment: comment %>
+    <%- end %>
+
+    <%= form_with(model: feed_item.feed_item_comments.new, url: feed_item_comments_path(feed_item, subdomain: current_tenant.subdomain), local: true) do |f| %>
+      <div class="row mt-4">
+        <div class="col">
+          <%= f.text_area :comment, class: "form-control", placeholder: "Write a comment" %>
+        </div>
+      </div>
+
+      <div class="row mt-1">
+        <div class="col">
+          <%=  f.submit "Comment", class: "btn btn-info" %>
+        </div>
+      </div>
+    <%- end %>
+  </div>
+
+<%- else %>
+  <%- if feed_item.feed_item_comments.count == 0 %>
+    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comments" %>
+  <%- elsif feed_item.feed_item_comments.count == 1 %>
+    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comment" %>
+  <%- elsif feed_item.feed_item_comments.count > 1 %>
+    <%= render "comment_count", feed_item: feed_item, label: "#{feed_item.feed_item_comments.count} comments" %>
+  <%- end %>
+<%- end %>

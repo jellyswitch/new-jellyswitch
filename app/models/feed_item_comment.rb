@@ -1,0 +1,16 @@
+# == Schema Information
+#
+# Table name: feed_item_comments
+#
+#  id           :bigint(8)        not null, primary key
+#  comment      :text
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  feed_item_id :integer          not null
+#  user_id      :integer          not null
+#
+
+class FeedItemComment < ApplicationRecord
+  belongs_to :feed_item
+  validates :comment, presence: true
+end

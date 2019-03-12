@@ -22,6 +22,7 @@ class FeedItem < ApplicationRecord
   # Relationships
   belongs_to :operator
   belongs_to :user
+  has_many :feed_item_comments
 
   acts_as_tenant :operator
 

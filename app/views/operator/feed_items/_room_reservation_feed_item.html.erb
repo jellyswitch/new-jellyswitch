@@ -24,3 +24,5 @@
       Reserved <%= link_to feed_item.reservation.room.name, room_path(feed_item.reservation.room) %> for <%= link_to feed_item.reservation.pretty_datetime, reservation_path(feed_item.reservation) %>
     </p>
   </div>
+
+  <%= render "comments", feed_item: feed_item, show_comments: comments %>

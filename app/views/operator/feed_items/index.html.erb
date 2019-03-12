@@ -10,7 +10,7 @@
     </div>
 
     <%- @feed_items.each do |feed_item| %>
-      <%= render "feed_item", feed_item: feed_item %>
+      <%= render "feed_item", feed_item: feed_item, comments: false %>
     <%- end %>
 
     <%== pagy_bootstrap_nav(@pagy) %>
