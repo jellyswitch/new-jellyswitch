@@ -67,7 +67,7 @@ class Plan < ApplicationRecord
       "daily" => "day",
       "weekly" => "week",
       "monthly" => "month",
-      "annualy" => "year"
+      "annually" => "year"
     }[interval]
   end
 
@@ -76,7 +76,7 @@ class Plan < ApplicationRecord
       "daily" => "day",
       "weekly" => "wk",
       "monthly" => "mo",
-      "annualy" => "yr"
+      "annually" => "yr"
     }[interval]
   end
 
@@ -86,7 +86,6 @@ class Plan < ApplicationRecord
 
   # Enumeration options
   INTERVAL_OPTIONS = [
-    "hourly",
     "daily",
     "monthly",
     "annually"
