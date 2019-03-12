@@ -9,7 +9,7 @@
     <div class="col-1"></div>
     <div class="col pl-0 m-0">
       <%= f.label :photos, "Attach photos" do %>
-        <span class="btn btn-sm btn-info">Attach photos</span>
+        <span class="btn btn-sm btn-outline-info">Attach photos</span>
         <%= f.file_field :photos, multiple: true, direct_upload: false, class: "form-control-file d-none" %>
       <%- end %>
     </div>
@@ -17,7 +17,7 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit "Post management note", class: "form-control btn btn-primary col" %>
+    <%= f.submit "Post management note", class: "form-control btn btn-outline-primary col" %>
     <div class="col-1"></div>
   </div>
 <%- end %>

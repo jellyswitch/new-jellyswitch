@@ -28,9 +28,9 @@
   </div>
 </div>
 <div class="row mt-4">
-  <p class="lead">
-    Submitted feedback: <i><%= feed_item.member_feedback.comment %></i>
-  </p>
+  <h3>
+    <%= feed_item.member_feedback.comment %>
+  </h3>
 </div>
 
 <%= render "comments", feed_item: feed_item, show_comments: comments %>
