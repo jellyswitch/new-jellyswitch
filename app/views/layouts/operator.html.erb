@@ -12,9 +12,7 @@
     <%= javascript_include_tag 'application', 'data-turbolinks-track': 'reload' %>
     <%- if @include_stripe %>
       <script src="https://js.stripe.com/v3/" data-turbolinks-track=reload></script>
-      <script type="text/javascript">
-        window.stripe_key = "<%= Rails.configuration.stripe[:publishable_key] %>";
-      </script>
+      <%= render "layouts/stripe" %>
     <%- end %>
     <title><%= current_tenant.name %></title>
   </head>

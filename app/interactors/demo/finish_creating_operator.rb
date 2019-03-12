@@ -2,6 +2,7 @@ class Demo::FinishCreatingOperator
   include Interactor
 
   def call
+    setup
     op = context.operator
 
     logo_path = logo_paths.shuffle.sample
@@ -88,6 +89,7 @@ class Demo::FinishCreatingOperator
     op.doors.create!(name: "Front Door")
     
     OperatorMailer.new_demo_instance(context.user, op).deliver_later
+    teardown
   end
 
   def logo_paths
@@ -100,5 +102,13 @@ class Demo::FinishCreatingOperator
     [1,2,3,4,5,6,7,8,9,10,11,12].map do |num|
       "#{num}.jpg"
     end
+  end
+
+  def setup
+    Stripe.api_key = Rails.configuration.stripe[:test_secret_key]
+  end
+
+  def teardown
+    Stripe.api_key = Rails.configuration.stripe[:secret_key]
   end
 end
