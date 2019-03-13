@@ -20,7 +20,7 @@
 class DayPass < ApplicationRecord
   # Relationships
   belongs_to :day_pass_type
-  belongs_to :invoice
+  belongs_to :invoice, optional: true
   belongs_to :user
   belongs_to :operator
   acts_as_tenant :operator
