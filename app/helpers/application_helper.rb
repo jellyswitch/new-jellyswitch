@@ -40,7 +40,6 @@ module ApplicationHelper
   end
 
   def mobile_app_request?
-    puts request.env['HTTP_USER_AGENT']
     request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
   end
 end
