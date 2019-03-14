@@ -18,9 +18,9 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
-      redirect_to reservation_path(@reservation)
+      turbolinks_redirect(reservation_path(@reservation))
     else
-      render :new
+      render :new, status: 422
     end
   end
 
@@ -30,10 +30,10 @@ class Operator::ReservationsController < Operator::BaseController
 
     if @reservation.destroy
       flash[:notice] = "Reservation cancelled."
-      redirect_to root_path
+      turbolinks_redirect(root_path)
     else
       flash[:error] = "There was a problem cancelling your reservation."
-      redirect_to reservation_path(@reservation)
+      turboinks_redirect(referrer_or_root)
     end
   end
 
