@@ -36,7 +36,7 @@
       <%- end %>
       <%= render "shared/terms_of_service" %>
       <p class="text-muted">
-        <%= link_to "Go Back", choose_path %>
+        <%= link_to "Go Back", choose_path, data: {"turbolinks-action" => "restore"} %>
       </p>
     </div>
   </div>
