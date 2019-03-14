@@ -14,9 +14,9 @@ class Demo::CreateOperator
     op.square_footage = 2000
     op.subdomain = "placeholder"
     op.stripe_user_id = ENV['STRIPE_ACCOUNT_ID']
-    op.stripe_publishable_key = "bogus"
-    op.stripe_refresh_token = "bogus"
-    op.stripe_access_token = "bogus"
+    op.stripe_publishable_key = nil
+    op.stripe_refresh_token = nil
+    op.stripe_access_token = nil
 
     context.operator = op
 
