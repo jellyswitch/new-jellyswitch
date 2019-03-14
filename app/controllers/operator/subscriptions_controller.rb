@@ -23,7 +23,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      redirect_to root_path
+      # render create.js.erb
     else
       flash[:error] = result.message
       redirect_to referrer_or_root
