@@ -10,16 +10,17 @@ class Operator::SessionsController < Operator::BaseController
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
-      redirect_to landing_path
     else
       flash[:error] = "Invalid email/password combination."
       background_image
+      render :new
       # render status: 422
     end
   end
 
   def destroy
     log_out
-    redirect_to root_path
+    # render destroy.js.erb
+    # OLD: redirect_to root_path
   end
 end

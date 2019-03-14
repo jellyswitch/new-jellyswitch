@@ -57,7 +57,7 @@ class Operator::UsersController < Operator::BaseController
         redirect_to user_path(result.user)
       else
         log_in(result.user)
-        redirect_to home_path
+        # render create.js.erb
       end
     else
       @user = result.user

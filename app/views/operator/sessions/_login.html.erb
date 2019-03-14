@@ -14,14 +14,14 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit "Sign In", class: "form-control btn btn-primary col" %>
+    <%= f.submit "Sign In", class: "form-control btn btn-primary col", data: { "turbolinks-action" => "restore" } %>
     <div class="col-1"></div>
   </div>
   <div class="form-group col"></div>
     <div class="col-1"></div>
     <div class="col-sm-7 text-right">
       <small>
-        Not a member? <%= link_to "Sign up", signup_path %>
+        Not a member? <%= link_to "Sign up", signup_path, data: { "turbolinks-action" => "replace" } %>
       </small>
     </div>
   <div class="col-1"></div>
