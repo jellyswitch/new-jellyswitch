@@ -23,10 +23,10 @@ class Operator::OrganizationsController < Operator::BaseController
 
     if @organization.save
       flash[:notice] = "Organization #{@organization.name} has been created."
-      redirect_to organization_path(@organization)
+      turbolinks_redirect(organization_path(@organization))
     else
       background_image
-      render :new
+      render :new, status: 422
     end
   end
 
@@ -44,10 +44,10 @@ class Operator::OrganizationsController < Operator::BaseController
 
     if @organization.save
       flash[:notice] = "The organization #{@organization.name} has been updated."
-      redirect_to organization_path(@organization)
+      turbolinks_redirect(organization_path(@organization))
     else
       background_image
-      render :edit
+      render :edit, status: 422
     end
   end
 
