@@ -1,6 +1,6 @@
 <%= link_to "Edit this plan", edit_plan_path(plan), class: "btn btn-info btn-sm" %>
 <%- if plan.available? %>
-  <%= link_to "Archive", plan_path(plan), method: :delete, class: "btn btn-sm btn-danger" %>
+  <%= link_to "Archive", plan_path(plan), method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
 <%- else %>
-  <%= link_to "Unarchive", plan_unarchive_path(plan), method: :post, class: "btn btn-sm btn-warning" %>
+  <%= link_to "Unarchive", plan_unarchive_path(plan), method: :post, remote: true, class: "btn btn-sm btn-warning" %>
 <%- end %>

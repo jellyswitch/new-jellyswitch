@@ -17,9 +17,9 @@ class Operator::PlansController < Operator::BaseController
 
     if @plan.save
       flash[:notice] = "Plan saved."
-      redirect_to plan_path(@plan)
+      turbolinks_redirect(plan_path(@plan))
     else
-      render :new
+      render :new, status: 422
     end
   end
 
@@ -43,9 +43,9 @@ class Operator::PlansController < Operator::BaseController
     
     if @plan.save
       flash[:notice] = "Plan updated."
-      redirect_to plan_path(@plan)
+      turbolinks_redirect(plan_path(@plan))
     else
-      render :edit
+      render :edit, status: 422
     end
   end
 
@@ -56,10 +56,10 @@ class Operator::PlansController < Operator::BaseController
     @plan.update_attributes({available: false})
     if @plan.save
       flash[:notice] = "Plan archived."
-      redirect_to plans_path
+      turbolinks_redirect(plans_path)
     else
       flash[:error] = "Unable to archive plan: #{@plan.name}"
-      redirect_to :back
+      turbolinks_redirect(referrer_or_root)
     end
   end
 
@@ -72,7 +72,7 @@ class Operator::PlansController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    redirect_to plan_path(@plan)
+    turbolinks_redirect(plan_path(@plan), action: "advance")
   end
 
   private
