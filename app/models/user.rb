@@ -127,7 +127,7 @@ class User < ApplicationRecord
     operator_id = params[:operator_id]
 
     user = User.find_by(email: email)
-    if user.superadmin?
+    if user.present? && user.superadmin?
       return user
     else
       return User.find_by(email: email, operator_id: operator_id)

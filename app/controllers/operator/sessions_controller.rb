@@ -7,13 +7,18 @@ class Operator::SessionsController < Operator::BaseController
   def create
     authorize :session, :create?
     user = User.find_by_operator(email: params[:session][:email].downcase, operator_id: current_tenant.id)
-    if user && user.authenticate(params[:session][:password])
+    if user.present?
+      if user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
       turbolinks_redirect(landing_path)
+      else
+        background_image
+        render :new, status: 422
+      end
     else
-      background_image
-      render :new, status: 422
+      flash[:error] = "Please check that your email and password are accurate."
+      turbolinks_redirect(login_path)
     end
   end
 
