@@ -36,10 +36,10 @@ class Operator::DayPassesController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      # render create.js.erb
+      turbolinks_redirect(home_path)
     else
       flash[:error] = result.message
-      # render new.js.erb
+      turbolinks_redirect(new_day_pass_path)
     end
   end
 

@@ -21,4 +21,9 @@ class ApplicationController < ActionController::Base
   def referrer_or_root
     request.referrer || root_path
   end
+
+  def turbolinks_redirect(path)
+    @redirect_path = path
+    render "shared/turbolinks_redirect.js.erb"
+  end
 end
