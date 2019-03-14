@@ -2,7 +2,9 @@
   <div class="card-body">
     <div class="row">
       <div>
-        <%= image_tag room.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
+        <%- if room.has_photo? %>
+          <%= image_tag room.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
+        <%- end %>
       </div>
       <div class="ml-4 mb-1">
         <div class="row">

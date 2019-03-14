@@ -32,9 +32,9 @@ class Operator::RoomsController < Operator::BaseController
 
     if @room.save
       flash[:notice] = "Room #{@room.name} created."
-      redirect_to room_path(@room)
+      turbolinks_redirect(room_path(@room))
     else
-      render :new
+      render :new, status: 422
     end
   end
 
@@ -52,9 +52,9 @@ class Operator::RoomsController < Operator::BaseController
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
-      redirect_to room_path(@room)
+      turbolinks_redirect(room_path(@room))
     else
-      render :edit
+      render :edit, status: 422
     end
   end
 

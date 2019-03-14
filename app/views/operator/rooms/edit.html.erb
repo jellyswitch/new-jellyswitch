@@ -20,7 +20,9 @@
       <%= render "form", label: "Update" %>
       <div class="row mt-3">
         <div class="col-12">
-          <%= link_to "Cancel", room_path(@room), class: "btn btn-block btn-warning" %>
+          <%- if !mobile_app_request? %>
+            <%= link_to "Cancel", room_path(@room), class: "btn btn-block btn-warning", data: {"turbolinks-action" => "replace"} %>
+          <%- end %>
         </div>
       </div>
     </div>
