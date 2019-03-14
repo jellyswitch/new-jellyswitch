@@ -54,10 +54,10 @@ class Operator::UsersController < Operator::BaseController
 
     if result.success?
       if admin? # admin is creating the user
-        turbolinks_redirect(user_path(result.user))
+        turbolinks_redirect(user_path(result.user), action: "restore")
       else
         log_in(result.user)
-        turbolinks_redirect(home_path)
+        turbolinks_redirect(home_path, action: "restore")
       end
     else
       @user = result.user

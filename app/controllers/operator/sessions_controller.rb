@@ -11,7 +11,7 @@ class Operator::SessionsController < Operator::BaseController
       if user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
-      turbolinks_redirect(landing_path)
+      turbolinks_redirect(landing_path, action: "restore")
       else
         background_image
         render :new, status: 422
@@ -24,6 +24,6 @@ class Operator::SessionsController < Operator::BaseController
 
   def destroy
     log_out
-    turbolinks_redirect(root_path)
+    turbolinks_redirect(root_path, action: "restore")
   end
 end
