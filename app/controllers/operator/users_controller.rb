@@ -54,10 +54,10 @@ class Operator::UsersController < Operator::BaseController
 
     if result.success?
       if admin? # admin is creating the user
-        redirect_to user_path(result.user)
+        turbolinks_redirect(user_path(result.user))
       else
         log_in(result.user)
-        # render create.js.erb
+        turbolinks_redirect(home_path)
       end
     else
       @user = result.user
@@ -78,7 +78,7 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.save
       flash[:success] = "Your profile has been updated."
-      redirect_to user_path(@user)
+      turbolinks_redirect(user_path(@user))
     else
       render :edit, status: 422
     end
@@ -97,7 +97,7 @@ class Operator::UsersController < Operator::BaseController
     
     if @user.save
       flash[:success] = "Your password has been changed."
-      redirect_to user_path(@user)
+      turbolinks_redirect(user_path(@user))
     else
       render :change_password, status: 422
     end
@@ -111,7 +111,7 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.save
       flash[:success] = "Updated organization."
-      redirect_to user_path(@user)
+      turbolinks_redirect(user_path(@user))
     else
       render :show, status: 422
     end
@@ -153,7 +153,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't approve user."
     end
-    redirect_to user_path(@user)
+    turbolinks_redirect(user_path(@user))
   end
 
   def unapprove
@@ -164,7 +164,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't unapprove user."
     end
-    redirect_to user_path(@user)
+    turbolinks_redirect(user_path(@user))
   end
 
   def edit_billing
@@ -179,10 +179,10 @@ class Operator::UsersController < Operator::BaseController
     result = UpdateCustomerBillingInfo.call(user: current_user, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
-      redirect_to user_path(current_user)
+      turbolinks_redirect(user_path(current_user))
     else
       flash[:error] = result.message
-      redirect_to user_billing_path(current_user)
+      turbolinks_redirect(user_billing_path(current_user))
     end
   end
 
@@ -201,7 +201,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
     
-    redirect_to user_path(@user)
+    turbolinks_redirect(user_path(@user))
   end
 
   def mark_invoice_as_paid
@@ -213,7 +213,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    redirect_to user_path(@user)
+    turbolinks_redirect(user_path(@user))
   end
 
   private
