@@ -24,10 +24,10 @@ class Operator::DoorsController < Operator::BaseController
 
     if @door.save
       flash[:notice] = "Door created."
-      redirect_to doors_path(@door)
+      turbolinks_redirect(door_path(@door))
     else
       background_image
-      render :new
+      render :new, status: 422
     end
   end
 
@@ -44,10 +44,10 @@ class Operator::DoorsController < Operator::BaseController
     @door.update_attributes(door_params)
     if @door.save
       flash[:notice] = "Door updated."
-      redirect_to doors_path(@door)
+      turbolinks_redirect(doors_path(@door))
     else
       background_image
-      render :edit
+      render :edit, status: 422
     end
   end
 
