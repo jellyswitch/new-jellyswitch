@@ -12,7 +12,7 @@ class Operator::FeedItemCommentsController < Operator::BaseController
       flash[:error] = "Couldn't post comment."
     end
 
-    redirect_to feed_item_path(@feed_item)
+    turbolinks_redirect(feed_item_path(@feed_item))
   end
 
   private
