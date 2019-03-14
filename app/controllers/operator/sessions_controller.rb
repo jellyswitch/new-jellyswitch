@@ -10,6 +10,7 @@ class Operator::SessionsController < Operator::BaseController
     if user && user.authenticate(params[:session][:password])
       log_in(user)
       remember(user)
+      turbolinks_redirect(landing_path)
     else
       flash[:error] = "Invalid email/password combination."
       background_image
