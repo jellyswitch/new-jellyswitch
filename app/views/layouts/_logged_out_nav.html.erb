@@ -1,21 +1,25 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="<%= home_path %>" data-turbolinks-action="restore">
-    <%- if current_tenant.logo_image.attached? %>
-      <%= image_tag current_tenant.logo_image, width: 30, height: 30 %>
-    <%- end %>
-    <%= current_tenant.name %>
-  </a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <%= link_to "Sign Up", signup_path, class: "nav-link" %>
-      </li>
-      <li class="nav-item">
-        <%= link_to "Sign In", login_path, class: "nav-link" %>
-      </li>
-    </ul>
-  </div>
-</nav>
+<%- if !mobile_app_request? %>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="<%= home_path %>" data-turbolinks-action="restore">
+      <%- if current_tenant.logo_image.attached? %>
+        <%= image_tag current_tenant.logo_image, width: 30, height: 30 %>
+      <%- end %>
+      <%= current_tenant.name %>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <%= link_to "Sign Up", signup_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Sign In", login_path, class: "nav-link" %>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+<%- end %>

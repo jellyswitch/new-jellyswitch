@@ -38,4 +38,9 @@ module ApplicationHelper
     redirect_uri = operator_operator_stripe_connect_setup_url(operator, subdomain: operator.subdomain)
     "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}"
   end
+
+  def mobile_app_request?
+    puts request.env['HTTP_USER_AGENT']
+    request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
+  end
 end
