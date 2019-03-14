@@ -12,16 +12,13 @@ class Operator::SessionsController < Operator::BaseController
       remember(user)
       turbolinks_redirect(landing_path)
     else
-      flash[:error] = "Invalid email/password combination."
       background_image
-      render :new
-      # render status: 422
+      render :new, status: 422
     end
   end
 
   def destroy
     log_out
-    # render destroy.js.erb
-    # OLD: redirect_to root_path
+    turbolinks_redirect(root_path)
   end
 end

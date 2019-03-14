@@ -24,6 +24,13 @@ class ApplicationController < ActionController::Base
 
   def turbolinks_redirect(path)
     @redirect_path = path
-    render "shared/turbolinks_redirect.js.erb"
+    respond_to do |format|
+      format.js do
+        render "shared/turbolinks_redirect.js.erb"
+      end
+      format.html do
+        redirect_to path
+      end
+    end
   end
 end
