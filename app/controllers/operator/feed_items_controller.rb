@@ -27,9 +27,10 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if @feed_item.save
       flash[:success] = "Posted!"
-      redirect_to feed_items_path
+      turbolinks_redirect(feed_item_path(@feed_item))
     else
       flash[:error] = "Something went wrong."
+      turbolinks_redirect(feed_items_path)
     end
   end
 
@@ -39,10 +40,10 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if @feed_item.destroy
       flash[:success] = "Deleted."
-      redirect_to feed_items_path
+      turbolinks_redirect(feed_items_path, action: "restore")
     else
       flash[:error] = "Unable to delete that item."
-      redirect_to :back
+      turbolinks_redirect(referrer_or_root)
     end
   end
 
