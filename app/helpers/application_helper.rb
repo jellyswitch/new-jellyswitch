@@ -60,6 +60,9 @@ module ApplicationHelper
 
   def member_nav_items
     [
+      {title: "Home", path: home_path},
+      {title: "Reserve a room", path: rooms_path},
+      {title: "Building Access", path: keys_doors_path},
       {title: "My Account", path: user_path(current_user)},
       {title: "My Membership", path: user_memberships_path(current_user)},
       {title: "My Day Passes", path: user_day_passes_path(current_user)},
