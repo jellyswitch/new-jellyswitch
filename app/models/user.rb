@@ -69,8 +69,12 @@ class User < ApplicationRecord
   # Attachments
   has_one_attached :profile_photo
 
+  def small_square_profile_photo
+    profile_photo.variant(combine_options: {resize: "65x65>", gravity: 'Center', crop: '50x50+0+0'})
+  end
+
   def square_profile_photo
-    profile_photo.variant(resize: "100x100")
+    profile_photo.variant(resize: "100x100>")
   end
   
   def normal_profile_photo
