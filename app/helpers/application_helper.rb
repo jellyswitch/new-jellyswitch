@@ -42,4 +42,37 @@ module ApplicationHelper
   def mobile_app_request?
     request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
   end
+
+  def admin_nav_items
+    [
+      {title: "Management Feed", path: feed_items_path},
+      {title: "Members & Resources", path: members_resources_path},
+      {title: "Finances", path: accounting_index_path},
+      {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
+      {title: "My Account", path: user_path(current_user)},
+      {title: "My Membership", path: user_memberships_path(current_user)},
+      {title: "My Day Passes", path: user_day_passes_path(current_user)},
+      {title: "My Reservations", path: user_reservations_path(current_user)},
+      {title: "My Invoices", path: user_invoices_path(current_user)},
+      {title: "Change Password", path: user_change_password_path(current_user)}
+    ]
+  end
+
+  def member_nav_items
+    [
+      {title: "My Account", path: user_path(current_user)},
+      {title: "My Membership", path: user_memberships_path(current_user)},
+      {title: "My Day Passes", path: user_day_passes_path(current_user)},
+      {title: "My Reservations", path: user_reservations_path(current_user)},
+      {title: "My Invoices", path: user_invoices_path(current_user)},
+      {title: "Change Password", path: user_change_password_path(current_user)}
+    ]
+  end
+
+  def logged_out_nav_items
+    [
+      {title: "Sign Up", path: signup_path},
+      {title: "Log In", path: login_path}
+    ]
+  end
 end

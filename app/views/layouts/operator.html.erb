@@ -24,7 +24,7 @@
   <%- end %>
     <%- if logged_in? %>
       <%- if admin? %>
-      <%= render "layouts/admin_nav" %>
+        <%= render "layouts/admin_nav" %>
       <%- else %>
         <%= render "layouts/nav" %>
       <%- end %>
@@ -36,4 +36,5 @@
       <%= yield %>
     </div>
   </body>
+  <%= render "layouts/mobile_nav" %>
 </html>
