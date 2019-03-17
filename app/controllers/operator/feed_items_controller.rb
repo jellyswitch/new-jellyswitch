@@ -1,4 +1,6 @@
 class Operator::FeedItemsController < Operator::BaseController
+  include FeedItemCreator
+
   def index
     render_index
     authorize @feed_items
@@ -22,6 +24,8 @@ class Operator::FeedItemsController < Operator::BaseController
     if photos.present?
       @feed_item.photos.attach(feed_item_params[:photos])
     end
+
+    PushNotifier.call(message: "New management note from #{@feed_item.user.name}")
 
     authorize @feed_item
 
