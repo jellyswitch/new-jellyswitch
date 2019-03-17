@@ -1,0 +1,35 @@
+
+<div class="row">
+  <div>
+    <%- if feed_item.user.has_profile_photo? %>
+      <%= image_tag feed_item.user.square_profile_photo, class: "img-thumbnail", style: "height: 50px;" %>
+    <%- else %>
+      <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 50px;" %>
+    <%- end %>
+  </div>
+  <div class="ml-2">
+    <p class="mb-1">
+      <%= link_to feed_item.user.name, user_path(feed_item.user) %>
+      <br />
+      <small>
+        <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
+      </small>
+    </p>
+  </div>
+  <div class="ml-auto">
+    <%= render "common", feed_item: feed_item %>
+  </div>
+</div>
+<div class="row mt-4">
+  <p class="lead">
+    <%- if feed_item.subscription.nil? %>
+      Became a member
+    <%- else %>
+      Became a member (<%= link_to feed_item.subscription.plan.name, plan_path(feed_item.subscription.plan) %>).
+    <%- end %>
+  </p>
+</div>
+
+<%= render "operator/users/approval_toggle", user: feed_item.user %>  
+<%= render "comments", feed_item: feed_item, show_comments: comments %>
+    

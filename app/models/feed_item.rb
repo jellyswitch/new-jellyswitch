@@ -44,6 +44,27 @@ class FeedItem < ApplicationRecord
     blob["amount"]
   end
 
+  def has_photos?
+    photos.count > 0
+  end
+
+  def thumbnails
+    photos.map do |photo|
+      photo.variant(resize: '180x180', auto_orient: true)
+    end
+  end
+
+  def parse_amount!
+    if self.text && self.text.downcase.include?("spent")
+      self.expense = true
+
+      amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
+      blob["amount"] = amount
+    end
+  end
+
+  # Lazy relationships
+
   def reservation
     reservation_id = blob["reservation_id"]
     if reservation_id.nil?
@@ -62,16 +83,6 @@ class FeedItem < ApplicationRecord
     end
   end
 
-  def has_photos?
-    photos.count > 0
-  end
-
-  def thumbnails
-    photos.map do |photo|
-      photo.variant(resize: '180x180', auto_orient: true)
-    end
-  end
-
   def day_pass
     day_pass_id = blob["day_pass_id"]
     if day_pass_id.nil?
@@ -81,12 +92,13 @@ class FeedItem < ApplicationRecord
     end
   end
 
-  def parse_amount!
-    if self.text && self.text.downcase.include?("spent")
-      self.expense = true
-
-      amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
-      blob["amount"] = amount
+  def subscription
+    subscription_id = blob["subscription_id"]
+    if subscription_id.nil?
+      nil
+    else
+      Subscription.find(subscription_id)
     end
   end
+
 end

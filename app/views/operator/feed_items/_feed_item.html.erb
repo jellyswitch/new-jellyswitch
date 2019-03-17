@@ -9,6 +9,8 @@
       <%= render "member_feedback_feed_item", feed_item: feed_item, comments: comments %>
     <%- when "day-pass" %>
       <%= render "day_pass_feed_item", feed_item: feed_item, comments: comments %>
+    <%- when "subscription" %>
+      <%= render "subscription_feed_item", feed_item: feed_item, comments: comments %>
     <%- end %>
   </div>
 </div>
