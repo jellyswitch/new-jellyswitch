@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_12_210048) do
+ActiveRecord::Schema.define(version: 2019_03_17_210334) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -251,6 +251,7 @@ ActiveRecord::Schema.define(version: 2019_03_12_210048) do
     t.integer "operator_id", default: 2, null: false
     t.boolean "superadmin", default: false, null: false
     t.boolean "out_of_band", default: false, null: false
+    t.string "ios_token"
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
