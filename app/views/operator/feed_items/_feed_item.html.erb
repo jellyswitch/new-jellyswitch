@@ -1,16 +1,12 @@
-<div class="card mb-2 pl-2 pr-2">
-  <div class="card-body">
-    <%- case feed_item.type
-        when "post" %>
-      <%= render "post_feed_item", feed_item: feed_item, comments: comments %>
-    <%- when "reservation" %>
-      <%= render "room_reservation_feed_item", feed_item: feed_item, comments: comments %>
-    <%- when "feedback" %>
-      <%= render "member_feedback_feed_item", feed_item: feed_item, comments: comments %>
-    <%- when "day-pass" %>
-      <%= render "day_pass_feed_item", feed_item: feed_item, comments: comments %>
-    <%- when "subscription" %>
-      <%= render "subscription_feed_item", feed_item: feed_item, comments: comments %>
-    <%- end %>
-  </div>
-</div>
+<%- case feed_item.type
+    when "post" %>
+  <%= feed_item_card { render "post_feed_item", feed_item: feed_item, comments: comments }%>
+<%- when "reservation" %>
+  <%= feed_item_card { render "room_reservation_feed_item", feed_item: feed_item, comments: comments }%>
+<%- when "feedback" %>
+  <%= feed_item_card { render "member_feedback_feed_item", feed_item: feed_item, comments: comments } %>
+<%- when "day-pass" %>
+  <%= feed_item_card { render "day_pass_feed_item", feed_item: feed_item, comments: comments } %>
+<%- when "subscription" %>
+  <%= feed_item_card { render "subscription_feed_item", feed_item: feed_item, comments: comments } %>
+<%- end %>

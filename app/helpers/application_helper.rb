@@ -33,6 +33,12 @@ module ApplicationHelper
     end
   end
 
+  def feed_item_card
+    render "operator/feed_items/feed_item_card" do
+      yield
+    end
+  end
+
   def title(page_title)
     content_for(:title) { page_title }
     page_title
