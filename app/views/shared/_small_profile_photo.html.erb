@@ -1,0 +1,9 @@
+<%- if user.has_profile_photo? %>
+  <%- if user.admin? %>
+    <%= image_tag user.square_profile_photo, class: "img-thumbnail rounded-circle border border-success", style: "height: 50px;" %>
+  <%- else %>
+    <%= image_tag user.square_profile_photo, class: "img-thumbnail rounded-circle", style: "height: 50px;" %>
+  <%- end %>
+<%- else %>
+  <%= image_tag "profile-125x125.jpg", class: "img-thumbnail rounded-circle", style: "height: 50px;" %>
+<%- end %>

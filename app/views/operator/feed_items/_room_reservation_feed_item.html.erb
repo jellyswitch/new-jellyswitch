@@ -1,11 +1,6 @@
   <div class="row">
     <div>
-      <%- if feed_item.user.has_profile_photo? %>
-        <%= image_tag feed_item.user.square_profile_photo, class: "img-thumbnail", style: "height: 50px;" %>
-      <%- else %>
-        <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 50px;" %>
-      <%- end %>
-    </div>
+      <%= render "shared/small_profile_photo", user: feed_item.user %>    </div>
     <div class="ml-2">
       <p class="mb-1">
         <%= link_to feed_item.user.name, user_path(feed_item.user) %>

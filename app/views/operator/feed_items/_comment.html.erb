@@ -1,9 +1,9 @@
 <hr />
 <div class="row mb-2">
   <%- if feed_item_comment.feed_item.user.has_profile_photo? %>
-    <%= image_tag feed_item_comment.user.square_profile_photo, class: "img-thumbnail ml-3", style: "height: 25px; width: 25px;" %>
+    <%= image_tag feed_item_comment.user.square_profile_photo, class: "img-thumbnail rounded-circle ml-3", style: "height: 25px; width: 25px;" %>
   <%- else %>
-    <%= image_tag "profile-125x125.jpg", class: "img-thumbnail ml-3", style: "height: 25px; width: 25px;" %>
+    <%= image_tag "profile-125x125.jpg", class: "img-thumbnail rounded-circle ml-3", style: "height: 25px; width: 25px;" %>
   <%- end %>
 </div>
 <div class="row">
