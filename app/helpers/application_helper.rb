@@ -33,6 +33,11 @@ module ApplicationHelper
     end
   end
 
+  def title(page_title)
+    content_for(:title) { page_title }
+    page_title
+  end
+
   def stripe_oauth_url(operator)
     client_id = ENV['STRIPE_CLIENT_ID']
     redirect_uri = operator_operator_stripe_connect_setup_url(operator, subdomain: operator.subdomain)

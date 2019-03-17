@@ -14,7 +14,8 @@
       <script src="https://js.stripe.com/v3/" data-turbolinks-track=reload></script>
       <%= render "layouts/stripe" %>
     <%- end %>
-    <title><%= current_tenant.name %></title>
+    <%- title = yield(:title) %>
+    <title><%= title || current_tenant.name %></title>
   </head>
 
   <%- if @background_image && @background_image.attached? %>
