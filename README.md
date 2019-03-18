@@ -78,3 +78,6 @@ As such, you need to have local DNS entries that point to your local development
 127.0.0.1       demo24.jellyswitch.net
 ```
 
+## Demo Instances
+
+Go to `app.jellyswitch.net:3000` and click "Generate Demo Instance". This will enqueue a background job to generate a new example demo instance of Jellyswitch that you can then poke around with for testing and development purposes. Refresh the page after ~45 seconds and click the "Visit" button to see this instance.
