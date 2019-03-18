@@ -13,5 +13,4 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 3. Ask dave for the `.env` file for environment variables
 4. Postgres DB: `createdb bristlecone_development`
 5. Run migrations: `heroku local:run rake db:migrate`
-6. Seed data: `heroku local:run rake db:seed`
-7. Run the server: `heroku local`
+6. Run the server: `heroku local`
