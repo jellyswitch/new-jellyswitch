@@ -14,3 +14,67 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 4. Postgres DB: `createdb bristlecone_development`
 5. Run migrations: `heroku local:run rake db:migrate`
 6. Run the server: `heroku local`
+
+## Users, Admins, and Superadmins
+
+All users have a record in the `users` table. Staff members of coworking spaces have the `admin` flag on their user set to `true`. Jellyswitch staff, developers, and so on, have both the `admin` and `superadmin` flag set to `true`. 
+
+All users have associated stripe customers associated with them. So it's important to have the environment variables before taking this next step.
+
+To get started, go ahead and hope the rails console (`heroku local:run rails c`) and create a new superadmin so you can log in:
+
+```
+$ u = User.create!(name: "Zero Cool", password: "password", email: "zerocool@hackers.com", admin: true, superadmin: true, approved: true)
+$ result = CreateStripeCustomer.call(user: u)
+```
+
+## DNS & Operators
+
+Bristlecone is a multi-tenant app, specifically on the `Operator` model. Every `operator` has a subdomain and all requests and database queries automatically select the correct operator as approprate (inferred from the subdomain).
+
+As such, you need to have local DNS entries that point to your local development environment. Here's an example `/etc/hosts` file:
+
+```
+# Jellyswitch
+127.0.0.1       www.jellyswitch.net
+127.0.0.1       admin.jellyswitch.net
+127.0.0.1       tml.jellyswitch.net
+127.0.0.1       app.jellyswitch.net
+127.0.0.1       beacon.jellyswitch.net
+127.0.0.1       elevatebreck.jellyswitch.net
+127.0.0.1       tahoemill.jellyswitch.net
+127.0.0.1       skilockersteamboat.jellyswitch.net
+127.0.0.1       innogrove.jellyswitch.net
+127.0.0.1       capsity.jellyswitch.net
+127.0.0.1       studio.jellyswitch.net
+127.0.0.1       workshop.jellyswitch.net
+127.0.0.1       incubateventures.jellyswitch.net
+
+# Jellyswitch demo instances
+127.0.0.1       demo0.jellyswitch.net
+127.0.0.1       demo1.jellyswitch.net
+127.0.0.1       demo2.jellyswitch.net
+127.0.0.1       demo3.jellyswitch.net
+127.0.0.1       demo4.jellyswitch.net
+127.0.0.1       demo5.jellyswitch.net
+127.0.0.1       demo6.jellyswitch.net
+127.0.0.1       demo7.jellyswitch.net
+127.0.0.1       demo8.jellyswitch.net
+127.0.0.1       demo9.jellyswitch.net
+127.0.0.1       demo10.jellyswitch.net
+127.0.0.1       demo11.jellyswitch.net
+127.0.0.1       demo12.jellyswitch.net
+127.0.0.1       demo13.jellyswitch.net
+127.0.0.1       demo14.jellyswitch.net
+127.0.0.1       demo15.jellyswitch.net
+127.0.0.1       demo16.jellyswitch.net
+127.0.0.1       demo17.jellyswitch.net
+127.0.0.1       demo18.jellyswitch.net
+127.0.0.1       demo19.jellyswitch.net
+127.0.0.1       demo20.jellyswitch.net
+127.0.0.1       demo21.jellyswitch.net
+127.0.0.1       demo22.jellyswitch.net
+127.0.0.1       demo23.jellyswitch.net
+127.0.0.1       demo24.jellyswitch.net
+```
+
