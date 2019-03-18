@@ -1,4 +1,4 @@
-<%- if current_tenant.present? && current_tenant.has_stripe_info? %>
+<%- if current_tenant.present? && current_tenant.production? %>
 <script type="text/javascript">
     window.stripe_key = "<%= Rails.configuration.stripe[:publishable_key] %>";
   </script>

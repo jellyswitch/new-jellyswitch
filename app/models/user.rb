@@ -152,7 +152,10 @@ class User < ApplicationRecord
 
   # Stripe Stuff
   def stripe_customer
-    Stripe::Customer.retrieve(self.stripe_customer_id, {stripe_account: operator.stripe_user_id})
+    Stripe::Customer.retrieve(self.stripe_customer_id, {
+      api_key: operator.stripe_secret_key,  
+      stripe_account: operator.stripe_user_id
+    })
   end
 
   def has_stripe_customer?

@@ -26,7 +26,8 @@ class Operators::FinishStripeConnect
         stripe_user_id: stripe_user_id,
         stripe_publishable_key: stripe_publishable_key,
         stripe_refresh_token: refresh_token,
-        stripe_access_token: access_token
+        stripe_access_token: access_token,
+        billing_state: "production"
       )
 
       if !result

@@ -28,19 +28,24 @@ class CreateSubscription
         days_until_due: 30,
         items: [
           { plan: subscription.plan.stripe_plan_id }
-        ]
-      }, {stripe_account: subscription.plan.operator.stripe_user_id})
+        ]}, {
+        api_key: subscription.plan.operator.stripe_secret_key,  
+        stripe_account: subscription.plan.operator.stripe_user_id
+      })
     else
       if !user.has_billing?
         context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
       end
+
       stripe_subscription = Stripe::Subscription.create({
         customer: context.user.stripe_customer_id,
         billing: "charge_automatically",
         items: [
           { plan: subscription.plan.stripe_plan_id }
-        ]
-      }, {stripe_account: subscription.plan.operator.stripe_user_id})
+        ]}, {
+        api_key: operator.stripe_secret_key,
+        stripe_account: subscription.plan.operator.stripe_user_id
+      })
     end
     
     begin

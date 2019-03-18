@@ -39,13 +39,24 @@ class Demo::CreateMember
 
     # Select a plan at random and subscribe them to it
     plan = operator.plans.available.all.shuffle.sample
-    subscription = Subscription.create!(
+    subscription = Subscription.new(
       plan_id: plan.id,
       user_id: user.id,
       active: true,
       created_at: day,
       updated_at: day
     )
+
+    result = CreateSubscription.call(
+      subscription: subscription,
+      token: nil,
+      user: user
+    )
+    
+    if !result.success?
+      context.fail!(message: "Error while creating subscription: #{result.message}")
+    end
+    subscription = result.subscription
 
     if day < Time.current
       invoice = Invoice.create!(
