@@ -47,10 +47,15 @@
   </div>
 
   <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
+
   <div class="form-group">
     <%= f.label :subdomain %>
-    <%= f.text_field :subdomain, placeholder: "Subdomain", class: "form-control", readonly: true %>
-    <small class="form-text text-muted">Please contact us to update your subdomain.</small>
+    <%- if editable_subdomain %>
+      <%= f.text_field :subdomain, placeholder: "Subdomain", class: "form-control" %>
+    <%- else %>
+      <%= f.text_field :subdomain, placeholder: "Subdomain", class: "form-control", readonly: true %>
+      <small class="form-text text-muted">Please contact us to update your subdomain.</small>
+    <%- end %>
   </div>
 
   <div class="form-group">
