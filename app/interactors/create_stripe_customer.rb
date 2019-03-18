@@ -6,7 +6,10 @@ class CreateStripeCustomer
 
     customer = Stripe::Customer.create({
       email: user.email
-    }, {stripe_account: user.operator.stripe_user_id})
+    }, {
+      api_key: user.operator.stripe_secret_key,
+      stripe_account: user.operator.stripe_user_id
+    })
 
     user.stripe_customer_id = customer.id
 

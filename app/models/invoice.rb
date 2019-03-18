@@ -39,7 +39,10 @@ class Invoice < ApplicationRecord
 
   def stripe_invoice
     if stripe_invoice_id.present?
-      @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id)
+      @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id, {
+        api_key: operator.stripe_secret_key,
+        stripe_account: operator.stripe_user_id
+      })
     else
       nil
     end

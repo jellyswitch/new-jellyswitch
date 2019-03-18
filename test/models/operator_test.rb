@@ -4,6 +4,7 @@
 #
 #  id                     :bigint(8)        not null, primary key
 #  approval_required      :boolean          default(TRUE), not null
+#  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
 #  contact_email          :string
 #  contact_name           :string

@@ -34,7 +34,7 @@
 <dl>
   <dt>Stripe Account ID</dt>
   <dd>
-    <%- if operator.has_stripe_info? %>
+    <%- if operator.production? %>
       <pre><%= operator.stripe_user_id %></pre>
     <%- else %>
       <%= link_to "Connect with Stripe", stripe_oauth_url(current_tenant), class: "btn btn-sm btn-primary" %>

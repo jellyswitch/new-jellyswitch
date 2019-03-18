@@ -4,6 +4,7 @@
 #
 #  id                     :bigint(8)        not null, primary key
 #  approval_required      :boolean          default(TRUE), not null
+#  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
 #  contact_email          :string
 #  contact_name           :string
@@ -50,10 +51,19 @@ class Operator < ApplicationRecord
     email_enabled || Rails.env.development?
   end
 
-  def has_stripe_info?
-    stripe_user_id.present? &&
-    stripe_publishable_key.present? &&
-    stripe_refresh_token.present? && 
-    stripe_access_token.present?
+  def demo?
+    billing_state == "demo"
+  end
+
+  def production?
+    billing_state == "production"
+  end
+
+  def stripe_secret_key
+    if production?
+      Rails.configuration.stripe[:secret_key]
+    else
+      Rails.configuration.stripe[:test_secret_key]
+    end
   end
 end

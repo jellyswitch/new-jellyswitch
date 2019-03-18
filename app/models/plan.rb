@@ -43,7 +43,10 @@ class Plan < ApplicationRecord
       product: { name: plan_name },
       currency: 'usd',
       id: plan_slug
-    }, {stripe_account: operator.stripe_user_id})
+    }, {
+      api_key: operator.stripe_secret_key,
+      stripe_account: operator.stripe_user_id
+    })
     self.stripe_plan_id = plan.id
     self.save
   end
@@ -55,7 +58,10 @@ class Plan < ApplicationRecord
 
 
   def stripe_plan
-    Stripe::Plan.retrieve(self.stripe_plan_id, {stripe_account: operator.stripe_user_id})
+    Stripe::Plan.retrieve(self.stripe_plan_id, {
+      api_key: operator.stripe_secret_key,    
+      stripe_account: operator.stripe_user_id
+  })
   end
 
   def plan_name
