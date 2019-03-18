@@ -43,7 +43,7 @@ class CreateSubscription
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]}, {
-        api_key: operator.stripe_secret_key,
+        api_key: subscription.plan.operator.stripe_secret_key,
         stripe_account: subscription.plan.operator.stripe_user_id
       })
     end
