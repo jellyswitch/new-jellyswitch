@@ -16,7 +16,7 @@ class PushNotifier
         notification.alert = @message
       
         apn.push(notification)
-        puts "Pushed message: #{@message} to device: #{@user.ios_token}"
+        puts "Pushed message: #{@message} to device: #{user.ios_token}"
       end
     end
   end

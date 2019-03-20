@@ -16,32 +16,21 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def create
-    @feed_item = FeedItem.new
-    @feed_item.blob = {text: feed_item_params[:text], type: "post"}
-    @feed_item.operator = current_tenant
-    @feed_item.user = current_user
-    photos = feed_item_params[:photos]
-    if photos.present?
-      @feed_item.photos.attach(feed_item_params[:photos])
-    end
+    authorize FeedItem.new
 
-    result = PushNotifier.call(
-      message: "#{@feed_item.user.name} posted a new management note",
-      operator: @feed_item.operator
+    result = CreatePostFeedItem.call(
+      blob: {text: feed_item_params[:text], type: "post"},
+      user: current_user,
+      operator: current_tenant,
+      photos: feed_item_params[:photos]
     )
 
-    if !result.success?
-      puts result.message
-    end
-
-    authorize @feed_item
-
-    if @feed_item.save
+    if result.success?
       flash[:success] = "Posted!"
-      turbolinks_redirect(feed_item_path(@feed_item))
+      turbolinks_redirect(feed_items_path, action: "restore")
     else
-      flash[:error] = "Something went wrong."
-      turbolinks_redirect(feed_items_path)
+      flash[:error] = result.message
+      turbolinks_redirect(feed_items_path, action: "restore")
     end
   end
 
