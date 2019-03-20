@@ -8,7 +8,7 @@ class PushNotifier
     validate!
 
     apn = Houston::Client.production # change this
-    apn.certificate = cert
+    apn.certificate = @operator.push_notification_certificate.download
 
     @operator.users.admins.each do |user|
       if user.ios_token.present?
@@ -26,7 +26,7 @@ class PushNotifier
       context.fail!(message: "Message can't be blank.")
     end
 
-    if @operator.push_notification_certificate.blank?
+    if !@operator.push_notification_certificate.attached?
       context.fail!(message: "Operator #{@operator.name} has no push notification certificate.")
     end
   end
