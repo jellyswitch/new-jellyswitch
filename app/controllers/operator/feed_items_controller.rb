@@ -1,6 +1,4 @@
 class Operator::FeedItemsController < Operator::BaseController
-  include FeedItemCreator
-
   def index
     render_index
     authorize @feed_items
