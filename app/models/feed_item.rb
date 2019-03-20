@@ -49,8 +49,9 @@ class FeedItem < ApplicationRecord
   end
 
   def thumbnails
-    photos.map do |photo|
-      photo.variant(resize: '180x180', auto_orient: true)
+    photos.each_with_object([]) do |photo, images|
+      next if photo.content_type.match /application\/pdf/
+      images << photo.variant(resize: '180x180', auto_orient: true)
     end
   end
 
