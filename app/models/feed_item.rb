@@ -72,7 +72,7 @@ class FeedItem < ApplicationRecord
     if reservation_id.nil?
       nil
     else
-      Reservation.find(reservation_id)
+      Reservation.unscoped.find(reservation_id)
     end
   end
 
