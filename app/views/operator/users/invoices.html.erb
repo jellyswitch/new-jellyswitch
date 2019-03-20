@@ -11,7 +11,7 @@
         <%- @invoices.each do |invoice| %>
           <tr>
             <td><%= DateTime.strptime(invoice[:date].to_s,'%s').strftime("%m/%d/%Y") %></td>
-            <td><%= link_to "Download Invoice", invoice[:invoice_pdf], class: "btn btn-primary btn-sm" %></td>
+            <td><%= link_to "Download", invoice.pdf_url, class: "btn btn-primary btn-sm" %></td>
           </tr>
         <%- end %>
       </table>

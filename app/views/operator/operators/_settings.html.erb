@@ -1,4 +1,4 @@
-<%= link_to "Edit", edit_operator_path(@operator, subdomain: operator.subdomain), class: "btn btn-info" %>
+<%= link_to "Edit", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-info" %>
 
 <h4 class="display-4 mt-3">Basic Settings</h4>
 <dl>
@@ -34,10 +34,10 @@
 <dl>
   <dt>Stripe Account ID</dt>
   <dd>
-    <%- if operator.has_stripe_info? %>
+    <%- if operator.production? %>
       <pre><%= operator.stripe_user_id %></pre>
     <%- else %>
-      <%= link_to "Connect with Stripe", stripe_oauth_url(current_tenant), class: "btn btn-sm btn-primary" %>
+      <%= link_to "Connect with Stripe", stripe_oauth_url(operator), class: "btn btn-sm btn-primary" %>
     <%- end %>
   </dd>
 

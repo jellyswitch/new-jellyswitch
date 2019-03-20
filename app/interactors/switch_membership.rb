@@ -16,7 +16,7 @@ class SwitchMembership
     if result.success?
       result = CancelSubscription.call(subscription: old_subscription)
       if !result.success?
-        context.fail!(message: "Unable to deactivate existing membership")
+        context.fail!(message: result.message)
       end
     else
       context.fail!(message: result.message)

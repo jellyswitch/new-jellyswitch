@@ -2,7 +2,11 @@ class BackfillInvoices
   include Interactor
 
   def call
-    stripe_invoices = Stripe::Invoice.list()
+    operator = context.operator
+    stripe_invoices = Stripe::Invoice.list({
+      api_key: operator.stripe_secret_key,
+      stripe_account: operator.stripe_user_id
+    })
     stripe_invoices.each do |stripe_invoice|
       result = CreateInvoice.call(stripe_invoice: stripe_invoice)
       if result.success?
