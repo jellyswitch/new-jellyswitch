@@ -41,7 +41,6 @@ group :development do
   gem 'annotate'
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'user-auth', git: "https://github.com/dpaola2/user-auth"
   gem 'web-console', '>= 3.3.0'
@@ -51,5 +50,10 @@ group :test do
   gem 'capybara', '>= 2.15', '< 4.0'
   gem 'selenium-webdriver'
   gem 'chromedriver-helper'
+end
+
+group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'pry-rails'
+  gem 'pry-byebug'
 end

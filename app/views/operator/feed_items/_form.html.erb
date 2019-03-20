@@ -10,7 +10,12 @@
     <div class="col pl-0 m-0">
       <%= f.label :photos, "Attach photos" do %>
         <span class="btn btn-sm btn-outline-info">Attach photos</span>
-        <%= f.file_field :photos, multiple: true, direct_upload: false, class: "form-control-file d-none" %>
+        <%= f.file_field :photos,
+                         multiple: true,
+                         direct_upload: false,
+                         accept: 'image/png,image/gif,image/jpeg,image/jpg',
+                         class: "form-control-file d-none"
+        %>
       <%- end %>
     </div>
     <div class="col-1"></div>
