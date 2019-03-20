@@ -24,6 +24,8 @@ class FeedItem < ApplicationRecord
   belongs_to :user
   has_many :feed_item_comments
 
+  validate :photo_files_accepted
+
   acts_as_tenant :operator
 
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
@@ -49,9 +51,8 @@ class FeedItem < ApplicationRecord
   end
 
   def thumbnails
-    photos.each_with_object([]) do |photo, images|
-      next if photo.content_type.match /application\/pdf/
-      images << photo.variant(resize: '180x180', auto_orient: true)
+    photos.map do |photo|
+      photo.variant(resize: '180x180', auto_orient: true)
     end
   end
 
@@ -102,4 +103,13 @@ class FeedItem < ApplicationRecord
     end
   end
 
+  private
+
+  VALID_ATTACHMENT_REGEX = /image\/(jpeg|jpg|png|gif)/
+
+  def photo_files_accepted
+    if photos.any? { |photo| !photo.content_type.match VALID_ATTACHMENT_REGEX }
+      errors.add(:photos, 'must be of file type .jpeg, .jpg, .png, or .gif')
+    end
+  end
 end
