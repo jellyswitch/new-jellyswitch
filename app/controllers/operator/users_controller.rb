@@ -222,8 +222,7 @@ class Operator::UsersController < Operator::BaseController
     result = params.require(:user).permit(
       :name, :email, :password, :password_confirmation, 
       :bio, :linkedin, :twitter, :website, :profile_photo,
-      :approved)
-    result[:admin] = @user.admin if @user.present?
+      :approved, :admin)
     result
   end
 
