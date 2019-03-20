@@ -17,10 +17,10 @@ module FeedItemCreator
     operator.users.admins.each do |admin_user|
       send_email_notification(admin_user, feed_item)
     end
+    feed_item
   end
 
   def send_email_notification(user, feed_item)
-    
     case feed_item.type
     when "feedback"
       FeedItemsMailer.member_feedback(user: user, feed_item: feed_item).deliver_later
