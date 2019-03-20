@@ -26,8 +26,7 @@ class Operator::FeedItemsController < Operator::BaseController
     end
 
     result = PushNotifier.call(
-      message: "New management note from #{@feed_item.user.name}",
-      user: User.first,
+      message: "#{@feed_item.user.name} posted a new management note",
       operator: @feed_item.operator
     )
 

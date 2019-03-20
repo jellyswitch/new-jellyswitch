@@ -3,20 +3,22 @@ class PushNotifier
 
   def call
     @message = context.message
-    @user = context.user
     @operator = context.operator
 
     validate!
-    
 
     apn = Houston::Client.production # change this
     apn.certificate = cert
 
-    notification = Houston::Notification.new(device: @user.ios_token)
-    notification.alert = @message
-   
-    apn.push(notification)
-    puts "Pushed message: #{@message} to device: #{@user.ios_token}"
+    @operator.users.admins.each do |user|
+      if user.ios_token.present?
+        notification = Houston::Notification.new(device: user.ios_token)
+        notification.alert = @message
+      
+        apn.push(notification)
+        puts "Pushed message: #{@message} to device: #{@user.ios_token}"
+      end
+    end
   end
 
   def cert
@@ -27,14 +29,6 @@ class PushNotifier
   def validate!
     if @message.blank?
       context.fail!(message: "Message can't be blank.")
-    end
-
-    if @user.blank?
-      context.fail!(message: "User can't be blank.")
-    end
-
-    if @user.ios_token.blank?
-      context.fail!(message: "User #{@user.slug} has no iOS token.")
     end
 
     if @operator.push_notification_certificate.blank?
