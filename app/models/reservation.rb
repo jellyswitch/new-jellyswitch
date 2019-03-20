@@ -3,12 +3,13 @@
 # Table name: reservations
 #
 #  id          :bigint(8)        not null, primary key
-#  user_id     :integer          not null
+#  cancelled   :boolean          default(FALSE), not null
 #  datetime_in :datetime         not null
 #  hours       :integer          default(1), not null
-#  room_id     :integer          not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  room_id     :integer          not null
+#  user_id     :integer          not null
 #
 
 class Reservation < ApplicationRecord
@@ -17,6 +18,9 @@ class Reservation < ApplicationRecord
   belongs_to :user
 
   validates_with ReservationValidator
+
+  default_scope { where(cancelled: false) }
+  scope :not_cancelled, ->() { where(cancelled: false) }
 
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")

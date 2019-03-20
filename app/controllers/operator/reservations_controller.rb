@@ -28,12 +28,14 @@ class Operator::ReservationsController < Operator::BaseController
     find_reservation
     authorize @reservation
 
-    if @reservation.destroy
+    result = CancelReservation.call(reservation: @reservation)
+
+    if result.success?
       flash[:notice] = "Reservation cancelled."
       turbolinks_redirect(root_path)
     else
-      flash[:error] = "There was a problem cancelling your reservation."
-      turboinks_redirect(referrer_or_root)
+      flash[:error] = result.message
+      turbolinks_redirect(referrer_or_root)
     end
   end
 

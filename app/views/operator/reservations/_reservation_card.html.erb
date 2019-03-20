@@ -1,10 +1,17 @@
 <div class="card border-light mb-3">
   <div class="card-body">
+    <%- if reservation.cancelled? %>
+      <span class="badge badge-warning">Cancelled</span>
+    <%- end %>
     <h5 class="card-title">
-      <%= link_to reservation.user.name, user_path(reservation.user) %>
-       in 
-       <%= reservation.room.smart_link %>
-    </h5>
+      <%- if reservation.user.nil? %>
+        <i>Deleted user</i>
+      <%- else %>
+        <%= link_to reservation.user.name, user_path(reservation.user) %>
+        in 
+        <%= reservation.room.smart_link %>
+      </h5>
+    <%- end %>
     <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
     <%- if policy(reservation).cancel? %>
       <p><%= link_to "Cancel this reservation", reservation_path(reservation), method: :delete, remote: true, class: "btn btn-sm btn-danger" %></p>
