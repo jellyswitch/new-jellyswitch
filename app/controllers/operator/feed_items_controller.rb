@@ -25,7 +25,15 @@ class Operator::FeedItemsController < Operator::BaseController
       @feed_item.photos.attach(feed_item_params[:photos])
     end
 
-    PushNotifier.call(message: "New management note from #{@feed_item.user.name}")
+    result = PushNotifier.call(
+      message: "New management note from #{@feed_item.user.name}",
+      user: User.first,
+      operator: @feed_item.operator
+    )
+
+    if !result.success?
+      puts result.message
+    end
 
     authorize @feed_item
 

@@ -83,5 +83,12 @@
     <%= f.file_field :background_image, placeholder: "Background Image File Path", class: "custom-file-input" %>
   </div>
 
+  <%- if editable_subdomain %>
+    <div class="form-group custom-file mb-3">
+      <label class="custom-file-label" for="customFile">Choose push notification certificate (PEM)</label>
+      <%= f.file_field :push_notification_certificate, placeholder: "Push Notification Certificate PEM", class: "custom-file-input" %>
+    </div>
+  <%- end %>
+
   <%= f.submit "Save/Update", class: "btn btn-primary" %>
 <%- end %>
