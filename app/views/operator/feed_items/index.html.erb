@@ -6,13 +6,12 @@
 
     <div class="card mb-2">
       <div class="card-body">
-        <h4 class="display-4 text-center">Management Log</h4>
         <%= render "form", feed_item: @feed_item %>
       </div>
     </div>
 
     <%- @feed_items.each do |feed_item| %>
-      <%= render "feed_item", feed_item: feed_item, comments: false %>
+      <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 1 %>
     <%- end %>
 
     <%== pagy_bootstrap_nav(@pagy) %>
