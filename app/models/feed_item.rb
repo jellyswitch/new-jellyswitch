@@ -50,6 +50,12 @@ class FeedItem < ApplicationRecord
     photos.count > 0
   end
 
+  def feed_photos
+    photos.map do |photo|
+      photo.variant(combine_options: {auto_orient: true})
+    end
+  end
+
   def thumbnails
     photos.map do |photo|
       photo.variant(resize: '180x180', auto_orient: true)

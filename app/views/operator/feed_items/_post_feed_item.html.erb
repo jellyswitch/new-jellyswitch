@@ -32,9 +32,11 @@
 
 <%- if feed_item.has_photos? %>
   <div class="row mt-2">
-    <%- feed_item.thumbnails.each do |photo| %>
-      <%= image_tag photo, class: "img-fluid m-1", style: "max-height: 100px;" %>
+    <div class="col">
+    <%- feed_item.feed_photos.each do |photo| %>
+      <%= image_tag photo, class: "img-fluid" %>
     <%- end %>
+    </div>
   </div>
 <%- end %>
 
