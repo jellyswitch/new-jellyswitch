@@ -22,6 +22,5 @@
   </p>
 </div>
 
-<%= render "operator/users/approval_toggle", user: feed_item.user %>  
+<%= render "feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
 <%= render "comments", feed_item: feed_item, show_comments: comments %>
-    

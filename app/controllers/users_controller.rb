@@ -44,7 +44,7 @@ class UsersController < ApplicationController
     # Create the admin user
     # Create the operator instance
     # Redirect them to the operator instance
-    
+
     @user = User.new(user_params)
     @user.admin = true
 
@@ -90,7 +90,7 @@ class UsersController < ApplicationController
     authorize @user
 
     @user.update_attributes(user_password_params)
-    
+
     if @user.save
       flash[:success] = "Your password has been changed."
       redirect_to user_path(@user)
