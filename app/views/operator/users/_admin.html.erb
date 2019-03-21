@@ -7,17 +7,8 @@
       <%= render "approval_toggle", user: @user %>
     </div>
   </div>
-  <dl class="row">
-    <dt class="col-sm-3">Email</dt>
-    <dd class="col-sm"><%= mail_to @user.email %></dd>
-  </dl>
-  <dl class="row">
-    <dt class="col-sm-3">Join Date</dt>
-    <dd class="col">
-      <%= time_ago_in_words(@user.created_at) %> ago (<%= @user.created_at.strftime("%F") %>)
-    </dd>
-  </dl>
-  <dl class="row">
+  
+  <dl class="row mt-3">
     <dt class="col-sm-3">Owner of</dt>
     <dd class="col">
       <%- if @user.owned_organization.present? %>
@@ -31,5 +22,4 @@
     <dt class="col-sm-3">Member Of</dt>
     <dd class="col"><%= render "organization_form" %></dd>
   </dl>
-  
 <%- end %>
