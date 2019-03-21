@@ -1,3 +1,5 @@
+Dotenv::Railtie.load
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -37,9 +39,9 @@ Rails.application.configure do
 
   # Mail Catcher
   config.action_mailer.delivery_method = :smtp
-  config.action_mailer.smtp_settings = { 
-    :address => ENV['SMTP_HOST'], 
-    :port => ENV['SMTP_PORT'].to_i 
+  config.action_mailer.smtp_settings = {
+    :address => ENV['SMTP_HOST'],
+    :port => ENV['SMTP_PORT'].to_i
   }
 
   # Print deprecation notices to the Rails logger.

@@ -95,7 +95,7 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
 
     @user.update_attributes(user_password_params)
-    
+
     if @user.save
       flash[:success] = "Your password has been changed."
       turbolinks_redirect(user_path(@user))
@@ -154,7 +154,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't approve user."
     end
-    turbolinks_redirect(user_path(@user))
+    turbolinks_redirect(approval_redirect_path)
   end
 
   def unapprove
@@ -165,7 +165,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't unapprove user."
     end
-    turbolinks_redirect(user_path(@user))
+    turbolinks_redirect(approval_redirect_path)
   end
 
   def edit_billing
@@ -189,19 +189,19 @@ class Operator::UsersController < Operator::BaseController
 
   def update_payment_method
     find_user(:user_id)
-    
+
     if payment_method_params[:out_of_band] == "1"
       result = MarkCustomerAsOutOfBand.call(user: @user)
     else
       result = UnmarkCustomerAsOutOfBand.call(user: @user)
     end
-    
+
     if result.success?
       flash[:success] = "Payment method updated."
     else
       flash[:error] = result.message
     end
-    
+
     turbolinks_redirect(user_path(@user))
   end
 
@@ -221,7 +221,7 @@ class Operator::UsersController < Operator::BaseController
 
   def user_params
     result = params.require(:user).permit(
-      :name, :email, :password, :password_confirmation, 
+      :name, :email, :password, :password_confirmation,
       :bio, :linkedin, :twitter, :website, :profile_photo,
       :approved, :admin)
     result
@@ -259,5 +259,14 @@ class Operator::UsersController < Operator::BaseController
 
   def find_unapproved_users
     @users = User.for_space(current_tenant).unapproved
+  end
+
+  def approval_redirect_path
+    if params[:feed_item]
+      feed_item = FeedItem.find params[:feed_item]
+      feed_item_path(feed_item)
+    else
+      user_path(@user)
+    end
   end
 end
