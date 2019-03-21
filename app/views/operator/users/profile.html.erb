@@ -1,43 +1,50 @@
 <%- title @user.name %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4"><%= @user.name %></h4>
-      <%- if @user.delinquent? %>
-        <span class="badge badge-danger">Delinquent</span>
-      <%- else %>
-        <span class="badge badge-success">Not Delinquent</span>
-      <%- end %>
-
-      <p class="lead text-center mb-3 mt-3">Membership Card:</p>
-      <%= render "operator/users/member_card", member: @user %>
+<%= wide_card do %>
+  <p class="lead text-center mb-3 mt-3">This data is only visible to administrators</p>
+  <div class="row">
+    <div class="ml-3">
+      <%= render "shared/small_profile_photo", user: @user %>
+    </div>
+    <div class="ml-2">
+      <h5 class="mb-1">
+        <%= link_to @user.name, user_path(@user) %>
+      </h5>
+      <small>
+        Joined
+        <%= time_ago_in_words(@user.created_at) %>
+        ago
+        (<%= @user.created_at.strftime("%F") %>)
+      </small>
     </div>
   </div>
-  <div class="col-sm-3"></div>
-</div>
-
-<div class="row">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Administrative Actions</h4>
-      <p class="lead text-center mb-3 mt-3">This data is only visible to administrators</p>
-      <%= render "admin" %>
+  <dl class="row mt-3">
+    <dt class="col-sm-3">Email address</dt>
+    <dd class="col-sm"><%= mail_to @user.email %></dd>
+  </dl>
+  <div class="row mt-4">
+    <div class="col">
+      <%= render "admin", user: @user %>
     </div>
   </div>
-  <div class="col-sm-3"></div>
-</div>
+<%- end %>
 
-<div class="row">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Billing</h4>
-      <p class="lead text-center mb-3 mt-3">This data is only visible to administrators</p>
-      <%= render "billing" %>
-    </div>
-  </div>
-  <div class="col-sm-3"></div>
-</div>
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Billing</h4>
+  <%= render "billing", user: @user %>
+<%- end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Memberships</h4>
+  <%= render "memberships", user: @user %>
+<%- end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Day Passes</h4>
+  <%= render "day_passes", user: @user %>
+<%- end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Invoices</h4>
+  <%= render "invoices", user: @user %>
+<%- end %>
