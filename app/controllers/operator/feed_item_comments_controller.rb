@@ -7,7 +7,14 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     @feed_item_comment.user_id = current_user.id
     
     if @feed_item_comment.save
-      flash[:success] = "Comment posted."
+      @feed_item.updated_at = @feed_item_comment.created_at
+      if @feed_item.save
+        flash[:success] = "Comment posted."
+      else
+        flash[:success] = "Comment posted."
+        Rollbar.error("Unable to updated feed item #{@feed_item.id} upon comment #{@feed_item_comment.id}")
+      end
+      
     else
       flash[:error] = "Couldn't post comment."
     end
