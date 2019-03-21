@@ -11,7 +11,7 @@
     </div>
 
     <%- @feed_items.each do |feed_item| %>
-      <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 1 %>
+      <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 0 %>
     <%- end %>
 
     <%== pagy_bootstrap_nav(@pagy) %>
