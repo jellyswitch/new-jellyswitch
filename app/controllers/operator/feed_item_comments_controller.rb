@@ -3,20 +3,16 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     find_feed_item
     authorize @feed_item
 
-    @feed_item_comment = @feed_item.feed_item_comments.new(feed_item_comment_params)
-    @feed_item_comment.user_id = current_user.id
-    
-    if @feed_item_comment.save
-      @feed_item.updated_at = @feed_item_comment.created_at
-      if @feed_item.save
-        flash[:success] = "Comment posted."
-      else
-        flash[:success] = "Comment posted."
-        Rollbar.error("Unable to updated feed item #{@feed_item.id} upon comment #{@feed_item_comment.id}")
-      end
-      
+    result = CreateFeedItemComment.call(
+      feed_item: @feed_item,
+      params: feed_item_comment_params,
+      user: current_user
+    )
+
+    if result.success?
+      flash[:success] = "Comment posted."
     else
-      flash[:error] = "Couldn't post comment."
+      flash[:error] = result.message
     end
 
     turbolinks_redirect(feed_item_path(@feed_item))

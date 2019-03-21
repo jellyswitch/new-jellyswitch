@@ -56,7 +56,7 @@ module ApplicationHelper
 
   def admin_nav_items
     [
-      {title: "Management Feed", path: feed_items_path},
+      {title: "Home", path: feed_items_path},
       {title: "Members & Resources", path: members_resources_path},
       {title: "Finances", path: accounting_index_path},
       {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
