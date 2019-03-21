@@ -23,7 +23,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      turbolinks_redirect(root_path)
+      turbolinks_redirect(home_path)
     else
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
@@ -70,7 +70,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership cancelled."
-      turbolinks_redirect(home_path)
+      turbolinks_redirect(referrer_or_root)
     else
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
