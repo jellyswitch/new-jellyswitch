@@ -1,6 +1,7 @@
 class Operator::UsersController < Operator::BaseController
   def index
     find_approved_users
+    @unapproved_users = User.for_space(current_tenant).unapproved
     authorize @users
     background_image
   end

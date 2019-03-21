@@ -1,11 +1,12 @@
 <%- if admin? %>
-  <dl class="row">
-    <dt class="col-sm-3">Actions</dt>
-    <dd class="col-sm">
-      <%= link_to "Edit this user", edit_user_path(@user), class: "btn btn-outline-primary btn-sm mb-2" %>
+  <div class="row">
+    <%= link_to "Edit this user", edit_user_path(@user), class: "col btn btn-block btn-outline-primary btn-sm mb-2 ml-3 mr-3" %>
+  </div>
+  <div class="row">
+    <div class="col">
       <%= render "approval_toggle", user: @user %>
-    </dd>
-  </dl>
+    </div>
+  </div>
   <dl class="row">
     <dt class="col-sm-3">Email</dt>
     <dd class="col-sm"><%= mail_to @user.email %></dd>
