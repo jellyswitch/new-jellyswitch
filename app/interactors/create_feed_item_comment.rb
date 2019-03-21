@@ -23,7 +23,7 @@ class CreateFeedItemComment
     end
 
     result = PushNotifier.call(
-      message: "#{@feed_item.user.name} replied to a recent management note",
+      message: "#{@feed_item_comment.user.name} replied to a recent management note",
       operator: @feed_item.operator
     )
 
