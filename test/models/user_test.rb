@@ -13,6 +13,8 @@
 #  out_of_band        :boolean          default(FALSE), not null
 #  password_digest    :string
 #  remember_digest    :string
+#  reset_digest       :string
+#  reset_sent_at      :datetime
 #  slug               :string
 #  superadmin         :boolean          default(FALSE), not null
 #  twitter            :string

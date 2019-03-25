@@ -78,6 +78,7 @@ Rails.application.routes.draw do
   resources :operators, as: :operator_operators, controller: 'operator/operators' do
     get :stripe_connect_setup, to: 'operator/operators/stripe_connect_setup'
   end
+  resources :password_resets, only: [:new, :create, :edit, :update], controller: 'operator/password_resets'
   resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'operator/plans#unarchive'
   end

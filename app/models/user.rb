@@ -13,6 +13,8 @@
 #  out_of_band        :boolean          default(FALSE), not null
 #  password_digest    :string
 #  remember_digest    :string
+#  reset_digest       :string
+#  reset_sent_at      :datetime
 #  slug               :string
 #  superadmin         :boolean          default(FALSE), not null
 #  twitter            :string
@@ -47,7 +49,7 @@ class User < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Auth stuff
-  attr_accessor :remember_token
+  attr_accessor :remember_token, :reset_token
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create
   validates :email, uniqueness: { scope: :operator_id }
@@ -137,6 +139,20 @@ class User < ApplicationRecord
     else
       return User.find_by(email: email, operator_id: operator_id)
     end
+  end
+
+  def create_reset_digest
+    self.reset_token = User.new_token
+    update_attribute(:reset_digest, User.digest(reset_token))
+    update_attribute(:reset_sent_at, Time.zone.now)
+  end
+
+  def send_password_reset_email
+    UserMailer.password_reset(self, operator).deliver_now
+  end
+
+  def password_reset_expired?
+    reset_sent_at < 2.hours.ago
   end
 
   # Form and view helpers
