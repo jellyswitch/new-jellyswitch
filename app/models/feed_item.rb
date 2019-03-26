@@ -40,7 +40,8 @@ class FeedItem < ApplicationRecord
       text: text,
       type: type,
       amount: amount,
-      user_name: user.present? ? user.name : "Anonymous"
+      user_name: user.present? ? user.name : "Anonymous",
+      comments: feed_item_comments.map(&:comment)
     }
   end
 
