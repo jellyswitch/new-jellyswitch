@@ -16,6 +16,7 @@
 #
 
 class FeedItem < ApplicationRecord
+  searchkick
   has_many_attached :photos
   before_save :parse_amount!
 
@@ -33,6 +34,15 @@ class FeedItem < ApplicationRecord
 
   # Types of feed_items
   scope :member_feedbacks, -> () { where("blob->> 'type' = ?", "feedback") }
+
+  def search_data
+    {
+      text: text,
+      type: type,
+      amount: amount,
+      user_name: user.present? ? user.name : "Anonymous"
+    }
+  end
 
   def text
     blob["text"]
