@@ -32,6 +32,7 @@ class SwitchMembership
       })
 
     rescue Exception => e
+      Rollbar.error("Interactor Failure: #{e.message}")
       context.fail!(message: "Unable to switch membership: #{e.message}")
     end
   end

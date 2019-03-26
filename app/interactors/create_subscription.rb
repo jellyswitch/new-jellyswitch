@@ -61,5 +61,8 @@ class CreateSubscription
     blob = {type: "subscription", subscription_id: subscription.id}
     create_feed_item(user.operator, user, blob)
     context.subscription = subscription
+  rescue Exception => e
+    Rollbar.error("Interactor Failure: #{e.message}")
+    context.fail!(message: e.message)
   end
 end

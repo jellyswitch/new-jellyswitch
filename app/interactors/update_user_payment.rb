@@ -22,6 +22,7 @@ class UpdateUserPayment
     end
 
   rescue Exception => e
+    Rollbar.error("Interactor Failure: #{e.message}")
     context.fail!(message: e.message)
   end
 

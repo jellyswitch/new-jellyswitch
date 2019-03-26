@@ -14,6 +14,7 @@ class CancelSubscription
       subscription.cancel_stripe!
     rescue Exception => e
       undo_deactivate(subscription)
+      Rollbar.error("Interactor Failure: #{e.message}")
       context.fail!(message: e.message)
     end
   end

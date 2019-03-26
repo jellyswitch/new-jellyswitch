@@ -16,5 +16,8 @@ class UpdateInvoiceStatus
     if !invoice.save
       context.fail!(message: "Couldn't save invoice #{number} with new status: #{new_status}")
     end
+  rescue Exception => e
+    Rollbar.error("Interactor Failure: #{e.message}")
+    context.fail!(message: e.message)
   end
 end
