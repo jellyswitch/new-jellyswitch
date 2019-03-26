@@ -1,0 +1,31 @@
+<%= javascript_include_tag "stripe_handler.js" %>
+
+<%= form_for(day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <%= f.date_select :day, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+    <div class="col-1"></div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <%= f.select :day_pass_type, @day_pass_types, {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <div class="col-1"></div>
+  </div>
+
+  <%= f.hidden_field :user_id, value: user.id %>
+
+  <%- if !user.has_billing? %>
+    <div class="form-group row">
+      <div class="col-1"></div>
+      <%= render "shared/billing", show_check_option: false %>
+      <div class="col-1"></div>
+    </div>
+  <%- end %>
+
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <%= f.submit label, class: "form-control btn btn-primary col" %>
+    <div class="col-1"></div>
+  </div>
+<%- end %>
