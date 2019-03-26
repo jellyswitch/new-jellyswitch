@@ -15,7 +15,12 @@
     </div>
   </div>
 <%- else %>
+  <h5 class="display-5 text-center">Past Day Passes:</h5>
   <%- user.day_passes.each do |day_pass| %>
-    <%= day_pass.pretty_day %>
+    <dd class="row text-center">
+      <div class="col-lg mt-1">
+        <%= day_pass.pretty_day %>
+      </div>
+    </dd>
   <%- end %>
 <%- end %>
