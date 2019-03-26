@@ -1,16 +1,17 @@
+<div class="row mt-2">
+  <div class="col">
+    <%- if user.has_billing? || user.out_of_band? %>    
+      <%= render "operator/day_passes/form", day_pass: DayPass.new, label: "Add day pass", user: user %>
+    <%- else %>
+      <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
+    <%- end %>
+  </div>
+</div>
+
 <%- if @user.day_passes.count < 1 %>
   <div class="row">
     <div class="col text-center">
       No day passes.
-    </div>
-  </div>
-  <div class="row mt-2">
-    <div class="col">
-      <%- if user.has_billing? || user.out_of_band? %>    
-        <%= render "operator/day_passes/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id %>
-      <%- else %>
-        <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
-      <%- end %>
     </div>
   </div>
 <%- else %>

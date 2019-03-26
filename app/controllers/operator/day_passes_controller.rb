@@ -8,7 +8,7 @@ class Operator::DayPassesController < Operator::BaseController
   def new
     @day_pass = DayPass.new
     authorize @day_pass
-    @day_pass_types = DayPassType.available.visible.map {|d| [d.name_for_select, d.id] }
+    @day_pass_types = DayPassType.for_purchase_options(current_tenant)
     background_image
     include_stripe
   end
@@ -19,7 +19,7 @@ class Operator::DayPassesController < Operator::BaseController
     if admin?
       result = CreateDayPass.call(
         params: admin_day_pass_params,
-        user_id: admin_day_pass_params[:day_pass][:user_id],
+        user_id: admin_day_pass_params[:user_id],
         token: params[:stripeToken],
         operator: current_tenant
       )
@@ -35,8 +35,13 @@ class Operator::DayPassesController < Operator::BaseController
     @day_pass = result.day_pass
 
     if result.success?
-      flash[:success] = "Welcome to #{current_tenant.name}!"
-      turbolinks_redirect(home_path)
+      if admin?
+        flash[:success] = "Day pass added."
+        turbolinks_redirect(user_path(@day_pass.user), action: "replace")
+      else
+        flash[:success] = "Welcome to #{current_tenant.name}!"
+        turbolinks_redirect(home_path)
+      end
     else
       flash[:error] = result.message
       turbolinks_redirect(new_day_pass_path)

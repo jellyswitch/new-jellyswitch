@@ -25,4 +25,8 @@ class DayPassType < ApplicationRecord
   def name_for_select
     "#{name} ($#{amount_in_cents.to_f / 100.0})"
   end
+
+  def self.for_purchase_options(operator)
+    where(operator_id: operator.id).available.visible.map {|d| [d.name_for_select, d.id] }
+  end
 end
