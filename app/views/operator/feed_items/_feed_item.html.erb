@@ -1,12 +1,12 @@
 <%- case feed_item.type
     when "post" %>
-  <%= feed_item_card { render "post_feed_item", feed_item: feed_item, comments: comments }%>
+  <%= feed_item_card { render "operator/feed_items/post_feed_item", feed_item: feed_item, comments: comments }%>
 <%- when "reservation" %>
-  <%= feed_item_card { render "room_reservation_feed_item", feed_item: feed_item, comments: comments }%>
+  <%= feed_item_card { render "operator/feed_items/room_reservation_feed_item", feed_item: feed_item, comments: comments }%>
 <%- when "feedback" %>
-  <%= feed_item_card { render "member_feedback_feed_item", feed_item: feed_item, comments: comments } %>
+  <%= feed_item_card { render "operator/feed_items/member_feedback_feed_item", feed_item: feed_item, comments: comments } %>
 <%- when "day-pass" %>
-  <%= feed_item_card { render "day_pass_feed_item", feed_item: feed_item, comments: comments } %>
+  <%= feed_item_card { render "operator/feed_items/day_pass_feed_item", feed_item: feed_item, comments: comments } %>
 <%- when "subscription" %>
-  <%= feed_item_card { render "subscription_feed_item", feed_item: feed_item, comments: comments } %>
+  <%= feed_item_card { render "operator/feed_items/subscription_feed_item", feed_item: feed_item, comments: comments } %>
 <%- end %>

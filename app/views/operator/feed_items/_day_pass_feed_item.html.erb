@@ -13,7 +13,7 @@
     </p>
   </div>
   <div class="ml-auto">
-    <%= render "common", feed_item: feed_item %>
+    <%= render "operator/feed_items/common", feed_item: feed_item %>
   </div>
 </div>
 <div class="row mt-4">
@@ -22,5 +22,5 @@
   </p>
 </div>
 
-<%= render "feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
-<%= render "comments", feed_item: feed_item, show_comments: comments %>
+<%= render "operator/feed_items/feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
+<%= render "operator/feed_items/comments", feed_item: feed_item, show_comments: comments %>

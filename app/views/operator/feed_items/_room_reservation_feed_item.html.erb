@@ -11,7 +11,7 @@
       </p>
     </div>
     <div class="ml-auto">
-      <%= render "common", feed_item: feed_item %>
+      <%= render "operator/feed_items/common", feed_item: feed_item %>
     </div>
   </div>
   <div class="row mt-2">
@@ -20,4 +20,4 @@
     </p>
   </div>
 
-  <%= render "comments", feed_item: feed_item, show_comments: comments %>
+  <%= render "operator/feed_items/comments", feed_item: feed_item, show_comments: comments %>

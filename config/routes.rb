@@ -86,6 +86,11 @@ Rails.application.routes.draw do
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
     get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability
   end
+  resources :search_results, only: [:new, :create], controller: 'operator/search_results' do
+    collection do
+      get :query, to: 'operator/search_results#query'
+    end
+  end
   resources :subscriptions, controller: 'operator/subscriptions'
   resources :users, controller: 'operator/users' do
     post 'approve', to: "operator/users#approve"
