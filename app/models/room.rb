@@ -96,10 +96,11 @@ class Room < ApplicationRecord
         e.dtend = reservation.datetime_in + 1.hour
         if reservation.user.present?
           e.summary = reservation.user.name
+          e.description = "#{reservation.user.name} has reserved #{name} for an hour."
         else
           e.summary = "DELETED USER"
+          e.description = "DELETED USER has reserved #{name} for an hour."
         end
-        e.description = "#{reservation.user.name} has reserved #{name} for an hour."
       end
     end
     cal.publish
