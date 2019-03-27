@@ -17,7 +17,7 @@
     <%= f.hidden_field :user_id, value: user_id %>
   <%- end %>
 
-  <%- if admin? %>
+  <%- if defined?(show_start_day) && show_start_day %>
     <div class="form-group row">
       <div class="col-1"></div>
       <div class="col">
