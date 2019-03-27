@@ -23,32 +23,57 @@ class CreateSubscription
     end
 
     if user.out_of_band?
-      stripe_subscription = Stripe::Subscription.create({
-        customer: context.user.stripe_customer_id,
-        billing: "send_invoice",
-        days_until_due: 30,
-        billing_cycle_anchor: start_day,
-        items: [
-          { plan: subscription.plan.stripe_plan_id }
-        ]}, {
-        api_key: subscription.plan.operator.stripe_secret_key,  
-        stripe_account: subscription.plan.operator.stripe_user_id
-      })
+      if start_day.present?
+        stripe_subscription = Stripe::Subscription.create({
+          customer: context.user.stripe_customer_id,
+          billing: "send_invoice",
+          days_until_due: 30,
+          billing_cycle_anchor: start_day,
+          items: [
+            { plan: subscription.plan.stripe_plan_id }
+          ]}, {
+          api_key: subscription.plan.operator.stripe_secret_key,  
+          stripe_account: subscription.plan.operator.stripe_user_id
+        })
+      else
+        stripe_subscription = Stripe::Subscription.create({
+          customer: context.user.stripe_customer_id,
+          billing: "send_invoice",
+          days_until_due: 30,
+          items: [
+            { plan: subscription.plan.stripe_plan_id }
+          ]}, {
+          api_key: subscription.plan.operator.stripe_secret_key,  
+          stripe_account: subscription.plan.operator.stripe_user_id
+        })
+      end
     else
       if !user.has_billing?
         context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
       end
-
-      stripe_subscription = Stripe::Subscription.create({
-        customer: context.user.stripe_customer_id,
-        billing: "charge_automatically",
-        billing_cycle_anchor: start_day,
-        items: [
-          { plan: subscription.plan.stripe_plan_id }
-        ]}, {
-        api_key: subscription.plan.operator.stripe_secret_key,
-        stripe_account: subscription.plan.operator.stripe_user_id
-      })
+      
+      if start_day.present?
+        stripe_subscription = Stripe::Subscription.create({
+          customer: context.user.stripe_customer_id,
+          billing: "charge_automatically",
+          billing_cycle_anchor: start_day,
+          items: [
+            { plan: subscription.plan.stripe_plan_id }
+          ]}, {
+          api_key: subscription.plan.operator.stripe_secret_key,
+          stripe_account: subscription.plan.operator.stripe_user_id
+        })
+      else
+        stripe_subscription = Stripe::Subscription.create({
+          customer: context.user.stripe_customer_id,
+          billing: "charge_automatically",
+          items: [
+            { plan: subscription.plan.stripe_plan_id }
+          ]}, {
+          api_key: subscription.plan.operator.stripe_secret_key,
+          stripe_account: subscription.plan.operator.stripe_user_id
+        })
+      end
     end
     
     begin
@@ -69,3 +94,4 @@ class CreateSubscription
     context.fail!(message: e.message)
   end
 end
+
