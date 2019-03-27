@@ -66,7 +66,8 @@ module ApplicationHelper
       {title: "My Day Passes", path: user_day_passes_path(current_user)},
       {title: "My Reservations", path: user_reservations_path(current_user)},
       {title: "My Invoices", path: user_invoices_path(current_user)},
-      {title: "Change Password", path: user_change_password_path(current_user)}
+      {title: "Change Password", path: user_change_password_path(current_user)},
+      {title: "Member Dashboard", path: home_path}
     ]
   end
 
