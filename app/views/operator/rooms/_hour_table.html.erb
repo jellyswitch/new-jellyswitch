@@ -8,7 +8,7 @@
     <%- if hour[:reserved] %>
       <a href="#" class="btn btn-danger btn-sm disabled">RESERVED</a>
     <%- else %>
-      <%= render "reservation_button", room: @room, datetime_in: hour[:hour], label: "Reserve" %>
+      <%= link_to "Reserve", new_reservation_path(reservation: {hours: 1, datetime_in: hour[:hour], room_id: @room.id}), class: "btn btn-sm btn-success" %>
     <%- end %>
   </td>
 </tr>

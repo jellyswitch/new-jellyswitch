@@ -9,11 +9,11 @@
           <div class="col-sm text-center">
             <h4 class="display-4 text-center mt-1 mb-4">Room Availability: <%= @room.name %></h4>
             <div class="btn-group" role="group" aria-label="date-select">
-              <%= link_to "Previous Day", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info" %>
+              <%= link_to "Previous Day", room_day_availability_path(@room, day: @previous_day.day, month: @previous_day.month, year: @previous_day.year), class: "btn btn-info", data: {"turbolinks-action" => "replace"} %>
               <button>
                 <%= @month %>/<%= @day %>/<%= @year %>
               </button>
-              <%= link_to "Next Day", room_day_availability_path(@room, day: @next_day.day, month: @next_day.month, year: @next_day.year), class: "btn btn-info" %>
+              <%= link_to "Next Day", room_day_availability_path(@room, day: @next_day.day, month: @next_day.month, year: @next_day.year), class: "btn btn-info", data: {"turbolinks-action" => "replace"} %>
             </div>
           </div>
         </div>
