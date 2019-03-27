@@ -8,9 +8,10 @@
     <%- if admin? %>
       <%= f.select :plan_id, Plan.all_options_for_select, {}, { class: "form-control form-control-sm col" } %>
     <%- else %>
+      <div class="col-1"></div>
       <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control form-control-sm col" } %>
+      <div class="col-1"></div>
     <%- end %>
-    
   </div>
   <%- if defined?(user_id) %>
     <%= f.hidden_field :user_id, value: user_id %>
@@ -18,27 +19,25 @@
 
   <%- if admin? %>
     <div class="form-group row">
-      
-      <div class="col-8 text-right">
-        Starts on <%= Time.zone.now.strftime("%B") %>
+      <div class="col-1"></div>
+      <div class="col">
+        Starts on
+        <%= select "subscription", "start_day", options_for_select(days_option_for_current_month), {},  { class: "form-control form-control-sm" } %>
       </div>
-      <div class="col-4 pr-0">
-        <%= select "subscription", "start_day", options_for_select(days_option_for_current_month, selected: Time.zone.now.day), {},  { class: "form-control form-control-sm" } %>
-      </div>
-      
+      <div class="col-1"></div>
     </div>
   <%- end %>
 
   <%- if cc %>
     <div class="form-group row">
-      
+      <div class="col-1"></div>
       <%= render "shared/billing", show_check_option: false %>
-      
+      <div class="col-1"></div>
     </div>
   <%- end %>
   <div class="form-group row">
-    
+    <div class="col-1"></div>
     <%= f.submit label, class: "form-control btn btn-primary col" %>
-    
+    <div class="col-1"></div>
   </div>
 <%- end %>

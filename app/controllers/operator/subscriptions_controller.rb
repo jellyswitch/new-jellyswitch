@@ -15,10 +15,17 @@ class Operator::SubscriptionsController < Operator::BaseController
       @subscription = new_subscription
     end
 
+    start_day = Time.zone.now + 2.hours
+
+    if params[:subscription][:start_day].present?
+      start_day = Time.zone.at(params[:subscription][:start_day].to_i) + 2.hours
+    end
+
     result = CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
-      user: @subscription.user
+      user: @subscription.user,
+      start_day: start_day
     )
 
     if result.success?

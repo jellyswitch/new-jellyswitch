@@ -93,6 +93,9 @@ module ApplicationHelper
   end
 
   def days_option_for_current_month
-    [*1..Time.days_in_month(Time.zone.now.month)]
+    [*0..30].map do |i|
+      day = Time.zone.now + i.days
+      [day.to_formatted_s(:long), day.to_i]
+    end
   end
 end
