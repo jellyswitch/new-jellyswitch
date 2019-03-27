@@ -9,11 +9,17 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 - Postgres 10.5
 
 1. `bundle install`
-2. `gem install heroku`
-3. Ask dave for the `.env` file for environment variables
-4. Postgres DB: `createdb bristlecone_development`
-5. Run migrations: `heroku local:run rake db:migrate`
-6. Run the server: `heroku local`
+2. Install [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli)
+3. Install Redis:
+  - `brew install redis`
+  - `brew services start redis`
+4. Install Elasticsearch:
+  - `brew install elasticsearch`
+  - `brew services start elasticsearch`
+5. Ask dave for the `.env` file for environment variables
+6. Postgres DB: `createdb bristlecone_development`
+7. Run migrations: `heroku local:run rake db:migrate`
+8. Run the server: `heroku local`
 
 ## Users, Admins, and Superadmins
 
@@ -79,5 +85,11 @@ As such, you need to have local DNS entries that point to your local development
 ```
 
 ## Demo Instances
+
+Open the rails console and create Subdomain records:
+
+```
+[1] pry(main)> 25.times { |n| Subdomain.create!(subdomain: "demo#{n}")
+```
 
 Go to `app.jellyswitch.net:3000` and click "Generate Demo Instance". This will enqueue a background job to generate a new example demo instance of Jellyswitch that you can then poke around with for testing and development purposes. Refresh the page after ~45 seconds and click the "Visit" button to see this instance.
