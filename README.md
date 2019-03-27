@@ -14,6 +14,7 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
   - `brew install redis`
   - `brew services start redis`
 4. Install Elasticsearch:
+  - `brew cask install homebrew/cask-versions/java8`
   - `brew install elasticsearch`
   - `brew services start elasticsearch`
 5. Ask dave for the `.env` file for environment variables
