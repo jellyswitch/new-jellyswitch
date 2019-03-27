@@ -91,4 +91,8 @@ module ApplicationHelper
       {title: "Log In", path: login_path}
     ]
   end
+
+  def days_option_for_current_month
+    [*1..Time.days_in_month(Time.zone.now.month)]
+  end
 end
