@@ -9,6 +9,7 @@ class MarkInvoiceAsPaid
     end
 
     invoice.pay({paid_out_of_band: true})
+    invoice.update(status: "paid")
     context.invoice = invoice
   rescue Exception => e
     Rollbar.error("Interactor Failure: #{e.message}")
