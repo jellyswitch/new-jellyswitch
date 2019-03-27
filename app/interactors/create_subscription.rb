@@ -5,6 +5,7 @@ class CreateSubscription
   def call
     subscription = context.subscription
     user = context.user
+    start_day = context.start_day.to_i
 
     if !user.out_of_band?
       result = UpdateUserPayment.call(
@@ -26,6 +27,7 @@ class CreateSubscription
         customer: context.user.stripe_customer_id,
         billing: "send_invoice",
         days_until_due: 30,
+        billing_cycle_anchor: start_day,
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]}, {
@@ -40,6 +42,7 @@ class CreateSubscription
       stripe_subscription = Stripe::Subscription.create({
         customer: context.user.stripe_customer_id,
         billing: "charge_automatically",
+        billing_cycle_anchor: start_day,
         items: [
           { plan: subscription.plan.stripe_plan_id }
         ]}, {
