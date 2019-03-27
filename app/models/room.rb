@@ -94,7 +94,11 @@ class Room < ApplicationRecord
       cal.event do |e|
         e.dtstart = reservation.datetime_in
         e.dtend = reservation.datetime_in + 1.hour
-        e.summary = reservation.user.name
+        if reservation.user.present?
+          e.summary = reservation.user.name
+        else
+          e.summary = "DELETED USER"
+        end
         e.description = "#{reservation.user.name} has reserved #{name} for an hour."
       end
     end
