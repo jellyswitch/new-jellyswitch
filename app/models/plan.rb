@@ -108,6 +108,12 @@ class Plan < ApplicationRecord
     end
   end
 
+  def self.all_options_for_select
+    Plan.available.map do |plan|
+      [plan.pretty_name, plan.id]
+    end
+  end
+
   # Instance methods
   def pretty_name
     "#{name} (#{pretty_price})"

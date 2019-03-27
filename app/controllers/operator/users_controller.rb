@@ -16,7 +16,6 @@ class Operator::UsersController < Operator::BaseController
     find_user
     authorize @user
     background_image
-    @day_pass_types = DayPassType.for_purchase_options(current_tenant)
 
     if @user == current_user
       render :show

@@ -8,7 +8,6 @@ class Operator::DayPassesController < Operator::BaseController
   def new
     @day_pass = DayPass.new
     authorize @day_pass
-    @day_pass_types = DayPassType.for_purchase_options(current_tenant)
     background_image
     include_stripe
   end

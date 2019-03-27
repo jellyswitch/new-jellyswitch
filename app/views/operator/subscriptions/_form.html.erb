@@ -5,7 +5,11 @@
   
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control form-control-sm col" }%>
+    <%- if admin? %>
+      <%= f.select :plan_id, Plan.all_options_for_select, {}, { class: "form-control form-control-sm col" } %>
+    <%- else %>
+      <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control form-control-sm col" } %>
+    <%- end %>
     <div class="col-1"></div>
   </div>
   <%- if defined?(user_id) %>
