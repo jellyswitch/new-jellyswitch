@@ -35,11 +35,10 @@
       <%- if room.available_now? %>
         <%= render "reservation_button", room: room, datetime_in: Time.current.beginning_of_hour, label: "Reserve Now" %>
       <%- end %>
-      &nbsp;
-      <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "btn btn-sm btn-primary" %>
-      &nbsp;
+      <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "btn btn-block btn-primary" %>
       <%- if admin? %>
-        <%= link_to "Edit Room", edit_room_path(room), class: "btn btn-warning btn-sm" %>
+        <%= link_to "Edit Room", edit_room_path(room), class: "btn btn-block btn-warning" %>
+        <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "btn btn-block btn-info" %>
       <%- end %>
     </div>
   </div>
