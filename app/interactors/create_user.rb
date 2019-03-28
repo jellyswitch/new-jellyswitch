@@ -26,8 +26,8 @@ class CreateUser
 
     context.user = @user
   rescue Exception => e
-    Rollbar.error("Interactor Failure: #{e.message}")
+    Rollbar.error("Interactor Failure (#{self.class.name}): #{e.inspect} #{e.message}")
     context.user = @user
-    context.fail!(message: e.message)
+    context.fail!(message: e.)
   end
 end
