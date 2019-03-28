@@ -20,22 +20,32 @@ class Invoice < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
   belongs_to :user
+  has_many :refunds
 
-  scope :recent, ->() { where('date > ?', Time.now - 30.days) }
-  scope :open, ->() { where("status = 'open'") }
-  scope :due, -> () { open.where('due_date >= ?', Time.now) }
-  scope :delinquent, ->() { due.where('due_date < ?', Time.now) }
-  scope :last_month, -> () {
+  scope :recent, -> { where('date > ?', Time.now - 30.days) }
+  scope :open, -> { where("status = 'open'") }
+  scope :due, -> { open.where('due_date >= ?', Time.now) }
+  scope :delinquent, -> { due.where('due_date < ?', Time.now) }
+  scope :last_month, -> {
     last_month_start = (Time.now.beginning_of_month - 1.day).beginning_of_month.to_time.to_i
     this_month_start = Time.now.beginning_of_month.to_time.to_i
 
     where("date >= to_timestamp(?) AND date < to_timestamp(?)", last_month_start, this_month_start)
   }
-  scope :this_month, -> () {
+  scope :this_month, -> {
     this_month_start = Time.now.beginning_of_month.to_time.to_i
 
     where("date >= to_timestamp(?)", this_month_start)
   }
+
+  VOIDABLE_STATUSES = %w(draft open uncollectible)
+  STATUSES = (VOIDABLE_STATUSES + %w(void paid)).freeze
+
+  STATUSES.each do |invoice_status|
+    define_method("#{invoice_status}?") do
+      status == invoice_status
+    end
+  end
 
   def stripe_invoice
     if stripe_invoice_id.present?
@@ -49,7 +59,7 @@ class Invoice < ApplicationRecord
   end
 
   def pdf_url
-    if stripe_invoice_id.present?
+    if stripe_invoice_id.present? && !void?
       stripe_invoice.invoice_pdf
     else
       nil
@@ -66,5 +76,13 @@ class Invoice < ApplicationRecord
 
   def pretty_date
     date.strftime("%m/%d/%Y")
+  end
+
+  def voidable?
+    VOIDABLE_STATUSES.include?(status)
+  end
+
+  def refunded?
+    refunds.length > 0
   end
 end

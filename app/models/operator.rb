@@ -44,6 +44,8 @@ class Operator < ApplicationRecord
   has_one_attached :terms_of_service
   has_one_attached :push_notification_certificate
 
+  delegate :retrieve_stripe_invoice, :create_stripe_refund, to: :stripe_operator
+
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?
   end
@@ -67,4 +69,16 @@ class Operator < ApplicationRecord
       Rails.configuration.stripe[:test_secret_key]
     end
   end
+
+  def stripe_operator
+    @stripe_operator ||= StripeOperator.new(self)
+  end
+
+  private
+
+  class StripeOperator < SimpleDelegator
+    include StripeUtils
+  end
+
+  private_constant :StripeOperator
 end

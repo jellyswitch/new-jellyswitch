@@ -9,7 +9,7 @@ module FeedItemCreator
       feed_item.created_at = options[:day]
       feed_item.updated_at = options[:day]
     end
-    
+
     if !feed_item.save
     context.fail!(message: "Unable to generate feed item.")
     end

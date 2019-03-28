@@ -10,6 +10,6 @@
 #
 
 class Subdomain < ApplicationRecord
-  scope :unreserved, ->() { where(in_use: false) }
-  scope :reserved, ->() { where(in_use: true) }
+  scope :unreserved, -> { where(in_use: false) }
+  scope :reserved, -> { where(in_use: true) }
 end

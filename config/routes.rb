@@ -67,6 +67,7 @@ Rails.application.routes.draw do
     resources :comments, controller: 'operator/feed_item_comments', only: [:create]
   end
   resources :invoices, only: [:index], controller: 'operator/invoices' do
+    resources :refunds, only: [:create], controller: 'operator/refunds'
     collection do
       get :due, to: 'operator/invoices#due'
       get :recent, to: 'operator/invoices#recent'

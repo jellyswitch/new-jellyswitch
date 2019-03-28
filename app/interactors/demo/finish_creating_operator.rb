@@ -3,6 +3,7 @@ class Demo::FinishCreatingOperator
 
   def call
     setup
+
     op = context.operator
 
     logo_path = logo_paths.shuffle.sample
@@ -87,7 +88,7 @@ class Demo::FinishCreatingOperator
     end
 
     op.doors.create!(name: "Front Door")
-    
+
     OperatorMailer.new_demo_instance(context.user, op).deliver_later
     teardown
   end
