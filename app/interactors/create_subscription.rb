@@ -18,10 +18,6 @@ class CreateSubscription
       end
     end
 
-    if !subscription.save
-      context.fail!(message: "Failed to create subscription.")
-    end
-
     if user.out_of_band?
       if start_day.present?
         stripe_subscription = Stripe::Subscription.create({

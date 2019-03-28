@@ -34,9 +34,6 @@ class CreateDayPass
       end
     end
 
-    if !day_pass.save
-      context.fail!(message: "Unable to create day pass.")
-    end
 
     @invoice_item = Stripe::InvoiceItem.create({
       customer: user.stripe_customer_id,
