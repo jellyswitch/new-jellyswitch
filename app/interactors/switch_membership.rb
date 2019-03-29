@@ -30,10 +30,6 @@ class SwitchMembership
         api_key: new_subscription.plan.operator.stripe_secret_key,
         stripe_account: new_subscription.plan.operator.stripe_user_id
       })
-
-    rescue Exception => e
-      Rollbar.error("Interactor Failure: #{e.message}")
-      context.fail!(message: "Unable to switch membership: #{e.message}")
     end
   end
 end

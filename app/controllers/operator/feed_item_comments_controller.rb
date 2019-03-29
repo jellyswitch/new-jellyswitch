@@ -16,6 +16,10 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     end
 
     turbolinks_redirect(feed_item_path(@feed_item))
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   private

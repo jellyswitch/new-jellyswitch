@@ -39,7 +39,5 @@ class Demo::CreatePlans
       available: true,
       operator_id: operator.id
     )
-  rescue Exception => e
-    context.fail!(message: "Couldn't create plans: #{e.message}")
   end
 end

@@ -19,8 +19,6 @@ class Demo::CreateRoom
       filename: path
     )
     context.room = room
-  rescue Exception => e
-    context.fail!(message: "Unhandled exception creating room: #{e.message}")
   end
 
   def room_photo_paths

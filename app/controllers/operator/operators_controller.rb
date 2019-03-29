@@ -22,6 +22,10 @@ class Operator::OperatorsController < Operator::BaseController
     else
       render :edit, status: 422
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def stripe_connect_setup
@@ -42,6 +46,10 @@ class Operator::OperatorsController < Operator::BaseController
       end
     end
     redirect_to operator_path(@operator, subdomain: @operator.subdomain)
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   private

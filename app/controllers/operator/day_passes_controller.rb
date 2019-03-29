@@ -45,6 +45,10 @@ class Operator::DayPassesController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(new_day_pass_path)
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def show

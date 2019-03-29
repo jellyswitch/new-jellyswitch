@@ -14,8 +14,5 @@ class UnmarkCustomerAsOutOfBand
     if !user.save
       context.fail!(message: "Unable to save user record.")
     end
-  rescue Exception => e
-    Rollbar.error("Interactor Failure: #{e.message}")
-    context.fail!(message: e.message)
   end
 end

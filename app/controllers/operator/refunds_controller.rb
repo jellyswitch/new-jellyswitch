@@ -14,5 +14,9 @@ class Operator::RefundsController < Operator::BaseController
     end
 
     redirect_to invoices_path
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 end

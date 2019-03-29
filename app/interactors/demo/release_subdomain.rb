@@ -15,7 +15,5 @@ class Demo::ReleaseSubdomain
         operator.save!
       end
     end
-  rescue Exception => e
-    context.fail!(e.message)
   end
 end

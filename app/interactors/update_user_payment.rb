@@ -20,10 +20,6 @@ class UpdateUserPayment
       # We're adding billing for the first time
       update_payment(user, token)
     end
-
-  rescue Exception => e
-    Rollbar.error("Interactor Failure: #{e.message}")
-    context.fail!(message: e.message)
   end
 
   def update_payment(user, token)
