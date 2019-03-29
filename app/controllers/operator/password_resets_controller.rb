@@ -16,6 +16,10 @@ class Operator::PasswordResetsController < Operator::BaseController
       flash[:error] = "Email address not found."
       turbolinks_redirect(new_password_reset_path, action: "replace")
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def edit
@@ -37,6 +41,10 @@ class Operator::PasswordResetsController < Operator::BaseController
     else
       render 'edit'                                     # Case (2)
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   private

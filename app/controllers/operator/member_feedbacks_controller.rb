@@ -18,6 +18,10 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       background_image
       render :new, status: 422
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def index

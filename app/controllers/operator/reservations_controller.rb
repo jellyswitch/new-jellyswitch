@@ -22,6 +22,10 @@ class Operator::ReservationsController < Operator::BaseController
     else
       render :new, status: 422
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def destroy
@@ -37,6 +41,10 @@ class Operator::ReservationsController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   private

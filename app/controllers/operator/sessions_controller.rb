@@ -20,6 +20,10 @@ class Operator::SessionsController < Operator::BaseController
       flash[:error] = "Please check that your email and password are accurate."
       turbolinks_redirect(login_path)
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def destroy
