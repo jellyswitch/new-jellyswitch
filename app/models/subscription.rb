@@ -17,7 +17,7 @@ class Subscription < ApplicationRecord
   belongs_to :plan
 
   # Scopes
-  scope :active, ->() { where(active: true) }
+  scope :active, -> { where(active: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
 
   # Instance methods

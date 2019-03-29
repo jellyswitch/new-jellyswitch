@@ -121,6 +121,12 @@ class FeedItem < ApplicationRecord
     end
   end
 
+  def invoice
+    invoice_id = blob["invoice_id"]
+
+    Invoice.find_by(id: invoice_id)
+  end
+
   private
 
   VALID_ATTACHMENT_REGEX = /image\/(jpeg|jpg|png|gif)/

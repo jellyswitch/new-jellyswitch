@@ -43,6 +43,7 @@ class User < ApplicationRecord
   has_many :operator_surveys
   has_many :reservations
   has_many :subscriptions
+  has_many :refunds
 
   # Slugs
   extend FriendlyId
@@ -79,7 +80,7 @@ class User < ApplicationRecord
   def square_profile_photo
     profile_photo.variant(resize: "100x100>")
   end
-  
+
   def normal_profile_photo
     profile_photo.variant(resize: "250x250")
   end
@@ -169,7 +170,7 @@ class User < ApplicationRecord
   # Stripe Stuff
   def stripe_customer
     Stripe::Customer.retrieve(self.stripe_customer_id, {
-      api_key: operator.stripe_secret_key,  
+      api_key: operator.stripe_secret_key,
       stripe_account: operator.stripe_user_id
     })
   end

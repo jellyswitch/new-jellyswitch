@@ -1,4 +1,3 @@
-
 <%- if feed_item.user.approved? %>
   <%= form_for(user, url: user_unapprove_path(user, feed_item: feed_item), remote: true, method: :post, html: {class: "form-inline d-inline"}) do |f| %>
     <%= f.hidden_field :approved, value: false %>
