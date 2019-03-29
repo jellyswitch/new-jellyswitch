@@ -4,7 +4,7 @@ class Operator::BaseController < ApplicationController
   before_action :store_ios_token, if: :logged_in?
 
   def background_image
-    @background_image = current_tenant.background_image
+    @background_image = current_tenant.background_image if current_tenant.present?
   end
 
   def pundit_user
