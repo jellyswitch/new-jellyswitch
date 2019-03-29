@@ -5,7 +5,7 @@
         <p class="lead">
           <%= link_to invoice.user.name, user_path(invoice.user) %>
         </p>
-        <% if invoice.status.paid? %>
+        <% if invoice.paid? %>
           <span class="badge badge-success">paid</span>
         <% else %>
           <span class="badge badge-info"><%= invoice.status %></span>
