@@ -19,7 +19,5 @@ class Demo::CreateDayPassTypes
       visible: false,
       operator_id: operator.id
     )
-  rescue Exception => e
-    context.fail!(message: "Unhandled Exception: #{e.message}")
   end
 end
