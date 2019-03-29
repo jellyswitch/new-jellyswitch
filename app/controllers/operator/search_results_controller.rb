@@ -12,7 +12,7 @@ class Operator::SearchResultsController < Operator::BaseController
 
   def query
     @query = params[:query]
-    @results = FeedItem.search(@query, fields: [:text, :comments, :user_name, :type, :amount], operator: "or")
+    @results = FeedItem.search(@query, fields: [:text, :comments, :user_name, :type, :amount, :stripe_customer_id], operator: "or")
     render :create, status: 200
   end
 end

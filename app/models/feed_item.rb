@@ -41,7 +41,8 @@ class FeedItem < ApplicationRecord
       type: type,
       amount: amount,
       user_name: user.present? ? user.name : "Anonymous",
-      comments: feed_item_comments.map(&:comment)
+      comments: feed_item_comments.map(&:comment),
+      stripe_customer_id: user.present? user.stripe_customer_id : nil
     }
   end
 
