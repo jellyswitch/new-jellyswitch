@@ -3,7 +3,7 @@
 # Table name: refunds
 #
 #  id               :bigint(8)        not null, primary key
-#  amount           :string
+#  amount           :integer          default(0), not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
 #  invoice_id       :bigint(8)
