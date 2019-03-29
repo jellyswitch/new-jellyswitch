@@ -1,7 +1,21 @@
 <div class="row">
   <div class="col-lg-1"></div>
+  <div class="col-lg">
+    <h4 class="display-4"><%= @production_operators.count %> production spaces</h4>
+  </div>
+  <div class="col-lg">
+    <h4 class="display-4"><%= @active_memberships %> active memberships</h4>
+  </div>
+  <div class="col-lg">
+    <h4 class="display-4"><%= @active_staff %> active staff members</h4>
+  </div>
+  <div class="col-lg-1"></div>
+</div>
+
+<div class="row mt-5">
+  <div class="col-lg-1"></div>
   <div class="col">
-    <h2>Operators</h2>
+    <h3 class="display-3">Instances</h3>
     <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
     <%= link_to "Generate Demo Instance", demo_instance_operators_path, class: "btn btn-sm btn-warning" %>
     <table class="table table-sm mt-2">

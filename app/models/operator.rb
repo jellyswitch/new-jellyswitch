@@ -46,6 +46,8 @@ class Operator < ApplicationRecord
 
   delegate :retrieve_stripe_invoice, :create_stripe_refund, to: :stripe_operator
 
+  scope :production, -> { where(billing_state: "production") }
+
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?
   end

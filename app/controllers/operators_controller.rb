@@ -2,6 +2,11 @@ class OperatorsController < ApplicationController
   def index
     find_operators
     authorize @operators
+
+    @production_operators = Operator.production
+
+    @active_staff = @production_operators.all.map {|op| op.users.admins.non_superadmins.count }.sum
+    @active_memberships = Plan.joins(:operator).where("operators.billing_state = ?", "production").all.map{|plan| plan.subscriptions.active.count }.sum
   end
 
   def show
