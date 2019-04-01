@@ -79,7 +79,7 @@ class CreateDayPass
     begin
       blob = {type: "day-pass", day_pass_id: day_pass.id}
       create_feed_item(user.operator, user, blob)
-    rescue Exception => e
+    rescue => e
       Rollbar.error(e)
     end
   end
