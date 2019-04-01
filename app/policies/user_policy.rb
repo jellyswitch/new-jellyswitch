@@ -1,6 +1,6 @@
 class UserPolicy < ApplicationPolicy
   def index?
-    admin? || (member? && approved?)
+    admin?
   end
 
   def unapproved?

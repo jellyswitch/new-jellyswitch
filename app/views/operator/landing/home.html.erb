@@ -15,9 +15,9 @@
       <%= render "shared/send_feedback_card" %>
       <%- if current_tenant.has_contact_info? %>
         <%= render "shared/contact_card" %>
-        <%= render "shared/community_card" %>
+        <%= render "shared/empty_card" %>
       <%- else %>
-        <%= render "shared/community_card" %>
+        <%= render "shared/empty_card" %>
         <%= render "shared/empty_card" %>
       <%- end %>
     </div>
