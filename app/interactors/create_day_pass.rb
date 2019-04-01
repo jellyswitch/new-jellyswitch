@@ -84,8 +84,9 @@ class CreateDayPass
     end
 
     message = "#{user.name} has purchased a day pass."
+    
     if !user.approved?
-      message = "Approval required: #{user.name} has purchased a day pass."
+      message = "Approval required: #{message}"
     end
 
     result = PushNotifier.call(
