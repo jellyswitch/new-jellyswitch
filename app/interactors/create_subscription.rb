@@ -82,9 +82,14 @@ class CreateSubscription
       context.fail!(message: e.message)
     end
 
-    blob = {type: "subscription", subscription_id: subscription.id}
-    create_feed_item(user.operator, user, blob)
     context.subscription = subscription
+
+    begin
+      blob = {type: "subscription", subscription_id: subscription.id}
+      create_feed_item(user.operator, user, blob)
+    rescue Exception => e
+      Rollbar.error(e)
+    end
   end
 end
 
