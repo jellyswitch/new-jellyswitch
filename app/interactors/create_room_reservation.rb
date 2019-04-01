@@ -15,5 +15,16 @@ class CreateRoomReservation
 
     blob = {type: "reservation", reservation_id: reservation.id}
     create_feed_item(context.user.operator, context.user, blob)
+
+    message = "#{reservation.user.name} has reserved #{reservation.room.name}"
+
+    result = PushNotifier.call(
+      message: message,
+      operator: context.user.operator
+    )
+
+    if !result.success?
+      Rollbar.error("Error pushing notification: #{result.message}")
+    end
   end
 end
