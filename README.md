@@ -20,10 +20,10 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 5. Install [stripe-mock](https://github.com/stripe/stripe-mock)
   - `brew install stripe/stripe-mock/stripe-mock`
   - `brew services start stripe-mock`
-5. Ask dave for the `.env` file for environment variables
-6. Postgres DB: `createdb bristlecone_development`
-7. Run migrations: `heroku local:run rake db:migrate`
-8. Run the server: `heroku local`
+6. Ask dave for the `.env` file for environment variables
+7. Postgres DB: `createdb bristlecone_development`
+8. Run migrations: `heroku local:run rake db:migrate`
+9. Run the server: `heroku local`
 
 ## Users, Admins, and Superadmins
 
