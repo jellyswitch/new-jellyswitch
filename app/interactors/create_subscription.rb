@@ -91,20 +91,7 @@ class CreateSubscription
       Rollbar.error(e)
     end
 
-    message = "#{user.name} has subscribed to #{subscription.plan.pretty_name}"
-
-    if !user.approved?
-      message = "Approval required: #{message}"
-    end
-
-    result = PushNotifier.call(
-      message: message,
-      operator: user.operator
-    )
-
-    if !result.success?
-      Rollbar.error("Error pushing notification: #{result.message}")
-    end
+    Notifications::SubscriptionNotification.call(user: user, subscription: subscription, operator: user.operator)
   end
 end
 

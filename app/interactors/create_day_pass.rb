@@ -83,19 +83,6 @@ class CreateDayPass
       Rollbar.error(e)
     end
 
-    message = "#{user.name} has purchased a day pass."
-    
-    if !user.approved?
-      message = "Approval required: #{message}"
-    end
-
-    result = PushNotifier.call(
-      message: message,
-      operator: operator
-    )
-
-    if !result.success?
-      Rollbar.error("Error pushing notification: #{result.message}")
-    end
+    Notifications::DayPassNotification.call(user: user, operator: operator)
   end
 end

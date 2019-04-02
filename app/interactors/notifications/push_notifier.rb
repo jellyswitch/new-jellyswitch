@@ -1,4 +1,4 @@
-class PushNotifier
+class Notifications::PushNotifier
   include Interactor
 
   def call
