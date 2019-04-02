@@ -15,5 +15,16 @@ class CreateMemberFeedback
 
     blob = {type: "feedback", member_feedback_id: member_feedback.id}
     create_feed_item(context.operator, context.user, blob)
+
+    message = "New member feedback"
+
+    result = PushNotifier.call(
+      message: message,
+      operator: context.operator
+    )
+
+    if !result.success?
+      Rollbar.error("Error pushing notification: #{result.message}")
+    end
   end
 end

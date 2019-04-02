@@ -82,5 +82,7 @@ class CreateDayPass
     rescue => e
       Rollbar.error(e)
     end
+
+    Notifications::DayPassNotification.call(user: user, operator: operator)
   end
 end

@@ -1,10 +1,11 @@
-class PushNotifier
+class Notifications::PushNotifier
   include Interactor
 
   def call
     @message = context.message
     @operator = context.operator
 
+    puts "Pushing message: #{@message}"
     validate!
 
     apn = Houston::Client.production # change this

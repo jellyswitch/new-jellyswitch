@@ -90,6 +90,8 @@ class CreateSubscription
     rescue => e
       Rollbar.error(e)
     end
+
+    Notifications::SubscriptionNotification.call(user: user, subscription: subscription, operator: user.operator)
   end
 end
 
