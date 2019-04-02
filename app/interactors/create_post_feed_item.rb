@@ -16,7 +16,7 @@ class CreatePostFeedItem
       context.fail!(message: "Unable to post management note.")
     end
 
-    result = PushNotifier.call(
+    result = Notifications::PushNotifier.call(
       message: "#{@feed_item.user.name} posted a new management note",
       operator: @feed_item.operator
     )

@@ -18,7 +18,7 @@ class CreateRoomReservation
 
     message = "#{reservation.user.name} has reserved #{reservation.room.name}"
 
-    result = PushNotifier.call(
+    result = Notifications::PushNotifier.call(
       message: message,
       operator: context.user.operator
     )

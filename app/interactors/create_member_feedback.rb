@@ -18,7 +18,7 @@ class CreateMemberFeedback
 
     message = "New member feedback"
 
-    result = PushNotifier.call(
+    result = Notifications::PushNotifier.call(
       message: message,
       operator: context.operator
     )

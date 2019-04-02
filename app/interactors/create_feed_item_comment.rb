@@ -22,7 +22,7 @@ class CreateFeedItemComment
       context.fail!(message: msg)
     end
 
-    result = PushNotifier.call(
+    result = Notifications::PushNotifier.call(
       message: "#{@feed_item_comment.user.name} replied to a recent management note",
       operator: @feed_item.operator
     )
