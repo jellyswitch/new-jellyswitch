@@ -75,6 +75,7 @@ Rails.application.routes.draw do
     end
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
+  resources :offices, controller: 'operator/offices'
   resources :organizations, controller: 'operator/organizations'
   resources :operators, as: :operator_operators, controller: 'operator/operators' do
     get :stripe_connect_setup, to: 'operator/operators/stripe_connect_setup'
