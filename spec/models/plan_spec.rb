@@ -1,3 +1,25 @@
+# == Schema Information
+#
+# Table name: plans
+#
+#  id              :bigint(8)        not null, primary key
+#  amount_in_cents :integer          not null
+#  available       :boolean          default(TRUE), not null
+#  interval        :string           not null
+#  name            :string           not null
+#  plan_type       :string
+#  slug            :string
+#  visible         :boolean          default(TRUE), not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  operator_id     :integer          default(1), not null
+#  stripe_plan_id  :string
+#
+# Indexes
+#
+#  index_plans_on_operator_id  (operator_id)
+#
+
 require 'rails_helper'
 
 RSpec.describe Plan, type: :model do

@@ -1,15 +1,23 @@
 module StripeUtils
   STRIPE_CLASS_MAP = {
-    invoice: 'Invoice',
-    refund: 'Refund',
     customer: 'Customer',
     plan: 'Plan',
     subscription: 'Subscription',
-    invoice_item: 'InvoiceItem'
+    invoice: 'Invoice',
+    invoice_item: 'InvoiceItem',
+    refund: 'Refund',
   }
 
   STRIPE_CLASS_MAP.each do |key, value|
     define_method("stripe_#{key}") { value }
+  end
+
+  def create_stripe_customer(customer_args)
+    stripe_request(stripe_customer, :create, customer_args)
+  end
+
+  def retrieve_stripe_customer(customer)
+    stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id)
   end
 
   def retrieve_stripe_invoice(invoice)
@@ -25,10 +33,6 @@ module StripeUtils
 
   def retrieve_stripe_refund(refund)
     stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
-  end
-
-  def create_stripe_customer(user)
-    stripe_request(stripe_customer, :create, email: user.email)
   end
 
   def create_stripe_subscription(user, plan, start_day = nil)

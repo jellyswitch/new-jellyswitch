@@ -34,4 +34,17 @@ class Organization < ApplicationRecord
       [org.name, org.id]
     end.prepend(["", nil])
   end
+
+  def stripe_customer
+    return unless stripe_customer_id
+    operator.retrieve_stripe_customer(self)
+  end
+
+  def find_or_create_stripe_customer
+    stripe_customer || operator.create_stripe_customer(description: "Customer for organization #{name}")
+  end
+
+  def has_billing?
+    has_stripe_customer? && stripe_customer.sources["data"].count > 0
+  end
 end

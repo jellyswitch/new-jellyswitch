@@ -98,6 +98,10 @@ class User < ApplicationRecord
     (subscriptions.for_operator(operator).active.count > 0) || (day_passes.today.count > 0)
   end
 
+  def organization_owner?
+    organization && organization.owner == self
+  end
+
   def approved?
     approved == true
   end

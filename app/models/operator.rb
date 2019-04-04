@@ -45,6 +45,7 @@ class Operator < ApplicationRecord
   has_one_attached :push_notification_certificate
 
   delegate :create_stripe_customer,
+           :retrieve_stripe_customer,
            :create_stripe_invoice_item,
            :create_stripe_invoice,
            :retrieve_stripe_invoice,
