@@ -19,11 +19,19 @@
           <p><%= office.description %></p>
         </div>
       </div>
-      <div class="row mt-3">
+      <div class="row">
         <div class="col">
+          <div class="row mt-2">
+            <div class="col">
+              <p>Interested in leasing this space? Email us at <%= mail_to current_tenant.contact_email %></p>
+            </div>
+          </div>
           <% if admin? %>
             <div class="row mt-2">
-              <div class="col m-0 pl-0">
+              <div class="col">
+                <% if office.has_lease? %>
+                  <%= link_to "Download Lease", rails_blob_path(office.lease, disposition: 'attachment') %>
+                <% end %>
                 <%= link_to "Edit Office", edit_office_path(office), class: "btn btn-block btn-secondary" %>
               </div>
             </div>

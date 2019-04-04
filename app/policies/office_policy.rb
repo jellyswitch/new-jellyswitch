@@ -1,12 +1,8 @@
 class OfficePolicy < ApplicationPolicy
-  def index?
-    admin? || (member? && approved?)
-  end
-
   def show?
-    admin? || (member? && approved?)
+    true
   end
-
+  
   def new?
     admin?
   end

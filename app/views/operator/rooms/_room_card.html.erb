@@ -2,28 +2,28 @@
   <div class="card-body">
     <div class="row">
       <div>
-        <%- if room.has_photo? %>
+        <% if room.has_photo? %>
           <%= image_tag room.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
-        <%- end %>
+        <% end %>
       </div>
       <div class="ml-4 mb-1">
         <div class="row">
           <h5 class="display-5">
             <%= link_to room.name, room_path(room) %>
-            <%- if admin? %>
+            <% if admin? %>
               <%= link_to room_url(room, protocol: :webcal, format: :ics), class: "mt-1 ml-1" do %>
                 <%= octicon "calendar", height: 15, width: 15 %>
-              <%- end %>
-            <%- end %>
+              <% end %>
+            <% end %>
           </h5>
         </div>
         <div class="row">
-          <%- if room.whiteboard? %>
+          <% if room.whiteboard? %>
             <span class="badge badge-info mr-1">Whiteboard</span>
-          <%- end  %>
-          <%- if room.av? %>
+          <% end  %>
+          <% if room.av? %>
             <span class="badge badge-success mr-1">AV equipment</span>
-          <%- end %>
+          <% end %>
         </div>
         <div class="row">
           <p>Seats <strong><%= room.capacity %></strong> people</p>
@@ -33,13 +33,13 @@
 
     <div class="row mt-3">
       <div class="col">
-        <%- if room.available_now? %>
+        <% if room.available_now? %>
           <%= render "reservation_button", room: room, datetime_in: Time.current.beginning_of_hour, label: "Reserve Now" %>
-        <%- end %>
+        <% end %>
         <div class="row mt-2">
           <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "col btn btn-block btn-primary" %>
         </div>
-        <%- if admin? %>
+        <% if admin? %>
           <div class="row mt-2">
             <div class="col m-0 pl-0">
               <%= link_to "Edit Room", edit_room_path(room), class: "btn btn-block btn-secondary" %>
@@ -48,7 +48,7 @@
               <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "btn btn-block btn-info" %>
             </div>
           </div>
-        <%- end %>
+        <% end %>
       </div>
     </div>
   </div>

@@ -57,7 +57,7 @@ class Operator::LandingController < Operator::BaseController
       end
     end
     @day_pass_types = current_tenant.day_pass_types.available.visible.order('amount_in_cents DESC')
-    @plans = current_tenant.plans.available.visible.order('amount_in_cents DESC')
+    @plans = current_tenant.plans.for_individuals.order('amount_in_cents DESC')
   end
 
   def members_resources

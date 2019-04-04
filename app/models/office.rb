@@ -23,15 +23,19 @@
 
 class Office < ApplicationRecord
   belongs_to :operator
-  has_one_attached :lease
   acts_as_tenant :operator
 
+  has_one_attached :lease
   has_one_attached :photo
 
   extend FriendlyId
   friendly_id :name, use: :slugged
 
   scope :visible, -> { where(visible: true) }
+
+  def has_lease?
+    lease.attached?
+  end
 
   def has_photo?
     photo.attached?

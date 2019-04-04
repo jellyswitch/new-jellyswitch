@@ -4,7 +4,6 @@ class Operator::OfficesController < Operator::BaseController
 
   def index
     @offices = Office.visible.order(:name)
-    authorize @offices
   end
 
   def show
@@ -54,6 +53,6 @@ class Operator::OfficesController < Operator::BaseController
   end
 
   def office_params
-    params.require(:office).permit(:name, :description, :capacity, :photo, :visible)
+    params.require(:office).permit(:name, :description, :capacity, :photo, :lease, :visible)
   end
 end
