@@ -44,7 +44,14 @@ class Operator < ApplicationRecord
   has_one_attached :terms_of_service
   has_one_attached :push_notification_certificate
 
-  delegate :retrieve_stripe_invoice, :create_stripe_refund, to: :stripe_operator
+  delegate :create_stripe_customer,
+           :create_stripe_invoice_item,
+           :create_stripe_invoice,
+           :retrieve_stripe_invoice,
+           :create_stripe_refund,
+           :retrieve_stripe_refund,
+           :create_stripe_subscription,
+           to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }
 

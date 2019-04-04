@@ -103,13 +103,10 @@ class Demo::CreateMember
         status: 'paid'
       )
     else
-      # Create some 'draft', 'open' and 'paid' invoices
+      # Create some 'open' and 'paid' invoices
+      stripe_invoice.finalize_invoice
       if rand(10) < 5
-        stripe_invoice.finalize_invoice
-
-        if rand(10) < 5
-          stripe_invoice.pay
-        end
+        stripe_invoice.pay
       end
 
       invoice = Invoice.create!(

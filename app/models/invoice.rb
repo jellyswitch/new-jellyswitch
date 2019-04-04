@@ -38,7 +38,7 @@ class Invoice < ApplicationRecord
     where("date >= to_timestamp(?)", this_month_start)
   }
 
-  VOIDABLE_STATUSES = %w(draft open uncollectible)
+  VOIDABLE_STATUSES = %w(open uncollectible)
   STATUSES = (VOIDABLE_STATUSES + %w(void paid)).freeze
 
   STATUSES.each do |invoice_status|

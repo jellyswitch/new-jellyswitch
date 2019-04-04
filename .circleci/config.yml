@@ -6,22 +6,18 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
       - image: circleci/ruby:2.5.1-node-browsers-legacy
         environment:
           PG_HOST: localhost
           PGUSER: jellyswitch
           RAILS_ENV: test
+
       - image: postgres:10.5
         environment:
           POSTGRES_USER: jellyswitch
           POSTGRES_DB: jellyswitch_test
           POSTGRES_PASSWORD: ""
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/postgres:9.4
       - image: stripemock/stripe-mock
 
     working_directory: ~/repo
