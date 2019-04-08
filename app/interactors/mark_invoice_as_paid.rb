@@ -9,7 +9,11 @@ class MarkInvoiceAsPaid
       context.fail!(message: "Invalid invoice.")
     end
 
-    stripe_invoice.pay({paid_out_of_band: true})
+    begin
+      stripe_invoice.pay({paid_out_of_band: true})
+    rescue => e
+      context.fail!(message: e.message)
+    end
     invoice.update(status: "paid")
     context.invoice = invoice
   end
