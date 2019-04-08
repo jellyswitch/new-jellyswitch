@@ -4,6 +4,7 @@ class CreateUser
 
   def call
     @user = User.new(context.params)
+    context.user = @user
 
     if !context.operator.approval_required
       @user.approved = true
@@ -12,7 +13,7 @@ class CreateUser
     @user.operator = context.operator
     
     if !@user.save
-      context.fail!(message: "Unable to create user.")
+      context.fail!(message: "Unable to sign up. Please see below for errors.")
     end
 
     blob = {type: "new-user"}
@@ -23,7 +24,5 @@ class CreateUser
     if !result.success?
       context.fail!(message: result.message)
     end
-
-    context.user = @user
   end
 end

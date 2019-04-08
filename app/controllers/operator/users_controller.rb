@@ -55,14 +55,17 @@ class Operator::UsersController < Operator::BaseController
 
     if result.success?
       if admin? # admin is creating the user
-        turbolinks_redirect(user_path(result.user), action: "restore")
+        turbolinks_redirect(user_path(result.user), action: "replace")
       else
         log_in(result.user)
-        turbolinks_redirect(home_path, action: "restore")
+        turbolinks_redirect(home_path, action: "replace")
       end
     else
       @user = result.user
       background_image
+      if result.message
+        flash[:error] = result.message
+      end
       if admin? # Admin is creating a user
         render :add_member, status: 422
       else

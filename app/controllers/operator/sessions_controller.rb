@@ -9,11 +9,12 @@ class Operator::SessionsController < Operator::BaseController
     user = User.find_by_operator(email: params[:session][:email].downcase, operator_id: current_tenant.id)
     if user.present?
       if user.authenticate(params[:session][:password])
-      log_in(user)
-      remember(user)
-      turbolinks_redirect(landing_path, action: "restore")
+        log_in(user)
+        remember(user)
+        turbolinks_redirect(landing_path, action: "restore")
       else
         background_image
+        flash[:error] = "Invalid password."
         render :new, status: 422
       end
     else
