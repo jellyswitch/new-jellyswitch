@@ -1,8 +1,24 @@
 module StripeUtils
-  STRIPE_CLASSES = {
+  STRIPE_CLASS_MAP = {
+    customer: 'Customer',
+    plan: 'Plan',
+    subscription: 'Subscription',
     invoice: 'Invoice',
-    refund: 'Refund'
+    invoice_item: 'InvoiceItem',
+    refund: 'Refund',
   }
+
+  STRIPE_CLASS_MAP.each do |key, value|
+    define_method("stripe_#{key}") { value }
+  end
+
+  def create_stripe_customer(customer_args)
+    stripe_request(stripe_customer, :create, customer_args)
+  end
+
+  def retrieve_stripe_customer(customer)
+    stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id)
+  end
 
   def retrieve_stripe_invoice(invoice)
     stripe_request(stripe_invoice, :retrieve, id: invoice.stripe_invoice_id)
@@ -15,26 +31,70 @@ module StripeUtils
     stripe_request(stripe_refund, :create, refund_args)
   end
 
+  def retrieve_stripe_refund(refund)
+    stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
+  end
+
+  def create_stripe_subscription(user, plan, start_day = nil)
+    subscription_args = {
+      customer: user.stripe_customer_id,
+      billing: 'send_invoice',
+      days_until_due: 30,
+      items: [{ plan: subscription.plan.stripe_plan_id }]
+    }
+
+    if user.out_of_band? && start_day.present?
+      subscription_args.merge!(billing: 'send_invoice', billing_cycle_anchor: start_day.to_i)
+    elsif user.out_of_band?
+      subscription_args.merge!(billing: 'send_invoice')
+    elsif start_day.present?
+      subscription_args.merge!(billing: 'charge_automatically', billing_cycle_anchor: start_day.to_i)
+    else
+      subscription_args.merge!(billing: 'charge_automatically')
+    end
+
+    stripe_request(stripe_subscription, :create, subscription_args)
+  end
+
+  def create_stripe_plan(plan)
+    plan_args = {
+      amount: plan.amount_in_cents,
+      interval: plan.stripe_interval,
+      product: { name: plan.plan_name },
+      currency: 'usd',
+      id: plan.plan_slug
+    }
+
+    stripe_request(stripe_plan, :create, :plan_args)
+  end
+
+  def create_stripe_invoice(user)
+    invoice_args = { customer: user.stripe_customer_id }
+
+    stripe_request(stripe_invoice, :create, invoice_args)
+  end
+
+  def create_stripe_invoice_item(user, plan)
+    invoice_item_args = {
+      customer: user.stripe_customer_id,
+      currency: 'usd',
+      amount: plan.amount_in_cents,
+      description: plan.name,
+    }
+
+    stripe_request(stripe_invoice_item, :create, invoice_item_args)
+  end
+
   private
 
-  def stripe_invoice
-    STRIPE_CLASSES[:invoice]
-  end
-
-  def stripe_refund
-    STRIPE_CLASSES[:refund]
-  end
-
   def stripe_request(klass, action, request_args)
-    stripe_args = [request_args, operator_stripe_credentials]
-
-    "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
-  end
-
-  def operator_stripe_credentials
-    {
+    operator_stripe_credentials = {
       api_key: stripe_secret_key,
       stripe_account: stripe_user_id
     }
+
+    stripe_args = [request_args, operator_stripe_credentials]
+
+    "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
   end
 end

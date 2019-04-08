@@ -75,7 +75,10 @@ Rails.application.routes.draw do
     end
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
-  resources :organizations, controller: 'operator/organizations'
+  resources :offices, controller: 'operator/offices'
+  resources :organizations, controller: 'operator/organizations' do
+    post :billing, to: 'operator/organization_billing#create'
+  end
   resources :operators, as: :operator_operators, controller: 'operator/operators' do
     get :stripe_connect_setup, to: 'operator/operators/stripe_connect_setup'
   end

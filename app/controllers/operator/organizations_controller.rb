@@ -1,12 +1,13 @@
 class Operator::OrganizationsController < Operator::BaseController
+  before_action :find_organization, except: [:index, :new, :create]
+
   def index
     find_organizations
-    authorize @organizations.all
+    authorize @organizations
     background_image
   end
 
   def show
-    find_organization
     authorize @organization
     background_image
   end
@@ -28,20 +29,19 @@ class Operator::OrganizationsController < Operator::BaseController
       background_image
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
 
   def edit
-    find_organization
     authorize @organization
+    include_stripe
     background_image
   end
 
   def update
-    find_organization
     authorize @organization
 
     @organization.update_attributes(organization_params)
@@ -53,7 +53,7 @@ class Operator::OrganizationsController < Operator::BaseController
       background_image
       render :edit, status: 422
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -70,6 +70,6 @@ class Operator::OrganizationsController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = Organization
+    @organizations = Organization.all
   end
 end

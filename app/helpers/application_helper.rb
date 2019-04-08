@@ -67,7 +67,8 @@ module ApplicationHelper
       {title: "My Reservations", path: user_reservations_path(current_user)},
       {title: "My Invoices", path: user_invoices_path(current_user)},
       {title: "Change Password", path: user_change_password_path(current_user)},
-      {title: "Member Dashboard", path: home_path}
+      {title: "Member Dashboard", path: home_path},
+      {title: "Office Spaces", path: offices_path}
     ]
   end
 
@@ -88,7 +89,8 @@ module ApplicationHelper
   def logged_out_nav_items
     [
       {title: "Sign Up", path: signup_path},
-      {title: "Log In", path: login_path}
+      {title: "Log In", path: login_path},
+      {title: "Office Spaces", path: offices_path}
     ]
   end
 

@@ -7,7 +7,7 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 
 class FakeData
-  def admins 
+  def admins
     ["dpaola2@gmail.com"]
   end
 
@@ -36,8 +36,8 @@ class FakeData
 
 
     user = User.create!(
-      name: name, 
-      email: email, 
+      name: name,
+      email: email,
       password: password,
       bio: bio,
       approved: true
@@ -116,7 +116,7 @@ class FakeData
 
       3.times do
         org = fake_org
-        3.times do 
+        3.times do
           org.users << fake_user
         end
         puts org.name

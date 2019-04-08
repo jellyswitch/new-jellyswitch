@@ -21,7 +21,7 @@ class Operator::PlansController < Operator::BaseController
     else
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -44,14 +44,14 @@ class Operator::PlansController < Operator::BaseController
     authorize @plan
 
     @plan.update_attributes(plan_params)
-    
+
     if @plan.save
       flash[:notice] = "Plan updated."
       turbolinks_redirect(plan_path(@plan))
     else
       render :edit, status: 422
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -69,7 +69,7 @@ class Operator::PlansController < Operator::BaseController
       flash[:error] = "Unable to archive plan: #{@plan.name}"
       turbolinks_redirect(referrer_or_root)
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -85,7 +85,7 @@ class Operator::PlansController < Operator::BaseController
       flash[:error] = result.message
     end
     turbolinks_redirect(plan_path(@plan), action: "advance")
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -102,6 +102,6 @@ class Operator::PlansController < Operator::BaseController
   end
 
   def plan_params
-    params.require(:plan).permit(:name, :interval, :amount_in_cents, :visible, :available)
+    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available)
   end
 end

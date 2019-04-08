@@ -10,7 +10,8 @@ class Demo::CreatePlans
       amount_in_cents: 15000,
       visible: true,
       available: true,
-      operator_id: operator.id
+      operator_id: operator.id,
+      plan_type: 'individual',
     )
 
     Plan.create!(
@@ -19,7 +20,8 @@ class Demo::CreatePlans
       amount_in_cents: 40000,
       visible: true,
       available: true,
-      operator_id: operator.id
+      operator_id: operator.id,
+      plan_type: 'individual',
     )
 
     Plan.create!(
@@ -28,7 +30,8 @@ class Demo::CreatePlans
       amount_in_cents: 60000,
       visible: true,
       available: true,
-      operator_id: operator.id
+      operator_id: operator.id,
+      plan_type: 'individual',
     )
 
     Plan.create!(
@@ -37,7 +40,8 @@ class Demo::CreatePlans
       amount_in_cents: 120000,
       visible: true,
       available: true,
-      operator_id: operator.id
+      operator_id: operator.id,
+      plan_type: 'individual',
     )
   end
 end

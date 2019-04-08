@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_03_29_144347) do
+ActiveRecord::Schema.define(version: 2019_04_03_230632) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -132,6 +132,33 @@ ActiveRecord::Schema.define(version: 2019_03_29_144347) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "office_leases", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "organization_id", null: false
+    t.bigint "office_id", null: false
+    t.bigint "plan_id", null: false
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["office_id"], name: "index_office_leases_on_office_id"
+    t.index ["operator_id"], name: "index_office_leases_on_operator_id"
+    t.index ["organization_id"], name: "index_office_leases_on_organization_id"
+    t.index ["plan_id"], name: "index_office_leases_on_plan_id"
+  end
+
+  create_table "offices", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "name"
+    t.string "slug"
+    t.integer "capacity", default: 1, null: false
+    t.boolean "visible", default: true, null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id"], name: "index_offices_on_operator_id"
+  end
+
   create_table "operator_surveys", force: :cascade do |t|
     t.integer "user_id"
     t.integer "operator_id"
@@ -177,6 +204,7 @@ ActiveRecord::Schema.define(version: 2019_03_29_144347) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "operator_id", default: 1, null: false
+    t.string "stripe_customer_id"
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
@@ -191,6 +219,7 @@ ActiveRecord::Schema.define(version: 2019_03_29_144347) do
     t.datetime "updated_at", null: false
     t.string "stripe_plan_id"
     t.integer "operator_id", default: 1, null: false
+    t.string "plan_type"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -270,6 +299,11 @@ ActiveRecord::Schema.define(version: 2019_03_29_144347) do
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
+  add_foreign_key "office_leases", "offices"
+  add_foreign_key "office_leases", "operators"
+  add_foreign_key "office_leases", "organizations"
+  add_foreign_key "office_leases", "plans"
+  add_foreign_key "offices", "operators"
   add_foreign_key "refunds", "invoices"
   add_foreign_key "refunds", "users"
 end

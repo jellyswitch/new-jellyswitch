@@ -4,7 +4,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def show?
-    admin?
+    admin? || user.organization_owner?
   end
 
   def new?
@@ -16,7 +16,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def edit?
-    admin?
+    admin? || user.organization_owner?
   end
 
   def update?

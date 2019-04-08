@@ -7,6 +7,7 @@
 #  available       :boolean          default(TRUE), not null
 #  interval        :string           not null
 #  name            :string           not null
+#  plan_type       :string
 #  slug            :string
 #  visible         :boolean          default(TRUE), not null
 #  created_at      :datetime         not null
@@ -31,8 +32,14 @@ class Plan < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Scopes
-  scope :available, ->() { where(available: true) }
-  scope :visible, ->() { where(visible: true) }
+  scope :available, -> { where(available: true) }
+  scope :visible, -> { where(visible: true) }
+  scope :individual, -> { where(plan_type: 'individual') }
+  scope :for_individuals, -> { individual.available.visible }
+
+  PLAN_TYPES = %w(individual lease).freeze
+
+  PLAN_TYPES = %w(individual lease).freeze
 
   # Stripe stuff
   after_create :create_stripe_plan
@@ -59,7 +66,7 @@ class Plan < ApplicationRecord
 
   def stripe_plan
     Stripe::Plan.retrieve(self.stripe_plan_id, {
-      api_key: operator.stripe_secret_key,    
+      api_key: operator.stripe_secret_key,
       stripe_account: operator.stripe_user_id
   })
   end
@@ -96,7 +103,7 @@ class Plan < ApplicationRecord
     "monthly",
     "annually"
   ]
-  
+
   # Class methods
   def self.options_for_interval
     INTERVAL_OPTIONS

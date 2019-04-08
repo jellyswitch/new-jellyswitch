@@ -5,8 +5,15 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">Edit Group</h4>
-      <%= render "form", label: "Update" %>
+      <div>
+        <%= render "form", label: "Update" %>
+      </div>
+      <div>
+        <%= render "billing", show_check_option: true %>
+      </div>
     </div>
   </div>
   <div class="col-sm-3"></div>
 </div>
+
+<%= javascript_include_tag "stripe_handler.js" %>

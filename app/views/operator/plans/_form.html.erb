@@ -7,6 +7,11 @@
   </div>
 
   <div class="form-group">
+    <%= f.label :plan_type %>
+    <%= f.select :plan_type, Plan::PLAN_TYPES, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
     <%= f.label :interval %>
     <%= f.select :interval, Plan.options_for_interval, class: "form-control" %>
   </div>

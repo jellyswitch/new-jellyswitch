@@ -29,11 +29,11 @@ class FeedItem < ApplicationRecord
 
   acts_as_tenant :operator
 
-  scope :for_operator, ->(operator) { where(operator_id: operator.id) }
-  scope :expenses, ->() { where(expense: true) }
+  scope :for_operator, -> (operator) { where(operator: operator) }
+  scope :expenses, -> { where(expense: true) }
 
   # Types of feed_items
-  scope :member_feedbacks, -> () { where("blob->> 'type' = ?", "feedback") }
+  scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
 
   def search_data
     {
