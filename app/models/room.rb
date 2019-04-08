@@ -27,6 +27,7 @@ class Room < ApplicationRecord
 
   # Scopes
   scope :visible, ->() { where(visible: true) }
+  scope :invisible, ->() { where(visible: false) }
 
   # Slugs
   extend FriendlyId

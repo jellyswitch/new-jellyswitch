@@ -3,6 +3,7 @@ class Operator::RoomsController < Operator::BaseController
     find_rooms
     authorize @rooms
     @rooms = @rooms.decorate
+    @hidden_rooms = Room.invisible.order(:name).all.decorate
     background_image
   end
 

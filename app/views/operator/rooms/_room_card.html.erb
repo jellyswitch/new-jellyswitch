@@ -10,11 +10,6 @@
         <div class="row">
           <h5 class="display-5">
             <%= link_to room.name, room_path(room) %>
-            <% if admin? %>
-              <%= link_to room_url(room, protocol: :webcal, format: :ics), class: "mt-1 ml-1" do %>
-                <%= octicon "calendar", height: 15, width: 15 %>
-              <% end %>
-            <% end %>
           </h5>
         </div>
         <div class="row">

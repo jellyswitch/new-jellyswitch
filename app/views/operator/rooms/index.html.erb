@@ -10,6 +10,13 @@
             <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>
           </div>
         </div>
+        <%- if @hidden_rooms.count > 0 %>
+          <h4 class="display-4 text-center">Hidden Rooms</h4>
+          <%- @hidden_rooms.each do |room| %>
+            <%= render "room_card", room: room %>
+          <%- end %>
+          <h4 class="display-4 text-center">Visible Rooms</h4>
+        <%- end %>
       <% end %>
       <% @rooms.each do |room| %>
         <%= render "room_card", room: room %>
