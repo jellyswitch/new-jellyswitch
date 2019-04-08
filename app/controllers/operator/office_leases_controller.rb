@@ -1,0 +1,36 @@
+class Operator::OfficeLeasesController < Operator::BaseController
+  before_action :find_office, only: [:show, :edit, :update]
+  before_action :background_image, except: [:create, :update]
+
+  def index
+    @office_leases = OfficeLease.order(created_at: :desc)
+    authorize @office_leases
+  end
+
+  def new
+    @office_lease = OfficeLease.new
+    authorize @office_lease
+  end
+
+  def create
+    @office_lease = current_tenant.office_leases.build(office_lease_params)
+
+    authorize @office_lease
+
+    result = CreateOfficeLease.call(office_lease: @office_lease, operator: current_tenant)
+
+    if result.success?
+      flash[:notice] = "Office lease created."
+      turbolinks_redirect(office_leases_path)
+    else
+      flash[:error] = "Could not save office lease"
+      render :new, status: 422
+    end
+  end
+
+  private
+
+  def office_lease_params
+    params.require(:office_lease).permit(:organization_id, :office_id, :plan_id, :start_date, :lease_agreement)
+  end
+end

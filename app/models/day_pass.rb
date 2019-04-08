@@ -26,7 +26,7 @@ class DayPass < ApplicationRecord
   acts_as_tenant :operator
 
   # Scopes
-  scope :today, ->() { where(day: Time.current) }
+  scope :today, -> { where(day: Time.current) }
 
   # Instance methods
   def pretty_day

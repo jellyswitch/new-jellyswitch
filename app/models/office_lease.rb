@@ -31,6 +31,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :operator
   belongs_to :organization
   belongs_to :office
+  belongs_to :plan
 
   has_one_attached :lease_agreement
 end

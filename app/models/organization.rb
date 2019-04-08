@@ -4,6 +4,7 @@
 #
 #  id                 :bigint(8)        not null, primary key
 #  name               :string           not null
+#  out_of_band        :boolean          default(FALSE), not null
 #  slug               :string
 #  website            :string
 #  created_at         :datetime         not null
@@ -28,6 +29,8 @@ class Organization < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  has_one :subscription, as: :subscribable
+
   # Form and view helpers
   def self.options_for_select
     Organization.all.map do |org|
@@ -41,7 +44,7 @@ class Organization < ApplicationRecord
   end
 
   def find_or_create_stripe_customer
-    stripe_customer || operator.create_stripe_customer(description: "Customer for organization #{name}")
+    stripe_customer || operator.create_stripe_customer(self)
   end
 
   def has_billing?

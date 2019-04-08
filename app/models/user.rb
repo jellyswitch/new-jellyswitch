@@ -42,7 +42,7 @@ class User < ApplicationRecord
   belongs_to :operator
   has_many :operator_surveys
   has_many :reservations
-  has_many :subscriptions
+  has_many :subscriptions, as: :subscribable
   has_many :refunds
 
   # Slugs

@@ -76,6 +76,7 @@ Rails.application.routes.draw do
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :offices, controller: 'operator/offices'
+  resources :office_leases, controller: 'operator/office_leases'
   resources :organizations, controller: 'operator/organizations' do
     post :billing, to: 'operator/organization_billing#create'
   end

@@ -38,6 +38,7 @@ class Operator < ApplicationRecord
   has_many :plans
   has_many :rooms
   has_many :users
+  has_many :office_leases
 
   has_one_attached :background_image
   has_one_attached :logo_image
@@ -52,6 +53,7 @@ class Operator < ApplicationRecord
            :create_stripe_refund,
            :retrieve_stripe_refund,
            :create_stripe_subscription,
+           :create_stripe_plan,
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }

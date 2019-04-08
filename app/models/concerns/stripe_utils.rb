@@ -12,7 +12,14 @@ module StripeUtils
     define_method("stripe_#{key}") { value }
   end
 
-  def create_stripe_customer(customer_args)
+  def create_stripe_customer(customer)
+    case customer.class.name
+    when 'User'
+      customer_args = { email: customer.email }
+    when 'Organization'
+      customer_args = { description: "Customer for organization #{name}" }
+    end
+
     stripe_request(stripe_customer, :create, customer_args)
   end
 
@@ -35,18 +42,20 @@ module StripeUtils
     stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
   end
 
-  def create_stripe_subscription(user, plan, start_day = nil)
+  def create_stripe_subscription(subscriber, subscription, start_day = nil)
     subscription_args = {
-      customer: user.stripe_customer_id,
-      billing: 'send_invoice',
-      days_until_due: 30,
+      customer: subscriber.stripe_customer_id,
       items: [{ plan: subscription.plan.stripe_plan_id }]
     }
 
-    if user.out_of_band? && start_day.present?
-      subscription_args.merge!(billing: 'send_invoice', billing_cycle_anchor: start_day.to_i)
-    elsif user.out_of_band?
-      subscription_args.merge!(billing: 'send_invoice')
+    if subscriber.out_of_band? && start_day.present?
+      subscription_args.merge!(
+        billing: 'send_invoice',
+        billing_cycle_anchor: start_day.to_i,
+        days_until_due: 30,
+      )
+    elsif subscriber.out_of_band?
+      subscription_args.merge!(billing: 'send_invoice', days_until_due: 30)
     elsif start_day.present?
       subscription_args.merge!(billing: 'charge_automatically', billing_cycle_anchor: start_day.to_i)
     else
@@ -65,7 +74,7 @@ module StripeUtils
       id: plan.plan_slug
     }
 
-    stripe_request(stripe_plan, :create, :plan_args)
+    stripe_request(stripe_plan, :create, plan_args)
   end
 
   def create_stripe_invoice(user)
@@ -96,5 +105,7 @@ module StripeUtils
     stripe_args = [request_args, operator_stripe_credentials]
 
     "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
+  rescue Stripe::InvalidRequestError => e
+    Rollbar.error(e)
   end
 end

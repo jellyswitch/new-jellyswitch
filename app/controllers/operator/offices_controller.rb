@@ -7,7 +7,6 @@ class Operator::OfficesController < Operator::BaseController
   end
 
   def show
-    authorize @office
   end
 
   def new

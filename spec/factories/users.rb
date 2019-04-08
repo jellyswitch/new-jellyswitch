@@ -31,7 +31,7 @@
 #
 
 FactoryBot.define do
-  factory :user do
+  factory :user, aliases: [:owner] do
     name { Faker::Name.unique.name }
     email { Faker::Internet.unique.safe_email }
     password { 'password' }

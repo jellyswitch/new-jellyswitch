@@ -2,22 +2,22 @@
 
 <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
   <%= render "shared/error_messages", model: subscription %>
-  
-  <div class="form-group row">
-    
-    <%- if admin? %>
-      <%= f.select :plan_id, Plan.all_options_for_select, {}, { class: "form-control form-control-sm col" } %>
-    <%- else %>
-      <div class="col-1"></div>
-      <%= f.select :plan_id, Plan.options_for_select, {}, { class: "form-control form-control-sm col" } %>
-      <div class="col-1"></div>
-    <%- end %>
-  </div>
-  <%- if defined?(user_id) %>
-    <%= f.hidden_field :user_id, value: user_id %>
-  <%- end %>
 
-  <%- if defined?(show_start_day) && show_start_day %>
+  <div class="form-group row">
+
+    <% if admin? %>
+      <%= f.collection_select :plan_id, Plan.available.individual, :id, :pretty_name, { class: "form-control form-control-sm col" } %>
+    <% else %>
+      <div class="col-1"></div>
+      <%= f.collection_select :plan_id, Plan.for_individuals, :id, :pretty_name, { class: "form-control form-control-sm col" } %>
+      <div class="col-1"></div>
+    <% end %>
+  </div>
+  <% if defined?(user_id) %>
+    <%= f.hidden_field :subscribable_id, value: user_id %>
+  <% end %>
+
+  <% if defined?(show_start_day) && show_start_day %>
     <div class="form-group row">
       <div class="col-1"></div>
       <div class="col">
@@ -26,18 +26,18 @@
       </div>
       <div class="col-1"></div>
     </div>
-  <%- end %>
+  <% end %>
 
-  <%- if cc %>
+  <% if cc %>
     <div class="form-group row">
       <div class="col-1"></div>
       <%= render "shared/billing", show_check_option: false %>
       <div class="col-1"></div>
     </div>
-  <%- end %>
+  <% end %>
   <div class="form-group row">
     <div class="col-1"></div>
     <%= f.submit label, class: "form-control btn btn-primary col" %>
     <div class="col-1"></div>
   </div>
-<%- end %>
+<% end %>

@@ -1,8 +1,4 @@
 class OfficePolicy < ApplicationPolicy
-  def show?
-    true
-  end
-  
   def new?
     admin?
   end
@@ -17,9 +13,5 @@ class OfficePolicy < ApplicationPolicy
 
   def update?
     admin?
-  end
-
-  def day?
-    admin? || (member? && approved?)
   end
 end

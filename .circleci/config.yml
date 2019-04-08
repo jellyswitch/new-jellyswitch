@@ -49,6 +49,13 @@ jobs:
             - ./vendor/bundle
           key: v1-dependencies-{{ checksum "Gemfile.lock" }}
 
+      - run:
+          name: "Setup custom environment variables"
+          command: |
+            echo 'export EVENTS_CHANNEL_ADAPTER="active_support"' >> $BASH_ENV \
+            echo 'export STRIPE_TEST_SECRET_KEY="sk_test_Q9MzTdwzBlJFbHrjwiwueyUf"' >> $BASH_ENV \
+            echo 'export STRIPE_TEST_PUBLISHABLE_KEY="pk_test_OQBxhfosB5JdplqhauZfTdCL"' >> $BASH_ENV
+
       # Database setup
       - run: dockerize -wait tcp://localhost:5432 -timeout 1m
       - run: bundle exec rake db:create

@@ -15,6 +15,9 @@ module Bristlecone
     config.autoload_paths << Rails.root.join('app/interactors/*')
     config.autoload_paths << Rails.root.join('app/factories/*')
     config.autoload_paths << Rails.root.join('app/adapters/*')
+    config.autoload_paths << Rails.root.join('app/subscribers/*')
+    config.eager_load_paths << Rails.root.join('lib')
+    config.autoload_paths << Rails.root.join('lib')
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers

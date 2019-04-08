@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_03_230632) do
+ActiveRecord::Schema.define(version: 2019_04_05_163037) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -205,6 +205,7 @@ ActiveRecord::Schema.define(version: 2019_04_03_230632) do
     t.datetime "updated_at", null: false
     t.integer "operator_id", default: 1, null: false
     t.string "stripe_customer_id"
+    t.boolean "out_of_band", default: false, null: false
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
@@ -267,11 +268,13 @@ ActiveRecord::Schema.define(version: 2019_04_03_230632) do
 
   create_table "subscriptions", force: :cascade do |t|
     t.integer "plan_id", null: false
-    t.integer "user_id", null: false
     t.boolean "active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "stripe_subscription_id"
+    t.string "subscribable_type"
+    t.bigint "subscribable_id"
+    t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 
   create_table "users", force: :cascade do |t|

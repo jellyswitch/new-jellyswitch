@@ -39,8 +39,6 @@ class Plan < ApplicationRecord
 
   PLAN_TYPES = %w(individual lease).freeze
 
-  PLAN_TYPES = %w(individual lease).freeze
-
   # Stripe stuff
   after_create :create_stripe_plan
   def create_stripe_plan
@@ -107,18 +105,6 @@ class Plan < ApplicationRecord
   # Class methods
   def self.options_for_interval
     INTERVAL_OPTIONS
-  end
-
-  def self.options_for_select
-    Plan.available.visible.map do |plan|
-      [plan.pretty_name, plan.id]
-    end
-  end
-
-  def self.all_options_for_select
-    Plan.available.map do |plan|
-      [plan.pretty_name, plan.id]
-    end
   end
 
   # Instance methods

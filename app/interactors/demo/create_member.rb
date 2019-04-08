@@ -53,7 +53,7 @@ class Demo::CreateMember
     plan = operator.plans.available.all.shuffle.sample
     subscription = Subscription.new(
       plan_id: plan.id,
-      user_id: user.id,
+      subscribable: user,
       active: true,
       created_at: day,
       updated_at: day

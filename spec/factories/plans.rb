@@ -27,5 +27,7 @@ FactoryBot.define do
     amount_in_cents { 40_000 }
     visible { true }
     available { true }
+    operator
+    plan_type { 'individual' }
   end
 end

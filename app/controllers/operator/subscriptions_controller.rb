@@ -24,7 +24,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     result = CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
-      user: @subscription.user,
+      user: @subscription.subscribable,
       start_day: start_day
     )
 
@@ -56,11 +56,11 @@ class Operator::SubscriptionsController < Operator::BaseController
       old_subscription: @subscription,
       new_subscription: @new_subscription
     )
-    
+
     if result.success?
       if admin?
         flash[:success] = "Membership updated."
-        turbolinks_redirect(user_path(@subscription.user))
+        turbolinks_redirect(user_path(@subscription.subscribable))
       else
         flash[:success] = "Your membership has been updated"
         turbolinks_redirect(home_path)
@@ -112,7 +112,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
   def new_subscription
     subscription = Subscription.new(subscription_params)
-    subscription.user = current_user
+    subscription.subscribable = current_user
     subscription.active = true
     subscription
   end

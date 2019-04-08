@@ -9,7 +9,7 @@ class SwitchMembership
       old_subscription.active = false
       new_subscription.active = true
 
-      new_subscription.user_id = old_subscription.user_id # hack for admins switching memberships on behalf of users
+      new_subscription.subscribable = old_subscription.subscribable # hack for admins switching memberships on behalf of users
 
       new_subscription.stripe_subscription_id = old_subscription.stripe_subscription_id
 

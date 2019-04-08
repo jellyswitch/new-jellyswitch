@@ -3,18 +3,27 @@
 # Table name: subscriptions
 #
 #  id                     :bigint(8)        not null, primary key
-#  plan_id                :integer          not null
-#  user_id                :integer          not null
 #  active                 :boolean          default(TRUE), not null
+#  subscribable_type      :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
+#  plan_id                :integer          not null
 #  stripe_subscription_id :string
+#  subscribable_id        :bigint(8)
+#
+# Indexes
+#
+#  index_subscriptions_on_subscribable_type_and_subscribable_id  (subscribable_type,subscribable_id)
 #
 
 class Subscription < ApplicationRecord
   # Relationships
-  belongs_to :user
+  if column_names.include?('user_id')
+    belongs_to :user
+  end
+  
   belongs_to :plan
+  belongs_to :subscribable, polymorphic: true
 
   # Scopes
   scope :active, -> { where(active: true) }

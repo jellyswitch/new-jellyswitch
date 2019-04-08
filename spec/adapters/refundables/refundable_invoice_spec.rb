@@ -1,18 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Refundable::RefundableInvoice do
-  # create operator
-  # create member
-  # create stripe customer
-  # create stripe token
-  # create subscription
-  # create invoice item
-  # create invoice
-
-  # create refund in stripe
-  # create refund in DB
-  # update status of invoice to refunded
-
   let(:operator) { create(:operator) }
   let(:user) { create(:user, :with_stripe_info, operator: operator) }
   let(:plan) { create(:plan, operator: operator) }
