@@ -24,9 +24,6 @@
 class Invoice < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
-  if column_names.include?('user_id')
-    belongs_to :user
-  end
 
   belongs_to :billable, polymorphic: true
   has_many :refunds
