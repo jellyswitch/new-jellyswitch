@@ -10,7 +10,7 @@ RSpec.describe Refundable::RefundableInvoice do
     stripe_invoice.status = 'paid'
 
     create(:invoice,
-      user: user,
+      billable: user,
       operator: operator,
       amount_due: stripe_invoice.amount_due.to_i,
       amount_paid: stripe_invoice.amount_paid.to_i,

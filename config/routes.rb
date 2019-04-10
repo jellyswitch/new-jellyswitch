@@ -68,6 +68,7 @@ Rails.application.routes.draw do
   end
   resources :invoices, only: [:index], controller: 'operator/invoices' do
     resources :refunds, only: [:create], controller: 'operator/refunds'
+    patch :mark_paid, to: 'operator/mark_invoices_paid#update'
     collection do
       get :due, to: 'operator/invoices#due'
       get :recent, to: 'operator/invoices#recent'
@@ -104,7 +105,6 @@ Rails.application.routes.draw do
     patch 'update_password', to: 'operator/users#update_password'
     patch 'update_organization', to: 'operator/users#update_organization'
     patch 'update_payment_method', to: 'operator/users#update_payment_method'
-    get 'mark_invoice_as_paid', to: 'operator/users#mark_invoice_as_paid'
     get :memberships, to: 'operator/users#memberships'
     get :day_passes, to: 'operator/users#day_passes'
     get :reservations, to: 'operator/users#reservations'

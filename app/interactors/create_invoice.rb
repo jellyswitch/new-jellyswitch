@@ -1,17 +1,21 @@
 class CreateInvoice
   include Interactor
 
-  def call
-    stripe_invoice = context.stripe_invoice
+  delegate :stripe_invoice, to: :context
 
+  def call
     invoice = Invoice.find_by(stripe_invoice_id: stripe_invoice.id)
     if invoice.present?
       context.fail!(message: "Invoice #{invoice.number} already exists")
     end
 
-    user = User.find_by(stripe_customer_id: stripe_invoice.customer)
-    if user.nil?
-      context.fail!(message: "Cannot find user with stripe customer id #{stripe_invoice.customer}")
+    customer = stripe_invoice.customer
+
+    # TODO: put type in stripe invoice metadata
+    billable = User.find_by(stripe_customer_id: customer) || Organization.find_by(stripe_customer_id: customer)
+
+    if billable.nil?
+      context.fail!(message: "Cannot find billable with stripe customer id #{customer}")
     end
 
     invoice_date = Time.at(stripe_invoice.date).to_datetime
@@ -22,7 +26,7 @@ class CreateInvoice
     end
 
     invoice = Invoice.create!(
-      user_id: user.id,
+      billable: billable,
       operator_id: user.operator.id,
       amount_due: stripe_invoice.amount_due.to_i,
       amount_paid: stripe_invoice.amount_paid.to_i,

@@ -5,7 +5,6 @@ module Refundable
 
       refunds.create(
         amount: amount_paid,
-        user: user,
         stripe_refund_id: stripe_refund.id
       )
 

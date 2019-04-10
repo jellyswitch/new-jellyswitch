@@ -39,5 +39,26 @@ FactoryBot.define do
     square_footage { 2000 }
     subdomain { "placeholder" }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
+
+    trait :with_users do
+      transient do
+        user_count { 5 }
+
+        after(:create) do |operator, evaluator|
+          create_list(:user, evaluator.user_count, operator: operator)
+        end
+      end
+    end
+
+    trait :with_organizations do
+      transient do
+        org_count { 3 }
+
+        after(:create) do |operator, evaluator|
+          org_owner = create(:user, operator: operator)
+          create_list(:organization, evaluator.org_count, operator: operator, owner: org_owner)
+        end
+      end
+    end
   end
 end

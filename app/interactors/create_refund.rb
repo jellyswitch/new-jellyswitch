@@ -4,11 +4,11 @@ class CreateRefund
   delegate :operator, :invoice, to: :context
 
   def call
-    user = invoice.user
+    billable = invoice.billable
 
     if invoice.cancel
       blob = { type: 'refund', invoice_id: invoice.id }
-      create_feed_item(operator, user, blob)
+      create_feed_item(operator, billable, blob)
     else
       context.fail!(message: 'Failed to refund invoice')
     end

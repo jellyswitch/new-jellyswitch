@@ -5,21 +5,30 @@
 #  id                :bigint(8)        not null, primary key
 #  amount_due        :integer
 #  amount_paid       :integer
+#  billable_type     :string
 #  date              :datetime
 #  due_date          :datetime
 #  number            :string
 #  status            :string
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
+#  billable_id       :bigint(8)
 #  operator_id       :integer
 #  stripe_invoice_id :string
-#  user_id           :integer
+#
+# Indexes
+#
+#  index_invoices_on_billable_type_and_billable_id  (billable_type,billable_id)
 #
 
 class Invoice < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
-  belongs_to :user
+  if column_names.include?('user_id')
+    belongs_to :user
+  end
+
+  belongs_to :billable, polymorphic: true
   has_many :refunds
 
   scope :recent, -> { where('date > ?', Time.now - 30.days) }
@@ -39,7 +48,7 @@ class Invoice < ApplicationRecord
   }
 
   VOIDABLE_STATUSES = %w(open uncollectible)
-  STATUSES = (VOIDABLE_STATUSES + %w(void paid)).freeze
+  STATUSES = (VOIDABLE_STATUSES + %w(void paid refunded)).freeze
 
   STATUSES.each do |invoice_status|
     define_method("#{invoice_status}?") do

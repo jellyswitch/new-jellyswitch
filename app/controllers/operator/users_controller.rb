@@ -224,18 +224,6 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(user_path(@user))
   end
 
-  def mark_invoice_as_paid
-    find_user(:user_id)
-    result = MarkInvoiceAsPaid.call(user: @user, invoice_id: params[:invoice_id])
-
-    if result.success?
-      flash[:success] = "Invoice marked as paid."
-    else
-      flash[:error] = result.message
-    end
-    turbolinks_redirect(user_path(@user))
-  end
-
   private
 
   def user_params

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_05_163037) do
+ActiveRecord::Schema.define(version: 2019_04_10_004123) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -110,7 +110,6 @@ ActiveRecord::Schema.define(version: 2019_04_05_163037) do
 
   create_table "invoices", force: :cascade do |t|
     t.string "stripe_invoice_id"
-    t.integer "user_id"
     t.integer "amount_due"
     t.integer "amount_paid"
     t.datetime "date"
@@ -120,6 +119,9 @@ ActiveRecord::Schema.define(version: 2019_04_05_163037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "due_date"
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
   end
 
   create_table "member_feedbacks", force: :cascade do |t|
@@ -226,13 +228,11 @@ ActiveRecord::Schema.define(version: 2019_04_05_163037) do
 
   create_table "refunds", force: :cascade do |t|
     t.bigint "invoice_id"
-    t.bigint "user_id"
     t.string "stripe_refund_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "amount", default: 0, null: false
     t.index ["invoice_id"], name: "index_refunds_on_invoice_id"
-    t.index ["user_id"], name: "index_refunds_on_user_id"
   end
 
   create_table "reservations", force: :cascade do |t|
@@ -308,5 +308,4 @@ ActiveRecord::Schema.define(version: 2019_04_05_163037) do
   add_foreign_key "office_leases", "plans"
   add_foreign_key "offices", "operators"
   add_foreign_key "refunds", "invoices"
-  add_foreign_key "refunds", "users"
 end

@@ -94,6 +94,15 @@ module StripeUtils
     stripe_request(stripe_invoice_item, :create, invoice_item_args)
   end
 
+  def mark_invoice_paid(invoice, options = {})
+    stripe_invoice = retrieve_stripe_invoice(invoice)
+
+    stripe_invoice.pay(options)
+  rescue Stripe::InvalidRequestError => e
+    Rollbar.error(e)
+    false
+  end
+
   private
 
   def stripe_request(klass, action, request_args)

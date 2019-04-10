@@ -54,6 +54,7 @@ class Operator < ApplicationRecord
            :retrieve_stripe_refund,
            :create_stripe_subscription,
            :create_stripe_plan,
+           :mark_invoice_paid,
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }
