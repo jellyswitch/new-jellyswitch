@@ -18,6 +18,12 @@
 
 FactoryBot.define do
   factory :subscription do
+    plan
+
+    trait :for_user do
+      association :subscribable, factory: :user
+    end
+
     trait :with_stripe_info do
       after(:create) do |subscription|
         operator = subscription.plan.operator

@@ -16,8 +16,8 @@ RSpec.describe Billing::LeaseSync do
       operator = office_lease.operator
       plan = office_lease.plan
 
-      organization.stripe_customer_id = operator.create_stripe_customer(organization).id
-      plan.stripe_plan_id = operator.create_stripe_plan(plan).id
+      organization.stripe_customer_id = 'cus_12345'
+      plan.stripe_plan_id = 'plan_12345'
 
       organization.save!
       plan.save!

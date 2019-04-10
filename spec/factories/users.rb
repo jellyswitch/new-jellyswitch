@@ -36,6 +36,7 @@ FactoryBot.define do
     email { Faker::Internet.unique.safe_email }
     password { 'password' }
     bio { Faker::TvShows::GameOfThrones.quote }
+    operator
 
     trait :with_stripe_info do
       after(:create) do |user|

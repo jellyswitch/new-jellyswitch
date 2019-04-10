@@ -50,6 +50,26 @@ FactoryBot.define do
       end
     end
 
+    trait :with_individual_plans do
+      transient do
+        plans_count { 3 }
+      end
+
+      after(:create) do |operator, evaluator|
+        create_list(:plan, evaluator.plans_count, operator: operator, plan_type: 'individual')
+      end
+    end
+
+    trait :with_lease_plans do
+      transient do
+        plans_count { 3 }
+      end
+
+      after(:create) do |operator, evaluator|
+        create_list(:plan, evaluator.plans_count, operator: operator, plan_type: 'lease')
+      end
+    end
+
     trait :with_organizations do
       transient do
         org_count { 3 }
@@ -60,5 +80,23 @@ FactoryBot.define do
         end
       end
     end
+
+    trait :with_offices do
+      transient do
+        office_count { 3 }
+      end
+
+      after(:create) do |operator, evaluator|
+        create_list(:office, evaluator.office_count, operator: operator)
+      end
+    end
+
+    factory :operator_with_plans_orgs_and_offices,
+            traits: [
+              :with_individual_plans,
+              :with_lease_plans,
+              :with_organizations,
+              :with_offices,
+            ]
   end
 end

@@ -38,6 +38,7 @@ class Operator < ApplicationRecord
   has_many :plans
   has_many :rooms
   has_many :users
+  has_many :offices
   has_many :office_leases
 
   has_one_attached :background_image

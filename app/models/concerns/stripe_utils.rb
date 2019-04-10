@@ -103,6 +103,15 @@ module StripeUtils
     false
   end
 
+  def create_or_update_customer_payment(user, token)
+    stripe_customer = retrieve_stripe_customer(user)
+    stripe_customer.source = token
+    stripe_customer.save
+  rescue Stripe::InvalidRequestError => e
+    Rollbar.error(e)
+    false
+  end
+
   private
 
   def stripe_request(klass, action, request_args)
@@ -116,5 +125,6 @@ module StripeUtils
     "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
   rescue Stripe::InvalidRequestError => e
     Rollbar.error(e)
+    false
   end
 end

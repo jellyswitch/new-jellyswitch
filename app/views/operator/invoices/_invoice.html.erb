@@ -34,7 +34,7 @@
 
     <div class="clearfix mb-1"></div>
     <% if invoice.open? %>
-      <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-sm btn-success" %>
+      <%= button_to "Mark as paid", invoice_mark_paid_path(invoice), method: :patch, class: "btn btn-sm btn-success" %>
     <% end %>
   </div>
 </div>

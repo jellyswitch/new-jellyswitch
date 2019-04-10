@@ -1,32 +1,15 @@
 class UpdateUserPayment
   include Interactor
 
+  delegate :user, :token, to: :context
+
   def call
-    token = context.token
-    user = context.user
+    return if user.out_of_band?
 
-    if user.has_billing?
-      # We're trying to update it anyway
-      if token.nil?
-        # This interactor is called every time we want
-        # to charge the user. If we pass a token, then we update
-        # the payment source. If there is no token, it means we don't
-        # actually want to update the payment info. Just to check to make
-        # sure it exists.
-      else
-        update_payment(user, token)
+    if token
+      unless user.operator.create_or_update_customer_payment(user, token)
+        context.fail!(message: "Could not update payment method.")
       end
-    else
-      # We're adding billing for the first time
-      update_payment(user, token)
-    end
-  end
-
-  def update_payment(user, token)
-    stripe_customer = user.stripe_customer
-    stripe_customer.source = token
-    if !stripe_customer.save
-      context.fail!(message: "Could not update payment method.")
     end
   end
 end

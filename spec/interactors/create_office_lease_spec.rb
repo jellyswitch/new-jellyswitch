@@ -3,9 +3,10 @@ require 'rails_helper'
 RSpec.describe CreateOfficeLease do
   let(:office_lease) { create(:office_lease) }
   subject(:context) { described_class.call(office_lease: office_lease, operator: office_lease.operator) }
+
   describe '#call' do
     before do
-      expect(Jellyswitch::Events).to receive(:publish).once.with(
+      mock_event(
         'billing.lease.create',
         office_lease_id: office_lease.id,
         operator_id: office_lease.operator.id
