@@ -29,7 +29,7 @@ class FeedItem < ApplicationRecord
 
   acts_as_tenant :operator
 
-  scope :for_operator, -> (operator) { where(operator: operator) }
+  scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }
 
   # Types of feed_items
