@@ -103,7 +103,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   def admin_subscription_params
-    params.require(:subscription).permit(:plan_id, :user_id)
+    params.require(:subscription).permit(:plan_id, :subscribable_id)
   end
 
   def find_subscription(key=:id)
@@ -118,8 +118,10 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   def new_admin_subscription
+    subscribable = User.find(admin_subscription_params[:subscribable_id])
     subscription = Subscription.new(admin_subscription_params)
     subscription.active = true
+    subscription.subscribable = subscribable
     subscription
   end
 end
