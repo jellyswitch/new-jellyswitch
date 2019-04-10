@@ -18,4 +18,4 @@ Jellyswitch::Events.subscribe('billing.subscription.create', Billing::Subscripti
 # App events
 Jellyswitch::Events.register('app.notifiable.create')
 
-Jellyswitch::Events.subscribe('app.notifiable.create', Operators::NotificationSync)
+Jellyswitch::Events.subscribe('app.notifiable.create', NotificationSync)

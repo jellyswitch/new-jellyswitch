@@ -1,4 +1,4 @@
-class Operators::NotificationSync
+class NotificationSync
   def self.call(notifiable_id:, notifiable_type:)
     notifiable = notifiable_type.constantize.find(notifiable_id)
 
