@@ -4,7 +4,7 @@ class SaveSubscription
   delegate :subscription, :user, :start_day, to: :context
 
   def call
-    unless user.has_billing?
+    unless user.has_billing? || user.out_of_band?
       context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
     end
 
