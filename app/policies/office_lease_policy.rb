@@ -1,13 +1,13 @@
 class OfficeLeasePolicy < ApplicationPolicy
-  def index
+  def index?
     admin?
   end
 
-  def new
+  def new?
     admin?
   end
 
-  def create
+  def create?
     admin?
   end
 end

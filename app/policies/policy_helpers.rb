@@ -15,7 +15,6 @@ module PolicyHelpers
 
   def member?
     if @operator.nil?
-      raise "got here"
       false
     else
       is_user? && user.member?(@operator)
