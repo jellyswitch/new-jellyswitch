@@ -27,7 +27,7 @@ class CreateInvoice
 
     invoice = Invoice.create!(
       billable: billable,
-      operator_id: user.operator.id,
+      operator_id: billable.operator.id,
       amount_due: stripe_invoice.amount_due.to_i,
       amount_paid: stripe_invoice.amount_paid.to_i,
       number: stripe_invoice.number,
