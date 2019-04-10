@@ -15,7 +15,10 @@ RSpec.describe SaveSubscription do
 
   describe '#call' do
     context 'when user has no billing info' do
-      before { user.stripe_customer_id = nil }
+      before do
+        user.stripe_customer_id = nil
+        user.out_of_band = false
+      end
 
       it 'fails with a message' do
         expect(context.failure?).to be true
@@ -26,6 +29,30 @@ RSpec.describe SaveSubscription do
     context 'when user has billing info' do
       before do
         user.stripe_customer_id = "cus_12345"
+        mock_event(
+          'billing.subscription.create',
+          subscription_id: subscription.id,
+          start_date: start_day
+        )
+
+        mock_event(
+          'app.notifiable.create',
+          notifiable_id: subscription.id,
+          notifiable_type: 'Subscription'
+        )
+      end
+
+      it 'creates a subscription' do
+        expect(context.success?).to be true
+        expect(subscription.id).to_not be nil
+      end
+    end
+
+    context 'when user is paying out of band' do
+      before do
+        user.stripe_customer_id = nil
+        user.out_of_band = true
+        
         mock_event(
           'billing.subscription.create',
           subscription_id: subscription.id,
