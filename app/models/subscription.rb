@@ -18,10 +18,6 @@
 
 class Subscription < ApplicationRecord
   # Relationships
-  if column_names.include?('user_id')
-    belongs_to :user
-  end
-  
   belongs_to :plan
   belongs_to :subscribable, polymorphic: true
 
