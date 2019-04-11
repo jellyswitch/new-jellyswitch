@@ -60,6 +60,7 @@ class Operator < ApplicationRecord
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }
+  scope :demo, -> { where(billing_state: "demo") }
 
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?
@@ -87,6 +88,16 @@ class Operator < ApplicationRecord
 
   def stripe_operator
     @stripe_operator ||= StripeOperator.new(self)
+  end
+
+  def active_members
+    plans.all.map do |plan|
+      plan.subscriptions.active.count
+    end.sum
+  end
+
+  def total_members
+    users.members.non_superadmins.count
   end
 
   private

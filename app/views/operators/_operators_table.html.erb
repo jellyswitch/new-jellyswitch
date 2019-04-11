@@ -1,0 +1,22 @@
+<table class="table table-sm mt-2">
+  <%- operators.each do |operator| %>
+    <tr>
+      <td>
+        <%- if operator.production? %>
+          <span class="badge badge-success">Production</span>
+        <%- else %>
+          <span class="badge badge-info">Demo</span>
+        <%- end %>
+      </td>
+      <td><%= link_to operator.name, operator_path(operator) %></td>
+      <td><%= operator.active_members %> active members</td>
+      <td><%= operator.total_members %> total members</td>
+      <td><%= number_with_delimiter(operator.square_footage) %> sq ft</td>
+      <td>
+        <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
+        <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>
+        <%= link_to "Delete", operator_path(operator), method: :delete, data: { confirm: "Are you sure?"},  class: "btn btn-sm btn-danger" %>
+      </td>
+    </tr>
+  <%- end %>
+</table>

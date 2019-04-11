@@ -15,28 +15,15 @@
 <div class="row mt-5">
   <div class="col-lg-1"></div>
   <div class="col">
-    <h3 class="display-3">Instances</h3>
     <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
     <%= link_to "Generate Demo Instance", demo_instance_operators_path, class: "btn btn-sm btn-warning" %>
-    <table class="table table-sm mt-2">
-      <%- @operators.each do |operator| %>
-        <tr>
-          <td>
-            <%- if operator.production? %>
-              <span class="badge badge-success">Production</span>
-            <%- else %>
-              <span class="badge badge-info">Demo</span>
-            <%- end %>
-          </td>
-          <td><%= link_to operator.name, operator_path(operator) %></td>
-          <td>
-            <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
-            <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>
-            <%= link_to "Delete", operator_path(operator), method: :delete, data: { confirm: "Are you sure?"},  class: "btn btn-sm btn-danger" %>
-          </td>
-        </tr>
-      <%- end %>
-    </table>
+
+    <h3 class="display-3">Production Instances</h3>
+    <%= render "operators_table", operators: @production_operators %>
+
+    <h3 class="display-3">Demo Instances</h3>
+    <%= render "operators_table", operators: @demo_operators %>    
+
   </div>
   <div class="col-lg-1"></div>
 </div>

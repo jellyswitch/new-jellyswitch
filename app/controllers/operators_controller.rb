@@ -1,9 +1,7 @@
 class OperatorsController < ApplicationController
   def index
     find_operators
-    authorize @operators
-
-    @production_operators = Operator.production
+    authorize @production_operators
 
     @active_staff = @production_operators.all.map {|op| op.users.admins.non_superadmins.count }.sum
     @active_memberships = Plan.joins(:operator).where("operators.billing_state = ?", "production").all.map{|plan| plan.subscriptions.active.count }.sum
@@ -74,7 +72,8 @@ class OperatorsController < ApplicationController
   private
 
   def find_operators
-    @operators = Operator.order("created_at ASC").all
+    @production_operators = Operator.production.order("created_at ASC").all
+    @demo_operators = Operator.demo.order("created_at ASC").all
   end
 
   def find_operator(key=:id)
