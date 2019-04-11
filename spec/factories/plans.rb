@@ -22,7 +22,7 @@
 
 FactoryBot.define do
   factory :plan do
-    name { 'Full Time Membership '}
+    sequence(:name) { |n| "Membership #{n}" }
     interval { 'monthly' }
     amount_in_cents { 40_000 }
     visible { true }

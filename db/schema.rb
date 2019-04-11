@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_10_004123) do
+ActiveRecord::Schema.define(version: 2019_04_11_182531) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -299,6 +299,7 @@ ActiveRecord::Schema.define(version: 2019_04_10_004123) do
     t.string "ios_token"
     t.string "reset_digest"
     t.datetime "reset_sent_at"
+    t.boolean "card_added", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

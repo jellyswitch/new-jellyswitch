@@ -29,7 +29,7 @@
             Memberships start at <%= number_to_currency(@plans.first.amount_in_cents.to_f / 100.0) %> and vary from flexible desk space to full private offices.
           </p>
           <div class="row">
-            <%= link_to "Become a member", new_subscription_path, class: "btn btn-info col m-2" %>
+            <%= link_to "Become a member", new_subscription_path, class: "btn btn-info col m-2", data: { acc: 'new-member' } %>
           </div>
         </div>
       </div>
@@ -46,6 +46,3 @@
   </div>
   <div class="col-lg-3"></div>
 </div>
-
-
-

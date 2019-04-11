@@ -6,6 +6,7 @@
 #  admin              :boolean          default(FALSE), not null
 #  approved           :boolean          default(FALSE), not null
 #  bio                :text
+#  card_added         :boolean          default(FALSE), not null
 #  email              :string           not null
 #  ios_token          :string
 #  linkedin           :string
@@ -181,7 +182,7 @@ class User < ApplicationRecord
   end
 
   def has_billing?
-    has_stripe_customer? && stripe_customer.sources["data"].count > 0
+    has_stripe_customer? && (out_of_band? || card_added?)
   end
 
   def delinquent?

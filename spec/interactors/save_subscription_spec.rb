@@ -29,6 +29,7 @@ RSpec.describe SaveSubscription do
     context 'when user has billing info' do
       before do
         user.stripe_customer_id = "cus_12345"
+        user.card_added = true
         mock_event(
           'billing.subscription.create',
           subscription_id: subscription.id,
@@ -52,7 +53,7 @@ RSpec.describe SaveSubscription do
       before do
         user.stripe_customer_id = nil
         user.out_of_band = true
-        
+
         mock_event(
           'billing.subscription.create',
           subscription_id: subscription.id,

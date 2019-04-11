@@ -37,7 +37,7 @@ FactoryBot.define do
     contact_email { Faker::Internet.unique.safe_email }
     contact_phone { Faker::PhoneNumber.phone_number }
     square_footage { 2000 }
-    subdomain { "placeholder" }
+    sequence(:subdomain) { |n| "test-#{n}" }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
 
     trait :with_users do
@@ -91,6 +91,7 @@ FactoryBot.define do
       end
     end
 
+    factory :operator_with_plans_and_users, traits: [:with_individual_plans, :with_users]
     factory :operator_with_plans_orgs_and_offices,
             traits: [
               :with_individual_plans,

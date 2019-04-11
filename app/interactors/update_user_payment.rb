@@ -7,7 +7,9 @@ class UpdateUserPayment
     return if user.out_of_band?
 
     if token
-      unless user.operator.create_or_update_customer_payment(user, token)
+      if user.operator.create_or_update_customer_payment(user, token)
+        user.update(card_added: true)
+      else
         context.fail!(message: "Could not update payment method.")
       end
     end

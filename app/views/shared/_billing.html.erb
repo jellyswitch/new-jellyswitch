@@ -3,11 +3,11 @@
     <!-- a Stripe Element will be inserted here. -->
   </div>
   <div id="card-errors" role="alert" class="row"></div>
-  <%- if show_check_option %>
+  <% if show_check_option %>
     <div class="form-check row">
       <input type="checkbox" class="form-check-input" />
       <label class="form-check-label">I want to pay via ACH / Check</label>
     </div>
-  <%- end %>
+  <% end %>
 </div>
 <input type="hidden" value="<%= form_authenticity_token %>"name="authenticity_token"/>
