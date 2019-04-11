@@ -5,7 +5,8 @@ class BackfillCardAddedOnMembers < ActiveRecord::Migration[5.2]
     reversible do |dir|
       dir.up do
         users.each do |user|
-          if user.stripe_customer && user.stripe_customer.sources["data"].count > 0
+          stripe_customer = user.stripe_customer
+          if stripe_customer && stripe_customer.sources["data"].count > 0
             user.update(card_added: true)
           end
         end
