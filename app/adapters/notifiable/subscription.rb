@@ -15,6 +15,7 @@ module Notifiable
     end
 
     def send_notification
+      operator = subscribable.operator
       message = "#{subscribable.name} has subscribed to #{plan.pretty_name}"
 
       unless subscribable.approved?
