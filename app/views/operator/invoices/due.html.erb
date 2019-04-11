@@ -9,7 +9,9 @@
         <h4 class="display-4 text-center">Invoices Due Soon</h4>
         <%= render "operator/invoices/nav" %>
       </div>
-      <%= render "invoice_list", invoices: @invoices %>
+      <div class="card-body list-group list-group-flush p-0">
+        <%= render @invoices %>
+      </div>
     </div>
   </div>
   <div class="col-lg-3"></div>
