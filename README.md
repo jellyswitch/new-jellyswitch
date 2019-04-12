@@ -97,3 +97,11 @@ Open the rails console and create Subdomain records:
 ```
 
 Go to `app.jellyswitch.net:3000` and click "Generate Demo Instance". This will enqueue a background job to generate a new example demo instance of Jellyswitch that you can then poke around with for testing and development purposes. Refresh the page after ~45 seconds and click the "Visit" button to see this instance.
+
+## Local Elastic Search
+
+Open `/usr/local/etc/elasticsearch/elasticsearch.yml` and add this line:
+
+`cluster.routing.allocation.disk.threshold_enabled: false`
+
+Then restart elastic search.
