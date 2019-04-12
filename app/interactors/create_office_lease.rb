@@ -15,7 +15,7 @@ class CreateOfficeLease
     if office_lease.save
       Jellyswitch::Events.publish(
         'billing.lease.create',
-        subscription_id: office_lease.subscription_id,
+        office_lease_id: office_lease.id,
         operator_id: operator.id,
         start_date: office_lease.start_date
       )
