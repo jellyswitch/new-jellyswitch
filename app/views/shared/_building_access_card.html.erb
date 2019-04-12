@@ -3,9 +3,13 @@
     <h5 class="card-title">
       Building Access
     </h5>
-    <%= render "operator/doors/keys", doors: @doors %>
     
     <% if !mobile_app_request? && current_tenant.has_mobile_app_links? %>
+      <div class="row mt-4">
+        <div class="col text-center">
+          <p>To open the door, please download our mobile app below and sign in:
+        </div>
+      </div>
       <div class="row">
 
         <div class="col text-center align-middle">
@@ -21,6 +25,8 @@
         </div>
 
       </div>
+    <%- else %>
+      <%= render "operator/doors/keys", doors: @doors %>
     <%- end %>    
 
   </div>
