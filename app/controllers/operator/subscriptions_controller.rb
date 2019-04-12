@@ -21,12 +21,14 @@ class Operator::SubscriptionsController < Operator::BaseController
       start_day = Time.zone.at(params[:subscription][:start_day].to_i) + 2.hours
     end
 
+    out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
+
     result = CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
       user: @subscription.subscribable,
       start_day: start_day,
-      out_of_band: params[:out_of_band]
+      out_of_band: out_of_band
     )
 
     if result.success?
