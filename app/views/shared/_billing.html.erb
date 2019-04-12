@@ -5,8 +5,8 @@
   <div id="card-errors" role="alert" class="row"></div>
   <% if show_check_option %>
     <div class="form-check row">
-      <input type="checkbox" class="form-check-input" />
-      <label class="form-check-label">I want to pay via ACH / Check</label>
+      <%= check_box_tag :out_of_band, true, nil, class: "form-check-input" %>
+      <%= label_tag :out_of_band, 'I want to pay via check', class: "form-check-label" %>
     </div>
   <% end %>
 </div>

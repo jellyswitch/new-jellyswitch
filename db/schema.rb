@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_11_182531) do
+ActiveRecord::Schema.define(version: 2019_04_11_232501) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -138,15 +138,15 @@ ActiveRecord::Schema.define(version: 2019_04_11_182531) do
     t.bigint "operator_id", null: false
     t.bigint "organization_id", null: false
     t.bigint "office_id", null: false
-    t.bigint "plan_id", null: false
     t.date "start_date", null: false
     t.date "end_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "subscription_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
     t.index ["organization_id"], name: "index_office_leases_on_organization_id"
-    t.index ["plan_id"], name: "index_office_leases_on_plan_id"
+    t.index ["subscription_id"], name: "index_office_leases_on_subscription_id"
   end
 
   create_table "offices", force: :cascade do |t|
@@ -306,7 +306,7 @@ ActiveRecord::Schema.define(version: 2019_04_11_182531) do
   add_foreign_key "office_leases", "offices"
   add_foreign_key "office_leases", "operators"
   add_foreign_key "office_leases", "organizations"
-  add_foreign_key "office_leases", "plans"
+  add_foreign_key "office_leases", "subscriptions"
   add_foreign_key "offices", "operators"
   add_foreign_key "refunds", "invoices"
 end

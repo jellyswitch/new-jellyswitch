@@ -9,27 +9,27 @@
 
   <div class="form-group row">
     <div class="col-1"></div>
-    <%- if admin? %>
-      <%= f.select :day_pass_type, DayPassType.all_options_for_select(current_tenant), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
-    <%- else %>
-      <%= f.select :day_pass_type, DayPassType.options_for_select(current_tenant), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
-    <%- end %>
+    <% if admin? %>
+      <%= f.select :day_pass_type, day_pass_type_options(DayPassType.all_options_for_select(current_tenant)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <% else %>
+      <%= f.select :day_pass_type, day_pass_type_options(DayPassType.options_for_select(current_tenant)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <% end %>
     <div class="col-1"></div>
   </div>
 
   <%= f.hidden_field :user_id, value: user.id %>
 
-  <%- if !user.has_billing? %>
+  <% unless user.has_billing? %>
     <div class="form-group row">
       <div class="col-1"></div>
-      <%= render "shared/billing", show_check_option: false %>
+      <%= render "shared/billing", show_check_option: true %>
       <div class="col-1"></div>
     </div>
-  <%- end %>
+  <% end %>
 
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit label, class: "form-control btn btn-primary col" %>
+    <%= f.submit label, id: 'stripe-submit', class: "form-control btn btn-primary col" %>
     <div class="col-1"></div>
   </div>
-<%- end %>
+<% end %>

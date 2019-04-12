@@ -58,13 +58,15 @@ class User < ApplicationRecord
   has_secure_password
 
   # Scopes
-  scope :approved, ->() { where(approved: true) }
-  scope :unapproved, ->() { where(approved: false) }
-  scope :members, ->() { where(admin: false) }
-  scope :admins, ->() { where(admin: true) }
-  scope :non_superadmins, ->() { where(superadmin: false) }
+  scope :approved, -> { where(approved: true) }
+  scope :unapproved, -> { where(approved: false) }
+  scope :members, -> { where(admin: false) }
+  scope :admins, -> { where(admin: true) }
+  scope :non_superadmins, -> { where(superadmin: false) }
   scope :for_space, ->(operator) { where('operator_id = ?', operator.id) }
-  scope :superadmins, ->() { where(superadmin: true) }
+  scope :superadmins, -> { where(superadmin: true) }
+
+  scope :not_in_organization, ->(organization) { where('organization_id != ? OR organization_id IS NULL', organization.id) }
 
   # Relationship Helpers
   def owned_organization
@@ -104,7 +106,8 @@ class User < ApplicationRecord
   end
 
   def approved?
-    approved == true
+    return true if organization && organization.has_active_lease?
+    approved
   end
 
   def authenticated?(remember_token)

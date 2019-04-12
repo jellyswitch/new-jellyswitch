@@ -14,20 +14,22 @@ class Operator::DayPassesController < Operator::BaseController
 
   def create
     authorize DayPass.new
-    
+
     if admin?
       result = CreateDayPass.call(
         params: admin_day_pass_params,
         user_id: admin_day_pass_params[:user_id],
         token: params[:stripeToken],
-        operator: current_tenant
+        operator: current_tenant,
+        out_of_band: pay_by_check_params[:out_of_band]
       )
     else
       result = CreateDayPass.call(
         params: day_pass_params,
         user_id: current_user.id,
         token: params[:stripeToken],
-        operator: current_tenant
+        operator: current_tenant,
+        out_of_band: pay_by_check_params[:out_of_band]
       )
     end
 
@@ -45,7 +47,7 @@ class Operator::DayPassesController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(new_day_pass_path)
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -69,6 +71,10 @@ class Operator::DayPassesController < Operator::BaseController
 
   def day_pass_params
     params.require(:day_pass).permit(:day, :day_pass_type)
+  end
+
+  def pay_by_check_params
+    params.permit(:out_of_band)
   end
 
   def admin_day_pass_params

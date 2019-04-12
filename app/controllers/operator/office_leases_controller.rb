@@ -9,6 +9,10 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def new
     @office_lease = OfficeLease.new
+    @office_lease.build_subscription
+    @organizations = Organization.all
+    @offices = Office.available_for_lease
+    @plans = Plan.lease
     authorize @office_lease
   end
 
@@ -31,6 +35,13 @@ class Operator::OfficeLeasesController < Operator::BaseController
   private
 
   def office_lease_params
-    params.require(:office_lease).permit(:organization_id, :office_id, :plan_id, :start_date, :lease_agreement)
+    params.require(:office_lease).permit(
+      :organization_id,
+      :office_id,
+      :start_date,
+      :lease_agreement,
+      :end_date,
+      subscription_attributes: [:plan_id]
+    )
   end
 end

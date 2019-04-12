@@ -16,6 +16,7 @@
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
+@import "organization";
 
 <% ["primary", "secondary", "success", "danger", "info", "warning", "light", "dark"].each do |color| %>
 
@@ -48,7 +49,7 @@ $theme-colors: (
 
 /* Fix zoom issue on iOS */
 
-@media screen and (-webkit-min-device-pixel-ratio:0) { 
+@media screen and (-webkit-min-device-pixel-ratio:0) {
   select,
   textarea,
   input {

@@ -80,6 +80,7 @@ Rails.application.routes.draw do
   resources :office_leases, controller: 'operator/office_leases'
   resources :organizations, controller: 'operator/organizations' do
     post :billing, to: 'operator/organization_billing#create'
+    post :add_member, to: 'operator/organization_members#create'
   end
   resources :operators, as: :operator_operators, controller: 'operator/operators' do
     get :stripe_connect_setup, to: 'operator/operators/stripe_connect_setup'

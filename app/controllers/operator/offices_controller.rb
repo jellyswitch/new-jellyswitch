@@ -3,7 +3,7 @@ class Operator::OfficesController < Operator::BaseController
   before_action :background_image, except: [:create, :update]
 
   def index
-    @offices = Office.visible.order(:name)
+    @offices = current_tenant.offices.available_for_lease.order(:name)
   end
 
   def show

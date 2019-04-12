@@ -22,7 +22,7 @@
 //= require_tree .
 
 // This is required to get Turbolinks 5 to work with non-GET form errors
-// see https://github.com/turbolinks/turbolinks/issues/85#issuecomment-219799657 
+// see https://github.com/turbolinks/turbolinks/issues/85#issuecomment-219799657
 // for more information
 
 document.addEventListener("turbolinks:load", () => {
