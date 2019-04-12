@@ -64,6 +64,10 @@ class Operator < ApplicationRecord
   scope :production, -> { where(billing_state: "production") }
   scope :demo, -> { where(billing_state: "demo") }
 
+  def has_mobile_app_links?
+    ios_url.present? && android_url.present?
+  end
+
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?
   end

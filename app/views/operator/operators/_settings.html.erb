@@ -53,6 +53,24 @@
     <%- end %>
   </dd>
 
+  <dt>iOS App Store Link</dt>
+  <dd>
+    <%- if operator.ios_url.present? %>
+      <%= link_to "View in App Store", operator.ios_url, target: "_blank" %>
+    <%- else %>
+      <i>Not Entered</i>
+    <%- end %>
+  </dd>
+
+    <dt>Android App Store Link</dt>
+  <dd>
+    <%- if operator.android_url.present? %>
+      <%= link_to "View in Google Play", operator.android_url, target: "_blank" %>
+    <%- else %>
+      <i>Not Entered</i>
+    <%- end %>
+  </dd>
+
   <dt>Terms of Service</dt>
   <dd>
     <%- if operator.terms_of_service.attached? %>

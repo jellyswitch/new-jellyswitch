@@ -51,7 +51,15 @@ module ApplicationHelper
   end
 
   def mobile_app_request?
-    request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
+    ios_request? || android_request?
+  end
+
+  def ios_request?
+    request.env['HTTP_USER_AGENT'].match(/(Jellyswitch)/) && !request.env['HTTP_USER_AGENT'].match(/(Android)/)
+  end
+
+  def android_request?
+    request.env['HTTP_USER_AGENT'].match /(Jellyswitch\/Android)/
   end
 
   def admin_nav_items
