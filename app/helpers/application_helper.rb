@@ -55,7 +55,7 @@ module ApplicationHelper
   end
 
   def ios_request?
-    request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
+    request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/ && !request.env['HTTP_USER_AGENT'].match(/Android/)
   end
 
   def android_request?
