@@ -3,6 +3,7 @@
 # Table name: operators
 #
 #  id                     :bigint(8)        not null, primary key
+#  android_url            :string
 #  approval_required      :boolean          default(TRUE), not null
 #  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
@@ -11,6 +12,7 @@
 #  contact_phone          :string
 #  day_pass_cost_in_cents :integer          default(2500), not null
 #  email_enabled          :boolean          default(FALSE), not null
+#  ios_url                :string
 #  kisi_api_key           :string
 #  name                   :string           not null
 #  snippet                :string           default("Generic snippet about the space"), not null
@@ -61,6 +63,10 @@ class Operator < ApplicationRecord
 
   scope :production, -> { where(billing_state: "production") }
   scope :demo, -> { where(billing_state: "demo") }
+
+  def has_mobile_app_links?
+    ios_url.present? && android_url.present?
+  end
 
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?

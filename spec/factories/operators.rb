@@ -3,6 +3,7 @@
 # Table name: operators
 #
 #  id                     :bigint(8)        not null, primary key
+#  android_url            :string
 #  approval_required      :boolean          default(TRUE), not null
 #  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
@@ -11,6 +12,7 @@
 #  contact_phone          :string
 #  day_pass_cost_in_cents :integer          default(2500), not null
 #  email_enabled          :boolean          default(FALSE), not null
+#  ios_url                :string
 #  kisi_api_key           :string
 #  name                   :string           not null
 #  snippet                :string           default("Generic snippet about the space"), not null

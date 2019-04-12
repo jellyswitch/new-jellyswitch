@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_11_182531) do
+ActiveRecord::Schema.define(version: 2019_04_12_191013) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -196,6 +196,8 @@ ActiveRecord::Schema.define(version: 2019_04_11_182531) do
     t.string "stripe_refresh_token"
     t.string "stripe_access_token"
     t.string "billing_state", default: "demo", null: false
+    t.string "ios_url"
+    t.string "android_url"
   end
 
   create_table "organizations", force: :cascade do |t|
