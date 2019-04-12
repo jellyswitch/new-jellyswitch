@@ -12,10 +12,6 @@ module Bristlecone
     config.load_defaults 5.2
 
     # Autoload paths
-    config.autoload_paths << Rails.root.join('app/interactors/*')
-    config.autoload_paths << Rails.root.join('app/factories/*')
-    config.autoload_paths << Rails.root.join('app/adapters/*')
-    config.autoload_paths << Rails.root.join('app/subscribers/*')
     config.eager_load_paths << Rails.root.join('lib')
     config.autoload_paths << Rails.root.join('lib')
 
