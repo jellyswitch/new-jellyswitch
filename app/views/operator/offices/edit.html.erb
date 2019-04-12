@@ -22,7 +22,7 @@
       <%= render "form", label: "Update" %>
       <div class="row mt-3">
         <div class="col-12">
-          <% if !mobile_app_request? %>
+          <% if !ios_request? %>
             <%= link_to "Cancel", @office, class: "btn btn-block btn-warning", data: {"turbolinks-action" => "replace"} %>
           <% end %>
         </div>

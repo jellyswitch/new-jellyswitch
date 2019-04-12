@@ -51,7 +51,15 @@ module ApplicationHelper
   end
 
   def mobile_app_request?
-    request.env['HTTP_USER_AGENT'].match /(Jellyswitch)/
+    ios_request? || android_request?
+  end
+
+  def ios_request?
+    request.env['HTTP_USER_AGENT'].match(/(Jellyswitch)/) && !request.env['HTTP_USER_AGENT'].match(/(Android)/)
+  end
+
+  def android_request?
+    request.env['HTTP_USER_AGENT'].match /(Jellyswitch\/Android)/
   end
 
   def admin_nav_items
@@ -59,6 +67,8 @@ module ApplicationHelper
       {title: "Home", path: feed_items_path},
       {title: "Search", path: new_search_result_path},
       {title: "Members & Resources", path: members_resources_path},
+      {title: "Office Spaces", path: offices_path},
+      {title: "Leases", path: office_leases_path},
       {title: "Finances", path: accounting_index_path},
       {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
       {title: "My Account", path: user_path(current_user)},
@@ -67,8 +77,7 @@ module ApplicationHelper
       {title: "My Reservations", path: user_reservations_path(current_user)},
       {title: "My Invoices", path: user_invoices_path(current_user)},
       {title: "Change Password", path: user_change_password_path(current_user)},
-      {title: "Member Dashboard", path: home_path},
-      {title: "Office Spaces", path: offices_path}
+      {title: "Member Dashboard", path: home_path}
     ]
   end
 

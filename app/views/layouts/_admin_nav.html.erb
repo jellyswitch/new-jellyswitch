@@ -1,4 +1,4 @@
-<%- if !mobile_app_request? %>
+<%- if !ios_request? %>
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="<%= feed_items_path %>" data-turbolinks-action="restore">
@@ -15,7 +15,9 @@
         <%= link_to "Home", feed_items_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
         <%= link_to "Search", new_search_result_path, class: "nav-link", data: {"turbolinks-action" => "restore"} %>
         <%= link_to "Members & Resources", members_resources_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-        <%= link_to "Finances", accounting_index_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>  
+        <%= link_to "Finances", accounting_index_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+        <%= link_to "Offices", offices_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+        <%= link_to "Leases", office_leases_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
       </ul>
 
       <%= render "layouts/user_account_nav" %>

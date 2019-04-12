@@ -58,6 +58,24 @@
     <%- end %>
   </div>
 
+   <div class="form-group">
+    <%= f.label :ios_url, "iOS App Store URL" %>
+    <%- if editable_app_links %>
+      <%= f.text_field :ios_url, placeholder: "iOS App Store URL", class: "form-control" %>
+    <%- else %>
+      <%= f.text_field :ios_url, placeholder: "iOS App Store URL", class: "form-control", readonly: true %>
+    <%- end %>
+  </div>
+
+    <div class="form-group">
+    <%= f.label :android_url, "Google Play Store URL" %>
+    <%- if editable_app_links %>
+      <%= f.text_field :android_url, placeholder: "Google Play Store URL", class: "form-control" %>
+    <%- else %>
+      <%= f.text_field :android_url, placeholder: "Google Play Store URL", class: "form-control", readonly: true %>
+    <%- end %>
+  </div>
+
   <div class="form-group">
     <%= f.label "Approval Required" %>
     <%= f.check_box :approval_required, class: "form-control" %>
