@@ -5,28 +5,17 @@
     <p class="lead text-center mb-3 mt-3">To replace your current card on file, please enter your credit card information below.</p>
     <%= form_with(remote: true, url: organization_billing_path(organization), html: {id: "stripe-form" }) do |f| %>
       <div class="form-group row">
-        <div class="col-1"></div>
-          <div class="col col pr-0 pl-4">
-            <div id="card-element" class="form-control row">
-              <!-- a Stripe Element will be inserted here. -->
-            </div>
-            <div id="card-errors" role="alert" class="row"></div>
-            <% if show_check_option %>
-              <div class="form-check row">
-                <input type="checkbox" class="form-check-input" />
-                <label class="form-check-label">I want to pay via ACH / Check</label>
-              </div>
-            <% end %>
-          </div>
-          <input type="hidden" value="<%= form_authenticity_token %>"name="authenticity_token"/>
+        <%= render 'shared/billing', show_check_option: true %>
         <div class="col-1"></div>
       </div>
       <div class="form-group row">
         <div class="col-1"></div>
-          <%= f.submit "Update", class: "form-control btn btn-primary col" %>
+          <%= f.submit "Update", id: 'stripe-submit', class: "form-control btn btn-primary col" %>
         <div class="col-1"></div>
       </div>
     <% end %>
   </div>
 </div>
 <div class="col-sm-3"></div>
+
+<%= javascript_include_tag "stripe_handler.js" %>

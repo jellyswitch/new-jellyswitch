@@ -20,19 +20,26 @@ function doStripe() {
   });
 
   window.has_token = false;
-  var form = document.getElementById('stripe-form');
-  document.addEventListener('ajax:before', function(event) {
-  /*form.addEventListener('submit', function(event) {*/
+  var $stripeForm = document.getElementById('stripe-form');
+
+  $stripeForm.addEventListener('ajax:before', function(event) {
     console.log("ajax:before");
-    if (window.has_token == false) {
+    var payByCheck = document.getElementById('out_of_band').checked;
+
+    if (payByCheck) {
+      return;
+    }
+
+    if (window.has_token === false) {
       console.log("has_token is false")
       console.log(window.has_token);
       event.preventDefault();
-    
+
       stripe.createToken(card).then(function(result) {
         if (result.error) {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;
+          document.getElementById('stripe-submit').disabled = false;
         } else {
           stripeTokenHandler(result.token);
         }
@@ -50,7 +57,7 @@ function doStripe() {
     window.has_token = true;
     console.log("setting has_token=true")
     console.log(window.has_token);
-    
+
     Rails.fire(form, 'submit');
   };
 };

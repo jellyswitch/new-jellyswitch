@@ -2,38 +2,36 @@ class CreateDayPass
   include Interactor
   include FeedItemCreator
 
+  delegate :day_pass, :token, :operator, :out_of_band, :params, :user_id, to: :context
+
   def call
-    operator = context.operator
-    user = User.find(context.user_id)
+    user = User.find(user_id)
     if user.nil?
-      context.fail!(message: "No such user with ID #{context.user_id}")
+      context.fail!(message: "No such user with ID #{user_id}")
     end
-    
+
     if !user.has_stripe_customer?
       context.fail!(message: "Cannot create day pass for user without stripe customer.")
     end
 
-    day_pass_type = DayPassType.find(context.params[:day_pass_type].to_i)
+    day_pass_type = DayPassType.find(params[:day_pass_type].to_i)
     if day_pass_type.nil?
       context.fail!(message: "Invalid day pass type.")
     end
 
-    day_pass = DayPass.new(context.params.merge({day_pass_type: day_pass_type}))
+    day_pass = DayPass.new(params.merge({day_pass_type: day_pass_type}))
     day_pass.user = user
 
-    context.day_pass = day_pass
-    
-    if !user.out_of_band?
+    unless out_of_band
       result = UpdateUserPayment.call(
         user: user,
-        token: context.token
+        token: token
       )
-    
+
       if !result.success?
         context.fail!(message: "Unable to update payment method.")
       end
     end
-
 
     @invoice_item = Stripe::InvoiceItem.create({
       customer: user.stripe_customer_id,
@@ -45,7 +43,7 @@ class CreateDayPass
       stripe_account: operator.stripe_user_id
     })
 
-    if user.out_of_band?
+    if out_of_band
       @invoice = Stripe::Invoice.create({
         customer: user.stripe_customer_id,
         billing: 'send_invoice',

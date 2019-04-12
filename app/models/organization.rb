@@ -25,17 +25,22 @@ class Organization < ApplicationRecord
 
   # Relationships
   has_many :users
+  has_many :office_leases
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
 
-  has_one :subscription, as: :subscribable
+  has_many :subscriptions, as: :subscribable
 
   # Form and view helpers
   def self.options_for_select
     Organization.all.map do |org|
       [org.name, org.id]
     end.prepend(["", nil])
+  end
+
+  def has_active_lease?
+    office_leases.active.length > 0
   end
 
   def stripe_customer

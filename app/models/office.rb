@@ -25,6 +25,8 @@ class Office < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  has_many :office_leases
+
   has_one_attached :lease
   has_one_attached :photo
 
@@ -32,6 +34,14 @@ class Office < ApplicationRecord
   friendly_id :name, use: :slugged
 
   scope :visible, -> { where(visible: true) }
+
+  def self.available_for_lease
+    offices = visible.left_outer_joins(:office_leases)
+
+    offices.
+      where(office_leases: { office: nil }).
+      or(offices.where('office_leases.end_date < ?', Time.current))
+  end
 
   def has_lease?
     lease.attached?

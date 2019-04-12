@@ -14,4 +14,10 @@ class FeedItemComment < ApplicationRecord
   belongs_to :feed_item
   belongs_to :user
   validates :comment, presence: true
+
+  after_commit :reindex_feed_item
+
+  def reindex_feed_item
+    feed_item.reindex
+  end
 end
