@@ -18,4 +18,10 @@ class SubscriptionPolicy < ApplicationPolicy
   def destroy?
     admin? || (owner? && member? && approved?)
   end
+
+  private
+
+  def owner?
+    is_user? && (user == record.subscribable)
+  end
 end
