@@ -52,10 +52,10 @@ class Office < ApplicationRecord
   end
 
   def square_photo
-    photo.variant(resize: "300x300")
+    photo.variant(combine_options: {auto_orient: true, resize: "300x300"})
   end
 
   def card_photo
-    photo.variant(resize: "x200")
+    photo.variant(combine_options: {auto_orient: true, resize: "x200"})
   end
 end
