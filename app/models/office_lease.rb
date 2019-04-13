@@ -33,6 +33,8 @@ class OfficeLease < ApplicationRecord
   belongs_to :office
   belongs_to :subscription
 
+  acts_as_tenant :operator
+
   has_one_attached :lease_agreement
 
   accepts_nested_attributes_for :subscription
