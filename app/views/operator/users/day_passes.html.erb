@@ -3,22 +3,22 @@
   <div class="card col-sm bg-light p-3">
     <div class="card-body">
       <h1>My Day Passes</h1>
-      <%- if policy(DayPass.new).new? %>
+      <% if policy(DayPass.new).new? %>
         <p>
           <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-sm btn-primary" %>
         </p>
-      <%- end %>
+      <% end %>
       <table class="table table-sm">
-        <%- if @user.day_passes.count < 1 %>
+        <% if @user.day_passes.count < 1 %>
           <p class="lead">(None)</p>
-        <%- end %>
-        <%- @user.day_passes.each do |day_pass| %>
+        <% end %>
+        <% @user.day_passes.each do |day_pass| %>
           <tr>
             <td>
               <%= link_to day_pass.pretty_day, day_pass_path(day_pass) %>
             </td>
           </tr>
-        <%- end %>
+        <% end %>
       </table>
     </div>
   </div>

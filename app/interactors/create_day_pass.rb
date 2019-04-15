@@ -22,7 +22,7 @@ class CreateDayPass
     day_pass = DayPass.new(params.merge({day_pass_type: day_pass_type}))
     day_pass.user = user
 
-    unless out_of_band
+    if token
       result = UpdateUserPayment.call(
         user: user,
         token: token
@@ -74,6 +74,7 @@ class CreateDayPass
       context.fail!(message: "There was a problem invoicing this day pass.")
     end
 
+    context.day_pass = day_pass
     begin
       blob = {type: "day-pass", day_pass_id: day_pass.id}
       create_feed_item(user.operator, user, blob)
