@@ -1,0 +1,21 @@
+class Billing::Leasing::SaveOfficeLease
+  include Interactor
+
+  delegate :office_lease, :operator, to: :context
+
+  def call
+    organization = Organization.find(office_lease.organization_id)
+    subscription = office_lease.subscription
+    subscription.subscribable = organization
+
+    unless office_lease.end_date
+      office_lease.end_date = office_lease.start_date + 1.year
+    end
+
+    if office_lease.save
+      context.office_lease = office_lease
+    else
+      context.fail!(message: 'Could not create lease')
+    end
+  end
+end

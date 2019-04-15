@@ -23,7 +23,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
 
-    result = CreateSubscription.call(
+    result = Billing::Subscription::CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
       user: @subscription.subscribable,

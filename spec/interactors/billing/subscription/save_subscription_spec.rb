@@ -1,8 +1,7 @@
 require 'rails_helper'
 
-RSpec.describe SaveSubscription do
-  let(:subscription) { create(:subscription, :for_user) }
-  let(:user) { subscription.subscribable }
+RSpec.describe Billing::Subscription::SaveSubscription do
+  let(:subscription) { double(Subscription, id: 1) }
   let(:start_day) { 1.week.from_now.beginning_of_week }
 
   subject(:context) do
@@ -15,10 +14,7 @@ RSpec.describe SaveSubscription do
 
   describe '#call' do
     context 'when user has no billing info' do
-      before do
-        user.stripe_customer_id = nil
-        user.out_of_band = false
-      end
+      let(:user) { instance_double(User, has_billing?: false, out_of_band?: false) }
 
       it 'fails with a message' do
         expect(context.failure?).to be true
@@ -27,49 +23,63 @@ RSpec.describe SaveSubscription do
     end
 
     context 'when user has billing info' do
+      let(:user) { instance_double(User, has_billing?: true) }
+
       before do
-        user.stripe_customer_id = "cus_12345"
-        user.card_added = true
-        mock_event(
+        allow(subscription).to receive(:save) { true }
+      end
+
+      it 'is successful' do
+        expect_event(
           'billing.subscription.create',
           subscription_id: subscription.id,
           start_date: start_day
         )
 
-        mock_event(
+        expect_event(
           'app.notifiable.create',
           notifiable_id: subscription.id,
           notifiable_type: 'Subscription'
         )
-      end
 
-      it 'creates a subscription' do
         expect(context.success?).to be true
-        expect(subscription.id).to_not be nil
       end
     end
 
     context 'when user is paying out of band' do
-      before do
-        user.stripe_customer_id = nil
-        user.out_of_band = true
+      let(:user) { instance_double(User, has_billing?: false, out_of_band?: true) }
 
-        mock_event(
+      before do
+        allow(subscription).to receive(:save) { true }
+      end
+
+      it 'is successful' do
+        expect_event(
           'billing.subscription.create',
           subscription_id: subscription.id,
           start_date: start_day
         )
 
-        mock_event(
+        expect_event(
           'app.notifiable.create',
           notifiable_id: subscription.id,
           notifiable_type: 'Subscription'
         )
+
+        expect(context.success?).to be true
+      end
+    end
+
+    context 'when saving subscription is unsuccessful' do
+      let(:user) { instance_double(User, has_billing?: true) }
+
+      before do
+        allow(subscription).to receive(:save) { false }
       end
 
-      it 'creates a subscription' do
-        expect(context.success?).to be true
-        expect(subscription.id).to_not be nil
+      it 'results in failure' do
+        expect(context.success?).to be false
+        expect(context.message).to eq "There was a problem charging for this subscription."
       end
     end
   end

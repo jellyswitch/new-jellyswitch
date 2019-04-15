@@ -1,4 +1,4 @@
-class SaveSubscription
+class Billing::Subscription::SaveSubscription
   include Interactor
 
   delegate :subscription, :user, :start_day, to: :context
