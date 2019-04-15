@@ -1,23 +1,23 @@
-<%- if @user.invoices.count < 1 %>
+<% if @user.invoices.count < 1 %>
   No invoices
-<%- else %>
+<% else %>
   <table class="table">
     <tr>
       <th>Invoice</th>
       <th>Status</th>
       <th>Actions</th>
     </tr>
-    <%- @user.invoices.each do |invoice| %>
+    <% @user.invoices.each do |invoice| %>
       <tr>
         <td><%= invoice.number %></td>
         <td><%= invoice.status %></td>
         <td>
-          <%- if invoice.status == "open" %>
-            <%= link_to "Mark as paid", user_mark_invoice_as_paid_path(@user, invoice_id: invoice.id), class: "btn btn-sm btn-primary" %>
-          <%- end %>
+          <% if invoice.open? %>
+            <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-sm btn-primary" %>
+          <% end %>
           <%= link_to "Download PDF", invoice.pdf_url, class: "btn btn-sm btn-info", target: "_blank" %>
         </td>
       </tr>
-    <%- end %>
+    <% end %>
   </table>
-<%- end %>
+<% end %>
