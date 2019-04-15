@@ -100,8 +100,6 @@ Go to `app.jellyswitch.net:3000` and click "Generate Demo Instance". This will e
 
 ## Local Elastic Search
 
-Open `/usr/local/etc/elasticsearch/elasticsearch.yml` and add this line:
+Run this command: 
 
-`cluster.routing.allocation.disk.threshold_enabled: false`
-
-Then restart elastic search.
+`curl -u elastic:changeme -XPUT 'localhost:9200/_cluster/settings' -H 'Content-Type: application/json' -d '{"persistent":{"cluster.blocks.read_only":false}}'`
