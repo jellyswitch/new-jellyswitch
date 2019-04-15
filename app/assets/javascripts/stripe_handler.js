@@ -24,9 +24,9 @@ function doStripe() {
 
   $stripeForm.addEventListener('ajax:before', function(event) {
     console.log("ajax:before");
-    var payByCheck = document.getElementById('out_of_band').checked;
+    var payByCheck = document.getElementById('out_of_band');
 
-    if (payByCheck) {
+    if (payByCheck && payByCheck.checked) {
       return;
     }
 
