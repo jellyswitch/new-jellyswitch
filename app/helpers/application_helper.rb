@@ -13,7 +13,12 @@ module ApplicationHelper
   end
 
   def pretty_price(office_lease)
-    office_lease.subscription.plan.pretty_price
+    if office_lease.subscription.present? &&
+      office_lease.subscription.plan.present?
+      office_lease.subscription.plan.pretty_price
+    else
+      nil
+    end
   end
 
   def google_map(center)
