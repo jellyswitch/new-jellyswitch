@@ -3,6 +3,10 @@ class OfficeLeasePolicy < ApplicationPolicy
     admin?
   end
 
+  def show?
+    admin?
+  end
+
   def new?
     admin?
   end

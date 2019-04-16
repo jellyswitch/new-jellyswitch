@@ -26,6 +26,7 @@ class Organization < ApplicationRecord
   # Relationships
   has_many :users
   has_many :office_leases
+  has_many :invoices, as: :billable
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
@@ -40,7 +41,11 @@ class Organization < ApplicationRecord
   end
 
   def has_active_lease?
-    office_leases.active.length > 0
+    active_leases.length > 0
+  end
+
+  def active_leases
+    office_leases.active
   end
 
   def stripe_customer
