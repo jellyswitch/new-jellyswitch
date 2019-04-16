@@ -18,8 +18,8 @@ class DayPassType < ApplicationRecord
   acts_as_tenant :operator
 
   # Scopes
-  scope :available, ->() { where(available: true) }
-  scope :visible, ->() { where(visible: true) }
+  scope :available, -> { where(available: true) }
+  scope :visible, -> { where(visible: true) }
 
   def self.options_for_select(operator)
     where(operator_id: operator.id).available.visible
