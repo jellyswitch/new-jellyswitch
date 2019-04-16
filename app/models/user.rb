@@ -110,7 +110,7 @@ class User < ApplicationRecord
   end
 
   def has_active_lease?
-    organzation.present? && organization.has_active_lease?
+    organization.present? && organization.has_active_lease?
   end
 
   def organization_owner?
