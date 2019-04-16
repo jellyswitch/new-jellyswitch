@@ -1,10 +1,14 @@
 class Operator::OfficeLeasesController < Operator::BaseController
-  before_action :find_office, only: [:show, :edit, :update]
+  before_action :find_office_lease, only: [:show]
   before_action :background_image, except: [:create, :update]
 
   def index
     @office_leases = OfficeLease.order(created_at: :desc)
     authorize @office_leases
+  end
+
+  def show
+    authorize @office_lease
   end
 
   def new
@@ -33,6 +37,10 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   private
+
+  def find_office_lease(key=:id)
+    @office_lease = OfficeLease.find(params[key])
+  end
 
   def office_lease_params
     params.require(:office_lease).permit(

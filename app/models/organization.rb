@@ -26,6 +26,7 @@ class Organization < ApplicationRecord
   # Relationships
   has_many :users
   has_many :office_leases
+  has_many :invoices, as: :billable
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
