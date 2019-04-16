@@ -44,7 +44,11 @@ class Office < ApplicationRecord
   end
 
   def has_active_lease?
-    office_leases.active.count > 0
+    active_leases.count > 0
+  end
+
+  def active_leases
+    office_leases.active
   end
 
   def has_photo?

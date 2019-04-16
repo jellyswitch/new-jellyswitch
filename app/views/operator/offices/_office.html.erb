@@ -24,9 +24,9 @@
     <div class="row">
       <p>
         <% if office.has_active_lease? %>
-          <% office.office_leases.active.each do |lease| %>
-            Leased by <%= link_to lease.organization.name, organization_path(lease.organization) %><br />
-            (<%= lease.subscription.plan.pretty_price %> until <%= short_date(lease.end_date) %>)
+          <% office.active_leases.each do |lease| %>
+            Leased by <%= link_to lease.group_name, organization_path(lease.organization) %><br />
+            (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
             <br />
           <% end %>
         <% end %>
@@ -36,7 +36,7 @@
     <div class="row">
       <div class="col">
         <% if office.has_active_lease? %>
-          <% office.office_leases.active.each do |lease| %>
+          <% office.active_leases.each do |lease| %>
             <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
           <% end %>
         <% else %>

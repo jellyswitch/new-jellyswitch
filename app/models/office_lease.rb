@@ -44,4 +44,8 @@ class OfficeLease < ApplicationRecord
   def has_lease?
     lease_agreement.attached?
   end
+
+  def group_name
+    organization.name
+  end
 end
