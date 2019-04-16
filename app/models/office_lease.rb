@@ -48,4 +48,8 @@ class OfficeLease < ApplicationRecord
   def group_name
     organization.name
   end
+
+  def office_name
+    office.name
+  end
 end

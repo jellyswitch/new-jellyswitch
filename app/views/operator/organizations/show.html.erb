@@ -1,34 +1,50 @@
 <% title @organization.name %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4"><%= @organization.name %></h4>
-      <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-sm btn-primary" %>
+<%= wide_card do %>
+  <h4 class="display-4 text-center"><%= @organization.name %></h4>
 
-      <dl class="row">
-        <dt class="col-sm-3">Owner</dt>
-        <dd class="col-sm">
-          <%= link_to @organization.owner.name, user_path(@organization.owner) %>
-        </dd>
-      </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Owner</dt>
+    <dd class="col-sm">
+      <%= link_to @organization.owner.name, user_path(@organization.owner) %>
+    </dd>
+  </dl>
 
-      <dl class="row">
-        <dt class="col-sm-3">Created</dt>
-        <dd class="col-sm">
-          <%= time_ago_in_words(@organization.created_at) %> ago
-        </dd>
-      </dl>
+  <dl class="row">
+    <dt class="col-sm-3">Created</dt>
+    <dd class="col-sm">
+      <%= time_ago_in_words(@organization.created_at) %> ago
+    </dd>
+  </dl>
 
-      <h4 class="display-4 text-center mt-4">Members</h4>
-      <p class="text-muted text-center">(Right-click or CMD-click to select multiple)</p>
-      <%= render 'add_members', organization: @organization %>
-      <% @organization.users.each do |member| %>
-        <%= render "operator/users/member_card", member: member %>
-      <% end %>
+  <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
+<% end %>
 
-    </div>
-  </div>
-  <div class="col-sm-3"></div>
-</div>
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Members</h4>
+
+  <p class="text-muted text-center">(Right-click or CMD-click to select multiple)</p>
+
+  <%= render 'add_members', organization: @organization %>
+
+  <% @organization.users.each do |member| %>
+    <%= render "operator/users/member_card", member: member %>
+  <% end %>
+
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Leases</h4>
+
+  <% if @organization.has_active_lease? %>
+    <% @organization.active_leases.each do |lease| %>
+      <div class="row">
+        <p>
+          Leased <%= link_to lease.office_name, office_path(lease.office) %> (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
+        </p>
+        <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+      </div>      
+    <% end %>
+  <% end %>
+
+<% end %>
