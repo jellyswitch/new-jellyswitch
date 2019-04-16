@@ -43,7 +43,7 @@ class CreateDayPass
       stripe_account: operator.stripe_user_id
     })
 
-    if out_of_band
+    if token
       @invoice = Stripe::Invoice.create({
         customer: user.stripe_customer_id,
         billing: 'send_invoice',
