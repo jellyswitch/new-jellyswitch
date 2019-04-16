@@ -98,8 +98,7 @@ module ApplicationHelper
   def logged_out_nav_items
     [
       {title: "Sign Up", path: signup_path},
-      {title: "Log In", path: login_path},
-      {title: "Office Spaces", path: offices_path}
+      {title: "Log In", path: login_path}
     ]
   end
 
