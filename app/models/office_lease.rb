@@ -40,4 +40,8 @@ class OfficeLease < ApplicationRecord
   accepts_nested_attributes_for :subscription
 
   scope :active, -> { where('now() BETWEEN start_date AND end_date') }
+
+  def has_lease?
+    lease_agreement.attached?
+  end
 end
