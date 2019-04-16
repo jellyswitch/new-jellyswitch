@@ -38,7 +38,9 @@
     </dd>
   </dl>
 
-  <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: 'attachment'), class: "btn btn-block btn-primary" %>
+  <% if @office_lease.has_lease? %>
+    <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: 'attachment'), class: "btn btn-block btn-primary" %>
+  <% end %>
 
 <% end %>
 
