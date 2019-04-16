@@ -39,6 +39,16 @@ FactoryBot.define do
     bio { Faker::TvShows::GameOfThrones.quote }
     operator
 
+    trait :admin do
+      approved { true }
+      admin { true }
+    end
+
+    trait :superadmin do
+      approved { true }
+      superadmin { true }
+    end
+
     trait :with_stripe_info do
       after(:create) do |user|
         stripe_token = Stripe::Token.create({

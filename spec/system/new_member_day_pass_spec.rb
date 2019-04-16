@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-RSpec.describe 'Member signup', type: :system, js: true do
+RSpec.describe 'New member buys day pass', type: :system, js: true do
   let(:subdomain) { create(:subdomain) }
-  let(:operator) { create(:operator, :with_individual_plans, subdomain: subdomain.subdomain) }
+  let(:operator) { create(:operator, :with_day_passes, subdomain: subdomain.subdomain) }
   let(:admin_user) { create(:user, :admin, operator: operator) }
 
   before do
@@ -14,11 +14,10 @@ RSpec.describe 'Member signup', type: :system, js: true do
   end
 
   context 'paying with card' do
-    it 'allows a user to select a plan and become a member' do
+    it 'allows a user to purchase a day pass' do
       new_member_session do |new_member|
         new_member.sign_up
-        new_member.choose_membership
-        new_member.choose_plan
+        new_member.choose_day_pass
         new_member.add_card
         new_member.wait_for_approval
       end
@@ -36,12 +35,11 @@ RSpec.describe 'Member signup', type: :system, js: true do
     end
   end
 
-  context 'paying out of band' do
-    it 'allows a user to select a plan and become a member' do
+  context 'paying by check' do
+    it 'allows a user to purchase a day pass' do
       new_member_session do |new_member|
         new_member.sign_up
-        new_member.choose_membership
-        new_member.choose_plan
+        new_member.choose_day_pass
         new_member.select_pay_out_of_band
         new_member.wait_for_approval
       end
