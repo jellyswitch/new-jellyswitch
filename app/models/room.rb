@@ -12,18 +12,25 @@
 #  whiteboard  :boolean          default(FALSE), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  location_id :bigint(8)
 #  operator_id :integer          default(1), not null
 #
 # Indexes
 #
+#  index_rooms_on_location_id  (location_id)
 #  index_rooms_on_operator_id  (operator_id)
 #
-
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
+#
 class Room < ApplicationRecord
   # Relationships
   has_many :reservations
   belongs_to :operator
-  acts_as_tenant :operator
+  # acts_as_tenant :operator
+  acts_as_scopable :operator, :location
+  belongs_to :location
 
   # Scopes
   scope :visible, ->() { where(visible: true) }

@@ -7,12 +7,18 @@
 #  expense     :boolean          default(FALSE), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  location_id :bigint(8)
 #  operator_id :integer          not null
 #  user_id     :integer
 #
 # Indexes
 #
-#  index_feed_items_on_blob  (blob) USING gin
+#  index_feed_items_on_blob         (blob) USING gin
+#  index_feed_items_on_location_id  (location_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
 #
 
 class FeedItem < ApplicationRecord

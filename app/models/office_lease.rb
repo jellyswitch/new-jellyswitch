@@ -7,6 +7,7 @@
 #  start_date      :date             not null
 #  created_at      :datetime         not null
 #  updated_at      :datetime         not null
+#  location_id     :bigint(8)
 #  office_id       :bigint(8)        not null
 #  operator_id     :bigint(8)        not null
 #  organization_id :bigint(8)        not null
@@ -14,6 +15,7 @@
 #
 # Indexes
 #
+#  index_office_leases_on_location_id      (location_id)
 #  index_office_leases_on_office_id        (office_id)
 #  index_office_leases_on_operator_id      (operator_id)
 #  index_office_leases_on_organization_id  (organization_id)
@@ -21,6 +23,7 @@
 #
 # Foreign Keys
 #
+#  fk_rails_...  (location_id => locations.id)
 #  fk_rails_...  (office_id => offices.id)
 #  fk_rails_...  (operator_id => operators.id)
 #  fk_rails_...  (organization_id => organizations.id)
@@ -32,6 +35,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :organization
   belongs_to :office
   belongs_to :subscription
+  belongs_to :location
 
   acts_as_tenant :operator
 

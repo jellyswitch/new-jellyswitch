@@ -42,6 +42,7 @@ class Operator < ApplicationRecord
   has_many :users
   has_many :offices
   has_many :office_leases
+  has_many :locations
 
   has_one_attached :background_image
   has_one_attached :logo_image
@@ -63,6 +64,12 @@ class Operator < ApplicationRecord
 
   scope :production, -> { where(billing_state: "production") }
   scope :demo, -> { where(billing_state: "demo") }
+
+  %w(rooms offices office_leases member_feedbacks feed_items doors).each do |resource|
+    define_method "#{resource}_by_location" do |location|
+      public_send(resource).where(location: location)
+    end
+  end
 
   def has_mobile_app_links?
     ios_url.present? && android_url.present?

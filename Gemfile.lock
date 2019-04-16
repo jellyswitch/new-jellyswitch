@@ -411,6 +411,7 @@ DEPENDENCIES
   rails (~> 5.2.2)
   redis
   remotipart (~> 1.2)
+  request_store
   roadie-rails (~> 2.0)
   rollbar
   rspec-rails (~> 3.8)

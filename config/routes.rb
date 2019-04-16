@@ -98,6 +98,7 @@ Rails.application.routes.draw do
       get :query, to: 'operator/search_results#query'
     end
   end
+  resource :set_location, only: [:create], controller: 'operator/set_location'
   resources :subscriptions, controller: 'operator/subscriptions'
   resources :users, controller: 'operator/users' do
     post 'approve', to: "operator/users#approve"

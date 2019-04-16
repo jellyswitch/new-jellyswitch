@@ -6,10 +6,19 @@
 #  anonymous   :boolean          default(FALSE), not null
 #  comment     :text
 #  rating      :integer
-#  operator_id :integer          not null
-#  user_id     :integer
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  location_id :bigint(8)
+#  operator_id :integer          not null
+#  user_id     :integer
+#
+# Indexes
+#
+#  index_member_feedbacks_on_location_id  (location_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
 #
 
 class MemberFeedback < ApplicationRecord

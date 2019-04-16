@@ -2,6 +2,7 @@ class Operator::BaseController < ApplicationController
   set_current_tenant_by_subdomain(:operator, :subdomain)
   layout "operator"
   before_action :store_ios_token, if: :logged_in?
+  before_action :set_resource_scopes
 
   def background_image
     @background_image = current_tenant.background_image if current_tenant.present?
@@ -18,6 +19,14 @@ class Operator::BaseController < ApplicationController
       return if match.nil? || match[1].blank?
       token = match[1]
       current_user.update(ios_token: token)
+    end
+  end
+
+  private
+
+  def set_resource_scopes
+    if ActsAsScopable.current_scope_resources.empty?
+      ActsAsScopable.current_scope_resources = [current_tenant, current_location]
     end
   end
 end
