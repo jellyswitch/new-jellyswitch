@@ -1,4 +1,12 @@
 class OfficePolicy < ApplicationPolicy
+  def index?
+    admin?
+  end
+
+  def show?
+    admin?
+  end
+
   def new?
     admin?
   end

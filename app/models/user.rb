@@ -98,7 +98,19 @@ class User < ApplicationRecord
   end
 
   def member?(operator)
-    (subscriptions.for_operator(operator).active.count > 0) || (day_passes.today.count > 0)
+    has_active_subscription? || has_active_day_pass? || has_active_lease?
+  end
+
+  def has_active_subscription?
+    subscriptions.for_operator(operator).active.count > 0
+  end
+
+  def has_active_day_pass?
+    day_passes.today.count > 0
+  end
+
+  def has_active_lease?
+    organization.present? && organization.has_active_lease?
   end
 
   def organization_owner?
