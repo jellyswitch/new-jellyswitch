@@ -1,12 +1,11 @@
-
-<%- if user.approved? %>
+<% if user.approved? %>
   <%= form_for(user, url: user_unapprove_path(user), remote: true, method: :post, html: {class: "form-inline d-inline"}) do |f| %>
     <%= f.hidden_field :approved, value: false %>
     <%= f.submit "Unapprove", class: "btn btn-block btn-sm btn-outline-danger" %>
-  <%- end %>
-<%- else %>
+  <% end %>
+<% else %>
   <%= form_for(user, url: user_approve_path(user), remote: true, method: :post, html: {class: "form-inline d-inline"}) do |f| %>
     <%= f.hidden_field :approved, value: true %>
-    <%= f.submit "Approve", class: "btn  btn-block btn-sm btn-outline-info" %>
-  <%- end %>
-<%- end %>
+    <%= f.submit "Approve", class: "btn  btn-block btn-sm btn-outline-info", data: { acc: 'approve-member' } %>
+  <% end %>
+<% end %>

@@ -1,7 +1,7 @@
 <%= form_for(:session, url: operator_login_create_path, remote: true) do |f| %>
-  <%- if flash[:error] %>
+  <% if flash[:error] %>
     <%= render "layouts/flash" %>
-  <%- end %>
+  <% end %>
   <div class="form-group row">
     <div class="col-1"></div>
     <%= f.email_field :email, placeholder: "Email", class: "form-control col" %>
@@ -25,4 +25,4 @@
       </small>
     </div>
   <div class="col-1"></div>
-<%- end %>
+<% end %>

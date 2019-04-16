@@ -1,4 +1,4 @@
-<%- title "Approval Queue" %>
+<% title "Approval Queue" %>
 
 <div class="row mt-3">
   <div class="col-sm-3"></div>
@@ -6,24 +6,24 @@
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">Approval Queue</h4>
       <p class="lead text-center mb-3 mt-3">These users are currently awaiting approval.</p>
-      <%- if @users.count < 1 %>
+      <% if @users.count < 1 %>
         <p>(none)</p>
-      <%- else %>
+      <% else %>
         <table class="table">
           <tr>
             <th>Name</th>
             <th>Signed Up</th>
             <th></th>
           </tr>
-          <%- @users.each do |user| %>
+          <% @users.each do |user| %>
             <tr>
               <td><%= link_to user.name, user_path(user) %></td>
               <td><%= time_ago_in_words(user.created_at) %> ago</td>
               <td><%= render "approval_toggle", user: user %></td>
             </tr>
-          <%- end %>
+          <% end %>
         </table>
-      <%- end %>
+      <% end %>
     </div>
   </div>
   <div class="col-sm-3"></div>

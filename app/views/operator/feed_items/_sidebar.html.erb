@@ -1,30 +1,30 @@
 <div class="card">
   <div class="card-body p-0">
     <div class="list-group list-group-flush">
-      <%- if @unapproved_users.count > 0 %>
-        <a href="<%= unapproved_users_path %>" class="list-group-item list-group-item-action">
+      <% if @unapproved_users.count > 0 %>
+        <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action", data: { acc: 'approve-member' } do %>
           <span class="far fa-hand-paper text-center mr-3" style="width: 10px;"></span>
-          <%= @unapproved_users.count %> members awaiting approval
-        </a>
-      <%- end %>
-      <%- if @due_invoices.count > 0 %>
-        <a href="<%= due_invoices_path %>" class="list-group-item list-group-item-action">
+          <%= pluralize(@unapproved_users.count, 'member') %> awaiting approval
+        <% end %>
+      <% end %>
+      <% if @due_invoices.count > 0 %>
+        <%= link_to due_invoices_path class: "list-group-item list-group-item-action" do %>
           <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
           <%= @due_invoices.count %> invoices due soon
-        </a>
-      <%- end %>
-      <%- if @delinquent_invoices.count > 0 %>
-        <a href="<%= delinquent_invoices_path %>" class="list-group-item list-group-item-action">
+        <% end %>
+      <% end %>
+      <% if @delinquent_invoices.count > 0 %>
+        <%= link_to delinquent_invoices_path, class: "list-group-item list-group-item-action" do %>
           <span class="far fa-clock text-center mr-3" style="width: 10px;"></span>
           <%= @delinquent_invoices.count %> delinquent members
-        </a>
-      <%- end %>
-      <%- if @member_feedbacks.count > 0 %>
-        <a href="<%= member_feedbacks_path %>" class="list-group-item list-group-item-action">
+        <% end %>
+      <% end %>
+      <% if @member_feedbacks.count > 0 %>
+        <%= link_to member_feedbacks_path, class: "list-group-item list-group-item-action" do %>
           <span class="fas fa-comments text-center mr-3" style="width: 10px;"></span>
           <%= @member_feedbacks.count %> recent feedback
-        </a>
-      <%- end %>
+        <% end %>
+      <% end %>
     </div>
   </div>
 </div>
