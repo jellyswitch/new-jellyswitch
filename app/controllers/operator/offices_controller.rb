@@ -4,9 +4,11 @@ class Operator::OfficesController < Operator::BaseController
 
   def index
     @offices = current_tenant.offices.order(:name)
+    authorize @offices
   end
 
   def show
+    authorize @office
   end
 
   def new
