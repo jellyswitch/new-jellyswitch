@@ -18,7 +18,7 @@ class CreateInvoice
       context.fail!(message: "Cannot find billable with stripe customer id #{customer}")
     end
 
-    invoice_date = Time.at(stripe_invoice.date).to_datetime
+    invoice_date = Time.at(stripe_invoice.created).to_datetime
 
     due_date = nil
     if stripe_invoice.due_date.present?

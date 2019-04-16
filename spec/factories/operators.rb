@@ -93,6 +93,16 @@ FactoryBot.define do
       end
     end
 
+    trait :with_day_passes do
+      transient do
+        day_pass_type_count { 3 }
+      end
+
+      after(:create) do |operator, evaluator|
+        create_list(:day_pass_type, evaluator.day_pass_type_count, operator: operator)
+      end
+    end
+
     factory :operator_with_plans_and_users, traits: [:with_individual_plans, :with_users]
     factory :operator_with_plans_orgs_and_offices,
             traits: [

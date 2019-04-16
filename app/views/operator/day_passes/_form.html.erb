@@ -29,7 +29,7 @@
 
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit label, id: 'stripe-submit', class: "form-control btn btn-primary col" %>
+    <%= f.submit label, id: 'stripe-submit', class: "form-control btn btn-primary col", data: { acc: 'add-payment' } %>
     <div class="col-1"></div>
   </div>
 <% end %>
