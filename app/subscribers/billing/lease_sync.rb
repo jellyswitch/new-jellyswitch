@@ -12,9 +12,6 @@ class Billing::LeaseSync
     end
 
     stripe_subscription = operator.create_stripe_subscription(organization, subscription, stripe_start_date)
-
-    if stripe_subscription
-      subscription.update(stripe_subscription_id: stripe_subscription.id)
-    end
+    subscription.update(stripe_subscription_id: stripe_subscription.id)
   end
 end

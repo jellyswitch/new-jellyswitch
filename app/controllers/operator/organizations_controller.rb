@@ -22,10 +22,13 @@ class Operator::OrganizationsController < Operator::BaseController
     @organization = Organization.new(organization_params)
     authorize @organization
 
-    if @organization.save
+    result = CreateOrganization.call(organization: organization, operator: operator)
+
+    if result.success?
       flash[:notice] = "Organization #{@organization.name} has been created."
       turbolinks_redirect(organization_path(@organization))
     else
+      flash[:error] = result.message
       background_image
       render :new, status: 422
     end

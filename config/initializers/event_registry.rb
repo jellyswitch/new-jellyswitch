@@ -8,6 +8,9 @@ else
 end
 
 # Billing events
+Jellyswitch::Events.register('billing.customer.create')
+Jellyswitch::Events.subscribe('billing.customer.create', Billing::CustomerSync)
+
 Jellyswitch::Events.register('billing.lease.create')
 Jellyswitch::Events.register('billing.subscription.create')
 

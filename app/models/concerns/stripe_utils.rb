@@ -13,6 +13,8 @@ module StripeUtils
   end
 
   def create_stripe_customer(customer)
+    return retrieve_stripe_customer(customer) if customer.stripe_customer_id
+
     case customer.class.name
     when 'User'
       customer_args = { email: customer.email }
