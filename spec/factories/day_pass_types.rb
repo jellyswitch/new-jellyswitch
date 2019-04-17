@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: day_pass_types
+#
+#  id              :bigint(8)        not null, primary key
+#  amount_in_cents :integer          default(0), not null
+#  available       :boolean          default(TRUE), not null
+#  name            :string           not null
+#  visible         :boolean          default(TRUE), not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#  operator_id     :integer          not null
+#
+
 FactoryBot.define do
   factory :day_pass_type do
     sequence(:name) { |n| "Jellywork day pass #{n}" }
