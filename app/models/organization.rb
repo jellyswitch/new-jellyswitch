@@ -33,6 +33,8 @@ class Organization < ApplicationRecord
 
   has_many :subscriptions, as: :subscribable
 
+  delegate :email, to: :owner
+
   # Form and view helpers
   def self.options_for_select
     Organization.all.map do |org|
