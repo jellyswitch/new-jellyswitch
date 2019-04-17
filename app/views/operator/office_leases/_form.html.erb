@@ -12,6 +12,24 @@
   </div>
 
   <%= f.fields_for :subscription do |ff| %>
+    <%= ff.fields_for :plan do |fff| %>
+        <%= fff.hidden_field :name, value: "Office Lease Plan" %>
+        <%= fff.hidden_field :plan_type, value: "lease" %>
+        <%= fff.hidden_field :visible, value: true %>
+        <%= fff.hidden_field :available, value: true %>
+
+        <div class="form-group">
+          <%= fff.label :interval %>
+          <%= fff.select :interval, Plan.options_for_interval, class: "form-control" %>
+        </div>
+
+        <div class="form-group">
+          <%= fff.label :amount_in_cents %>
+          <%= fff.number_field :amount_in_cents, class: "form-control" %>
+        </div>
+
+    <% end %>
+
     <div class="form-group">
       <%= ff.label :plan %>
       <%= ff.collection_select :plan_id, @plans, :id, :name, class: "form-control" %>

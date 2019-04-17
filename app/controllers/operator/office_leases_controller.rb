@@ -14,6 +14,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   def new
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
+    @office_lease.subscription.build_plan
     @organizations = Organization.all
     @offices = Office.available_for_lease
     @plans = Plan.lease
