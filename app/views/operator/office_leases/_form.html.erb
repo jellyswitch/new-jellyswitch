@@ -2,12 +2,12 @@
   <%= render "shared/error_messages" , model: office_lease %>
 
   <div class="form-group">
-    <%= f.label :organization, "Group" %>
+    <%= f.label :organization, "Group on lease" %>
     <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: '' }, { class: "form-control"} %>
   </div>
 
   <div class="form-group">
-    <%= f.label :office %>
+    <%= f.label :office, "Office being leased" %>
     <%= f.collection_select :office_id, @offices, :id, :name, { prompt: '' }, { class: "form-control" } %>
   </div>
 
@@ -24,7 +24,7 @@
         </div>
 
         <div class="form-group">
-          <%= fff.label :amount_in_cents %>
+          <%= fff.label :amount_in_cents, "Lease payment amount (in cents)" %>
           <%= fff.number_field :amount_in_cents, class: "form-control" %>
         </div>
 
