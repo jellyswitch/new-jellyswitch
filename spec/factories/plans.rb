@@ -29,5 +29,6 @@ FactoryBot.define do
     available { true }
     plan_type { 'individual' }
     operator { create(:operator) }
+    stripe_plan_id { 'plan_12345' }
   end
 end

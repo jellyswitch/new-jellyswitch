@@ -125,6 +125,6 @@ module StripeUtils
     "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
   rescue Stripe::InvalidRequestError => e
     Rollbar.error(e)
-    false
+    raise(e)
   end
 end
