@@ -17,7 +17,10 @@ module StripeUtils
     when 'User'
       customer_args = { email: customer.email }
     when 'Organization'
-      customer_args = { description: "Customer for organization #{name}" }
+      customer_args = {
+        email: customer.email,
+        description: "Customer for organization #{name}"
+      }
     end
 
     stripe_request(stripe_customer, :create, customer_args)
