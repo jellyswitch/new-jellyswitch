@@ -62,4 +62,12 @@ class Organization < ApplicationRecord
   def has_billing?
     has_stripe_customer? && stripe_customer.sources["data"].count > 0
   end
+
+  def eligible_for_lease?
+    has_billing? || out_of_band?
+  end
+
+  def has_stripe_customer?
+    stripe_customer_id.present?
+  end
 end

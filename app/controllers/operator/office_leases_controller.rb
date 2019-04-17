@@ -15,7 +15,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
     @office_lease.subscription.build_plan
-    @organizations = Organization.all
+    @organizations = Organization.all.select { |org| org.eligible_for_lease? }
     @offices = Office.available_for_lease
     @plans = Plan.lease
     authorize @office_lease
