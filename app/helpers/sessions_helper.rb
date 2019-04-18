@@ -33,7 +33,7 @@ module SessionsHelper
         @current_location = current_location
       end
     elsif Location.count == 1
-      set_location(location)
+      set_location(Location.first)
       @current_location = Location.first
     end
   end

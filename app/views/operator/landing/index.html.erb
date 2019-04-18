@@ -13,10 +13,10 @@
       <% if current_location %>
         <div class="row mt-3">
           <div class="col">
-            <%= image_tag google_map(center: current_tenant.building_address), class: "img-fluid" %>
+            <%= image_tag google_map(center: current_location.building_address), class: "img-fluid" %>
           </div>
           <p class="col small">
-            <%= current_tenant.name %> is located at <%= link_to current_tenant.building_address, "https://maps.google.com/?q=#{current_tenant.building_address}", target: "_blank" %>.
+            <%= current_location.name %> is located at <%= link_to current_location.building_address, "https://maps.google.com/?q=#{current_location.building_address}", target: "_blank" %>.
           </p>
         </div>
         <div class="row mt-3">
@@ -25,15 +25,7 @@
         </div>
       <% else %>
         <h3>Please select a location to get started</h3>
-        <%= form_for(:location, url: set_location_path, html: { class: 'form' }) do |f| %>
-          <div class="form-group">
-            <%= f.label :id, 'Location' %>
-            <%= f.select :id, location_select_options(Location.all), {}, { class: 'form-control' } %>
-          </div>
-          <div class="form-group">
-            <%= f.submit 'Select', class: 'btn btn-primary btn-sm' %>
-          </div>
-        <% end %>
+        <%= render 'operator/set_location/form' %>
       <% end %>
     </div>
   </div>
@@ -43,7 +35,9 @@
 <div class="row mb-3">
   <div class="col-lg-1"></div>
   <div class="col-lg">
-    <%= render "shared/contact_card" %>
+    <% if current_location %>
+      <%= render "shared/contact_card" %>
+    <% end %>
   </div>
   <div class="col-lg-1"></div>
 </div>

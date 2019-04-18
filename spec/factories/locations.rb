@@ -37,19 +37,26 @@
 
 FactoryBot.define do
   factory :location do
-    name { "MyString" }
-    billing_state { "MyString" }
-    building_address { "MyString" }
-    contact_email { "MyString" }
-    contact_name { "MyString" }
-    contact_phone { "MyString" }
-    snippet { "MyString" }
-    square_footage { 1 }
-    stripe_access_token { "MyString" }
-    stripe_publishable_key { "MyString" }
-    stripe_refresh_token { "MyString" }
-    wifi_name { "MyString" }
-    wifi_password { "MyString" }
-    stripe_user_id { "MyString" }
+    sequence(:name) { |n| "jellywork-#{n}" }
+    snippet { Faker::TvShows::GameOfThrones.quote }
+    wifi_name { name }
+    wifi_password { Faker::Ancient.god }
+    building_address { Faker::Address.full_address }
+    contact_name { Faker::Name.unique.name }
+    contact_email { Faker::Internet.unique.safe_email }
+    contact_phone { Faker::PhoneNumber.phone_number }
+    square_footage { 2000 }
+    stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
+    operator
+
+    trait :with_offices do
+      transient do
+        office_count { 3 }
+      end
+
+      after(:create) do |location, evaluator|
+        create_list(:office, evaluator.office_count, location: location, operator: location.operator)
+      end
+    end
   end
 end

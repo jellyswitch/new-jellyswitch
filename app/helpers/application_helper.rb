@@ -76,6 +76,7 @@ module ApplicationHelper
       {title: "My Day Passes", path: user_day_passes_path(current_user)},
       {title: "My Reservations", path: user_reservations_path(current_user)},
       {title: "My Invoices", path: user_invoices_path(current_user)},
+      {title: "Change Location", path: edit_set_location_path},
       {title: "Change Password", path: user_change_password_path(current_user)},
       {title: "Member Dashboard", path: home_path}
     ]
@@ -91,6 +92,7 @@ module ApplicationHelper
       {title: "My Day Passes", path: user_day_passes_path(current_user)},
       {title: "My Reservations", path: user_reservations_path(current_user)},
       {title: "My Invoices", path: user_invoices_path(current_user)},
+      {title: "Change Location", path: edit_set_location_path},
       {title: "Change Password", path: user_change_password_path(current_user)}
     ]
   end
@@ -99,6 +101,7 @@ module ApplicationHelper
     [
       {title: "Sign Up", path: signup_path},
       {title: "Log In", path: login_path},
+      {title: "Change Location", path: edit_set_location_path},
       {title: "Office Spaces", path: offices_path}
     ]
   end

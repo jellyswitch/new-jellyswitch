@@ -30,5 +30,6 @@ FactoryBot.define do
     capacity { rand(50) }
     description { Faker::Lorem.paragraph(2) }
     operator
+    location
   end
 end

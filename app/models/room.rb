@@ -24,6 +24,7 @@
 #
 #  fk_rails_...  (location_id => locations.id)
 #
+
 class Room < ApplicationRecord
   # Relationships
   has_many :reservations

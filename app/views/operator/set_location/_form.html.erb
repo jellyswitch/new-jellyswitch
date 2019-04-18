@@ -1,0 +1,9 @@
+<%= form_for(:location, url: set_location_path, method: :put, html: { class: 'form' }) do |f| %>
+  <div class="form-group">
+    <%= f.label :id, 'Location' %>
+    <%= f.select :id, location_select_options(Location.all), {}, { class: 'form-control' } %>
+  </div>
+  <div class="form-group">
+    <%= f.submit 'Select', class: 'btn btn-primary btn-sm' %>
+  </div>
+<% end %>
