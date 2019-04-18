@@ -62,6 +62,7 @@ jobs:
       - run: bundle exec rake db:create
       - run: bundle exec rake db:schema:load
 
+      - run: mkdir -pv tmp/screenshots
       # run tests!
       - run:
           name: run tests
@@ -83,3 +84,4 @@ jobs:
           path: /tmp/test-results
       - store_artifacts:
           path: /tmp/screenshots
+          destination: screenshots
