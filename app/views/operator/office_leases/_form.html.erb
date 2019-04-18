@@ -2,20 +2,31 @@
   <%= render "shared/error_messages" , model: office_lease %>
 
   <div class="form-group">
-    <%= f.label :organization %>
-    <%= f.collection_select :organization_id, @organizations, :id, :name, prompt: '', class: "form-control" %>
+    <%= f.label :organization, "Group on lease" %>
+    <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: '' }, { class: "form-control"} %>
   </div>
 
   <div class="form-group">
-    <%= f.label :office %>
-    <%= f.collection_select :office_id, @offices, :id, :name, prompt: '', class: "form-control" %>
+    <%= f.label :office, "Office being leased" %>
+    <%= f.collection_select :office_id, @offices, :id, :name, { prompt: '' }, { class: "form-control" } %>
   </div>
 
   <%= f.fields_for :subscription do |ff| %>
-    <div class="form-group">
-      <%= ff.label :plan %>
-      <%= ff.collection_select :plan_id, @plans, :id, :name, class: "form-control" %>
-    </div>
+    <%= ff.fields_for :plan do |fff| %>
+        <%= fff.hidden_field :name, value: "Office Lease Plan" %>
+        <%= fff.hidden_field :plan_type, value: "lease" %>
+
+        <div class="form-group">
+          <%= fff.label :interval, "Lease payment frequency" %>
+          <%= fff.select :interval, Plan.lease_options_for_interval, {}, { class: "form-control" } %>
+        </div>
+
+        <div class="form-group">
+          <%= fff.label :amount_in_cents, "Lease payment amount (in cents)" %>
+          <%= fff.number_field :amount_in_cents, class: "form-control" %>
+        </div>
+
+    <% end %>
   <% end %>
 
   <div class="form-group">

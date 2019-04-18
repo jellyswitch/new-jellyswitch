@@ -14,7 +14,8 @@ class Operator::OfficeLeasesController < Operator::BaseController
   def new
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
-    @organizations = Organization.all
+    @office_lease.subscription.build_plan
+    @organizations = Organization.eligible_for_lease.all
     @offices = Office.available_for_lease
     @plans = Plan.lease
     authorize @office_lease
@@ -49,7 +50,16 @@ class Operator::OfficeLeasesController < Operator::BaseController
       :start_date,
       :lease_agreement,
       :end_date,
-      subscription_attributes: [:plan_id]
+      subscription_attributes: [
+        plan_attributes: [
+          :name,
+          :plan_type,
+          :visible,
+          :available,
+          :interval,
+          :amount_in_cents
+          ]
+        ]
     )
   end
 end
