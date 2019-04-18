@@ -35,6 +35,7 @@ FactoryBot.define do
     start_date { 1.month.from_now.beginning_of_month }
     end_date { start_date + 1.year }
     operator { create(:operator_with_plans_orgs_and_offices) }
+    location
 
     after(:build) do |office_lease|
       operator = office_lease.operator
