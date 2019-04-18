@@ -41,7 +41,7 @@ RSpec.shared_examples 'billable' do |billable_type|
       it 'marks the organization as paying out of band' do
         case billable_type
         when 'Organization'
-          expect(billable.out_of_band).to be_true
+          expect(billable.out_of_band).to be(true)
         end
       end
     end
