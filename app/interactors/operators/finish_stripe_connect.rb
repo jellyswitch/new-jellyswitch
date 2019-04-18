@@ -44,6 +44,17 @@ class Operators::FinishStripeConnect
       if failures.count > 0
         context.fail!(message: "Failed to create stripe customers for all users: #{failures.first.message}")
       end
+
+      # Migrate plans
+      operator.plans.each do |plan|
+        plan.subscriptions.each do |sub|
+          result = CancelSubscription.call(subscription: sub)
+          if !result.success?
+            context.fail!(message: "Failed to cancel subscription: #{sub.inspect}")
+          end
+        end
+        plan.create_stripe_plan
+      end
     end
   end
 end
