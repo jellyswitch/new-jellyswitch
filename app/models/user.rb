@@ -179,11 +179,21 @@ class User < ApplicationRecord
   # Form and view helpers
   def self.options_for_select(operator)
     User.for_space(operator).all.map do |user|
-      if user.organization.blank?
-        [user.name, user.id]
-      else
-        ["#{user.name} (Organization: #{user.organization.name})", user.id]
-      end
+      option_helper(user)
+    end
+  end
+
+  def self.lease_options_for_select(operator)
+    User.for_space(operator).non_superadmins.all.map do |user|
+      option_helper(user)
+    end
+  end
+
+  def self.option_helper(user)
+    if user.organization.blank?
+      [user.name, user.id]
+    else
+      ["#{user.name} (Organization: #{user.organization.name})", user.id]
     end
   end
 
