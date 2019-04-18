@@ -50,6 +50,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
       :start_date,
       :lease_agreement,
       :end_date,
+      :initial_invoice_date,
       subscription_attributes: [
         plan_attributes: [
           :name,
