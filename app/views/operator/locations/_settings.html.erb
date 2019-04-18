@@ -32,15 +32,6 @@
 <hr />
 <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
 <dl>
-  <dt>Stripe Account ID</dt>
-  <dd>
-    <% if location.production? %>
-      <pre><%= location.stripe_user_id %></pre>
-    <% else %>
-      <%= link_to "Connect with Stripe", stripe_oauth_url(location), class: "btn btn-sm btn-primary" %>
-    <% end %>
-  </dd>
-
   <dt>Background</dt>
   <dd>
     <% if location.background_image.attached? %>
