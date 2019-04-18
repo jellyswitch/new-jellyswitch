@@ -15,8 +15,6 @@
     <%= ff.fields_for :plan do |fff| %>
         <%= fff.hidden_field :name, value: "Office Lease Plan" %>
         <%= fff.hidden_field :plan_type, value: "lease" %>
-        <%= fff.hidden_field :visible, value: true %>
-        <%= fff.hidden_field :available, value: true %>
 
         <div class="form-group">
           <%= fff.label :interval, "Lease payment frequency" %>

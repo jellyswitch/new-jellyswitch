@@ -32,6 +32,19 @@ RSpec.shared_examples 'billable' do |billable_type|
         described_class.call(billable_id: billable.id, billable_type: billable.class.name)
       end
     end
+
+    context 'when billable is an Organization' do
+      before do
+        described_class.call(billable_id: billable.id, billable_type: billable.class.name)
+      end
+      
+      it 'marks the organization as paying out of band' do
+        case billable_type
+        when 'Organization'
+          expect(billable.out_of_band).to be_true
+        end
+      end
+    end
   end
 end
 

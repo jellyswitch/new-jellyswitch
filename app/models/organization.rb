@@ -35,6 +35,8 @@ class Organization < ApplicationRecord
 
   delegate :email, to: :owner
 
+  scope :eligible_for_lease, -> { where.not(stripe_customer_id: nil).or(where(out_of_band: true)) }
+
   # Form and view helpers
   def self.options_for_select
     Organization.all.map do |org|
@@ -61,10 +63,6 @@ class Organization < ApplicationRecord
 
   def has_billing?
     has_stripe_customer? && stripe_customer.sources["data"].count > 0
-  end
-
-  def eligible_for_lease?
-    has_billing? || out_of_band?
   end
 
   def has_stripe_customer?
