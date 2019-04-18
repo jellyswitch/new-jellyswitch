@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'New member buys day pass', type: :system, js: true do
   let(:subdomain) { create(:subdomain) }
-  let(:operator) { create(:operator, :with_location, :with_day_passes, subdomain: subdomain.subdomain) }
+  let(:operator) { create(:operator, :with_day_passes, subdomain: subdomain.subdomain) }
   let(:admin_user) { create(:user, :admin, operator: operator) }
 
   before do
