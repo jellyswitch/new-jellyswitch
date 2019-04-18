@@ -72,19 +72,4 @@ RSpec.configure do |config|
   config.before(:each, type: :system, js: true) do
     driven_by :selenium, using: :chrome
   end
-
-  config.after(:each, js: true) do |example|
-    if example.exception
-      meta = example.metadata
-      name = "test-failure-#{File.basename(meta[:file_path])}-#{meta[:line_number]}.png"
-
-      # Save screenshots in CI
-      screenshot_root_path = ENV["CIRCLE_ARTIFACTS"] || Rails.root.join("tmp", "screenshots")
-
-      screenshot_path = [screenshot_root_path, name].join("/")
-
-      page.save_screenshot(screenshot_path, full: true)
-      $stdout << "\nScreenshot Taken: #{screenshot_path}\n"
-    end
-  end
 end
