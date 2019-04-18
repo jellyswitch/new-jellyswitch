@@ -83,5 +83,5 @@ jobs:
       - store_test_results:
           path: /tmp/test-results
       - store_artifacts:
-          path: ~repo/tmp/screenshots
+          path: /tmp/screenshots
           destination: test-screenshots
