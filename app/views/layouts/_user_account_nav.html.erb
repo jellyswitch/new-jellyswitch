@@ -16,7 +16,9 @@
       <%= link_to "My Day Passes", user_day_passes_path(current_user), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
       <%= link_to "My Reservations", user_reservations_path(current_user), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
       <%= link_to "My Invoices", user_invoices_path(current_user), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Change Location", edit_set_location_path, class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
+      <% unless Location.count > 1 %>
+        <%= link_to "Change Location", edit_set_location_path, class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
+      <% end %>
       <%= link_to "Change Password", user_change_password_path(current_user), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
       <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "dropdown-item" %>
     </div>

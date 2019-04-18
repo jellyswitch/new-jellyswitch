@@ -18,7 +18,9 @@
           <%= link_to "Sign In", login_path, class: "nav-link" %>
         </li>
         <li class="nav-item">
-          <%= link_to "Change Location", edit_set_location_path, class: "nav-link" %>
+          <% unless Location.count > 1 %>
+            <%= link_to "Change Location", edit_set_location_path, class: "nav-link" %>
+          <% end %>
         </li>
       </ul>
     </div>
