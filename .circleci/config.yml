@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - checkout
-      - run: mkdir -pv /tmp/screenshots
+      - run: mkdir -pv ~repo/tmp/screenshots
 
       # Download and cache dependencies
       - restore_cache:
