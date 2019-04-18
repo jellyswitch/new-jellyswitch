@@ -47,14 +47,15 @@ FactoryBot.define do
     contact_phone { Faker::PhoneNumber.phone_number }
     square_footage { 2000 }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
+    operator
 
     trait :with_offices do
       transient do
         office_count { 3 }
       end
 
-      after(:create) do |operator, evaluator|
-        create_list(:office, evaluator.office_count, operator: operator)
+      after(:create) do |location, evaluator|
+        create_list(:office, evaluator.office_count, location: location, operator: location.operator)
       end
     end
   end
