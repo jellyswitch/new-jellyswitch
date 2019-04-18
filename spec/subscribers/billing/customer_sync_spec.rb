@@ -44,7 +44,7 @@ RSpec.describe Billing::CustomerSync do
       let (:organization) { create(:organization, stripe_customer_id: nil) }
 
       before do
-        described_class.call(billable_id: organizatino.id, billable_type: 'Organization')
+        described_class.call(billable_id: organization.id, billable_type: 'Organization')
       end
       
       it 'marks the organization as paying out of band' do
