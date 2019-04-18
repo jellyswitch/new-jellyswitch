@@ -32,23 +32,24 @@ RSpec.shared_examples 'billable' do |billable_type|
         described_class.call(billable_id: billable.id, billable_type: billable.class.name)
       end
     end
-
-    context 'when billable is an Organization' do
-      before do
-        described_class.call(billable_id: billable.id, billable_type: billable.class.name)
-      end
-      
-      it 'marks the organization as paying out of band' do
-        case billable_type
-        when 'Organization'
-          expect(billable.reload.out_of_band?).to be true
-        end
-      end
-    end
   end
 end
 
 RSpec.describe Billing::CustomerSync do
   include_examples 'billable', 'User'
   include_examples 'billable', 'Organization'
+
+  describe '.call' do
+    context 'when billable is an Organization' do
+      let (:organization) { create(:organization, stripe_customer_id: nil) }
+
+      before do
+        described_class.call(billable_id: organizatino.id, billable_type: 'Organization')
+      end
+      
+      it 'marks the organization as paying out of band' do
+        expect(organization.reload.out_of_band?).to be true
+      end
+    end
+  end
 end
