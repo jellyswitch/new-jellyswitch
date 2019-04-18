@@ -50,7 +50,7 @@ class Operators::FinishStripeConnect
         plan.subscriptions.each do |sub|
           result = CancelSubscription.call(subscription: sub)
           if !result.success?
-            context.fail!(message: "Failed to cancel subscription: #{sub.inspect}")
+            context.fail!(message: result.message)
           end
         end
         plan.create_stripe_plan
