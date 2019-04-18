@@ -25,7 +25,7 @@
         </div>
       <% else %>
         <h3>Please select a location to get started</h3>
-        <%= render 'set_location/form' %>
+        <%= render 'operator/set_location/form' %>
       <% end %>
     </div>
   </div>
@@ -35,7 +35,9 @@
 <div class="row mb-3">
   <div class="col-lg-1"></div>
   <div class="col-lg">
-    <%= render "shared/contact_card" %>
+    <% if current_location %>
+      <%= render "shared/contact_card" %>
+    <% end %>
   </div>
   <div class="col-lg-1"></div>
 </div>
