@@ -1,0 +1,21 @@
+<div class="card border-light">
+  <div class="card-body">
+    <div class="row">
+      <div>
+        <% if location.has_photo? %>
+          <%= image_tag location.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
+        <% end %>
+      </div>
+      <div class="ml-4 mb-1">
+        <div class="row">
+          <h5 class="display-5">
+            <%= link_to location.name, location %>
+          </h5>
+        </div>
+        <div class="row">
+          <p><%= location.snippet %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

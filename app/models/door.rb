@@ -30,5 +30,5 @@ class Door < ApplicationRecord
   # Relationships
   has_many :door_punches
   belongs_to :operator
-  acts_as_tenant :operator
+  acts_as_scopable :operator, :location
 end

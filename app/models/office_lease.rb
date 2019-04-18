@@ -37,7 +37,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :subscription
   belongs_to :location
 
-  acts_as_tenant :operator
+  acts_as_scopable :operator, :location
 
   has_one_attached :lease_agreement
 

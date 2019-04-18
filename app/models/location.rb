@@ -38,5 +38,18 @@
 class Location < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
+
+  has_many :doors
+  has_many :rooms
+  has_many :offices
+  has_many :office_leases
+  has_many :feed_items
+  has_many :member_feedbacks
+
   has_one_attached :background_image
+  has_one_attached :photo
+
+  def has_photo?
+    photo.attached?
+  end
 end

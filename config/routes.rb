@@ -75,6 +75,7 @@ Rails.application.routes.draw do
       get :delinquent, to: 'operator/invoices#delinquent'
     end
   end
+  resources :locations, controller: 'operator/locations'
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :offices, controller: 'operator/offices'
   resources :office_leases, controller: 'operator/office_leases'
@@ -98,7 +99,7 @@ Rails.application.routes.draw do
       get :query, to: 'operator/search_results#query'
     end
   end
-  resource :set_location, only: [:create], controller: 'operator/set_location'
+  resource :set_location, only: [:edit, :update], controller: 'operator/set_location'
   resources :subscriptions, controller: 'operator/subscriptions'
   resources :users, controller: 'operator/users' do
     post 'approve', to: "operator/users#approve"

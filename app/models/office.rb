@@ -26,7 +26,7 @@
 
 class Office < ApplicationRecord
   belongs_to :operator
-  acts_as_tenant :operator
+  acts_as_scopable :operator, :location
 
   has_many :office_leases
   belongs_to :location

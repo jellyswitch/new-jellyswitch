@@ -1,5 +1,8 @@
 class Operator::SetLocationController < Operator::BaseController
-  def create
+  def edit
+  end
+
+  def update
     location = Location.find(location_params[:id])
 
     set_location(location)

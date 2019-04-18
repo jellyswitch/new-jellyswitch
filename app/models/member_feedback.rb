@@ -25,7 +25,7 @@ class MemberFeedback < ApplicationRecord
   belongs_to :operator
   belongs_to :user
 
-  acts_as_tenant :operator
+  acts_as_scopable :operator, :location
 
   scope :recent, ->() { where('created_at > ?', Time.now - 7.days) }
 
