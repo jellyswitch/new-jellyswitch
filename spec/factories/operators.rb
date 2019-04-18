@@ -42,6 +42,12 @@ FactoryBot.define do
     sequence(:subdomain) { |n| "test-#{n}" }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
 
+    trait :with_location do
+      after(:create) do |operator|
+        create(:location, operator: operator)
+      end
+    end
+
     trait :with_users do
       transient do
         user_count { 5 }
