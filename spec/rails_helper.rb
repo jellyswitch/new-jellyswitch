@@ -79,7 +79,7 @@ RSpec.configure do |config|
       name = "test-failure-#{File.basename(meta[:file_path])}-#{meta[:line_number]}.png"
 
       # Save screenshots in CI
-      screenshot_root_path = ENV["CIRCLE_ARTIFACTS"] || Rails.root.join("tmp", "capybara")
+      screenshot_root_path = ENV["CIRCLE_ARTIFACTS"] || Rails.root.join("tmp", "screenshots")
 
       screenshot_path = [screenshot_root_path, name].join("/")
 
