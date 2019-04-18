@@ -1,4 +1,6 @@
 class Operator::LocationsController < Operator::BaseController
+  before_action :find_location, only: [:show, :edit, :update, :destroy]
+
   def index
     @locations = Location.all
     authorize @locations
@@ -15,26 +17,51 @@ class Operator::LocationsController < Operator::BaseController
     authorize @location
 
     if @location.save
-      flash[:success] = "location created."
+      flash[:success] = "Location created."
       turbolinks_redirect location_path(@location)
     else
+      flash[:error] = "Could not save location."
       render :new
     end
   end
 
   def show
+    authorize @location
   end
 
   def edit
+    authorize @location
   end
 
   def update
+    authorize @location
+
+    if @location.update(location_params)
+      flash[:success] = "Location updated."
+      turbolinks_redirect location_path(@location)
+    else
+      flash[:error] = "Could not update location."
+      render :new
+    end
   end
 
   def destroy
+    authorize @location
+
+    if @location.destroy
+      flash[:success] = "Location removed."
+      turbolinks_redirect location_path(@location)
+    else
+      flash[:error] = "Could not remove location."
+      render :new
+    end
   end
 
   private
+
+  def find_location
+    @location = Location.find(params[:id])
+  end
 
   def location_params
     params.require(:location).permit(
