@@ -1,5 +1,5 @@
 class Billing::Leasing::CreateOfficeLease
   include Interactor::Organizer
 
-  organize SaveOfficeLease, BroadcastEvent
+  organize SaveOfficeLease, CreateStripeSubscription
 end
