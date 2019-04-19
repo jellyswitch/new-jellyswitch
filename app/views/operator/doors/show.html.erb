@@ -32,7 +32,7 @@
           </tr>
         <%- end %>
       </table>
-      <%= will_paginate @punches, page_links: false, class: "text-center" %>
+      <%== pagy_bootstrap_responsive_nav(@pagy) %>
     </div>
   </div>
   <div class="col-sm-2"></div>

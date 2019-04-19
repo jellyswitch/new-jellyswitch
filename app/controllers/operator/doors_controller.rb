@@ -8,7 +8,7 @@ class Operator::DoorsController < Operator::BaseController
   def show
     find_door
     authorize @door
-    @punches = @door.door_punches.order('created_at DESC').paginate(:page => params[:page], per_page: 50)
+    @pagy, @punches = pagy(@door.door_punches.order('created_at DESC'))
     background_image
   end
 
