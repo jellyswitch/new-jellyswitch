@@ -32,7 +32,7 @@ FactoryBot.define do
   factory :office_lease do
     start_date { 1.month.from_now.beginning_of_month }
     end_date { start_date + 1.year }
-    initial_invoice_date { 1.month_from_now.beginning_of_month }
+    initial_invoice_date { 1.month.from_now.beginning_of_month }
     operator { create(:operator_with_plans_orgs_and_offices) }
 
     after(:build) do |office_lease|
