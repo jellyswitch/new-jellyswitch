@@ -13,7 +13,11 @@
                 <%= day_pass.pretty_day %>
               </td>
               <td>
-                <%= link_to day_pass.user.name, user_path(day_pass.user) %>
+                <% if day_pass.user.present? %>
+                  <%= link_to day_pass.user.name, user_path(day_pass.user) %>
+                <% else %>
+                  <i>Deleted User</i>
+                <% end %>
               </td>
             </tr>
           <%- end %>
