@@ -17,8 +17,9 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
   - `brew cask install homebrew/cask-versions/java8`
   - `brew install elasticsearch`
   - `brew services start elasticsearch`
-5. Install [stripe-mock](https://github.com/stripe/stripe-mock)
+5. Install [stripe-mock](https://github.com/stripe/stripe-mock) (to speed up testing)
   - `brew install stripe/stripe-mock/stripe-mock`
+  - **NOTE** stripe-mock cannot be used to test for specific errors, so be sure to turn it off in development if testing for those.
   - `brew services start stripe-mock`
 6. Ask dave for the `.env` file for environment variables
 7. Postgres DB: `createdb bristlecone_development`

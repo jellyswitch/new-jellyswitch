@@ -25,6 +25,8 @@ class Subscription < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
 
+  accepts_nested_attributes_for :plan
+
   # Instance methods
   def cancel_stripe!
     stripe_subscription.delete

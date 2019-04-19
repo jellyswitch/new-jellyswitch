@@ -26,11 +26,16 @@ class Organization < ApplicationRecord
   # Relationships
   has_many :users
   has_many :office_leases
+  has_many :invoices, as: :billable
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
 
   has_many :subscriptions, as: :subscribable
+
+  delegate :email, to: :owner
+
+  scope :eligible_for_lease, -> { where.not(stripe_customer_id: nil).or(where(out_of_band: true)) }
 
   # Form and view helpers
   def self.options_for_select
@@ -40,7 +45,11 @@ class Organization < ApplicationRecord
   end
 
   def has_active_lease?
-    office_leases.active.length > 0
+    active_leases.length > 0
+  end
+
+  def active_leases
+    office_leases.active
   end
 
   def stripe_customer
@@ -54,5 +63,9 @@ class Organization < ApplicationRecord
 
   def has_billing?
     has_stripe_customer? && stripe_customer.sources["data"].count > 0
+  end
+
+  def has_stripe_customer?
+    stripe_customer_id.present?
   end
 end

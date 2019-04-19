@@ -24,5 +24,6 @@ FactoryBot.define do
     owner
     name { Faker::Company.name }
     website { "https://www.example.com" }
+    stripe_customer_id { 'cus_12345' }
   end
 end

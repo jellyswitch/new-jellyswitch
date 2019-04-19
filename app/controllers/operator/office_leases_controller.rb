@@ -1,5 +1,5 @@
 class Operator::OfficeLeasesController < Operator::BaseController
-  before_action :find_office, only: [:show, :edit, :update]
+  before_action :find_office_lease, only: [:show]
   before_action :background_image, except: [:create, :update]
 
   def index
@@ -7,10 +7,15 @@ class Operator::OfficeLeasesController < Operator::BaseController
     authorize @office_leases
   end
 
+  def show
+    authorize @office_lease
+  end
+
   def new
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
-    @organizations = Organization.all
+    @office_lease.subscription.build_plan
+    @organizations = Organization.eligible_for_lease.all
     @offices = Office.available_for_lease
     @plans = Plan.lease
     authorize @office_lease
@@ -34,6 +39,10 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   private
 
+  def find_office_lease(key=:id)
+    @office_lease = OfficeLease.find(params[key])
+  end
+
   def office_lease_params
     params.require(:office_lease).permit(
       :organization_id,
@@ -41,7 +50,17 @@ class Operator::OfficeLeasesController < Operator::BaseController
       :start_date,
       :lease_agreement,
       :end_date,
-      subscription_attributes: [:plan_id]
+      :initial_invoice_date,
+      subscription_attributes: [
+        plan_attributes: [
+          :name,
+          :plan_type,
+          :visible,
+          :available,
+          :interval,
+          :amount_in_cents
+          ]
+        ]
     )
   end
 end

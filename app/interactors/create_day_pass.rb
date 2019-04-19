@@ -22,7 +22,7 @@ class CreateDayPass
     day_pass = DayPass.new(params.merge({day_pass_type: day_pass_type}))
     day_pass.user = user
 
-    if token
+    if token && !(out_of_band || user.out_of_band)
       result = UpdateUserPayment.call(
         user: user,
         token: token
@@ -43,7 +43,7 @@ class CreateDayPass
       stripe_account: operator.stripe_user_id
     })
 
-    if token
+    if token && !(out_of_band || user.out_of_band)
       @invoice = Stripe::Invoice.create({
         customer: user.stripe_customer_id,
         billing: 'send_invoice',
@@ -78,8 +78,6 @@ class CreateDayPass
     begin
       blob = {type: "day-pass", day_pass_id: day_pass.id}
       create_feed_item(user.operator, user, blob)
-    rescue => e
-      Rollbar.error(e)
     end
 
     Notifications::DayPassNotification.call(user: user, operator: operator)

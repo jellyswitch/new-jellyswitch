@@ -36,7 +36,6 @@ gem 'sidekiq'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
-gem 'will_paginate', '~> 3.1.0'
 gem 'request_store'
 
 group :development do

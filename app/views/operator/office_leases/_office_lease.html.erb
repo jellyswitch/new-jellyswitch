@@ -11,6 +11,9 @@
           <p>Office: <%= office_lease.office.name %></p>
           <p>Lease start: <%= office_lease.start_date %></p>
           <p>Lease end: <%= office_lease.end_date %></p>
+          <% if office_lease.has_lease? %>
+            <%= link_to "Download Lease", rails_blob_path(office_lease.lease_agreement, disposition: 'attachment') %>
+          <% end %>
         </div>
       </div>
     </div>

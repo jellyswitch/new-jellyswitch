@@ -94,7 +94,7 @@ class Operator::PlansController < Operator::BaseController
   private
 
   def find_plans
-    @plans = Plan.all
+    @plans = Plan.individual.all
   end
 
   def find_plan(key=:id)

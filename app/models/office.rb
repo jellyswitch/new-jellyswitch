@@ -47,8 +47,12 @@ class Office < ApplicationRecord
       or(offices.where('office_leases.end_date < ?', Time.current))
   end
 
-  def has_lease?
-    lease.attached?
+  def has_active_lease?
+    active_leases.count > 0
+  end
+
+  def active_leases
+    office_leases.active
   end
 
   def has_photo?

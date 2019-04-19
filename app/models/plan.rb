@@ -103,9 +103,18 @@ class Plan < ApplicationRecord
     "annually"
   ]
 
+  LEASE_INTERVAL_OPTIONS = [
+    "monthly",
+    "annually"
+  ]
+
   # Class methods
   def self.options_for_interval
     INTERVAL_OPTIONS
+  end
+
+  def self.lease_options_for_interval
+    LEASE_INTERVAL_OPTIONS
   end
 
   # Instance methods
