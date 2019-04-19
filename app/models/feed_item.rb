@@ -34,7 +34,7 @@ class FeedItem < ApplicationRecord
 
   validate :photo_files_accepted
 
-  acts_as_tenant :operator
+  acts_as_scopable :operator, :location
 
   scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }

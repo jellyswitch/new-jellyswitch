@@ -87,7 +87,6 @@ class Operator::RoomsController < Operator::BaseController
   private
 
   def find_rooms
-    binding.pry
     @rooms = Room.visible.order(:name).all
   end
 
