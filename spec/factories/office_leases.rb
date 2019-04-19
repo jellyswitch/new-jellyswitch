@@ -2,15 +2,16 @@
 #
 # Table name: office_leases
 #
-#  id              :bigint(8)        not null, primary key
-#  end_date        :date             not null
-#  start_date      :date             not null
-#  created_at      :datetime         not null
-#  updated_at      :datetime         not null
-#  office_id       :bigint(8)        not null
-#  operator_id     :bigint(8)        not null
-#  organization_id :bigint(8)        not null
-#  subscription_id :bigint(8)
+#  id                   :bigint(8)        not null, primary key
+#  end_date             :date             not null
+#  initial_invoice_date :date
+#  start_date           :date             not null
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  office_id            :bigint(8)        not null
+#  operator_id          :bigint(8)        not null
+#  organization_id      :bigint(8)        not null
+#  subscription_id      :bigint(8)
 #
 # Indexes
 #
@@ -31,6 +32,7 @@ FactoryBot.define do
   factory :office_lease do
     start_date { 1.month.from_now.beginning_of_month }
     end_date { start_date + 1.year }
+    initial_invoice_date { 1.month.from_now.beginning_of_month }
     operator { create(:operator_with_plans_orgs_and_offices) }
 
     after(:build) do |office_lease|

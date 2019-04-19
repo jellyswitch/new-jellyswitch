@@ -13,30 +13,35 @@
 
   <%= f.fields_for :subscription do |ff| %>
     <%= ff.fields_for :plan do |fff| %>
-        <%= fff.hidden_field :name, value: "Office Lease Plan" %>
-        <%= fff.hidden_field :plan_type, value: "lease" %>
+      <%= fff.hidden_field :name, value: "Office Lease Plan" %>
+      <%= fff.hidden_field :plan_type, value: "lease" %>
 
-        <div class="form-group">
-          <%= fff.label :interval, "Lease payment frequency" %>
-          <%= fff.select :interval, Plan.lease_options_for_interval, {}, { class: "form-control" } %>
-        </div>
+      <div class="form-group">
+        <%= fff.label :interval, "Lease payment frequency" %>
+        <%= fff.select :interval, Plan.lease_options_for_interval, {}, { class: "form-control" } %>
+      </div>
 
-        <div class="form-group">
-          <%= fff.label :amount_in_cents, "Lease payment amount (in cents)" %>
-          <%= fff.number_field :amount_in_cents, class: "form-control" %>
-        </div>
+      <div class="form-group">
+        <%= fff.label :amount_in_cents, "Lease payment amount (in cents)" %>
+        <%= fff.number_field :amount_in_cents, class: "form-control" %>
+      </div>
 
     <% end %>
   <% end %>
 
   <div class="form-group">
-    <%= f.label :start_date %>
+    <%= f.label :start_date, "Lease Start Date" %>
     <%= f.date_select :start_date, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
   </div>
 
   <div class="form-group">
-    <%= f.label :end_date %>
+    <%= f.label :end_date, "Lease End Date" %>
     <%= f.date_select :end_date, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :initial_invoice_date, "Next Invoice Date" %>
+    <%= f.date_select :initial_invoice_date, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
   </div>
 
   <div class="form-group">

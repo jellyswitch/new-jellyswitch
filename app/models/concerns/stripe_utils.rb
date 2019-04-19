@@ -48,26 +48,9 @@ module StripeUtils
   end
 
   def create_stripe_subscription(subscriber, subscription, start_day = nil)
-    subscription_args = {
-      customer: subscriber.stripe_customer_id,
-      items: [{ plan: subscription.plan.stripe_plan_id }]
-    }
-
-    if subscriber.out_of_band? && start_day.present?
-      subscription_args.merge!(
-        billing: 'send_invoice',
-        billing_cycle_anchor: start_day.to_i,
-        days_until_due: 30,
-      )
-    elsif subscriber.out_of_band?
-      subscription_args.merge!(billing: 'send_invoice', days_until_due: 30)
-    elsif start_day.present?
-      subscription_args.merge!(billing: 'charge_automatically', billing_cycle_anchor: start_day.to_i)
-    else
-      subscription_args.merge!(billing: 'charge_automatically')
-    end
-
-    stripe_request(stripe_subscription, :create, subscription_args)
+    subscribable = SubscribableFactory.for(subscriber, subscription, start_day)
+    
+    stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 
   def create_stripe_plan(plan)
