@@ -1,8 +1,23 @@
-<%- title "Home" %>
+<% title "Home" %>
 
 <div class="row mt-3 mb-2">
   <div class="col-lg-2 order-2 order-lg-1"></div>
   <div class="col-lg-6 order-3 order-lg-2">
+    <% if Location.count > 1 %>
+      <div class="card mb-2">
+        <div class="card-body">
+          <%= form_tag feed_items_path, method: :get do %>
+            <div class="form-group">
+              <%= label_tag :location_filter, 'Select Location' %>
+              <%= select_tag :location_filter, options_from_collection_for_select(Location.all, :id, :name), { prompt: 'All Locations', selected: @location&.id, class: 'form-control' } %>
+            </div>
+            <div class="form-group">
+              <%= submit_tag "Filter", class: 'btn btn-primary btn-sm' %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
 
     <div class="card mb-2">
       <div class="card-body">
@@ -10,9 +25,9 @@
       </div>
     </div>
 
-    <%- @feed_items.each do |feed_item| %>
+    <% @feed_items.each do |feed_item| %>
       <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 0 %>
-    <%- end %>
+    <% end %>
 
     <%== pagy_bootstrap_responsive_nav(@pagy) %>
 
@@ -23,4 +38,3 @@
 
   <div class="col-lg-1 order-4"></div>
 </div>
-

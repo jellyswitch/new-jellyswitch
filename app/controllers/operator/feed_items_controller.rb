@@ -72,7 +72,14 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.for_operator(current_tenant).order('updated_at DESC'))
+    if params[:location_filter].blank?
+      feed_items = FeedItem.for_operator(current_tenant).where(location: location).order('updated_at DESC')
+    else
+      @location = Location.find(params[:location_filter])
+      feed_items = FeedItem.for_operator(current_tenant).where(location: location).order('updated_at DESC')
+    end
+
+    @pagy, @feed_items = pagy(feed_items)
   end
 
   def feed_item_params

@@ -35,7 +35,7 @@ class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
   end
 
   def down
-    %w(rooms offices office_leases member_feedbacks feed_items doors).each do |resource|
+    LOCATION_RESOURCES.each do |resource|
       remove_reference :"#{resource}", :location, foreign_key: true
     end
     Location.delete_all

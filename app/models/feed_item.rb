@@ -34,7 +34,7 @@ class FeedItem < ApplicationRecord
 
   validate :photo_files_accepted
 
-  acts_as_scopable :operator, :location
+  acts_as_tenant :operator
 
   scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }
@@ -106,7 +106,7 @@ class FeedItem < ApplicationRecord
     if member_feedback_id.nil?
       nil
     else
-      MemberFeedback.find(member_feedback_id)
+      MemberFeedback.unscoped.find(member_feedback_id)
     end
   end
 

@@ -36,6 +36,7 @@ Rails.application.routes.draw do
 
   # Operator Authentication
   delete '/logout',  to: 'operator/sessions#destroy'
+  get '/logout',  to: 'sessions#destroy'
   post '/login',     to: 'operator/sessions#create'
   get '/login',      to: 'operator/sessions#new'
   get '/signup',     to: 'operator/users#new'
