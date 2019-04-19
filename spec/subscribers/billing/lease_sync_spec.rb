@@ -12,8 +12,7 @@ RSpec.describe Billing::LeaseSync do
       before do
         described_class.call(
           office_lease_id: office_lease.id,
-          operator_id: office_lease.operator_id,
-          start_date: office_lease.start_date
+          operator_id: office_lease.operator_id
         )
       end
 
@@ -24,9 +23,9 @@ RSpec.describe Billing::LeaseSync do
 
     context 'when creating a historical lease' do
       it 'creates a subscription starting next month' do
-        office_lease.start_date = 1.year.ago
+        office_lease.initial_invoice_date = 1.month.from_now
 
-        stripe_start_date = Time.zone.at(1.month.from_now.beginning_of_month + 2.hours).to_i
+        stripe_start_date = (Time.zone.at(office_lease.initial_invoice_date.to_time.to_i) + 2.hours).to_i
 
         expect_any_instance_of(Operator).to receive(:create_stripe_subscription).once.with(
           organization, subscription, stripe_start_date
@@ -34,8 +33,7 @@ RSpec.describe Billing::LeaseSync do
 
         described_class.call(
           office_lease_id: office_lease.id,
-          operator_id: office_lease.operator_id,
-          start_date: office_lease.start_date
+          operator_id: office_lease.operator_id
         )
 
         expect(subscription.reload.stripe_subscription_id).to_not be_nil
