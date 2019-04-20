@@ -28,7 +28,8 @@ class Operator::SubscriptionsController < Operator::BaseController
       token: params[:stripeToken],
       user: @subscription.subscribable,
       start_day: start_day,
-      out_of_band: out_of_band
+      out_of_band: out_of_band,
+      operator: current_tenant
     )
 
     if result.success?

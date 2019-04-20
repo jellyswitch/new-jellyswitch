@@ -6,7 +6,7 @@ class Billing::Leasing::CreateStripeSubscription
   def call
     subscription = office_lease.subscription
     organization = subscription.subscribable
-    operator = Operator.find(operator_id)
+    start_date = office_lease.start_date
 
     if start_date < Time.current
       stripe_start_date = Time.zone.at(1.month.from_now.beginning_of_month + 2.hours).to_i

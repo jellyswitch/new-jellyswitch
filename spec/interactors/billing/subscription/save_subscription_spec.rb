@@ -30,18 +30,6 @@ RSpec.describe Billing::Subscription::SaveSubscription do
       end
 
       it 'is successful' do
-        expect_event(
-          'billing.subscription.create',
-          subscription_id: subscription.id,
-          start_date: start_day
-        )
-
-        expect_event(
-          'app.notifiable.create',
-          notifiable_id: subscription.id,
-          notifiable_type: 'Subscription'
-        )
-
         expect(context.success?).to be true
       end
     end
@@ -54,18 +42,6 @@ RSpec.describe Billing::Subscription::SaveSubscription do
       end
 
       it 'is successful' do
-        expect_event(
-          'billing.subscription.create',
-          subscription_id: subscription.id,
-          start_date: start_day
-        )
-
-        expect_event(
-          'app.notifiable.create',
-          notifiable_id: subscription.id,
-          notifiable_type: 'Subscription'
-        )
-
         expect(context.success?).to be true
       end
     end
@@ -79,7 +55,7 @@ RSpec.describe Billing::Subscription::SaveSubscription do
 
       it 'results in failure' do
         expect(context.success?).to be false
-        expect(context.message).to eq "There was a problem charging for this subscription."
+        expect(context.message).to eq "There was a problem creating this subscription."
       end
     end
   end
