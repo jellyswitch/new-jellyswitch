@@ -3,8 +3,8 @@ class Billing::Subscription::CreateSubscription
 
   organize(
     Billing::Payment::UpdateUserPayment,
-    SaveSubscription,
-    CreateStripeSubscription,
+    Billing::Subscription::SaveSubscription,
+    Billing::Subscription::CreateStripeSubscription,
     CreateNotifications
   )
 end
