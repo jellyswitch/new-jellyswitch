@@ -116,6 +116,10 @@ class Operator < ApplicationRecord
     end.flatten.uniq.count
   end
 
+  def total_day_passes
+    day_passes.last_30_days.count
+  end
+
   def reset_stripe_to_demo!
     update(
       stripe_user_id: ENV['STRIPE_ACCOUNT_ID'],

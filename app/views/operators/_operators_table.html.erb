@@ -1,4 +1,13 @@
 <table class="table table-sm mt-2">
+  <tr>
+    <th><small>Operator</small></th>
+    <th><small>Active Members</small></th>
+    <th><small>Members on active leases</small></th>
+    <th><small>Day Passes (last 30 days)</small></th>
+    <th><small>Active leases</small></th>
+    <th><small>Total members</small></th>
+    <th><small>Square footage</small></th>    
+  </tr>
   <%- operators.each do |operator| %>
     <tr>
       <td>
@@ -9,11 +18,12 @@
         <%- end %>
       </td>
       <td><%= link_to operator.name, operator_path(operator) %></td>
-      <td><small><%= operator.active_members %> active members</small></td>
-      <td><small><%= operator.total_members %> total members</small></td>
-      <td><small><%= operator.total_active_leases %> active leases</small></td>
-      <td><small><%= operator.total_active_lease_members %> members on active leases</small></td>
-      <td><small><%= number_with_delimiter(operator.square_footage) %> sq ft</small></td>
+      <td><%= operator.active_members %></td>
+      <td><%= operator.total_active_lease_members %></td>
+      <td><%= operator.total_day_passes %></td>
+      <td><%= operator.total_active_leases %></td>
+      <td><%= operator.total_members %></td>
+      <td><%= number_with_delimiter(operator.square_footage) %></td>
       <td>
         <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
         <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>
