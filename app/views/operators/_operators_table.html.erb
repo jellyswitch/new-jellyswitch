@@ -9,9 +9,11 @@
         <%- end %>
       </td>
       <td><%= link_to operator.name, operator_path(operator) %></td>
-      <td><%= operator.active_members %> active members</td>
-      <td><%= operator.total_members %> total members</td>
-      <td><%= number_with_delimiter(operator.square_footage) %> sq ft</td>
+      <td><small><%= operator.active_members %> active members</small></td>
+      <td><small><%= operator.total_members %> total members</small></td>
+      <td><small><%= operator.total_active_leases %> active leases</small></td>
+      <td><small><%= operator.total_active_lease_members %> members on active leases</small></td>
+      <td><small><%= number_with_delimiter(operator.square_footage) %> sq ft</small></td>
       <td>
         <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
         <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>

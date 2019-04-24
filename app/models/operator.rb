@@ -106,6 +106,16 @@ class Operator < ApplicationRecord
     users.members.non_superadmins.count
   end
 
+  def total_active_leases
+    office_leases.active.count
+  end
+
+  def total_active_lease_members
+    office_leases.active.map do |lease|
+      lease.organization.users
+    end.flatten.uniq.count
+  end
+
   def reset_stripe_to_demo!
     update(
       stripe_user_id: ENV['STRIPE_ACCOUNT_ID'],
