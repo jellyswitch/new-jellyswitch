@@ -4,6 +4,7 @@
 #
 #  id                     :bigint(8)        not null, primary key
 #  active                 :boolean          default(TRUE), not null
+#  pending                :boolean          default(FALSE), not null
 #  subscribable_type      :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
