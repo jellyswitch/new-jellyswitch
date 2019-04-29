@@ -12,6 +12,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     authorize Subscription, :new?
 
     @subscription = new_subscription
+
     start_day = nil
 
     if params[:subscription][:start_day].present?
