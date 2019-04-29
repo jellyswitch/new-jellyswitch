@@ -5,13 +5,7 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     authorize Subscription, :new?
 
     @subscription = new_subscription
-
-    start_day = nil
-
-    if params[:subscription][:start_day].present?
-      start_day = Time.zone.at(params[:subscription][:start_day].to_i) + 2.hours
-    end
-
+    start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
 
     result = CreateSubscription.call(
@@ -24,7 +18,7 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership created."
-      turbolinks_redirect(user_path(@subscription.user))
+      turbolinks_redirect(user_path(@subscription.subscribable))
     else
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
