@@ -24,6 +24,7 @@ class Subscription < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(active: true) }
+  scope :pending, -> { where(pending: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
 
   accepts_nested_attributes_for :plan
