@@ -4,6 +4,7 @@
 #
 #  id                     :bigint(8)        not null, primary key
 #  active                 :boolean          default(TRUE), not null
+#  pending                :boolean          default(FALSE), not null
 #  subscribable_type      :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -23,6 +24,7 @@ class Subscription < ApplicationRecord
 
   # Scopes
   scope :active, -> { where(active: true) }
+  scope :pending, -> { where(pending: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
 
   accepts_nested_attributes_for :plan

@@ -6,17 +6,15 @@
   </div>
   <div class="row mt-2">
     <div class="col">
-      <%- if user.has_billing? || user.out_of_band? %>    
-        <%= render "operator/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
-      <%- else %>
-        <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
+      <%- if !(user.has_billing? || user.out_of_band?) %>    
+        <small><strong>NOTE</strong>: This user does not have a credit card on file. They will be required to enter a valid credit card number upon next login.</small>
       <%- end %>
+      <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
     </div>
   </div>
 <%- else %>
   <dl class="row mt-3">
     <dt class="col-sm-3 text-center">Active memberships</dt>
-
     <%- user.subscriptions.for_operator(current_tenant).active.each do |subscription| %>
       <dd class="col-sm text-center">
         <%= subscription.plan.plan_name %>

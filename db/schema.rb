@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_18_213019) do
+ActiveRecord::Schema.define(version: 2019_04_29_172523) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -277,6 +277,7 @@ ActiveRecord::Schema.define(version: 2019_04_18_213019) do
     t.string "stripe_subscription_id"
     t.string "subscribable_type"
     t.bigint "subscribable_id"
+    t.boolean "pending", default: false, null: false
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 

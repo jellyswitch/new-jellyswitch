@@ -1,4 +1,6 @@
 class Operator::SubscriptionsController < Operator::BaseController
+  include SubscriptionsHelper
+
   def new
     @subscription = Subscription.new
     authorize @subscription
@@ -9,12 +11,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   def create
     authorize Subscription, :new?
 
-    if admin?
-      @subscription = new_admin_subscription
-    else
-      @subscription = new_subscription
-    end
-
+    @subscription = new_subscription
     start_day = nil
 
     if params[:subscription][:start_day].present?
@@ -105,26 +102,10 @@ class Operator::SubscriptionsController < Operator::BaseController
     params.require(:subscription).permit(:plan_id)
   end
 
-  def admin_subscription_params
-    params.require(:subscription).permit(:plan_id, :subscribable_id)
-  end
-
-  def find_subscription(key=:id)
-    @subscription = Subscription.find(params[key])
-  end
-
   def new_subscription
     subscription = Subscription.new(subscription_params)
     subscription.subscribable = current_user
     subscription.active = true
-    subscription
-  end
-
-  def new_admin_subscription
-    subscribable = User.find(admin_subscription_params[:subscribable_id])
-    subscription = Subscription.new(admin_subscription_params)
-    subscription.active = true
-    subscription.subscribable = subscribable
     subscription
   end
 end

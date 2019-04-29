@@ -1,7 +1,6 @@
 module ApplicationHelper
   include PlansHelper
   include LandingHelper
-  include SubscriptionsHelper
   include Pagy::Frontend
 
   def pretty_datetime(input)

@@ -49,7 +49,14 @@ Rails.application.routes.draw do
   # Other
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
 
-  # Alphabetized Resources
+  # Admin namespace (for operator resources)
+  namespace :operator do
+    namespace :admin do
+      resources :subscriptions
+    end
+  end
+
+  # Alphabetized Member Resources
   resources :accounting, controller: 'operator/accounting' do
     collection do
       get 'expenses', to: 'operator/accounting#expenses', as: :expenses
