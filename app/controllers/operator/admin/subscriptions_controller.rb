@@ -8,12 +8,13 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
 
-    result = CreateSubscription.call(
+    result = Billing::Subscription::CreateSubscription.call(
       subscription: @subscription,
       token: params[:stripeToken],
       user: @subscription.subscribable,
       start_day: start_day,
-      out_of_band: out_of_band
+      out_of_band: out_of_band,
+      operator: current_tenant
     )
 
     if result.success?
