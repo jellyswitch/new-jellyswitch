@@ -26,7 +26,10 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     authorize @office_lease
 
-    result = CreateOfficeLease.call(office_lease: @office_lease, operator: current_tenant)
+    result = Billing::Leasing::CreateOfficeLease.call(
+      office_lease: @office_lease,
+      operator: current_tenant
+    )
 
     if result.success?
       flash[:notice] = "Office lease created."

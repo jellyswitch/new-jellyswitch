@@ -210,7 +210,7 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.datetime "updated_at", null: false
     t.integer "operator_id", default: 1, null: false
     t.string "stripe_customer_id"
-    t.boolean "out_of_band", default: false, null: false
+    t.boolean "out_of_band", default: true, null: false
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 

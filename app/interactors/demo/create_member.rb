@@ -59,7 +59,7 @@ class Demo::CreateMember
       updated_at: day
     )
 
-    result = CreateSubscription.call(
+    result = Billing::Subscription::CreateSubscription.call(
       subscription: subscription,
       token: nil,
       user: user

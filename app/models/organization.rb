@@ -4,7 +4,7 @@
 #
 #  id                 :bigint(8)        not null, primary key
 #  name               :string           not null
-#  out_of_band        :boolean          default(FALSE), not null
+#  out_of_band        :boolean          default(TRUE), not null
 #  slug               :string
 #  website            :string
 #  created_at         :datetime         not null
