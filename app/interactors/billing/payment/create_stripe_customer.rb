@@ -1,4 +1,6 @@
 class Billing::Payment::CreateStripeCustomer
+  include Interactor
+
   delegate :billable, :operator, to: :context
 
   def call
