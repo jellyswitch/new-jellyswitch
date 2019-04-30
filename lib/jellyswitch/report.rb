@@ -2,7 +2,7 @@ module Jellyswitch
   class Report
     attr_accessor :operator
 
-    delegate :plans, :office_leases, :day_passes, :users, to: :operator
+    delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, to: :operator
 
     def initialize(operator)
       @operator = operator
@@ -50,6 +50,14 @@ module Jellyswitch
 
     def all_member_count
       all_members.count
+    end
+
+    def staff
+      users.admins.non_superadmins
+    end
+    
+    def staff_count
+      staff.count
     end
   end
 end
