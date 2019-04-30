@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_29_172523) do
+ActiveRecord::Schema.define(version: 2019_04_30_180724) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -199,6 +199,9 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.string "billing_state", default: "demo", null: false
     t.string "ios_url"
     t.string "android_url"
+    t.boolean "working_hours_enabled", default: false, null: false
+    t.string "working_day_start", default: "09:00", null: false
+    t.string "working_day_end", default: "18:00", null: false
   end
 
   create_table "organizations", force: :cascade do |t|

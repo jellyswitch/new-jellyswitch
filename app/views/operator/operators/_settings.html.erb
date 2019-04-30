@@ -28,6 +28,22 @@
 
   <dt>Building Address</dt>
   <dd><%= operator.building_address %></dd>
+
+  <dt>Working Hours Enabled?</dt>
+  <dd>
+    <% if operator.working_hours_enabled? %>
+      Yes
+    <% else %>
+      No
+    <% end %>
+  </dd>
+
+  <% if operator.working_hours_enabled? %>
+    <dt>Working Hours</dt>
+    <dd>
+      <%= Time.strptime(operator.working_day_start, "%R").strftime("%r") %> through <%= Time.strptime(operator.working_day_end, "%R").strftime("%r") %>
+    </dd>
+  <% end %>
 </dl>
 <hr />
 <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
