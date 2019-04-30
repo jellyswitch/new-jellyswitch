@@ -98,6 +98,15 @@ Rails.application.routes.draw do
   resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'operator/plans#unarchive'
   end
+  resources :reports, controller: 'operator/reports' do
+    collection do
+      get :active_members
+      get :active_lease_members
+      get :active_leases
+      get :last_30_day_passes
+      get :total_members
+    end
+  end
   resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
     get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability

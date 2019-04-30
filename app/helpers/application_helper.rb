@@ -149,6 +149,16 @@ module ApplicationHelper
     end
   end
 
+  def quantize(collection, string)
+    if collection.count <= 0
+      string.pluralize
+    elsif collection.count == 1
+      string.singularize
+    else
+      string.pluralize
+    end
+  end
+
   private
 
   def working_hours_config(operator)
