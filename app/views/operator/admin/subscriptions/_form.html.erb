@@ -1,4 +1,4 @@
-<%= form_with(model: subscription, url: operator_admin_subscriptions_path, local: true, html: {id: "stripe-form" }) do |f| %>
+<%= form_with(model: subscription, url: operator_admin_subscriptions_path, remote: true, html: {id: "stripe-form" }) do |f| %>
   <%= render "shared/error_messages", model: subscription %>
 
   <div class="form-group row">

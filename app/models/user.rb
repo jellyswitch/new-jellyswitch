@@ -101,6 +101,10 @@ class User < ApplicationRecord
     has_active_subscription? || has_active_day_pass? || has_active_lease?
   end
 
+  def pending?
+    subscriptions.pending.count > 0
+  end
+
   def has_active_subscription?
     subscriptions.for_operator(operator).active.count > 0
   end
