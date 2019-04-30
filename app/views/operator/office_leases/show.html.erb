@@ -38,6 +38,11 @@
     </dd>
   </dl>
 
+  <dl class="row">
+    <dt class="col-sm-3">Always allow building access?</dt>
+    <dd class="col-sm"><%= boolean_to_yesno(@office_lease.always_allow_building_access?) %></dd>
+  </dl>
+
   <% if @office_lease.has_lease? %>
     <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: 'attachment'), class: "btn btn-block btn-primary" %>
   <% end %>
