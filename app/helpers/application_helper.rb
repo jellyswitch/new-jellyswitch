@@ -137,6 +137,14 @@ module ApplicationHelper
     end
   end
 
+  def has_building_access?(user)
+    if user.superadmin? || user.admin?
+      true
+    else
+      user.always_allow_building_access?
+    end
+  end
+
   private
 
   def working_hours_config(operator)
