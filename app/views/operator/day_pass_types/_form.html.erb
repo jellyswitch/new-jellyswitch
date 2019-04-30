@@ -12,13 +12,20 @@
   </div>
 
   <div class="form-group">
-    <%= form.label :available %>
-    <%= form.check_box :available, class: "form-control" %>
-  </div>
+    <div class="form-check">
+      <%= form.check_box :available, class: "form-check-input" %>
+      <%= form.label :available, class: "form-check-label" %>
+    </div>
 
-  <div class="form-group">
-    <%= form.label :visible %>
-    <%= form.check_box :visible, class: "form-control" %>
+    <div class="form-check">
+      <%= form.check_box :visible, class: "form-check-input" %>
+      <%= form.label :visible, class: "form-check-label" %>
+    </div>
+
+    <div class="form-check">
+      <%= form.check_box :always_allow_building_access, class: "form-check-input" %>
+      <%= form.label :always_allow_building_access, class: "form-check-label" %>
+    </div>
   </div>
 
   <%= form.submit "Create", class: "btn btn-primary" %>

@@ -30,13 +30,7 @@
   <dd><%= operator.building_address %></dd>
 
   <dt>Working Hours Enabled?</dt>
-  <dd>
-    <% if operator.working_hours_enabled? %>
-      Yes
-    <% else %>
-      No
-    <% end %>
-  </dd>
+  <dd><%= boolean_to_yesno(operator.working_hours_enabled?) %></dd>
 
   <% if operator.working_hours_enabled? %>
     <dt>Working Hours</dt>
@@ -61,13 +55,7 @@
   <dd><pre><%= operator.subdomain %></pre></dd>
 
   <dt>Approval required for new members</dt>
-  <dd>
-    <%- if operator.approval_required %>
-      Yes
-    <%- else %>
-      No
-    <%- end %>
-  </dd>
+  <dd><%= boolean_to_yesno(operator.approval_required) %></dd>
 
   <dt>iOS App Store Link</dt>
   <dd>

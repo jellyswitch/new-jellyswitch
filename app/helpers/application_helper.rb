@@ -141,6 +141,14 @@ module ApplicationHelper
     user.superadmin? || user.admin? || user.always_allow_building_access? || user.has_building_access_day_pass? || user.has_building_access_membership?
   end
 
+  def boolean_to_yesno(value)
+    if value
+      "Yes"
+    else
+      "No"
+    end
+  end
+
   private
 
   def working_hours_config(operator)

@@ -25,6 +25,10 @@
         <dt class="col-sm">Available</dt>
         <dd class="col-sm"><%= @day_pass_type.available? %></dd>
       </dl> 
+      <dl class="row">
+        <dt class="col-sm">Always has building access?</dt>
+        <dd class="col-sm"><%= boolean_to_yesno(@day_pass_type.always_allow_building_access?) %></dd>
+      </dl> 
     </div>
   </div>
   <div class="col-sm-3"></div>
