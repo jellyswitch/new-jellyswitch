@@ -130,6 +130,12 @@ class User < ApplicationRecord
     organization.present? && organization.has_active_lease?
   end
 
+  def has_building_access_lease?
+    has_active_lease? && organization.active_leases.any? do |lease|
+      lease.always_allow_building_access?
+    end
+  end
+
   def organization_owner?
     organization && organization.owner == self
   end
