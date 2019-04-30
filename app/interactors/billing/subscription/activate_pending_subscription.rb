@@ -1,8 +1,8 @@
-class Billing::Subscription::CreateSubscription
+class Billing::Subscription::ActivatePendingSubscription
   include Interactor::Organizer
 
   organize(
-    Billing::Subscription::SaveSubscription,
+    Billing::Subscription::ActivateSubscription,
     Billing::Subscription::CreateStripeSubscription,
     CreateNotifications
   )

@@ -33,6 +33,10 @@ module SessionsHelper
     current_user.present? && current_user.member?(current_tenant)
   end
 
+  def pending?
+    current_user.present? && current_user.pending?
+  end
+
   def approved?
     current_user.present? && current_user.approved?
   end

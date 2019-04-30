@@ -1,40 +1,15 @@
 class Operator::LandingController < Operator::BaseController
   before_action :background_image
+  include LandingHelper
 
   def index
-    if logged_in?
-      if admin?
-        redirect_to feed_items_path
-      else
-        if member?
-          if approved?
-            redirect_to home_path
-          else
-            redirect_to wait_path
-          end
-        else
-          redirect_to choose_path
-        end
-      end
-    end
+    landing_redirect
   end
 
   def home
     @doors = Door.all
     @member_feedback = MemberFeedback.new
-    if member? || admin?
-      if !approved? && !admin?
-        redirect_to wait_path
-      else
-        render :home
-      end
-    else
-      if logged_in?
-        redirect_to choose_path
-      else
-        redirect_to root_path
-      end
-    end
+    home_redirect
   end
 
   def wait
@@ -43,6 +18,54 @@ class Operator::LandingController < Operator::BaseController
     end
     if (member? && approved?) || admin?
       redirect_to home_path
+    end
+  end
+
+  def activate
+    if current_user.out_of_band?
+      result = Billing::Subscription::ActivatePendingSubscription.call(
+        subscription: current_user.subscriptions.pending.first,
+        user: current_user,
+        operator: current_tenant,
+        start_day: nil)
+      if result.success?
+        # redirect to home
+        flash[:success] = "Welcome!"
+        turbolinks_redirect(home_path, action: "restore")
+      else
+        flash[:error] = result.message
+        turbolinks_redirect(activate_path, action: "restore")  
+      end
+    else
+      include_stripe
+    end
+  end
+
+  def activate_membership
+    # update billing info
+    token = params[:stripeToken]
+    result = Billing::Payment::UpdateUserPayment.call(
+      user: current_user,
+      token: token,
+      out_of_band: false)
+    if result.success?
+      # activate membership
+      result2 = Billing::Subscription::ActivatePendingSubscription.call(
+        subscription: current_user.subscriptions.pending.first,
+        user: current_user,
+        operator: current_tenant,
+        start_day: nil)
+      if result2.success?
+        # redirect to home
+        flash[:success] = "Welcome!"
+        turbolinks_redirect(home_path, action: "restore")
+      else
+        flash[:error] = result2.message
+        turbolinks_redirect(activate_path, action: "restore")  
+      end
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(activate_path, action: "restore")
     end
   end
 

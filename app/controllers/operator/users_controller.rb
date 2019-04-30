@@ -201,7 +201,7 @@ class Operator::UsersController < Operator::BaseController
   def update_billing
     find_user(:user_id)
     token = params[:stripeToken]
-    result = UpdateCustomerBillingInfo.call(user: current_user, token: token)
+    result = Billing::Payment::UpdateUserPayment.call(user: current_user, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
       turbolinks_redirect(user_path(current_user))

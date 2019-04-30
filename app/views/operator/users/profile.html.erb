@@ -35,8 +35,13 @@
 <% end %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Memberships</h4>
+  <h4 class="display-4 text-center mt-4">Active Memberships</h4>
   <%= render "memberships", user: @user %>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Pending Memberships</h4>
+  <%= render "pending_memberships", user: @user %>
 <% end %>
 
 <%= wide_card do %>

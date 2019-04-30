@@ -35,10 +35,14 @@ class Subscription < ApplicationRecord
   end
 
   def stripe_subscription
-    Stripe::Subscription.retrieve(self.stripe_subscription_id, {
-      api_key: plan.operator.stripe_secret_key,
-      stripe_account: plan.operator.stripe_user_id
-    })
+    if pending?
+      nil
+    else
+      Stripe::Subscription.retrieve(self.stripe_subscription_id, {
+        api_key: plan.operator.stripe_secret_key,
+        stripe_account: plan.operator.stripe_user_id
+      })
+    end
   end
 
   def pretty_datetime

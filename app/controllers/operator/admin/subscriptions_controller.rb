@@ -8,7 +8,13 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
 
-    result = Billing::Subscription::CreateSubscription.call(
+    interactor = Billing::Subscription::CreateSubscription
+    
+    if out_of_band == false && @subscription.subscribable.card_added == false
+      interactor = Billing::Subscription::CreatePendingSubscription
+    end
+    
+    result = interactor.call(
       subscription: @subscription,
       token: params[:stripeToken],
       user: @subscription.subscribable,
@@ -19,6 +25,27 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership created."
+      turbolinks_redirect(user_path(@subscription.subscribable))
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(referrer_or_root)
+    end
+  rescue => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
+  end
+
+  def destroy
+    find_subscription
+    authorize @subscription
+
+    result = Billing::Subscription::CancelPendingSubscription.call(
+      subscription: @subscription
+    )
+
+    if result.success?
+      flash[:success] = "Membership cancelled."
       turbolinks_redirect(user_path(@subscription.subscribable))
     else
       flash[:error] = result.message
