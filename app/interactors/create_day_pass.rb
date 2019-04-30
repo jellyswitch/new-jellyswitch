@@ -23,7 +23,7 @@ class CreateDayPass
     day_pass.user = user
 
     if token && !(out_of_band || user.out_of_band)
-      result = UpdateUserPayment.call(
+      result = Billing::Payment::UpdateUserPayment.call(
         user: user,
         token: token
       )
