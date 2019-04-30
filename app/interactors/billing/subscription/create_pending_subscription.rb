@@ -10,6 +10,10 @@ class Billing::Subscription::CreatePendingSubscription
       subscription.active = false
     end
 
+    if user.subscriptions.pending.count > 0
+      context.fail!(message: "Can't add more than one pending memberships. Cancel any existing pending memberships first, and try again.")
+    end
+
     if subscription.save
       context.subscription = subscription
     else
