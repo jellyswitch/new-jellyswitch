@@ -172,7 +172,7 @@ class UsersController < ApplicationController
   def update_billing
     find_user(:user_id)
     token = params[:stripeToken]
-    result = UpdateCustomerBillingInfo.call(user: current_user, token: token)
+    result = Billing::Payment::UpdateUserPayment.call(user: current_user, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
       redirect_to user_path(current_user)

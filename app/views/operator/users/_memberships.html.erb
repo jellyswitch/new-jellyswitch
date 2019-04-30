@@ -6,11 +6,17 @@
   </div>
   <div class="row mt-2">
     <div class="col">
-      <% if user.has_billing? || user.out_of_band? %>    
-        <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
+      <% if user.pending? %>
+        <p class="text-center">
+          <small>This user has a pending membership. If you'd like to add a different membership, please cancel that pending membership first.</small>
+        </p>
       <% else %>
-        <small><strong>NOTE</strong>: This user does not have a credit card on file. They will be required to enter a valid credit card number upon next login.</small>
-        <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
+        <% if user.has_billing? || user.out_of_band? %>    
+          <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
+        <% else %>
+          <small><strong>NOTE</strong>: This user does not have a credit card on file. They will be required to enter a valid credit card number upon next login.</small>
+          <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
+        <% end %>
       <% end %>
     </div>
   </div>
