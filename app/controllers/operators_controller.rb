@@ -84,6 +84,6 @@ class OperatorsController < ApplicationController
     params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
       :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
       :background_image, :logo_image, :square_footage, :email_enabled, :kisi_api_key, :terms_of_service,
-      :push_notification_certificate, :ios_url, :android_url)
+      :push_notification_certificate, :ios_url, :android_url, :working_hours_enabled)
   end
 end

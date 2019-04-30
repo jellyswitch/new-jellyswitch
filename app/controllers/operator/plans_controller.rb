@@ -102,6 +102,6 @@ class Operator::PlansController < Operator::BaseController
   end
 
   def plan_params
-    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available)
+    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available, :always_allow_building_access)
   end
 end

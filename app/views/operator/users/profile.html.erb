@@ -22,6 +22,16 @@
     <dt class="col-sm-3">Email address</dt>
     <dd class="col-sm"><%= mail_to @user.email %></dd>
   </dl>
+  <dl class="row mt-3">
+    <dt class="col-sm-3">Always has building access?</dt>
+    <dd class="col-sm">
+      <% if @user.always_allow_building_access? %>
+        Yes
+      <% else %>
+        No
+      <% end %>
+    </dd>
+  </dl>
   <div class="row mt-4">
     <div class="col">
       <%= render "admin", user: @user %>

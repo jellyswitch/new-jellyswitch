@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_04_29_172523) do
+ActiveRecord::Schema.define(version: 2019_04_30_201715) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,6 +44,7 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.boolean "visible", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "always_allow_building_access", default: false, null: false
   end
 
   create_table "day_passes", force: :cascade do |t|
@@ -144,6 +145,7 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.datetime "updated_at", null: false
     t.bigint "subscription_id"
     t.date "initial_invoice_date"
+    t.boolean "always_allow_building_access", default: true, null: false
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
     t.index ["organization_id"], name: "index_office_leases_on_organization_id"
@@ -199,6 +201,9 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.string "billing_state", default: "demo", null: false
     t.string "ios_url"
     t.string "android_url"
+    t.boolean "working_hours_enabled", default: false, null: false
+    t.string "working_day_start", default: "09:00", null: false
+    t.string "working_day_end", default: "18:00", null: false
   end
 
   create_table "organizations", force: :cascade do |t|
@@ -226,6 +231,7 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.string "stripe_plan_id"
     t.integer "operator_id", default: 1, null: false
     t.string "plan_type"
+    t.boolean "always_allow_building_access", default: true, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -304,6 +310,7 @@ ActiveRecord::Schema.define(version: 2019_04_29_172523) do
     t.string "reset_digest"
     t.datetime "reset_sent_at"
     t.boolean "card_added", default: false, null: false
+    t.boolean "always_allow_building_access", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
