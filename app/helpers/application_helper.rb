@@ -120,4 +120,32 @@ module ApplicationHelper
       [day.to_formatted_s(:long), day.to_i]
     end
   end
+
+  def format_working_hours(operator, separator="through")
+    start = Time.strptime(operator.working_day_start, "%R").strftime("%r")
+    ending = Time.strptime(operator.working_day_end, "%R").strftime("%r")
+    "#{start} #{separator} #{ending}"
+  end
+
+  def active_working_hours?(operator)
+    if operator.working_hours_enabled?
+      WorkingHours::Config.with_config(working_hours: working_hours_config(operator), holidays: [], time_zone: Time.zone.name) do
+        Time.current.in_working_hours?
+      end
+    else
+      true
+    end
+  end
+
+  private
+
+  def working_hours_config(operator)
+    {
+      mon: {operator.working_day_start => operator.working_day_end},
+      tue: {operator.working_day_start => operator.working_day_end},
+      wed: {operator.working_day_start => operator.working_day_end},
+      thu: {operator.working_day_start => operator.working_day_end},
+      fri: {operator.working_day_start => operator.working_day_end},
+    }
+  end
 end

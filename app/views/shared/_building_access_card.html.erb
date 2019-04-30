@@ -7,7 +7,7 @@
     <% if !mobile_app_request? && current_tenant.has_mobile_app_links? %>
       <div class="row mt-4">
         <div class="col text-center">
-          <p>To open the door, please download our mobile app below and sign in:
+          <p>To open the door, please download our mobile app below and sign in:</p>
         </div>
       </div>
       <div class="row">
@@ -26,7 +26,15 @@
 
       </div>
     <%- else %>
-      <%= render "operator/doors/keys", doors: @doors %>
+      <% if active_working_hours?(current_tenant) %>
+        <%= render "operator/doors/keys", doors: @doors %>
+      <% else %>
+        <div class="row mt-4">
+          <div class="col text-center">
+            <p>Building access is unavailable between <%= format_working_hours(current_tenant, "and") %></p>
+          </div>
+        </div>
+      <% end %>
     <%- end %>    
 
   </div>

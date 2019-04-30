@@ -41,7 +41,7 @@
   <% if operator.working_hours_enabled? %>
     <dt>Working Hours</dt>
     <dd>
-      <%= Time.strptime(operator.working_day_start, "%R").strftime("%r") %> through <%= Time.strptime(operator.working_day_end, "%R").strftime("%r") %>
+      <%= format_working_hours(operator, "-") %>
     </dd>
   <% end %>
 </dl>

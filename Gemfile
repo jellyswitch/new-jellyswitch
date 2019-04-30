@@ -36,6 +36,7 @@ gem 'sidekiq'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
+gem 'working_hours'
 
 group :development do
   gem 'annotate'
