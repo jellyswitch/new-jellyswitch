@@ -110,8 +110,20 @@ class User < ApplicationRecord
     subscriptions.for_operator(operator).active.count > 0
   end
 
+  def has_building_access_membership?
+    has_active_subscription? && subscriptions.active.any? do |subscription|
+      subscription.plan.always_allow_building_access?
+    end
+  end
+
   def has_active_day_pass?
     day_passes.today.count > 0
+  end
+
+  def has_building_access_day_pass?
+    has_active_day_pass? && day_passes.today.any? do |day_pass|
+      day_pass.day_pass_type.always_allow_building_access?
+    end
   end
 
   def has_active_lease?

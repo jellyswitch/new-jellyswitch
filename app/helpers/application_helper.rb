@@ -138,7 +138,7 @@ module ApplicationHelper
   end
 
   def has_building_access?(user)
-    user.superadmin? || user.admin? || user.always_allow_building_access?
+    user.superadmin? || user.admin? || user.always_allow_building_access? || user.has_building_access_day_pass? || user.has_building_access_membership?
   end
 
   private
