@@ -9,7 +9,7 @@ module Jellyswitch
     end
 
     def active_members
-      plans.individual.map do |plan|
+      plans.individual.nonzero.map do |plan|
         plan.subscriptions.active.map(&:subscribable)
       end.flatten.uniq
     end
