@@ -18,4 +18,10 @@ class Billing::Leasing::SaveOfficeLease
       context.fail!(message: 'Could not create lease')
     end
   end
+
+  def rollback
+    sub = context.office_lease.subscription
+    context.office_lease.destroy
+    sub.destroy
+  end
 end
