@@ -39,6 +39,13 @@
   </dl>
 
   <dl class="row">
+    <dt class="col-sm-3">Initial Invoice Date</dt>
+    <dd class="col-sm">
+      <%= short_date(@office_lease.initial_invoice_date) %>
+    </dd>
+  </dl>
+
+  <dl class="row">
     <dt class="col-sm-3">Always allow building access?</dt>
     <dd class="col-sm"><%= boolean_to_yesno(@office_lease.always_allow_building_access?) %></dd>
   </dl>
