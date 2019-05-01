@@ -33,7 +33,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :operator
   belongs_to :organization
   belongs_to :office
-  belongs_to :subscription
+  belongs_to :subscription, dependent: :destroy
 
   acts_as_tenant :operator
 
