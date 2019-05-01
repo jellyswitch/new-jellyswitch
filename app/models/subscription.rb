@@ -18,6 +18,9 @@
 #
 
 class Subscription < ApplicationRecord
+  # Callbacks
+  before_destroy :check_for_stripe_subscription
+
   # Relationships
   belongs_to :plan
   belongs_to :subscribable, polymorphic: true
@@ -47,5 +50,11 @@ class Subscription < ApplicationRecord
 
   def pretty_datetime
     updated_at.strftime("%m/%d/%Y at %l:%M%P")
+  end
+
+  def check_for_stripe_subscription
+    if stripe_subscription_id.present?
+      raise "Cancel Stripe Subscription first: #{stripe_subscription_id}"
+    end
   end
 end
