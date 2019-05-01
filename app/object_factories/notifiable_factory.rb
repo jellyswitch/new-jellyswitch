@@ -3,6 +3,8 @@ class NotifiableFactory
     case notifiable.class.name
     when 'Subscription'
       Notifiable::Subscription
+    when 'DayPass'
+      Notifiable::DayPass
     end.new(notifiable)
   end
 end
