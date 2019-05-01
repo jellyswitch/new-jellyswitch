@@ -12,5 +12,7 @@ class Billing::Leasing::CreateStripeSubscription
 
     stripe_subscription = operator.create_stripe_subscription(organization, subscription, stripe_start_date)
     subscription.update(stripe_subscription_id: stripe_subscription.id)
+  rescue StandardError => e
+    context.fail!(message: e.message)
   end
 end
