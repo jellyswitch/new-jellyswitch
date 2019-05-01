@@ -10,4 +10,8 @@ class SaveOrganization
       context.fail!(message: 'Could not save organization.')
     end
   end
+
+  def rollback
+    context.organization.destroy
+  end
 end
