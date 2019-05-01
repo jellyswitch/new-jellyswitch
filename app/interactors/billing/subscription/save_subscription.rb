@@ -14,4 +14,8 @@ class Billing::Subscription::SaveSubscription
       context.fail!(message: "There was a problem creating this subscription.")
     end
   end
+
+  def rollback
+    context.subscription.destroy
+  end
 end
