@@ -8,11 +8,15 @@
     <tr>
       <th>Group</th>
       <th>Office</th>
+      <th>Monthly revenue per member</th>
     </tr>
     <% @report.active_leases.each do |office_lease| %>
       <tr>
         <td><%= link_to office_lease.organization.name, organization_path(office_lease.organization) %></td>
         <td><%= link_to office_lease.office.name, office_path(office_lease.office) %></td>
+        <td>
+          <%= number_to_currency(office_lease.organization.users.count.to_f / office_lease.subscription.plan.amount_in_cents) %>
+        </td>
       </tr>
     <% end %>
   </table>
