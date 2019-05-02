@@ -5,8 +5,8 @@ class Operator::Admin::DayPassesController < Operator::BaseController
     authorize DayPass.new
 
     user = User.find(day_pass_params[:user_id])
-
     token = params[:stripeToken]
+    out_of_band = pay_by_check_params[:out_of_band]
 
     if token && !(out_of_band || user.out_of_band)
       result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
@@ -14,7 +14,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
         user_id: user.id,
         token: token,
         operator: current_tenant,
-        out_of_band: pay_by_check_params[:out_of_band]
+        out_of_band: out_of_band
       )
     else
       result = Billing::DayPasses::CreateDayPass.call(
@@ -22,7 +22,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
         user_id: user.id,
         token: token,
         operator: current_tenant,
-        out_of_band: pay_by_check_params[:out_of_band]
+        out_of_band: out_of_band
       )
     end
 
