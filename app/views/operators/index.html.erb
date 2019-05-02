@@ -30,7 +30,6 @@
   <div class="col-lg-1"></div>
   <div class="col">
     <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
-    <%= link_to "Generate Demo Instance", demo_instance_operators_path, class: "btn btn-sm btn-warning" %>
 
     <h3 class="display-3">Production Instances</h3>
     <%= render "operators_table", reports: @production_reports %>
