@@ -106,6 +106,7 @@ Rails.application.routes.draw do
       get :active_leases
       get :last_30_day_passes
       get :total_members
+      get :membership_breakdown
     end
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]

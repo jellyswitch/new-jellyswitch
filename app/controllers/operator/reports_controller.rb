@@ -20,6 +20,9 @@ class Operator::ReportsController < Operator::BaseController
   def total_members
   end
 
+  def membership_breakdown
+  end
+
   private
 
   def generate_report

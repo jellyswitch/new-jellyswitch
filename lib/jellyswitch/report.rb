@@ -59,5 +59,9 @@ module Jellyswitch
     def staff_count
       staff.count
     end
+
+    def membership_breakdown
+      Subscription.for_operator(operator).where("plans.plan_type = ?", "individual").group("plans.name").count
+    end
   end
 end

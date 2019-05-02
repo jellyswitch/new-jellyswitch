@@ -27,4 +27,9 @@
     <dt class="col-lg-6"><%= @report.all_member_count %> total members</dt>
     <dd class="col"><%= link_to "View Data", total_members_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6">Membership Breakdown</dt>
+    <dd class="col"><%= link_to "View Data", membership_breakdown_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
 <% end %>
