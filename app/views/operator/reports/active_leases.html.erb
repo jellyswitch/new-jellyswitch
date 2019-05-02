@@ -15,7 +15,7 @@
         <td><%= link_to office_lease.organization.name, organization_path(office_lease.organization) %></td>
         <td><%= link_to office_lease.office.name, office_path(office_lease.office) %></td>
         <td>
-          <%= number_to_currency((office_lease.subscription.plan.amount_in_cents.to_f) / 100 / (office_lease.organization.users.count.to_f + 1) %>
+          <%= number_to_currency((office_lease.subscription.plan.amount_in_cents.to_f) / 100 / (office_lease.organization.users.count.to_f + 1)) %>
         </td>
       </tr>
     <% end %>
