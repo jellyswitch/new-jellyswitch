@@ -67,5 +67,9 @@ module Jellyswitch
     def membership_breakdown_count
       membership_breakdown.group("plans.name").count
     end
+
+    def membership_breakdown_plan_count
+      membership_breakdown.group(:plan).count
+    end
   end
 end
