@@ -57,4 +57,12 @@ class Subscription < ApplicationRecord
       raise "Cancel Stripe Subscription first: #{stripe_subscription_id}"
     end
   end
+
+  def pretty_name
+    if plan.present?
+      plan.pretty_name
+    else
+      "error"
+    end
+  end
 end
