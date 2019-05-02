@@ -55,6 +55,7 @@ Rails.application.routes.draw do
   namespace :operator do
     namespace :admin do
       resources :subscriptions
+      resources :day_passes
     end
   end
 
