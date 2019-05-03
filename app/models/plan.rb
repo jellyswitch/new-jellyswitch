@@ -42,12 +42,6 @@ class Plan < ApplicationRecord
 
   PLAN_TYPES = %w(individual lease).freeze
 
-  before_destroy :destroy_stripe_plan
-  def destroy_stripe_plan
-    stripe_plan.delete
-  end
-
-
   def stripe_plan
     Stripe::Plan.retrieve(self.stripe_plan_id, {
       api_key: operator.stripe_secret_key,
