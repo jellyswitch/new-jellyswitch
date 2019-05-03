@@ -15,16 +15,18 @@ class Operator::PlansController < Operator::BaseController
     @plan = Plan.new(plan_params)
     authorize @plan
 
-    if @plan.save
+    result = Billing::Plans::CreatePlan.call(
+      plan: @plan,
+      operator: current_tenant
+    )
+
+    if result.success?
       flash[:notice] = "Plan saved."
       turbolinks_redirect(plan_path(@plan))
     else
-      render :new, status: 422
+      flash[:error] = result.message
+      turbolinks_redirect(new_plan_path)
     end
-  rescue => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
   end
 
   def show

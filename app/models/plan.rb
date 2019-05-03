@@ -42,23 +42,6 @@ class Plan < ApplicationRecord
 
   PLAN_TYPES = %w(individual lease).freeze
 
-  # Stripe stuff
-  after_create :create_stripe_plan
-  def create_stripe_plan
-    plan = Stripe::Plan.create({
-      amount: amount_in_cents,
-      interval: stripe_interval,
-      product: { name: plan_name },
-      currency: 'usd',
-      id: plan_slug
-    }, {
-      api_key: operator.stripe_secret_key,
-      stripe_account: operator.stripe_user_id
-    })
-    self.stripe_plan_id = plan.id
-    self.save
-  end
-
   before_destroy :destroy_stripe_plan
   def destroy_stripe_plan
     stripe_plan.delete
