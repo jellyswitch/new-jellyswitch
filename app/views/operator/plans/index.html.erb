@@ -5,15 +5,32 @@
   <div class="col-sm-3"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Membership Plans</h4>
       <%= link_to "Add a new plan", new_plan_path, class: "btn btn-primary btn-sm" %>
+      <h4 class="display-4 text-center mt-4">Available Plans</h4>
       <table class="table">
         <tr>
           <th>Plan</th>
           <th>Price</th>
           <th>Actions</th>
         </tr>
-        <%- @plans.each do |plan| %>
+        <%- @plans.available.each do |plan| %>
+          <tr>
+            <td><%= link_to plan.name, plan_path(plan) %></td>
+            <td><%= plan.pretty_price %></td>
+            <td><%= render "actions", plan: plan %></td>
+          </tr>
+        <%- end %>
+      </table>
+
+
+      <h4 class="display-4 text-center mt-4">Archived Plans</h4>
+      <table class="table">
+        <tr>
+          <th>Plan</th>
+          <th>Price</th>
+          <th>Actions</th>
+        </tr>
+        <%- @plans.unavailable.each do |plan| %>
           <tr>
             <td><%= link_to plan.name, plan_path(plan) %></td>
             <td><%= plan.pretty_price %></td>
