@@ -66,5 +66,8 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Invoices</h4>
-  <%= render "invoices", user: @user %>
+  <div class="card-body list-group list-group-flush p-0">
+    <%= render "invoices", user: @user %>
+  </div>
 <% end %>
+
