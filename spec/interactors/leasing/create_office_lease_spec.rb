@@ -2,7 +2,13 @@ require 'rails_helper'
 
 RSpec.describe Billing::Leasing::CreateOfficeLease do
   let(:office_lease) { build(:office_lease) }
-  subject(:context) { described_class.call(office_lease: office_lease, operator: office_lease.operator) }
+  subject(:context) { 
+    described_class.call(
+      office_lease: office_lease,
+      operator: office_lease.operator,
+      plan: office_lease.subscription.plan
+    )
+  }
 
   describe '#call' do
     before do
