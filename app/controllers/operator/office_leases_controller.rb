@@ -28,7 +28,8 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     result = Billing::Leasing::CreateOfficeLease.call(
       office_lease: @office_lease,
-      operator: current_tenant
+      operator: current_tenant,
+      plan: @office_lease.subscription.plan
     )
 
     if result.success?

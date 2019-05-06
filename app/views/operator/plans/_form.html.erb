@@ -13,6 +13,8 @@
     </div>
   <% end %>
 
+  <%= f.hidden_field :plan_type, value: "individual" %>
+
   <div class="form-group">
     <%= f.label :interval %>
     <%= f.select :interval, Plan.options_for_interval, class: "form-control" %>
