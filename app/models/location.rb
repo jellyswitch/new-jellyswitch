@@ -18,6 +18,9 @@
 #  stripe_refresh_token   :string
 #  wifi_name              :string
 #  wifi_password          :string
+#  working_day_end        :string           default("18:00"), not null
+#  working_day_start      :string           default("09:00"), not null
+#  working_hours_enabled  :boolean          default(FALSE), not null
 #  zip                    :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null

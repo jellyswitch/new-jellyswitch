@@ -9,7 +9,7 @@
 #  start_date                   :date             not null
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
-#  location_id          :bigint(8)
+#  location_id                  :bigint(8)
 #  office_id                    :bigint(8)        not null
 #  operator_id                  :bigint(8)        not null
 #  organization_id              :bigint(8)        not null
