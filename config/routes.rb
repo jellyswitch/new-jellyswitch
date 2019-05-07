@@ -9,11 +9,7 @@ Rails.application.routes.draw do
     get '/login',      to: 'sessions#new', as: :operator_login
     get '/signup',     to: 'users#new', as: :operator_signup
 
-    resources :operators do
-      collection do
-        get :demo_instance, to: 'operators#demo_instance'
-      end
-    end
+    resources :operators
     resources :operator_surveys do
       collection do
         get :wait, to: 'operator_surveys#wait'
