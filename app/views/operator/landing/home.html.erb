@@ -4,15 +4,15 @@
   <div class="col-sm">
     <div class="card-group">
       <%= render "shared/building_access_card" %>
+      <%= render "shared/send_feedback_card" %>
       <%= render "shared/reservations_card" %>
-      <%= render "shared/wifi" %>
     </div>
   </div>
 </div>
 <div class="row mt-3">
   <div class="col-sm">
     <div class="card-group">
-      <%= render "shared/send_feedback_card" %>
+      <%= render "shared/wifi" %>
       <%- if current_tenant.has_contact_info? %>
         <%= render "shared/contact_card" %>
         <%= render "shared/map_card" %>
