@@ -55,27 +55,6 @@ class OperatorsController < ApplicationController
       render :edit, status: 422
     end
   end
-  
-  def demo_instance
-    authorize Operator
-    result = Demo::CreateOperator.call(user: current_user)
-
-    if result.success
-      flash[:success] = "Creating demo instance: #{result.operator.name}. Please check back in 30 seconds."
-    else
-      flash[:error] = result.message
-    end
-    redirect_to operators_path
-  end
-
-  def destroy
-    find_operator
-    authorize @operator
-
-    DestroyOperatorJob.perform_later(@operator)
-    flash[:success] = "Enqueued for deletion."
-    redirect_to operators_path
-  end
 
   private
 

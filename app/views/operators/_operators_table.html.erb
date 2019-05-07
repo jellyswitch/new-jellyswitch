@@ -28,7 +28,6 @@
       <td>
         <%= link_to "Visit", landing_url(subdomain: report.operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
         <%= link_to "Edit", edit_operator_path(report.operator), class: "btn btn-sm btn-info" %>
-        <%= link_to "Delete", operator_path(report.operator), method: :delete, data: { confirm: "Are you sure?"},  class: "btn btn-sm btn-danger" %>
       </td>
     </tr>
   <% end %>
