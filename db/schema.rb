@@ -76,6 +76,8 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.datetime "updated_at", null: false
     t.integer "operator_id", default: 1, null: false
     t.integer "kisi_id"
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
   end
 
@@ -94,7 +96,9 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "expense", default: false, null: false
+    t.bigint "location_id"
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
+    t.index ["location_id"], name: "index_feed_items_on_location_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -125,6 +129,35 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
   end
 
+  create_table "locations", force: :cascade do |t|
+    t.string "name"
+    t.bigint "operator_id", null: false
+    t.string "billing_state"
+    t.string "building_address"
+    t.string "city"
+    t.string "state"
+    t.string "zip"
+    t.string "contact_email"
+    t.string "contact_name"
+    t.string "contact_phone"
+    t.string "snippet"
+    t.integer "square_footage"
+    t.string "stripe_access_token"
+    t.string "stripe_publishable_key"
+    t.string "stripe_refresh_token"
+    t.string "wifi_name"
+    t.string "wifi_password"
+    t.boolean "working_hours_enabled", default: false, null: false
+    t.string "working_day_start", default: "09:00", null: false
+    t.string "working_day_end", default: "18:00", null: false
+    t.string "stripe_user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id"], name: "index_locations_on_operator_id"
+    t.index ["state", "city"], name: "index_locations_on_state_and_city"
+    t.index ["zip"], name: "index_locations_on_zip"
+  end
+
   create_table "member_feedbacks", force: :cascade do |t|
     t.boolean "anonymous", default: false, null: false
     t.text "comment"
@@ -133,6 +166,8 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
   create_table "office_leases", force: :cascade do |t|
@@ -146,6 +181,8 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.bigint "subscription_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
     t.index ["organization_id"], name: "index_office_leases_on_organization_id"
@@ -161,6 +198,8 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_offices_on_location_id"
     t.index ["operator_id"], name: "index_offices_on_operator_id"
   end
 
@@ -265,6 +304,8 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.datetime "updated_at", null: false
     t.boolean "visible", default: true, null: false
     t.integer "operator_id", default: 1, null: false
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
 
@@ -314,10 +355,17 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
+  add_foreign_key "doors", "locations"
+  add_foreign_key "feed_items", "locations"
+  add_foreign_key "locations", "operators"
+  add_foreign_key "member_feedbacks", "locations"
+  add_foreign_key "office_leases", "locations"
   add_foreign_key "office_leases", "offices"
   add_foreign_key "office_leases", "operators"
   add_foreign_key "office_leases", "organizations"
   add_foreign_key "office_leases", "subscriptions"
+  add_foreign_key "offices", "locations"
   add_foreign_key "offices", "operators"
   add_foreign_key "refunds", "invoices"
+  add_foreign_key "rooms", "locations"
 end

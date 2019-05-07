@@ -2,6 +2,10 @@ class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
   LOCATION_RESOURCES = %w(rooms offices office_leases member_feedbacks feed_items doors)
 
   def up
+    FeedItem.all.select do |feed_item|
+      feed_item.user.blank?
+    end.map(&:destroy)
+
     LOCATION_RESOURCES.each do |resource|
       add_reference :"#{resource}", :location, foreign_key: true
       resource.singularize.camelize.constantize.reset_column_information
@@ -22,7 +26,6 @@ class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
           created_at
           updated_at
           stripe_user_id
-          
         )
       ))
 
