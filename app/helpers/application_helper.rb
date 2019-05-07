@@ -83,6 +83,7 @@ module ApplicationHelper
       {title: "Leases", path: office_leases_path},
       {title: "Finances", path: accounting_index_path},
       {title: "Data", path: reports_path},
+      {title: "Locations", path: locations_path},
       {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
       {title: "My Account", path: user_path(current_user)},
       {title: "My Membership", path: user_memberships_path(current_user)},
