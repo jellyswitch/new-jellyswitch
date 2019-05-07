@@ -17,7 +17,6 @@ module ActsAsScopable
         default_scope lambda {
           if ActsAsScopable.current_scope_resources.present?
             query_criteria = ActsAsScopable.current_scope_resources.each_with_object({}) do |record, criteria|
-              puts "RECORD IS #{record.inspect}"
               criteria["#{record.class.name.downcase}_id".to_sym] = record.id
             end
 
