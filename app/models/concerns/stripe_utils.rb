@@ -17,11 +17,14 @@ module StripeUtils
 
     case customer.class.name
     when 'User'
-      customer_args = { email: customer.email }
+      customer_args = { 
+        email: customer.email,
+        description: customer.name
+      }
     when 'Organization'
       customer_args = {
         email: customer.email,
-        description: "Customer for organization #{name}"
+        description: customer.name
       }
     end
 

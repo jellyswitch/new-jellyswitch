@@ -2,17 +2,18 @@
 #
 # Table name: office_leases
 #
-#  id                   :bigint(8)        not null, primary key
-#  end_date             :date             not null
-#  initial_invoice_date :date
-#  start_date           :date             not null
-#  created_at           :datetime         not null
-#  updated_at           :datetime         not null
+#  id                           :bigint(8)        not null, primary key
+#  always_allow_building_access :boolean          default(TRUE), not null
+#  end_date                     :date             not null
+#  initial_invoice_date         :date
+#  start_date                   :date             not null
+#  created_at                   :datetime         not null
+#  updated_at                   :datetime         not null
 #  location_id          :bigint(8)
-#  office_id            :bigint(8)        not null
-#  operator_id          :bigint(8)        not null
-#  organization_id      :bigint(8)        not null
-#  subscription_id      :bigint(8)
+#  office_id                    :bigint(8)        not null
+#  operator_id                  :bigint(8)        not null
+#  organization_id              :bigint(8)        not null
+#  subscription_id              :bigint(8)
 #
 # Indexes
 #
@@ -35,7 +36,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :operator
   belongs_to :organization
   belongs_to :office
-  belongs_to :subscription
+  belongs_to :subscription, dependent: :destroy
   belongs_to :location
 
   acts_as_scopable :operator, :location

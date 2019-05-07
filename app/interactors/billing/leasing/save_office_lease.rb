@@ -1,4 +1,4 @@
-class CreateOfficeLease
+class Billing::Leasing::SaveOfficeLease
   include Interactor
 
   delegate :office_lease, :operator, to: :context
@@ -13,13 +13,15 @@ class CreateOfficeLease
     end
 
     if office_lease.save
-      Jellyswitch::Events.publish(
-        'billing.lease.create',
-        office_lease_id: office_lease.id,
-        operator_id: operator.id
-      )
+      context.office_lease = office_lease
     else
       context.fail!(message: 'Could not create lease')
     end
+  end
+
+  def rollback
+    sub = context.office_lease.subscription
+    context.office_lease.destroy
+    sub.destroy
   end
 end

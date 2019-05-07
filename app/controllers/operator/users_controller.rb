@@ -55,7 +55,12 @@ class Operator::UsersController < Operator::BaseController
 
     if result.success?
       if admin? # admin is creating the user
-        turbolinks_redirect(user_path(result.user), action: "replace")
+        flash[:success] = "Member #{result.user.name} added."
+        if params[:add_member_and_create_another].present?
+          turbolinks_redirect(add_member_users_path, action: "replace")
+        else
+          turbolinks_redirect(user_path(result.user), action: "replace")
+        end
       else
         log_in(result.user)
         turbolinks_redirect(home_path, action: "replace")
@@ -196,7 +201,7 @@ class Operator::UsersController < Operator::BaseController
   def update_billing
     find_user(:user_id)
     token = params[:stripeToken]
-    result = UpdateCustomerBillingInfo.call(user: current_user, token: token)
+    result = Billing::Payment::UpdateUserPayment.call(user: current_user, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
       turbolinks_redirect(user_path(current_user))
@@ -230,7 +235,8 @@ class Operator::UsersController < Operator::BaseController
     result = params.require(:user).permit(
       :name, :email, :password, :password_confirmation,
       :bio, :linkedin, :twitter, :website, :profile_photo,
-      :approved, :admin)
+      :approved, :admin, :add_member, :add_member_and_create_another,
+      :always_allow_building_access)
     result
   end
 

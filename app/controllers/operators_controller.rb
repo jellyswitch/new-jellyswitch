@@ -3,8 +3,16 @@ class OperatorsController < ApplicationController
     find_operators
     authorize @production_operators
 
-    @active_staff = @production_operators.all.map {|op| op.users.admins.non_superadmins.count }.sum
-    @active_memberships = Plan.joins(:operator).where("operators.billing_state = ?", "production").all.map{|plan| plan.subscriptions.active.count }.sum
+    @production_reports = @production_operators.all.map do |operator|
+      Jellyswitch::Report.new(operator)
+    end
+
+    @demo_reports = @demo_operators.all.map do |operator|
+      Jellyswitch::Report.new(operator)
+    end
+
+    @production_staff = @production_reports.sum(&:staff_count)
+    @demo_staff = @demo_reports.sum(&:staff_count)
   end
 
   def show
@@ -84,6 +92,6 @@ class OperatorsController < ApplicationController
     params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
       :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
       :background_image, :logo_image, :square_footage, :email_enabled, :kisi_api_key, :terms_of_service,
-      :push_notification_certificate, :ios_url, :android_url)
+      :push_notification_certificate, :ios_url, :android_url, :working_hours_enabled)
   end
 end

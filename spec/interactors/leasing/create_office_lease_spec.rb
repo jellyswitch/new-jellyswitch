@@ -1,8 +1,14 @@
 require 'rails_helper'
 
-RSpec.describe CreateOfficeLease do
+RSpec.describe Billing::Leasing::CreateOfficeLease do
   let(:office_lease) { build(:office_lease) }
-  subject(:context) { described_class.call(office_lease: office_lease, operator: office_lease.operator) }
+  subject(:context) { 
+    described_class.call(
+      office_lease: office_lease,
+      operator: office_lease.operator,
+      plan: office_lease.subscription.plan
+    )
+  }
 
   describe '#call' do
     before do
@@ -12,8 +18,6 @@ RSpec.describe CreateOfficeLease do
         subscribable_type: 'Organization',
         subscribable_id: office_lease.organization_id
       }
-
-      expect(Jellyswitch::Events).to receive(:publish)
     end
 
     it 'subscribes the organization to the lease plan' do

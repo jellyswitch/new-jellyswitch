@@ -28,6 +28,16 @@
 
   <dt>Building Address</dt>
   <dd><%= operator.building_address %></dd>
+
+  <dt>Working Hours Enabled?</dt>
+  <dd><%= boolean_to_yesno(operator.working_hours_enabled?) %></dd>
+
+  <% if operator.working_hours_enabled? %>
+    <dt>Working Hours</dt>
+    <dd>
+      <%= format_working_hours(operator, "-") %>
+    </dd>
+  <% end %>
 </dl>
 <hr />
 <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
@@ -45,13 +55,7 @@
   <dd><pre><%= operator.subdomain %></pre></dd>
 
   <dt>Approval required for new members</dt>
-  <dd>
-    <%- if operator.approval_required %>
-      Yes
-    <%- else %>
-      No
-    <%- end %>
-  </dd>
+  <dd><%= boolean_to_yesno(operator.approval_required) %></dd>
 
   <dt>iOS App Store Link</dt>
   <dd>

@@ -23,6 +23,9 @@
 #  subdomain              :string           not null
 #  wifi_name              :string           default("not set"), not null
 #  wifi_password          :string           default("not set"), not null
+#  working_day_end        :string           default("18:00"), not null
+#  working_day_start      :string           default("09:00"), not null
+#  working_hours_enabled  :boolean          default(FALSE), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
@@ -101,16 +104,6 @@ class Operator < ApplicationRecord
 
   def stripe_operator
     @stripe_operator ||= StripeOperator.new(self)
-  end
-
-  def active_members
-    plans.all.map do |plan|
-      plan.subscriptions.active.count
-    end.sum
-  end
-
-  def total_members
-    users.members.non_superadmins.count
   end
 
   def reset_stripe_to_demo!

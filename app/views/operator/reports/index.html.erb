@@ -1,0 +1,35 @@
+<% title "Data" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 mb-5 text-center">Data Reports</h4>
+
+  <dl class="row">
+    <dt class="col-lg-6"><%= @report.active_member_count %> active members</dt>
+    <dd class="col"><%= link_to "View Data", active_members_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6"><%= @report.active_lease_count %> active leases</dt>
+    <dd class="col"><%= link_to "View Data", active_leases_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6"><%= @report.active_lease_member_count %> members on active leases</dt>
+    <dd class="col"><%= link_to "View Data", active_lease_members_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6"><%= @report.last_30_day_pass_count %> day passes (last 30 days)</dt>
+    <dd class="col"><%= link_to "View Data", last_30_day_passes_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6"><%= @report.all_member_count %> total members</dt>
+    <dd class="col"><%= link_to "View Data", total_members_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
+    <dt class="col-lg-6">Membership Breakdown</dt>
+    <dd class="col"><%= link_to "View Data", membership_breakdown_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+<% end %>

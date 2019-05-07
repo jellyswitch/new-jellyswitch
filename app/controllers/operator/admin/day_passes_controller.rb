@@ -1,0 +1,49 @@
+class Operator::Admin::DayPassesController < Operator::BaseController
+  include DayPassesHelper
+
+  def create
+    authorize DayPass.new
+
+    user = User.find(day_pass_params[:user_id])
+    token = params[:stripeToken]
+    out_of_band = pay_by_check_params[:out_of_band]
+
+    if token && !(out_of_band || user.out_of_band)
+      result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
+        params: day_pass_params,
+        user_id: user.id,
+        token: token,
+        operator: current_tenant,
+        out_of_band: out_of_band
+      )
+    else
+      result = Billing::DayPasses::CreateDayPass.call(
+        params: day_pass_params,
+        user_id: user.id,
+        token: token,
+        operator: current_tenant,
+        out_of_band: out_of_band
+      )
+    end
+
+    @day_pass = result.day_pass
+
+    if result.success?
+      flash[:success] = "Day pass added."
+      turbolinks_redirect(user_path(@day_pass.user), action: "replace")
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(user_path(user))
+    end
+  rescue => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
+  end
+
+  private
+  
+  def day_pass_params
+    params.require(:day_pass).permit(:day_pass_type, :day, :user_id)
+  end
+end

@@ -1,7 +1,6 @@
 module ApplicationHelper
   include PlansHelper
   include LandingHelper
-  include SubscriptionsHelper
   include Pagy::Frontend
 
   def pretty_datetime(input)
@@ -83,6 +82,7 @@ module ApplicationHelper
       {title: "Office Spaces", path: offices_path},
       {title: "Leases", path: office_leases_path},
       {title: "Finances", path: accounting_index_path},
+      {title: "Data", path: reports_path},
       {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
       {title: "My Account", path: user_path(current_user)},
       {title: "My Membership", path: user_memberships_path(current_user)},
@@ -123,5 +123,55 @@ module ApplicationHelper
       day = Time.zone.now + i.days
       [day.to_formatted_s(:long), day.to_i]
     end
+  end
+
+  def format_working_hours(operator, separator="through")
+    start = Time.strptime(operator.working_day_start, "%R").strftime("%l:%M %P")
+    ending = Time.strptime(operator.working_day_end, "%R").strftime("%l:%M %P")
+    "#{start} #{separator} #{ending}"
+  end
+
+  def active_working_hours?(operator)
+    if operator.working_hours_enabled?
+      WorkingHours::Config.with_config(working_hours: working_hours_config(operator), holidays: [], time_zone: Time.zone.name) do
+        Time.current.in_working_hours?
+      end
+    else
+      true
+    end
+  end
+
+  def has_building_access?(user)
+    user.superadmin? || user.admin? || user.always_allow_building_access? || user.has_building_access_day_pass? || user.has_building_access_membership? || user.has_building_access_lease?
+  end
+
+  def boolean_to_yesno(value)
+    if value
+      "Yes"
+    else
+      "No"
+    end
+  end
+
+  def quantize(collection, string)
+    if collection.count <= 0
+      string.pluralize
+    elsif collection.count == 1
+      string.singularize
+    else
+      string.pluralize
+    end
+  end
+
+  private
+
+  def working_hours_config(operator)
+    {
+      mon: {operator.working_day_start => operator.working_day_end},
+      tue: {operator.working_day_start => operator.working_day_end},
+      wed: {operator.working_day_start => operator.working_day_end},
+      thu: {operator.working_day_start => operator.working_day_end},
+      fri: {operator.working_day_start => operator.working_day_end},
+    }
   end
 end

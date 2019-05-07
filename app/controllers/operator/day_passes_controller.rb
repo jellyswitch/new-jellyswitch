@@ -1,4 +1,6 @@
 class Operator::DayPassesController < Operator::BaseController
+  include DayPassesHelper
+
   def index
     find_day_passes
     authorize @day_passes
@@ -15,34 +17,32 @@ class Operator::DayPassesController < Operator::BaseController
   def create
     authorize DayPass.new
 
-    if admin?
-      result = CreateDayPass.call(
-        params: admin_day_pass_params,
-        user_id: admin_day_pass_params[:user_id],
-        token: params[:stripeToken],
-        operator: current_tenant,
-        out_of_band: pay_by_check_params[:out_of_band]
-      )
-    else
-      result = CreateDayPass.call(
+    token = params[:stripeToken]
+    out_of_band = pay_by_check_params[:out_of_band]
+
+    if token && !(out_of_band || current_user.out_of_band)
+      result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
         params: day_pass_params,
         user_id: current_user.id,
-        token: params[:stripeToken],
+        token: token,
         operator: current_tenant,
-        out_of_band: pay_by_check_params[:out_of_band]
+        out_of_band: out_of_band
+      )
+    else
+      result = Billing::DayPasses::CreateDayPass.call(
+        params: day_pass_params,
+        user_id: current_user.id,
+        token: token,
+        operator: current_tenant,
+        out_of_band: out_of_band
       )
     end
 
     @day_pass = result.day_pass
 
     if result.success?
-      if admin?
-        flash[:success] = "Day pass added."
-        turbolinks_redirect(user_path(@day_pass.user), action: "replace")
-      else
-        flash[:success] = "Welcome to #{current_tenant.name}!"
-        turbolinks_redirect(home_path)
-      end
+      flash[:success] = "Welcome to #{current_tenant.name}!"
+      turbolinks_redirect(home_path)
     else
       flash[:error] = result.message
       turbolinks_redirect(new_day_pass_path)
@@ -71,13 +71,5 @@ class Operator::DayPassesController < Operator::BaseController
 
   def day_pass_params
     params.require(:day_pass).permit(:day, :day_pass_type)
-  end
-
-  def pay_by_check_params
-    params.permit(:out_of_band)
-  end
-
-  def admin_day_pass_params
-    params.require(:day_pass).permit(:day_pass_type, :day, :user_id)
   end
 end

@@ -1,7 +1,7 @@
 <div class="row mt-2">
   <div class="col">
     <% if user.has_billing? || user.out_of_band? %>
-      <%= render "operator/day_passes/form", day_pass: DayPass.new, label: "Add day pass", user: user %>
+      <%= render "operator/admin/day_passes/form", day_pass: DayPass.new, label: "Add day pass", user: user %>
     <% else %>
       <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
     <% end %>

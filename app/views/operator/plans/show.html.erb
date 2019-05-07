@@ -28,7 +28,11 @@
       <dl class="row">
         <dt class="col-sm">Available</dt>
         <dd class="col-sm"><%= @plan.available? %></dd>
-      </dl> 
+      </dl>
+      <dl class="row">
+        <dt class="col-sm">Always has building access?</dt>
+        <dd class="col-sm"><%= boolean_to_yesno(@plan.always_allow_building_access) %></dd>
+      </dl>
     </div>
   </div>
   <div class="col-sm-3"></div>

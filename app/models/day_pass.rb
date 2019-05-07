@@ -27,6 +27,7 @@ class DayPass < ApplicationRecord
 
   # Scopes
   scope :today, -> { where(day: Time.current) }
+  scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
 
   # Instance methods
   def pretty_day

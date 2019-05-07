@@ -15,9 +15,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
     @office_lease.subscription.build_plan
-    @organizations = Organization.eligible_for_lease.all
-    @offices = Office.available_for_lease
-    @plans = Plan.lease
+    find_organizations
+    find_offices
+    find_plans
     authorize @office_lease
   end
 
@@ -26,13 +26,20 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     authorize @office_lease
 
-    result = CreateOfficeLease.call(office_lease: @office_lease, operator: current_tenant)
+    result = Billing::Leasing::CreateOfficeLease.call(
+      office_lease: @office_lease,
+      operator: current_tenant,
+      plan: @office_lease.subscription.plan
+    )
 
     if result.success?
       flash[:notice] = "Office lease created."
       turbolinks_redirect(office_leases_path)
     else
-      flash[:error] = "Could not save office lease"
+      flash[:error] = result.message
+      find_organizations
+      find_offices
+      find_plans
       render :new, status: 422
     end
   end
@@ -62,5 +69,17 @@ class Operator::OfficeLeasesController < Operator::BaseController
           ]
         ]
     )
+  end
+
+  def find_organizations
+    @organizations = Organization.eligible_for_lease.all
+  end
+
+  def find_offices
+    @offices = Office.available_for_lease
+  end
+
+  def find_plans
+    @plans = Plan.lease
   end
 end

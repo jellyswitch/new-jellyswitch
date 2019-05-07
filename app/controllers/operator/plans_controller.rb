@@ -15,16 +15,18 @@ class Operator::PlansController < Operator::BaseController
     @plan = Plan.new(plan_params)
     authorize @plan
 
-    if @plan.save
+    result = Billing::Plans::CreatePlan.call(
+      plan: @plan,
+      operator: current_tenant
+    )
+
+    if result.success?
       flash[:notice] = "Plan saved."
       turbolinks_redirect(plan_path(@plan))
     else
-      render :new, status: 422
+      flash[:error] = result.message
+      turbolinks_redirect(new_plan_path)
     end
-  rescue => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
   end
 
   def show
@@ -43,18 +45,12 @@ class Operator::PlansController < Operator::BaseController
     find_plan
     authorize @plan
 
-    @plan.update_attributes(plan_params)
-
-    if @plan.save
+    if @plan.update(plan_update_params)
       flash[:notice] = "Plan updated."
       turbolinks_redirect(plan_path(@plan))
     else
       render :edit, status: 422
     end
-  rescue => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
   end
 
   def destroy
@@ -84,7 +80,7 @@ class Operator::PlansController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    turbolinks_redirect(plan_path(@plan), action: "advance")
+    turbolinks_redirect(plans_path, action: "advance")
   rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
@@ -94,7 +90,7 @@ class Operator::PlansController < Operator::BaseController
   private
 
   def find_plans
-    @plans = Plan.individual.all
+    @plans = Plan.individual.order(:name)
   end
 
   def find_plan(key=:id)
@@ -102,6 +98,10 @@ class Operator::PlansController < Operator::BaseController
   end
 
   def plan_params
-    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available)
+    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available, :always_allow_building_access)
+  end
+
+  def plan_update_params
+    params.require(:plan).permit(:visible, :available, :always_allow_building_access)
   end
 end

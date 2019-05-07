@@ -29,6 +29,7 @@ gem 'rails', '~> 5.2.2'
 gem 'redis'
 gem 'remotipart', '~> 1.2'
 gem 'roadie-rails', '~> 2.0'
+gem 'request_store'
 gem 'rollbar'
 gem 'sass-rails', '~> 5.0'
 gem 'searchkick'
@@ -36,13 +37,14 @@ gem 'sidekiq'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
-gem 'request_store'
+gem 'working_hours'
 
 group :development do
   gem 'annotate'
   gem 'better_errors'
   gem 'binding_of_caller'
   gem 'listen', '>= 3.0.5', '< 3.2'
+  gem 'rails-erd'
   gem 'user-auth', git: "https://github.com/dpaola2/user-auth"
   gem 'web-console', '>= 3.3.0'
 end

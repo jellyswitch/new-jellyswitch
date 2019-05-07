@@ -46,11 +46,21 @@ Rails.application.routes.draw do
   get '/home',      to: 'operator/landing#home'
   get '/wait',      to: 'operator/landing#wait'
   get '/choose',    to: 'operator/landing#choose'
+  get '/activate',  to: 'operator/landing#activate'
+  post '/activate_membership', to: 'operator/landing#activate_membership'
 
   # Other
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
 
-  # Alphabetized Resources
+  # Admin namespace (for operator resources)
+  namespace :operator do
+    namespace :admin do
+      resources :subscriptions
+      resources :day_passes
+    end
+  end
+
+  # Alphabetized Member Resources
   resources :accounting, controller: 'operator/accounting' do
     collection do
       get 'expenses', to: 'operator/accounting#expenses', as: :expenses
@@ -69,7 +79,7 @@ Rails.application.routes.draw do
   end
   resources :invoices, only: [:index], controller: 'operator/invoices' do
     resources :refunds, only: [:create], controller: 'operator/refunds'
-    patch :mark_paid, to: 'operator/mark_invoices_paid#update'
+    get :mark_paid, to: 'operator/mark_invoices_paid#update'
     collection do
       get :due, to: 'operator/invoices#due'
       get :recent, to: 'operator/invoices#recent'
@@ -90,6 +100,16 @@ Rails.application.routes.draw do
   resources :password_resets, only: [:new, :create, :edit, :update], controller: 'operator/password_resets'
   resources :plans, controller: 'operator/plans' do
     post 'unarchive', to: 'operator/plans#unarchive'
+  end
+  resources :reports, controller: 'operator/reports' do
+    collection do
+      get :active_members
+      get :active_lease_members
+      get :active_leases
+      get :last_30_day_passes
+      get :total_members
+      get :membership_breakdown
+    end
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do

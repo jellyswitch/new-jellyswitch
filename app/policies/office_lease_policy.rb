@@ -4,7 +4,7 @@ class OfficeLeasePolicy < ApplicationPolicy
   end
 
   def show?
-    admin?
+    admin? || record.organization.owner == user
   end
 
   def new?

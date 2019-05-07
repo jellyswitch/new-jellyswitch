@@ -1,22 +1,35 @@
 <table class="table table-sm mt-2">
-  <%- operators.each do |operator| %>
+  <tr>
+    <th><small>Status</small></th>
+    <th><small>Operator</small></th>
+    <th><small>Active Members</small></th>
+    <th><small>Members on active leases</small></th>
+    <th><small>Day Passes (last 30 days)</small></th>
+    <th><small>Active leases</small></th>
+    <th><small>Total members</small></th>
+    <th><small>Square footage</small></th>    
+  </tr>
+  <% reports.each do |report| %>
     <tr>
       <td>
-        <%- if operator.production? %>
+        <%- if report.operator.production? %>
           <span class="badge badge-success">Production</span>
         <%- else %>
           <span class="badge badge-info">Demo</span>
         <%- end %>
       </td>
-      <td><%= link_to operator.name, operator_path(operator) %></td>
-      <td><%= operator.active_members %> active members</td>
-      <td><%= operator.total_members %> total members</td>
-      <td><%= number_with_delimiter(operator.square_footage) %> sq ft</td>
+      <td><%= link_to report.name, operator_path(report.operator) %></td>
+      <td><%= report.active_member_count %></td>
+      <td><%= report.active_lease_member_count %></td>
+      <td><%= report.last_30_day_pass_count %></td>
+      <td><%= report.active_lease_count %></td>
+      <td><%= report.all_member_count %></td>
+      <td><%= number_with_delimiter(report.operator.square_footage) %></td>
       <td>
-        <%= link_to "Visit", landing_url(subdomain: operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
-        <%= link_to "Edit", edit_operator_path(operator), class: "btn btn-sm btn-info" %>
-        <%= link_to "Delete", operator_path(operator), method: :delete, data: { confirm: "Are you sure?"},  class: "btn btn-sm btn-danger" %>
+        <%= link_to "Visit", landing_url(subdomain: report.operator.subdomain), class: "btn btn-sm btn-primary", target: "_blank" %>
+        <%= link_to "Edit", edit_operator_path(report.operator), class: "btn btn-sm btn-info" %>
+        <%= link_to "Delete", operator_path(report.operator), method: :delete, data: { confirm: "Are you sure?"},  class: "btn btn-sm btn-danger" %>
       </td>
     </tr>
-  <%- end %>
+  <% end %>
 </table>
