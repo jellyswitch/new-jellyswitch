@@ -22,6 +22,7 @@ class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
           created_at
           updated_at
           stripe_user_id
+          
         )
       ))
 

@@ -18,6 +18,9 @@ class CreateLocations < ActiveRecord::Migration[5.2]
       t.string :stripe_refresh_token
       t.string :wifi_name
       t.string :wifi_password
+      t.boolean :working_hours_enabled, default: false, null: false
+      t.string :working_day_start, default: "09:00", null: false
+      t.string :working_day_end, default: "18:00", null: false
       t.string :stripe_user_id
 
       t.timestamps
