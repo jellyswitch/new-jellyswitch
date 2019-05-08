@@ -16,6 +16,7 @@
 #  stripe_access_token    :string
 #  stripe_publishable_key :string
 #  stripe_refresh_token   :string
+#  time_zone              :string           default("Pacific Time (US & Canada)"), not null
 #  wifi_name              :string
 #  wifi_password          :string
 #  working_day_end        :string           default("18:00"), not null
