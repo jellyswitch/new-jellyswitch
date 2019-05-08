@@ -46,11 +46,9 @@ class UsersController < ApplicationController
     # Redirect them to the operator instance
 
     @user = User.new(user_params)
-    @user.admin = true
 
     if @user.save
       log_in(@user)
-      result = Demo::CreateOperator.call(user: current_user)
 
       if !result.success?
         flash[:error] = result.message
