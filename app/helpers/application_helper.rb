@@ -45,6 +45,12 @@ module ApplicationHelper
     end
   end
 
+  def super_wide_card
+    render "layouts/super_wide_card" do
+      yield
+    end
+  end
+
   def feed_item_card
     render "operator/feed_items/feed_item_card" do
       yield
