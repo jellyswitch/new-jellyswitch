@@ -3,6 +3,7 @@ class Operator::BaseController < ApplicationController
   layout "operator"
   before_action :store_ios_token, if: :logged_in?
   before_action :set_resource_scopes
+  around_action :set_time_zone, if: :current_location
 
   def background_image
     @background_image = current_tenant.background_image if current_tenant.present?
@@ -28,5 +29,9 @@ class Operator::BaseController < ApplicationController
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
     end
+  end
+
+  def set_time_zone(&block)
+    Time.use_zone(current_location.time_zone, &block)
   end
 end
