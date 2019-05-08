@@ -53,6 +53,10 @@ class Location < ApplicationRecord
   has_one_attached :photo
 
   def has_photo?
-    photo.attached?
+    background_image.attached?
+  end
+
+  def square_photo
+    background_image.variant(resize: "100x100>")
   end
 end

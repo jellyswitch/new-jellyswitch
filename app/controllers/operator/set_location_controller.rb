@@ -1,4 +1,6 @@
 class Operator::SetLocationController < Operator::BaseController
+  before_action :background_image
+
   def edit
   end
 

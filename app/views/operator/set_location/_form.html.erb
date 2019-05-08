@@ -1,9 +1,8 @@
-<%= form_for(:location, url: set_location_path, method: :put, html: { class: 'form' }) do |f| %>
-  <div class="form-group">
-    <%= f.label :id, 'Location' %>
-    <%= f.select :id, location_select_options(Location.all), {}, { class: 'form-control' } %>
-  </div>
-  <div class="form-group">
-    <%= f.submit 'Select', class: 'btn btn-primary btn-sm' %>
-  </div>
+<% Location.all.each do |location| %>
+  <%= wide_card do %>
+    <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
+      <%= f.hidden_field :id, value: location.id %>
+      <%= f.submit "Switch to #{location.name}", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
 <% end %>
