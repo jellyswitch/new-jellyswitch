@@ -7,18 +7,12 @@
 #  expense     :boolean          default(FALSE), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
-#  location_id :bigint(8)
 #  operator_id :integer          not null
 #  user_id     :integer
 #
 # Indexes
 #
-#  index_feed_items_on_blob         (blob) USING gin
-#  index_feed_items_on_location_id  (location_id)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (location_id => locations.id)
+#  index_feed_items_on_blob  (blob) USING gin
 #
 
 class FeedItem < ApplicationRecord
@@ -28,13 +22,12 @@ class FeedItem < ApplicationRecord
 
   # Relationships
   belongs_to :operator
-  belongs_to :location
   belongs_to :user
   has_many :feed_item_comments
 
   validate :photo_files_accepted
 
-  acts_as_scopable :operator, :location
+  acts_as_tenant :operator
 
   scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }

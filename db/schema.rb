@@ -96,9 +96,7 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "expense", default: false, null: false
-    t.bigint "location_id"
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
-    t.index ["location_id"], name: "index_feed_items_on_location_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -166,8 +164,6 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
     t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "location_id"
-    t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
   create_table "office_leases", force: :cascade do |t|
@@ -356,9 +352,7 @@ ActiveRecord::Schema.define(version: 2019_04_30_201715) do
   end
 
   add_foreign_key "doors", "locations"
-  add_foreign_key "feed_items", "locations"
   add_foreign_key "locations", "operators"
-  add_foreign_key "member_feedbacks", "locations"
   add_foreign_key "office_leases", "locations"
   add_foreign_key "office_leases", "offices"
   add_foreign_key "office_leases", "operators"

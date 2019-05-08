@@ -61,7 +61,7 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def sidebar_items
-    @member_feedbacks = current_location.member_feedbacks.recent
+    @member_feedbacks = current_tenant.member_feedbacks.recent
     @unapproved_users = current_tenant.users.members.unapproved
     @due_invoices = current_tenant.invoices.due.order('date DESC')
     @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
@@ -72,14 +72,7 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_items
-    if params[:location_filter].blank?
-      feed_items = FeedItem.unscoped.for_operator(current_tenant).where(location: location).order('updated_at DESC')
-    else
-      @location = Location.find(params[:location_filter])
-      feed_items = FeedItem.unscoped.for_operator(current_tenant).where(location: location).order('updated_at DESC')
-    end
-
-    @pagy, @feed_items = pagy(feed_items)
+    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order('updated_at DESC'))
   end
 
   def feed_item_params

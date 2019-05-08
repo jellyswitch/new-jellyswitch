@@ -1,5 +1,5 @@
 class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
-  LOCATION_RESOURCES = %w(rooms offices office_leases member_feedbacks feed_items doors)
+  LOCATION_RESOURCES = %w(rooms offices office_leases doors)
 
   def up
     FeedItem.all.select do |feed_item|
