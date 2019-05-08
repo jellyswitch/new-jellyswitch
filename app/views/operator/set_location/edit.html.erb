@@ -5,4 +5,4 @@
   <p class="text-center">Your current location is: <%= current_location.name %></p>
 <% end %>
 
-<%= render Location.all %>
+<%= render Location.visible, label: "Switch to" %>

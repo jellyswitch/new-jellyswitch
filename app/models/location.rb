@@ -17,6 +17,7 @@
 #  stripe_publishable_key :string
 #  stripe_refresh_token   :string
 #  time_zone              :string           default("Pacific Time (US & Canada)"), not null
+#  visible                :boolean          default(TRUE), not null
 #  wifi_name              :string
 #  wifi_password          :string
 #  working_day_end        :string           default("18:00"), not null
@@ -52,6 +53,8 @@ class Location < ApplicationRecord
 
   has_one_attached :background_image
   has_one_attached :photo
+
+  scope :visible, -> { where(visible: true) }
 
   def has_photo?
     background_image.attached?

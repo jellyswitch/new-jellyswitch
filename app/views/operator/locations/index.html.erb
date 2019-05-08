@@ -4,4 +4,4 @@
   <h4 class="display-4">Locations</h4>
   <%= link_to "Add a location", new_location_path, class: "btn btn-primary" %>
 <% end %>
-<%= render @locations %>
+<%= render @locations, label: "Switch to" %>

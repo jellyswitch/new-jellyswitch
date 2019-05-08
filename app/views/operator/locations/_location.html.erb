@@ -8,7 +8,11 @@
     <div class="ml-4 mb-1">
       <div class="row">
         <h5 class="display-5">
-          <%= link_to location.name, location %>
+          <% if admin? %>
+            <%= link_to location.name, location %>
+          <% else %>
+            <%= location.name %>
+          <% end %>
         </h5>
       </div>
       <div class="row">
@@ -20,11 +24,7 @@
     <div class="col">
     <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
       <%= f.hidden_field :id, value: location.id %>
-      <% if label %>
-        <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
-      <% else %>
-        <%= f.submit "Switch to #{location.name}", class: "btn btn-primary btn-block" %>
-      <% end %>
+      <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
     <% end %>
     </div>
   </div>
