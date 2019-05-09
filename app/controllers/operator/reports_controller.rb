@@ -23,6 +23,9 @@ class Operator::ReportsController < Operator::BaseController
   def membership_breakdown
   end
 
+  def revenue
+  end
+
   private
 
   def generate_report
