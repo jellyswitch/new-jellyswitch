@@ -16,7 +16,7 @@
   </div>
   <div class="row mt-2">
     <p class="lead">
-      Reserved <%= link_to feed_item.reservation.room.name, room_path(feed_item.reservation.room) %> for <%= link_to feed_item.reservation.pretty_datetime, reservation_path(feed_item.reservation) %>
+      Reserved <%= link_to feed_item.reservation.room.name, room_path(feed_item.reservation.room) %> in <%= feed_item.reservation.room.location.name %> for <%= link_to feed_item.reservation.pretty_datetime, reservation_path(feed_item.reservation) %>
     </p>
   </div>
 
