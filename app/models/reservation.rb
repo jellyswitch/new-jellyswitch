@@ -35,4 +35,8 @@ class Reservation < ApplicationRecord
     end
     result
   end
+
+  def room
+    Room.unscoped { super }
+  end
 end
