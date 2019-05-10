@@ -238,7 +238,7 @@ class User < ApplicationRecord
   end
 
   def card_last_4_digits
-    if stripe_customer
+    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data && stripe_customer.sources.data.first && stripe_customer.sources.data.first.last4
       stripe_customer.sources.data.first.last4
     else
       nil
