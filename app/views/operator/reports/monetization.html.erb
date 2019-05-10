@@ -1,0 +1,29 @@
+<% title @location.name %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Monetization: <%= @location.name %></h4>
+  <p class="lead text-center">(Monthly)</p>
+
+  <table class="table">
+    <tr>
+      <th>Space</th>
+      <th>Sq ft</th>
+      <th>Income</th>
+      <th>Income / sq ft</th>
+    </tr>
+    <% @report.office_income.each do |row| %>
+      <tr>
+        <td><%= row.name %></td>
+        <td><%= row.square_footage %></td>
+        <td class="text-right"><%= number_to_currency(row.income) %></td>
+        <td class="text-right"><%= number_to_currency(row.income_per_square_foot) %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <th><%= @report.total_office_income.name %></th>
+      <th><%= @report.total_office_income.square_footage %></th>
+      <th class="text-right"><%= number_to_currency(@report.total_office_income.income) %></th>
+      <th class="text-right"><%= number_to_currency(@report.total_office_income.income_per_square_foot) %></th>
+    </tr>
+  </table>
+<% end %>

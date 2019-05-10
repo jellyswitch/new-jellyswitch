@@ -1,6 +1,6 @@
 class Operator::ReportsController < Operator::BaseController
   before_action :background_image
-  before_action :generate_report
+  before_action :generate_report, except: [:monetization]
 
   def index
   end
@@ -24,6 +24,12 @@ class Operator::ReportsController < Operator::BaseController
   end
 
   def revenue
+  end
+
+  def monetization
+    @location = Location.find(params[:location_id])
+    
+    @report = Jellyswitch::MonetizationReport.new(@location)
   end
 
   private
