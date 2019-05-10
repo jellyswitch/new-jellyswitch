@@ -39,7 +39,7 @@ class Jellyswitch::MonetizationReport
       room_income_klass.new(
         room,
         room.name,
-        0,
+        room.square_footage,
         0,
         0
       )
@@ -50,7 +50,7 @@ class Jellyswitch::MonetizationReport
     @total_room_income  ||= room_income_klass.new(
       nil,
       "Total Rooms",
-      0,
+      room_income.sum {|r| r.square_footage},
       0,
       0
     )
@@ -84,6 +84,26 @@ class Jellyswitch::MonetizationReport
     )
   end
 
+  def total_income
+    vals = [total_flex_income, total_office_income]
+
+    incomes_per_square_foot = vals.map(&:income_per_square_foot)
+    avg_income_per_sq_ft = incomes_per_square_foot.inject { |sum, el| sum + el }.to_f / incomes_per_square_foot.count
+
+    income_klass.new(
+      vals.sum { |v| v.square_footage },
+      vals.sum { |v| v.income },
+      avg_income_per_sq_ft
+    )
+  end
+
+  def chart_data
+    {
+      "Offices" => total_office_income.income_per_square_foot.round(2),
+      "Flex Space" => total_flex_income.income_per_square_foot.round(2)
+    }
+  end
+
   private
 
   def office_income_klass
@@ -96,5 +116,9 @@ class Jellyswitch::MonetizationReport
 
   def flex_income_klass
     Struct.new(:plan, :name, :square_footage, :income, :income_per_square_foot)
+  end
+
+  def income_klass
+    Struct.new(:square_footage, :income, :income_per_square_foot)
   end
 end
