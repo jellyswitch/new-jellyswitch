@@ -107,6 +107,7 @@ Rails.application.routes.draw do
       get :total_members
       get :membership_breakdown
       get :revenue
+      get :monetization
     end
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]

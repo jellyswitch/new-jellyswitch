@@ -37,4 +37,16 @@
     <dt class="col-lg-6">Revenue</dt>
     <dd class="col"><%= link_to "View Data", revenue_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>
+
+ <% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 mb-5 text-center">Monetization</h4>
+
+  <% current_tenant.locations.each do |location| %>
+    <dl class="row">
+      <dt class="col-lg-6"><%= location.name %></dt>
+      <dd class="col"><%= link_to "View Data", monetization_reports_path(location_id: location.id), class: "btn btn-primary btn-block" %></dd>
+    </dl>
+  <% end %>
 <% end %>

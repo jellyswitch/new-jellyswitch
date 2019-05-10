@@ -68,7 +68,8 @@ class Operator::LocationsController < Operator::BaseController
     params.require(:location).permit(
       :name, :snippet, :wifi_name, :wifi_password, :building_address,
       :city, :state, :zip, :contact_name, :contact_email, :contact_phone,
-      :background_image, :square_footage, :time_zone, :visible
+      :background_image, :square_footage, :time_zone, :visible,
+      :flex_square_footage, :common_square_footage
     )
   end
 end
