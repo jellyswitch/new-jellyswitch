@@ -3,6 +3,9 @@
     <p class="lead">
       <%= link_to invoice.billable.name, path_for_billable(invoice) %>
     </p>
+    <p>
+      <span class="badge badge-dark"><%= invoice.payment_method %></span>
+    </p>
     <% if invoice.paid? %>
       <span class="badge badge-success">paid</span>
     <% else %>
