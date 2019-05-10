@@ -22,4 +22,28 @@ class Operator::InvoicesController < Operator::BaseController
     authorize @invoices
     background_image
   end
+
+  def charge
+    find_invoice(:invoice_id)
+    authorize @invoice
+
+    result = Billing::Invoices::ChargeInvoice.call(
+      invoice: @invoice,
+      operator: @invoice.operator
+    )
+
+    if result.success?
+      flash[:success] = "Charge succeeded."
+    else
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(referrer_or_root, action: "replace")
+  end
+
+  private
+
+  def find_invoice(key=:id)
+    @invoice = Invoice.find(params[key])
+  end
 end

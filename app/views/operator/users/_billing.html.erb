@@ -2,3 +2,14 @@
   <dt class="col-sm-3">Payment Method</dt>
   <dd class="col"><%= render "payment_method_form", user: user %></dd>
 </dl>
+
+<dl class="row">
+  <dt class="col-sm-3">Credit Card on file</dt>
+  <dd class="col">
+    <% if user.card_added? %>
+      <pre>**** **** **** <%= user.card_last_4_digits %></pre>
+    <% else %>
+      No card
+    <% end %>
+  </dd>
+</dl>

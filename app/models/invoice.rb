@@ -31,6 +31,7 @@ class Invoice < ApplicationRecord
   scope :recent, -> { where('date > ?', Time.now - 30.days) }
   scope :open, -> { where("status = 'open'") }
   scope :due, -> { open.where('due_date >= ?', Time.now) }
+  scope :paid, ->{ where(status: "paid") }
   scope :delinquent, -> { due.where('due_date < ?', Time.now) }
   scope :last_month, -> {
     last_month_start = (Time.now.beginning_of_month - 1.day).beginning_of_month.to_time.to_i
@@ -90,5 +91,13 @@ class Invoice < ApplicationRecord
 
   def refunded?
     refunds.length > 0
+  end
+
+  def payment_method
+    if stripe_invoice
+      stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Out of Band"
+    else
+      "error"
+    end
   end
 end

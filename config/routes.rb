@@ -81,6 +81,7 @@ Rails.application.routes.draw do
       get :recent, to: 'operator/invoices#recent'
       get :delinquent, to: 'operator/invoices#delinquent'
     end
+    get :charge
   end
   resources :locations, controller: 'operator/locations'
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
@@ -105,6 +106,7 @@ Rails.application.routes.draw do
       get :last_30_day_passes
       get :total_members
       get :membership_breakdown
+      get :revenue
     end
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]

@@ -71,5 +71,23 @@ module Jellyswitch
     def membership_breakdown_plan_count
       membership_breakdown.group(:plan).count
     end
+
+    def revenue_by_month
+      operator.invoices.paid.group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
+        amt.to_f / 100.0
+      end
+    end
+
+    def revenue_by_week
+      operator.invoices.paid.group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
+        amt.to_f / 100.0
+      end
+    end
+
+    def revenue_by_day
+      operator.invoices.paid.group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
+        amt.to_f / 100.0
+      end
+    end
   end
 end

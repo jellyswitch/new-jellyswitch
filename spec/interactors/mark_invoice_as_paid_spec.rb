@@ -32,7 +32,7 @@ RSpec.shared_examples 'paying invoice' do |trait|
   end
 end
 
-RSpec.describe MarkInvoiceAsPaid do
+RSpec.describe Billing::Invoices::MarkInvoiceAsPaid do
   include_examples 'paying invoice', 'with_user'
   include_examples 'paying invoice', 'with_organization'
 end

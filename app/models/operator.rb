@@ -63,6 +63,7 @@ class Operator < ApplicationRecord
            :create_stripe_plan,
            :mark_invoice_paid,
            :create_or_update_customer_payment,
+           :charge_invoice,
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }
