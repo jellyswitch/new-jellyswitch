@@ -236,4 +236,12 @@ class User < ApplicationRecord
   def delinquent?
     stripe_customer.delinquent == true
   end
+
+  def card_last_4_digits
+    if stripe_customer
+      stripe_customer.sources.data.first.last4
+    else
+      nil
+    end
+  end
 end
