@@ -35,9 +35,14 @@
       <%= button_to "Void", invoice_refunds_path(invoice), class: "btn btn-sm btn-secondary" %>
     <% end %>
 
-    <div class="clearfix mb-1"></div>
     <% if invoice.open? %>
+      <div class="clearfix mb-1"></div>
       <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-sm btn-success" %>
+
+      <% if policy(invoice).charge? %>
+        <div class="clearfix mb-1"></div>
+        <%= link_to "Pay with card on file", invoice_charge_path(invoice), class: "btn btn-sm btn-success" %>
+      <% end %>
     <% end %>
   </div>
 </div>

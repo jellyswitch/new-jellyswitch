@@ -80,6 +80,7 @@ Rails.application.routes.draw do
       get :recent, to: 'operator/invoices#recent'
       get :delinquent, to: 'operator/invoices#delinquent'
     end
+    get :charge
   end
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :offices, controller: 'operator/offices'
