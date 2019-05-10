@@ -238,8 +238,21 @@ class User < ApplicationRecord
   end
 
   def card_last_4_digits
-    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data && stripe_customer.sources.data.first && stripe_customer.sources.data.first.last4
-      stripe_customer.sources.data.first.last4
+    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
+      if stripe_customer.sources.data.count < 1
+        nil
+      else
+        cards = stripe_customer.sources.data.select {|source| source.object == "card"}
+        if cards.first
+          if cards.first.respond_to? :last4
+            cards.first.last4
+          else
+            nil
+          end
+        else
+          nil
+        end
+      end
     else
       nil
     end
