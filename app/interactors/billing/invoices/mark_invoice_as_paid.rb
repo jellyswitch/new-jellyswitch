@@ -1,4 +1,4 @@
-class MarkInvoiceAsPaid
+class Billing::Invoices::MarkInvoiceAsPaid
   include Interactor
 
   delegate :invoice, :operator, to: :context
