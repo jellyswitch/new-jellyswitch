@@ -421,6 +421,7 @@ DEPENDENCIES
   rails-erd
   redis
   remotipart (~> 1.2)
+  request_store
   roadie-rails (~> 2.0)
   rollbar
   rspec-rails (~> 3.8)

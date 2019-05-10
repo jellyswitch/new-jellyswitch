@@ -6,10 +6,10 @@
 #  anonymous   :boolean          default(FALSE), not null
 #  comment     :text
 #  rating      :integer
-#  operator_id :integer          not null
-#  user_id     :integer
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
+#  operator_id :integer          not null
+#  user_id     :integer
 #
 
 class MemberFeedback < ApplicationRecord

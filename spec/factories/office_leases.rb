@@ -9,6 +9,7 @@
 #  start_date                   :date             not null
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
+#  location_id                  :bigint(8)
 #  office_id                    :bigint(8)        not null
 #  operator_id                  :bigint(8)        not null
 #  organization_id              :bigint(8)        not null
@@ -16,6 +17,7 @@
 #
 # Indexes
 #
+#  index_office_leases_on_location_id      (location_id)
 #  index_office_leases_on_office_id        (office_id)
 #  index_office_leases_on_operator_id      (operator_id)
 #  index_office_leases_on_organization_id  (organization_id)
@@ -23,6 +25,7 @@
 #
 # Foreign Keys
 #
+#  fk_rails_...  (location_id => locations.id)
 #  fk_rails_...  (office_id => offices.id)
 #  fk_rails_...  (operator_id => operators.id)
 #  fk_rails_...  (organization_id => organizations.id)
@@ -33,8 +36,9 @@ FactoryBot.define do
   factory :office_lease do
     start_date { 1.month.from_now.beginning_of_month }
     end_date { start_date + 1.year }
+    operator { create(:operator, :with_lease_plans, :with_organizations) }
+    location { create(:location, :with_offices, operator: operator) }
     initial_invoice_date { 1.month.from_now.beginning_of_month }
-    operator { create(:operator_with_plans_orgs_and_offices) }
 
     after(:build) do |office_lease|
       operator = office_lease.operator

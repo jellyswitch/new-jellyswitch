@@ -22,7 +22,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def create
-    @office_lease = current_tenant.office_leases.build(office_lease_params)
+    @office_lease = current_location.office_leases.build(office_lease_params)
 
     authorize @office_lease
 

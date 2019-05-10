@@ -1,10 +1,9 @@
-<%- if !ios_request? %>
-
+<% if !ios_request? %>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="<%= home_path %>" data-turbolinks-action="restore">
-      <%- if current_tenant.logo_image.attached? %>
+      <% if current_tenant.logo_image.attached? %>
         <%= image_tag current_tenant.logo_image, width: 30, height: 30 %>
-      <%- end %>
+      <% end %>
       <%= current_tenant.name %>
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,8 +17,12 @@
         <li class="nav-item">
           <%= link_to "Sign In", login_path, class: "nav-link" %>
         </li>
+        <li class="nav-item">
+          <% if Location.count > 1 %>
+            <%= link_to "Change Location", edit_set_location_path, class: "nav-link" %>
+          <% end %>
+        </li>
       </ul>
     </div>
   </nav>
-
-<%- end %>
+<% end %>

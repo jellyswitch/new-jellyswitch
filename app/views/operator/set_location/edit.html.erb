@@ -1,0 +1,8 @@
+<% title "Switch Location" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Change Location</h4>
+  <p class="text-center">Your current location is: <%= current_location.name %></p>
+<% end %>
+
+<%= render Location.visible, label: "Switch to" %>

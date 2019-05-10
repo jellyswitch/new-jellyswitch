@@ -30,7 +30,7 @@ class Operator::FeedItemsController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(feed_items_path, action: "restore")
     end
-  rescue Exception => e
+  rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
@@ -72,7 +72,7 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.for_operator(current_tenant).order('updated_at DESC'))
+    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order('updated_at DESC'))
   end
 
   def feed_item_params
@@ -80,6 +80,6 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_item(key=:id)
-    @feed_item = FeedItem.find(params[key])
+    @feed_item = FeedItem.unscoped.find(params[key])
   end
 end

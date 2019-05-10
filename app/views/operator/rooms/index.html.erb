@@ -5,6 +5,9 @@
   <div class="col-lg">
     <div class="jumbotron bg-white pb-2 pt-2">
       <% if admin? %>
+        <p>
+          Showing rooms for <strong><%= current_location.name %></strong>. Switch locations to manage rooms at other locations.
+        </p>
         <div class="row mt-2 mb-2">
           <div class="col mr-auto">
             <%= link_to "Add a new room", new_room_path, class: "btn btn-primary" %>

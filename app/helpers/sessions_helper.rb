@@ -4,6 +4,10 @@ module SessionsHelper
     session[:user_id] = user.id
   end
 
+  def set_location(location)
+    session[:location_id] = location.id
+  end
+
   # Returns the current logged-in user (if any)
   def current_user
     if (user_id = session[:user_id])
@@ -14,6 +18,23 @@ module SessionsHelper
         log_in(user)
         @current_user = user
       end
+    end
+  end
+
+  def current_location
+    return @current_location if @current_location
+
+    if (location_id = session[:location_id])
+      @current_location ||= Location.find_by(id: location_id)
+    elsif (location_id = cookies.signed[:location_id])
+      current_location = Location.find_by(id: location_id)
+      if current_location
+        set_location(location)
+        @current_location = current_location
+      end
+    elsif Location.count == 1
+      set_location(Location.first)
+      @current_location = Location.first
     end
   end
 

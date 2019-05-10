@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   def user_not_authorized
-    flash[:alert] = "Whoops! That's not allowed. If this isn't what you were expecting, please contact #{current_tenant.contact_name} by calling #{current_tenant.contact_phone}."
+    flash[:alert] = "Whoops! That's not allowed. If this isn't what you were expecting, please contact #{current_location.contact_name} by calling #{current_location.contact_phone}."
     redirect_to referrer_or_root
   end
 

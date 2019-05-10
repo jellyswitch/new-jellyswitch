@@ -1,4 +1,4 @@
-<%- title "Home" %>
+<% title current_location.name %>
 
 <div class="row mt-3">
   <div class="col-sm">
@@ -13,13 +13,13 @@
   <div class="col-sm">
     <div class="card-group">
       <%= render "shared/wifi" %>
-      <%- if current_tenant.has_contact_info? %>
+      <% if current_tenant.has_contact_info? %>
         <%= render "shared/contact_card" %>
         <%= render "shared/map_card" %>
-      <%- else %>
+      <% else %>
         <%= render "shared/map_card" %>
         <%= render "shared/empty_card" %>
-      <%- end %>
+      <% end %>
     </div>
   </div>
 </div>

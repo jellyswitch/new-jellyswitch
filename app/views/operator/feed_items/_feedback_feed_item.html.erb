@@ -1,18 +1,18 @@
 <div class="row">
   <div>
-    <%- if !feed_item.member_feedback.anonymous? %>
+    <% if !feed_item.member_feedback.anonymous? %>
       <%= render "shared/small_profile_photo", user: feed_item.user %>
-    <%- else %>
+    <% else %>
       <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 50px;" %>
-    <%- end %>
+    <% end %>
   </div>
   <div class="ml-2">
     <p class="mb-1">
-      <%- if !feed_item.member_feedback.anonymous? %>
+      <% if !feed_item.member_feedback.anonymous? %>
         <%= link_to feed_item.user.name, user_path(feed_item.user) %>
-      <%- else %>
+      <% else %>
         Anonymous
-      <%- end %>
+      <% end %>
       <br />
       <small>
         <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>

@@ -1,0 +1,49 @@
+<%= link_to "Edit", edit_location_path(location), class: "btn btn-info" %>
+
+<h4 class="display-4 mt-3">Basic Settings</h4>
+<dl>
+  <dt>Name</dt>
+  <dd><%= location.name %></dd>
+
+  <dt>Homepage description</dt>
+  <dd><%= location.snippet %></dd>
+
+  <dt>Contact Name (for members)</dt>
+  <dd><%= location.contact_name %></dd>
+
+  <dt>Contact email (for members)</dt>
+  <dd><%= location.contact_email %></dd>
+
+  <dt>Contact phone (for members)</dt>
+  <dd><%= location.contact_phone %></dd>
+
+  <dt>Square Footage</dt>
+  <dd><%= location.square_footage %></dd>
+
+  <dt>Wifi Name</dt>
+  <dd><%= location.wifi_name %></dd>
+
+  <dt>Wifi Password</dt>
+  <dd><%= location.wifi_password %></dd>
+
+  <dt>Building Address</dt>
+  <dd><%= location.building_address %></dd>
+
+  <dt>Time Zone</dt>
+  <dd><%= location.time_zone %></dd>
+
+  <dt>Visible?</dt>
+  <dd><%= boolean_to_yesno(location.visible) %></dd>
+</dl>
+<hr />
+<h4 class="display-4 mt-3">Jellyswitch Customization</h4>
+<dl>
+  <dt>Background</dt>
+  <dd>
+    <% if location.background_image.attached? %>
+      <%= image_tag(location.background_image.variant(resize: "500x500"), width: 150, height: 150) %>
+    <% else %>
+      <i>Not uploaded</i>
+    <% end %>
+  </dd>
+</dl>

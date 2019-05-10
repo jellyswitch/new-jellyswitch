@@ -26,7 +26,7 @@
           <%= render "reservation_button", room: room, datetime_in: Time.current.beginning_of_hour, label: "Reserve Now" %>
         <%- end %>
         &nbsp;
-        <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "btn btn-sm btn-primary" %>
+        <%= link_to "Reserve later", room_day_availability_path(room, day: Time.zone.today.day, month: Time.zone.today.month, year: Time.zone.today.year), class: "btn btn-sm btn-primary" %>
       </div>
     </div>
   </div>

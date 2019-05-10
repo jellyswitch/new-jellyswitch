@@ -1,7 +1,7 @@
 <%= form_with(model: day_pass, url: operator_admin_day_passes_path, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.date_select :day, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+    <%= f.date_select :day, {default: Time.zone.today, order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
     <div class="col-1"></div>
   </div>
 

@@ -32,7 +32,7 @@
           <%= render "reservation_button", room: room, datetime_in: Time.current.beginning_of_hour, label: "Reserve Now" %>
         <% end %>
         <div class="row mt-2">
-          <%= link_to "Reserve later", room_day_availability_path(room, day: Date.today.day, month: Date.today.month, year: Date.today.year), class: "col btn btn-block btn-primary" %>
+          <%= link_to "Reserve later", room_day_availability_path(room, day: Time.zone.today.day, month: Time.zone.today.month, year: Time.zone.today.year), class: "col btn btn-block btn-primary" %>
         </div>
         <% if admin? %>
           <div class="row mt-2">

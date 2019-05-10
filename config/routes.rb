@@ -32,6 +32,7 @@ Rails.application.routes.draw do
 
   # Operator Authentication
   delete '/logout',  to: 'operator/sessions#destroy'
+  get '/logout',  to: 'sessions#destroy'
   post '/login',     to: 'operator/sessions#create'
   get '/login',      to: 'operator/sessions#new'
   get '/signup',     to: 'operator/users#new'
@@ -82,6 +83,7 @@ Rails.application.routes.draw do
     end
     get :charge
   end
+  resources :locations, controller: 'operator/locations'
   resources :member_feedbacks, controller: 'operator/member_feedbacks'
   resources :offices, controller: 'operator/offices'
   resources :office_leases, controller: 'operator/office_leases'
@@ -116,6 +118,7 @@ Rails.application.routes.draw do
       get :query, to: 'operator/search_results#query'
     end
   end
+  resource :set_location, only: [:edit, :update], controller: 'operator/set_location'
   resources :subscriptions, controller: 'operator/subscriptions'
   resources :users, controller: 'operator/users' do
     post 'approve', to: "operator/users#approve"

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe 'Member signup', type: :system, js: true do
   let(:subdomain) { create(:subdomain) }
-  let(:operator) { create(:operator, :with_individual_plans, subdomain: subdomain.subdomain) }
+  let(:operator) { create(:operator, :with_location, :with_individual_plans, subdomain: subdomain.subdomain) }
   let(:admin_user) { create(:user, :admin, operator: operator) }
 
   before do

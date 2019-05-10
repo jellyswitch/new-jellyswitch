@@ -34,6 +34,7 @@ class FeedItem < ApplicationRecord
 
   # Types of feed_items
   scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
+  scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
 
   def search_data
     {
@@ -99,7 +100,7 @@ class FeedItem < ApplicationRecord
     if member_feedback_id.nil?
       nil
     else
-      MemberFeedback.find(member_feedback_id)
+      MemberFeedback.unscoped.find(member_feedback_id)
     end
   end
 
