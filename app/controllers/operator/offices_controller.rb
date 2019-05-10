@@ -54,6 +54,6 @@ class Operator::OfficesController < Operator::BaseController
   end
 
   def office_params
-    params.require(:office).permit(:name, :description, :capacity, :photo, :lease, :visible)
+    params.require(:office).permit(:name, :description, :capacity, :square_footage, :photo, :lease, :visible)
   end
 end

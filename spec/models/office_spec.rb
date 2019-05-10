@@ -2,16 +2,17 @@
 #
 # Table name: offices
 #
-#  id          :bigint(8)        not null, primary key
-#  capacity    :integer          default(1), not null
-#  description :text
-#  name        :string
-#  slug        :string
-#  visible     :boolean          default(TRUE), not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  location_id :bigint(8)
-#  operator_id :bigint(8)        not null
+#  id             :bigint(8)        not null, primary key
+#  capacity       :integer          default(1), not null
+#  description    :text
+#  name           :string
+#  slug           :string
+#  square_footage :integer          default(0), not null
+#  visible        :boolean          default(TRUE), not null
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
+#  location_id    :bigint(8)
+#  operator_id    :bigint(8)        not null
 #
 # Indexes
 #

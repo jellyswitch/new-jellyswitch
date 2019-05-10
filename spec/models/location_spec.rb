@@ -6,9 +6,11 @@
 #  billing_state          :string
 #  building_address       :string
 #  city                   :string
+#  common_square_footage  :integer          default(0), not null
 #  contact_email          :string
 #  contact_name           :string
 #  contact_phone          :string
+#  flex_square_footage    :integer          default(0), not null
 #  name                   :string
 #  snippet                :string
 #  square_footage         :integer
