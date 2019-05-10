@@ -16,4 +16,8 @@ class InvoicePolicy < ApplicationPolicy
   def delinquent?
     admin?
   end
+
+  def charge?
+    admin? && record.billable.card_added?
+  end
 end

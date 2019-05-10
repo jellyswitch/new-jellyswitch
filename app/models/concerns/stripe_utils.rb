@@ -85,6 +85,28 @@ module StripeUtils
     stripe_request(stripe_invoice_item, :create, invoice_item_args)
   end
 
+  def charge_invoice(invoice)
+    if !invoice.billable.card_added
+      raise "No card on file."
+    end
+    stripe_customer = invoice.billable.stripe_customer
+
+    if stripe_customer.sources.data.count == 0
+      raise "No card on file."
+    end
+
+    stripe_invoice = retrieve_stripe_invoice(invoice)
+
+    options = {
+      source: stripe_customer.sources.data.first.id
+    }
+
+    stripe_invoice.pay(options)
+  rescue Stripe::InvalidRequestError => e
+    Rollbar.error(e)
+    false
+  end
+
   def mark_invoice_paid(invoice, options = {})
     stripe_invoice = retrieve_stripe_invoice(invoice)
 

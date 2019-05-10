@@ -2,7 +2,7 @@ class Operator::MarkInvoicesPaidController < Operator::BaseController
   def update
     invoice = Invoice.find(params[:invoice_id])
 
-    result = MarkInvoiceAsPaid.call(invoice: invoice, operator: current_tenant)
+    result = Billing::Invoices::MarkInvoiceAsPaid.call(invoice: invoice, operator: current_tenant)
 
     if result.success?
       flash[:success] = "Invoice marked as paid."

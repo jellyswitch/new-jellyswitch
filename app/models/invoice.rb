@@ -92,4 +92,12 @@ class Invoice < ApplicationRecord
   def refunded?
     refunds.length > 0
   end
+
+  def payment_method
+    if stripe_invoice
+      stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Out of Band"
+    else
+      "error"
+    end
+  end
 end

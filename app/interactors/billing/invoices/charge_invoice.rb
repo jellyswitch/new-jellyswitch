@@ -1,10 +1,10 @@
-class MarkInvoiceAsPaid
+class Billing::Invoices::ChargeInvoice
   include Interactor
 
   delegate :invoice, :operator, to: :context
 
   def call
-    if operator.mark_invoice_paid(invoice, paid_out_of_band: true)
+    if operator.charge_invoice(invoice)
       invoice.update(status: 'paid')
     else
       context.fail!(message: 'Failed to mark invoice as paid.')
