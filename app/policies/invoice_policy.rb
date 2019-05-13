@@ -18,6 +18,17 @@ class InvoicePolicy < ApplicationPolicy
   end
 
   def charge?
-    admin? && record.billable.card_added?
+    admin? && card_added?
+  end
+
+  private
+
+  def card_added?
+    case record.billable.class
+    when User
+      record.billable.card_added?
+    when Organization
+      record.billable.has_billing?
+    end
   end
 end
