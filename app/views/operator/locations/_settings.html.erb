@@ -32,6 +32,15 @@
   <dt>Wifi Password</dt>
   <dd><%= location.wifi_password %></dd>
 
+  <dt>Building Access Instructions</dt>
+  <dd>
+    <% if location.building_access_instructions.present? %>
+      <%= location.building_access_instructions %>
+    <% else %>
+      <i>Not set</i>
+    <% end %>
+  </dd>
+
   <dt>Building Address</dt>
   <dd><%= location.building_address %></dd>
 

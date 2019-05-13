@@ -2,34 +2,35 @@
 #
 # Table name: locations
 #
-#  id                     :bigint(8)        not null, primary key
-#  billing_state          :string
-#  building_address       :string
-#  city                   :string
-#  common_square_footage  :integer          default(0), not null
-#  contact_email          :string
-#  contact_name           :string
-#  contact_phone          :string
-#  flex_square_footage    :integer          default(0), not null
-#  name                   :string
-#  snippet                :string
-#  square_footage         :integer
-#  state                  :string
-#  stripe_access_token    :string
-#  stripe_publishable_key :string
-#  stripe_refresh_token   :string
-#  time_zone              :string           default("Pacific Time (US & Canada)"), not null
-#  visible                :boolean          default(TRUE), not null
-#  wifi_name              :string
-#  wifi_password          :string
-#  working_day_end        :string           default("18:00"), not null
-#  working_day_start      :string           default("09:00"), not null
-#  working_hours_enabled  :boolean          default(FALSE), not null
-#  zip                    :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  operator_id            :bigint(8)        not null
-#  stripe_user_id         :string
+#  id                           :bigint(8)        not null, primary key
+#  billing_state                :string
+#  building_access_instructions :string
+#  building_address             :string
+#  city                         :string
+#  common_square_footage        :integer          default(0), not null
+#  contact_email                :string
+#  contact_name                 :string
+#  contact_phone                :string
+#  flex_square_footage          :integer          default(0), not null
+#  name                         :string
+#  snippet                      :string
+#  square_footage               :integer
+#  state                        :string
+#  stripe_access_token          :string
+#  stripe_publishable_key       :string
+#  stripe_refresh_token         :string
+#  time_zone                    :string           default("Pacific Time (US & Canada)"), not null
+#  visible                      :boolean          default(TRUE), not null
+#  wifi_name                    :string
+#  wifi_password                :string
+#  working_day_end              :string           default("18:00"), not null
+#  working_day_start            :string           default("09:00"), not null
+#  working_hours_enabled        :boolean          default(FALSE), not null
+#  zip                          :string
+#  created_at                   :datetime         not null
+#  updated_at                   :datetime         not null
+#  operator_id                  :bigint(8)        not null
+#  stripe_user_id               :string
 #
 # Indexes
 #
