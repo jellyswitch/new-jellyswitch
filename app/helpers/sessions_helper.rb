@@ -52,6 +52,9 @@ module SessionsHelper
     elsif Location.count == 1
       set_location(Location.first)
       @current_location = Location.first
+    else
+      set_location(Location.first)
+      @current_location = Location.first
     end
   end
 
