@@ -8,6 +8,12 @@ module SessionsHelper
     session[:location_id] = location.id
   end
 
+  def unset_location
+    session.delete(:location_id)
+    cookies.delete(:location_id)
+    @current_location = nil
+  end
+
   # Returns the current logged-in user (if any)
   def current_user
     if (user_id = session[:user_id])
@@ -22,8 +28,17 @@ module SessionsHelper
   end
 
   def current_location
-    return @current_location if @current_location
+    # In case I"m a superadmin and my location is set to a different operator
+    if session[:location_id]
+      loc = Location.unscoped.find_by(id: session[:location_id])
+      
+      if loc && loc.operator != current_tenant
+        unset_location
+      end
+    end
 
+    return @current_location if @current_location
+    
     if (location_id = session[:location_id])
       @current_location ||= Location.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id])
@@ -31,6 +46,8 @@ module SessionsHelper
       if current_location
         set_location(location)
         @current_location = current_location
+      else
+        raise "No locations configured."
       end
     elsif Location.count == 1
       set_location(Location.first)
