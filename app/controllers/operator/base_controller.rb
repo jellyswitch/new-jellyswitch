@@ -26,9 +26,9 @@ class Operator::BaseController < ApplicationController
   private
 
   def set_resource_scopes
-    if ActsAsScopable.current_scope_resources.empty?
+    #if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
-    end
+    #end
   end
 
   def set_time_zone(&block)
