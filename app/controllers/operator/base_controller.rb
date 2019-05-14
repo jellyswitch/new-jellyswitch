@@ -10,7 +10,7 @@ class Operator::BaseController < ApplicationController
   end
 
   def pundit_user
-    UserContext.new(current_user, current_tenant)
+    UserContext.new(current_user, current_tenant, current_location)
   end
 
   def store_ios_token

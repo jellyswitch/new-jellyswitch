@@ -12,7 +12,7 @@
         Check in now and pay $3 / hr. Includes access to the building, wifi, and a flex desk.
       </p>
       <div class="row">
-        <%= link_to "Check in now", checkins_path, method: :post, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' }%>
+        <%= link_to "Check in now", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
       </div>
     </div>
   </div>
