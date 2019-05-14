@@ -19,4 +19,8 @@ class Checkin < ApplicationRecord
 
   scope :open, -> { where(datetime_out: nil) }
   scope :for_location, -> (loc) { where(location_id: loc.id) }
+
+  def charge_description
+    "Hourly charge for #{location.name}"
+  end
 end
