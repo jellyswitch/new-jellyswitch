@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_14_173315) do
+ActiveRecord::Schema.define(version: 2019_05_14_222549) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -166,6 +166,8 @@ ActiveRecord::Schema.define(version: 2019_05_14_173315) do
     t.integer "flex_square_footage", default: 0, null: false
     t.integer "common_square_footage", default: 0, null: false
     t.string "building_access_instructions"
+    t.boolean "allow_hourly", default: false, null: false
+    t.integer "hourly_rate_in_cents", default: 0, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

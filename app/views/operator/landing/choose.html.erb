@@ -3,23 +3,25 @@
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Welcome!</h4>
   <p class="lead text-center mb-3 mt-3">To proceed, please select an option:</p>
-  <div class="row mb-2 mr-1 ml-1">
-    <div class="col mt-3">
-      <strong class="row">
-        Hourly Rate
-      </strong>
-      <p class="row mt-3" style="height: 100px;">
-        Check in now and pay $3 / hr. Includes access to the building, wifi, and a flex desk.
-      </p>
-      <div class="row">
-        <% if current_user.has_billing? %>
-          <%= link_to "Check in now", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
-        <% else %>
-          <%= link_to "Check in now", new_checkin_path, class: "btn btn-primary col m-2" %>
-        <% end %>
+  <% if current_location.allow_hourly? %>
+    <div class="row mb-2 mr-1 ml-1">
+      <div class="col mt-3">
+        <strong class="row">
+          Hourly Rate
+        </strong>
+        <p class="row mt-3" style="height: 100px;">
+          Check in now and pay <%= number_to_currency(current_location.hourly_rate_in_cents.to_f / 100.0) %> / hr. Includes access to the building, wifi, and a flex desk.
+        </p>
+        <div class="row">
+          <% if current_user.has_billing? %>
+            <%= link_to "Check in now", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
+          <% else %>
+            <%= link_to "Check in now", new_checkin_path, class: "btn btn-primary col m-2" %>
+          <% end %>
+        </div>
       </div>
     </div>
-  </div>
+  <% end %>
   <div class="row mb-2 mr-1 ml-1">
     <% if @day_pass_types.count > 0 %>
       <div class="col mt-3">

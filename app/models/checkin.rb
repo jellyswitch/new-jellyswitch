@@ -23,4 +23,20 @@ class Checkin < ApplicationRecord
   def charge_description
     "Hourly charge for #{location.name}"
   end
+
+  def charge_amount
+    location.hourly_rate_in_cents * hours
+  end
+
+  def seconds
+    (datetime_out - datetime_in).to_i
+  end
+
+  def minutes
+    (seconds.to_f / 1.minute).ceil
+  end
+
+  def hours
+    (seconds.to_f / 1.hour).ceil
+  end
 end

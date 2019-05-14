@@ -7,7 +7,7 @@ class Checkins::CreateStripeInvoice
     @invoice_item = Stripe::InvoiceItem.create({
       customer: checkin.user.stripe_customer_id,
       currency: 'usd',
-      amount: 300,
+      amount: checkin.charge_amount,
       description: checkin.charge_description
     }, {
       api_key: checkin.location.operator.stripe_secret_key,
@@ -18,7 +18,7 @@ class Checkins::CreateStripeInvoice
       @invoice = Stripe::Invoice.create({
         customer: checkin.user.stripe_customer_id,
         billing: 'send_invoice',
-        days_until_due: 30,
+        days_until_due: 1,
         auto_advance: true
       }, {
         api_key: checkin.location.operator.stripe_secret_key,

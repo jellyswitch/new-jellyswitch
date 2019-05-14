@@ -12,6 +12,16 @@
   </div>
 
   <div class="form-group">
+    <%= f.label :allow_hourly, "Allow check-ins and check-outs at an hourly rate?" %>
+    <%= f.check_box :allow_hourly, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :hourly_rate_in_cents %>
+    <%= f.number_field :hourly_rate_in_cents, placeholder: "300", class: "form-control" %>
+  </div>
+
+  <div class="form-group">
     <%= f.label :contact_name, "Contact Name (for members)" %>
     <%= f.text_field :contact_name, placeholder: "Contact Name", class: "form-control" %>
   </div>
@@ -91,5 +101,6 @@
     <%= f.label "Visible?" %>
     <%= f.check_box :visible, class: "form-control" %>
   </div>
+
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <% end %>
