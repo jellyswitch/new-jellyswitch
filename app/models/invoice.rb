@@ -26,6 +26,7 @@ class Invoice < ApplicationRecord
   acts_as_tenant :operator
 
   belongs_to :billable, polymorphic: true
+  has_many :checkins
   has_many :refunds
 
   scope :recent, -> { where('date > ?', Time.now - 30.days) }

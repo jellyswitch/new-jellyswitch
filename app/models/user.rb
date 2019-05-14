@@ -34,6 +34,7 @@
 
 class User < ApplicationRecord
   # Relationships
+  has_many :checkins
   has_many :day_passes
   has_many :door_punches
   has_many :feed_items
@@ -218,6 +219,10 @@ class User < ApplicationRecord
     else
       ["#{user.name} (Organization: #{user.organization.name})", user.id]
     end
+  end
+
+  def checked_in?(location)
+    checkins.for_location(location).open.count > 0
   end
 
   # Stripe Stuff

@@ -27,6 +27,10 @@ module SessionsHelper
     end
   end
 
+  def current_checkin
+    current_user.checkins.for_location(current_location).open.first
+  end
+
   def current_location
     # In case I"m a superadmin and my location is set to a different operator
     if session[:location_id]
@@ -71,7 +75,7 @@ module SessionsHelper
   end
 
   def member?
-    current_user.present? && current_user.member?(current_tenant)
+    current_user.present? && (current_user.member?(current_tenant) || current_user.checked_in?(current_location) )
   end
 
   def pending?

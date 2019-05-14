@@ -1,45 +1,52 @@
 <% title "Welcome" %>
 
-<div class="row mt-3">
-  <div class="col-lg-3"></div>
-  <div class="col-lg">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Welcome!</h4>
-      <p class="lead text-center mb-3 mt-3">To proceed, please purchase a day pass or become a member at <%= current_tenant.name %>.</p>
-      <div class="row mb-2 mr-1 ml-1">
-        <% if @day_pass_types.count > 0 %>
-          <div class="col mt-3">
-            <strong class="row">
-              Day Passes
-            </strong>
-            <p class="row mt-3" style="height: 100px;">
-              A day pass costs <%= display_price(@day_pass_types.first) %> and include access to the building, wifi, and a desk.
-            </p>
-            <div class="row">
-              <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' }%>
-            </div>
-          </div>
-          <div class="col-1"></div>
-        <% end %>
-        <% if @plans.count > 0 %>
-          <div class="col mt-3">
-            <strong class="row">
-              Memberships
-            </strong>
-            <p class="row mt-3" style="height: 100px;">
-              Memberships start at <%= display_price(@plans.first) %> and vary from flexible desk space to full private offices.
-            </p>
-            <div class="row">
-              <%= link_to "Become a member", new_subscription_path, class: "btn btn-info col m-2", data: { acc: 'new-member' } %>
-            </div>
-          </div>
-        <% end %>
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Welcome!</h4>
+  <p class="lead text-center mb-3 mt-3">To proceed, please select an option:</p>
+  <div class="row mb-2 mr-1 ml-1">
+    <div class="col mt-3">
+      <strong class="row">
+        Hourly Rate
+      </strong>
+      <p class="row mt-3" style="height: 100px;">
+        Check in now and pay $3 / hr. Includes access to the building, wifi, and a flex desk.
+      </p>
+      <div class="row">
+        <%= link_to "Check in now", checkins_path, method: :post, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' }%>
       </div>
     </div>
   </div>
-  <div class="col-lg-3"></div>
-</div>
+  <div class="row mb-2 mr-1 ml-1">
+    <% if @day_pass_types.count > 0 %>
+      <div class="col mt-3">
+        <strong class="row">
+          Day Passes
+        </strong>
+        <p class="row mt-3" style="height: 100px;">
+          A day pass costs <%= display_price(@day_pass_types.first) %> and include access to the building, wifi, and a desk.
+        </p>
+        <div class="row">
+          <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' }%>
+        </div>
+      </div>
+      <div class="col-1"></div>
+    <% end %>
+    <% if @plans.count > 0 %>
+      <div class="col mt-3">
+        <strong class="row">
+          Memberships
+        </strong>
+        <p class="row mt-3" style="height: 100px;">
+          Memberships start at <%= display_price(@plans.first) %> and vary from flexible desk space to full private offices.
+        </p>
+        <div class="row">
+          <%= link_to "Become a member", new_subscription_path, class: "btn btn-info col m-2", data: { acc: 'new-member' } %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 
+<% end %>
 
 <div class="row mb-3">
   <div class="col-lg-3"></div>

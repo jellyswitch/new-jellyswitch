@@ -47,6 +47,7 @@ class Location < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  has_many :checkins
   has_many :doors
   has_many :rooms
   has_many :offices
