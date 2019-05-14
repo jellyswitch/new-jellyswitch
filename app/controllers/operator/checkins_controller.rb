@@ -1,10 +1,30 @@
 class Operator::CheckinsController < Operator::BaseController
+  before_action :background_image
+
+  def new
+    @checkin = Checkin.new
+    include_stripe
+  end
+
   def create
-    result = Checkins::CreateCheckin.call(
-      user: current_user,
-      operator: current_tenant,
-      location: current_location
-    )
+    token = params[:stripeToken]
+    out_of_band = params[:out_of_band]
+
+    if token && !(out_of_band || current_user.out_of_band)
+      result = Checkins::UpdatePaymentAndCreateCheckin.call(
+        user: current_user,
+        operator: current_tenant,
+        location: current_location,
+        token: token,
+        out_of_band: out_of_band
+      )
+    else
+      result = Checkins::CreateCheckin.call(
+        user: current_user,
+        operator: current_tenant,
+        location: current_location
+      )
+    end
 
     if result.success?
       turbolinks_redirect(home_path, action: "replace")

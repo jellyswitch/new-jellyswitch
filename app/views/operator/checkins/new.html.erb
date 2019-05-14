@@ -1,0 +1,12 @@
+<% title "Become a member" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Check in</h4>
+  <p>
+    Check-ins require a credit card on file. You will be billed automatically after you check out.
+  </p>
+  <%= render "form", checkin: @checkin, cc: !current_user.has_billing? %>
+  <p class="text-muted">
+    <%= link_to "Go Back", choose_path, data: {"turbolinks-action" => "restore"} %>
+  </p>
+<% end %>
