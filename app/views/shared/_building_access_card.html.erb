@@ -26,7 +26,7 @@
 
       </div>
     <%- else %>
-      <% if active_working_hours?(current_tenant) || has_building_access?(current_user) %>
+      <% if active_working_hours?(current_location) || has_building_access?(current_user) %>
         <%= render "operator/doors/keys", doors: @doors %>
       <% else %>
         <div class="row mt-4">

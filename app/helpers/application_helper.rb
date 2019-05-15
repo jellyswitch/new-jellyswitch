@@ -138,13 +138,9 @@ module ApplicationHelper
     "#{start} #{separator} #{ending}"
   end
 
-  def active_working_hours?(operator)
-    if operator.working_hours_enabled?
-      WorkingHours::Config.with_config(working_hours: working_hours_config(operator), holidays: [], time_zone: Time.zone.name) do
-        Time.current.in_working_hours?
-      end
-    else
-      true
+  def active_working_hours?(location)
+    WorkingHours::Config.with_config(working_hours: working_hours_config(location), holidays: [], time_zone: Time.zone.name) do
+      Time.current.in_working_hours?
     end
   end
 
@@ -172,13 +168,13 @@ module ApplicationHelper
 
   private
 
-  def working_hours_config(operator)
+  def working_hours_config(location)
     {
-      mon: {operator.working_day_start => operator.working_day_end},
-      tue: {operator.working_day_start => operator.working_day_end},
-      wed: {operator.working_day_start => operator.working_day_end},
-      thu: {operator.working_day_start => operator.working_day_end},
-      fri: {operator.working_day_start => operator.working_day_end},
+      mon: {location.working_day_start => location.working_day_end},
+      tue: {location.working_day_start => location.working_day_end},
+      wed: {location.working_day_start => location.working_day_end},
+      thu: {location.working_day_start => location.working_day_end},
+      fri: {location.working_day_start => location.working_day_end},
     }
   end
 end

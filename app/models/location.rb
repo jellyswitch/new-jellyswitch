@@ -27,7 +27,6 @@
 #  wifi_password                :string
 #  working_day_end              :string           default("18:00"), not null
 #  working_day_start            :string           default("09:00"), not null
-#  working_hours_enabled        :boolean          default(FALSE), not null
 #  zip                          :string
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
@@ -59,6 +58,9 @@ class Location < ApplicationRecord
 
   has_one_attached :background_image
   has_one_attached :photo
+
+  validates :working_day_start, presence: true
+  validates :working_day_end, presence: true
 
   scope :visible, -> { where(visible: true) }
 
