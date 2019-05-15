@@ -5,6 +5,8 @@ class NotifiableFactory
       Notifiable::Subscription
     when 'DayPass'
       Notifiable::DayPass
+    when 'Checkin'
+      Notifiable::Checkin
     end.new(notifiable)
   end
 end
