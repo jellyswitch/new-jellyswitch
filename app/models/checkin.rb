@@ -25,7 +25,15 @@ class Checkin < ApplicationRecord
   end
 
   def charge_amount
-    location.hourly_rate_in_cents * hours
+    (per_minute_charge_amount * minutes).to_i
+  end
+
+  def per_minute_charge_amount
+    location.hourly_rate_in_cents.to_f / 60.0
+  end
+
+  def per_hour_charge_amount
+    location.hourly_rate_in_cents
   end
 
   def seconds
