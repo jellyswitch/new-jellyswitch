@@ -132,9 +132,9 @@ module ApplicationHelper
     end
   end
 
-  def format_working_hours(operator, separator="through")
-    start = Time.strptime(operator.working_day_start, "%R").strftime("%l:%M %P")
-    ending = Time.strptime(operator.working_day_end, "%R").strftime("%l:%M %P")
+  def format_working_hours(location, separator="through")
+    start = Time.strptime(location.working_day_start, "%R").strftime("%l:%M %P")
+    ending = Time.strptime(location.working_day_end, "%R").strftime("%l:%M %P")
     "#{start} #{separator} #{ending}"
   end
 
