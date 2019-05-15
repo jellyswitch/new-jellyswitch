@@ -36,6 +36,7 @@ class Operator::CheckinsController < Operator::BaseController
 
   def destroy
     @checkin = Checkin.find(params[:id])
+    authorize @checkin
 
     result = Checkins::Checkout.call(checkin: @checkin)
 
