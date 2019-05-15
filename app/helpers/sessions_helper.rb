@@ -56,9 +56,6 @@ module SessionsHelper
     elsif Location.count == 1
       set_location(Location.first)
       @current_location = Location.first
-    else
-      set_location(Location.first)
-      @current_location = Location.first
     end
   end
 
@@ -89,6 +86,7 @@ module SessionsHelper
   def log_out
     forget(current_user)
     session.delete(:user_id)
+    session.delete(:location_id)
     @current_user = nil
   end
 
