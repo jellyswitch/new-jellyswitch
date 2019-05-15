@@ -87,39 +87,23 @@ class FeedItem < ApplicationRecord
   # Lazy relationships
 
   def reservation
-    reservation_id = blob["reservation_id"]
-    if reservation_id.nil?
-      nil
-    else
-      Reservation.unscoped.find(reservation_id)
-    end
+    blob_relation("reservation_id", Reservation.unscoped)
   end
 
   def member_feedback
-    member_feedback_id = blob["member_feedback_id"]
-    if member_feedback_id.nil?
-      nil
-    else
-      MemberFeedback.unscoped.find(member_feedback_id)
-    end
+    blob_relation("member_feedback_id", MemberFeedback.unscoped)
   end
 
   def day_pass
-    day_pass_id = blob["day_pass_id"]
-    if day_pass_id.nil?
-      nil
-    else
-      DayPass.find(day_pass_id)
-    end
+    blob_relation("day_pass_id", DayPass)
   end
 
   def subscription
-    subscription_id = blob["subscription_id"]
-    if subscription_id.nil?
-      nil
-    else
-      Subscription.find(subscription_id)
-    end
+    blob_relation("subscription_id", Subscription)
+  end
+
+  def checkin
+    blob_relation("checkin_id", Checkin)
   end
 
   def invoice
@@ -135,6 +119,15 @@ class FeedItem < ApplicationRecord
   def photo_files_accepted
     if photos.any? { |photo| !photo.content_type.match VALID_ATTACHMENT_REGEX }
       errors.add(:photos, 'must be of file type .jpeg, .jpg, .png, or .gif')
+    end
+  end
+
+  def blob_relation(key, klass)
+    rel_id = blob[key]
+    if rel_id.nil?
+      nil
+    else
+      klass.find(rel_id)
     end
   end
 end
