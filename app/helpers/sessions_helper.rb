@@ -28,7 +28,11 @@ module SessionsHelper
   end
 
   def current_checkin
-    current_user.checkins.for_location(current_location).open.first
+    if !logged_in?
+      return nil
+    else
+      current_user.checkins.for_location(current_location).open.first
+    end
   end
 
   def current_location
@@ -84,9 +88,10 @@ module SessionsHelper
   end
 
   def log_out
+    checkout
     forget(current_user)
     session.delete(:user_id)
-    session.delete(:location_id)
+    unset_location
     @current_user = nil
   end
 
@@ -107,5 +112,16 @@ module SessionsHelper
     user.forget
     cookies.delete(:user_id)
     cookies.delete(:remember_token)
+  end
+
+  def checkout
+    if current_checkin.present?
+      result = Checkins::Checkout.call(
+        checkin: current_checkin
+      )
+      if !result.success?
+        flash[:error] = result.message
+      end
+    end
   end
 end

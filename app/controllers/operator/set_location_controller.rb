@@ -1,12 +1,13 @@
 class Operator::SetLocationController < Operator::BaseController
   before_action :background_image
+  include SessionsHelper
 
   def edit
   end
 
   def update
     location = Location.find(location_params[:id])
-
+    checkout
     set_location(location)
     turbolinks_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e
