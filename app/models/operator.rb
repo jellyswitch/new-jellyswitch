@@ -113,6 +113,10 @@ class Operator < ApplicationRecord
       billing_state: "demo")
   end
 
+  def checkins
+    Checkin.for_operator(self)
+  end
+
   private
 
   class StripeOperator < SimpleDelegator

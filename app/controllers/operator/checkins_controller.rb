@@ -3,6 +3,7 @@ class Operator::CheckinsController < Operator::BaseController
 
   def new
     @checkin = Checkin.new
+    authorize @checkin
     include_stripe
   end
 
@@ -34,6 +35,16 @@ class Operator::CheckinsController < Operator::BaseController
     end
   end
 
+  def index
+    find_checkins
+    authorize @checkins
+  end
+
+  def show
+    find_checkin
+    authorize @checkin
+  end
+
   def destroy
     @checkin = Checkin.find(params[:id])
     authorize @checkin
@@ -47,5 +58,11 @@ class Operator::CheckinsController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root, action: "replace")
     end
+  end
+
+  private
+
+  def find_checkins
+    @checkins = current_tenant.checkins
   end
 end

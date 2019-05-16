@@ -19,6 +19,7 @@ class Checkin < ApplicationRecord
 
   scope :open, -> { where(datetime_out: nil) }
   scope :for_location, -> (loc) { where(location_id: loc.id) }
+  scope :for_operator, -> (op) { where(location_id: [op.locations.map(&:id)]) }
 
   def charge_description
     "Hourly charge for #{location.name}"
@@ -46,5 +47,9 @@ class Checkin < ApplicationRecord
 
   def hours
     (seconds.to_f / 1.hour).ceil
+  end
+
+  def open?
+    datetime_out.blank?
   end
 end
