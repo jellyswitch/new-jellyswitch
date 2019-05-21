@@ -8,6 +8,12 @@
   <dt>Homepage description</dt>
   <dd><%= location.snippet %></dd>
 
+  <dt>Allow hourly checkins and checkouts?</dt>
+  <dd><%= boolean_to_yesno(location.allow_hourly) %></dd>
+
+  <dt>Hourly rate</dt>
+  <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
+
   <dt>Contact Name (for members)</dt>
   <dd><%= location.contact_name %></dd>
 
@@ -16,6 +22,11 @@
 
   <dt>Contact phone (for members)</dt>
   <dd><%= location.contact_phone %></dd>
+
+  <dt>Working Hours</dt>
+  <dd>
+    <%= format_working_hours(location, "-") %>
+  </dd>
 
   <dt>Square Footage</dt>
   <dd><%= location.square_footage %></dd>

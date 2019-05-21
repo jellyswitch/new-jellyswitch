@@ -23,9 +23,6 @@
 #  subdomain              :string           not null
 #  wifi_name              :string           default("not set"), not null
 #  wifi_password          :string           default("not set"), not null
-#  working_day_end        :string           default("18:00"), not null
-#  working_day_start      :string           default("09:00"), not null
-#  working_hours_enabled  :boolean          default(FALSE), not null
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
@@ -114,6 +111,10 @@ class Operator < ApplicationRecord
       stripe_refresh_token: nil,
       stripe_access_token: nil,
       billing_state: "demo")
+  end
+
+  def checkins
+    Checkin.for_operator(self)
   end
 
   private

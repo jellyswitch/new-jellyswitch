@@ -1,9 +1,10 @@
 class UserContext
-  attr_reader :user, :operator
+  attr_reader :user, :operator, :location
 
-  def initialize(user, operator)
+  def initialize(user, operator, location)
     @user = user
     @operator = operator
+    @location = location
   end
 
   def admin?

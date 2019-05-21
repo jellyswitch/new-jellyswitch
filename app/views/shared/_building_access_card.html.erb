@@ -26,12 +26,12 @@
 
       </div>
     <%- else %>
-      <% if active_working_hours?(current_tenant) || has_building_access?(current_user) %>
+      <% if active_working_hours?(current_location) || has_building_access?(current_user) %>
         <%= render "operator/doors/keys", doors: @doors %>
       <% else %>
         <div class="row mt-4">
           <div class="col text-center">
-            <p>Building access is only available between <%= format_working_hours(current_tenant, "and") %></p>
+            <p>Building access is only available between <%= format_working_hours(current_location, "and") %></p>
           </div>
         </div>
       <% end %>

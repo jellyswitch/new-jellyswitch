@@ -3,6 +3,7 @@
 # Table name: locations
 #
 #  id                           :bigint(8)        not null, primary key
+#  allow_hourly                 :boolean          default(FALSE), not null
 #  billing_state                :string
 #  building_access_instructions :string
 #  building_address             :string
@@ -12,6 +13,7 @@
 #  contact_name                 :string
 #  contact_phone                :string
 #  flex_square_footage          :integer          default(0), not null
+#  hourly_rate_in_cents         :integer          default(0), not null
 #  name                         :string
 #  snippet                      :string
 #  square_footage               :integer
@@ -25,7 +27,6 @@
 #  wifi_password                :string
 #  working_day_end              :string           default("18:00"), not null
 #  working_day_start            :string           default("09:00"), not null
-#  working_hours_enabled        :boolean          default(FALSE), not null
 #  zip                          :string
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null

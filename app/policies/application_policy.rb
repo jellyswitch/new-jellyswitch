@@ -6,6 +6,7 @@ class ApplicationPolicy
     @user = user.class == UserContext ? user.user : user
     @record = record
     @operator = user.class == UserContext ? user.operator : nil
+    @location = user.class == UserContext ? user.location : nil
   end
 
   def index?

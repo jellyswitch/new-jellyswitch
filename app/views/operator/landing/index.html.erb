@@ -3,9 +3,9 @@
   <%= super_wide_card do %>
     <div class="row">
       <div class="col">
-        <h1 class="display-4 mt-1">Welcome to <%= current_tenant.name %>!</h1>
+        <h1 class="display-4 mt-1">Welcome to <%= current_location.name %>!</h1>
         <p class="lead mt-3">
-          <%= render "snippet", operator: current_tenant %>
+          <%= render "snippet", location: current_location %>
         </p>
       </div>
     </div>

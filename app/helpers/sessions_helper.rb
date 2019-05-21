@@ -27,6 +27,14 @@ module SessionsHelper
     end
   end
 
+  def current_checkin
+    if !logged_in?
+      return nil
+    else
+      current_user.checkins.for_location(current_location).open.first
+    end
+  end
+
   def current_location
     # In case I"m a superadmin and my location is set to a different operator
     if session[:location_id]
@@ -52,9 +60,6 @@ module SessionsHelper
     elsif Location.count == 1
       set_location(Location.first)
       @current_location = Location.first
-    else
-      set_location(Location.first)
-      @current_location = Location.first
     end
   end
 
@@ -71,7 +76,7 @@ module SessionsHelper
   end
 
   def member?
-    current_user.present? && current_user.member?(current_tenant)
+    current_user.present? && (current_user.member?(current_tenant) || current_user.checked_in?(current_location) )
   end
 
   def pending?
@@ -83,8 +88,10 @@ module SessionsHelper
   end
 
   def log_out
+    checkout
     forget(current_user)
     session.delete(:user_id)
+    unset_location
     @current_user = nil
   end
 
@@ -105,5 +112,16 @@ module SessionsHelper
     user.forget
     cookies.delete(:user_id)
     cookies.delete(:remember_token)
+  end
+
+  def checkout
+    if current_checkin.present?
+      result = Checkins::Checkout.call(
+        checkin: current_checkin
+      )
+      if !result.success?
+        flash[:error] = result.message
+      end
+    end
   end
 end

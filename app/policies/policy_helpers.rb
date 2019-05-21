@@ -17,7 +17,15 @@ module PolicyHelpers
     if @operator.nil?
       false
     else
-      is_user? && user.member?(@operator)
+      is_user? && (user.member?(@operator) || checked_in?)
+    end
+  end
+
+  def checked_in?
+    if @location.nil?
+      false
+    else
+      is_user? && user.checked_in?(@location)
     end
   end
 

@@ -26,6 +26,9 @@ class Operator::ReportsController < Operator::BaseController
   def revenue
   end
 
+  def checkins
+  end
+
   def monetization
     @location = Location.find(params[:location_id])
     

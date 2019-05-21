@@ -62,6 +62,7 @@ Rails.application.routes.draw do
       get 'expenses', to: 'operator/accounting#expenses', as: :expenses
     end
   end
+  resources :checkins, controller: 'operator/checkins'
   resources :day_passes, controller: 'operator/day_passes'
   resources :day_pass_types, controller: 'operator/day_pass_types'
   resources :doors, controller: 'operator/doors' do
@@ -108,6 +109,7 @@ Rails.application.routes.draw do
       get :membership_breakdown
       get :revenue
       get :monetization
+      get :checkins
     end
   end
   resources :reservations, controller: 'operator/reservations', except: [:index]
