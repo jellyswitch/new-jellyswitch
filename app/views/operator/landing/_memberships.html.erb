@@ -1,0 +1,11 @@
+<div class="col mt-3">
+  <strong class="row">
+    Memberships
+  </strong>
+  <p class="row mt-3" style="height: 100px;">
+    Memberships start at <%= display_price(@plans.first) %> and vary from flexible desk space to full private offices.
+  </p>
+  <div class="row">
+    <%= link_to "Become a member", new_subscription_path, class: "btn btn-info col m-2", data: { acc: 'new-member' } %>
+  </div>
+</div>

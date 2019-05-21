@@ -23,6 +23,7 @@ module LandingHelper
 
   def home_redirect
     if member? || admin?
+      # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path
       else
@@ -33,9 +34,14 @@ module LandingHelper
         if pending?
           redirect_to activate_path
         else
-          redirect_to choose_path
+          if hit_membership_limit?
+            redirect_to upgrade_path
+          else
+            redirect_to choose_path
+          end
         end
       else
+        # they're logged out
         redirect_to root_path
       end
     end

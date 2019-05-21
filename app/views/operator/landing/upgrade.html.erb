@@ -1,8 +1,8 @@
-<% title "Welcome" %>
+<% title "Upgrade" %>
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Welcome!</h4>
-  <p class="lead text-center mb-3 mt-3">To proceed, please select an option:</p>
+  <p class="lead text-center mb-3 mt-3">You have hit the limit of your membership plan. To proceed, please choose an option below:</p>
   
   <% if current_location.allow_hourly? %>
     <%= render "checkin", location: current_location, user: current_user %>
@@ -11,9 +11,6 @@
   <div class="row mb-2 mr-1 ml-1">
     <% if @day_pass_types.count > 0 %>
       <%= render "day_pass", day_pass_types: @day_pass_types %>
-    <% end %>
-    <% if @plans.count > 0 %>
-      <%= render "upgrade_membership", plans: @plans %>
     <% end %>
   </div>
 
