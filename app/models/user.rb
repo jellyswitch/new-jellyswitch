@@ -108,7 +108,9 @@ class User < ApplicationRecord
   end
 
   def has_active_subscription?
-    subscriptions.for_operator(operator).active.count > 0
+    subscriptions.for_operator(operator).active.select do |sub|
+      sub.has_days_left?
+    end.count > 0
   end
 
   def has_building_access_membership?

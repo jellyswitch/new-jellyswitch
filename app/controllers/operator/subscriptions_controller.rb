@@ -15,10 +15,18 @@ class Operator::SubscriptionsController < Operator::BaseController
     start_day = compute_start_day
 
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
+    token = params[:stripeToken]
+    card_added = @subscription.subscribable.card_added?
 
-    result = Billing::Subscription::UpdatePaymentAndCreateSubscription.call(
+    interactor = Billing::Subscription::UpdatePaymentAndCreateSubscription
+
+    if card_added || out_of_band?
+      interactor = Billing::Subscription::CreateSubscription
+    end
+
+    result = interactor.call(
       subscription: @subscription,
-      token: params[:stripeToken],
+      token: token,
       user: @subscription.subscribable,
       start_day: start_day,
       out_of_band: out_of_band,

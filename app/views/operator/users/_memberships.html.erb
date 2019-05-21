@@ -26,6 +26,9 @@
     <% user.subscriptions.for_operator(current_tenant).active.each do |subscription| %>
       <dd class="col-sm text-center">
         <%= subscription.plan.plan_name %>
+        <% if subscription.plan.has_day_limit? %>
+          <p>Days remaining: <%= subscription.days_left %></p>
+        <% end %>
         <div class="mt-3">
           <%= render "operator/subscriptions/form", subscription: subscription, label: "Update membership", cc: false, user_id: user.id, show_start_day: false %>
         </div>

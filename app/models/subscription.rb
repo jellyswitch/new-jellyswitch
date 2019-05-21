@@ -65,4 +65,17 @@ class Subscription < ApplicationRecord
       "error"
     end
   end
+
+  def has_days_left?
+    if plan.has_day_limit?
+      days_left > 0
+    else
+      true
+    end
+  end
+
+  def days_left
+    report = Jellyswitch::UsageReport.new(subscribable)
+    plan.day_limit - report.days_used_count
+  end
 end
