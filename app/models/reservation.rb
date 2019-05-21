@@ -21,6 +21,7 @@ class Reservation < ApplicationRecord
 
   default_scope { where(cancelled: false) }
   scope :not_cancelled, ->() { where(cancelled: false) }
+  scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
 
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")

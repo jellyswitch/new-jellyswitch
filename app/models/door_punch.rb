@@ -21,6 +21,8 @@ class DoorPunch < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  scope :this_month, -> () { where("created_at > ?", Time.current.beginning_of_month ) }
+
   # View helpers
   def pretty_datetime
     created_at.strftime("%m/%d/%Y at %l:%M%P")
