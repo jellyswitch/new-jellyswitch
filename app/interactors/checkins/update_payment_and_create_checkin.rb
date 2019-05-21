@@ -3,6 +3,6 @@ class Checkins::UpdatePaymentAndCreateCheckin
 
   organize(
     Billing::Payment::UpdateUserPayment,
-    CreateCheckin
+    Checkins::CreateCheckin
   )
 end
