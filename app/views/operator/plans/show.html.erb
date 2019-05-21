@@ -33,6 +33,14 @@
         <dt class="col-sm">Always has building access?</dt>
         <dd class="col-sm"><%= boolean_to_yesno(@plan.always_allow_building_access) %></dd>
       </dl>
+      <dl class="row">
+        <dt class="col-sm">Has a limit on days included?</dt>
+        <dd class="col-sm"><%= boolean_to_yesno(@plan.has_day_limit?) %></dd>
+      </dl>
+      <dl class="row">
+        <dt class="col-sm">Number of days included</dt>
+        <dd class="col-sm"><%= @plan.day_limit%></dd>
+      </dl>
     </div>
   </div>
   <div class="col-sm-3"></div>
