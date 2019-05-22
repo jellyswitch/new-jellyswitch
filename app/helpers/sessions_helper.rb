@@ -87,6 +87,12 @@ module SessionsHelper
     current_user.present? && current_user.approved?
   end
 
+  def hit_membership_limit?
+    current_user.present? && current_user.subscriptions.active.any? do |sub|
+      !sub.has_days_left?
+    end
+  end
+
   def log_out
     checkout
     forget(current_user)

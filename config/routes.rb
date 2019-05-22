@@ -44,6 +44,7 @@ Rails.application.routes.draw do
   get '/choose',    to: 'operator/landing#choose'
   get '/activate',  to: 'operator/landing#activate'
   post '/activate_membership', to: 'operator/landing#activate_membership'
+  get '/upgrade',   to: 'operator/landing#upgrade'
 
   # Other
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources

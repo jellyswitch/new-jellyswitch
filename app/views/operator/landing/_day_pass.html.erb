@@ -1,0 +1,12 @@
+<div class="col mt-3">
+  <strong class="row">
+    Day Passes
+  </strong>
+  <p class="row mt-3" style="height: 100px;">
+    A day pass costs <%= display_price(day_pass_types.first) %> and include access to the building, wifi, and a desk.
+  </p>
+  <div class="row">
+    <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' }%>
+  </div>
+</div>
+<div class="col-1"></div>

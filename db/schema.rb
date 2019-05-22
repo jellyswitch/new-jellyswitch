@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_15_232419) do
+ActiveRecord::Schema.define(version: 2019_05_21_200229) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -281,6 +281,8 @@ ActiveRecord::Schema.define(version: 2019_05_15_232419) do
     t.integer "operator_id", default: 1, null: false
     t.string "plan_type"
     t.boolean "always_allow_building_access", default: true, null: false
+    t.boolean "has_day_limit", default: false, null: false
+    t.integer "day_limit", default: 0, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 

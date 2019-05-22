@@ -6,6 +6,8 @@
 #  always_allow_building_access :boolean          default(TRUE), not null
 #  amount_in_cents              :integer          not null
 #  available                    :boolean          default(TRUE), not null
+#  day_limit                    :integer          default(0), not null
+#  has_day_limit                :boolean          default(FALSE), not null
 #  interval                     :string           not null
 #  name                         :string           not null
 #  plan_type                    :string

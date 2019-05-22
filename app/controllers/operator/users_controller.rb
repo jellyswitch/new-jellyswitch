@@ -17,6 +17,8 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
     background_image
 
+    @usage_report = Jellyswitch::UsageReport.new(@user)
+    
     if @user == current_user
       render :show
     else
