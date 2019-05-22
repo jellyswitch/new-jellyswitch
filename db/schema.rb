@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_21_200229) do
+ActiveRecord::Schema.define(version: 2019_05_22_230901) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -167,6 +167,7 @@ ActiveRecord::Schema.define(version: 2019_05_21_200229) do
     t.string "building_access_instructions"
     t.boolean "allow_hourly", default: false, null: false
     t.integer "hourly_rate_in_cents", default: 0, null: false
+    t.boolean "new_users_get_free_day_pass", default: false, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

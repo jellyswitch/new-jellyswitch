@@ -15,6 +15,7 @@
 #  flex_square_footage          :integer          default(0), not null
 #  hourly_rate_in_cents         :integer          default(0), not null
 #  name                         :string
+#  new_users_get_free_day_pass  :boolean          default(FALSE), not null
 #  snippet                      :string
 #  square_footage               :integer
 #  state                        :string

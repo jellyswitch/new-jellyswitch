@@ -22,6 +22,11 @@
   </div>
 
   <div class="form-group">
+    <%= f.label :new_users_get_free_day_pass, "Automatically provision free day passes to new users??" %>
+    <%= f.check_box :new_users_get_free_day_pass, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
     <%= f.label :contact_name, "Contact Name (for members)" %>
     <%= f.text_field :contact_name, placeholder: "Contact Name", class: "form-control" %>
   </div>
