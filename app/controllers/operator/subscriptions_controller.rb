@@ -20,7 +20,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     interactor = Billing::Subscription::UpdatePaymentAndCreateSubscription
 
-    if card_added || out_of_band
+    if card_added
       interactor = Billing::Subscription::CreateSubscription
     end
 
