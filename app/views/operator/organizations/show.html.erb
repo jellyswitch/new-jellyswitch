@@ -61,24 +61,8 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Invoices</h4>
-
-  <table class="table">
-    <tr>
-      <th>Invoice</th>
-      <th>Status</th>
-      <th>Actions</th>
-    </tr>
-    <% @organization.invoices.each do |invoice| %>
-      <tr>
-        <td><%= invoice.number %></td>
-        <td><%= invoice.status %></td>
-        <td>
-          <% if invoice.open? %>
-            <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-sm btn-primary" %>
-          <% end %>
-          <%= link_to "Download PDF", invoice.pdf_url, class: "btn btn-sm btn-info", target: "_blank" %>
-        </td>
-      </tr>
-    <% end %>
-  </table>
+  
+  <% @organization.invoices.each do |invoice| %>
+    <%= render invoice %>
+  <% end %>
 <% end %>
