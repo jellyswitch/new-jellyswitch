@@ -14,6 +14,9 @@
   <dt>Hourly rate</dt>
   <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
 
+  <dt>Automatically provision free day passes to new users?</dt>
+  <dd><%= boolean_to_yesno(location.new_users_get_free_day_pass?) %></dd>
+
   <dt>Contact Name (for members)</dt>
   <dd><%= location.contact_name %></dd>
 

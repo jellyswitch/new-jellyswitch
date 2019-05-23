@@ -65,6 +65,21 @@ class Operator::UsersController < Operator::BaseController
         end
       else
         log_in(result.user)
+        
+        if current_location.new_users_get_free_day_pass?
+          # todo: fold this into two interactors: one that creates a user and one that creates a user and provisoins a new day pass
+          # provision new free day pass
+          day_pass_result = Billing::DayPasses::CreateFreeDayPass.call(
+            user: current_user,
+            location: current_location
+          )
+
+          if day_pass_result.success?
+            flash[:success] = "Thanks for signing up! You've been granted a free day pass, pending approval. Enjoy!"
+          else
+            flash[:error] = day_pass_result.message
+          end
+        end
         turbolinks_redirect(home_path, action: "replace")
       end
     else
@@ -79,10 +94,10 @@ class Operator::UsersController < Operator::BaseController
         render :new, status: 422
       end
     end
-  rescue Exception => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+  # rescue Exception => e
+  #   Rollbar.error(e)
+  #   flash[:error] = "An error occurred: #{e.message}"
+  #   turbolinks_redirect(referrer_or_root)
   end
 
   def update

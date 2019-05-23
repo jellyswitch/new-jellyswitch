@@ -21,6 +21,8 @@ class DayPassType < ApplicationRecord
   # Scopes
   scope :available, -> { where(available: true) }
   scope :visible, -> { where(visible: true) }
+  scope :free, -> { where(amount_in_cents: 0) }
+  scope :for_operator, ->(operator) { where(operator_id: operator.id) }
 
   def self.options_for_select(operator)
     where(operator_id: operator.id).available.visible
