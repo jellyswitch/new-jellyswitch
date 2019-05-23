@@ -1,7 +1,11 @@
 <div class="card border-light">
   <div class="card-body">
     <h5 class="card-title">
-      Building Access
+      <% if @doors.count < 1 %>
+        Checkin Instructions
+      <% else %>
+        Building Access
+      <% end %>
     </h5>
     
     <% if !mobile_app_request? && current_tenant.has_mobile_app_links? %>
