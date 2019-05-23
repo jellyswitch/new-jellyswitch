@@ -37,6 +37,10 @@ class Subscription < ApplicationRecord
     stripe_subscription.delete
   end
 
+  def has_stripe_subscription?
+    stripe_subscription_id.present?
+  end
+
   def stripe_subscription
     if pending?
       nil

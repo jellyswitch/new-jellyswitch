@@ -22,10 +22,15 @@
   </div>
 <% else %>
   <dl class="row mt-3">
-    <dt class="col-sm-3 text-center">Active memberships</dt>
     <% user.subscriptions.for_operator(current_tenant).active.each do |subscription| %>
+    <dt class="col-sm-3 text-center"><%= subscription.plan.plan_name %></dt>
       <dd class="col-sm text-center">
-        <%= subscription.plan.plan_name %>
+        <% if !subscription.has_stripe_subscription? %>
+          <span class="badge badge-danger">Stripe error</span>
+        <% end %>
+        <p>
+          Start date: <%= short_date(subscription.created_at) %>
+        </p>
         <% if subscription.plan.has_day_limit? %>
           <p>Days remaining: <%= subscription.days_left %></p>
         <% end %>
