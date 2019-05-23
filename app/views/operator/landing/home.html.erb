@@ -5,7 +5,11 @@
     <div class="card-group">
       <%= render "shared/building_access_card" %>
       <%= render "shared/send_feedback_card" %>
-      <%= render "shared/reservations_card" %>
+      <% if current_location.rooms.count > 0 %>
+        <%= render "shared/reservations_card" %>
+      <% else %>
+        <%= render "shared/empty_card" %>
+      <% end %>
     </div>
   </div>
 </div>
