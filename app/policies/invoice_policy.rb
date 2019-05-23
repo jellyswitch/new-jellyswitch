@@ -24,10 +24,10 @@ class InvoicePolicy < ApplicationPolicy
   private
 
   def card_added?
-    case record.billable.class
-    when User
+    case record.billable_type
+    when "User"
       record.billable.card_added?
-    when Organization
+    when "Organization"
       record.billable.has_billing?
     end
   end
