@@ -9,9 +9,8 @@ class OpenDoorJob < ApplicationJob
       'Content-type' => 'application/json',
       'Authorization' => "KISI-LOGIN #{door.operator.kisi_api_key}"
     }
-    puts url.inspect
-    puts headers.inspect
-
-    puts HTTParty.post(url, headers: headers)
+    HTTParty.post(url, headers: headers)
+  rescue StandardError => e
+    Rollbar.error(e.message)
   end
 end
