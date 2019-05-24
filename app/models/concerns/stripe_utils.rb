@@ -86,8 +86,15 @@ module StripeUtils
   end
 
   def charge_invoice(invoice)
-    if !invoice.billable.card_added
-      raise "No card on file."
+    case invoice.billable_type
+    when "User"
+      if !invoice.billable.card_added
+        raise "No card on file."
+      end
+    when "Organization"
+      if !invoice.billable.has_billing?
+        raise "No card on file."
+      end
     end
     stripe_customer = invoice.billable.stripe_customer
 
