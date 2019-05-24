@@ -97,10 +97,12 @@ Open the rails console and create Subdomain records:
 [1] pry(main)> 25.times { |n| Subdomain.create!(subdomain: "demo#{n}")
 ```
 
-Go to `app.jellyswitch.net:3000` and click "Generate Demo Instance". This will enqueue a background job to generate a new example demo instance of Jellyswitch that you can then poke around with for testing and development purposes. Refresh the page after ~45 seconds and click the "Visit" button to see this instance.
+Go to `app.jellyswitch.net:3000` and click "New Operator". This will create take you to a form to create a new operator. Make sure to pick a subdomain that exists in the `/etc/hosts` file above.
+
+Click the "Visit" button to see this instance.
 
 ## Local Elastic Search
 
-Run this command: 
+If you encounter issues w/ elastic search, try running this command: 
 
 `curl -u elastic:changeme -XPUT 'localhost:9200/_cluster/settings' -H 'Content-Type: application/json' -d '{"persistent":{"cluster.blocks.read_only":false}}'`
