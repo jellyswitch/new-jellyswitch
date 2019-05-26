@@ -1,4 +1,4 @@
-module Subscribable
+module StripeSubscription
   class OutOfBandSpecifiedStartDay < DefaultSubscription
     def subscription_args
       super.merge!(

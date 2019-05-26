@@ -8,6 +8,8 @@ class Billing::Subscription::SaveSubscription
       context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
     end
 
+    subscription.billable = BillableFactory.for(subscription).billable
+
     if subscription.save
       context.subscription = subscription
     else

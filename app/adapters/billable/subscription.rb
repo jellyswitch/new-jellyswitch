@@ -18,14 +18,14 @@ class Billable::Subscription < SimpleDelegator
   private
 
   def user
-    if @subscription.subscribable.member_of_organization?
-      if @subscription.subscribable.bill_to_organization?
-        @subscription.subscribable.organization
+    if subscription.subscribable.member_of_organization?
+      if subscription.subscribable.bill_to_organization?
+        subscription.subscribable.organization
       else
-        @subscription.subscribable
+        subscription.subscribable
       end
     else
-      @subscription.subscribable
+      subscription.subscribable
     end
   end
 end

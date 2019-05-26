@@ -1,19 +1,14 @@
 class BillableFactory
-  attr_accessor :invoiceable
-
-  def initialize(invoiceable)
-    # invoiceable is a subscription, day pass, or checkin
-    @invoiceable = invoiceable
-  end
-
-  def billable
+   def self.for(invoiceable)
     case invoiceable.class.name
     when "Subscription"
-      Billable::Subscription.new(invoiceable).billable
+      Billable::Subscription
     when "Checkin"
       raise "Not Implemented"
     when "DayPass"
       raise "Not Implemented"
-    end
+    else
+      raise "Cannot determine billable for #{invoiceable.class.name}"
+    end.new(invoiceable)
   end
 end
