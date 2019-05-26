@@ -6,6 +6,7 @@
 #  admin                        :boolean          default(FALSE), not null
 #  always_allow_building_access :boolean          default(FALSE), not null
 #  approved                     :boolean          default(FALSE), not null
+#  bill_to_organization         :boolean          default(FALSE), not null
 #  bio                          :text
 #  card_added                   :boolean          default(FALSE), not null
 #  email                        :string           not null

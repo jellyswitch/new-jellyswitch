@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_22_230901) do
+ActiveRecord::Schema.define(version: 2019_05_25_210856) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -366,6 +366,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_230901) do
     t.datetime "reset_sent_at"
     t.boolean "card_added", default: false, null: false
     t.boolean "always_allow_building_access", default: false, null: false
+    t.boolean "bill_to_organization", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
