@@ -248,42 +248,40 @@ class Operator::UsersController < Operator::BaseController
 
   def credit_card
     find_user(:user_id)
-    if @user.card_added?
-      if @user.update(out_of_band: false, bill_to_organization: false)
-        flash[:success] = "Payment method updated."
-      else
-        flash[:error] = "An error occurred."
-      end
+    result = Billing::Payment::SetToCreditCard.call(user: @user)
+
+    if result.success?
+      flash[:success] = "Payment method updated."
     else
-      flash[:error] = "User has no card on file."
+      flash[:error] = result.message
     end
+
     turbolinks_redirect(user_path(@user), action: "replace")
   end
 
   def out_of_band
     find_user(:user_id)
+    result = Billing::Payment::SetToOutOfBand.call(user: @user)
 
-    if @user.update(out_of_band: true, bill_to_organization: false)
+    if result.success?
       flash[:success] = "Payment method updated."
     else
-      flash[:error] = "An error occurred."
+      flash[:error] = result.message
     end
+
     turbolinks_redirect(user_path(@user), action: "replace")
   end
 
   def bill_to_organization
     find_user(:user_id)
+    result = Billing::Payment::SetToBillOrganization.call(user: @user)
 
-    if @user.member_of_organization?
-      if @user.update(bill_to_organization: true, out_of_band: false)
-        flash[:success] = "Payment method updated."
-      else
-        flash[:error] = "An error occurred."
-      end
+    if result.success?
+      flash[:success] = "Payment method updated."
     else
-      flash[:error] = "User is not a member of a group."
+      flash[:error] = result.message
     end
-
+    
     turbolinks_redirect(user_path(@user), action: "replace")
   end
 
