@@ -246,6 +246,47 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(user_path(@user))
   end
 
+  def credit_card
+    find_user(:user_id)
+    if @user.card_added?
+      if @user.update(out_of_band: false, bill_to_organization: false)
+        flash[:success] = "Payment method updated."
+      else
+        flash[:error] = "An error occurred."
+      end
+    else
+      flash[:error] = "User has no card on file."
+    end
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
+  def out_of_band
+    find_user(:user_id)
+
+    if @user.update(out_of_band: true, bill_to_organization: false)
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = "An error occurred."
+    end
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
+  def bill_to_organization
+    find_user(:user_id)
+
+    if @user.member_of_organization?
+      if @user.update(bill_to_organization: true, out_of_band: false)
+        flash[:success] = "Payment method updated."
+      else
+        flash[:error] = "An error occurred."
+      end
+    else
+      flash[:error] = "User is not a member of a group."
+    end
+
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
   private
 
   def user_params
