@@ -45,18 +45,5 @@ RSpec.describe Billing::Subscription::SaveSubscription do
         expect(context.success?).to be true
       end
     end
-
-    context 'when saving subscription is unsuccessful' do
-      let(:user) { instance_double(User, has_billing?: true) }
-
-      before do
-        allow(subscription).to receive(:save) { false }
-      end
-
-      it 'results in failure' do
-        expect(context.success?).to be false
-        expect(context.message).to eq "There was a problem creating this subscription."
-      end
-    end
   end
 end
