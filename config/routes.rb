@@ -141,5 +141,8 @@ Rails.application.routes.draw do
       get 'add_member', to: 'operator/users#add_member'
       get 'unapproved', to: 'operator/users#unapproved'
     end
+    get :out_of_band, to: 'operator/users#out_of_band'
+    get :credit_card, to: 'operator/users#credit_card'
+    get :bill_to_organization, to: 'operator/users#bill_to_organization'
   end
 end

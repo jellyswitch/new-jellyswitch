@@ -7,6 +7,7 @@ class Billing::Leasing::SaveOfficeLease
     organization = Organization.find(office_lease.organization_id)
     subscription = office_lease.subscription
     subscription.subscribable = organization
+    subscription.billable = BillableFactory.for(subscription).billable
 
     unless office_lease.end_date
       office_lease.end_date = office_lease.start_date + 1.year

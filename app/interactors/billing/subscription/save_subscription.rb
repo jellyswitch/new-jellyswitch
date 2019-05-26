@@ -4,9 +4,11 @@ class Billing::Subscription::SaveSubscription
   delegate :subscription, :user, :start_day, to: :context
 
   def call
-    unless user.has_billing? || user.out_of_band?
+    unless user.card_added? || user.out_of_band? || user.bill_to_organization?
       context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
     end
+
+    subscription.billable = BillableFactory.for(subscription).billable
 
     if subscription.save
       context.subscription = subscription

@@ -1,16 +1,15 @@
-module Subscribable
+module StripeSubscription
   class DefaultSubscription < SimpleDelegator
-    attr_accessor :subscriber, :subscription, :start_day
+    attr_accessor :subscription, :start_day
 
-    def initialize(subscriber, subscription, start_day)
-      @subscriber = subscriber
+    def initialize(subscription, start_day)
       @subscription = subscription
       @start_day = start_day
     end
 
     def subscription_args
       {
-        customer: subscriber.stripe_customer_id,
+        customer: subscription.billable.stripe_customer_id,
         items: [{ plan: subscription.plan.stripe_plan_id }],
         prorate: false
       }

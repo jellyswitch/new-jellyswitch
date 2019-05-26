@@ -61,17 +61,17 @@
 <% end %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Billing</h4>
-  <%= render "billing", user: @user %>
+  <h4 class="display-4 text-center mt-4">Payment Method</h4>
+  <%= render "payment_method", user: @user %>
 <% end %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Active Memberships</h4>
+  <h4 class="display-4 text-center mt-4">Active Membership</h4>
   <%= render "memberships", user: @user %>
 <% end %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Pending Memberships</h4>
+  <h4 class="display-4 text-center mt-4">Pending Membership</h4>
   <%= render "pending_memberships", user: @user %>
 <% end %>
 

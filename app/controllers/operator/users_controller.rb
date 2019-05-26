@@ -246,6 +246,45 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(user_path(@user))
   end
 
+  def credit_card
+    find_user(:user_id)
+    result = Billing::Payment::SetToCreditCard.call(user: @user)
+
+    if result.success?
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
+  def out_of_band
+    find_user(:user_id)
+    result = Billing::Payment::SetToOutOfBand.call(user: @user)
+
+    if result.success?
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
+  def bill_to_organization
+    find_user(:user_id)
+    result = Billing::Payment::SetToBillOrganization.call(user: @user)
+
+    if result.success?
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = result.message
+    end
+    
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
   private
 
   def user_params

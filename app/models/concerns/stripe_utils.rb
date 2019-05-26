@@ -50,9 +50,9 @@ module StripeUtils
     stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
   end
 
-  def create_stripe_subscription(subscriber, subscription, start_day = nil)
-    subscribable = SubscribableFactory.for(subscriber, subscription, start_day)
-    
+  def create_stripe_subscription(subscription, start_day = nil)
+    subscribable = StripeSubscriptionFactory.for(subscription, start_day)
+  
     stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 

@@ -74,10 +74,6 @@ class Operator::SubscriptionsController < Operator::BaseController
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
     end
-  rescue => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
   end
 
   def destroy

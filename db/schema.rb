@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_22_230901) do
+ActiveRecord::Schema.define(version: 2019_05_26_203034) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -339,6 +339,9 @@ ActiveRecord::Schema.define(version: 2019_05_22_230901) do
     t.string "subscribable_type"
     t.bigint "subscribable_id"
     t.boolean "pending", default: false, null: false
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.index ["billable_type", "billable_id"], name: "index_subscriptions_on_billable_type_and_billable_id"
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 
@@ -366,6 +369,7 @@ ActiveRecord::Schema.define(version: 2019_05_22_230901) do
     t.datetime "reset_sent_at"
     t.boolean "card_added", default: false, null: false
     t.boolean "always_allow_building_access", default: false, null: false
+    t.boolean "bill_to_organization", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

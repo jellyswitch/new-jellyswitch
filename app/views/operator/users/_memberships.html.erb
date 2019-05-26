@@ -11,7 +11,7 @@
           <small>This user has a pending membership. If you'd like to add a different membership, please cancel that pending membership first.</small>
         </p>
       <% else %>
-        <% if user.has_billing? || user.out_of_band? %>    
+        <% if user.has_billing? || user.out_of_band? || user.bill_to_organization? %>    
           <%= render "operator/admin/subscriptions/form", subscription: Subscription.new, label: "Add membership", cc: false, user_id: user.id, show_start_day: true %>
         <% else %>
           <small><strong>NOTE</strong>: This user does not have a credit card on file. They will be required to enter a valid credit card number upon next login.</small>
@@ -30,6 +30,16 @@
         <% end %>
         <p>
           Start date: <%= short_date(subscription.created_at) %>
+        </p>
+        <p>
+          Billed to:
+          <% if subscription.billable_type == "User" %>
+            <%= link_to subscription.billable.name, user_path(subscription.billable) %>
+          <% elsif subscription.billable_type == "Organization" %>
+            <%= link_to subscription.billable.name, organization_path(subscription.billable) %>
+          <% else %>
+            <strong>Billed to:</strong> <span class="badge badge-danger"><%= subscription.billable_type %></span>
+          <% end %>
         </p>
         <% if subscription.plan.has_day_limit? %>
           <p>Days remaining: <%= subscription.days_left %></p>

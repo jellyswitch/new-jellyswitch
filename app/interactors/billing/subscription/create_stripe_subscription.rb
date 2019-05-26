@@ -5,7 +5,7 @@ class Billing::Subscription::CreateStripeSubscription
   def call
     user = subscription.subscribable
     begin
-      stripe_subscription = operator.create_stripe_subscription(user, subscription, start_day)
+      stripe_subscription = operator.create_stripe_subscription(subscription, start_day)
     rescue StandardError => e
       context.fail!(message: e.message)
     end

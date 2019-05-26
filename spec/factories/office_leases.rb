@@ -52,7 +52,8 @@ FactoryBot.define do
       office_lease.subscription = create(
         :subscription,
         plan: operator.plans.first,
-        subscribable: office_lease.organization
+        subscribable: office_lease.organization,
+        billable: office_lease.organization
       )
       office_lease.office = operator.offices.first
     end
