@@ -1,4 +1,7 @@
 <div class="list-group-item">
+  <p class="text-center">
+    <strong><%= invoice.description %></strong>
+  </p>
   <div class="float-left">
     <p class="lead">
       <%= link_to invoice.billable.name, path_for_billable(invoice) %>

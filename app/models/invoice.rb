@@ -101,4 +101,8 @@ class Invoice < ApplicationRecord
       "error"
     end
   end
+
+  def description
+    stripe_invoice.lines.data.map(&:description).join("\n")
+  end
 end
