@@ -54,7 +54,8 @@ RSpec.describe Billing::Subscription::SaveSubscription do
       end
 
       it 'results in failure' do
-        expect(context.success?).to raise_error
+        expect(context.success?).to be false
+        expect(context.message).to eq "There was a problem creating this subscription."
       end
     end
   end
