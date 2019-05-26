@@ -26,6 +26,7 @@ FactoryBot.define do
 
     trait :for_user do
       association :subscribable, factory: :user
+      association :billable, factory: :user
     end
 
     trait :with_stripe_info do
