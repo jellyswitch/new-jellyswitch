@@ -3,7 +3,7 @@
 <%= wide_card do %>
   <h4 class="display-4 text-center">Redeem a day pass code</h4>
 
-  <%= form_with(path: code_day_passes_path, method: :post, local: true) do |f| %>
+  <%= form_with(path: code_day_passes_path, method: :post) do |f| %>
     <div class="form-group">
       <%= f.label :code, "Enter discount code" %>
       <%= f.text_field :code, class: "form-control" %>

@@ -4,11 +4,11 @@ class DayPassPolicy < ApplicationPolicy
   end
 
   def new?
-    is_user? && !member?
+    is_user?
   end
 
   def create?
-    (is_user? && !member?) || admin?
+    is_user? || admin?
   end
 
   def show?
