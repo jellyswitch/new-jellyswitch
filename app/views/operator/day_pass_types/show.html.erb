@@ -9,39 +9,11 @@
         <li class="breadcrumb-item active" aria-current="page"><%= @day_pass_type.name %></li>
       </ol>
     </nav>
-    <div class="jumbotron bg-white pb-2 pt-2">
-      
-      <h4 class="display-4 text-center mt-4"><%= @day_pass_type.name %></h4>
-      <%= render "actions", day_pass_type: @day_pass_type %>
-      <dl class="row">
-        <dt class="col-sm">Price</dt>
-        <dd class="col-sm"><%= dollar_amount(@day_pass_type.amount_in_cents) %></dd>
-      </dl> 
-
-      <dl class="row">
-        <dt class="col-sm">Discount Code</dt>
-        <dd class="col-sm">
-          <% if @day_pass_type.code.present? %>
-            <code><%= @day_pass_type.code %></code>
-          <% else %>
-            <i>None</i>
-          <% end %>
-        </dd>
-      </dl>
-
-      <dl class="row">
-        <dt class="col-sm">Visible?</dt>
-        <dd class="col-sm"><%= @day_pass_type.visible? %></dd>
-      </dl> 
-      <dl class="row">
-        <dt class="col-sm">Available</dt>
-        <dd class="col-sm"><%= @day_pass_type.available? %></dd>
-      </dl> 
-      <dl class="row">
-        <dt class="col-sm">Always has building access?</dt>
-        <dd class="col-sm"><%= boolean_to_yesno(@day_pass_type.always_allow_building_access?) %></dd>
-      </dl> 
-    </div>
   </div>
   <div class="col-sm-3"></div>
 </div>
+
+
+<%= wide_card do %>
+  <%= render @day_pass_type %>
+<% end %>
