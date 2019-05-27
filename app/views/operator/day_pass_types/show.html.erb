@@ -1,19 +1,23 @@
 <%- title @day_pass_type.name %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><%= link_to "Day Pass Types", day_pass_types_path %></li>
-        <li class="breadcrumb-item active" aria-current="page"><%= @day_pass_type.name %></li>
-      </ol>
-    </nav>
+<% if !mobile_app_request? %>
+  <div class="row mt-3">
+    <div class="col-sm-3"></div>
+    <div class="col-sm">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><%= link_to "Day Pass Types", day_pass_types_path %></li>
+          <li class="breadcrumb-item active" aria-current="page"><%= @day_pass_type.name %></li>
+        </ol>
+      </nav>
+    </div>
+    <div class="col-sm-3"></div>
   </div>
-  <div class="col-sm-3"></div>
-</div>
+<% end %>
 
 
 <%= wide_card do %>
-  <%= render @day_pass_type %>
+  <div class="list-group list-group-flush">
+    <%= render @day_pass_type, view: false %>
+  </div>
 <% end %>

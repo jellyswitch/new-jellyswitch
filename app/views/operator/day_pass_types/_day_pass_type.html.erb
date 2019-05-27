@@ -1,4 +1,4 @@
-<div class="row mt-4">
+<ul class="list-group-item row">
   <div class="col">
     <h5 class="display-5 text-center"><%= day_pass_type.name %></h5>
     <p>
@@ -21,9 +21,11 @@
     <p>
       24/7 building access: <%= boolean_to_yesno(day_pass_type.always_allow_building_access?) %>
     </p>
-    <%= link_to 'View', day_pass_type, class: "btn btn-block btn-primary" %>
+    <% if view %>
+      <%= link_to 'View', day_pass_type, class: "btn btn-block btn-primary" %>
+    <% end %>
     <%- if day_pass_type.available? %>
       <%= link_to 'Archive', day_pass_type, method: :delete, remote: true, class: "btn btn-block btn-danger" %>
     <%- end %>
   </div>
-</div>
+</ul>

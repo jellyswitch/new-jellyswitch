@@ -5,5 +5,7 @@
 
   <%= link_to "Add a new day pass type", new_day_pass_type_path, class: "btn btn-primary btn-block" %>
 
-  <%= render @day_pass_types %>
+  <div class="list-group list-group-flush mt-4">
+    <%= render @day_pass_types, view: true %>
+  </div>
 <% end %>
