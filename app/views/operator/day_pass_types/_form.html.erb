@@ -12,6 +12,11 @@
   </div>
 
   <div class="form-group">
+    <%= form.label :code, "Discount Code (Optional)" %>
+    <%= form.text_field :code, class: "form-control", placeholder: "CODE123" %>
+  </div>
+
+  <div class="form-group">
     <div class="form-check">
       <%= form.check_box :available, class: "form-check-input" %>
       <%= form.label :available, class: "form-check-label" %>

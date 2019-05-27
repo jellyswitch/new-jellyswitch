@@ -6,6 +6,7 @@
 #  always_allow_building_access :boolean          default(FALSE), not null
 #  amount_in_cents              :integer          default(0), not null
 #  available                    :boolean          default(TRUE), not null
+#  code                         :string
 #  name                         :string           not null
 #  visible                      :boolean          default(TRUE), not null
 #  created_at                   :datetime         not null

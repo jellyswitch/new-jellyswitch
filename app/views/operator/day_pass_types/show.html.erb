@@ -17,6 +17,18 @@
         <dt class="col-sm">Price</dt>
         <dd class="col-sm"><%= dollar_amount(@day_pass_type.amount_in_cents) %></dd>
       </dl> 
+
+      <dl class="row">
+        <dt class="col-sm">Discount Code</dt>
+        <dd class="col-sm">
+          <% if @day_pass_type.code.present? %>
+            <code><%= @day_pass_type.code %></code>
+          <% else %>
+            <i>None</i>
+          <% end %>
+        </dd>
+      </dl>
+
       <dl class="row">
         <dt class="col-sm">Visible?</dt>
         <dd class="col-sm"><%= @day_pass_type.visible? %></dd>

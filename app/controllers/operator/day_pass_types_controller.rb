@@ -74,6 +74,6 @@ class Operator::DayPassTypesController < Operator::BaseController
   end
 
   def day_pass_type_params
-    params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access)
+    params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code)
   end
 end
