@@ -9,7 +9,12 @@
 
   <div class="form-group row">
     <div class="col-1"></div>
+    <% if @day_pass_type %>
+      <strong><%= @day_pass_type.name %> (<%= number_to_currency(@day_pass_type.amount_in_cents / 100.0) %>)</strong>
+      <%= f.hidden_field :day_pass_type, value: @day_pass_type.id %>
+    <% else %>
       <%= f.select :day_pass_type, day_pass_type_options(DayPassType.options_for_select(current_tenant)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <% end %>
     <div class="col-1"></div>
   </div>
 

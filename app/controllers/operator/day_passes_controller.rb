@@ -89,9 +89,10 @@ class Operator::DayPassesController < Operator::BaseController
           turbolinks_redirect(code_day_passes_path, action: "replace")
         end
       else
-        raise "Not a free day pass"
-        # todo: create a page where they can click "purchase" for the specific day pass
-        # clone day_passes#new but with a hidden field with hidden day pass type instead of dropdown
+        @day_pass_type = result.day_pass_type
+        @day_pass = DayPass.new
+        include_stripe
+        render :redeem_paid
       end
     else
       flash[:error] = result.message
