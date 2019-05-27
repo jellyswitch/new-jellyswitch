@@ -14,4 +14,12 @@ class DayPassPolicy < ApplicationPolicy
   def show?
     owner? || admin?
   end
+
+  def code?
+    is_user?
+  end
+
+  def redeem_code?
+    is_user?
+  end
 end

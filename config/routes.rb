@@ -64,7 +64,12 @@ Rails.application.routes.draw do
     end
   end
   resources :checkins, controller: 'operator/checkins'
-  resources :day_passes, controller: 'operator/day_passes'
+  resources :day_passes, controller: 'operator/day_passes' do
+    collection do
+      get :code, to: 'operator/day_passes#code'
+      post :code, to: 'operator/day_passes#redeem_code'
+    end
+  end
   resources :day_pass_types, controller: 'operator/day_pass_types'
   resources :doors, controller: 'operator/doors' do
     get 'open', to: 'operator/doors#open'
