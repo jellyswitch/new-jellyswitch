@@ -19,7 +19,7 @@ class Operator::DayPassesController < Operator::BaseController
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
 
-    if token && !(out_of_band || current_user.out_of_band)
+    if token.present?
       result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
         params: day_pass_params,
         user_id: current_user.id,

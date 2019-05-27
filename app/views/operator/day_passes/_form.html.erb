@@ -20,7 +20,7 @@
 
   <%= f.hidden_field :user_id, value: user.id %>
 
-  <% unless user.has_billing? %>
+  <% if !user.has_billing? && !user.bill_to_organization? %>
     <div class="form-group row">
       <div class="col-1"></div>
       <%= render "shared/billing", show_check_option: true %>

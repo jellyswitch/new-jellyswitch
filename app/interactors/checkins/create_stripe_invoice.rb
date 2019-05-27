@@ -5,7 +5,7 @@ class Checkins::CreateStripeInvoice
 
   def call
     @invoice_item = Stripe::InvoiceItem.create({
-      customer: checkin.user.stripe_customer_id,
+      customer: checkin.billable.stripe_customer_id,
       currency: 'usd',
       amount: checkin.charge_amount,
       description: checkin.charge_description
@@ -14,26 +14,14 @@ class Checkins::CreateStripeInvoice
       stripe_account: checkin.location.operator.stripe_user_id
     })
 
-    if checkin.user.has_billing?
-      @invoice = Stripe::Invoice.create({
-        customer: checkin.user.stripe_customer_id,
-        billing: 'send_invoice',
-        days_until_due: 1,
-        auto_advance: true
-      }, {
+    invoice_args = CheckInableFactory.for(checkin).invoice_args
+    @invoice = Stripe::Invoice.create(
+      invoice_args,
+      {
         api_key: checkin.location.operator.stripe_secret_key,
         stripe_account: checkin.location.operator.stripe_user_id
-      })
-    else
-      @invoice = Stripe::Invoice.create({
-        customer: checkin.user.stripe_customer_id,
-        billing: 'charge_automatically',
-        auto_advance: true
-      }, {
-        api_key: checkin.location.operator.stripe_secret_key,
-        stripe_account: checkin.location.operator.stripe_user_id
-      })
-    end
+      }
+    )
 
     result = CreateInvoice.call(stripe_invoice: @invoice)
     if !result.success?

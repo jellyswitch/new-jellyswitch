@@ -9,12 +9,20 @@ class Checkins::SaveCheckin
       context.fail!(message: "Cannot check into #{location.name} for operator #{operator.name}")
     end
 
-    context.checkin = Checkin.create!(
+    checkin = Checkin.new(
       user: user,
       location: location,
       datetime_in: Time.current,
       invoice_id: nil
     )
+
+    checkin.billable = BillableFactory.for(checkin).billable
+
+    if !checkin.save
+      context.fail!(message: "Could not check in.")
+    end
+
+    context.checkin = checkin
 
     context.notifiable = context.checkin
   end

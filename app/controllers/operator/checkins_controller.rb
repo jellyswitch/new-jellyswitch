@@ -11,7 +11,7 @@ class Operator::CheckinsController < Operator::BaseController
     token = params[:stripeToken]
     out_of_band = params[:out_of_band]
 
-    if token && !(out_of_band || current_user.out_of_band)
+    if token
       result = Checkins::UpdatePaymentAndCreateCheckin.call(
         user: current_user,
         operator: current_tenant,

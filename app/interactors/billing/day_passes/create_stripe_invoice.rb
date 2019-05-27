@@ -5,7 +5,7 @@ class Billing::DayPasses::CreateStripeInvoice
 
   def call
     @invoice_item = Stripe::InvoiceItem.create({
-      customer: user.stripe_customer_id,
+      customer: day_pass.billable.stripe_customer_id,
       currency: 'usd',
       amount: day_pass.day_pass_type.amount_in_cents,
       description: day_pass.charge_description
@@ -14,7 +14,7 @@ class Billing::DayPasses::CreateStripeInvoice
       stripe_account: operator.stripe_user_id
     })
 
-    invoice_args = DayPassableFactory.for(day_pass, user).invoice_args
+    invoice_args = DayPassableFactory.for(day_pass).invoice_args
     @invoice = Stripe::Invoice.create(
       invoice_args,
       {

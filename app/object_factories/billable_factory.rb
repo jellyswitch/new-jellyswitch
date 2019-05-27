@@ -4,9 +4,9 @@ class BillableFactory
     when "Subscription"
       Billable::Subscription
     when "Checkin"
-      raise "Not Implemented"
+      Billable::Checkin
     when "DayPass"
-      raise "Not Implemented"
+      Billable::DayPass
     else
       raise "Cannot determine billable for #{invoiceable.class.name}"
     end.new(invoiceable)

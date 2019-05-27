@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_27_181119) do
+ActiveRecord::Schema.define(version: 2019_05_27_193957) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -44,6 +44,9 @@ ActiveRecord::Schema.define(version: 2019_05_27_181119) do
     t.integer "invoice_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
   end
 
   create_table "day_pass_types", force: :cascade do |t|
@@ -67,6 +70,9 @@ ActiveRecord::Schema.define(version: 2019_05_27_181119) do
     t.integer "operator_id", default: 1, null: false
     t.integer "day_pass_type_id"
     t.integer "invoice_id"
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
