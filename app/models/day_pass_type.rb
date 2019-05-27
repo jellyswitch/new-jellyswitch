@@ -6,6 +6,7 @@
 #  always_allow_building_access :boolean          default(FALSE), not null
 #  amount_in_cents              :integer          default(0), not null
 #  available                    :boolean          default(TRUE), not null
+#  code                         :string
 #  name                         :string           not null
 #  visible                      :boolean          default(TRUE), not null
 #  created_at                   :datetime         not null
@@ -23,6 +24,7 @@ class DayPassType < ApplicationRecord
   scope :visible, -> { where(visible: true) }
   scope :free, -> { where(amount_in_cents: 0) }
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
+  scope :for_code, -> (code) { where(code: code) }
 
   def self.options_for_select(operator)
     where(operator_id: operator.id).available.visible
@@ -30,5 +32,9 @@ class DayPassType < ApplicationRecord
 
   def self.all_options_for_select(operator)
     where(operator_id: operator.id).available
+  end
+
+  def free?
+    amount_in_cents == 0
   end
 end
