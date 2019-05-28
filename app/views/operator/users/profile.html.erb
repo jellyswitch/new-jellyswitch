@@ -47,6 +47,10 @@
     </div>
   </div>
   <dl class="row">
+    <dt class="col-6">Day Passes</dt>
+    <dd class="col"><%= @usage_report.day_passes.keys.count %> <%= quantize(@usage_report.day_passes.keys, "day") %></dd>
+  </dl>
+  <dl class="row">
     <dt class="col-6">Reservations</dt>
     <dd class="col"><%= @usage_report.reservations.keys.count %> <%= quantize(@usage_report.reservations.keys, "day") %></dd>
   </dl>
