@@ -14,7 +14,8 @@ class Operator::Admin::DayPassesController < Operator::BaseController
         user_id: user.id,
         token: token,
         operator: current_tenant,
-        out_of_band: out_of_band
+        out_of_band: out_of_band,
+        location: current_location,
       )
     else
       result = Billing::DayPasses::CreateDayPass.call(
@@ -22,7 +23,8 @@ class Operator::Admin::DayPassesController < Operator::BaseController
         user_id: user.id,
         token: token,
         operator: current_tenant,
-        out_of_band: out_of_band
+        out_of_band: out_of_band,
+        location: current_location
       )
     end
 
