@@ -7,6 +7,7 @@
 #  approval_required      :boolean          default(TRUE), not null
 #  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
+#  checkin_required       :boolean          default(FALSE), not null
 #  contact_email          :string
 #  contact_name           :string
 #  contact_phone          :string
@@ -115,10 +116,6 @@ class Operator < ApplicationRecord
 
   def checkins
     Checkin.for_operator(self)
-  end
-
-  def checkin_required?
-    true # TODO make this a column
   end
 
   private
