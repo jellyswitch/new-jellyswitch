@@ -117,6 +117,10 @@ class Operator < ApplicationRecord
     Checkin.for_operator(self)
   end
 
+  def checkin_required?
+    true # TODO make this a column
+  end
+
   private
 
   class StripeOperator < SimpleDelegator

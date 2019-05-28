@@ -1,0 +1,9 @@
+<% title "Check in" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Welcome!</h4>
+  <p>
+    <%= current_location.name %> requires you to check in to use your day pass or membership.
+  </p>
+  <%= render "form", checkin: @checkin, cc: false %>
+<% end %>

@@ -7,6 +7,12 @@ class Operator::CheckinsController < Operator::BaseController
     include_stripe
   end
 
+  def required
+    @checkin = Checkin.new
+    authorize @checkin
+    include_stripe
+  end
+
   def create
     token = params[:stripeToken]
     out_of_band = params[:out_of_band]
