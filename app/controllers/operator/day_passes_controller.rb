@@ -28,7 +28,6 @@ class Operator::DayPassesController < Operator::BaseController
       location: current_location
     )
     
-
     @day_pass = result.day_pass
 
     if result.success?
