@@ -175,7 +175,8 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @reservations = @user.reservations.order('created_at DESC').all.decorate
+    @pagy, @reservations = pagy(@user.reservations.order('created_at DESC').all)
+    @reservations = @reservations.decorate
     background_image
   end
 
