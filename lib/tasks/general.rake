@@ -8,3 +8,7 @@ task backfill_stripe_credentials: :environment do
     )
   end
 end
+
+task checkout_job: :environment do
+  CheckoutJob.perform_later
+end
