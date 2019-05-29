@@ -72,6 +72,7 @@ Rails.application.routes.draw do
     collection do
       get :code, to: 'operator/day_passes#code'
       post :code, to: 'operator/day_passes#redeem_code'
+      get :redeem_paid, to: 'operator/day_passes#redeem_paid'
     end
   end
   resources :day_pass_types, controller: 'operator/day_pass_types'

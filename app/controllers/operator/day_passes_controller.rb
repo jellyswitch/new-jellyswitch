@@ -80,13 +80,26 @@ class Operator::DayPassesController < Operator::BaseController
           turbolinks_redirect(code_day_passes_path, action: "replace")
         end
       else
-        @day_pass_type = result.day_pass_type
-        @day_pass = DayPass.new
-        include_stripe
-        render :redeem_paid
+        turbolinks_redirect(redeem_paid_day_passes_path(code: params[:code]))
       end
     else
       flash[:error] = result.message
+      turbolinks_redirect(code_day_passes_path, action: "replace")
+    end
+  end
+
+  def redeem_paid
+    result = Billing::DayPasses::RedeemCode.call(
+      code: params[:code],
+      operator: current_tenant
+    )
+
+    if result.success?
+      @day_pass_type = result.day_pass_type
+      @day_pass = DayPass.new
+      include_stripe
+    else
+      flash[:error] = "No such code."
       turbolinks_redirect(code_day_passes_path, action: "replace")
     end
   end
