@@ -63,7 +63,11 @@ Rails.application.routes.draw do
       get 'expenses', to: 'operator/accounting#expenses', as: :expenses
     end
   end
-  resources :checkins, controller: 'operator/checkins'
+  resources :checkins, controller: 'operator/checkins' do
+    collection do
+      get :required, to: 'operator/checkins#required'
+    end
+  end
   resources :day_passes, controller: 'operator/day_passes' do
     collection do
       get :code, to: 'operator/day_passes#code'

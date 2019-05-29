@@ -1,10 +1,15 @@
 class Checkins::SaveCheckout
   include Interactor
 
-  delegate :checkin, to: :context
+  delegate :checkin, :datetime_out, to: :context
 
   def call
-    if !checkin.update(datetime_out: Time.current)
+    if datetime_out.present?
+      timestamp = datetime_out
+    else
+      timestamp = Time.current
+    end
+    if !checkin.update(datetime_out: timestamp)
       context.fail!(message: "Could not check out.")
     end
   end

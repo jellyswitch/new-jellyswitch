@@ -6,7 +6,11 @@ module LandingHelper
       else
         if member?
           if approved?
-            redirect_to home_path
+            if current_tenant.checkin_required? && !checked_in?
+              redirect_to required_checkins_path
+            else
+              redirect_to home_path
+            end
           else
             redirect_to wait_path
           end
@@ -27,7 +31,11 @@ module LandingHelper
       if !approved? && !admin?
         redirect_to wait_path
       else
-        render :home
+        if current_tenant.checkin_required? && !checked_in?
+          redirect_to required_checkins_path
+        else
+          render :home
+        end
       end
     else
       if logged_in?
@@ -45,5 +53,11 @@ module LandingHelper
         redirect_to root_path
       end
     end
+  end
+
+  private
+
+  def checked_in?
+    current_user.checked_in?(current_location)
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_05_27_193957) do
+ActiveRecord::Schema.define(version: 2019_05_28_214227) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -261,6 +261,7 @@ ActiveRecord::Schema.define(version: 2019_05_27_193957) do
     t.string "billing_state", default: "demo", null: false
     t.string "ios_url"
     t.string "android_url"
+    t.boolean "checkin_required", default: false, null: false
   end
 
   create_table "organizations", force: :cascade do |t|
