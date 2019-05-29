@@ -13,6 +13,10 @@ class Operator::RoomsController < Operator::BaseController
       authorize @room
     end
     background_image
+
+    @pagy, @reservations = pagy(Reservation.for_room(@room))
+
+    @reservations = @reservations.decorate
     respond_to do |format|
       format.html
       format.ics do
