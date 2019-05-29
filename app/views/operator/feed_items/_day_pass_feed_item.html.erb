@@ -18,7 +18,8 @@
 </div>
 <div class="row mt-4">
   <p class="lead">
-    Bought a day pass for <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>.
+    Bought a day pass 
+    (<%= feed_item.day_pass.day_pass_type.name %>) for <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>.
   </p>
 </div>
 

@@ -19,24 +19,15 @@ class Operator::DayPassesController < Operator::BaseController
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
 
-    if token.present?
-      result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
-        params: day_pass_params,
-        user_id: current_user.id,
-        token: token,
-        operator: current_tenant,
-        out_of_band: out_of_band
-      )
-    else
-      result = Billing::DayPasses::CreateDayPass.call(
-        params: day_pass_params,
-        user_id: current_user.id,
-        token: token,
-        operator: current_tenant,
-        out_of_band: out_of_band
-      )
-    end
-
+    result = DayPassInteractorFactory.for(token, current_tenant).call(
+      params: day_pass_params,
+      user_id: current_user.id,
+      token: token,
+      operator: current_tenant,
+      out_of_band: out_of_band,
+      location: current_location
+    )
+    
     @day_pass = result.day_pass
 
     if result.success?

@@ -4,32 +4,40 @@ class Checkins::CreateStripeInvoice
   delegate :checkin, to: :context
 
   def call
-    @invoice_item = Stripe::InvoiceItem.create({
-      customer: checkin.billable.stripe_customer_id,
-      currency: 'usd',
-      amount: checkin.charge_amount,
-      description: checkin.charge_description
-    }, {
-      api_key: checkin.location.operator.stripe_secret_key,
-      stripe_account: checkin.location.operator.stripe_user_id
-    })
-
-    invoice_args = CheckInableFactory.for(checkin).invoice_args
-    @invoice = Stripe::Invoice.create(
-      invoice_args,
-      {
+    if generate_invoice?
+      @invoice_item = Stripe::InvoiceItem.create({
+        customer: checkin.billable.stripe_customer_id,
+        currency: 'usd',
+        amount: checkin.charge_amount,
+        description: checkin.charge_description
+      }, {
         api_key: checkin.location.operator.stripe_secret_key,
         stripe_account: checkin.location.operator.stripe_user_id
-      }
-    )
+      })
 
-    result = CreateInvoice.call(stripe_invoice: @invoice)
-    if !result.success?
-      context.fail!(message: result.message)
-    end
+      invoice_args = CheckInableFactory.for(checkin).invoice_args
+      @invoice = Stripe::Invoice.create(
+        invoice_args,
+        {
+          api_key: checkin.location.operator.stripe_secret_key,
+          stripe_account: checkin.location.operator.stripe_user_id
+        }
+      )
 
-    if !checkin.update(invoice_id: result.invoice.id)
-      context.fail!(message: "There was a problem invoicing this day pass.")
+      result = CreateInvoice.call(stripe_invoice: @invoice)
+      if !result.success?
+        context.fail!(message: result.message)
+      end
+
+      if !checkin.update(invoice_id: result.invoice.id)
+        context.fail!(message: "There was a problem invoicing this day pass.")
+      end
     end
+  end
+
+  private
+
+  def generate_invoice?
+    !checkin.user.member?(checkin.location.operator)
   end
 end

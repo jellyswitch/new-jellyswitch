@@ -3,6 +3,10 @@ class CheckinPolicy < ApplicationPolicy
     true
   end
 
+  def required?
+    true
+  end
+
   def create?
     true
   end

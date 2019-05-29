@@ -23,6 +23,12 @@ class Jellyswitch::UsageReport
     end
   end
 
+  def day_passes
+    @day_passes ||= user.day_passes.this_month.group_by_day(:day).count.reject do |k,v|
+      v < 1
+    end
+  end
+
   def days_used
     @days_used ||= reservations.merge(door_punches) do |_,o,n|
       o+n
