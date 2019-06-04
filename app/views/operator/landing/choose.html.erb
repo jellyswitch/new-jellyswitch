@@ -5,7 +5,11 @@
   <p class="lead text-center mb-3 mt-3">To proceed, please select an option:</p>
   
   <% if current_location.allow_hourly? %>
-    <%= render "checkin", location: current_location, user: current_user %>
+    <% if active_working_hours?(current_location) %>
+      <%= render "checkin", location: current_location, user: current_user %>
+    <% else %>
+      <%= render "shared/closed", location: current_location %>
+    <% end %>
   <% end %>
 
   <div class="row mb-2 mr-1 ml-1">
