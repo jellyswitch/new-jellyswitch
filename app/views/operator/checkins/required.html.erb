@@ -3,7 +3,13 @@
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Welcome!</h4>
   <p>
-    <%= current_location.name %> requires you to check in to use your day pass or membership.
+    <% if current_user.has_active_day_pass? %>
+      You currently have an active day pass at <%= current_location.name %>. To use this day pass, please check in.
+    <% elsif current_user.has_active_subscription? %>
+      You currently have an active membership at <%= current_location.name %>. To use this membership, please check in.
+    <% else %>
+      Please check in to continue to <%= current_location.name %>
+    <% end %>
   </p>
   <%= render "form", checkin: @checkin, cc: false %>
 <% end %>
