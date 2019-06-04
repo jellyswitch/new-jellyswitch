@@ -1,5 +1,5 @@
 class ApplicationPolicy
-  attr_reader :user, :record
+  attr_reader :user, :record, :operator, :location
   include PolicyHelpers
 
   def initialize(user, record)
