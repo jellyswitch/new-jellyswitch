@@ -4,7 +4,7 @@
   <div class="row">
     <h4 class="display-4 col">Reset password</h4>
   </div>
-  <%= form_for(:password_reset, url: password_resets_path) do |f| %>
+  <%= form_for(:password_reset, url: password_resets_path, remote: true) do |f| %>
     <div class="form-group row">
       <div class="col-lg-1"></div>
       <div class="col-lg">
