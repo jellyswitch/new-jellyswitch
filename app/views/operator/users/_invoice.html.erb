@@ -1,0 +1,32 @@
+<div class="list-group-item">
+  <p class="text-center">
+    <strong><%= invoice.description %></strong>
+  </p>
+  <div class="float-left">
+    <p class="lead">
+      <%= invoice.billable.name %>
+    </p>
+    <p>
+      <span class="badge badge-dark"><%= invoice.payment_method %></span>
+    </p>
+    <% if invoice.paid? %>
+      <span class="badge badge-success">paid</span>
+    <% else %>
+      <span class="badge badge-info"><%= invoice.status %></span>
+    <% end %>
+    <% if invoice.refunded? %>
+      <span class="badge badge-info">refunded</span>
+    <% end %>
+  </div>
+  <div class="float-right">
+    <small>Created <%= invoice.pretty_date %></small>
+    <% if invoice.due_date.present? %>
+      <br />
+      <small>Due <%= invoice.pretty_due_date %></small>
+    <% end %>
+    <br />
+    <h4 class="text-success mt-1"><%= number_to_currency(invoice.amount_due.to_f / 100.0) %></h4>
+    <%= link_to "Download PDF", invoice.pdf_url, class: "btn btn-sm btn-primary" %>
+
+  </div>
+</div>
