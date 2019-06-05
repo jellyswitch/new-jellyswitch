@@ -72,4 +72,8 @@ class Location < ApplicationRecord
   def square_photo
     background_image.variant(resize: "100x100>")
   end
+
+  def has_contact_info?
+    contact_name.present? && contact_email.present? && contact_phone.present?
+  end
 end

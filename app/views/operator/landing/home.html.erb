@@ -1,29 +1,29 @@
 <% title current_location.name %>
 
-<div class="row mt-3">
-  <div class="col-sm">
-    <div class="card-group">
-      <%= render "shared/building_access_card" %>
-      <%= render "shared/send_feedback_card" %>
-      <% if current_location.rooms.count > 0 %>
-        <%= render "shared/reservations_card" %>
-      <% else %>
-        <%= render "shared/empty_card" %>
-      <% end %>
-    </div>
-  </div>
-</div>
-<div class="row mt-3">
-  <div class="col-sm">
-    <div class="card-group">
-      <%= render "shared/wifi" %>
-      <% if current_tenant.has_contact_info? %>
-        <%= render "shared/contact_card" %>
-        <%= render "shared/map_card" %>
-      <% else %>
-        <%= render "shared/map_card" %>
-        <%= render "shared/empty_card" %>
-      <% end %>
-    </div>
-  </div>
-</div>
+<%= wide_card do %>
+  <%= render "shared/building_access_card" %>
+<% end %>
+
+<%= wide_card do %>
+  <%= render "shared/send_feedback_card" %>
+<% end %>
+
+<% if current_location.rooms.count > 0 %>
+  <%= wide_card do %>
+    <%= render "shared/reservations_card" %>
+  <% end %>
+<% end %>
+
+<%= wide_card do %>
+  <%= render "shared/wifi" %>
+<% end %>
+
+<%= wide_card do %>
+  <%= render "shared/map_card" %>
+<% end %>
+
+<% if current_location.has_contact_info? %>
+  <%= wide_card do %>
+    <%= render "shared/contact_card" %>
+  <% end %>
+<% end %>
