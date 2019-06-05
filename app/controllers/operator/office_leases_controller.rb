@@ -44,6 +44,23 @@ class Operator::OfficeLeasesController < Operator::BaseController
     end
   end
 
+  def destroy
+    find_office_lease
+    authorize @office_lease
+
+    result = Billing::Leasing::TerminateOfficeLease.call(
+      office_lease: @office_lease,
+      subscription: @office_lease.subscription
+    )
+
+    if result.success?
+      flash[:success] = "This lease has been terminated. Any outstanding invoices may still need to be addressed."
+    else
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(office_lease_path(@office_lease), action: "replace")
+  end
+
   private
 
   def find_office_lease(key=:id)

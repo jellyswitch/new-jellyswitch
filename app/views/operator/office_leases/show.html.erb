@@ -54,5 +54,9 @@
     <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: 'attachment'), class: "btn btn-block btn-primary" %>
   <% end %>
 
+  <% if @office_lease.active? %>
+    <%= link_to "Terminate Lease", office_lease_path(@office_lease), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+  <% end %>
+
 <% end %>
 
