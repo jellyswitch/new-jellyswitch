@@ -42,6 +42,7 @@ class Plan < ApplicationRecord
   scope :for_individuals, -> { individual.available.visible }
   scope :lease, -> { where(plan_type: 'lease') }
   scope :nonzero, -> { where('amount_in_cents > 0') }
+  scope :cheapest, -> { order('amount_in_cents ASC').first }
 
   PLAN_TYPES = %w(individual lease).freeze
 

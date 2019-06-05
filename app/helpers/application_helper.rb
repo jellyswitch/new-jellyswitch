@@ -166,6 +166,10 @@ module ApplicationHelper
     end
   end
 
+  def membership_text(plan)
+    "Memberships start at #{display_price(plan)} and vary from flexible desk space to full private offices."
+  end
+
   private
 
   def working_hours_config(location)

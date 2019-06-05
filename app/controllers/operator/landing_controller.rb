@@ -79,6 +79,7 @@ class Operator::LandingController < Operator::BaseController
     end
     @day_pass_types = current_tenant.day_pass_types.available.visible.order('amount_in_cents DESC')
     @plans = current_tenant.plans.for_individuals.order('amount_in_cents DESC')
+    @plan = current_tenant.plans.available.visible.individual.cheapest
   end
 
   def upgrade
