@@ -72,7 +72,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = Organization.eligible_for_lease.all
+    @organizations = Organization.all.select do |org|
+      org.has_billing?
+    end
   end
 
   def find_offices
