@@ -1,6 +1,6 @@
 class OpenDoorJob < ApplicationJob
   queue_as :default
-  throttle threshold: 1, period: 5.seconds, drop: true
+  # throttle threshold: 1, period: 5.seconds, drop: true
 
   def perform(door)
     url = "https://api.getkisi.com/locks/#{door.kisi_id}/unlock"
