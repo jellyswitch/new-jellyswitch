@@ -2,7 +2,7 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Available Offices</h4>
-
+  <%= link_to "Add an office", new_office_path, class: 'btn btn-block btn-primary' %>
   <%= render @offices.available_for_lease %>
 <% end %>
 
