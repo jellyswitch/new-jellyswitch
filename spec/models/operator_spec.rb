@@ -15,6 +15,7 @@
 #  email_enabled          :boolean          default(FALSE), not null
 #  ios_url                :string
 #  kisi_api_key           :string
+#  membership_text        :string
 #  name                   :string           not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null

@@ -7,6 +7,15 @@
 
   <dt>Homepage description</dt>
   <dd><%= operator.snippet %></dd>
+
+  <dt>Membership Text</dt>
+  <dd>
+    <% if operator.membership_text.present? %>
+      <%= operator.membership_text %>
+    <% else %>
+      <i>None</i>
+    <% end %>
+  </dd>
   
   <dt>Contact Name (for members)</dt>
   <dd><%= operator.contact_name %></dd>

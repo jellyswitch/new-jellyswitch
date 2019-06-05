@@ -167,7 +167,11 @@ module ApplicationHelper
   end
 
   def membership_text(plan)
-    "Memberships start at #{display_price(plan)} and vary from flexible desk space to full private offices."
+    if current_tenant.membership_text.present?
+      "Memberships start at #{display_price(plan)} and include #{current_tenant.membership_text}."
+    else
+      "Memberships start at #{display_price(plan)} and vary from flexible desk space to full private offices."
+    end
   end
 
   private
