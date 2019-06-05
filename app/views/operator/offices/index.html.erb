@@ -1,18 +1,14 @@
 <% title "Offices" %>
 
-<div class="row mt-3">
-  <div class="col-lg-3"></div>
-  <div class="col-lg">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <% if admin? %>
-        <div class="row mt-2 mb-2">
-          <div class="col mr-auto">
-            <%= link_to "Add an office", new_office_path, class: "btn btn-primary" %>
-          </div>
-        </div>
-      <% end %>
-      <%= render @offices %>
-    </div>
-  </div>
-  <div class="col-lg-3"></div>
-</div>
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Available Offices</h4>
+
+  <%= render @offices.available_for_lease %>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Occupied Offices</h4>
+
+  <%= render @offices.occupied %>
+<% end %>
+

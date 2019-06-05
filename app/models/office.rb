@@ -48,6 +48,10 @@ class Office < ApplicationRecord
       or(offices.where('office_leases.end_date <= ?', Time.current))
   end
 
+  def self.occupied
+    visible.select { |office| office.has_active_lease? }
+  end
+
   def has_active_lease?
     active_leases.count > 0
   end
