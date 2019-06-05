@@ -31,7 +31,12 @@ class Operator::DayPassesController < Operator::BaseController
     @day_pass = result.day_pass
 
     if result.success?
-      flash[:success] = "Welcome to #{current_tenant.name}!"
+      if @day_pass.today?
+        flash[:success] = "Welcome to #{current_tenant.name}!"
+      else
+        flash[:success] = "Thanks! Your day pass will be available on #{short_date(@day_pass.day)}."
+      end
+      flash.keep
       turbolinks_redirect(home_path)
     else
       flash[:error] = result.message

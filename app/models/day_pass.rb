@@ -42,4 +42,8 @@ class DayPass < ApplicationRecord
   def charge_description
     "#{operator.name} Day Pass for #{pretty_day}"
   end
+
+  def today?
+    day.day == Time.current.day
+  end
 end

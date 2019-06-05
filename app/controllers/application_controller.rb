@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
     @redirect_path = path
 
     @action = action
-
+    flash.keep
     respond_to do |format|
       format.js do
         render "shared/turbolinks_redirect.js.erb"
