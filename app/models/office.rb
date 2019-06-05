@@ -45,7 +45,7 @@ class Office < ApplicationRecord
 
     offices.
       where(office_leases: { office: nil }).
-      or(offices.where('office_leases.end_date < ?', Time.current))
+      or(offices.where('office_leases.end_date <= ?', Time.current))
   end
 
   def has_active_lease?
