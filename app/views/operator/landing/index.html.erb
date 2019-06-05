@@ -29,11 +29,7 @@
 
 
 <% if current_location %>
-  <div class="row mb-3">
-    <div class="col-lg-1"></div>
-    <div class="col-lg">
-        <%= render "shared/contact_card" %>
-    </div>
-    <div class="col-lg-1"></div>
-  </div>
+  <%= super_wide_card do %>
+    <%= render "shared/contact_card" %>
+  <% end %>
 <% end %>

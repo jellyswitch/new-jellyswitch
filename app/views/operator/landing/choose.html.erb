@@ -12,21 +12,15 @@
     <% end %>
   <% end %>
 
-  <div class="row mb-2 mr-1 ml-1">
-    <% if @day_pass_types.count > 0 %>
-      <%= render "day_pass", day_pass_types: @day_pass_types %>
-    <% end %>
-    <% if @plans.count > 0 %>
-      <%= render "memberships", plans: @plans %>
-    <% end %>
-  </div>
+  <% if @day_pass_types.count > 0 %>
+    <%= render "day_pass", day_pass_types: @day_pass_types %>
+  <% end %>
 
+  <% if @plans.count > 0 %>
+    <%= render "memberships", plans: @plans %>
+  <% end %>
 <% end %>
 
-<div class="row mb-3">
-  <div class="col-lg-3"></div>
-  <div class="col-lg">
-    <%= render "shared/contact_card" %>
-  </div>
-  <div class="col-lg-3"></div>
-</div>
+<%= wide_card do %>
+  <%= render "shared/contact_card" %>
+<% end %>
