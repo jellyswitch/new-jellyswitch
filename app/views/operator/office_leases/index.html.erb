@@ -2,13 +2,13 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Active Leases</h4>
-
+  
   <%= link_to "Create an office lease", new_office_lease_path, class: "btn btn-block btn-primary" %>
-  <%= render @office_leases.active %>
+  <%= render "lease_list", leases: @office_leases.active %>
 <% end %>
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Terminated Leases</h4>
 
-  <%= render @office_leases.inactive %>
+  <%= render "lease_list", leases: @office_leases.inactive %>
 <% end %>
