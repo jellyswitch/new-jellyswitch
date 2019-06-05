@@ -61,8 +61,7 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Invoices</h4>
-  
-  <% @organization.invoices.each do |invoice| %>
-    <%= render invoice %>
-  <% end %>
+  <ul class="list-group list-group-flush">
+    <%= render @organization.invoices %>
+  </ul>
 <% end %>
