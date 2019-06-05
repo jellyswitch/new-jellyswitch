@@ -14,7 +14,6 @@ class Operator::BaseController < ApplicationController
   end
 
   def store_ios_token
-    puts request.user_agent
     if logged_in?
       match = request.user_agent.match(/.*deviceToken: (.*)/)
       return if match.nil? || match[1].blank?
@@ -28,6 +27,10 @@ class Operator::BaseController < ApplicationController
   def set_resource_scopes
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
+    end
+
+    if current_tenant.blank?
+      redirect_to status: 404
     end
   end
 
