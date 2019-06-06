@@ -31,7 +31,7 @@ module LandingHelper
       if !approved? && !admin?
         redirect_to wait_path
       else
-        if current_tenant.checkin_required? && !checked_in?
+        if !admin && current_tenant.checkin_required? && !checked_in?
           redirect_to required_checkins_path
         else
           render :home
