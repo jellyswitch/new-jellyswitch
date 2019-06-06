@@ -36,3 +36,12 @@
     <i><%= current_tenant.name %> has not enabled the approval queue.</i>
   <% end %>
 <% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Member Feedback</h4>
+  <p>
+    <%= current_tenant.name %> has <%= current_tenant.member_feedbacks.count %> feedback submissions from members.
+  </p>
+
+  <%= link_to "View member feedback", member_feedbacks_path, class: "btn btn-block btn-primary" %>
+<% end %>

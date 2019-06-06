@@ -47,8 +47,9 @@ Rails.application.routes.draw do
   get '/upgrade',   to: 'operator/landing#upgrade'
 
   # Other
-  get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
+  get '/members_resources', to: "operator/landing#members_resources", as: :members_resources # TODO delete this
   get '/members_groups', to: "operator/landing#members_groups", as: :members_groups
+  get '/offices_leases', to: "operator/landing#offices_leases", as: :offices_leases
 
   # Admin namespace (for operator resources)
   namespace :operator do

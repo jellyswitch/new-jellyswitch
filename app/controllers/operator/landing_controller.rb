@@ -93,6 +93,10 @@ class Operator::LandingController < Operator::BaseController
     @report = Jellyswitch::Report.new(current_tenant)
   end
 
+  def offices_leases
+    authorize :dashboard, :show?
+  end
+
   # TODO: delete this
   def members_resources
     authorize :dashboard, :show?
