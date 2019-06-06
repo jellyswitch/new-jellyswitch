@@ -87,6 +87,13 @@ class Operator::LandingController < Operator::BaseController
     @plans = current_tenant.plans.for_individuals.order('amount_in_cents DESC')
   end
 
+  # High level pages for nav
+  def members_groups
+    authorize :dashboard, :show?
+    @report = Jellyswitch::Report.new(current_tenant)
+  end
+
+  # TODO: delete this
   def members_resources
     authorize :dashboard, :show?
     @doors = Door.all

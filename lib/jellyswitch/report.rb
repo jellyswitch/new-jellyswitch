@@ -2,7 +2,7 @@ module Jellyswitch
   class Report
     attr_accessor :operator
 
-    delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, :locations, to: :operator
+    delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, :locations, :organizations, to: :operator
 
     def initialize(operator)
       @operator = operator
@@ -44,12 +44,26 @@ module Jellyswitch
       last_30_day_passes.count
     end
 
+    def checkins_last_30_days
+      locations.map(&:checkins).flatten.select do |checkin|
+        checkin.datetime_in > 30.days.ago
+      end
+    end
+
+    def checkins_last_30_days_count
+      checkins_last_30_days.count
+    end
+
     def all_members
       users.members.non_superadmins
     end
 
     def all_member_count
       all_members.count
+    end
+    
+    def organization_count
+      organizations.count
     end
 
     def staff

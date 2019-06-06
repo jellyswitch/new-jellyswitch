@@ -48,6 +48,7 @@ Rails.application.routes.draw do
 
   # Other
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources
+  get '/members_groups', to: "operator/landing#members_groups", as: :members_groups
 
   # Admin namespace (for operator resources)
   namespace :operator do
