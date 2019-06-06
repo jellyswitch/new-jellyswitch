@@ -41,7 +41,7 @@ module StripeUtils
 
   def create_stripe_refund(invoice, stripe_invoice = nil)
     stripe_invoice = retrieve_stripe_invoice(invoice) unless stripe_invoice
-    refund_args = { charge: stripe_invoice.charge, amount: invoice.amount_paid }
+    refund_args = { charge: stripe_invoice.charge, amount: invoice.amount_due }
 
     stripe_request(stripe_refund, :create, refund_args)
   end
