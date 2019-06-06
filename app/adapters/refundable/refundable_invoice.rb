@@ -4,7 +4,7 @@ module Refundable
       stripe_refund = operator.create_stripe_refund(self)
 
       refunds.create(
-        amount: amount_paid,
+        amount: amount_due,
         stripe_refund_id: stripe_refund.id
       )
 
