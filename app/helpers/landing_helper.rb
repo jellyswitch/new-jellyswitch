@@ -31,7 +31,7 @@ module LandingHelper
       if !approved? && !admin?
         redirect_to wait_path
       else
-        if !admin? && current_tenant.checkin_required? && !checked_in?
+        if !admin? && !always_has_access? && current_tenant.checkin_required? && !checked_in?
           redirect_to required_checkins_path
         else
           render :home
@@ -59,5 +59,9 @@ module LandingHelper
 
   def checked_in?
     current_user.checked_in?(current_location)
+  end
+
+  def always_has_access?
+    current_user.has_building_access_lease? || current_user.always_allow_building_access?
   end
 end
