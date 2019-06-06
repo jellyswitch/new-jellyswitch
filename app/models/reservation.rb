@@ -23,7 +23,7 @@ class Reservation < ApplicationRecord
   scope :not_cancelled, ->() { where(cancelled: false) }
   scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
   scope :for_room, -> (room) { where(room_id: room.id) }
-
+  
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
@@ -36,6 +36,12 @@ class Reservation < ApplicationRecord
       result.push(new_datetime)
     end
     result
+  end
+
+  def self.for_time(time)
+    select do |reservation|
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.hours.hours >= time)
+    end.first
   end
 
   def room

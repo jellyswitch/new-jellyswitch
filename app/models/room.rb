@@ -91,7 +91,12 @@ class Room < ApplicationRecord
     24.times do |i|
       hour = day_start + i.hours
       is_reserved = reserved.index(hour).present?
-      result.push({hour: hour, reserved: is_reserved})
+      reservation = reservations.for_time(hour)
+      result.push({
+        hour: hour,
+        reserved: is_reserved,
+        reservation: reservation
+      })
     end
     result
   end

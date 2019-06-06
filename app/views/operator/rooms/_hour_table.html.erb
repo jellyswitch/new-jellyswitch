@@ -6,7 +6,13 @@
   <td><%= hour[:hour].strftime("%l%P") %></td>
   <td>
     <%- if hour[:reserved] %>
-      <a href="#" class="btn btn-danger btn-sm disabled">RESERVED</a>
+      <a href="#" class="btn btn-danger btn-sm disabled">
+        <% if hour[:reservation].present? %>
+          <%= hour[:reservation].user.name %>
+        <% else %>
+          RESERVED
+        <% end %>
+      </a>
     <%- else %>
       <%= link_to "Reserve", new_reservation_path(reservation: {hours: 1, datetime_in: hour[:hour], room_id: @room.id}), class: "btn btn-sm btn-success" %>
     <%- end %>
