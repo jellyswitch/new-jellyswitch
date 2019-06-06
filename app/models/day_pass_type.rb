@@ -22,6 +22,7 @@ class DayPassType < ApplicationRecord
   # Scopes
   scope :available, -> { where(available: true) }
   scope :visible, -> { where(visible: true) }
+  scope :invisible, -> { where(visible: false) }
   scope :free, -> { where(amount_in_cents: 0) }
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
   scope :for_code, -> (code) { where(code: code) }

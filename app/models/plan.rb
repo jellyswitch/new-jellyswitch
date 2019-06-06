@@ -38,6 +38,7 @@ class Plan < ApplicationRecord
   scope :available, -> { where(available: true) }
   scope :unavailable, ->{ where(available: false) }
   scope :visible, -> { where(visible: true) }
+  scope :invisible, -> { where(visible: false) }
   scope :individual, -> { where(plan_type: 'individual') }
   scope :for_individuals, -> { individual.available.visible }
   scope :lease, -> { where(plan_type: 'lease') }

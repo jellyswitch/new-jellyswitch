@@ -97,6 +97,10 @@ class Operator::LandingController < Operator::BaseController
     authorize :dashboard, :show?
   end
 
+  def plans_day_passes
+    authorize :dashboard, :show?
+  end
+
   # TODO: delete this
   def members_resources
     authorize :dashboard, :show?

@@ -50,6 +50,7 @@ Rails.application.routes.draw do
   get '/members_resources', to: "operator/landing#members_resources", as: :members_resources # TODO delete this
   get '/members_groups', to: "operator/landing#members_groups", as: :members_groups
   get '/offices_leases', to: "operator/landing#offices_leases", as: :offices_leases
+  get '/plans_day_passes', to: "operator/landing#plans_day_passes", as: :plans_day_passes
 
   # Admin namespace (for operator resources)
   namespace :operator do
