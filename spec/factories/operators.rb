@@ -33,6 +33,7 @@
 FactoryBot.define do
   factory :operator do
     sequence(:name) { |n| "jellywork-#{n}" }
+    approval_required { true }
     snippet { Faker::TvShows::GameOfThrones.quote }
     wifi_name { name }
     wifi_password { Faker::Ancient.god }
