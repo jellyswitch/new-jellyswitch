@@ -1,104 +1,17 @@
-<%- title "Finances" %>
+<%- title "Invoices & Expenses" %>
 
-<div class="row mt-3">
-  <div class="col-sm">
-    <div class="card-group">
- 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Last month
-          </h5>
-          <p class="card-text">
-            <%= number_to_currency(@last_month_revenue.to_f / 100.0) %>
-          </p>
-          <p class="card-text">
-            <small><%= number_to_currency(@last_month_square_footage) %> per square foot</small>
-          </p>
-        </div>
-      </div>
+<%= wide_card do %>
+  <h4 class="display-4">Expenses</h4>
 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            This month
-          </h5>
-          <p class="card-text">
-            <%= number_to_currency(@this_month_revenue.to_f / 100.0) %>
-          </p>
-          <p class="card-text">
-            <small><%= number_to_currency(@this_month_square_footage) %> per square foot</small>
-          </p>
-        </div>
-      </div>
+  <%= link_to "View expenses", expenses_accounting_index_path, class: "btn btn-block btn-primary" %>
+<% end %>
 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Expenses
-          </h5>
-          <p class="card-text">
-            This report contains expenses incurred by <%= current_tenant.name %>.
-          </p>
-          <p class="card-text">
-            <%= link_to "View expenses", expenses_accounting_index_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
+<%= wide_card do %>
+  <h4 class="display-4">Invoices</h4>
 
-
-    </div>
-  </div>
-</div>
-
-<div class="row mt-3">
-  <div class="col-sm">
-    <div class="card-group">
- 
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Invoices
-          </h5>
-          <p class="card-text">
-            <%= current_tenant.name %> has <%= current_tenant.invoices.count %> invoices.
-          </p>
-          <p class="card-text">
-            <%= link_to "View invoices", invoices_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
-
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Plans & Day Pass Types
-          </h5>
-          <p class="card-text">
-            <%= current_tenant.name %> has <%= current_tenant.plans.individual.count %> membership plans and <%= current_tenant.day_pass_types.count %> day pass types.
-          </p>
-          <p class="card-text">
-            <%= link_to "View plans", plans_path, class: "btn btn-primary" %>
-            &nbsp;
-            <%= link_to "View day pass types", day_pass_types_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
-
-      <div class="card border-light">
-        <div class="card-body">
-          <h5 class="card-title">
-            Day Passes
-          </h5>
-          <p class="card-text">
-            <%= current_tenant.name %> has <%= current_tenant.day_passes.count %> day passes.
-          </p>
-          <p class="card-text">
-            <%= link_to "View day passes", day_passes_path, class: "btn btn-primary" %>
-          </p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  <p class="card-text">
+    <%= current_tenant.name %> has <%= current_tenant.invoices.count %> invoices.
+  </p>
+  <%= link_to "View invoices", invoices_path, class: "btn btn-block btn-primary" %>
+<% end %>
 
