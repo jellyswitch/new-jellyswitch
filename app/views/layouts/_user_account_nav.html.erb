@@ -4,10 +4,6 @@
       <%= current_user.name %>
     </a>
     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="accountDropdownLink">
-      <% if admin? %>
-        <%= link_to "#{current_tenant.name} Settings", operator_path(current_tenant, subdomain: current_tenant.subdomain), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
-        <div class="dropdown-divider"></div>
-      <% end %>
       <% if current_user.organization_owner? %>
         <%= link_to "My Organization", organization_path(current_user.organization), class: "dropdown-item", data: { "turbolinks-action" => "restore" } %>
       <% end %>

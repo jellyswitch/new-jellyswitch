@@ -105,12 +105,6 @@ class Operator::LandingController < Operator::BaseController
     authorize :dashboard, :show?
   end
 
-  # TODO: delete this
-  def members_resources
-    authorize :dashboard, :show?
-    @doors = Door.all
-  end
-
   def privacy_policy
   end
 end

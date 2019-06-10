@@ -92,8 +92,6 @@ module ApplicationHelper
       {title: "Invoices & Expenses", path: accounting_index_path},
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
-      {title: "Locations", path: locations_path},
-      {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
       {title: "My Account", path: user_path(current_user)},
       {title: "My Membership", path: user_memberships_path(current_user)},
       {title: "My Day Passes", path: user_day_passes_path(current_user)},
