@@ -70,11 +70,7 @@ class Operator::DoorsController < Operator::BaseController
     authorize @door
     log_door_punch
     OpenDoorJob.perform_later(@door)
-    redirect_to referrer_or_root
-  rescue Exception => e
-    Rollbar.error(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbolinks_redirect(referrer_or_root, action: "replace")
   end
 
   private

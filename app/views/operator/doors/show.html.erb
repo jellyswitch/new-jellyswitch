@@ -1,39 +1,30 @@
 <%- title @door.name %>
 
-<div class="row mt-3">
-  <div class="col-2"></div>
-  <div class="col-8">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><%= link_to "Doors", doors_path %></li>
-        <li class="breadcrumb-item active"> <%= @door.name %></li>
-      </ol>
-    </nav>
-  </div>
-  <div class="col-2"></div>
-</div>
+<% if !mobile_app_request? %>
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><%= link_to "Doors", doors_path %></li>
+      <li class="breadcrumb-item active"> <%= @door.name %></li>
+    </ol>
+  </nav>
+<% end %>
 
-<div class="row">
-  <div class="col-sm-2"></div>
-  <div class="col-sm-8">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4"><%= @door.name %> access log</h4>
-      <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, label: "Punches" %>
-      <p>Kisi ID: <pre><%= @door.kisi_id %></pre></p>
-      <table class="table">
-        <tr>
-          <th>When</th>
-          <th>Who</th>
-        </tr>
-        <%- @punches.each do |punch| %>
-          <tr>
-            <td><%= punch.pretty_datetime %></td>
-            <td><%= link_to punch.user.name, user_path(punch.user) %></td>
-          </tr>
-        <%- end %>
-      </table>
-      <%== pagy_bootstrap_responsive_nav(@pagy) %>
-    </div>
-  </div>
-  <div class="col-sm-2"></div>
-</div>
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Access Log</h4>
+  <p class="lead text-center"><%= @door.name %></p>
+  <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, label: "Punches" %>
+  <p>Kisi ID: <pre><%= @door.kisi_id %></pre></p>
+  <table class="table">
+    <tr>
+      <th>When</th>
+      <th>Who</th>
+    </tr>
+    <%- @punches.each do |punch| %>
+      <tr>
+        <td><%= punch.pretty_datetime %></td>
+        <td><%= link_to punch.user.name, user_path(punch.user) %></td>
+      </tr>
+    <%- end %>
+  </table>
+  <%== pagy_bootstrap_responsive_nav(@pagy) %>
+<% end %>

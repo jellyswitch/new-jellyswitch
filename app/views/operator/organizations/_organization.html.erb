@@ -1,0 +1,9 @@
+<ul class="list-group-item row">
+  <h5 class="display-5 text-center"><%= organization.name %></h5>
+  <p>
+    Owned by <%= link_to organization.owner.name, organization.owner %>
+  </p>
+  <% if view %>
+    <%= link_to 'View', organization, class: "btn btn-block btn-primary" %>
+  <% end %>
+</ul>

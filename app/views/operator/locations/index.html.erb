@@ -1,7 +1,12 @@
 <% title "Locations" %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Customization", customization_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Location Settings</li>
+<% end %>
+
 <%= wide_card do %>
-  <h4 class="display-4">Locations</h4>
-  <%= link_to "Add a location", new_location_path, class: "btn btn-primary" %>
+  <h4 class="display-4 text-center">Locations</h4>
+  <%= link_to "Add a location", new_location_path, class: "btn btn-block btn-primary" %>
 <% end %>
 <%= render @locations, label: "Switch to" %>

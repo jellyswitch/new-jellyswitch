@@ -57,6 +57,12 @@ module ApplicationHelper
     end
   end
 
+  def breadcrumb
+    render "layouts/breadcrumb" do
+      yield
+    end
+  end
+
   def title(page_title)
     content_for(:title) { page_title }
     page_title
@@ -84,13 +90,14 @@ module ApplicationHelper
     [
       {title: "Home", path: feed_items_path},
       {title: "Search", path: new_search_result_path},
-      {title: "Members & Resources", path: members_resources_path},
-      {title: "Finances", path: accounting_index_path},
+      {title: "Building Access", path: doors_path},
+      {title: "Members & Groups", path: members_groups_path},
+      {title: "Offices & Leases", path: offices_leases_path},
+      {title: "Rooms & Reservations", path: rooms_path},
+      {title: "Plans & Day Passes", path: plans_day_passes_path},
+      {title: "Invoices & Expenses", path: accounting_index_path},
       {title: "Data", path: reports_path},
-      {title: "Offices", path: offices_path},
-      {title: "Leases", path: office_leases_path},
-      {title: "Locations", path: locations_path},
-      {title: "#{current_tenant.name} Settings", path: operator_path(current_tenant, subdomain: current_tenant.subdomain)},
+      {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(current_user)},
       {title: "My Membership", path: user_memberships_path(current_user)},
       {title: "My Day Passes", path: user_day_passes_path(current_user)},

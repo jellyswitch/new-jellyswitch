@@ -1,25 +1,14 @@
 <%- title "Member Feedback" %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Member Feedback</h4>
-      <table class="table">
-        <tr>
-          <th>When</th>
-          <th>Who</th>
-          <th>Comment</th>
-        </tr>
-        <%- @member_feedbacks.each do |member_feedback| %>
-          <tr>
-            <td><%= time_ago_in_words(member_feedback.created_at) %> ago</td>
-            <td><%= member_feedback_who(member_feedback) %></td>
-            <td><%= simple_format(member_feedback.comment) %></td>
-          </tr>
-        <%- end %>
-      </table>
-    </div>
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Members & Groups", members_groups_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Member Feedback</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Member Feedback</h4>
+
+  <div class="list-group list-group-flush mt-4">
+    <%= render @member_feedbacks %>
   </div>
-  <div class="col-sm-3"></div>
-</div>
+<% end %>

@@ -1,8 +1,13 @@
 <%- title "Member Directory" %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Members & Groups", members_groups_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Member Directory</li>
+<% end %>
+
 <%= wide_card do %>
   <%- if admin? %>
-    <div class="row mt-3 mb-3">
+    <div class="row mb-3">
       <div class="col">
         <%= link_to "Add Member", add_member_users_path, class: "btn btn-block btn-primary" %>
       </div>
