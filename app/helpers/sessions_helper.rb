@@ -29,9 +29,13 @@ module SessionsHelper
 
   def current_checkin
     if !logged_in?
-      return nil
+      nil
     else
-      current_user.checkins.for_location(current_location).open.first
+      if current_location.present?
+        current_user.checkins.for_location(current_location).open.first
+      else
+        nil
+      end
     end
   end
 
