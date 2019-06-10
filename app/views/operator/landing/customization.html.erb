@@ -1,0 +1,21 @@
+<% title "Customization" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Global Settings</h4>
+
+  <p>
+    Set up your account name, homepage description, enable the approval queue, required checkins, and more.
+  </p>
+
+  <%= link_to "Customize Jellyswitch", operator_path(current_tenant, subdomain: current_tenant.subdomain), class: "btn btn-block btn-primary", data: { "turbolinks-action" => "restore" } %>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Location Settings</h4>
+
+  <p>
+    Add, remove, and update settings on a per-location basis.
+  </p>
+
+  <%= link_to "Customize Locations", locations_path, class: "btn btn-primary btn-block" %>
+<% end %>

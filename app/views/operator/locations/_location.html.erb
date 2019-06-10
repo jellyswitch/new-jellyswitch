@@ -7,19 +7,18 @@
     </div>
     <div class="ml-4 mb-1">
       <div class="row">
-        <h5 class="display-5">
-          <% if admin? %>
-            <%= link_to location.name, location %>
-          <% else %>
-            <%= location.name %>
-          <% end %>
+        <h5 class="display-5 col">
+          <%= location.name %>
         </h5>
       </div>
       <div class="row">
-        <p><%= location.snippet %></p>
+        <p class="col"><%= location.snippet %></p>
       </div>
     </div>
   </div>
+  <% if admin? %>
+    <%= link_to "Manage Location", location, class: "btn btn-info btn-block" %>
+  <% end %>
   <div class="row mt-2">
     <div class="col">
     <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
