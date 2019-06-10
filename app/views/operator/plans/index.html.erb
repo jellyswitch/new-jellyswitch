@@ -1,6 +1,11 @@
 
 <%- title 'Plans' %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Plans</li>
+<% end %>
+
 <%= wide_card do %>
   <h4 class="display-4 text-center">Available Plans</h4>
   <%= link_to "Add a new plan", new_plan_path, class: "btn btn-primary btn-block mb-3" %>

@@ -57,6 +57,12 @@ module ApplicationHelper
     end
   end
 
+  def breadcrumb
+    render "layouts/breadcrumb" do
+      yield
+    end
+  end
+
   def title(page_title)
     content_for(:title) { page_title }
     page_title

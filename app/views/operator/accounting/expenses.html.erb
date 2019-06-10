@@ -1,4 +1,9 @@
-<%- title "Expenses" %>
+<% title "Expenses" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Invoices & Expenses", accounting_index_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Expenses</li>
+<% end %>
 
 <%= basic_card do %>
   <h4 class="display-4 text-center">Expenses</h4>
