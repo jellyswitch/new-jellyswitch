@@ -7,10 +7,10 @@
           <%= pluralize(@unapproved_users.count, 'member') %> awaiting approval
         <% end %>
       <% end %>
-      <% if @due_invoices.count > 0 %>
-        <%= link_to due_invoices_path, class: "list-group-item list-group-item-action" do %>
+      <% if @open_invoices.count > 0 %>
+        <%= link_to open_invoices_path, class: "list-group-item list-group-item-action" do %>
           <span class="fas fa-dollar-sign text-center mr-3" style="width: 10px;"></span>
-          <%= @due_invoices.count %> invoices due soon
+          <%= @open_invoices.count %> unpaid invoices
         <% end %>
       <% end %>
       <% if @delinquent_invoices.count > 0 %>

@@ -63,7 +63,7 @@ class Operator::FeedItemsController < Operator::BaseController
   def sidebar_items
     @member_feedbacks = current_tenant.member_feedbacks.recent
     @unapproved_users = current_tenant.users.members.unapproved
-    @due_invoices = current_tenant.invoices.due.order('date DESC')
+    @open_invoices = current_tenant.invoices.open.order('date DESC')
     @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
   end
 
