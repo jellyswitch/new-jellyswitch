@@ -21,14 +21,15 @@
   <% end %>
 <% end %>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center">Hidden Rooms</h4>
-  <% if @hidden_rooms.count < 1 %>
-    <i>All rooms are visible.</i>
-  <% else %>
-    <%- @hidden_rooms.each do |room| %>
-      <%= render "room_card", room: room %>
-    <%- end %>
+<% if admin? %>
+  <%= wide_card do %>
+    <h4 class="display-4 text-center">Hidden Rooms</h4>
+    <% if @hidden_rooms.count < 1 %>
+      <i>All rooms are visible.</i>
+    <% else %>
+      <%- @hidden_rooms.each do |room| %>
+        <%= render "room_card", room: room %>
+      <%- end %>
+    <% end %>
   <% end %>
 <% end %>
-
