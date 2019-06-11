@@ -102,7 +102,7 @@ module ApplicationHelper
       {title: "Member Dashboard", path: home_path}
     ]
 
-    if current_tenant.locations > 1
+    if current_tenant.locations.count > 1
       items = items.insert(
         3,
         {title: "Change Location", path: edit_set_location_path}
@@ -120,7 +120,7 @@ module ApplicationHelper
       {title: "My Account", path: user_path(current_user)}
     ]
 
-    if current_tenant.locations > 1
+    if current_tenant.locations.count > 1
       items = items.insert(
         3,
         {title: "Change Location", path: edit_set_location_path}
@@ -136,7 +136,7 @@ module ApplicationHelper
       {title: "Log In", path: login_path}
     ]
 
-    if current_tenant.locations > 1
+    if current_tenant.locations.count > 1
       items = items.insert(
         2,
         {title: "Change Location", path: edit_set_location_path}
