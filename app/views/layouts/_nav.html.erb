@@ -20,6 +20,9 @@
           <li class="nav-item">
             <%= link_to "Building Access", keys_doors_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
           </li>
+          <% if current_tenant.locations.count > 1 %>
+            <%= link_to "Change Location", edit_set_location_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+          <% end %>
         <% else %>
           <li class="nav-item">
             <%= link_to "Sign Up", signup_path, class: "nav-link" %>

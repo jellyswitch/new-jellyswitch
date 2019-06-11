@@ -1,5 +1,10 @@
 <% title "My Reservations" %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "My Account", user_path(@user) %></li>
+  <li class="breadcrumb-item">My Reservations</li>
+<% end %>
+
 <%= wide_card do %>
   <h4 class="display-4">My Reservations</h4>
   <% @reservations.each do |reservation| %>

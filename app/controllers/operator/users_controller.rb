@@ -121,6 +121,7 @@ class Operator::UsersController < Operator::BaseController
   def change_password
     find_user(:user_id)
     authorize @user
+    background_image
   end
 
   def update_password

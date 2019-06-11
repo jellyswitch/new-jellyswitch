@@ -87,7 +87,7 @@ module ApplicationHelper
   end
 
   def admin_nav_items
-    [
+    items = [
       {title: "Home", path: feed_items_path},
       {title: "Search", path: new_search_result_path},
       {title: "Building Access", path: doors_path},
@@ -99,37 +99,49 @@ module ApplicationHelper
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(current_user)},
-      {title: "My Membership", path: user_memberships_path(current_user)},
-      {title: "My Day Passes", path: user_day_passes_path(current_user)},
-      {title: "My Reservations", path: user_reservations_path(current_user)},
-      {title: "My Invoices", path: user_invoices_path(current_user)},
-      {title: "Change Location", path: edit_set_location_path},
-      {title: "Change Password", path: user_change_password_path(current_user)},
       {title: "Member Dashboard", path: home_path}
     ]
+
+    if current_tenant.locations > 1
+      items = items.insert(
+        3,
+        {title: "Change Location", path: edit_set_location_path}
+      )
+    end
+
+    items
   end
 
   def member_nav_items
-    [
+    items = [
       {title: "Home", path: home_path},
       {title: "Reserve a room", path: rooms_path},
       {title: "Building Access", path: keys_doors_path},
-      {title: "My Account", path: user_path(current_user)},
-      {title: "My Membership", path: user_memberships_path(current_user)},
-      {title: "My Day Passes", path: user_day_passes_path(current_user)},
-      {title: "My Reservations", path: user_reservations_path(current_user)},
-      {title: "My Invoices", path: user_invoices_path(current_user)},
-      {title: "Change Location", path: edit_set_location_path},
-      {title: "Change Password", path: user_change_password_path(current_user)}
+      {title: "My Account", path: user_path(current_user)}
     ]
+
+    if current_tenant.locations > 1
+      items = items.insert(
+        3,
+        {title: "Change Location", path: edit_set_location_path}
+      )
+    end
+
+    items
   end
 
   def logged_out_nav_items
-    [
+    items = [
       {title: "Sign Up", path: signup_path},
-      {title: "Log In", path: login_path},
-      {title: "Change Location", path: edit_set_location_path},
+      {title: "Log In", path: login_path}
     ]
+
+    if current_tenant.locations > 1
+      items = items.insert(
+        2,
+        {title: "Change Location", path: edit_set_location_path}
+      )
+    end
   end
 
   def days_option_for_current_month
