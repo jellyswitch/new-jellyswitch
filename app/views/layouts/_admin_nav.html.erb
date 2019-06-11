@@ -20,6 +20,9 @@
         <%= link_to "Rooms & Reservations", rooms_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
         <%= link_to "Plans & Day Passes", plans_day_passes_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
         <%= link_to "Invoices & Expenses", accounting_index_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+        <% if current_tenant.locations.count > 1 %>
+          <%= link_to "Change Location", edit_set_location_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+        <% end %>
         <%= link_to "Data", reports_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
         <%= link_to "Customization", customization_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
       </ul>
