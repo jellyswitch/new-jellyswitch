@@ -21,6 +21,14 @@ class InvoicePolicy < ApplicationPolicy
     admin? && card_added?
   end
 
+  def groups?
+    admin?
+  end
+
+  def open?
+    admin?
+  end
+
   private
 
   def card_added?

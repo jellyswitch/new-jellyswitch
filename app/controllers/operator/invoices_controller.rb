@@ -1,26 +1,38 @@
 class Operator::InvoicesController < Operator::BaseController
+  before_action :background_image
   def index
     @pagy, @invoices = pagy(Invoice.all.order('date DESC'))
     authorize @invoices
-    background_image
-  end
-
-  def due
-    @pagy, @invoices = pagy(Invoice.due.order('date DESC'))
-    authorize @invoices
-    background_image
+    @title = "All Invoices"
+    render :generic
   end
 
   def recent
     @pagy, @invoices = pagy(Invoice.recent.order('date DESC'))
     authorize @invoices
-    background_image
+    @title = "Recent Invoices"
+    render :generic
   end
 
   def delinquent
     @pagy, @invoices = pagy(Invoice.delinquent.order('date DESC'))
     authorize @invoices
-    background_image
+    @title = "Delinquent Invoices"
+    render :generic
+  end
+
+  def groups
+    @pagy, @invoices = pagy(Invoice.groups.order('date DESC'))
+    authorize @invoices
+    @title = "Group Invoices"
+    render :generic
+  end
+
+  def open
+    @pagy, @invoices = pagy(Invoice.open.order('date DESC'))
+    authorize @invoices
+    @title = "Open Invoices"
+    render :generic
   end
 
   def charge

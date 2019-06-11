@@ -12,6 +12,6 @@
   <p class="card-text">
     <%= current_tenant.name %> has <%= current_tenant.invoices.count %> invoices.
   </p>
-  <%= link_to "View invoices", invoices_path, class: "btn btn-block btn-primary" %>
+  <%= link_to "View invoices", open_invoices_path, class: "btn btn-block btn-primary" %>
 <% end %>
 

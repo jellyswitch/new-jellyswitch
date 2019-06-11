@@ -93,7 +93,8 @@ Rails.application.routes.draw do
     resources :refunds, only: [:create], controller: 'operator/refunds'
     get :mark_paid, to: 'operator/mark_invoices_paid#update'
     collection do
-      get :due, to: 'operator/invoices#due'
+      get :groups, to: 'operator/invoices#groups'
+      get :open, to: 'operator/invoices#open'
       get :recent, to: 'operator/invoices#recent'
       get :delinquent, to: 'operator/invoices#delinquent'
     end

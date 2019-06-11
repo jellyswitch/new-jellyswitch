@@ -34,6 +34,7 @@ class Invoice < ApplicationRecord
   scope :due, -> { open.where('due_date >= ?', Time.now) }
   scope :paid, ->{ where(status: "paid") }
   scope :delinquent, -> { due.where('due_date < ?', Time.now) }
+  scope :groups, -> { where(billable_type: "Organization") }
   scope :last_month, -> {
     last_month_start = (Time.now.beginning_of_month - 1.day).beginning_of_month.to_time.to_i
     this_month_start = Time.now.beginning_of_month.to_time.to_i
