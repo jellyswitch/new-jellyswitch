@@ -85,6 +85,11 @@
 <% end %>
 
 <%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Checkins</h4>
+  <%= render "checkins", user: @user %>
+<% end %>
+
+<%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Organization</h4>
   <%= render "organization_form", user: @user %>
 <% end %>
