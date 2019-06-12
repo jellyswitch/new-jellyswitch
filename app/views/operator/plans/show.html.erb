@@ -33,8 +33,10 @@
     <dt class="col-sm">Has a limit on days included?</dt>
     <dd class="col-sm"><%= boolean_to_yesno(@plan.has_day_limit?) %></dd>
   </dl>
-  <dl class="row">
-    <dt class="col-sm">Number of days included</dt>
-    <dd class="col-sm"><%= @plan.day_limit%></dd>
-  </dl>
+  <% if @plan.has_day_limit? %>
+    <dl class="row">
+      <dt class="col-sm">Number of days included</dt>
+      <dd class="col-sm"><%= @plan.day_limit%></dd>
+    </dl>
+  <% end %>
 <% end %>
