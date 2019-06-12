@@ -1,7 +1,6 @@
 <%= wide_card do %>
   <h4 class="display-4 text-center">Global Settings</h4>
 
-  <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
   <dl>
     <dt>Name</dt>
     <dd><%= operator.name %></dd>
@@ -39,10 +38,6 @@
     <dt>Building Address</dt>
     <dd><%= operator.building_address %></dd>
 
-  </dl>
-  <hr />
-  <h4 class="display-4 mt-3">Jellyswitch Customization</h4>
-  <dl>
     <dt>Stripe Account ID</dt>
     <dd>
       <%- if operator.production? %>
@@ -124,4 +119,6 @@
       <%- end %>
     </dd>
   </dl>
+
+      <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
 <% end %>
