@@ -10,6 +10,11 @@
   <div class="row mt-3">
     <div class="col">
       <dl class="row">
+        <dt class="col-6">Day</dt>
+        <dd class="col">
+          <%= short_date(checkin.datetime_in) %>
+        </dd>
+
         <dt class="col-6">Duration</dt>
         <dd class="col">
           <% if checkin.open? %>
