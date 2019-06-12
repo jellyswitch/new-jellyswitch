@@ -138,10 +138,12 @@ module ApplicationHelper
 
     if current_tenant.locations.count > 1
       items = items.insert(
-        2,
+        3,
         {title: "Change Location", path: edit_set_location_path}
       )
     end
+
+    items
   end
 
   def days_option_for_current_month
