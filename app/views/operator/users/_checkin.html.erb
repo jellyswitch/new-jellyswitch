@@ -5,7 +5,9 @@
   <% if checkin.open? %>
     <h4 class="text-success text-center mt-1"><i>Currently Checked In</i></h4>
   <% else %>
-    <h4 class="text-success text-center mt-1"><%= number_to_currency(checkin.invoice.amount_due.to_f / 100.0) %></h4>
+    <% if checkin.invoice.present? %>
+      <h4 class="text-success text-center mt-1"><%= number_to_currency(checkin.invoice.amount_due.to_f / 100.0) %></h4>
+    <% end %>
   <% end %>
   <div class="row mt-3">
     <div class="col">
