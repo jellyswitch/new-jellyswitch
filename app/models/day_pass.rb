@@ -31,6 +31,7 @@ class DayPass < ApplicationRecord
 
   # Scopes
   scope :today, -> { where(day: Time.current) }
+  scope :for_day, -> (date) { where(day: date) }
   scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
 

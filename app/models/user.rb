@@ -100,8 +100,8 @@ class User < ApplicationRecord
     superadmin
   end
 
-  def member?(operator)
-    has_active_subscription? || has_active_day_pass? || has_active_lease?
+  def member?(operator, day: Time.current)
+    has_active_subscription? || has_active_day_pass?(day) || has_active_lease?
   end
 
   def pending?
@@ -120,8 +120,8 @@ class User < ApplicationRecord
     end
   end
 
-  def has_active_day_pass?
-    day_passes.today.count > 0
+  def has_active_day_pass?(day)
+    day_passes.for_day(day).count > 0
   end
 
   def has_building_access_day_pass?
