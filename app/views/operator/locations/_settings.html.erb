@@ -29,6 +29,20 @@
     <%= format_working_hours(location, "-") %>
   </dd>
 
+  <dt>Working Days</dt>
+  <dd>
+    <% [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday].each do |day| %>
+      <div class="form-check">
+        <% if location.send("#{day}?".to_sym) == true %>
+          <input class="form-check-input" type="checkbox" disabled checked>
+        <% else %>
+          <input class="form-check-input" type="checkbox" disabled>
+        <% end %>
+        <%= label_tag :day, "#{day.to_s.humanize.titleize}?", class: "form-check-label" %>
+      </div>
+    <% end %>
+  </dd>
+
   <dt>Square Footage</dt>
   <dd><%= location.square_footage %></dd>
 

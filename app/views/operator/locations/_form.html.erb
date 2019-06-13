@@ -107,5 +107,25 @@
     <%= f.check_box :visible, class: "form-control" %>
   </div>
 
+  <div class="form-group">
+    <%= f.label :working_day_start %>
+    <%= f.select :working_day_start, @hourly_options %>    
+  </div>
+
+  <div class="form-group">
+    <%= f.label :working_day_end %>
+    <%= f.select :working_day_end, @hourly_options %>    
+  </div>
+
+  <div class="form-group">
+    <label>Working Days</label>
+  </div>
+  <% [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday].each do |day| %>
+    <div class="form-check">
+      <%= f.check_box day, class: "form-check-input" %>
+      <%= f.label :day, "#{day.to_s.humanize.titleize}?", class: "form-check-label" %>
+    </div>
+  <% end %>
+  <div class="mt-3"></div>
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <% end %>

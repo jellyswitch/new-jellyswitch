@@ -16,6 +16,13 @@
 #  hourly_rate_in_cents         :integer          default(0), not null
 #  name                         :string
 #  new_users_get_free_day_pass  :boolean          default(FALSE), not null
+#  open_friday                  :boolean          default(TRUE), not null
+#  open_monday                  :boolean          default(TRUE), not null
+#  open_saturday                :boolean          default(FALSE), not null
+#  open_sunday                  :boolean          default(FALSE), not null
+#  open_thursday                :boolean          default(TRUE), not null
+#  open_tuesday                 :boolean          default(TRUE), not null
+#  open_wednesday               :boolean          default(TRUE), not null
 #  snippet                      :string
 #  square_footage               :integer
 #  state                        :string

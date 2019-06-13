@@ -9,6 +9,7 @@ class Operator::LocationsController < Operator::BaseController
 
   def new
     @location = Location.new
+    setup_hours
     authorize @location
   end
 
@@ -31,6 +32,7 @@ class Operator::LocationsController < Operator::BaseController
   end
 
   def edit
+    setup_hours
     authorize @location
   end
 
@@ -64,13 +66,45 @@ class Operator::LocationsController < Operator::BaseController
     @location = Location.find(params[:id])
   end
 
+  def setup_hours
+    @hourly_options = [
+      ["12:00am", "00:00"],
+      ["1:00am", "01:00"],
+      ["2:00am", "02:00"],
+      ["3:00am", "03:00"],
+      ["4:00am", "04:00"],
+      ["5:00am", "05:00"],
+      ["6:00am", "06:00"],
+      ["7:00am", "07:00"],
+      ["8:00am", "08:00"],
+      ["9:00am", "09:00"],
+      ["10:00am", "10:00"],
+      ["11:00am", "11:00"],
+      ["12:00pm", "12:00"],
+      ["1:00pm", "13:00"],
+      ["2:00pm", "14:00"],
+      ["3:00pm", "15:00"],
+      ["4:00pm", "16:00"],
+      ["5:00pm", "17:00"],
+      ["6:00pm", "18:00"],
+      ["7:00pm", "19:00"],
+      ["8:00pm", "20:00"],
+      ["9:00pm", "21:00"],
+      ["10:00pm", "22:00"],
+      ["11:00pm", "23:00"],
+      ["11:59pm", "23:59"]
+    ]
+  end
+
   def location_params
     params.require(:location).permit(
       :name, :snippet, :wifi_name, :wifi_password, :building_address,
       :city, :state, :zip, :contact_name, :contact_email, :contact_phone,
       :background_image, :square_footage, :time_zone, :visible,
       :flex_square_footage, :common_square_footage, :building_access_instructions,
-      :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass
+      :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass,
+      :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
+      :open_friday, :open_saturday, :working_day_start, :working_day_end
     )
   end
 end
