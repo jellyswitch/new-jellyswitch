@@ -70,7 +70,9 @@ class Operator::LocationsController < Operator::BaseController
       :city, :state, :zip, :contact_name, :contact_email, :contact_phone,
       :background_image, :square_footage, :time_zone, :visible,
       :flex_square_footage, :common_square_footage, :building_access_instructions,
-      :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass
+      :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass,
+      :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
+      :open_friday, :open_saturday
     )
   end
 end

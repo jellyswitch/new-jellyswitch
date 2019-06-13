@@ -203,12 +203,13 @@ module ApplicationHelper
   private
 
   def working_hours_config(location)
-    {
-      mon: {location.working_day_start => location.working_day_end},
-      tue: {location.working_day_start => location.working_day_end},
-      wed: {location.working_day_start => location.working_day_end},
-      thu: {location.working_day_start => location.working_day_end},
-      fri: {location.working_day_start => location.working_day_end},
-    }
+    config = {}
+
+    [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday].map do |day|
+      if location.send("#{day}?".to_sym) == true
+        config[day.to_s.split("_").last.first(3).to_sym] = {location.working_day_start => location.working_day_end}
+      end
+    end
+    config
   end
 end
