@@ -23,7 +23,7 @@ class Jellyswitch::MonetizationReport
   def total_office_income
     square_footage = office_income.sum { |o| o.square_footage }
     income = office_income.sum{ |o| o.income }
-    income_per_square_foot = square_footage == 0? ? 0 : income / square_footage
+    income_per_square_foot = square_footage == 0 ? 0 : income / square_footage
 
     @total_office_income ||= office_income_klass.new(
       nil,
