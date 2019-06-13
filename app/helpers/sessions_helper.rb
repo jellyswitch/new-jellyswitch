@@ -65,6 +65,10 @@ module SessionsHelper
       set_location(Location.first)
       @current_location = Location.first
     end
+
+    set_location(Location.first)
+    @current_location = Location.first
+
   end
 
   def logged_in?
