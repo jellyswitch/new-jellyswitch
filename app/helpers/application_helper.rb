@@ -11,6 +11,10 @@ module ApplicationHelper
     date.strftime("%m/%d/%Y")
   end
 
+  def pretty_time(time)
+    time.strftime("%l:%M%P")
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?
@@ -183,9 +187,15 @@ module ApplicationHelper
   end
 
   def quantize(collection, string)
-    if collection.count <= 0
+    if collection.respond_to? :each
+      count = collection.count
+    else
+      count = collection
+    end
+
+    if count <= 0
       string.pluralize
-    elsif collection.count == 1
+    elsif count == 1
       string.singularize
     else
       string.pluralize

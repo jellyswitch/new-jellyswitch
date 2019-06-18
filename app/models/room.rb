@@ -101,6 +101,12 @@ class Room < ApplicationRecord
     result
   end
 
+  def future_availability_for_day(day_start)
+    availability_for_day(day_start).select do |option|
+      option[:hour].future?
+    end
+  end
+
   def calendar
     cal = Icalendar::Calendar.new
     cal.x_wr_calname = "Reservations: #{name}"
