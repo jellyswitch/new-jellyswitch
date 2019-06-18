@@ -101,7 +101,7 @@ class User < ApplicationRecord
   end
 
   def member?(operator, day = Time.current)
-    has_active_subscription? || has_active_day_pass?(day) || has_active_lease?
+    has_active_subscription? || has_active_day_pass?(day=day) || has_active_lease?
   end
 
   def pending?
