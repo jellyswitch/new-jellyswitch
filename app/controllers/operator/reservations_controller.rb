@@ -26,6 +26,9 @@ class Operator::ReservationsController < Operator::BaseController
     @room = current_tenant.rooms.visible.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
+
+    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
+    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
   end
 
   def confirm
@@ -50,6 +53,7 @@ class Operator::ReservationsController < Operator::BaseController
     
     result = CreateRoomReservation.call(reservation_params: {
       datetime_in: @datetime_in,
+      hours: @duration,
       room: @room
     }, user: current_user)
     @reservation = result.reservation

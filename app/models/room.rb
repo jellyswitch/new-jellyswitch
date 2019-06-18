@@ -90,15 +90,12 @@ class Room < ApplicationRecord
   end
 
   def availability_for_day(day_start)
-    reserved = reserved_hours
     result = []
     24.times do |i|
       hour = day_start + i.hours
-      is_reserved = reserved.index(hour).present?
       reservation = reservations.for_time(hour)
       result.push({
         hour: hour,
-        reserved: is_reserved,
         reservation: reservation
       })
     end

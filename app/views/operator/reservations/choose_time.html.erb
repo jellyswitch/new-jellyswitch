@@ -17,8 +17,8 @@
   </dl>
 
   <% @room.future_availability_for_day(@day.beginning_of_day).each do |option| %>
-    <% if option[:reserved] %>
-      <%= link_to option[:reservation].user.name, "#", class: "btn btn-block btn-danger disabled" %>
+    <% if option[:reservation].present? %>
+      <%= link_to "#{pretty_time(option[:hour])} (#{option[:reservation].user.name}, #{option[:reservation].hours} #{quantize(option[:reservation].hours, 'hours')})", "#", class: "btn btn-block btn-danger disabled" %>
     <% else %>
       <%= link_to pretty_time(option[:hour]), choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(option[:hour])), class: "btn btn-block btn-primary" %>
     <% end %>
