@@ -1,5 +1,12 @@
 <% title "Confirm reservation" %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id) %></li>
+  <li class="breadcrumb-item"><%= link_to "Choose a time", choose_time_reservations_path(room_id: @room.id, day: @day) %></li>
+  <li class="breadcrumb-item"><%= link_to "How long?", choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour)) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Confirm</li>
+<% end %>
+
 <%= wide_card do %>
   <h4 class="display-4 text-center">Confirm reservation</h4>
 
