@@ -21,6 +21,10 @@
   </dl>
 
   <% [1, 2, 3, 4].each do |i| %>
-    <%= link_to "#{i} #{quantize(i, 'hour')}", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: i), class: "btn btn-block btn-primary" %>
+    <% if @room.available_at?(@hour + (i - 1).hours) %>
+      <%= link_to "#{i} #{quantize(i, 'hour')}", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: i), class: "btn btn-block btn-primary" %>
+    <% else %>
+      <% break %>
+    <% end %>
   <% end %>
 <% end %>

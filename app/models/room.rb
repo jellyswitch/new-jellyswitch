@@ -47,8 +47,12 @@ class Room < ApplicationRecord
   # Predicates
 
   def available_now?
-    start = Time.current.beginning_of_hour
-    reservations.all.map(&:datetime_in).index(start).blank?
+    available_at?(Time.current)
+  end
+
+  def available_at?(timestamp)
+    hour = timestamp.beginning_of_hour
+    reservations.all.map(&:datetime_in).index(hour).blank?
   end
 
   def has_photo?

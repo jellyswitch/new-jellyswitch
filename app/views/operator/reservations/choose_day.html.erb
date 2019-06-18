@@ -10,7 +10,7 @@
 
   <%= form_with(local: true, url: choose_time_reservations_path, method: :get) do |f| %>
     <div class="form-group">
-      <%= f.date_select :day, {}, class: "form-control mt-2" %>
+      <%= f.date_select :day, {order: [:month, :day, :year]}, class: "form-control mt-2" %>
     </div>
     <%= f.hidden_field :room_id, value: @room.id %>
 
