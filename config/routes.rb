@@ -117,6 +117,7 @@ Rails.application.routes.draw do
   end
   resources :reports, controller: 'operator/reports' do
     collection do
+      get :member_csv
       get :active_members
       get :active_lease_members
       get :active_leases

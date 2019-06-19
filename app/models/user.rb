@@ -143,6 +143,14 @@ class User < ApplicationRecord
   def organization_owner?
     organization && organization.owner == self
   end
+  
+  def organization_name
+    if organization.present?
+      organization.name
+    else
+      "None"
+    end
+  end
 
   def member_of_organization?
     organization.present?
@@ -267,6 +275,22 @@ class User < ApplicationRecord
       end
     else
       nil
+    end
+  end
+
+  def payment_method
+    if bill_to_organization
+      "Bill to Group"
+    else
+      if out_of_band?
+        "Via cash or check"
+      else
+        if card_added?
+            "Credit card on file"
+        else
+          "None"
+        end
+      end
     end
   end
 end
