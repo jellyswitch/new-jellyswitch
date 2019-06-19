@@ -60,4 +60,9 @@ class Checkin < ApplicationRecord
   def open?
     datetime_out.blank?
   end
+
+  def auto_checkout_time
+    time = Time.parse(location.working_day_end)
+    time.change(day: datetime_in.day)
+  end
 end

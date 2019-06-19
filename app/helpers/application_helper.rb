@@ -14,6 +14,10 @@ module ApplicationHelper
   def pretty_time(time)
     time.strftime("%l:%M%P")
   end
+  
+  def long_date(date)
+    date.strftime("%B %e, %Y")
+  end
 
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
@@ -153,7 +157,7 @@ module ApplicationHelper
   def days_option_for_current_month
     [*0..30].map do |i|
       day = Time.zone.now + i.days
-      [day.to_formatted_s(:long), day.to_i]
+      [long_date(day), day.to_i]
     end
   end
 

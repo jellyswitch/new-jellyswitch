@@ -84,7 +84,7 @@ class Invoice < ApplicationRecord
   end
 
   def pretty_date
-    date&.strftime("%m/%d/%Y")
+    date&.strftime("%m/%d/%Y %l:%M%P")
   end
 
   def voidable?
