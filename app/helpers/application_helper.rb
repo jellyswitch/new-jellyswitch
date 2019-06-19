@@ -218,6 +218,10 @@ module ApplicationHelper
     [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday]
   end
 
+  def no_cache
+    render "layouts/no_cache"
+  end
+
   private
 
   def working_hours_config(location)
