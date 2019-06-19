@@ -47,12 +47,8 @@ class Room < ApplicationRecord
   # Predicates
 
   def available_now?
-    available_at?(Time.current)
-  end
-
-  def available_at?(timestamp)
-    hour = timestamp.beginning_of_hour
-    reservations.all.map(&:datetime_in).index(hour).blank?
+    start = Time.current.beginning_of_hour
+    reservations.all.map(&:datetime_in).index(start).blank?
   end
 
   def has_photo?
@@ -90,22 +86,19 @@ class Room < ApplicationRecord
   end
 
   def availability_for_day(day_start)
+    reserved = reserved_hours
     result = []
     24.times do |i|
       hour = day_start + i.hours
+      is_reserved = reserved.index(hour).present?
       reservation = reservations.for_time(hour)
       result.push({
         hour: hour,
+        reserved: is_reserved,
         reservation: reservation
       })
     end
     result
-  end
-
-  def future_availability_for_day(day_start)
-    availability_for_day(day_start).select do |option|
-      option[:hour].future?
-    end
   end
 
   def calendar

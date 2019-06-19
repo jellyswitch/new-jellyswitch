@@ -129,15 +129,7 @@ Rails.application.routes.draw do
       get :checkins
     end
   end
-  resources :reservations, controller: 'operator/reservations', except: [:index, :new, :create] do
-    collection do 
-      get :choose_day, to: 'operator/reservations#choose_day'
-      get :choose_time, to: 'operator/reservations#choose_time'
-      get :choose_duration, to: 'operator/reservations#choose_duration'
-      get :confirm, to: 'operator/reservations#confirm'
-      get :create_reservation, to: 'operator/reservations#create_reservation'
-    end
-  end
+  resources :reservations, controller: 'operator/reservations', except: [:index]
   resources :rooms, controller: 'operator/rooms', except: [:destroy] do
     get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability
   end

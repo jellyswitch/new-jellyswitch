@@ -11,10 +11,6 @@ module ApplicationHelper
     date.strftime("%m/%d/%Y")
   end
 
-  def pretty_time(time)
-    time.strftime("%l:%M%P")
-  end
-  
   def long_date(date)
     date.strftime("%B %e, %Y")
   end
@@ -191,15 +187,9 @@ module ApplicationHelper
   end
 
   def quantize(collection, string)
-    if collection.respond_to? :each
-      count = collection.count
-    else
-      count = collection
-    end
-
-    if count <= 0
+    if collection.count <= 0
       string.pluralize
-    elsif count == 1
+    elsif collection.count == 1
       string.singularize
     else
       string.pluralize

@@ -1,61 +1,19 @@
 class Operator::ReservationsController < Operator::BaseController
-  before_action :background_image
-
   def show
     find_reservation
     authorize @reservation
     background_image
   end
 
-  def choose_day
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+  def new
+    @reservation = Reservation.new(reservation_params)
+    authorize @reservation
+    background_image
   end
 
-  def choose_time
-    # requires room, day
-    @room = current_tenant.rooms.visible.find(params[:room_id])
-    if params[:day].present?
-      @day = Date.parse(params[:day])
-    else
-      @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
-    end
-  end
-
-  def choose_duration
-    # require room, day, time
-    @room = current_tenant.rooms.visible.find(params[:room_id])
-    @day = Date.parse(params[:day])
-    @hour = Time.strptime(params[:hour], "%l:%M%P")
-
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
-  end
-
-  def confirm
-    # requires room, day, time, duration
-    @room = current_tenant.rooms.visible.find(params[:room_id])
-    @day = Date.parse(params[:day])
-    @hour = Time.strptime(params[:hour], "%l:%M%P")
-    @duration = params[:duration].to_i
-
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
-  end
-
-  def create_reservation
-    @room = current_tenant.rooms.visible.find(params[:room_id])
-    @day = Date.parse(params[:day])
-    @hour = Time.strptime(params[:hour], "%l:%M%P")
-    @duration = params[:duration].to_i
-
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
-    
-    result = CreateRoomReservation.call(reservation_params: {
-      datetime_in: @datetime_in,
-      hours: @duration,
-      room: @room
-    }, user: current_user)
+  def create
+    authorize Reservation.new
+    result = CreateRoomReservation.call(reservation_params: reservation_params, user: current_user)
     @reservation = result.reservation
 
     if result.success?
@@ -64,6 +22,10 @@ class Operator::ReservationsController < Operator::BaseController
     else
       render :new, status: 422
     end
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def destroy
@@ -93,9 +55,5 @@ class Operator::ReservationsController < Operator::BaseController
 
   def reservation_params
     params.require(:reservation).permit(:room_id, :datetime_in, :hours)
-  end
-
-  def flatten_date_array hash
-    %w(1 2 3).map { |e| hash["date(#{e}i)"].to_i }
   end
 end

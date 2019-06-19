@@ -1,0 +1,28 @@
+<%= form_for(@reservation, remote: true) do |f| %>
+  <%= render "shared/error_messages" , model: @reservation %>
+  <table class="table">
+    <tr>
+      <th>Room</th>
+      <td>
+        <%= f.select :room_id, Room.options_for_select, class: "form-control" %>
+      </td>
+    </tr>
+    <tr>
+      <th>Day and Time</th>
+      <td>
+        <%= f.datetime_select :datetime_in, default: (Time.current + 1.hour).beginning_of_hour, ampm: true, order: [:month, :day, :year], disabled: true, discard_minute: true, class: "form-control" %>
+        <%= f.hidden_field :datetime_in, value: @reservation.datetime_in %>
+        <br />
+        <i>Want a different time? <%= link_to "View availability", room_day_availability_path(@reservation.room, day: Date.today.day, month: Date.today.month, year: Date.today.year)%></i>
+      </td>
+    </tr>
+    <tr>
+      <th>How many hours?</th>
+      <td>
+        <%= f.number_field :hours, value: 1, class: "form-control" %>
+      </td>
+    </tr>
+  </table>
+  <br />
+  <%= f.submit label, class: "form-control btn btn-primary" %>
+<%- end %>
