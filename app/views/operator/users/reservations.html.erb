@@ -7,9 +7,10 @@
 
 <%= wide_card do %>
   <h4 class="display-4">My Reservations</h4>
-  <% @reservations.each do |reservation| %>
-    <%= render "operator/reservations/reservation_card", reservation: reservation %>
-  <% end %>
-
+  <ul class="list-group list-group-flush">
+    <% @reservations.each do |reservation| %>
+      <%= render "operator/reservations/reservation_card", reservation: reservation %>
+    <% end %>
+  </ul>
   <%== pagy_bootstrap_responsive_nav(@pagy) %>
 <% end %>
