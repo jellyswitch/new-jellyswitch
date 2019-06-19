@@ -218,12 +218,16 @@ module ApplicationHelper
     end
   end
 
+  def working_hours_options
+    [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday]
+  end
+
   private
 
   def working_hours_config(location)
     config = {}
 
-    [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday].map do |day|
+    working_hours_options.map do |day|
       if location.send("#{day}?".to_sym) == true
         config[day.to_s.split("_").last.first(3).to_sym] = {location.working_day_start => location.working_day_end}
       end
