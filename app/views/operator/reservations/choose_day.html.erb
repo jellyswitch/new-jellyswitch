@@ -8,7 +8,7 @@
     <dd class="col"><%= @room.name %></dd>
   </dl>
 
-  <%= form_with(local: true, url: choose_time_reservations_path, method: :get) do |f| %>
+  <%= form_with(url: choose_time_post_reservations_path, method: :post) do |f| %>
     <div class="form-group">
       <%= f.date_select :day, {order: [:month, :day, :year]}, class: "form-control mt-2" %>
     </div>

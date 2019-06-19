@@ -133,6 +133,7 @@ Rails.application.routes.draw do
     collection do 
       get :choose_day, to: 'operator/reservations#choose_day'
       get :choose_time, to: 'operator/reservations#choose_time'
+      post :choose_time_post, to: 'operator/reservations#choose_time_post'
       get :choose_duration, to: 'operator/reservations#choose_duration'
       get :confirm, to: 'operator/reservations#confirm'
       get :create_reservation, to: 'operator/reservations#create_reservation'

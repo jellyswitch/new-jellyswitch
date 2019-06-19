@@ -11,6 +11,16 @@ class Operator::ReservationsController < Operator::BaseController
     @room = current_tenant.rooms.visible.find(params[:room_id])
   end
 
+  def choose_time_post
+    @room = current_tenant.rooms.visible.find(params[:room_id])
+    if params[:day].present?
+      @day = Date.parse(params[:day])
+    else
+      @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
+    end
+    turbolinks_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
+  end
+
   def choose_time
     # requires room, day
     @room = current_tenant.rooms.visible.find(params[:room_id])
