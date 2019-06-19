@@ -11,20 +11,18 @@
           <%= location.name %>
         </h5>
       </div>
-      <div class="row">
-        <p class="col"><%= location.snippet %></p>
-      </div>
     </div>
   </div>
+   <%= simple_format(location.snippet) %>
   <% if admin? %>
     <%= link_to "Manage #{location.name}", location, class: "btn btn-info btn-block" %>
   <% end %>
   <div class="row mt-2">
     <div class="col">
-    <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
-      <%= f.hidden_field :id, value: location.id %>
-      <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
-    <% end %>
+      <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
+        <%= f.hidden_field :id, value: location.id %>
+        <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
+      <% end %>
     </div>
   </div>
 <% end %>
