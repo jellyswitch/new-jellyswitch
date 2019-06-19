@@ -31,7 +31,7 @@ RSpec.describe 'Member signup', type: :system, js: true do
       new_member_session do |new_member|
         new_member.refresh
 
-        expect(page).to have_content 'Building Access'
+        expect(page).to have_content 'Send us a note'
       end
     end
   end
