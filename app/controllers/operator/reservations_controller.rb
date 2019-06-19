@@ -72,7 +72,8 @@ class Operator::ReservationsController < Operator::BaseController
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       turbolinks_redirect(reservation_path(@reservation), action: "restore")
     else
-      render :new, status: 422
+      flash[:error] = result.message
+      turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
     end
   end
 
