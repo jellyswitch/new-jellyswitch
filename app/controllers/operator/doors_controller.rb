@@ -70,7 +70,7 @@ class Operator::DoorsController < Operator::BaseController
     authorize @door
     log_door_punch
     OpenDoorJob.perform_later(@door)
-    redirect_to home_path
+    turbolinks_redirect(home_path, action: "replace")
   end
 
   private
