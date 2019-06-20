@@ -19,6 +19,10 @@
   <% if current_tenant.memberships_enabled? %>
     <%= render "memberships", plans: @plans %>
   <% end %>
+
+  <% if current_location.rentable_rooms_enabled? %>
+    <%= render "rooms", rooms: @rooms %>
+  <% end %>
 <% end %>
 
 <%= wide_card do %>

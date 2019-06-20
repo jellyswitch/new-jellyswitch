@@ -90,7 +90,7 @@ class Location < ApplicationRecord
     allow_hourly?
   end
 
-  def outside_rooms_enabled?
+  def rentable_rooms_enabled?
     rooms.visible.rentable.count > 0
   end
 end

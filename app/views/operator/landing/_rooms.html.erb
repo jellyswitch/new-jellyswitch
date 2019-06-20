@@ -1,0 +1,18 @@
+<div class="row mb-2 mr-1 ml-1">
+
+  <div class="col mt-3">
+
+    <strong class="row">
+      Rent a room
+    </strong>
+    <p class="row mt-3" style="height: 100px;">
+      Rooms start at <%= number_to_currency(@rooms.cheapest.first.hourly_rate_in_cents.to_f / 100.0) %> / hour.
+    </p>
+    <div class="row">
+      <%= link_to "Reserve a room", rooms_path, class: "btn btn-primary col m-2" %>
+    </div>
+  </div>
+
+  
+
+</div>

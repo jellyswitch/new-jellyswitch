@@ -39,6 +39,7 @@ class Room < ApplicationRecord
   scope :visible, ->() { where(visible: true) }
   scope :invisible, ->() { where(visible: false) }
   scope :rentable, ->()  { where(rentable: true) }
+  scope :cheapest, ->() { order('hourly_rate_in_cents DESC') }
 
   # Slugs
   extend FriendlyId

@@ -1,10 +1,14 @@
 class RoomPolicy < ApplicationPolicy
   def index?
-    admin? || (member? && approved?)
+    is_user?
   end
 
   def show?
-    admin? || (member? && approved?)
+    if record.rentable?
+      is_user?
+    else
+      admin? || (member? && approved?)
+    end
   end
 
   def new?
@@ -21,9 +25,5 @@ class RoomPolicy < ApplicationPolicy
 
   def update?
     admin?
-  end
-
-  def day?
-    admin? || (member? && approved?)
   end
 end
