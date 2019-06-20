@@ -15,9 +15,7 @@
   <% if @rooms.count < 1 %>
     <i>All rooms are hidden.</i>
   <% else %>
-    <% @rooms.each do |room| %>
-      <%= render "room_card", room: room %>
-    <% end %>
+    <%= render @rooms %>
   <% end %>
 <% end %>
 
@@ -27,9 +25,7 @@
     <% if @hidden_rooms.count < 1 %>
       <i>All rooms are visible.</i>
     <% else %>
-      <%- @hidden_rooms.each do |room| %>
-        <%= render "room_card", room: room %>
-      <%- end %>
+      <%= render @hidden_rooms %>
     <% end %>
   <% end %>
 <% end %>
