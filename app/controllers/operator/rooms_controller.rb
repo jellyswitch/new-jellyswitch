@@ -82,6 +82,17 @@ class Operator::RoomsController < Operator::BaseController
   end
 
   def room_params
-    params.require(:room).permit(:name, :description, :whiteboard, :capacity, :square_footage, :photo, :visible, :av)
+    params.require(:room).permit(
+      :name, 
+      :description, 
+      :whiteboard, 
+      :capacity, 
+      :square_footage, 
+      :photo, 
+      :visible, 
+      :av,
+      :rentable,
+      :hourly_rate_in_cents
+      )
   end
 end

@@ -43,6 +43,18 @@
   </div>
 
   <div class="form-group">
+    <div class="form-check">
+      <%= f.check_box :rentable, class: "form-check-input" %>
+      <%= f.label :rentable, "Available for rent to non-members", {class: "form-check-label"} %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :hourly_rate_in_cents %>
+    <%= f.number_field :hourly_rate_in_cents, value: 600 %>
+  </div>
+
+  <div class="form-group">
     <%= f.label :photo %>
     <%= f.file_field :photo, class: "form-control-file" %>
   </div>
