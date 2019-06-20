@@ -4,7 +4,7 @@
   <h4 class="display-4 text-center mt-4">Welcome!</h4>
   <p class="lead text-center mb-3 mt-3">To proceed, please select an option:</p>
   
-  <% if current_location.allow_hourly? %>
+  <% if current_location.hourly_enabled? %>
     <% if active_working_hours?(current_location) %>
       <%= render "checkin", location: current_location, user: current_user %>
     <% else %>
@@ -12,11 +12,11 @@
     <% end %>
   <% end %>
 
-  <% if @day_pass_types.count > 0 %>
+  <% if current_tenant.day_passes_enabled? %>
     <%= render "day_pass", day_pass_types: @day_pass_types %>
   <% end %>
 
-  <% if @plans.count > 0 %>
+  <% if current_tenant.memberships_enabled? %>
     <%= render "memberships", plans: @plans %>
   <% end %>
 <% end %>
