@@ -37,8 +37,7 @@ class Operator::ReservationsController < Operator::BaseController
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
 
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
+    parse_time
   end
 
   def confirm
@@ -48,8 +47,7 @@ class Operator::ReservationsController < Operator::BaseController
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
 
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
+    parse_time
   end
 
   def create_reservation
@@ -58,8 +56,7 @@ class Operator::ReservationsController < Operator::BaseController
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
 
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P")
+    parse_time
     
     result = CreateRoomReservation.call(reservation_params: {
       datetime_in: @datetime_in,
@@ -108,5 +105,12 @@ class Operator::ReservationsController < Operator::BaseController
 
   def flatten_date_array hash
     %w(1 2 3).map { |e| hash["date(#{e}i)"].to_i }
+  end
+
+  def parse_time
+    zone = ActiveSupport::TimeZone[@room.location.time_zone]
+    offset = zone.now.formatted_offset
+    time_input = "#{short_date(@day)} #{pretty_time(@hour)} #{offset}"
+    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P %Z")
   end
 end
