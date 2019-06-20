@@ -17,7 +17,11 @@
     <div class="col">
       <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
         <%= f.hidden_field :id, value: location.id %>
-        <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
+        <% if current_location.present? && current_location == location %>
+          <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block disabled", disabled: true %>
+        <% else %>
+          <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
+        <% end %>
       <% end %>
     </div>
   </div>
