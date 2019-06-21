@@ -41,8 +41,7 @@ class Operator::BaseController < ApplicationController
 
   def set_location
     if current_location.blank?
-      background_image
-      render "landing/index"
+      redirect_to landing_path
     end
   end
 end
