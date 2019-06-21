@@ -1,3 +1,4 @@
+# typed: false
 require 'pagy/extras/bootstrap'
 
 Pagy::VARS[:items] = 25

@@ -1,3 +1,4 @@
+# typed: false
 # == Schema Information
 #
 # Table name: feed_items
@@ -16,7 +17,7 @@
 #
 
 class FeedItem < ApplicationRecord
-  searchkick
+  searchkick callbacks: :async
   has_many_attached :photos
   before_save :parse_amount!
 

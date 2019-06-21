@@ -1,3 +1,4 @@
+# typed: true
 class CreateRoomReservation
   include Interactor
   include FeedItemCreator

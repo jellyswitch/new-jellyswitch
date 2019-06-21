@@ -1,3 +1,4 @@
+# typed: false
 class RoomDecorator < ApplicationDecorator
   delegate_all
   decorates_association :reservations

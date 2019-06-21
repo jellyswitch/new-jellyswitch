@@ -1,3 +1,4 @@
+# typed: false
 class Operator::SubscriptionsController < Operator::BaseController
   include SubscriptionsHelper
 

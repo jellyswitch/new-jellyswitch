@@ -1,3 +1,4 @@
+# typed: true
 class Jellyswitch::UsageReport
   attr_reader :user
 

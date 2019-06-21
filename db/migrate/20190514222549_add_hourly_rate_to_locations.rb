@@ -1,3 +1,4 @@
+# typed: false
 class AddHourlyRateToLocations < ActiveRecord::Migration[5.2]
   def change
     add_column :locations, :allow_hourly, :boolean, null: false, default: false

@@ -1,3 +1,4 @@
+# typed: true
 module StripeSubscription
   class OutOfBandSpecifiedStartDay < DefaultSubscription
     def subscription_args

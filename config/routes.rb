@@ -1,3 +1,4 @@
+# typed: strict
 Rails.application.routes.draw do
   constraints subdomain: 'app' do
     # Root

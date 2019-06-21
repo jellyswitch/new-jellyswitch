@@ -1,3 +1,4 @@
+# typed: false
 class Operator::OperatorsController < Operator::BaseController
   before_action :background_image
 

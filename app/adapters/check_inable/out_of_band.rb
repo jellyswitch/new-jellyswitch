@@ -1,3 +1,4 @@
+# typed: true
 class CheckInable::OutOfBand < CheckInable::DefaultCheckin
 def invoice_args
     super.merge!(

@@ -1,3 +1,4 @@
+# typed: false
 class Operator::FeedItemsController < Operator::BaseController
   def index
     render_index

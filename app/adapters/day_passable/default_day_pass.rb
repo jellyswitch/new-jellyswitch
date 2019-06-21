@@ -1,3 +1,4 @@
+# typed: true
 module DayPassable
   class DefaultDayPass < SimpleDelegator
     attr_accessor :day_pass

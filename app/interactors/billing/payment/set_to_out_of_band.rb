@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Payment::SetToOutOfBand
   include Interactor
 

@@ -1,3 +1,4 @@
+# typed: true
 module StripeSubscription
   class InBandSpecifiedStartDay < DefaultSubscription
     def subscription_args

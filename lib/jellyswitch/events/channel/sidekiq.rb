@@ -1,3 +1,4 @@
+# typed: false
 module Jellyswitch
   module Events
     module Channel

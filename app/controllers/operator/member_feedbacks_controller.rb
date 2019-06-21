@@ -1,3 +1,4 @@
+# typed: false
 class Operator::MemberFeedbacksController < Operator::BaseController
   def new
     @member_feedback = MemberFeedback.new

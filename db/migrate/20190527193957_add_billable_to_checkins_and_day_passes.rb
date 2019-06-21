@@ -1,3 +1,4 @@
+# typed: false
 class AddBillableToCheckinsAndDayPasses < ActiveRecord::Migration[5.2]
   def change
     add_reference :day_passes, :billable, polymorphic: true

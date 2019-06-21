@@ -1,3 +1,4 @@
+# typed: true
 class Billing::SubscriptionSync
   def self.call(subscription_id:, start_date: nil)
     subscription = Subscription.find(subscription_id)

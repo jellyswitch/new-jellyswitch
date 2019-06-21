@@ -1,3 +1,4 @@
+# typed: strong
 class ApplicationDecorator < Draper::Decorator
   include Draper::LazyHelpers
   # Define methods for all decorated objects.

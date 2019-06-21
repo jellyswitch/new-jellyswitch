@@ -1,3 +1,4 @@
+# typed: true
 class CreateUser
   include Interactor
   include FeedItemCreator

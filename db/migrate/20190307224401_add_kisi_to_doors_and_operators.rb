@@ -1,3 +1,4 @@
+# typed: false
 class AddKisiToDoorsAndOperators < ActiveRecord::Migration[5.2]
   def change
     add_column :doors, :kisi_id, :integer

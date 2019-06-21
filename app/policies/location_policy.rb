@@ -1,3 +1,4 @@
+# typed: true
 class LocationPolicy < ApplicationPolicy
   def index?
     admin?

@@ -1,3 +1,4 @@
+# typed: strong
 # case ENV['EVENTS_CHANNEL_ADAPTER']
 # when 'sidekiq'
 #   Jellyswitch::Events.channel = Jellyswitch::Events::Channel::Sidekiq.instance

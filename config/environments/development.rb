@@ -1,3 +1,4 @@
+# typed: false
 Dotenv::Railtie.load
 
 Rails.application.configure do

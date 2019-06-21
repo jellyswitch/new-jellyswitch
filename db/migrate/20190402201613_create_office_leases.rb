@@ -1,3 +1,4 @@
+# typed: true
 class CreateOfficeLeases < ActiveRecord::Migration[5.2]
   def change
     create_table :office_leases do |t|

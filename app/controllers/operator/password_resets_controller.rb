@@ -1,3 +1,4 @@
+# typed: false
 class Operator::PasswordResetsController < Operator::BaseController
   before_action :background_image
 
