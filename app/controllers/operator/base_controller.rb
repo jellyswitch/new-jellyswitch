@@ -41,7 +41,8 @@ class Operator::BaseController < ApplicationController
 
   def set_location
     if current_location.blank?
-      redirect_to landing_path
+      log_out
+      redirect_to root_path
     end
   end
 end

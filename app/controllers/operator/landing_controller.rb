@@ -1,6 +1,5 @@
 class Operator::LandingController < Operator::BaseController
   before_action :background_image
-  skip_before_action :set_location, only: [:index]
   include LandingHelper
 
   def index
