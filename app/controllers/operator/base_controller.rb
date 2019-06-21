@@ -4,7 +4,7 @@ class Operator::BaseController < ApplicationController
   before_action :store_ios_token, if: :logged_in?
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
-  before_action :set_location, if: :logged_in?
+  before_action :reset_location, if: :logged_in?
 
   def background_image
     @background_image = current_tenant.background_image if current_tenant.present?
@@ -39,7 +39,7 @@ class Operator::BaseController < ApplicationController
     Time.use_zone(current_location.time_zone, &block)
   end
 
-  def set_location
+  def reset_location
     if current_location.blank?
       log_out
       redirect_to root_path
