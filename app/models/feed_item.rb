@@ -17,7 +17,7 @@
 #
 
 class FeedItem < ApplicationRecord
-  searchkick callbacks: :async
+  searchkick
   has_many_attached :photos
   before_save :parse_amount!
 
