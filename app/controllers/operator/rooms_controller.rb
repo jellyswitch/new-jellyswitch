@@ -1,9 +1,9 @@
 class Operator::RoomsController < Operator::BaseController
+  decorates_assigned :rooms, :hidden_rooms, :room, :rentable_rooms, :reservations
+
   def index
     find_rooms
     authorize @rooms
-    @rooms = @rooms.decorate
-    @hidden_rooms = Room.invisible.order(:name).all.decorate
     background_image
   end
 
@@ -16,7 +16,6 @@ class Operator::RoomsController < Operator::BaseController
 
     @pagy, @reservations = pagy(Reservation.for_room(@room))
 
-    @reservations = @reservations.decorate
     respond_to do |format|
       format.html
       format.ics do
@@ -74,11 +73,13 @@ class Operator::RoomsController < Operator::BaseController
   private
 
   def find_rooms
-    @rooms = Room.visible.order(:name).all
+    @rooms = current_location.rooms.visible.order(:name).all
+    @hidden_rooms = current_location.rooms.invisible.order(:name).all
+    @rentable_rooms = current_location.rooms.rentable.cheapest.all
   end
 
   def find_room(key=:id)
-    @room = Room.friendly.find(params[key]).decorate
+    @room = Room.friendly.find(params[key])
   end
 
   def room_params
