@@ -63,14 +63,14 @@ class OperatorsController < ApplicationController
     @demo_operators = Operator.demo.order("created_at ASC").all
   end
 
-  def find_operator(key=:id)
+  def find_operator(key = :id)
     @operator = Operator.find(params[key])
   end
 
   def operator_params
-    params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
-      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
-      :background_image, :logo_image, :square_footage, :email_enabled, :kisi_api_key, :terms_of_service,
-      :push_notification_certificate, :ios_url, :android_url, :checkin_required)
+    params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address,
+                                     :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
+                                     :background_image, :logo_image, :square_footage, :email_enabled, :kisi_api_key, :terms_of_service,
+                                     :push_notification_certificate, :ios_url, :android_url, :checkin_required)
   end
 end

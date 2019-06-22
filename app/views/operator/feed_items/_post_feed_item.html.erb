@@ -18,8 +18,10 @@
 </div>
 
 <%- if feed_item.expense? %>
-  <div class="row mt-4">
-    <span class="badge badge-danger">Expense: <%= number_to_currency(feed_item.amount.to_f / 100.0) %></span>
+  <div id= "badge-expense-status-<%=feed_item.id%>">
+    <div class="row mt-4">
+      <span class="badge badge-danger">Expense: <%= number_to_currency(feed_item.amount.to_f / 100.0) %></span>
+    </div>
   </div>
 <%- end %>
 

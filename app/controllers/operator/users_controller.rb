@@ -18,7 +18,7 @@ class Operator::UsersController < Operator::BaseController
     background_image
 
     @usage_report = Jellyswitch::UsageReport.new(@user)
-    
+
     if @user == current_user
       render :show
     else
@@ -65,13 +65,13 @@ class Operator::UsersController < Operator::BaseController
         end
       else
         log_in(result.user)
-        
+
         if current_location.new_users_get_free_day_pass?
           # todo: fold this into two interactors: one that creates a user and one that creates a user and provisoins a new day pass
           # provision new free day pass
           day_pass_result = Billing::DayPasses::CreateFreeDayPass.call(
             user: current_user,
-            location: current_location
+            location: current_location,
           )
 
           if day_pass_result.success?
@@ -94,10 +94,10 @@ class Operator::UsersController < Operator::BaseController
         render :new, status: 422
       end
     end
-  # rescue Exception => e
-  #   Rollbar.error(e)
-  #   flash[:error] = "An error occurred: #{e.message}"
-  #   turbolinks_redirect(referrer_or_root)
+    # rescue Exception => e
+    #   Rollbar.error(e)
+    #   flash[:error] = "An error occurred: #{e.message}"
+    #   turbolinks_redirect(referrer_or_root)
   end
 
   def update
@@ -176,7 +176,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @pagy, @reservations = pagy(@user.reservations.order('created_at DESC').all)
+    @pagy, @reservations = pagy(@user.reservations.order("created_at DESC").all)
     @reservations = @reservations.decorate
     background_image
   end
@@ -283,7 +283,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    
+
     turbolinks_redirect(user_path(@user), action: "replace")
   end
 
@@ -294,7 +294,8 @@ class Operator::UsersController < Operator::BaseController
       :name, :email, :password, :password_confirmation,
       :bio, :linkedin, :twitter, :website, :profile_photo,
       :approved, :admin, :add_member, :add_member_and_create_another,
-      :always_allow_building_access)
+      :always_allow_building_access
+    )
     result
   end
 
@@ -320,7 +321,7 @@ class Operator::UsersController < Operator::BaseController
     end
   end
 
-  def find_user(key=:id)
+  def find_user(key = :id)
     @user = User.friendly.find(params[key])
   end
 

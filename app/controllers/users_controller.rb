@@ -53,7 +53,7 @@ class UsersController < ApplicationController
       if !result.success?
         flash[:error] = result.message
         # TODO? what to do here?
-        redirect_to root_path(subdomain: 'app')
+        redirect_to root_path(subdomain: "app")
       else
         @user.update(operator_id: result.operator.id)
         redirect_to new_operator_survey_path
@@ -127,7 +127,7 @@ class UsersController < ApplicationController
     find_user(:user_id)
     authorize @user
 
-    @reservations = @user.reservations.order('created_at DESC').all.decorate
+    @reservations = @user.reservations.order("created_at DESC").all.decorate
     background_image
   end
 
@@ -186,7 +186,7 @@ class UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 
-  def find_user(key=:id)
+  def find_user(key = :id)
     @user = User.friendly.find(params[key])
   end
 

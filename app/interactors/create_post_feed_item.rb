@@ -18,7 +18,7 @@ class CreatePostFeedItem
 
     result = Notifications::PushNotifier.call(
       message: "#{@feed_item.user.name} posted a new management note",
-      operator: @feed_item.operator
+      operator: @feed_item.operator,
     )
 
     if !result.success?

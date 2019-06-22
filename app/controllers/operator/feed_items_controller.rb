@@ -17,10 +17,10 @@ class Operator::FeedItemsController < Operator::BaseController
     authorize FeedItem.new
 
     result = CreatePostFeedItem.call(
-      blob: {text: feed_item_params[:text], type: "post"},
+      blob: { text: feed_item_params[:text], type: "post" },
       user: current_user,
       operator: current_tenant,
-      photos: feed_item_params[:photos]
+      photos: feed_item_params[:photos],
     )
 
     if result.success?
@@ -53,6 +53,16 @@ class Operator::FeedItemsController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def set_expense_status
+    find_feed_item
+    is_expense
+  end
+
+  def unset_expense_status
+    find_feed_item
+    not_expense
+  end
+
   private
 
   def render_index
@@ -63,8 +73,8 @@ class Operator::FeedItemsController < Operator::BaseController
   def sidebar_items
     @member_feedbacks = current_tenant.member_feedbacks.recent
     @unapproved_users = current_tenant.users.members.unapproved
-    @open_invoices = current_tenant.invoices.open.order('date DESC')
-    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
+    @open_invoices = current_tenant.invoices.open.order("date DESC")
+    @delinquent_invoices = current_tenant.invoices.delinquent.order("date DESC")
   end
 
   def new_feed_item
@@ -72,14 +82,22 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order('updated_at DESC'))
+    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC"))
   end
 
   def feed_item_params
     params.require(:feed_item).permit(:text, photos: [])
   end
 
-  def find_feed_item(key=:id)
+  def find_feed_item(key = :id)
     @feed_item = FeedItem.unscoped.find(params[key])
+  end
+
+  def is_expense
+    @feed_item.update(expense: true)
+  end
+
+  def not_expense
+    @feed_item.update(expense: false)
   end
 end

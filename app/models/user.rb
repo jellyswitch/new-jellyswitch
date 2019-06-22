@@ -66,10 +66,10 @@ class User < ApplicationRecord
   scope :members, -> { where(admin: false) }
   scope :admins, -> { where(admin: true) }
   scope :non_superadmins, -> { where(superadmin: false) }
-  scope :for_space, ->(operator) { where('operator_id = ?', operator.id) }
+  scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(superadmin: true) }
 
-  scope :not_in_organization, ->(organization) { where('organization_id != ? OR organization_id IS NULL', organization.id) }
+  scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
   # Relationship Helpers
   def owned_organization
@@ -80,7 +80,7 @@ class User < ApplicationRecord
   has_one_attached :profile_photo
 
   def small_square_profile_photo
-    profile_photo.variant(combine_options: {resize: "65x65>", gravity: 'Center', crop: '50x50+0+0'})
+    profile_photo.variant(combine_options: { resize: "65x65>", gravity: "Center", crop: "50x50+0+0" })
   end
 
   def square_profile_photo
@@ -120,7 +120,7 @@ class User < ApplicationRecord
     end
   end
 
-  def has_active_day_pass?(day=Time.current)
+  def has_active_day_pass?(day = Time.current)
     day_passes.for_day(day).count > 0
   end
 
@@ -254,7 +254,7 @@ class User < ApplicationRecord
       if stripe_customer.sources.data.count < 1
         nil
       else
-        cards = stripe_customer.sources.data.select {|source| source.object == "card"}
+        cards = stripe_customer.sources.data.select { |source| source.object == "card" }
         if cards.first
           if cards.first.respond_to? :last4
             cards.first.last4

@@ -18,8 +18,8 @@
 class FeedItem < ApplicationRecord
   searchkick
   has_many_attached :photos
-  before_save :parse_amount!
-
+  #before_save :parse_amount!
+  before_create :parse_amount!
   # Relationships
   belongs_to :operator
   belongs_to :user
@@ -29,7 +29,7 @@ class FeedItem < ApplicationRecord
 
   acts_as_tenant :operator
 
-  scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
+  scope :for_operator, ->(operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }
 
   # Types of feed_items
@@ -43,7 +43,7 @@ class FeedItem < ApplicationRecord
       amount: amount,
       user_name: user.present? ? user.name : "Anonymous",
       comments: feed_item_comments.map(&:comment),
-      stripe_customer_id: user.present? ? user.stripe_customer_id : nil
+      stripe_customer_id: user.present? ? user.stripe_customer_id : nil,
     }
   end
 
@@ -65,18 +65,18 @@ class FeedItem < ApplicationRecord
 
   def feed_photos
     photos.map do |photo|
-      photo.variant(combine_options: {auto_orient: true})
+      photo.variant(combine_options: { auto_orient: true })
     end
   end
 
   def thumbnails
     photos.map do |photo|
-      photo.variant(resize: '180x180', auto_orient: true)
+      photo.variant(resize: "180x180", auto_orient: true)
     end
   end
 
   def parse_amount!
-    if self.text && self.text.downcase.include?("spent")
+    if self.text && self.text.downcase.include_any?(["spent", "expense", "expenditure"])
       self.expense = true
 
       amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
@@ -118,7 +118,7 @@ class FeedItem < ApplicationRecord
 
   def photo_files_accepted
     if photos.any? { |photo| !photo.content_type.match VALID_ATTACHMENT_REGEX }
-      errors.add(:photos, 'must be of file type .jpeg, .jpg, .png, or .gif')
+      errors.add(:photos, "must be of file type .jpeg, .jpg, .png, or .gif")
     end
   end
 
