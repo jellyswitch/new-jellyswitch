@@ -55,12 +55,12 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def set_expense_status
     find_feed_item
-    is_expense
+    turn_into_expense
   end
 
   def unset_expense_status
     find_feed_item
-    not_expense
+    not_an_expense
   end
 
   private
@@ -93,11 +93,16 @@ class Operator::FeedItemsController < Operator::BaseController
     @feed_item = FeedItem.unscoped.find(params[key])
   end
 
-  def is_expense
-    @feed_item.update(expense: true)
+  def turn_into_expense
+    if @feed_item.is_expense_feed?
+      @feed_item.parse_amount
+      @feed_item.set_expense
+      @feed_item.save
+    end
   end
 
-  def not_expense
-    @feed_item.update(expense: false)
+  def not_an_expense
+    @feed_item.unset_expense
+    @feed_item.save
   end
 end
