@@ -6,7 +6,6 @@
 #  cancelled   :boolean          default(FALSE), not null
 #  datetime_in :datetime         not null
 #  hours       :integer          default(1), not null
-#  minutes     :integer          default(0), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  room_id     :integer          not null
@@ -48,6 +47,4 @@ class Reservation < ApplicationRecord
   def room
     Room.unscoped { super }
   end
-
-  
 end
