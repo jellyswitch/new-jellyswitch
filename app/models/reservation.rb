@@ -6,6 +6,7 @@
 #  cancelled   :boolean          default(FALSE), not null
 #  datetime_in :datetime         not null
 #  hours       :integer          default(1), not null
+#  minutes     :integer          default(0), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  room_id     :integer          not null
@@ -48,7 +49,5 @@ class Reservation < ApplicationRecord
     Room.unscoped { super }
   end
 
-  def hours
-    minutes.to_f / 60
-  end
+  
 end
