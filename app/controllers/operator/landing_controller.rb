@@ -9,6 +9,7 @@ class Operator::LandingController < Operator::BaseController
   def home
     @doors = Door.all
     @member_feedback = MemberFeedback.new
+    response.headers["Turbolinks-Location"] = home_url
     home_redirect
   end
 

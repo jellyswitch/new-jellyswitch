@@ -40,7 +40,7 @@ class Reservation < ApplicationRecord
 
   def self.for_time(time)
     select do |reservation|
-      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.hours.hours >= time)
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.hours.hours > time)
     end.first
   end
 

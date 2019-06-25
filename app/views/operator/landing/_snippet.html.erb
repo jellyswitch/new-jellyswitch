@@ -1,8 +1,1 @@
-<% if location.snippet.size > 75 %>
-  <div class="collapse-group">
-    <%= location.snippet[0..75] %><span id="full-snippet" class="collapse"><%= location.snippet[76..-1] %></span>
-    <a href="#" data-toggle="collapse" data-target="#full-snippet">Read More</a>
-  </div>
-<% else %>
-  <%= location.snippet %>
-<% end %>
+<%= simple_format(location.snippet) %>

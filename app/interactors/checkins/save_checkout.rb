@@ -7,8 +7,9 @@ class Checkins::SaveCheckout
     if datetime_out.present?
       timestamp = datetime_out
     else
-      timestamp = Time.current
+      timestamp = checkin.auto_checkout_time
     end
+
     if !checkin.update(datetime_out: timestamp)
       context.fail!(message: "Could not check out.")
     end

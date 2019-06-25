@@ -11,6 +11,14 @@ module ApplicationHelper
     date.strftime("%m/%d/%Y")
   end
 
+  def pretty_time(time)
+    time.strftime("%l:%M%P")
+  end
+  
+  def long_date(date)
+    date.strftime("%B %e, %Y")
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?
@@ -115,16 +123,20 @@ module ApplicationHelper
   def member_nav_items
     items = [
       {title: "Home", path: home_path},
-      {title: "Reserve a room", path: rooms_path},
-      {title: "Building Access", path: keys_doors_path},
-      {title: "My Account", path: user_path(current_user)}
     ]
 
+    if current_location.rooms.visible.count > 0
+      items << {title: "Reserve a room", path: rooms_path}
+    end
+
+    if current_location.doors.count > 0
+      items << {title: "Building Access", path: keys_doors_path}
+    end
+
+    items << {title: "My Account", path: user_path(current_user)}
+
     if current_tenant.locations.count > 1
-      items = items.insert(
-        3,
-        {title: "Change Location", path: edit_set_location_path}
-      )
+      items = items << {title: "Change Location", path: edit_set_location_path}
     end
 
     items
@@ -138,7 +150,7 @@ module ApplicationHelper
 
     if current_tenant.locations.count > 1
       items = items.insert(
-        3,
+        2,
         {title: "Change Location", path: edit_set_location_path}
       )
     end
@@ -149,7 +161,7 @@ module ApplicationHelper
   def days_option_for_current_month
     [*0..30].map do |i|
       day = Time.zone.now + i.days
-      [day.to_formatted_s(:long), day.to_i]
+      [long_date(day), day.to_i]
     end
   end
 
@@ -183,9 +195,15 @@ module ApplicationHelper
   end
 
   def quantize(collection, string)
-    if collection.count <= 0
+    if collection.respond_to? :each
+      count = collection.count
+    else
+      count = collection
+    end
+
+    if count <= 0
       string.pluralize
-    elsif collection.count == 1
+    elsif count == 1
       string.singularize
     else
       string.pluralize
@@ -200,12 +218,20 @@ module ApplicationHelper
     end
   end
 
+  def working_hours_options
+    [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday]
+  end
+
+  def no_cache
+    render "layouts/no_cache"
+  end
+
   private
 
   def working_hours_config(location)
     config = {}
 
-    [:open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday, :open_friday, :open_saturday].map do |day|
+    working_hours_options.map do |day|
       if location.send("#{day}?".to_sym) == true
         config[day.to_s.split("_").last.first(3).to_sym] = {location.working_day_start => location.working_day_end}
       end

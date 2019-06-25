@@ -38,6 +38,6 @@ class Checkins::CreateStripeInvoice
   private
 
   def generate_invoice?
-    !checkin.user.member?(checkin.location.operator, day: checkin.datetime_in)
+    !checkin.user.member?(checkin.location.operator, day= checkin.datetime_in)
   end
 end

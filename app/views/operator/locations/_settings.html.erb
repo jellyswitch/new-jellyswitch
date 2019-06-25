@@ -4,7 +4,7 @@
   <dd><%= location.name %></dd>
 
   <dt>Homepage description</dt>
-  <dd><%= location.snippet %></dd>
+  <dd><%= simple_format(location.snippet) %></dd>
 
   <dt>Allow hourly checkins and checkouts?</dt>
   <dd><%= boolean_to_yesno(location.allow_hourly) %></dd>

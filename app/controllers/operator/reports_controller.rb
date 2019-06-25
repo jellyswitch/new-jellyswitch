@@ -5,6 +5,10 @@ class Operator::ReportsController < Operator::BaseController
   def index
   end
 
+  def member_csv
+    send_data @report.member_csv, filename: "Jellyswitch-Member-Data-#{short_date(Time.current)}.csv"
+  end
+
   def active_lease_members
   end
 

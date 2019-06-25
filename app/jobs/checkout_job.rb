@@ -6,10 +6,7 @@ class CheckoutJob < ApplicationJob
       operator.locations.each do |location|
         location.checkins.open.each do |checkin|
           Time.use_zone(location.time_zone) do
-            timestamp =  Time.parse(location.working_day_end)
-            corrected_timestamp = timestamp + (checkin.datetime_in.day - timestamp.day).days
-
-            result = Checkins::Checkout.call(checkin: checkin, datetime_out: corrected_timestamp)
+            result = Checkins::Checkout.call(checkin: checkin, datetime_out: checkin.auto_checkout_time)
 
             if !result.success?
               puts result.message

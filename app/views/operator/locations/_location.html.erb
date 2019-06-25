@@ -1,30 +1,28 @@
 <%= wide_card do %>
-  <div class="row">
-    <div>
-      <% if location.has_photo? %>
-        <%= image_tag location.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
-      <% end %>
-    </div>
-    <div class="ml-4 mb-1">
-      <div class="row">
-        <h5 class="display-5 col">
-          <%= location.name %>
-        </h5>
-      </div>
-      <div class="row">
-        <p class="col"><%= location.snippet %></p>
-      </div>
-    </div>
+  <div>
+    <% if location.has_photo? %>
+      <%= image_tag location.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
+    <% end %>
   </div>
+  
+  <h4 class="display-4 text-center">
+    <%= location.name %>
+  </h4>
+  
+  <%= simple_format(location.snippet) %>
   <% if admin? %>
     <%= link_to "Manage #{location.name}", location, class: "btn btn-info btn-block" %>
   <% end %>
   <div class="row mt-2">
     <div class="col">
-    <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
-      <%= f.hidden_field :id, value: location.id %>
-      <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
-    <% end %>
+      <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>
+        <%= f.hidden_field :id, value: location.id %>
+        <% if current_location.present? && current_location == location %>
+          <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block disabled", disabled: true %>
+        <% else %>
+          <%= f.submit "#{label} #{location.name}", class: "btn btn-primary btn-block" %>
+        <% end %>
+      <% end %>
     </div>
   </div>
 <% end %>

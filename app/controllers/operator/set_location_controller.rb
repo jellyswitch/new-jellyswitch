@@ -8,7 +8,9 @@ class Operator::SetLocationController < Operator::BaseController
   def update
     location = Location.find(location_params[:id])
     checkout
+    unset_location
     set_location(location)
+    
     turbolinks_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e
     Rollbar.error(e)

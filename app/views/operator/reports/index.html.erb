@@ -41,7 +41,11 @@
   <dl class="row">
     <dt class="col-lg-6">Checkins</dt>
     <dd class="col"><%= link_to "View Data", checkins_reports_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
 
+  <dl class="row">
+    <dt class="col-lg-6">Download Member CSV</dt>
+    <dd class="col"><%= link_to "Download", member_csv_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>
 
  <% end %>
