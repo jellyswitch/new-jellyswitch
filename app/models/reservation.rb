@@ -47,4 +47,8 @@ class Reservation < ApplicationRecord
   def room
     Room.unscoped { super }
   end
+
+  def hours
+    minutes.to_f / 60
+  end
 end
