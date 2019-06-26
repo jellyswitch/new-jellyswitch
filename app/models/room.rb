@@ -51,7 +51,7 @@ class Room < ApplicationRecord
   end
 
   def available_at?(timestamp)
-    reservations.for_time_inclusive(timestamp.beginning_of_half_hour).blank?
+    reservations.for_time(timestamp.beginning_of_half_hour).blank?
   end
 
   def has_photo?
@@ -94,7 +94,7 @@ class Room < ApplicationRecord
 
   def future_availability_for_day(day_start)
     availability_for_day(day_start).select do |option|
-      option[:hour].future?
+      option[:hour] >= Time.current.beginning_of_half_hour
     end
   end
 
