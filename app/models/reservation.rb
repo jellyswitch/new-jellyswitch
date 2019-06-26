@@ -6,7 +6,6 @@
 #  cancelled   :boolean          default(FALSE), not null
 #  datetime_in :datetime         not null
 #  hours       :integer          default(1), not null
-#  minutes     :integer          default(0), not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  room_id     :integer          not null
@@ -29,23 +28,23 @@ class Reservation < ApplicationRecord
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
 
-  def reserved_hours
-    result = []
-    result.push(datetime_in)
-    (hours-1).times do |i|
-      new_datetime = datetime_in + (i+1).hours
-      result.push(new_datetime)
-    end
-    result
-  end
-
   def self.for_time(time)
     select do |reservation|
-      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.hours.hours > time)
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.minutes.minutes > time)
+    end.first
+  end
+
+  def self.for_time_inclusive(time)
+    select do |reservation|
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.minutes.minutes >= time)
     end.first
   end
 
   def room
     Room.unscoped { super }
+  end
+
+  def hours
+    minutes.to_f / 60.0
   end
 end

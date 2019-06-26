@@ -8,7 +8,7 @@
       <%= reservation.room.smart_link %>
     <%- end %>
   </p>
-  <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.hours %> hours</p>
+  <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.minutes %> minutes</p>
   <%- if reservation.cancelled? %>
     <span class="badge badge-warning">Cancelled</span>
   <%- end %>
