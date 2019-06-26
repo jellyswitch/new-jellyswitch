@@ -18,7 +18,6 @@
 class FeedItem < ApplicationRecord
   searchkick
   has_many_attached :photos
-  # before_create :parse_amount!
   # Relationships
   belongs_to :operator
   belongs_to :user
@@ -73,15 +72,6 @@ class FeedItem < ApplicationRecord
       photo.variant(resize: "180x180", auto_orient: true)
     end
   end
-
-  # def parse_amount!
-  #   if self.text && self.text.downcase.include_any?(["spent", "expense", "expenditure"])
-  #     self.expense = true
-
-  #     amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
-  #     blob["amount"] = amount
-  #   end
-  # end
 
   def is_expense_feed?
     (self.text && self.text.downcase.include_any?(["spent", "expense", "expenditure"])) ? true : false
