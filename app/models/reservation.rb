@@ -28,19 +28,9 @@ class Reservation < ApplicationRecord
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
 
-  def reserved_hours
-    result = []
-    result.push(datetime_in)
-    (hours-1).times do |i|
-      new_datetime = datetime_in + (i+1).hours
-      result.push(new_datetime)
-    end
-    result
-  end
-
   def self.for_time(time)
     select do |reservation|
-      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.hours.hours > time)
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.minutes.minutes > time)
     end.first
   end
 

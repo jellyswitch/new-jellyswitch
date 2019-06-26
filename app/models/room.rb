@@ -78,17 +78,6 @@ class Room < ApplicationRecord
     photo.variant(resize: "x200")
   end
 
-  def reserved_hours
-    # Return one datetime item per hour booked
-    result = []
-    reservations.each do |reservation|
-      reservation.reserved_hours.each do |hour|
-        result.push(hour)
-      end
-    end
-    result
-  end
-
   def availability_for_day(day_start)
     result = []
     24.times do |i|
