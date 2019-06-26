@@ -20,9 +20,11 @@
     <dd class="col"><%= pretty_time(@hour) %></dd>
   </dl>
 
+  <%= link_to "30 minutes", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 30), class: "btn btn-block btn-primary" %>
+
   <% [1, 2, 3, 4].each do |i| %>
-    <% if @room.available_at?(@datetime_in + (i - 1).hours) %>
-      <%= link_to "#{i} #{quantize(i, 'hour')}", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: i), class: "btn btn-block btn-primary" %>
+    <% if @room.available_at?(@datetime_in + (i * 60).minutes) %>
+      <%= link_to "#{i} #{quantize(i, 'hour')}", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: i*60), class: "btn btn-block btn-primary" %>
     <% else %>
       <% break %>
     <% end %>

@@ -34,6 +34,12 @@ class Reservation < ApplicationRecord
     end.first
   end
 
+  def self.for_time_inclusive(time)
+    select do |reservation|
+      (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.minutes.minutes >= time)
+    end.first
+  end
+
   def room
     Room.unscoped { super }
   end
