@@ -61,6 +61,7 @@ class Operator::ReservationsController < Operator::BaseController
     result = CreateRoomReservation.call(reservation_params: {
       datetime_in: @datetime_in,
       hours: @duration,
+      minutes: @duration.to_i * 60,
       room: @room
     }, user: current_user)
     @reservation = result.reservation
