@@ -62,7 +62,7 @@ class Checkin < ApplicationRecord
   end
 
   def auto_checkout_time
-    time = Time.parse(location.working_day_end)
+    time = Time.parse(location.working_day_end).in_time_zone(location.time_zone)
     time.change(day: datetime_in.day)
   end
 end
