@@ -8,7 +8,7 @@
   <%= render "shared/send_feedback_card" %>
 <% end %>
 
-<% if current_location.rooms.count > 0 %>
+<% if current_location.rooms.visible.count > 0 %>
   <%= wide_card do %>
     <%= render "shared/reservations_card" %>
   <% end %>

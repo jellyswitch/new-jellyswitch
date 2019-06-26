@@ -71,23 +71,6 @@ class Operator::RoomsController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
-  def day
-    find_room(:room_id)
-    authorize @room
-    background_image
-
-    @day = params[:day].to_i
-    @month = params[:month].to_i
-    @year = params[:year].to_i
-
-    @day_start = Time.zone.parse("#{@year}-#{@month}-#{@day}").beginning_of_hour
-    #@day_start = Time.new(@year, @month, @day).beginning_of_hour.in_time_zone
-    @previous_day = @day_start - 1.day
-    @next_day = @day_start + 1.day
-
-    @hours = @room.availability_for_day(@day_start)
-  end
-
   private
 
   def find_rooms

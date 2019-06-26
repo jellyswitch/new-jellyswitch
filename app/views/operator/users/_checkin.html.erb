@@ -25,6 +25,15 @@
             <%= distance_of_time_in_words(checkin.datetime_in, checkin.datetime_out) %>
           <% end %>
         </dd>
+
+        <dt class="col-6">Timestamps</dt>
+        <dd class="col">
+          <% if checkin.open? %>
+            <%= pretty_time(checkin.datetime_in) %>
+          <% else %>
+            <%= pretty_timestamps(checkin.datetime_in, checkin.datetime_out) %>
+          <% end %>
+        </dd>
       </dl>
     </div>
   </div>

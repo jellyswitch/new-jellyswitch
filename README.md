@@ -22,9 +22,10 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
   - **NOTE** stripe-mock cannot be used to test for specific errors, so be sure to turn it off in development if testing for those.
   - `brew services start stripe-mock`
 6. Ask dave for the `.env` file for environment variables
-7. Postgres DB: `createdb bristlecone_development`
-8. Run migrations: `heroku local:run rake db:migrate`
-9. Run the server: `heroku local`
+7. Run: `rails active_storage:install`
+8. Postgres DB: `createdb bristlecone_development`
+9. Run migrations: `heroku local:run rake db:migrate`
+10. Run the server: `heroku local`
 
 ## Users, Admins, and Superadmins
 

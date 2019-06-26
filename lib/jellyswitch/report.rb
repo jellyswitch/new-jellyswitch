@@ -1,11 +1,43 @@
 module Jellyswitch
   class Report
+    include ApplicationHelper
     attr_accessor :operator
 
     delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, :locations, :organizations, to: :operator
 
     def initialize(operator)
       @operator = operator
+    end
+
+    def member_csv
+      CSV.generate(headers: true) do |csv|
+        csv << ["Name", 
+          "Email", 
+          "Member of organization?", 
+          "Organization",
+          "Membership",
+          "Payment Method",
+          "Stripe Customer ID"
+        ]
+        
+        operator.users.map do |user|
+          subscription = user.subscriptions.active.first
+          if subscription.present?
+            subscription = subscription.pretty_name
+          else
+            subscription = "None"
+          end
+
+          csv << [user.name, 
+            user.email, 
+            boolean_to_yesno(user.member_of_organization?), 
+            user.organization_name,
+            subscription,
+            user.payment_method,
+            user.stripe_customer_id
+          ]
+        end
+      end
     end
 
     def active_members

@@ -326,11 +326,11 @@ class Operator::UsersController < Operator::BaseController
   end
 
   def find_approved_users
-    @users = User.for_space(current_tenant).approved
+    @users = User.for_space(current_tenant).approved.order("name")
   end
 
   def find_unapproved_users
-    @users = User.for_space(current_tenant).unapproved
+    @users = User.for_space(current_tenant).unapproved.order("name")
   end
 
   def approval_redirect_path

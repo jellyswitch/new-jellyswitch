@@ -27,6 +27,7 @@ class ApplicationController < ActionController::Base
 
     @action = action
     flash.keep
+    response.headers["Turbolinks-Location"] = path
     respond_to do |format|
       format.js do
         render "shared/turbolinks_redirect.js.erb"

@@ -19,13 +19,11 @@
   <%- if @room.reservations.count < 1 %>
     (none)
   <%- else %>
-    <%- @room.reservations.each do |reservation| %>
-      <div class="row">
-        <div class="col-sm">
-          <%= render "operator/reservations/reservation_card", reservation: reservation %>
-        </div>
-      </div>
-    <%- end %>
+    <ul class="list-group list-group-flush">
+      <%- @room.reservations.each do |reservation| %>
+        <%= render "operator/reservations/reservation_card", reservation: reservation %>
+      <%- end %>
+    </ul>
   <%- end %>
   <%== pagy_bootstrap_responsive_nav(@pagy) %>
 <% end %>

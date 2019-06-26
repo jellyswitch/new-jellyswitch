@@ -52,9 +52,9 @@ module SessionsHelper
     return @current_location if @current_location
 
     if (location_id = session[:location_id])
-      @current_location ||= Location.find_by(id: location_id)
+      @current_location ||= current_tenant.locations.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id])
-      current_location = Location.find_by(id: location_id)
+      current_location = current_tenant.locations.find_by(id: location_id)
       if current_location
         set_location(location)
         @current_location = current_location
@@ -62,12 +62,9 @@ module SessionsHelper
         raise "No locations configured."
       end
     elsif Location.count == 1
-      set_location(Location.first)
-      @current_location = Location.first
+      set_location(current_tenant.locations.first)
+      @current_location = current_tenant.locations.first
     end
-    set_location(Location.first)
-
-    @current_location = Location.first
   end
 
   def logged_in?
