@@ -21,7 +21,6 @@
   </dl>
 
   <% if @room.available_at?(@datetime_in) %>
-    <pre><%= @datetime_in %></pre>
     <%= link_to "30 minutes", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 30), class: "btn btn-block btn-primary" %>
   
     <% if @room.available_at?(@datetime_in + 30.minutes) %>
