@@ -133,24 +133,18 @@ Rails.application.routes.draw do
       get :checkins
     end
   end
-<<<<<<< HEAD
-  resources :reservations, controller: "operator/reservations", except: [:index]
-  resources :rooms, controller: "operator/rooms", except: [:destroy] do
-    get "day/:day/:month/:year", to: "operator/rooms#day", as: :day_availability
-=======
-  resources :reservations, controller: 'operator/reservations', except: [:index, :new, :create] do
-    collection do 
-      get :choose_day, to: 'operator/reservations#choose_day'
-      get :choose_time, to: 'operator/reservations#choose_time'
-      post :choose_time_post, to: 'operator/reservations#choose_time_post'
-      get :choose_duration, to: 'operator/reservations#choose_duration'
-      get :confirm, to: 'operator/reservations#confirm'
-      get :create_reservation, to: 'operator/reservations#create_reservation'
+  resources :reservations, controller: "operator/reservations", except: [:index, :new, :create] do
+    collection do
+      get :choose_day, to: "operator/reservations#choose_day"
+      get :choose_time, to: "operator/reservations#choose_time"
+      post :choose_time_post, to: "operator/reservations#choose_time_post"
+      get :choose_duration, to: "operator/reservations#choose_duration"
+      get :confirm, to: "operator/reservations#confirm"
+      get :create_reservation, to: "operator/reservations#create_reservation"
     end
   end
-  resources :rooms, controller: 'operator/rooms', except: [:destroy] do
-    get 'day/:day/:month/:year', to: 'operator/rooms#day', as: :day_availability
->>>>>>> master
+  resources :rooms, controller: "operator/rooms", except: [:destroy] do
+    get "day/:day/:month/:year", to: "operator/rooms#day", as: :day_availability
   end
   resources :search_results, only: [:new, :create], controller: "operator/search_results" do
     collection do
