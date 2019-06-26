@@ -5,7 +5,7 @@ module SessionsHelper
   end
 
   def set_location(location)
-    session[:location_id] = location
+    session[:location_id] = location.id
   end
 
   def unset_location
