@@ -18,11 +18,8 @@
 </div>
 
 <%- if feed_item.expense? %>
-  <div id= "badge-expense-status-<%= feed_item.id %>">
-    <%= render "expense_badge", feed_item: feed_item %>
-  </div>
+  <%= render "expense_badge", feed_item: feed_item %>
 <%- end %>
-
 
 <div class="row mt-4">
   <p class="lead">

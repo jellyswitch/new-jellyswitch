@@ -4,12 +4,10 @@
   </button>
   <div class="dropdown-menu dropdown-menu-right" aria-labelledby="feedItemDropdown">
     <%= link_to "Delete", feed_item_path(feed_item), method: :delete, remote: true, data: {"turbolinks-action" => "restore"}, class: "dropdown-item" %>
-    <div id= "expense-status-<%=feed_item.id%>">
-      <% if feed_item.expense? %>
-        <%= link_to "Not an expense", unset_expense_status_feed_item_path(feed_item),method: :post,remote: true,data: {"turbolinks-action" => "restore"}, class: "dropdown-item"%>
-      <% else  %>
-        <%= link_to "Turn into an expense", set_expense_status_feed_item_path(feed_item),method: :post,remote: true,data: {"turbolinks-action" => "restore"}, class: "dropdown-item"%>
-      <%end  %>
-    </div>
+    <% if feed_item.expense? %>
+      <%= link_to "Not an expense", unset_expense_status_feed_item_path(feed_item),method: :post,remote: true,data: {"turbolinks-action" => "restore"}, class: "dropdown-item"%>
+    <% else %>
+      <%= link_to "Turn into an expense", set_expense_status_feed_item_path(feed_item),method: :post,remote: true,data: {"turbolinks-action" => "restore"}, class: "dropdown-item"%>
+    <% end %>
   </div>
 </div>

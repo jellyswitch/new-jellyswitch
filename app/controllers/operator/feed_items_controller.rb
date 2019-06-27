@@ -56,11 +56,13 @@ class Operator::FeedItemsController < Operator::BaseController
   def set_expense_status
     find_feed_item
     turn_into_expense
+    render :set_expense_status
   end
 
   def unset_expense_status
     find_feed_item
     not_an_expense
+    render :set_expense_status
   end
 
   private
