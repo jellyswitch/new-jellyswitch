@@ -65,6 +65,7 @@ Rails.application.routes.draw do
   resources :accounting, controller: "operator/accounting" do
     collection do
       get "expenses", to: "operator/accounting#expenses", as: :expenses
+      get "update_expenses", to: "operator/accounting#update_expenses"
     end
   end
   resources :checkins, controller: "operator/checkins" do
