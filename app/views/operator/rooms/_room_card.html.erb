@@ -30,7 +30,7 @@
       <div class="col">
         <% if room.available_now? %>
           <div class="row mt-2">
-            <%= link_to "Reserve Now", choose_duration_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_hour)), class: "col btn btn-block btn-success" %>
+            <%= link_to "Reserve Now", choose_duration_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_half_hour)), class: "col btn btn-block btn-success" %>
           </div>
         <% end %>
         <div class="row mt-2">

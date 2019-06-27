@@ -62,7 +62,12 @@ class Checkin < ApplicationRecord
   end
 
   def auto_checkout_time
-    time = Time.parse(location.working_day_end)
+    zone = ActiveSupport::TimeZone[location.time_zone]
+    offset = zone.now.formatted_offset
+
+    time_input = "#{location.working_day_end} #{offset}"
+
+    time = Time.strptime(time_input, "%k:%M %Z")
     time.change(day: datetime_in.day)
   end
 end
