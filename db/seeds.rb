@@ -12,19 +12,19 @@ class FakeData
   end
 
   def user_photos
-    [0,1,2,3,4,5,6,7,8,14,15,21,24,27,37,42,44,57,60,61,71,72,77,79,81]
+    [0, 1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 24, 27, 37, 42, 44, 57, 60, 61, 71, 72, 77, 79, 81]
   end
 
   def room_photos
-    [1,2,3,4,5]
+    [1, 2, 3, 4, 5]
   end
 
   def user_photo_paths
-    user_photos.map {|num| "#{num}.jpg" }
+    user_photos.map { |num| "#{num}.jpg" }
   end
 
   def room_photo_paths
-    room_photos.map {|num| "#{num}.jpg" }
+    room_photos.map { |num| "#{num}.jpg" }
   end
 
   def fake_user
@@ -34,17 +34,16 @@ class FakeData
     bio = Faker::GameOfThrones.quote
     path = user_photo_paths.shuffle.sample
 
-
     user = User.create!(
       name: name,
       email: email,
       password: password,
       bio: bio,
-      approved: true
+      approved: true,
     )
     user.profile_photo.attach(
       io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
-      filename: path
+      filename: path,
     )
     user
   end
@@ -57,7 +56,7 @@ class FakeData
     org = Organization.create!(
       name: name,
       owner: owner,
-      website: website
+      website: website,
     )
     org
   end
@@ -68,13 +67,14 @@ class FakeData
       description: Faker::Company.catch_phrase,
       capacity: rand(1..5),
       whiteboard: [true, false].sample,
-      av: [true, false].sample
+      av: [true, false].sample,
+      location_id: 1,
     )
 
     path = room_photo_paths.shuffle.sample # "2.jpg"
     room.photo.attach(
       io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
-      filename: path
+      filename: path,
     )
     room
   end
@@ -102,11 +102,11 @@ class FakeData
           password: "pizza123",
           admin: true,
           bio: Faker::GameOfThrones.quote,
-          approved: true
+          approved: true,
         )
         admin.profile_photo.attach(
           io: File.open(Rails.root.join("app/assets/images/avatars/dave.png")),
-          filename: "dave.png"
+          filename: "dave.png",
         )
       end
 

@@ -206,9 +206,9 @@ ActiveRecord::Schema.define(version: 2019_06_25_224613) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "subscription_id"
+    t.bigint "location_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
-    t.bigint "location_id"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"

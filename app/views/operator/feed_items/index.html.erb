@@ -10,7 +10,9 @@
     </div>
 
     <% @feed_items.each do |feed_item| %>
-      <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 0 %>
+      <div id="feed-item-<%= feed_item.id %>">
+        <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 0 %>
+      </div>
     <% end %>
 
     <%== pagy_bootstrap_responsive_nav(@pagy) %>
