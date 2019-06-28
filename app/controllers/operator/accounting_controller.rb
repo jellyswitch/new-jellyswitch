@@ -1,4 +1,5 @@
 class Operator::AccountingController < Operator::BaseController
+  include AccountingHelper
   def index
     background_image
 
@@ -15,6 +16,6 @@ class Operator::AccountingController < Operator::BaseController
   end
 
   def update_expenses
-    @expenses = FeedItem.where("extract(month from created_at) = ? and expense = ? ", params[:month], true)
+    expenses_from_month
   end
 end
