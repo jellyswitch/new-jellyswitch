@@ -34,6 +34,7 @@ class FeedItem < ApplicationRecord
   # Types of feed_items
   scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
   scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
+  scope :questions, -> { where("blob->> 'text' LIKE '%\?%'") }
 
   def search_data
     {
