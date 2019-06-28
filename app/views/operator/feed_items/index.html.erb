@@ -3,11 +3,14 @@
 <div class="row mt-3 mb-2">
   <div class="col-lg-2 order-2 order-lg-1"></div>
   <div class="col-lg-6 order-3 order-lg-2">
+
     <div class="card mb-2">
       <div class="card-body">
         <%= render "form", feed_item: @feed_item %>
       </div>
     </div>
+
+    <%= render "filter" %>
 
     <% @feed_items.each do |feed_item| %>
       <div id="feed-item-<%= feed_item.id %>">
