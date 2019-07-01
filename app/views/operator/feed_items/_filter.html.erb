@@ -16,6 +16,15 @@
           <%= link_to "Questions", "#", class: "btn btn-primary" %>
         </div>
       </div>
+
+      <div class="card-body text-center">
+        <div class="btn-group btn-group-sm" role="group">
+          <%= link_to "All", "#", class: "btn btn-info" %>
+          <% current_tenant.locations.each do |location| %>
+            <%= link_to location.name, "#", class: "btn btn-info" %>
+          <% end %>
+        </div>
+      </div>
     </div>
   </div>
 </div>
