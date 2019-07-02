@@ -1,6 +1,6 @@
 module LandingHelper
   def landing_redirect
-    if logged_in?
+    if logged_in? && current_location.present?
       if admin?
         redirect_to feed_items_path
       else

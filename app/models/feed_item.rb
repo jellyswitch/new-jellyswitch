@@ -16,10 +16,9 @@
 #
 
 class FeedItem < ApplicationRecord
+  MONTHS = [["Select Month", ""], ["January", 1], ["February", 2], ["March", 3], ["April", 4], ["May", 5], ["June", 6], ["July", 7], ["August", 8], ["September", 9], ["Octobor", 10], ["November", 11], ["December", 12]]
   searchkick
   has_many_attached :photos
-  before_save :parse_amount!
-
   # Relationships
   belongs_to :operator
   belongs_to :user
@@ -29,12 +28,13 @@ class FeedItem < ApplicationRecord
 
   acts_as_tenant :operator
 
-  scope :for_operator, -> (operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
+  scope :for_operator, ->(operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
   scope :expenses, -> { where(expense: true) }
 
   # Types of feed_items
   scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
   scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
+  scope :questions, -> { where("blob->> 'text' LIKE '%\?%'") }
 
   def search_data
     {
@@ -43,7 +43,7 @@ class FeedItem < ApplicationRecord
       amount: amount,
       user_name: user.present? ? user.name : "Anonymous",
       comments: feed_item_comments.map(&:comment),
-      stripe_customer_id: user.present? ? user.stripe_customer_id : nil
+      stripe_customer_id: user.present? ? user.stripe_customer_id : nil,
     }
   end
 
@@ -65,23 +65,31 @@ class FeedItem < ApplicationRecord
 
   def feed_photos
     photos.map do |photo|
-      photo.variant(combine_options: {auto_orient: true})
+      photo.variant(combine_options: { auto_orient: true })
     end
   end
 
   def thumbnails
     photos.map do |photo|
-      photo.variant(resize: '180x180', auto_orient: true)
+      photo.variant(resize: "180x180", auto_orient: true)
     end
   end
 
-  def parse_amount!
-    if self.text && self.text.downcase.include?("spent")
-      self.expense = true
+  def is_expense_feed?
+    (self.text && self.text.downcase.include_any?(["spent", "expense", "expenditure"])) ? true : false
+  end
 
-      amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
-      blob["amount"] = amount
-    end
+  def parse_amount
+    amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
+    blob["amount"] = amount
+  end
+
+  def set_expense
+    self.expense = true
+  end
+
+  def unset_expense
+    self.expense = false
   end
 
   # Lazy relationships
@@ -118,7 +126,7 @@ class FeedItem < ApplicationRecord
 
   def photo_files_accepted
     if photos.any? { |photo| !photo.content_type.match VALID_ATTACHMENT_REGEX }
-      errors.add(:photos, 'must be of file type .jpeg, .jpg, .png, or .gif')
+      errors.add(:photos, "must be of file type .jpeg, .jpg, .png, or .gif")
     end
   end
 

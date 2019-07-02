@@ -108,11 +108,12 @@ class Operator < ApplicationRecord
 
   def reset_stripe_to_demo!
     update(
-      stripe_user_id: ENV['STRIPE_ACCOUNT_ID'],
+      stripe_user_id: ENV["STRIPE_ACCOUNT_ID"],
       stripe_publishable_key: nil,
       stripe_refresh_token: nil,
       stripe_access_token: nil,
-      billing_state: "demo")
+      billing_state: "demo",
+    )
   end
 
   def checkins

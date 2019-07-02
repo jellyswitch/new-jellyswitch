@@ -43,14 +43,14 @@ module SessionsHelper
     # In case I"m a superadmin and my location is set to a different operator
     if session[:location_id]
       loc = Location.unscoped.find_by(id: session[:location_id])
-      
+
       if loc && loc.operator != current_tenant
         unset_location
       end
     end
 
     return @current_location if @current_location
-    
+
     if (location_id = session[:location_id])
       @current_location ||= current_tenant.locations.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id])
@@ -80,7 +80,7 @@ module SessionsHelper
   end
 
   def member?
-    current_user.present? && (current_user.member?(current_tenant) || current_user.checked_in?(current_location) )
+    current_user.present? && (current_user.member?(current_tenant) || current_user.checked_in?(current_location))
   end
 
   def pending?
@@ -127,7 +127,7 @@ module SessionsHelper
   def checkout
     if current_checkin.present?
       result = Checkins::Checkout.call(
-        checkin: current_checkin
+        checkin: current_checkin,
       )
       if !result.success?
         flash[:error] = result.message

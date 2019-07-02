@@ -51,12 +51,11 @@ class Room < ApplicationRecord
   # Predicates
 
   def available_now?
-    available_at?(Time.current)
+    available_at?(Time.current.beginning_of_half_hour)
   end
 
   def available_at?(timestamp)
-    hour = timestamp.beginning_of_hour
-    reservations.all.map(&:datetime_in).index(hour).blank?
+    reservations.for_time(timestamp.beginning_of_half_hour).blank?
   end
 
   def has_photo?
@@ -82,33 +81,24 @@ class Room < ApplicationRecord
     photo.variant(resize: "x200")
   end
 
-  def reserved_hours
-    # Return one datetime item per hour booked
-    result = []
-    reservations.each do |reservation|
-      reservation.reserved_hours.each do |hour|
-        result.push(hour)
-      end
-    end
-    result
-  end
-
   def availability_for_day(day_start)
     result = []
-    24.times do |i|
-      hour = day_start + i.hours
-      reservation = reservations.for_time(hour)
+
+    48.times do |i|
+      time = day_start + (i*30).minutes
+      reservation = reservations.for_time(time)
       result.push({
-        hour: hour,
+        hour: time,
         reservation: reservation
       })
     end
+
     result
   end
 
   def future_availability_for_day(day_start)
     availability_for_day(day_start).select do |option|
-      option[:hour].future?
+      option[:hour] >= Time.current.beginning_of_half_hour
     end
   end
 
