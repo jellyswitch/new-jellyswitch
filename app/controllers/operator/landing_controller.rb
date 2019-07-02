@@ -29,14 +29,15 @@ class Operator::LandingController < Operator::BaseController
         subscription: current_user.subscriptions.pending.first,
         user: current_user,
         operator: current_tenant,
-        start_day: nil)
+        start_day: nil,
+      )
       if result.success?
         # redirect to home
         flash[:success] = "Welcome!"
         turbolinks_redirect(home_path, action: "restore")
       else
         flash[:error] = result.message
-        turbolinks_redirect(activate_path, action: "restore")  
+        turbolinks_redirect(activate_path, action: "restore")
       end
     else
       include_stripe
@@ -49,21 +50,23 @@ class Operator::LandingController < Operator::BaseController
     result = Billing::Payment::UpdateUserPayment.call(
       user: current_user,
       token: token,
-      out_of_band: false)
+      out_of_band: false,
+    )
     if result.success?
       # activate membership
       result2 = Billing::Subscription::ActivatePendingSubscription.call(
         subscription: current_user.subscriptions.pending.first,
         user: current_user,
         operator: current_tenant,
-        start_day: nil)
+        start_day: nil,
+      )
       if result2.success?
         # redirect to home
         flash[:success] = "Welcome!"
         turbolinks_redirect(home_path, action: "restore")
       else
         flash[:error] = result2.message
-        turbolinks_redirect(activate_path, action: "restore")  
+        turbolinks_redirect(activate_path, action: "restore")
       end
     else
       flash[:error] = result.message
@@ -79,14 +82,14 @@ class Operator::LandingController < Operator::BaseController
         redirect_to home_path
       end
     end
-    @day_pass_types = current_tenant.day_pass_types.available.visible.order('amount_in_cents DESC')
-    @plans = current_tenant.plans.for_individuals.order('amount_in_cents DESC')
+    @day_pass_types = current_tenant.day_pass_types.available.visible.order("amount_in_cents DESC")
+    @plans = current_tenant.plans.for_individuals.order("amount_in_cents DESC")
     @plan = current_tenant.plans.available.visible.individual.cheapest
   end
 
   def upgrade
-    @day_pass_types = current_tenant.day_pass_types.available.visible.order('amount_in_cents DESC')
-    @plans = current_tenant.plans.for_individuals.order('amount_in_cents DESC')
+    @day_pass_types = current_tenant.day_pass_types.available.visible.order("amount_in_cents DESC")
+    @plans = current_tenant.plans.for_individuals.order("amount_in_cents DESC")
   end
 
   # High level pages for nav

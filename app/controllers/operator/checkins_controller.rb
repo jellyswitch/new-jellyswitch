@@ -56,7 +56,7 @@ class Operator::CheckinsController < Operator::BaseController
     @checkin = Checkin.find(params[:id])
     authorize @checkin
 
-    result = Checkins::Checkout.call(checkin: @checkin)
+    result = Checkins::Checkout.call(checkin: @checkin, datetime_out: Time.current)
 
     if result.success?
       flash[:success] = "You've checked out."

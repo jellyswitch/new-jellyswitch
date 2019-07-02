@@ -7,7 +7,7 @@ class CreateRoomReservation
     reservation = Reservation.new(context.reservation_params)
 
     reservation.user = context.user
-    reservation.datetime_in = reservation.datetime_in.beginning_of_hour
+    reservation.datetime_in = reservation.datetime_in.beginning_of_half_hour
 
     context.reservation = reservation
     if !reservation.save

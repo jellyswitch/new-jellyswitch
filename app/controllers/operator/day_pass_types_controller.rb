@@ -30,7 +30,7 @@ class Operator::DayPassTypesController < Operator::BaseController
 
     @day_pass_type = result.day_pass_type
     if result.success?
-      flash[:success] = 'Day pass type was successfully created.'
+      flash[:success] = "Day pass type was successfully created."
       turbolinks_redirect(day_pass_type_path(@day_pass_type))
     else
       flash[:error] = result.message
@@ -44,9 +44,9 @@ class Operator::DayPassTypesController < Operator::BaseController
 
   def update
     authorize @day_pass_type
-    
+
     if @day_pass_type.update(day_pass_type_params)
-      flash[:success] = 'Day pass type was successfully updated.'
+      flash[:success] = "Day pass type was successfully updated."
       turbolinks_redirect(day_pass_type_path(@day_pass_type))
     else
       render :edit, status: 422
@@ -60,13 +60,13 @@ class Operator::DayPassTypesController < Operator::BaseController
   def destroy
     authorize @day_pass_type
     @day_pass_type.update(available: false)
-    flash[:success] = 'Day pass type was successfully archived.'
+    flash[:success] = "Day pass type was successfully archived."
     turbolinks_redirect(day_pass_types_url)
   end
 
   private
-  
-  def find_day_pass_type(key=:id)
+
+  def find_day_pass_type(key = :id)
     @day_pass_type = DayPassType.find(params[key])
   end
 

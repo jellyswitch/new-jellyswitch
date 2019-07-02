@@ -20,11 +20,19 @@
     <dd class="col"><%= pretty_time(@hour) %></dd>
   </dl>
 
-  <% [1, 2, 3, 4].each do |i| %>
-    <% if @room.available_at?(@datetime_in + (i - 1).hours) %>
-      <%= link_to "#{i} #{quantize(i, 'hour')}", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: i), class: "btn btn-block btn-primary" %>
-    <% else %>
-      <% break %>
+  <% if @room.available_at?(@datetime_in) %>
+    <%= link_to "30 minutes", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 30), class: "btn btn-block btn-primary" %>
+  
+    <% if @room.available_at?(@datetime_in + 30.minutes) %>
+      <%= link_to "1 hour", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 60), class: "btn btn-block btn-primary" %>
+
+      <% if @room.available_at?(@datetime_in + 60.minutes) %>
+        <%= link_to "1.5 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 90), class: "btn btn-block btn-primary" %>
+
+        <% if @room.available_at?(@datetime_in + 90.minutes) %>
+          <%= link_to "2 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 120), class: "btn btn-block btn-primary" %>
+        <% end %>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>

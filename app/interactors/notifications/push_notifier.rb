@@ -16,7 +16,7 @@ class Notifications::PushNotifier
       if user.ios_token.present?
         notification = Houston::Notification.new(device: user.ios_token)
         notification.alert = @message
-      
+
         apn.push(notification)
         puts "Pushed message: #{@message} to device: #{user.ios_token}"
       end
@@ -32,5 +32,4 @@ class Notifications::PushNotifier
       context.fail!(message: "Operator #{@operator.name} has no push notification certificate.")
     end
   end
-
 end

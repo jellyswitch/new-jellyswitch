@@ -20,6 +20,10 @@ module ApplicationHelper
     date.strftime("%B %e, %Y")
   end
 
+  def pretty_timestamps(a, b)
+    "#{pretty_time(a)} - #{pretty_time(b)}"
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?

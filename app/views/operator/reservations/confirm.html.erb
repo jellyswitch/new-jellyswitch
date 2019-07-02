@@ -20,8 +20,8 @@
     <dt class="col-6">Time</dt>
     <dd class="col"><%= pretty_time(@hour) %></dd>
 
-    <dt class="col-6">Hours</dt>
-    <dd class="col"><%= @duration %> <%= quantize(@duration, "hour") %></dd>
+    <dt class="col-6">Length</dt>
+    <dd class="col"><%= @duration %> <%= quantize(@duration, "minute") %></dd>
 
     <dt class="col-6">Datetime</dt>
     <dd class="col"><pre><%= @datetime_in.to_s %></pre></dd>
