@@ -5,7 +5,7 @@
     <%- else %>
       <%= link_to reservation.user.name, user_path(reservation.user) %>
       in 
-      <%= reservation.room.smart_link %>
+      <%= reservation.room.decorate.smart_link %>
     <%- end %>
   </p>
   <p class="card-text"><%= reservation.pretty_datetime %> for <%= reservation.minutes %> minutes</p>
