@@ -1,3 +1,4 @@
+# typed: false
 class Billing::Subscription::CreateSubscription
   include Interactor::Organizer
 

@@ -1,3 +1,4 @@
+# typed: true
 class CreateMemberFeedbacks < ActiveRecord::Migration[5.2]
   def change
     create_table :member_feedbacks do |t|

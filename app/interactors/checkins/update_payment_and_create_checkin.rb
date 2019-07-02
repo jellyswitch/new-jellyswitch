@@ -1,3 +1,4 @@
+# typed: false
 class Checkins::UpdatePaymentAndCreateCheckin
   include Interactor::Organizer
 

@@ -1,3 +1,4 @@
+# typed: false
 class OperatorSurveysController < ApplicationController
   def new
     @operator_survey = OperatorSurvey.new

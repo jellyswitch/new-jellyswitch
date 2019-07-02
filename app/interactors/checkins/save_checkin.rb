@@ -1,3 +1,4 @@
+# typed: true
 
 class Checkins::SaveCheckin
   include Interactor

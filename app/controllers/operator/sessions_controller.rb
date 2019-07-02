@@ -1,3 +1,4 @@
+# typed: false
 class Operator::SessionsController < Operator::BaseController
   def new
     authorize :session, :new?

@@ -1,3 +1,4 @@
+# typed: false
 class Operator::BaseController < ApplicationController
   set_current_tenant_by_subdomain(:operator, :subdomain)
   layout "operator"

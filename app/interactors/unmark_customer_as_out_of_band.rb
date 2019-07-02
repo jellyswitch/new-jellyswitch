@@ -1,3 +1,4 @@
+# typed: true
 class UnmarkCustomerAsOutOfBand
   include Interactor
 

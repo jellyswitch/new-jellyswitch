@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Reservations::SaveRoomReservation
   include Interactor
   include FeedItemCreator

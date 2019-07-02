@@ -1,3 +1,4 @@
+# typed: false
 class Operator::LandingController < Operator::BaseController
   before_action :background_image
   include LandingHelper

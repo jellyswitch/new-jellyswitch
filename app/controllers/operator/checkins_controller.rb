@@ -1,3 +1,4 @@
+# typed: false
 class Operator::CheckinsController < Operator::BaseController
   before_action :background_image
 

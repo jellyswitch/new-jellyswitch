@@ -1,3 +1,4 @@
+# typed: false
 class Operator::RoomsController < Operator::BaseController
   decorates_assigned :rooms, :hidden_rooms, :room, :rentable_rooms, :reservations
 

@@ -1,3 +1,4 @@
+# typed: true
 class SubscriptionPolicy < ApplicationPolicy
   def new?
     is_user?

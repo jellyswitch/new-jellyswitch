@@ -1,3 +1,4 @@
+# typed: true
 module StripeSubscription
   class DefaultSubscription < SimpleDelegator
     attr_accessor :subscription, :start_day

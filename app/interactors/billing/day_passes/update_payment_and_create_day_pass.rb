@@ -1,3 +1,4 @@
+# typed: false
 class Billing::DayPasses::UpdatePaymentAndCreateDayPass
   include Interactor::Organizer
 

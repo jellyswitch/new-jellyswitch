@@ -1,3 +1,4 @@
+# typed: true
 class Billable::DayPass < SimpleDelegator
   attr_accessor :billable, :day_pass
 

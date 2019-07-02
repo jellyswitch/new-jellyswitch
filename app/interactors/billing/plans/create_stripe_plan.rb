@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Plans::CreateStripePlan
   include Interactor
 

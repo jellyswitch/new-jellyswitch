@@ -1,3 +1,4 @@
+# typed: true
 class Billable::Subscription < SimpleDelegator
   attr_accessor :billable, :subscription
 

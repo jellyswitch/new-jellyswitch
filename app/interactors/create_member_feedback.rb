@@ -1,3 +1,4 @@
+# typed: true
 class CreateMemberFeedback
   include Interactor
   include FeedItemCreator

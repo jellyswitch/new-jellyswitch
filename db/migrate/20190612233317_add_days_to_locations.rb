@@ -1,3 +1,4 @@
+# typed: false
 class AddDaysToLocations < ActiveRecord::Migration[5.2]
   def change
     add_column :locations, :open_sunday, :boolean, null: false, default: false

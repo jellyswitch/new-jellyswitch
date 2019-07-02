@@ -1,3 +1,4 @@
+# typed: false
 class Operator::UsersController < Operator::BaseController
   def index
     find_approved_users

@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Payment::SetToBillOrganization
   include Interactor
 

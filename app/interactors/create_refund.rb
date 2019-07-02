@@ -1,3 +1,4 @@
+# typed: true
 class CreateRefund
   include Interactor
   include FeedItemCreator

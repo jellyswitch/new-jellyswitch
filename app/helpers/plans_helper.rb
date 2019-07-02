@@ -1,3 +1,4 @@
+# typed: false
 module PlansHelper
   def dollar_amount(cents)
     new_amount = cents.to_f / 100.0
