@@ -39,7 +39,7 @@
     <% end %>
   </dl>
 
-  <% if current_user.member?(current_tenant, day=@day) || current_user.has_billing? %> 
+  <% if current_user.member?(current_tenant, day=@day) %>
     <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary" %>
   <% else %>
     <%= render "billing" %>

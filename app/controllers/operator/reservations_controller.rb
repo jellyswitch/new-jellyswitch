@@ -80,7 +80,11 @@ class Operator::ReservationsController < Operator::BaseController
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
+      if current_user.approved?
+        turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
+      else
+        turbolinks_redirect(wait_path, action: "restore")
+      end
     end
 
   end

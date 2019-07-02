@@ -3,6 +3,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
 
   organize(
     Billing::Payment::UpdateUserPayment,
-    CreateRoomReservation
+    CreateRoomReservation,
+    Billing::Reservations::SaveStripeInvoice
   )
 end

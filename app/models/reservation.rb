@@ -48,4 +48,12 @@ class Reservation < ApplicationRecord
   def hours
     minutes.to_f / 60.0
   end
+
+  def charge_amount
+    ((room.hourly_rate_in_cents / 60.0) * minutes).to_i
+  end
+
+  def charge_description
+    "#{room.location.operator.name} room reservation for #{pretty_datetime}"
+  end
 end
