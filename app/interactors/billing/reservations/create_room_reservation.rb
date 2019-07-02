@@ -1,4 +1,4 @@
-class CreateRoomReservation
+class Billing::Reservations::CreateRoomReservation
   include Interactor
   include FeedItemCreator
 

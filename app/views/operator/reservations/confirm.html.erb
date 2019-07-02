@@ -26,7 +26,7 @@
     <dt class="col-6">Datetime</dt>
     <dd class="col"><pre><%= @datetime_in.to_s %></pre></dd>
 
-    <% unless current_user.member?(current_tenant, day= @day) %>
+    <% unless current_user.member?(current_tenant, day= @day) || admin? %>
       <dt class="col-6">Hourly Price</dt>
       <dd class="col">
         <%= number_to_currency(@room.hourly_rate_in_cents / 100.0) %>
@@ -39,7 +39,7 @@
     <% end %>
   </dl>
 
-  <% if current_user.member?(current_tenant, day=@day) %>
+  <% if current_user.member?(current_tenant, day=@day) || admin? %>
     <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary" %>
   <% else %>
     <%= render "billing" %>

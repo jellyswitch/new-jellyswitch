@@ -97,7 +97,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     parse_time
     
-    result = CreateRoomReservation.call(reservation_params: {
+    result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
       datetime_in: @datetime_in,
       hours: @duration,
       minutes: @duration.to_i,
