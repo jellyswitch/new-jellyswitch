@@ -48,7 +48,9 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = params[:duration].to_i
 
     parse_time
-    include_stripe
+    if !(current_user.member?(current_tenant, day=@day) || admin? || current_user.has_billing?)
+      include_stripe
+    end
   end
 
   def update_billing_and_create_reservation
@@ -103,6 +105,7 @@ class Operator::ReservationsController < Operator::BaseController
       minutes: @duration.to_i,
       room: @room
     }, user: current_user)
+    
     @reservation = result.reservation
 
     if result.success?
