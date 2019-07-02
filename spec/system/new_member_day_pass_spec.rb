@@ -1,3 +1,4 @@
+# typed: false
 require 'rails_helper'
 
 RSpec.describe 'New member buys day pass', type: :system, js: true do

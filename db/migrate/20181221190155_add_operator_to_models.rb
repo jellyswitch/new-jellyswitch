@@ -1,3 +1,4 @@
+# typed: false
 class AddOperatorToModels < ActiveRecord::Migration[5.2]
   def up
     op = Operator.create!(name: "Cowork Tahoe", subdomain: "tml")

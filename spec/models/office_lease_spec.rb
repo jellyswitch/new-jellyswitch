@@ -1,3 +1,4 @@
+# typed: false
 # == Schema Information
 #
 # Table name: office_leases

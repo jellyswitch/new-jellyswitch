@@ -1,3 +1,4 @@
+# typed: false
 class AddSubscriptionsToOfficeLeases < ActiveRecord::Migration[5.2]
   def change
     add_reference :office_leases, :subscription, foreign_key: true

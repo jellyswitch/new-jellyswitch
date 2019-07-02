@@ -1,3 +1,4 @@
+# typed: true
 class Notifications::DayPassNotification
   include Interactor
 

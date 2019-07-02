@@ -1,3 +1,4 @@
+# typed: true
 class ReservationPolicy < ApplicationPolicy
   def new?
     admin? || (member? && approved?)

@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Leasing::UpdateEndDate
   include Interactor
 

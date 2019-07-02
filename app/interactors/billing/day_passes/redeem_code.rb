@@ -1,3 +1,4 @@
+# typed: true
 class Billing::DayPasses::RedeemCode
   include Interactor
 

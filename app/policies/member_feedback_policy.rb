@@ -1,3 +1,4 @@
+# typed: true
 class MemberFeedbackPolicy < ApplicationPolicy
   def new?
     true

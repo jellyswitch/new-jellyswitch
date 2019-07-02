@@ -1,3 +1,4 @@
+# typed: false
 require 'rails_helper'
 
 RSpec.describe Billing::Leasing::CreateOfficeLease do

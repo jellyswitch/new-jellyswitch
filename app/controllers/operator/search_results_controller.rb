@@ -1,3 +1,4 @@
+# typed: true
 class Operator::SearchResultsController < Operator::BaseController
   before_action :background_image
 

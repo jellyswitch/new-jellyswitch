@@ -1,3 +1,4 @@
+# typed: true
 class LandingController < ApplicationController
   def index
     if superadmin?

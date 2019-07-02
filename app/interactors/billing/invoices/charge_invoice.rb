@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Invoices::ChargeInvoice
   include Interactor
 

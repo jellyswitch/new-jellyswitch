@@ -1,3 +1,4 @@
+# typed: false
 # Theming
 Rails.application.config.x.customization.primary = ENV['THEME_PRIMARY']
 Rails.application.config.x.customization.secondary = ENV['THEME_SECONDARY']

@@ -1,3 +1,4 @@
+# typed: false
 module SystemHelpers
   def start_session(name, user_session, &block)
     using_session(name) do

@@ -1,3 +1,4 @@
+# typed: true
 class Billing::Subscription::CancelPendingSubscription
   include Interactor
   

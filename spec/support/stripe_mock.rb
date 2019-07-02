@@ -1,3 +1,4 @@
+# typed: true
 require 'stripe'
 
 module StripeMock

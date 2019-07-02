@@ -1,3 +1,4 @@
+# typed: false
 module Notifiable
   class Subscription < SimpleDelegator
     def notify

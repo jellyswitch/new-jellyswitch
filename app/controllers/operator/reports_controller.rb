@@ -1,3 +1,4 @@
+# typed: false
 class Operator::ReportsController < Operator::BaseController
   before_action :background_image
   before_action :generate_report, except: [:monetization]

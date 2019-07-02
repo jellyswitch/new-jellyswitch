@@ -1,3 +1,4 @@
+# typed: false
 module Notifiable
   class DayPass < SimpleDelegator
     def notify

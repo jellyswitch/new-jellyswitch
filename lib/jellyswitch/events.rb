@@ -1,3 +1,4 @@
+# typed: false
 module Jellyswitch
   module Events
     class Jellyswitch::Events::Error < StandardError; end

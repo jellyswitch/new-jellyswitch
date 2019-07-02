@@ -1,3 +1,4 @@
+# typed: false
 module DayPassTypesHelper
   def day_pass_type_options(day_pass_types)
     day_pass_types.map do |day_pass_type|

@@ -1,3 +1,4 @@
+# typed: false
 module Notifiable
   class Checkin < SimpleDelegator
     def notify
