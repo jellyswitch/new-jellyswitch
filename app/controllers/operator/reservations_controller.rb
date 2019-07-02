@@ -48,6 +48,41 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = params[:duration].to_i
 
     parse_time
+    include_stripe
+  end
+
+  def update_billing_and_create_reservation
+    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @day = Date.parse(params[:day])
+    @hour = Time.strptime(params[:hour], "%l:%M%P")
+    @duration = params[:duration].to_i
+
+    parse_time
+
+    token = params[:stripeToken]
+
+    result = Billing::Reservations::UpdateBillingAndCreateRoomReservation.call(reservation_params: {
+      datetime_in: @datetime_in,
+      hours: @duration,
+      minutes: @duration.to_i,
+      room: @room
+    }, user: current_user,
+    token: token,
+    out_of_band: false)
+    @reservation = result.reservation
+
+    if result.success?
+      flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      if current_user.approved?
+        turbolinks_redirect(reservation_path(@reservation), action: "restore")
+      else
+        turbolinks_redirect(wait_path, action: "restore")
+      end
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
+    end
+
   end
 
   def create_reservation
