@@ -3,19 +3,21 @@
 #
 # Table name: rooms
 #
-#  id             :bigint(8)        not null, primary key
-#  av             :boolean          default(FALSE), not null
-#  capacity       :integer          default(1), not null
-#  description    :text
-#  name           :string           not null
-#  slug           :string
-#  square_footage :integer          default(0), not null
-#  visible        :boolean          default(TRUE), not null
-#  whiteboard     :boolean          default(FALSE), not null
-#  created_at     :datetime         not null
-#  updated_at     :datetime         not null
-#  location_id    :bigint(8)
-#  operator_id    :integer          default(1), not null
+#  id                   :bigint(8)        not null, primary key
+#  av                   :boolean          default(FALSE), not null
+#  capacity             :integer          default(1), not null
+#  description          :text
+#  hourly_rate_in_cents :integer          default(0), not null
+#  name                 :string           not null
+#  rentable             :boolean          default(FALSE), not null
+#  slug                 :string
+#  square_footage       :integer          default(0), not null
+#  visible              :boolean          default(TRUE), not null
+#  whiteboard           :boolean          default(FALSE), not null
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  location_id          :bigint(8)
+#  operator_id          :integer          default(1), not null
 #
 # Indexes
 #
@@ -37,6 +39,8 @@ class Room < ApplicationRecord
   # Scopes
   scope :visible, ->() { where(visible: true) }
   scope :invisible, ->() { where(visible: false) }
+  scope :rentable, ->()  { where(rentable: true) }
+  scope :cheapest, ->() { order('hourly_rate_in_cents DESC') }
 
   # Slugs
   extend FriendlyId

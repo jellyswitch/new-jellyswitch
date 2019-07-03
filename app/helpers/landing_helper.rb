@@ -27,7 +27,7 @@ module LandingHelper
   end
 
   def home_redirect
-    if member? || admin?
+    if member? || admin? || has_reservation?
       # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path

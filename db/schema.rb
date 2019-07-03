@@ -207,9 +207,9 @@ ActiveRecord::Schema.define(version: 2019_06_25_224613) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "subscription_id"
-    t.bigint "location_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
+    t.bigint "location_id"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
@@ -337,6 +337,8 @@ ActiveRecord::Schema.define(version: 2019_06_25_224613) do
     t.integer "operator_id", default: 1, null: false
     t.bigint "location_id"
     t.integer "square_footage", default: 0, null: false
+    t.boolean "rentable", default: false, null: false
+    t.integer "hourly_rate_in_cents", default: 0, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
