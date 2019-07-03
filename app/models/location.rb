@@ -84,4 +84,14 @@ class Location < ApplicationRecord
   def has_contact_info?
     contact_name.present? && contact_email.present? && contact_phone.present?
   end
+
+  # Predicates for high-level features
+
+  def hourly_enabled?
+    allow_hourly?
+  end
+
+  def rentable_rooms_enabled?
+    rooms.visible.rentable.count > 0
+  end
 end

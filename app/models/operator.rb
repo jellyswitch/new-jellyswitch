@@ -121,6 +121,16 @@ class Operator < ApplicationRecord
     Checkin.for_operator(self)
   end
 
+  # Predicates for features
+
+  def day_passes_enabled?
+    day_pass_types.count > 0
+  end
+
+  def memberships_enabled?
+    plans.individual.visible.available.count > 0
+  end
+
   private
 
   class StripeOperator < SimpleDelegator

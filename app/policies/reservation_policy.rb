@@ -9,7 +9,7 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def show?
-    admin? || (member? && approved?)
+    admin? || (owner? && approved?)
   end
 
   def destroy?

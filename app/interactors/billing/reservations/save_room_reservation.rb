@@ -1,5 +1,5 @@
 # typed: true
-class CreateRoomReservation
+class Billing::Reservations::SaveRoomReservation
   include Interactor
   include FeedItemCreator
 

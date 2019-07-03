@@ -21,8 +21,13 @@
           <% end %>
         </div>
         <div class="row">
-          <p>Seats <strong><%= room.capacity %></strong> people</p>
+          <span class="text-dark">Seats <strong><%= room.capacity %></strong> people</span>
         </div>
+        <% if room.rentable? %>
+          <div class="row">
+            <span class="text-dark">Available for <%= number_to_currency(room.hourly_rate_in_cents.to_f / 100.0) %> / hr</span>
+          </div>
+        <% end %>
       </div>
     </div>
 
