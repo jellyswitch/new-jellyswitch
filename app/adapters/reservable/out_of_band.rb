@@ -1,4 +1,4 @@
-class Reservatble::OutOfBand < Reservable::DefaultReservation
+class Reservable::OutOfBand < Reservable::DefaultReservation
   def invoice_args
     super.merge!(
       billing: 'send_invoice',
