@@ -1,3 +1,4 @@
+# typed: false
 class Operator::UsersController < Operator::BaseController
   def index
     find_approved_users
@@ -94,10 +95,10 @@ class Operator::UsersController < Operator::BaseController
         render :new, status: 422
       end
     end
-    # rescue Exception => e
-    #   Rollbar.error(e)
-    #   flash[:error] = "An error occurred: #{e.message}"
-    #   turbolinks_redirect(referrer_or_root)
+  rescue Exception => e
+    Rollbar.error(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbolinks_redirect(referrer_or_root)
   end
 
   def update

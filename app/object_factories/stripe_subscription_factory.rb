@@ -1,3 +1,4 @@
+# typed: true
 class StripeSubscriptionFactory
   def self.for(subscription, start_day)
     if subscription.billable.out_of_band?

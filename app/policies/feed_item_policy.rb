@@ -1,3 +1,4 @@
+# typed: true
 class FeedItemPolicy < ApplicationPolicy
   def index?
     admin?

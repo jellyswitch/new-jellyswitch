@@ -1,3 +1,4 @@
+# typed: true
 class Billing::DayPasses::SaveDayPass
   include Interactor
 

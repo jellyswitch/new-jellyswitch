@@ -1,3 +1,4 @@
+# typed: true
 class OfficeLeasePolicy < ApplicationPolicy
   def index?
     admin?

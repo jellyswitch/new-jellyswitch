@@ -1,3 +1,4 @@
+# typed: false
 class Billing::DayPasses::RedeemFreeDayPass
   include Interactor::Organizer
 

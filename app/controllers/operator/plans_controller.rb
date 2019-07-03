@@ -1,3 +1,4 @@
+# typed: false
 class Operator::PlansController < Operator::BaseController
   def index
     find_plans

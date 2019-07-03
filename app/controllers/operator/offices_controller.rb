@@ -1,3 +1,4 @@
+# typed: false
 class Operator::OfficesController < Operator::BaseController
   before_action :find_office, only: [:show, :edit, :update]
   before_action :background_image, except: [:create, :update]

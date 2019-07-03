@@ -1,3 +1,4 @@
+# typed: false
 class DropWorkingHoursFromOperators < ActiveRecord::Migration[5.2]
   def change
     remove_column :operators, :working_hours_enabled

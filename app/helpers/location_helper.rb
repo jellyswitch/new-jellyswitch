@@ -1,3 +1,4 @@
+# typed: true
 module LocationHelper
   def location_select_options(locations)
     locations.map do |location|

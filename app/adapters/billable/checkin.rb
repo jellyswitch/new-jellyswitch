@@ -1,3 +1,4 @@
+# typed: true
 class Billable::Checkin < SimpleDelegator
   attr_accessor :billable, :checkin
 

@@ -1,3 +1,4 @@
+# typed: true
 class Jellyswitch::MonetizationReport
   attr_reader :location
 

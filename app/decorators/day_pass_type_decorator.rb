@@ -1,3 +1,4 @@
+# typed: strict
 class DayPassTypeDecorator < ApplicationDecorator
   delegate_all
 

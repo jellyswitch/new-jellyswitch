@@ -1,3 +1,4 @@
+# typed: true
 class Operators::FinishStripeConnect
   include Interactor
 

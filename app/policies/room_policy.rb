@@ -1,3 +1,4 @@
+# typed: true
 class RoomPolicy < ApplicationPolicy
   def index?
     admin? || (member? && approved?)

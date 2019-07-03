@@ -34,6 +34,8 @@ gem 'rollbar'
 gem 'sass-rails', '~> 5.0'
 gem 'searchkick'
 gem 'sidekiq'
+gem 'sorbet-rails'
+gem 'sorbet-runtime'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
@@ -45,6 +47,7 @@ group :development do
   gem 'binding_of_caller'
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'rails-erd'
+  gem 'sorbet'
   gem 'user-auth', git: "https://github.com/dpaola2/user-auth"
   gem 'web-console', '>= 3.3.0'
 end

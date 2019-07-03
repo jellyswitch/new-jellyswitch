@@ -1,3 +1,4 @@
+# typed: false
 class Operator::OrganizationsController < Operator::BaseController
   before_action :find_organization, except: [:index, :new, :create]
 

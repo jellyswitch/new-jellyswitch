@@ -1,3 +1,4 @@
+# typed: false
 require 'rails_helper'
 
 RSpec.shared_examples 'paying invoice' do |trait|

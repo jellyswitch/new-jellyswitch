@@ -1,3 +1,4 @@
+# typed: false
 class Operator::RoomsController < Operator::BaseController
   def index
     find_rooms

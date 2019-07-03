@@ -1,3 +1,4 @@
+# typed: true
 class DayPassPolicy < ApplicationPolicy
   def index?
     admin?

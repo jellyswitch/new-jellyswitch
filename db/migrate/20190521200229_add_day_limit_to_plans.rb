@@ -1,3 +1,4 @@
+# typed: false
 class AddDayLimitToPlans < ActiveRecord::Migration[5.2]
   def change
     add_column :plans, :has_day_limit, :boolean, default: false, null: false

@@ -1,3 +1,4 @@
+# typed: true
 class UserContext
   attr_reader :user, :operator, :location
 

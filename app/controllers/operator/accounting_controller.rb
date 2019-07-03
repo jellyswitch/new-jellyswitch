@@ -1,3 +1,4 @@
+# typed: false
 class Operator::AccountingController < Operator::BaseController
   include AccountingHelper
   def index

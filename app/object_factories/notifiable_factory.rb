@@ -1,3 +1,4 @@
+# typed: false
 class NotifiableFactory
   def self.for(notifiable)
     case notifiable.class.name
