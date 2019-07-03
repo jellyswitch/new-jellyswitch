@@ -1,3 +1,5 @@
+# typed: true
+
 class Reservable::OutOfBand < Reservable::DefaultReservation
   def invoice_args
     super.merge!(
