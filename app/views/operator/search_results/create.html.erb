@@ -24,6 +24,8 @@
           <%= render "operator/users/user", user: item, view: true %>
         <% when "Organization" %>
           <%= render "operator/organizations/organization", organization: item, view: true %>        
+        <% when "Room" %>
+          <%= render "operator/rooms/room", room: item %>
       <% end %>
     <%- end %>
   

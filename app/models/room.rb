@@ -30,6 +30,7 @@
 #
 
 class Room < ApplicationRecord
+  searchkick
   # Relationships
   has_many :reservations
   belongs_to :operator
@@ -48,6 +49,13 @@ class Room < ApplicationRecord
 
   # Attachments
   has_one_attached :photo
+
+  def search_data
+    {
+      name: name,
+      text: description
+    }
+  end
 
   # Predicates
 

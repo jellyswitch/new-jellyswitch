@@ -15,8 +15,18 @@ class Operator::SearchResultsController < Operator::BaseController
     @query = params[:query]
     @results = Searchkick.search(
       @query, 
-      fields: [:text, :comments, :user_name, :type, :amount, :stripe_customer_id, :name, :email, :organization, :owner], 
-      models: [FeedItem, User, Organization],
+      fields: [
+        :name, 
+        :text, 
+        :comments, 
+        :user_name, 
+        :type, 
+        :amount, 
+        :stripe_customer_id, 
+        :email, 
+        :organization, 
+        :owner], 
+      models: [FeedItem, User, Organization, Room],
       operator: "or"
     )
     render :create, status: 200
