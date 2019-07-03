@@ -1,17 +1,20 @@
 # typed: false
 class Operator::FeedItemsController < Operator::BaseController
+  before_action :background_image
+
   def index
     render_index
     authorize @feed_items
-    new_feed_item
-    
   end
 
   def show
     find_feed_item
     authorize @feed_item
-    background_image
-    
+  end
+
+  def new
+    new_feed_item
+    authorize @feed_item
   end
 
   def create

@@ -1,10 +1,9 @@
 
-<div class="row mt-0 mb-2 ml-0 mr-0">
-
+<div class="row m-0">
   <div class="col-lg">
     <%= form_with(url: search_results_path, method: :post, remote: true) do |f| %>
-      <div class="form-group row">
-        <div class="col-lg-1"></div>
+      <div class="form-group row mb-2">
+        
         <div class="input-group">
           <%- if @query.present? %>
             <%= f.text_field :query, placeholder: "Search", class: "form-control form-control col-lg", value: @query %>
@@ -15,7 +14,7 @@
             <%= f.submit "Search", class: "btn btn-primary fas fa-search" %>
           </div>
         </div>
-        <div class="col-lg-1"></div>
+        
       </div>
       
     <%- end %>
