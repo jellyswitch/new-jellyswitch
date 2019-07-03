@@ -24,7 +24,7 @@
 #
 
 class Door < ApplicationRecord
-  searchkick
+  searchkick callbacks: :async
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
