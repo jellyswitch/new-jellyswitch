@@ -35,6 +35,7 @@
 #
 
 class User < ApplicationRecord
+  searchkick
   # Relationships
   has_many :checkins
   has_many :day_passes
@@ -71,6 +72,18 @@ class User < ApplicationRecord
   scope :superadmins, -> { where(superadmin: true) }
 
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
+
+  def search_data
+    {
+      name: name,
+      email: email,
+      stripe_customer_id: stripe_customer_id,
+      bio: bio,
+      slug: slug,
+      twitter: twitter,
+      organization: organization.present? ? organization.name : nil
+    }
+  end
 
   # Relationship Helpers
   def owned_organization
