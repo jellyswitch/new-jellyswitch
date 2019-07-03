@@ -26,7 +26,7 @@ class Operator::SearchResultsController < Operator::BaseController
         :email, 
         :organization, 
         :owner], 
-      models: [FeedItem, User, Organization, Room, Door],
+      models: [FeedItem, User, Organization, Room, Door, Location],
       operator: "or"
     )
     render :create, status: 200

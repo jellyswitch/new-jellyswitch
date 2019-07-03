@@ -20,6 +20,8 @@
           <%= feed_item_card do %>
             <%= render "operator/doors/door", door: item %>        
           <% end %>
+        <% when "Location" %>
+          <%= render "operator/locations/location", location: item, label: "Switch to" %>
       <% end %>
     <%- end %>
   
