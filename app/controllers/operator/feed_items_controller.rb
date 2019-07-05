@@ -3,8 +3,18 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
 
   def index
-    render_index
+    find_feed_items
+    @all_active = "active"
+    @questions_active = nil
     authorize @feed_items
+  end
+
+  def questions
+    find_questions
+    @all_active = nil
+    @questions_active = "active"
+    authorize @feed_items
+    render :index
   end
 
   def show
@@ -71,17 +81,16 @@ class Operator::FeedItemsController < Operator::BaseController
 
   private
 
-  def render_index
-    background_image
-    find_feed_items
-  end
-
   def new_feed_item
     @feed_item = FeedItem.new
   end
 
   def find_feed_items
     @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC"))
+  end
+
+  def find_questions
+    @pagy, @feed_items = pagy(FeedItem.unscoped.questions.for_operator(current_tenant).order("updated_at DESC"))
   end
 
   def feed_item_params

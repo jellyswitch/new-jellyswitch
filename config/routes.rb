@@ -89,6 +89,9 @@ Rails.application.routes.draw do
     end
   end
   resources :feed_items, controller: "operator/feed_items" do
+    collection do
+      get :questions
+    end
     member do
       post "set_expense_status"
       post "unset_expense_status"
