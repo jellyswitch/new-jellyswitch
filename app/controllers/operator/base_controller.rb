@@ -8,7 +8,13 @@ class Operator::BaseController < ApplicationController
   before_action :reset_location, if: :logged_in?
 
   def background_image
-    @background_image = current_tenant.background_image if current_tenant.present?
+    @background_image = if current_tenant.present?
+      if current_location.present? && current_location.has_photo?
+        current_location.background_image
+      else
+        current_tenant.background_image
+      end
+    end
   end
 
   def pundit_user
