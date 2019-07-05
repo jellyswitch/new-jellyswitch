@@ -1,4 +1,4 @@
-<%= form_for(location, remote: true) do |f| %>
+<%= form_for(location, html: {multipart: true}, remote: true) do |f| %>
   <%= render "shared/error_messages" , model: location %>
 
   <div class="form-group ">
