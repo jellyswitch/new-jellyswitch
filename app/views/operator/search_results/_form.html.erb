@@ -11,7 +11,9 @@
             <%= f.text_field :query, placeholder: "Search", class: "form-control form-control col-lg" %>
           <%- end %>
           <div class="input-group-append">
-            <%= f.submit "Search", class: "btn btn-primary fas fa-search" %>
+            <%= button_tag(type: "submit", class: "btn btn-primary") do %>
+              <i class="fas fa-search mr-2"></i>Search
+            <% end %>
           </div>
         </div>
         
