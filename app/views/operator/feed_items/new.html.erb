@@ -1,3 +1,9 @@
-<div class="card mb-1 mt-1">
-  <%= render "form", feed_item: @feed_item %>
+<% title "New Post" %>
+
+<div class="row" style="margin-top: -10px;">
+  <div class="col p-0">
+    <%= wide_card do %>
+      <%= render "form", feed_item: @feed_item %>
+    <% end %>
+  </div>
 </div>

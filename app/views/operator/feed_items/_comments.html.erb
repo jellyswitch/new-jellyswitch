@@ -14,12 +14,12 @@
 
       <div class="row mt-1">
         <div class="col">
-          <%=  f.submit "Comment", class: "btn btn-info" %>
+          <%=  f.submit "Add a note", class: "btn btn-info" %>
         </div>
       </div>
     <%- end %>
   </div>
 
 <%- else %>
-  <%= render "operator/feed_items/comment_count", feed_item: feed_item, label: "Comment (#{feed_item.feed_item_comments.count})" %>
+  <%= render "operator/feed_items/comment_count", feed_item: feed_item, label: "Add a note (#{feed_item.feed_item_comments.count})" %>
 <%- end %>
