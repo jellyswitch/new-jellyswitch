@@ -94,4 +94,8 @@ class Location < ApplicationRecord
   def rentable_rooms_enabled?
     rooms.visible.rentable.count > 0
   end
+
+  def full_address
+    "#{building_address}, #{city} #{state} #{zip}"
+  end
 end
