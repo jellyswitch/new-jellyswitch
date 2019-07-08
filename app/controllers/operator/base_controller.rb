@@ -6,6 +6,7 @@ class Operator::BaseController < ApplicationController
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
   before_action :reset_location, if: :logged_in?
+  before_action :set_navigation
 
   def background_image
     @background_image = if current_tenant.present?
@@ -28,6 +29,15 @@ class Operator::BaseController < ApplicationController
       token = match[1]
       current_user.update(ios_token: token)
     end
+  end
+
+  def set_navigation
+    @navigation = NavigationFactory.for(
+      logged_in?, 
+      admin?, 
+      current_tenant, 
+      current_location,
+      current_user)
   end
 
   private

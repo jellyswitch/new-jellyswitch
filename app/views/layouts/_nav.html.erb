@@ -10,37 +10,10 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
-        <% if logged_in? %>
-          <li class="nav-item">
-            <%= link_to "Home", home_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-          </li>
-          <% if current_location.present? %>
-            <% if  current_location.rooms.visible.count > 0 %>
-              <li class="nav-item">
-                <%= link_to "Reserve a room", rooms_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-              </li>
-            <% end %>
-
-            <% if current_location.doors.count > 0 %>
-              <li class="nav-item">
-                <%= link_to "Building Access", keys_doors_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-              </li>
-            <% end %>
-          <% end %>
-          <% if current_tenant.locations.count > 1 %>
-            <%= link_to "Change Location", edit_set_location_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-          <% end %>
-        <% else %>
-          <li class="nav-item">
-            <%= link_to "Sign Up", signup_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Sign In", login_path, class: "nav-link" %>
-          </li>
+        <% paths.each do |path| %>
+          <%= link_to path[:title], path[:path], class: "nav-link", data: { "turbolinks-action" => "restore"} %>
         <% end %>
       </ul>
-
-      <%= render "layouts/user_account_nav" %>
     </div>
   </nav>
 
