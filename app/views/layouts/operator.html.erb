@@ -23,15 +23,7 @@
   <% else %>
     <body>
   <% end %>
-    <% if logged_in? %>
-      <% if admin? %>
-        <%= render "layouts/admin_nav" %>
-      <% else %>
-        <%= render "layouts/nav" %>
-      <% end %>
-    <% else %>
-      <%= render "layouts/logged_out_nav" %>
-    <% end %>
+    <%= render NavigationFactory.for(logged_in?, admin?) %>
     <div class="container-fluid" style="min-height: 100vh;">
       <%= render "layouts/checkin" %>
       <%= render "layouts/flash" %>
