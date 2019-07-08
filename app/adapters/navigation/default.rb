@@ -63,7 +63,7 @@ class Navigation::Default < SimpleDelegator
   def logged_out_nav_items
     items = [
       {title: "Sign Up", path: signup_path},
-      {title: "Log In", path: login_path}
+      {title: "Sign In", path: login_path}
     ]
 
     if operator.locations.count > 1

@@ -10,22 +10,10 @@
   </button>
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      <%= link_to "Home", feed_items_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Search", new_search_result_path, class: "nav-link", data: {"turbolinks-action" => "restore"} %>
-      <%= link_to "Building Access", doors_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Members & Groups", members_groups_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Offices & Leases", offices_leases_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Rooms & Reservations", rooms_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Plans & Day Passes", plans_day_passes_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Invoices & Expenses", accounting_index_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <% if current_tenant.locations.count > 1 %>
-        <%= link_to "Change Location", edit_set_location_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
+      <% paths.each do |path| %>
+        <%= link_to path[:title], path[:path], class: "nav-link", data: { "turbolinks-action" => "restore"} %>
       <% end %>
-      <%= link_to "Data", reports_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
-      <%= link_to "Customization", customization_path, class: "nav-link", data: { "turbolinks-action" => "restore" } %>
     </ul>
-
-    <%= render "layouts/user_account_nav" %>
 
   </div>
 </nav>
