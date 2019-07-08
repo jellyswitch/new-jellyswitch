@@ -76,4 +76,35 @@ class Navigation::Default < SimpleDelegator
     items
   end
 
+  def admin_tab_paths
+    [
+      {title: "Home", path: feed_items_path},
+      {title: "Search", path: new_search_result_path}
+    ]
+  end
+
+  def member_tab_paths
+    items = [
+      {title: "Home", path: home_path}
+    ]
+
+    if location.doors.count > 0
+      items << {title: "Building Access", path: keys_doors_path}
+    else
+      if location.rooms.visible.count > 0
+        items << {title: "Reserve a room", path: rooms_path}
+      else
+        items << {title: "My Account", path: user_path(user)}
+      end
+    end
+    items
+  end
+
+  def logged_out_tab_paths
+    [
+      {title: "Sign Up", path: signup_path},
+      {title: "Sign In", path: login_path}
+    ]
+  end
+
 end
