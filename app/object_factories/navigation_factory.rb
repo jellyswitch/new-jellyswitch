@@ -1,13 +1,13 @@
 class NavigationFactory
-  def self.for(logged_in, admin)
+  def self.for(logged_in, admin, current_tenant, current_location, current_user)
     if logged_in
       if admin
-        "layouts/admin_nav"
+        Navigation::Admin
       else
-        "layouts/nav"
+        Navigation::Member
       end
     else
-      "layouts/logged_out_nav"
-    end
+      Navigation::LoggedOut
+    end.new(current_tenant, current_location, current_user)
   end
 end

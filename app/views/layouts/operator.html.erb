@@ -23,12 +23,11 @@
   <% else %>
     <body>
   <% end %>
-    <%= render NavigationFactory.for(logged_in?, admin?) %>
+    <%= render "layouts/nav_renderer" %>
     <div class="container-fluid" style="min-height: 100vh;">
       <%= render "layouts/checkin" %>
       <%= render "layouts/flash" %>
       <%= yield %>
     </div>
   </body>
-  <%= render "layouts/mobile_nav" %>
 </html>

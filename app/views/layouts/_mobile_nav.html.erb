@@ -1,25 +1,3 @@
-<%- if ios_request? %>
-
-  <%- if logged_in? %>
-    <%- if admin? %>
-      <script>
-        navigation_json = '<%= admin_nav_items.to_json.html_safe %>';
-        window.webkit.messageHandlers.ApplicationController.postMessage(navigation_json);
-      </script>
-      <%#= render "layouts/admin_nav" %>
-    <%- else %>
-      <script>
-        navigation_json = '<%= member_nav_items.to_json.html_safe %>';
-        window.webkit.messageHandlers.ApplicationController.postMessage(navigation_json);
-      </script>
-      <%#= render "layouts/nav" %>
-    <%- end %>
-  <%- else %>
-    <script>
-      navigation_json = '<%= logged_out_nav_items.to_json.html_safe %>';
-      window.webkit.messageHandlers.ApplicationController.postMessage(navigation_json);
-    </script>
-    <%#= render "layouts/logged_out_nav" %>
-  <%- end %>
-
-<%- end %>
+<script>
+  window.webkit.messageHandlers.ApplicationController.postMessage('<%= paths %>');
+</script>
