@@ -1,12 +1,8 @@
 <%- title "Search Results" %>
 
-<div class="row mt-2">
-  <div class="col-lg-3"></div>
-  <div class="col-lg">
-    <%= render "form" %>
-  </div>
-    <div class="col-lg-3"></div>
-</div>
+<%= card_wrapper do %>
+  <%= render "form" %>
+<% end %>
 
 <%= card_wrapper do %>
   <%- @results.each do |item| %>
@@ -20,7 +16,7 @@
       <% when "Room" %>
         <%= render "operator/rooms/room", room: item %>
       <% when "Door" %>
-        <%= wide_card do %>
+        <%= card do %>
           <%= render "operator/doors/door", door: item %>        
         <% end %>
       <% when "Location" %>
