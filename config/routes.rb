@@ -91,6 +91,9 @@ Rails.application.routes.draw do
   resources :feed_items, controller: "operator/feed_items" do
     collection do
       get :questions
+      get :activity
+      get :notes
+      get :expenses
     end
     member do
       post "set_expense_status"

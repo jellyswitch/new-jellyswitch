@@ -6,6 +6,9 @@ class Operator::FeedItemsController < Operator::BaseController
     find_feed_items
     @all_active = "active"
     @questions_active = nil
+    @activity_active = nil
+    @notes_active = nil
+    @expenses_active = nil
     authorize @feed_items
   end
 
@@ -13,6 +16,42 @@ class Operator::FeedItemsController < Operator::BaseController
     find_questions
     @all_active = nil
     @questions_active = "active"
+    @activity_active = nil
+    @notes_active = nil
+    @expenses_active = nil
+    authorize @feed_items
+    render :index
+  end
+
+  def activity
+    find_activity
+    @all_active = nil
+    @questions_active = nil
+    @activity_active = "active"
+    @notes_active = nil
+    @expenses_active = nil
+    authorize @feed_items
+    render :index
+  end
+
+  def notes
+    find_notes
+    @all_active = nil
+    @questions_active = nil
+    @activity_active = nil
+    @notes_active = "active"
+    @expenses_active = nil
+    authorize @feed_items
+    render :index
+  end
+
+  def expenses
+    find_expenses
+    @all_active = nil
+    @questions_active = nil
+    @activity_active = nil
+    @notes_active = nil
+    @expenses_active = "active"
     authorize @feed_items
     render :index
   end
@@ -91,6 +130,18 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def find_questions
     @pagy, @feed_items = pagy(FeedItem.unscoped.questions.for_operator(current_tenant).order("updated_at DESC"))
+  end
+
+  def find_activity
+    @pagy, @feed_items = pagy(FeedItem.unscoped.activity.for_operator(current_tenant).order("updated_at DESC"))
+  end 
+
+  def find_notes
+    @pagy, @feed_items = pagy(FeedItem.unscoped.notes.for_operator(current_tenant).order("updated_at DESC"))
+  end
+
+  def find_expenses
+    @pagy, @feed_items = pagy(FeedItem.unscoped.expenses.for_operator(current_tenant).order("updated_at DESC"))
   end
 
   def feed_item_params
