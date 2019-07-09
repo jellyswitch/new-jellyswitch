@@ -52,12 +52,6 @@ module ApplicationHelper
     end
   end
 
-  def basic_card
-    render "layouts/basic_card" do
-      yield
-    end
-  end
-
   def super_wide_card
     render "layouts/super_wide_card" do
       yield
