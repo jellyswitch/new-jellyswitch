@@ -98,13 +98,9 @@ module SystemHelpers
     end
 
     def approve_member
-      expect(page).to have_content '1 member awaiting approval'
+      expect(page).to have_content 'approve'
 
       find('a[data-acc="approve-member"]').click
-
-      expect(page).to have_content 'Approval Queue'
-
-      find('input[data-acc="approve-member"]').click
 
       expect(page).to have_content 'User approved.'
     end
