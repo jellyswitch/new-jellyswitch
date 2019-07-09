@@ -98,7 +98,7 @@ module SystemHelpers
     end
 
     def approve_member
-      expect(page).to have_content 'approve'
+      expect(page).to have_content 'Approve'
 
       find('a[data-acc="approve-member"]').click
 
