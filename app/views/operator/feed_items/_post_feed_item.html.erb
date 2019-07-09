@@ -4,7 +4,9 @@
       Amount:
     </dt>
     <dd class="col">
-      <%= number_to_currency(feed_item.amount.to_f/100.0)  %>
+      <span class="text-danger">
+        <%= number_to_currency(feed_item.amount.to_f/100.0)  %>
+      </span>
     </dd>
   <% end %>
 </dl>
@@ -14,7 +16,7 @@
 </p>
 
 <%- if feed_item.has_photos? %>
-  <div class="row mt-2">
+  <div class="row mt-1 mb-3">
     <div class="col">
     <%- feed_item.feed_photos.each do |photo| %>
       <%= image_tag photo, class: "img-fluid" %>

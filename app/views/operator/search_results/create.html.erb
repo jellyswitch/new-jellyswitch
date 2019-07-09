@@ -1,35 +1,30 @@
 <%- title "Search Results" %>
 
 <div class="row mt-2">
-  <div class="col">
+  <div class="col-lg-3"></div>
+  <div class="col-lg">
     <%= render "form" %>
   </div>
+    <div class="col-lg-3"></div>
 </div>
 
-<div class="row mt-3 mb-2">
-  <div class="col-lg-3"></div>
-  <div class="col-lg-6">
-
-    <%- @results.each do |item| %>
-      <% case item.class.name %>
-        <% when "FeedItem" %>
-          <%= render "operator/feed_items/feed_item", feed_item: item, comments: item.feed_item_comments.count > 0 %>
-        <% when "User" %>
-          <%= render "operator/users/user", user: item, view: true %>
-        <% when "Organization" %>
-          <%= render "operator/organizations/organization", organization: item, view: true %>        
-        <% when "Room" %>
-          <%= render "operator/rooms/room", room: item %>
-        <% when "Door" %>
-          <%= wide_card do %>
-            <%= render "operator/doors/door", door: item %>        
-          <% end %>
-        <% when "Location" %>
-          <%= render "operator/locations/location", location: item, label: "Switch to" %>
-      <% end %>
-    <%- end %>
-  
-  </div>
-
-  <div class="col-lg-3"></div>
-</div>
+<%= card_wrapper do %>
+  <%- @results.each do |item| %>
+    <% case item.class.name %>
+      <% when "FeedItem" %>
+        <%= render "operator/feed_items/feed_item", feed_item: item, comments: item.feed_item_comments.count > 0 %>
+      <% when "User" %>
+        <%= render "operator/users/user", user: item, view: true %>
+      <% when "Organization" %>
+        <%= render "operator/organizations/organization", organization: item, view: true %>        
+      <% when "Room" %>
+        <%= render "operator/rooms/room", room: item %>
+      <% when "Door" %>
+        <%= wide_card do %>
+          <%= render "operator/doors/door", door: item %>        
+        <% end %>
+      <% when "Location" %>
+        <%= render "operator/locations/location", location: item, label: "Switch to" %>
+    <% end %>
+  <%- end %>
+<% end %>

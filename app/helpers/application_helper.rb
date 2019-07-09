@@ -52,14 +52,32 @@ module ApplicationHelper
     end
   end
 
+  def super_wide_card
+    render "layouts/super_wide_card" do
+      yield
+    end
+  end
+
+  def card_wrapper
+    render "layouts/card_wrapper" do
+      yield
+    end
+  end
+
   def wide_card
     render "layouts/wide_card" do
       yield
     end
   end
 
-  def super_wide_card
-    render "layouts/super_wide_card" do
+  def list_wrapper
+    render "layouts/list_wrapper" do
+      yield
+    end
+  end
+
+  def list_item
+    render "layouts/list_item" do
       yield
     end
   end

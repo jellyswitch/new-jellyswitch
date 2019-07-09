@@ -6,6 +6,17 @@
   <dd class="col">
     <%= feed_item.day_pass.day_pass_type.name %>
   </dd>
+
+  <dt class="col-6">Amount:</dt>
+  <dd class="col">
+    <span class="text-success">
+      <% if feed_item.day_pass.day_pass_type.free? %>
+        FREE
+      <% else %>
+        <%= number_to_currency(feed_item.day_pass.day_pass_type.amount_in_cents.to_f / 100.0) %>
+      <% end %>
+    </span>
+  </dd>
   
   <dt class="col-6">
     Day:
