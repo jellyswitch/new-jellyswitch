@@ -1,24 +1,15 @@
-<div class="row">
-  <div>
-    <%= render "shared/small_profile_photo", user: feed_item.user %>
-  </div>
-  <div class="ml-2">
-    <p class="mb-1">
-      <%= link_to feed_item.user.name, user_path(feed_item.user) %>
-      <br />
-      <small>
-        <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
-      </small>
-    </p>
-  </div>
-  <div class="ml-auto">
-    <%= render "operator/feed_items/common", feed_item: feed_item %>
-  </div>
-</div>
-<div class="row mt-4">
-  <p class="lead">
-    Refunded invoice (<%= number_to_currency(feed_item.invoice.amount_paid.to_f / 100.0) %>)
-  </p>
-</div>
+<dl class="row">
+  <dt class="col-6">
+    Amount:
+  </dt>
+  <dd class="col">
+    <%= number_to_currency(feed_item.invoice.amount_paid.to_f / 100.0) %>
+  </dd>
 
-<%= render "operator/feed_items/comments", feed_item: feed_item, show_comments: comments %>
+  <dt class="col-6">
+    Description:
+  </dt>
+  <dd class="col">
+    <%= feed_item.invoice.description %>
+  </dd>
+</dl>

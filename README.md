@@ -107,3 +107,5 @@ Click the "Visit" button to see this instance.
 If you encounter issues w/ elastic search, try running this command: 
 
 `curl -u elastic:changeme -XPUT 'localhost:9200/_cluster/settings' -H 'Content-Type: application/json' -d '{"persistent":{"cluster.blocks.read_only":false}}'`
+
+(From [https://github.com/ankane/searchkick/issues/1040](https://github.com/ankane/searchkick/issues/1040)

@@ -4,6 +4,22 @@ class FeedItemPolicy < ApplicationPolicy
     admin?
   end
 
+  def questions?
+    admin?
+  end
+
+  def activity?
+    admin?
+  end
+
+  def notes?
+    admin?
+  end
+
+  def expenses?
+    admin?
+  end
+
   def create?
     admin?
   end

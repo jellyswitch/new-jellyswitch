@@ -1,25 +1,19 @@
-<%- if show_comments %>
+<div>
+  <%- feed_item.feed_item_comments.each do |comment| %>
+    <%= render "operator/feed_items/comment", feed_item_comment: comment %>
+  <%- end %>
 
-  <div style="margin-right: -15px; margin-left:-15px;">
-    <%- feed_item.feed_item_comments.each do |comment| %>
-      <%= render "operator/feed_items/comment", feed_item_comment: comment %>
-    <%- end %>
-
-    <%= form_with(model: feed_item.feed_item_comments.new, url: feed_item_comments_path(feed_item, subdomain: current_tenant.subdomain), remote: true) do |f| %>
-      <div class="row mt-4">
-        <div class="col">
-          <%= f.text_area :comment, class: "form-control", placeholder: "Write a comment" %>
-        </div>
+  <%= form_with(model: feed_item.feed_item_comments.new, url: feed_item_comments_path(feed_item, subdomain: current_tenant.subdomain), remote: true) do |f| %>
+    <div class="row mt-4">
+      <div class="col">
+        <%= f.text_area :comment, class: "form-control", placeholder: "Write a comment" %>
       </div>
+    </div>
 
-      <div class="row mt-1">
-        <div class="col">
-          <%=  f.submit "Comment", class: "btn btn-info" %>
-        </div>
+    <div class="row mt-1">
+      <div class="col">
+        <%=  f.submit "Add a note", class: "btn btn-block btn-info" %>
       </div>
-    <%- end %>
-  </div>
-
-<%- else %>
-  <%= render "operator/feed_items/comment_count", feed_item: feed_item, label: "Comment (#{feed_item.feed_item_comments.count})" %>
-<%- end %>
+    </div>
+  <%- end %>
+</div>

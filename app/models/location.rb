@@ -54,6 +54,7 @@
 #
 
 class Location < ApplicationRecord
+  searchkick
   belongs_to :operator
   acts_as_tenant :operator
 
@@ -72,6 +73,13 @@ class Location < ApplicationRecord
   validates :working_day_end, presence: true
 
   scope :visible, -> { where(visible: true) }
+
+  def search_data
+    {
+      name: name,
+      text: snippet
+    }
+  end
 
   def has_photo?
     background_image.attached?

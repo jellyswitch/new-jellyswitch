@@ -1,15 +1,13 @@
 <%= form_for(feed_item, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages" , model: feed_item %>
-  <div class="form-group row mb-0">
-    <div class="col-1"></div>
-    <%= f.text_area :text, placeholder: "Type a new management note...", class: "form-control col" %>
-    <div class="col-1"></div>
+  <div class="form-group row m-0 p-0 mt-0">
+    <%= f.text_area :text, placeholder: "Type a new management note...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
   </div>
-  <div class="form-group row mb-0 mt-2">
-    <div class="col-1"></div>
+  <div class="form-group row m-0 p-0 mt-2">
+    
     <div class="col pl-0 m-0">
       <%= f.label :photos, "Attach photos" do %>
-        <span class="btn btn-sm btn-outline-info">Attach photos</span>
+        <span class="btn btn-sm btn-info">Attach photos</span>
         <%= f.file_field :photos,
                          multiple: true,
                          direct_upload: false,
@@ -18,11 +16,13 @@
         %>
       <%- end %>
     </div>
-    <div class="col-1"></div>
+    
   </div>
-  <div class="form-group row">
-    <div class="col-1"></div>
-    <%= f.submit "Post management note", class: "form-control btn btn-outline-primary col" %>
-    <div class="col-1"></div>
+  <div class="form-group row m-0 p-0">
+    
+    <%= f.submit "Post management note", class: "form-control btn btn-primary col", id: "submit" %>
+    
   </div>
 <%- end %>
+
+

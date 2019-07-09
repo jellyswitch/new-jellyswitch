@@ -20,6 +20,7 @@
 #
 
 class Organization < ApplicationRecord
+  searchkick
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
@@ -37,6 +38,14 @@ class Organization < ApplicationRecord
   delegate :email, to: :owner
 
   scope :eligible_for_lease, -> { where.not(stripe_customer_id: nil).or(where(out_of_band: true)) }
+
+  def search_data
+    {
+      name: name,
+      owner: owner.name,
+      stripe_customer_id: stripe_customer_id,
+    }
+  end
 
   # Form and view helpers
   def self.options_for_select

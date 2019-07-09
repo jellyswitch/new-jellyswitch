@@ -89,6 +89,12 @@ Rails.application.routes.draw do
     end
   end
   resources :feed_items, controller: "operator/feed_items" do
+    collection do
+      get :questions
+      get :activity
+      get :notes
+      get :expenses
+    end
     member do
       post "set_expense_status"
       post "unset_expense_status"
@@ -157,8 +163,8 @@ Rails.application.routes.draw do
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
   resources :subscriptions, controller: "operator/subscriptions"
   resources :users, controller: "operator/users" do
-    post "approve", to: "operator/users#approve"
-    post "unapprove", to: "operator/users#unapprove"
+    get :approve, to: "operator/users#approve"
+    get :unapprove, to: "operator/users#unapprove"
     get "change_password", to: "operator/users#change_password"
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"

@@ -23,20 +23,11 @@
   <% else %>
     <body>
   <% end %>
-    <% if logged_in? %>
-      <% if admin? %>
-        <%= render "layouts/admin_nav" %>
-      <% else %>
-        <%= render "layouts/nav" %>
-      <% end %>
-    <% else %>
-      <%= render "layouts/logged_out_nav" %>
-    <% end %>
+    <%= render "layouts/nav_renderer" %>
     <div class="container-fluid" style="min-height: 100vh;">
       <%= render "layouts/checkin" %>
       <%= render "layouts/flash" %>
       <%= yield %>
     </div>
   </body>
-  <%= render "layouts/mobile_nav" %>
 </html>

@@ -36,6 +36,9 @@ class FeedItem < ApplicationRecord
   scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
   scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
   scope :questions, -> { where("blob->> 'text' LIKE '%\?%'") }
+  scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin") }
+  scope :notes, -> { where("blob->> 'type' = ? AND expense = ?", "post", false) }
+  scope :expenses, -> { where(expense: true) }
 
   def search_data
     {
@@ -46,6 +49,35 @@ class FeedItem < ApplicationRecord
       comments: feed_item_comments.map(&:comment),
       stripe_customer_id: user.present? ? user.stripe_customer_id : nil,
     }
+  end
+
+  def action_text
+    case type
+    when "reservation"
+      "reserved a room"
+    when "feedback"
+      "left feedback"
+    when "refund"
+      "was issued a refund"
+    when "subscription"
+      "became a member"
+    when "day-pass"
+      "bought a day pass"
+    when "post"
+      if expense?
+        "posted an expense"
+      else
+        "posted a mgmt note"
+      end
+    when "checkin"
+      "checked in"
+    when "new-user"
+      "signed up"
+    end
+  end
+
+  def requires_approval?
+    ["subscription", "day-pass", "new-user", "reservation"].any? {|t| type == t}
   end
 
   def text

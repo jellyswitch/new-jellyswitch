@@ -24,6 +24,7 @@
 #
 
 class Door < ApplicationRecord
+  searchkick
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
@@ -32,4 +33,10 @@ class Door < ApplicationRecord
   has_many :door_punches
   belongs_to :operator
   acts_as_scopable :operator, :location
+
+  def search_data
+    {
+      name: name
+    }
+  end
 end

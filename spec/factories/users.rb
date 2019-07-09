@@ -70,5 +70,8 @@ FactoryBot.define do
         stripe_customer.save
       end
     end
+
+    trait :reindex do
+    end
   end
 end

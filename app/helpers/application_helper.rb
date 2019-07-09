@@ -2,6 +2,7 @@
 module ApplicationHelper
   include PlansHelper
   include LandingHelper
+  include LayoutHelper
   include Pagy::Frontend
 
   def pretty_datetime(input)
@@ -46,41 +47,6 @@ module ApplicationHelper
     end
   end
 
-  def basic_card
-    render "layouts/basic_card" do
-      yield
-    end
-  end
-
-  def wide_card
-    render "layouts/wide_card" do
-      yield
-    end
-  end
-
-  def super_wide_card
-    render "layouts/super_wide_card" do
-      yield
-    end
-  end
-
-  def feed_item_card
-    render "operator/feed_items/feed_item_card" do
-      yield
-    end
-  end
-
-  def breadcrumb
-    render "layouts/breadcrumb" do
-      yield
-    end
-  end
-
-  def title(page_title)
-    content_for(:title) { page_title }
-    page_title
-  end
-
   def stripe_oauth_url(operator)
     client_id = ENV['STRIPE_CLIENT_ID']
     redirect_uri = operator_operator_stripe_connect_setup_url(operator, subdomain: operator.subdomain)
@@ -97,70 +63,6 @@ module ApplicationHelper
 
   def android_request?
     request.env['HTTP_USER_AGENT'].match /(Jellyswitch\/Android)/
-  end
-
-  def admin_nav_items
-    items = [
-      {title: "Home", path: feed_items_path},
-      {title: "Search", path: new_search_result_path},
-      {title: "Building Access", path: doors_path},
-      {title: "Members & Groups", path: members_groups_path},
-      {title: "Offices & Leases", path: offices_leases_path},
-      {title: "Rooms & Reservations", path: rooms_path},
-      {title: "Plans & Day Passes", path: plans_day_passes_path},
-      {title: "Invoices & Expenses", path: accounting_index_path},
-      {title: "Data", path: reports_path},
-      {title: "Customization", path: customization_path},
-      {title: "My Account", path: user_path(current_user)},
-      {title: "Member Dashboard", path: home_path}
-    ]
-
-    if current_tenant.locations.count > 1
-      items = items.insert(
-        3,
-        {title: "Change Location", path: edit_set_location_path}
-      )
-    end
-
-    items
-  end
-
-  def member_nav_items
-    items = [
-      {title: "Home", path: home_path},
-    ]
-
-    if current_location.rooms.visible.count > 0
-      items << {title: "Reserve a room", path: rooms_path}
-    end
-
-    if current_location.doors.count > 0
-      items << {title: "Building Access", path: keys_doors_path}
-    end
-
-    items << {title: "My Account", path: user_path(current_user)}
-
-    if current_tenant.locations.count > 1
-      items = items << {title: "Change Location", path: edit_set_location_path}
-    end
-
-    items
-  end
-
-  def logged_out_nav_items
-    items = [
-      {title: "Sign Up", path: signup_path},
-      {title: "Log In", path: login_path}
-    ]
-
-    if current_tenant.locations.count > 1
-      items = items.insert(
-        2,
-        {title: "Change Location", path: edit_set_location_path}
-      )
-    end
-
-    items
   end
 
   def days_option_for_current_month
