@@ -110,7 +110,6 @@ class Operator::FeedItemsController < Operator::BaseController
     find_feed_item
     turn_into_expense
     @comments = params[:comments] == "true"
-    puts params.inspect
     render :set_expense_status
   end
 
