@@ -18,7 +18,7 @@ RSpec.configure do |config|
   # Searchkick config
   config.before(:each) do
     # reindex models
-    # [Room, Door, Location, Organization, FeedItem, User].map(&:reindex)
+    [Room, Door, Location, Organization, FeedItem, User].map(&:reindex)
 
     # and disable callbacks
     Searchkick.disable_callbacks
