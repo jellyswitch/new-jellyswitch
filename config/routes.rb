@@ -160,8 +160,8 @@ Rails.application.routes.draw do
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
   resources :subscriptions, controller: "operator/subscriptions"
   resources :users, controller: "operator/users" do
-    post "approve", to: "operator/users#approve"
-    post "unapprove", to: "operator/users#unapprove"
+    get :approve, to: "operator/users#approve"
+    get :unapprove, to: "operator/users#unapprove"
     get "change_password", to: "operator/users#change_password"
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"

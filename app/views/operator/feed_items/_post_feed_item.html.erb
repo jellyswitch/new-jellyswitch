@@ -1,31 +1,17 @@
+<dl class="row">
+  <% if feed_item.expense? %>
+    <dt class="col-6">
+      Amount:
+    </dt>
+    <dd class="col">
+      <%= number_to_currency(feed_item.amount.to_f/100.0)  %>
+    </dd>
+  <% end %>
+</dl>
 
-<div class="row">
-  <div>
-    <%= render "shared/small_profile_photo", user: feed_item.user %>
-  </div>
-  <div class="ml-2">
-    <p class="mb-1">
-      <%= link_to feed_item.user.name, user_path(feed_item.user) %>
-      <br />
-      <small>
-        <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
-      </small>
-    </p>
-  </div>
-  <div class="ml-auto">
-    <%= render "operator/feed_items/common", feed_item: feed_item %>
-  </div>
-</div>
-
-<%- if feed_item.expense? %>
-  <%= render "operator/feed_items/expense_badge", feed_item: feed_item %>
-<%- end %>
-
-<div class="row mt-4">
-  <p class="lead">
-    <%= feed_item.text %>
-  </p>
-</div>
+<p>
+  <%= feed_item.text %>
+</p>
 
 <%- if feed_item.has_photos? %>
   <div class="row mt-2">
@@ -36,5 +22,3 @@
     </div>
   </div>
 <%- end %>
-
-<%= render "operator/feed_items/comments", feed_item: feed_item, show_comments: comments %>

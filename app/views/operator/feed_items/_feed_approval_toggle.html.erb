@@ -1,11 +1,7 @@
-<%- if feed_item.user.approved? %>
-  <%= form_for(user, url: user_unapprove_path(user, feed_item: feed_item), remote: true, method: :post, html: {class: "form-inline d-inline"}) do |f| %>
-    <%= f.hidden_field :approved, value: false %>
-    <%= f.submit "Unapprove", class: "btn btn-block btn-sm btn-outline-danger" %>
+<small class="ml-2">
+  <%- if feed_item.user.approved? %>
+    <%= link_to "Unapprove", user_unapprove_path(user, feed_item: feed_item), remote: true, class: "text-danger" %>
+  <%- else %>
+    <%= link_to "Approve", user_approve_path(user, feed_item: feed_item), remote: true, class: "text-success" %>
   <%- end %>
-<%- else %>
-  <%= form_for(user, url: user_approve_path(user, feed_item: feed_item), remote: true, method: :post, html: {class: "form-inline d-inline"}) do |f| %>
-    <%= f.hidden_field :approved, value: true %>
-    <%= f.submit "Approve", class: "btn  btn-block btn-sm btn-outline-info" %>
-  <%- end %>
-<%- end %>
+</small>

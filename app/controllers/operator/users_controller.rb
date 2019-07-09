@@ -192,8 +192,7 @@ class Operator::UsersController < Operator::BaseController
 
   def approve
     find_user(:user_id)
-    @user.update_attributes(user_approval_params)
-    if @user.save
+    if @user.update(approved: true)
       flash[:success] = "User approved."
     else
       flash[:error] = "Couldn't approve user."
@@ -203,8 +202,7 @@ class Operator::UsersController < Operator::BaseController
 
   def unapprove
     find_user(:user_id)
-    @user.update_attributes(user_approval_params)
-    if @user.save
+    if @user.update(approved: false)
       flash[:success] = "User unapproved."
     else
       flash[:error] = "Couldn't unapprove user."
@@ -306,10 +304,6 @@ class Operator::UsersController < Operator::BaseController
 
   def user_organization_params
     params.require(:user).permit(:organization_id)
-  end
-
-  def user_approval_params
-    params.require(:user).permit(:approved)
   end
 
   def payment_method_params

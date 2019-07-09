@@ -64,10 +64,8 @@ module ApplicationHelper
     end
   end
 
-  def feed_item_card
-    render "operator/feed_items/feed_item_card" do
-      yield
-    end
+  def feed_item_card(feed_item, comments)
+    render "operator/feed_items/feed_item_card", feed_item: feed_item, comments: comments
   end
 
   def breadcrumb

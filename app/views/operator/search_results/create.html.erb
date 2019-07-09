@@ -21,7 +21,7 @@
         <% when "Room" %>
           <%= render "operator/rooms/room", room: item %>
         <% when "Door" %>
-          <%= feed_item_card do %>
+          <%= wide_card do %>
             <%= render "operator/doors/door", door: item %>        
           <% end %>
         <% when "Location" %>

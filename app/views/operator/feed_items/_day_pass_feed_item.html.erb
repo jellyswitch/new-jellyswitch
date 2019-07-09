@@ -1,27 +1,16 @@
 
-<div class="row">
-  <div>
-    <%= render "shared/small_profile_photo", user: feed_item.user %>
-  </div>
-  <div class="ml-2">
-    <p class="mb-1">
-      <%= link_to feed_item.user.name, user_path(feed_item.user) %>
-      <br />
-      <small>
-        <%= link_to "#{time_ago_in_words(feed_item.created_at)} ago", feed_item_path(feed_item) %>
-      </small>
-    </p>
-  </div>
-  <div class="ml-auto">
-    <%= render "operator/feed_items/common", feed_item: feed_item %>
-  </div>
-</div>
-<div class="row mt-4">
-  <p class="lead">
-    Bought a day pass 
-    (<%= feed_item.day_pass.day_pass_type.name %>) for <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>.
-  </p>
-</div>
-
-<%= render "operator/feed_items/feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
-<%= render "operator/feed_items/comments", feed_item: feed_item, show_comments: comments %>
+<dl class="row">
+  <dt class="col-6">
+    Type:
+  </dt>
+  <dd class="col">
+    <%= feed_item.day_pass.day_pass_type.name %>
+  </dd>
+  
+  <dt class="col-6">
+    Day:
+  </dt>
+  <dd class="col">
+    <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>
+  </dd>
+</dt>

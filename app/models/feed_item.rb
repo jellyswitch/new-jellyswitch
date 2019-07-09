@@ -48,6 +48,35 @@ class FeedItem < ApplicationRecord
     }
   end
 
+  def action_text
+    case type
+    when "reservation"
+      "reserved a room"
+    when "feedback"
+      "left feedback"
+    when "refund"
+      "was issued a refund"
+    when "subscription"
+      "became a member"
+    when "day-pass"
+      "bought a day pass"
+    when "post"
+      if expense?
+        "posted an expense"
+      else
+        "posted a mgmt note"
+      end
+    when "checkin"
+      "checked in"
+    when "new-user"
+      "signed up"
+    end
+  end
+
+  def requires_approval?
+    ["subscription", "day-pass", "new-user", "reservation"].any? {|t| type == t}
+  end
+
   def text
     blob["text"]
   end
