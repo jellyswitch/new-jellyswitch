@@ -6,11 +6,11 @@
     <% end %>
   
     <% if feed_item.expense? %>
-      <%= link_to unset_expense_status_feed_item_path(feed_item), method: :post,remote: true, class: "ml-3" do %>
+      <%= link_to unset_expense_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
         <i class="fas fa-dollar-sign"></i>
       <% end %>
     <% else %>
-      <%= link_to set_expense_status_feed_item_path(feed_item), method: :post,remote: true, class: "ml-3" do %>
+      <%= link_to set_expense_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
         <i class="fas fa-dollar-sign" style="opacity: 0.6;"></i>
       <% end %>
     <% end %>
