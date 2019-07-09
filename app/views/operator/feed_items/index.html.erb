@@ -6,7 +6,7 @@
     <%= list_wrapper do %>
       <% @feed_items.each do |feed_item| %>
         <div id="feed-item-<%= feed_item.id %>">
-          <%= render "feed_item", feed_item: feed_item, comments: feed_item.feed_item_comments.count > 0 %>
+          <%= render "feed_item", feed_item: feed_item, comments: false %>
         </div>
       <% end %>
     <% end %>
