@@ -46,6 +46,12 @@ module ApplicationHelper
     end
   end
 
+  def card
+    render "layouts/card" do
+      yield
+    end
+  end
+
   def basic_card
     render "layouts/basic_card" do
       yield
