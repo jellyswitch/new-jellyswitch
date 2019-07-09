@@ -16,11 +16,7 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   # Searchkick config
-  config.before(:each) do
-    # reindex models
-    [Room, Door, Location, Organization, FeedItem, User].map(&:reindex)
-
-    # and disable callbacks
+  config.before(:suite) do
     Searchkick.disable_callbacks
   end
   # rspec-expectations config goes here. You can use an alternate
