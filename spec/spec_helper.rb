@@ -16,7 +16,7 @@
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   # Searchkick config
-  config.before(:suite) do
+  config.before(:each) do
     # reindex models
     # [Room, Door, Location, Organization, FeedItem, User].map(&:reindex)
 
