@@ -2,21 +2,21 @@
 
 <div class="d-flex justify-content-center">
   <div class="btn-group mt-2" role="group" aria-label="Filter">
-    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}" %>
+    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbolinks-action" => "replace"} %>
 
-    <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}" do %>
+    <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}", data: {"turbolinks-action" => "replace"} do %>
       <i class="fas fa-clipboard"></i>
     <% end %>
     
-    <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}" do %>
+    <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}", data: {"turbolinks-action" => "replace"} do %>
       <i class="fas fa-question"></i>
     <% end %>
 
-    <%= link_to activity_feed_items_path, class: "btn btn-light #{@activity_active}" do %>
+    <%= link_to activity_feed_items_path, class: "btn btn-light #{@activity_active}", data: {"turbolinks-action" => "replace"} do %>
       <i class="fas fa-users"></i>
     <% end %>
 
-    <%= link_to expenses_feed_items_path, class: "btn btn-light #{@expenses_active}" do %>
+    <%= link_to expenses_feed_items_path, class: "btn btn-light #{@expenses_active}", data: {"turbolinks-action" => "replace"} do %>
       <i class="fas fa-dollar-sign"></i>
     <% end %>
 
