@@ -35,7 +35,7 @@
 #
 
 class User < ApplicationRecord
-  searchkick callbacks: :async
+  searchkick
   # Relationships
   has_many :checkins
   has_many :day_passes

@@ -54,7 +54,7 @@
 #
 
 class Location < ApplicationRecord
-  searchkick callbacks: :async
+  searchkick
   belongs_to :operator
   acts_as_tenant :operator
 

@@ -30,7 +30,7 @@
 #
 
 class Room < ApplicationRecord
-  searchkick callbacks: :async
+  searchkick
   # Relationships
   has_many :reservations
   belongs_to :operator
