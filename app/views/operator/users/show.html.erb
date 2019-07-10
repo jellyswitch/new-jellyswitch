@@ -8,6 +8,9 @@
   <%= link_to "View my day passes", user_day_passes_path(current_user), class: "btn btn-block btn-primary" %>
   <%= link_to "View my reservations", user_reservations_path(current_user), class: "btn btn-block btn-primary" %>
   <%= link_to "View my invoices", user_invoices_path(current_user), class: "btn btn-block btn-primary" %>
+  <% if current_user.organization_owner? %>
+    <%= link_to "View my group", organization_path(current_user.owned_organization), class: "btn btn-block btn-primary" %>
+  <% end %>
   <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
   <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "btn btn-block btn-warning" %>
 <% end %>

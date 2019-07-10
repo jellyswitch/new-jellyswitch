@@ -155,7 +155,11 @@ class User < ApplicationRecord
   end
 
   def organization_owner?
-    organization && organization.owner == self
+    owned_organization.present?
+  end
+
+  def owned_organization
+    operator.organizations.find_by(owner_id: self.id)
   end
   
   def organization_name
