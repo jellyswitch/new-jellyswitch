@@ -48,4 +48,12 @@ class DayPass < ApplicationRecord
   def today?
     day.day == Time.current.day
   end
+
+  def day_pass_type_name
+    if day_pass_type.present?
+      day_pass_type.name
+    else
+      "Unknown"
+    end
+  end
 end
