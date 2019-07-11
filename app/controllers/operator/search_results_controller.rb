@@ -8,7 +8,7 @@ class Operator::SearchResultsController < Operator::BaseController
 
   def create
     @query = params[:query]
-    turbolinks_redirect(query_search_results_path(query: @query), action: "replace")
+    turbolinks_redirect(query_search_results_path(query: @query), action: "advance")
   end
 
   def query
