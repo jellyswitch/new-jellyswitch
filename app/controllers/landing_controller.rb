@@ -5,4 +5,8 @@ class LandingController < ApplicationController
       redirect_to operators_path
     end
   end
+
+  def welcome
+    render :typeform, layout: false
+  end
 end

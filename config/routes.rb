@@ -4,6 +4,9 @@ Rails.application.routes.draw do
     # Root
     root "landing#index"
 
+    # Typeform
+    get :welcome, to: "landing#welcome"
+
     # Authentication
     delete "/logout", to: "sessions#destroy", as: :operator_logout
     post "/login", to: "sessions#create", as: :operator_login_create
