@@ -1,5 +1,9 @@
 # typed: strict
 Rails.application.routes.draw do
+  constraints subdomain: "apply" do
+    # Typeform
+    get :welcome, to: "landing#welcome"
+  end
   constraints subdomain: "app" do
     # Root
     root "landing#index"
