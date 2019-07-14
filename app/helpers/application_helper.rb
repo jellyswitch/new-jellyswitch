@@ -57,12 +57,20 @@ module ApplicationHelper
     ios_request? || android_request?
   end
 
+  def user_agent
+    request.env['HTTP_USER_AGENT']
+  end
+
+  def has_user_agent?
+    user_agent.present?
+  end
+
   def ios_request?
-    request.env['HTTP_USER_AGENT'].match(/(Jellyswitch)/) && !request.env['HTTP_USER_AGENT'].match(/(Android)/)
+    has_user_agent? && user_agent.match(/(Jellyswitch)/) && !android_request?
   end
 
   def android_request?
-    request.env['HTTP_USER_AGENT'].match /(Jellyswitch\/Android)/
+    has_user_agent? && user_agent.match(/(Jellyswitch\/Android)/)
   end
 
   def days_option_for_current_month
