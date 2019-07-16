@@ -9,23 +9,23 @@
     <li class="list-group-item">
       <div class="row">
         <p class="col">
-          Your members paid <strong><%= @paid_invoices.count %> invoices</strong>, earning you <strong><%= number_to_currency(@revenue) %></strong> in revenue. There are <%= @unpaid_invoices.count %> unpaid invoices.
+          Your members paid <strong><%= @report.paid_invoices.count %> invoices</strong>, earning you <strong><%= number_to_currency(@report.revenue) %></strong> in revenue. There are <%= @report.unpaid_invoices.count %> unpaid invoices.
         </p>
       </div>
     </li>
 
     <li class="list-group-item">
       <div class="row">
-        <strong class="col">New paying members:</strong><span class="col"><%= @new_active_members %></span>
+        <strong class="col">New paying members:</strong><span class="col"><%= @report.new_active_members %></span>
       </div>
       <div class="row">
-        <strong class="col">New free members:</strong><span class="col"><%= @new_free_members %></span>
+        <strong class="col">New free members:</strong><span class="col"><%= @report.new_free_members %></span>
       </div>
       <div class="row">
-        <strong class="col">Day Passes purchased:</strong><span class="col"><%= @day_passes %></span>
+        <strong class="col">Day Passes purchased:</strong><span class="col"><%= @report.day_passes %></span>
       </div>
       <div class="row">
-        <strong class="col">Checkins:</strong><span class="col"><%= @checkins %></span>
+        <strong class="col">Checkins:</strong><span class="col"><%= @report.checkins %></span>
       </div>
     </li>
 
@@ -47,7 +47,7 @@
     <li class="list-group-item">
       <div class="row">
         <p class="col">
-          Your members made a total of <strong><%= @reservations %> room reservations</strong> last week, <%= @rooms.to_sentence %>.
+          Your members made a total of <strong><%= @report.reservations %> room reservations</strong> last week, <%= @report.rooms.to_sentence %>.
         </p>
       </div>
     </li>
