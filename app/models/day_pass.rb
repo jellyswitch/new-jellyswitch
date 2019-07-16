@@ -35,6 +35,7 @@ class DayPass < ApplicationRecord
   scope :for_day, -> (date) { where(day: date) }
   scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
+  scope :for_week, -> (week_start, week_end) { where('created_at > ? and created_at <= ?', week_start, week_end) }
 
   # Instance methods
   def pretty_day

@@ -25,6 +25,10 @@ module ApplicationHelper
     "#{pretty_time(a)} - #{pretty_time(b)}"
   end
 
+  def pretty_dates(a, b)
+    "#{long_date(a)} - #{long_date(b)}"
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?

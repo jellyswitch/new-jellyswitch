@@ -1,0 +1,46 @@
+<% title "Weekly Updates" %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center"><%= pretty_dates(@week_start, @week_end) %></h4>
+
+  <p>Hope you had a good weekend! Here's a summary of what happened in your spaces last week:</p>
+
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <div class="row">
+        <strong class="col">New paying members:</strong><span class="col"><%= @new_active_members %></span>
+      </div>
+      <div class="row">
+        <strong class="col">New free members:</strong><span class="col"><%= @new_free_members %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Day Passes purchased:</strong><span class="col"><%= @day_passes %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Checkins:</strong><span class="col"><%= @checkins %></span>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <strong class="col">Current membership</strong>
+      </div>
+      <div class="row">
+        <strong class="col">Paying members:</strong><span class="col"><%= @report.active_member_count %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Free / sponsored members:</strong><span class="col"><%= @report.free_member_count %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Members under office leases:</strong><span class="col"><%= @report.active_lease_member_count %></span>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <p class="col">
+          Your members made a total of <strong><%= @reservations %> room reservations</strong> last week, <%= @rooms.to_sentence %>.
+        </p>
+      </div>
+  </ul>
+<% end %>
