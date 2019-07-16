@@ -47,6 +47,7 @@ class Invoice < ApplicationRecord
 
     where("date >= to_timestamp(?)", this_month_start)
   }
+  scope :for_week, -> (week_start, week_end) { where('due_date > ? and due_date <= ?', week_start, week_end) }
 
   VOIDABLE_STATUSES = %w(open uncollectible)
   STATUSES = (VOIDABLE_STATUSES + %w(void paid refunded)).freeze

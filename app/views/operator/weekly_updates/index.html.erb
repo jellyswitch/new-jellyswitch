@@ -8,6 +8,14 @@
   <ul class="list-group list-group-flush">
     <li class="list-group-item">
       <div class="row">
+        <p class="col">
+          Your members paid <strong><%= @paid_invoices.count %> invoices</strong>, earning you <strong><%= number_to_currency(@revenue) %></strong> in revenue. There are <%= @unpaid_invoices.count %> unpaid invoices.
+        </p>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
         <strong class="col">New paying members:</strong><span class="col"><%= @new_active_members %></span>
       </div>
       <div class="row">
@@ -42,5 +50,6 @@
           Your members made a total of <strong><%= @reservations %> room reservations</strong> last week, <%= @rooms.to_sentence %>.
         </p>
       </div>
+    </li>
   </ul>
 <% end %>

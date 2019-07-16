@@ -29,5 +29,9 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
 
       "#{number_to_percentage(room[:percent].to_f, precision: 0)} of which were in #{room[:name]}"
     end
+
+    @paid_invoices = current_tenant.invoices.for_week(@week_start, @week_end).paid
+    @unpaid_invoices = current_tenant.invoices.for_week(@week_start, @week_end).open
+    @revenue = @paid_invoices.sum(:amount_due).to_f / 100.0
   end
 end
