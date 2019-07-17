@@ -2,13 +2,14 @@
 #
 # Table name: weekly_updates
 #
-#  id          :bigint(8)        not null, primary key
-#  blob        :jsonb
-#  week_end    :datetime
-#  week_start  :datetime
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  operator_id :integer
+#  id            :bigint(8)        not null, primary key
+#  blob          :jsonb
+#  previous_blob :jsonb
+#  week_end      :datetime
+#  week_start    :datetime
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  operator_id   :integer
 #
 
 class WeeklyUpdate < ApplicationRecord
@@ -19,6 +20,19 @@ class WeeklyUpdate < ApplicationRecord
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, 
     :active_member_count, :free_member_count, :active_lease_member_count,
     :management_notes, :questions, :unanswered_questions, :admins
+
+  store_accessor :previous_blob, :prev_day_passes, :prev_checkins, :prev_new_active_members, :prev_new_free_members, 
+  :prev_rooms, :prev_paid_invoices, :prev_unpaid_invoices, :prev_revenue, :prev_reservations, 
+  :prev_active_member_count, :prev_free_member_count, :prev_active_lease_member_count,
+  :prev_management_notes, :prev_questions, :prev_unanswered_questions, :prev_admins
+
+  def self.from_weekly_reports(report, previous_report)
+    w = from_weekly_report(report)
+
+    temp_w = from_weekly_report(previous_report)
+    w.previous_blob = temp_w.blob
+    w
+  end
 
   def self.from_weekly_report(report)
     w = WeeklyUpdate.new
@@ -62,4 +76,9 @@ class WeeklyUpdate < ApplicationRecord
     end
   end
 
+  def prev_admins
+    previous_blob["admins"].map do |admin_id|
+      User.find(admin_id)
+    end
+  end
 end
