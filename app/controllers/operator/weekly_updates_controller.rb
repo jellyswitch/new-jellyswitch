@@ -14,13 +14,14 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
   def create
     @week_start = Time.current.beginning_of_week
     @week_end = Time.current.end_of_week
-    @weekly_update = WeeklyUpdate.from_weekly_report(Jellyswitch::WeeklyReport.new(current_tenant, @week_start, @week_end))
-    authorize @weekly_update
-    if @weekly_update.save
-      flash[:success] = "Success."
-      turbolinks_redirect(weekly_update_path(@weekly_update), action: "replace")
+    authorize WeeklyUpdate
+
+    result = CreateWeeklyUpdate.call(operator: current_tenant, week_start: @week_start, week_end: @week_end)
+
+    if result.success?
+      turbolinks_redirect(weekly_update_path(result.weekly_update), action: "replace")
     else
-      flash[:error] = "Something went wrong."
+      flash[:error] = result.message
       turbolinks_redirect(weekly_updates_path, action: "replace")
     end
   end
@@ -28,7 +29,7 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
   private
 
   def find_weekly_updates
-    @weekly_updates = current_tenant.weekly_updates.order('created_at DESC').all
+    @weekly_updates = current_tenant.weekly_updates.order('week_start DESC').all
   end
 
   def find_weekly_update(key=:id)
