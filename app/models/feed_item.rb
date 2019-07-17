@@ -75,6 +75,8 @@ class FeedItem < ApplicationRecord
       "checked in"
     when "new-user"
       "signed up"
+    when "weekly-update"
+      "Your weekly update has been posted"
     end
   end
 
@@ -147,6 +149,10 @@ class FeedItem < ApplicationRecord
 
   def checkin
     blob_relation("checkin_id", Checkin)
+  end
+
+  def weekly_update
+    blob_relation("weekly_update_id", WeeklyUpdate)
   end
 
   def invoice

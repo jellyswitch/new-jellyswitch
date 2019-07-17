@@ -10,6 +10,7 @@ class WeeklyUpdates::Save
     
     if weekly_update.save
       context.weekly_update = weekly_update
+      context.notifiable = weekly_update
     else
       context.fail!(message: "Someething went wrong.")
     end

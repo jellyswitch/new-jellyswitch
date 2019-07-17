@@ -8,6 +8,8 @@ class NotifiableFactory
       Notifiable::DayPass
     when 'Checkin'
       Notifiable::Checkin
+    when 'WeeklyUpdate'
+      Notifiable::WeeklyUpdate
     end.new(notifiable)
   end
 end
