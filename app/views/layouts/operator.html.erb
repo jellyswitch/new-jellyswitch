@@ -19,7 +19,7 @@
   </head>
 
   <% if @background_image && @background_image.attached? %>
-    <body style="background-image: url(<%= url_for(@background_image) %>); background-repeat: no-repeat; background-size: cover;">
+    <body style="background-image: url('<%= url_for(@background_image) %>'); background-repeat: no-repeat; background-size: cover;">
   <% else %>
     <body>
   <% end %>
