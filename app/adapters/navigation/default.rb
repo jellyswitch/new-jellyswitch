@@ -61,16 +61,14 @@ class Navigation::Default < SimpleDelegator
   end
 
   def logged_out_nav_items
-    items = [
-      {title: "Sign Up", path: signup_path},
-      {title: "Sign In", path: login_path}
-    ]
+    items = []
+    if @location.present?
+      items << {title: "Sign Up", path: signup_path}
+      items << {title: "Sign In", path: login_path}
+    end
 
     if operator.locations.count > 1
-      items = items.insert(
-        2,
-        {title: "Change Location", path: edit_set_location_path}
-      )
+      items = items << {title: "Change Location", path: edit_set_location_path}
     end
 
     items

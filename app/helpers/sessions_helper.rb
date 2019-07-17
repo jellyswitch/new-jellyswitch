@@ -41,6 +41,8 @@ module SessionsHelper
   end
 
   def current_location
+    # this will only return nil if there is more than one location to choose and one has NOT been selected already
+
     # In case I"m a superadmin and my location is set to a different operator
     if session[:location_id]
       loc = Location.unscoped.find_by(id: session[:location_id])
@@ -50,11 +52,12 @@ module SessionsHelper
       end
     end
 
+    # if I already have a current location set, return it
     return @current_location if @current_location
 
-    if (location_id = session[:location_id])
+    if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
-    elsif (location_id = cookies.signed[:location_id])
+    elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
       current_location = current_tenant.locations.find_by(id: location_id)
       if current_location
         set_location(location)
@@ -62,7 +65,7 @@ module SessionsHelper
       else
         raise "No locations configured."
       end
-    elsif Location.count == 1
+    elsif Location.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
     end
