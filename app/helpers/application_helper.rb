@@ -139,7 +139,7 @@ module ApplicationHelper
 
   def reservations_in_english(rooms)
     rooms.map do |room|
-      "#{number_to_percentage(room[:percent].to_f, precision: 0)} of which were in #{room[:name]}"
+      "#{number_to_percentage(room['percent'].to_f, precision: 0)} of which were in #{room['name']}"
     end.to_sentence
   end
 
