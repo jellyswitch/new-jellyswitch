@@ -12,3 +12,7 @@ end
 task checkout_job: :environment do
   CheckoutJob.perform_later
 end
+
+task weekly_updates: :environment do
+  WeeklyUpdateJob.perform_later
+end
