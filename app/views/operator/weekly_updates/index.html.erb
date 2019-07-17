@@ -47,7 +47,8 @@
     <li class="list-group-item">
       <div class="row">
         <p class="col">
-          Your members made a total of <strong><%= @report.reservations %> room reservations</strong> last week, <%= @report.rooms.to_sentence %>.
+          Your members made a total of <strong><%= @report.reservations %> room reservations</strong> last week, 
+          <%= reservations_in_english(@report.rooms) %>.
         </p>
       </div>
     </li>

@@ -30,13 +30,15 @@ class Jellyswitch::WeeklyReport
       percent = @reservations == 0 ? 0 : count.to_f / @reservations.to_f
       name = room.name
 
-      "#{number_to_percentage(room[:percent].to_f, precision: 0)} of which were in #{room[:name]}"
+      {
+        percent: percent.to_f,
+        name: name,
+        count: count
+      }
     end
 
     @paid_invoices = operator.invoices.for_week(@week_start, @week_end).paid
     @unpaid_invoices = operator.invoices.for_week(@week_start, @week_end).open
     @revenue = @paid_invoices.sum(:amount_due).to_f / 100.0
   end
-
-
 end

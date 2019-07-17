@@ -137,6 +137,12 @@ module ApplicationHelper
     render "layouts/no_cache"
   end
 
+  def reservations_in_english(rooms)
+    rooms.map do |room|
+      "#{number_to_percentage(room[:percent].to_f, precision: 0)} of which were in #{room[:name]}"
+    end.to_sentence
+  end
+
   private
 
   def working_hours_config(location)
