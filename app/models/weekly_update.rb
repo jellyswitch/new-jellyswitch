@@ -21,10 +21,14 @@ class WeeklyUpdate < ApplicationRecord
     :active_member_count, :free_member_count, :active_lease_member_count,
     :management_notes, :questions, :unanswered_questions, :admins
 
-  store_accessor :previous_blob, :prev_day_passes, :prev_checkins, :prev_new_active_members, :prev_new_free_members, 
-  :prev_rooms, :prev_paid_invoices, :prev_unpaid_invoices, :prev_revenue, :prev_reservations, 
-  :prev_active_member_count, :prev_free_member_count, :prev_active_lease_member_count,
-  :prev_management_notes, :prev_questions, :prev_unanswered_questions, :prev_admins
+  [:day_passes, :checkins, :new_active_members, :new_free_members, 
+    :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, 
+    :active_member_count, :free_member_count, :active_lease_member_count,
+    :management_notes, :questions, :unanswered_questions].each do |attr|
+      define_method :"prev_#{attr.to_s}" do
+        previous_blob[attr.to_s]
+      end
+    end
 
   def self.from_weekly_reports(report, previous_report)
     w = from_weekly_report(report)
