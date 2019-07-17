@@ -29,6 +29,7 @@ class Checkin < ApplicationRecord
   scope :for_location, -> (loc) { where(location_id: loc.id) }
   scope :for_operator, -> (op) { where(location_id: [op.locations.map(&:id)]) }
   scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
+  scope :for_week, -> (week_start, week_end) { where('datetime_in > ? and datetime_in <= ?', week_start, week_end) }
 
   def charge_description
     "Hourly charge for #{location.name}"

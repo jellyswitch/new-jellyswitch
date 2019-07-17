@@ -1,4 +1,3 @@
-# typed: false
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -11,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_06_25_224613) do
+ActiveRecord::Schema.define(version: 2019_07_17_000506) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -391,6 +390,15 @@ ActiveRecord::Schema.define(version: 2019_06_25_224613) do
     t.boolean "always_allow_building_access", default: false, null: false
     t.boolean "bill_to_organization", default: false, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
+  end
+
+  create_table "weekly_updates", force: :cascade do |t|
+    t.integer "operator_id"
+    t.jsonb "blob"
+    t.datetime "week_start"
+    t.datetime "week_end"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_foreign_key "doors", "locations"

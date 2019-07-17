@@ -51,6 +51,16 @@ module Jellyswitch
       active_members.count
     end
 
+    def free_members
+      plans.individual.free.map do |plan|
+        plan.subscriptions.active.map(&:subscribable)
+      end.flatten.uniq
+    end
+
+    def free_member_count
+      free_members.count
+    end
+
     def active_leases
       office_leases.active
     end

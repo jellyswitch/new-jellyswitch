@@ -34,6 +34,7 @@ class Subscription < ApplicationRecord
   scope :active, -> { where(active: true) }
   scope :pending, -> { where(pending: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
+  scope :for_week, -> (week_start, week_end) { where('created_at > ? and created_at <= ?', week_start, week_end) }
 
   accepts_nested_attributes_for :plan
 

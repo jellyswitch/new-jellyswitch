@@ -190,4 +190,5 @@ Rails.application.routes.draw do
     get :credit_card, to: "operator/users#credit_card"
     get :bill_to_organization, to: "operator/users#bill_to_organization"
   end
+  resources :weekly_updates, controller: "operator/weekly_updates"
 end

@@ -25,6 +25,10 @@ module ApplicationHelper
     "#{pretty_time(a)} - #{pretty_time(b)}"
   end
 
+  def pretty_dates(a, b)
+    "#{long_date(a)} - #{long_date(b)}"
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?
@@ -131,6 +135,12 @@ module ApplicationHelper
 
   def no_cache
     render "layouts/no_cache"
+  end
+
+  def reservations_in_english(rooms)
+    rooms.map do |room|
+      "#{number_to_percentage(room[:percent].to_f, precision: 0)} of which were in #{room[:name]}"
+    end.to_sentence
   end
 
   private
