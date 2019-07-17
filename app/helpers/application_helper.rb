@@ -143,6 +143,12 @@ module ApplicationHelper
     end.to_sentence
   end
 
+  def admins_in_english(users)
+    users.map do |user|
+      link_to user.name, user_path
+    end.to_sentence
+  end
+
   private
 
   def working_hours_config(location)

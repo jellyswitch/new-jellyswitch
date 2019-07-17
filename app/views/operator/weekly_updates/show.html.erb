@@ -87,6 +87,19 @@
               </div>
             </div>
           </li>
+
+          <li class="list-group-item">
+            <div class="row mb-3 mt-3">
+              <div class="col text-center">
+                <i class="fas fa-users-cog display-4"></i>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                You have <strong><%= @weekly_update.admins.count %> administrative roles</strong> on your account: <%= admins_in_english(@weekly_update.admins).html_safe %>
+              </div>
+            </div>
+          </li>
         </ul>
       <% end %>
     <% end %>
