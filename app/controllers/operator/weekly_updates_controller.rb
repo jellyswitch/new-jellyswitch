@@ -16,7 +16,7 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
     @week_end = Time.current.end_of_week
     authorize WeeklyUpdate
 
-    result = CreateWeeklyUpdate.call(operator: current_tenant, week_start: @week_start, week_end: @week_end)
+    result = WeeklyUpdates::Create.call(operator: current_tenant, week_start: @week_start, week_end: @week_end)
 
     if result.success?
       turbolinks_redirect(weekly_update_path(result.weekly_update), action: "replace")

@@ -1,4 +1,4 @@
-class CreateWeeklyUpdate
+class WeeklyUpdates::Save
   include Interactor
   delegate :week_start, :week_end, :operator, to: :context
 
