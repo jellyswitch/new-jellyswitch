@@ -14,14 +14,17 @@
 class WeeklyUpdate < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
+  
   store_accessor :blob, :day_passes, :checkins, :new_active_members, :new_free_members, 
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, 
-    :active_member_count, :free_member_count, :active_lease_member_count
+    :active_member_count, :free_member_count, :active_lease_member_count,
+    :management_notes, :questions, :unanswered_questions
 
   def self.report_attributes
     [:day_passes, :checkins, :new_active_members, :new_free_members, 
       :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, 
-      :active_member_count, :free_member_count, :active_lease_member_count
+      :active_member_count, :free_member_count, :active_lease_member_count,
+      :management_notes, :questions, :unanswered_questions
     ]
   end
 
@@ -49,6 +52,10 @@ class WeeklyUpdate < ApplicationRecord
 
     w.paid_invoices = report.paid_invoices.map(&:id)
     w.unpaid_invoices = report.unpaid_invoices.map(&:id)
+
+    w.management_notes = report.management_notes.map(&:id)
+    w.questions = report.questions.map(&:id)
+    w.unanswered_questions = report.unanswered_questions.map(&:id)
 
     w.revenue = report.revenue
 

@@ -39,6 +39,8 @@ class FeedItem < ApplicationRecord
   scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin") }
   scope :notes, -> { where("blob->> 'type' = ? AND expense = ?", "post", false) }
   scope :expenses, -> { where(expense: true) }
+  scope :unanswered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NULL') }
+  scope :answered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NOT NULL') }
 
   def search_data
     {
