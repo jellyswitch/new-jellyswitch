@@ -39,6 +39,10 @@ class WeeklyUpdate < ApplicationRecord
     w.new_active_members = report.new_active_members
     w.new_free_members = report.new_free_members
 
+    w.active_member_count = report.active_member_count
+    w.free_member_count = report.free_member_count
+    w.active_lease_member_count = report.active_lease_member_count
+
     w.reservations = report.reservations
 
     w.rooms = report.rooms

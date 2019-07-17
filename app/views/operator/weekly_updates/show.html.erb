@@ -1,0 +1,61 @@
+<% title "Weekly Update" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Weekly Updates", weekly_updates_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Weekly Update</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center"><%= pretty_dates(@weekly_update.week_start, @weekly_update.week_end) %></h4>
+
+  <p>Hope you had a good weekend! Here's a summary of what happened in your spaces last week:</p>
+
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <div class="row">
+        <p class="col">
+          Your members paid <strong><%= @weekly_update.paid_invoices.count %> invoices</strong>, earning you <strong><%= number_to_currency(@weekly_update.revenue) %></strong> in revenue. There are <%= @weekly_update.unpaid_invoices.count %> unpaid invoices.
+        </p>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <strong class="col">New paying members:</strong><span class="col"><%= @weekly_update.new_active_members %></span>
+      </div>
+      <div class="row">
+        <strong class="col">New free members:</strong><span class="col"><%= @weekly_update.new_free_members %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Day Passes purchased:</strong><span class="col"><%= @weekly_update.day_passes %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Checkins:</strong><span class="col"><%= @weekly_update.checkins %></span>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <strong class="col">Current membership</strong>
+      </div>
+      <div class="row">
+        <strong class="col">Paying members:</strong><span class="col"><%= @weekly_update.active_member_count %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Free / sponsored members:</strong><span class="col"><%= @weekly_update.free_member_count %></span>
+      </div>
+      <div class="row">
+        <strong class="col">Members under office leases:</strong><span class="col"><%= @weekly_update.active_lease_member_count %></span>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <p class="col">
+          Your members made a total of <strong><%= @weekly_update.reservations %> room reservations</strong> last week, 
+          <%= reservations_in_english(@weekly_update.rooms) %>.
+        </p>
+      </div>
+    </li>
+  </ul>
+<% end %>

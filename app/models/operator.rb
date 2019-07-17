@@ -46,6 +46,7 @@ class Operator < ApplicationRecord
   has_many :offices
   has_many :office_leases
   has_many :locations
+  has_many :weekly_updates
 
   has_one_attached :background_image
   has_one_attached :logo_image

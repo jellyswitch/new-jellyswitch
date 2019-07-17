@@ -1,56 +1,19 @@
 <% title "Weekly Updates" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center"><%= pretty_dates(@week_start, @week_end) %></h4>
+  <h4 class="display-4 text-center">Weekly Updates</h4>
+  
+  <div class="row mb-2">
+    <div class="col">
+      <%= link_to "Create a new update for this week", weekly_updates_path, remote: true, method: :post, class: "btn btn-block btn-primary" %>
+    </div>
+  </div>
 
-  <p>Hope you had a good weekend! Here's a summary of what happened in your spaces last week:</p>
-
-  <ul class="list-group list-group-flush">
-    <li class="list-group-item">
-      <div class="row">
-        <p class="col">
-          Your members paid <strong><%= @report.paid_invoices.count %> invoices</strong>, earning you <strong><%= number_to_currency(@report.revenue) %></strong> in revenue. There are <%= @report.unpaid_invoices.count %> unpaid invoices.
-        </p>
+  <% @weekly_updates.each do |weekly_update| %>
+    <div class="row mb-2">
+      <div class="col">
+        <%= link_to "#{pretty_dates(weekly_update.week_start, weekly_update .week_end)}", weekly_update_path(weekly_update), class: "btn btn-block btn-info" %>
       </div>
-    </li>
-
-    <li class="list-group-item">
-      <div class="row">
-        <strong class="col">New paying members:</strong><span class="col"><%= @report.new_active_members %></span>
-      </div>
-      <div class="row">
-        <strong class="col">New free members:</strong><span class="col"><%= @report.new_free_members %></span>
-      </div>
-      <div class="row">
-        <strong class="col">Day Passes purchased:</strong><span class="col"><%= @report.day_passes %></span>
-      </div>
-      <div class="row">
-        <strong class="col">Checkins:</strong><span class="col"><%= @report.checkins %></span>
-      </div>
-    </li>
-
-    <li class="list-group-item">
-      <div class="row">
-        <strong class="col">Current membership</strong>
-      </div>
-      <div class="row">
-        <strong class="col">Paying members:</strong><span class="col"><%= @report.active_member_count %></span>
-      </div>
-      <div class="row">
-        <strong class="col">Free / sponsored members:</strong><span class="col"><%= @report.free_member_count %></span>
-      </div>
-      <div class="row">
-        <strong class="col">Members under office leases:</strong><span class="col"><%= @report.active_lease_member_count %></span>
-      </div>
-    </li>
-
-    <li class="list-group-item">
-      <div class="row">
-        <p class="col">
-          Your members made a total of <strong><%= @report.reservations %> room reservations</strong> last week, 
-          <%= reservations_in_english(@report.rooms) %>.
-        </p>
-      </div>
-    </li>
-  </ul>
+    </div>
+  <% end %>
 <% end %>
