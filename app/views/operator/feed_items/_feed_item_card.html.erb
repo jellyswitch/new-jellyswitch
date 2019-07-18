@@ -1,14 +1,18 @@
 <%= list_item do %>
   <div class="row">
     <div class="col-2">
-      <%= render "shared/small_profile_photo", user: feed_item.user %>
+      <% if feed_item.weekly_update? %>
+        <%= render "shared/jellyswitch_square" %>
+      <% else %>
+        <%= render "shared/small_profile_photo", user: feed_item.user %>
+      <% end %>
     </div>
     <div class="col">
       <div class="ml-0">
         <span class="mb-1">
           <div class="row">
             <div class="col">
-              <%= content_for :user do %>
+              <% unless feed_item.weekly_update? %>
                 <%= link_to feed_item.user.name, user_path(feed_item.user) %> 
               <% end %>
               <small><%= feed_item.action_text %></small>

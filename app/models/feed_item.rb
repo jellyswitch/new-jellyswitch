@@ -84,6 +84,10 @@ class FeedItem < ApplicationRecord
     ["subscription", "day-pass", "new-user", "reservation"].any? {|t| type == t}
   end
 
+  def weekly_update?
+    type == "weekly-update"
+  end
+
   def text
     blob["text"]
   end
