@@ -14,5 +14,7 @@ task checkout_job: :environment do
 end
 
 task weekly_updates: :environment do
-  WeeklyUpdateJob.perform_later
+  if Time.current.wday == 1
+    WeeklyUpdateJob.perform_later
+  end
 end
