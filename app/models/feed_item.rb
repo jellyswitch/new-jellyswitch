@@ -39,6 +39,8 @@ class FeedItem < ApplicationRecord
   scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin") }
   scope :notes, -> { where("blob->> 'type' = ? AND expense = ?", "post", false) }
   scope :expenses, -> { where(expense: true) }
+  scope :unanswered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NULL') }
+  scope :answered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NOT NULL') }
 
   def search_data
     {
@@ -73,6 +75,8 @@ class FeedItem < ApplicationRecord
       "checked in"
     when "new-user"
       "signed up"
+    when "weekly-update"
+      "Your weekly update has been posted"
     end
   end
 
@@ -145,6 +149,10 @@ class FeedItem < ApplicationRecord
 
   def checkin
     blob_relation("checkin_id", Checkin)
+  end
+
+  def weekly_update
+    blob_relation("weekly_update_id", WeeklyUpdate)
   end
 
   def invoice

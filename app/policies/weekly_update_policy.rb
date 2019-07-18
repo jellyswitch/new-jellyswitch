@@ -11,4 +11,8 @@ class WeeklyUpdatePolicy < ApplicationPolicy
   def show?
     admin?
   end
+
+  def new?
+    superadmin?
+  end
 end

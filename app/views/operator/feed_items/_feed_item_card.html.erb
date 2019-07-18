@@ -8,7 +8,10 @@
         <span class="mb-1">
           <div class="row">
             <div class="col">
-              <%= link_to feed_item.user.name, user_path(feed_item.user) %> <small><%= feed_item.action_text %></small>
+              <%= content_for :user do %>
+                <%= link_to feed_item.user.name, user_path(feed_item.user) %> 
+              <% end %>
+              <small><%= feed_item.action_text %></small>
             </div>
           </div>
           <div class="row" style="margin-top: -5px;">
