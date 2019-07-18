@@ -39,7 +39,7 @@ class WeeklyUpdate < ApplicationRecord
   end
 
   def self.from_weekly_report(report)
-    w = WeeklyUpdate.new
+    w = self.new
     w.blob = {} 
     
     w.week_start = report.week_start
