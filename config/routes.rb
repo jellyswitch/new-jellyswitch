@@ -15,8 +15,16 @@ Rails.application.routes.draw do
     delete "/logout", to: "sessions#destroy", as: :operator_logout
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
-    get "/signup", to: "users#new", as: :operator_signup
+    get "/signup", to: "onboarding#new_user", as: :operator_signup
 
+    resources :onboarding do
+      collection do
+        get :new_user
+        post :create_user
+        get :new_user_info
+        post :create_user_info
+      end
+    end
     resources :operators
     resources :operator_surveys do
       collection do

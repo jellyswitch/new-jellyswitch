@@ -1,5 +1,6 @@
 # typed: false
 module ApplicationHelper
+  include ErrorsHelper
   include PlansHelper
   include LandingHelper
   include LayoutHelper
