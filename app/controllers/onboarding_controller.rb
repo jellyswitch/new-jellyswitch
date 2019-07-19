@@ -7,8 +7,13 @@ class  OnboardingController < ApplicationController
       email: params[:email]
     )
 
-    log_in(result.user)
-    turbolinks_redirect(new_user_info_onboarding_index_path, action: "replace")
+    if result.success?
+      log_in(result.user)
+      turbolinks_redirect(new_user_info_onboarding_index_path, action: "replace")
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(new_user_onboarding_index_path, action: "replace")
+    end
   end
 
   def new_user_info
@@ -16,15 +21,18 @@ class  OnboardingController < ApplicationController
   end
 
   def create_user_info
-    @user = current_user
-
-    @user.operator.update(name: params[:operator_name])
-
-    @user.update(
+    result = Onboarding::SetUserInfo.call(
+      user: current_user,
       name: params[:name],
-      password: params[:password]
+      password: params[:password],
+      operator_name: params[:operator_name]
     )
 
-    redirect_to landing_url(subdomain: @user.operator.subdomain)
+    if result.success?
+      turbolinks_redirect(landing_url(subdomain: result.user.operator.subdomain), action: "replace")
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(new_user_info_onboarding_index_path, action: "replace")
+    end
   end
 end
