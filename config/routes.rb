@@ -23,6 +23,12 @@ Rails.application.routes.draw do
         post :create_user
         get :new_user_info
         post :create_user_info
+        get :new_location
+        post :create_location
+        get :new_member_info
+        post :create_member_info
+        get :new_images
+        post :create_images
       end
     end
     resources :operators

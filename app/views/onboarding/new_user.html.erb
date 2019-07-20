@@ -1,6 +1,10 @@
 <% title "Sign Up" %>
 
 <%= wide_card do %>
+  <strong class="lead text-success">Step 1 of x</strong>
+<% end %>
+
+<%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Sign up with your email address</h4>
   <%= form_with(url: create_user_onboarding_index_path, method: :post, local: true) do |f| %>
     <div class="row">

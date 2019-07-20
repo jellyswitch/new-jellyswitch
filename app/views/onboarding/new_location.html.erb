@@ -1,0 +1,64 @@
+<% title "Onboarding" %>
+
+<%= wide_card do %>
+  <strong class="lead text-success">Step 3 of X</strong>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Let's set up your first space</h4>
+  <%= form_with(url: create_location_onboarding_index_path, method: :post, local: true) do |f| %>
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :name, "Space Name" %>
+        <%= f.text_field :name, placeholder: "Location Name", class: "form-control", value: "#{@operator.name}" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :description, "Description" %>
+        <%= f.text_area :description, placeholder: "In one or two sentences, what's your space all about? What would you put on your website?", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :square_footage, "Square Footage" %>
+        <%= f.number_field :square_footage, placeholder: "", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :street_address, "Description" %>
+        <%= f.text_field :street_address, placeholder: "123 Awesomesauce Ave.", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :city, "City" %>
+        <%= f.text_field :city, placeholder: "Anywhere", class: "form-control" %>
+      </div>
+
+      <div class="col">
+        <%= f.label :state, "State" %>
+        <%= f.text_field :street_address, placeholder: "California", class: "form-control" %>
+      </div>
+
+      <div class="col">
+        <%= f.label :zip, "Zip Code" %>
+        <%= f.text_field :zip, placeholder: "12345", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="form-group row">
+      <div class="col">
+        <%= f.label :time_zone %>
+        <%= f.time_zone_select(:time_zone, nil, {default: "Pacific Time (US & Canada)" },  {class: "form-control"}) %>
+      </div>
+    </div>
+
+    <%= f.submit "Next", class: "btn btn-block btn-primary col" %>
+  <% end %>
+<% end %>
