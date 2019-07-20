@@ -53,10 +53,14 @@ module ApplicationHelper
     end
   end
 
-  def stripe_oauth_url(operator)
+  def stripe_oauth_url(operator, options = {})
     client_id = ENV['STRIPE_CLIENT_ID']
-    redirect_uri = operator_operator_stripe_connect_setup_url(operator, subdomain: operator.subdomain)
-    "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}"
+    redirect_uri = stripe_connect_setup_url
+    stripe_landing = "login"
+    if options[:stripe_landing].present?
+      stripe_landing = options[:stripe_landing]
+    end
+    "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}&stripe_landing=#{stripe_landing}"
   end
 
   def mobile_app_request?

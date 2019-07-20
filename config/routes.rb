@@ -17,6 +17,8 @@ Rails.application.routes.draw do
     get "/login", to: "sessions#new", as: :operator_login
     get "/signup", to: "onboarding#new_user", as: :operator_signup
 
+    get :stripe_connect_setup, to: "landing#stripe_connect_setup", as: :stripe_connect_setup
+
     resources :onboarding do
       collection do
         get :new_user
