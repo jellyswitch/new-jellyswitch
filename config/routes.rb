@@ -137,6 +137,11 @@ Rails.application.routes.draw do
   end
   resources :locations, controller: "operator/locations"
   resources :member_feedbacks, controller: "operator/member_feedbacks"
+  resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
+    collection do
+
+    end
+  end
   resources :offices, controller: "operator/offices"
   resources :office_leases, controller: "operator/office_leases"
   resources :organizations, controller: "operator/organizations" do
