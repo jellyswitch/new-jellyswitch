@@ -139,7 +139,8 @@ Rails.application.routes.draw do
   resources :member_feedbacks, controller: "operator/member_feedbacks"
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
-
+      get :new_membership_plan
+      post :create_membership_plan
     end
   end
   resources :offices, controller: "operator/offices"

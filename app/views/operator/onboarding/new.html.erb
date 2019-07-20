@@ -7,7 +7,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= check_box_tag :foo %> Set up membership plans
+          <%= check_box_tag :foo, nil, current_tenant.plans.count > 0 %> <%= link_to "Set up membership plans", new_membership_plan_operator_onboarding_index_path %>
         </div>
       </div>
     </li>
