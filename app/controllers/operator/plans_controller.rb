@@ -1,5 +1,7 @@
 # typed: false
 class Operator::PlansController < Operator::BaseController
+  include PlansHelper
+
   def index
     find_plans
     authorize @plans
@@ -23,7 +25,11 @@ class Operator::PlansController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Plan saved."
-      turbolinks_redirect(plan_path(@plan))
+      if params[:add_plan_and_add_another].present?
+        turbolinks_redirect(new_plan_path, action: "replace")
+      else
+        turbolinks_redirect(plan_path(@plan))
+      end
     else
       flash[:error] = result.message
       turbolinks_redirect(new_plan_path)
@@ -96,10 +102,6 @@ class Operator::PlansController < Operator::BaseController
 
   def find_plan(key=:id)
     @plan = Plan.friendly.find(params[key])
-  end
-
-  def plan_params
-    params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents, :visible, :available, :always_allow_building_access, :has_day_limit, :day_limit)
   end
 
   def plan_update_params
