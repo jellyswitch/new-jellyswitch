@@ -1,5 +1,6 @@
 # typed: false
 class Operator::RoomsController < Operator::BaseController
+  include RoomsHelper
   decorates_assigned :rooms, :hidden_rooms, :room, :rentable_rooms, :reservations
 
   def index
@@ -36,8 +37,12 @@ class Operator::RoomsController < Operator::BaseController
     authorize @room
 
     if @room.save
-      flash[:notice] = "Room #{@room.name} created."
-      turbolinks_redirect(room_path(@room))
+      flash[:success] = "Room added."
+      if params[:add_room_and_add_another].present?
+        turbolinks_redirect(new_room_path, action: "replace")
+      else
+        turbolinks_redirect(room_path(@room))
+      end
     else
       render :new, status: 422
     end
@@ -81,20 +86,5 @@ class Operator::RoomsController < Operator::BaseController
 
   def find_room(key=:id)
     @room = Room.friendly.find(params[key])
-  end
-
-  def room_params
-    params.require(:room).permit(
-      :name, 
-      :description, 
-      :whiteboard, 
-      :capacity, 
-      :square_footage, 
-      :photo, 
-      :visible, 
-      :av,
-      :rentable,
-      :hourly_rate_in_cents
-      )
   end
 end

@@ -2,6 +2,7 @@ class Operator::OnboardingController < Operator::BaseController
   before_action :background_image
   include PlansHelper
   include DayPassTypesHelper
+  include RoomsHelper
 
   def new
   end
@@ -47,6 +48,25 @@ class Operator::OnboardingController < Operator::BaseController
     else
       flash[:error] = result.message
       render :new_day_pass_type, status: 422
+    end
+  end
+
+  def new_room
+    @room = current_location.rooms.new
+  end
+
+  def create_room
+    @room = Room.new(room_params)
+
+    if @room.save
+      flash[:success] = "Room added."
+      if params[:add_room_and_add_another].present?
+        turbolinks_redirect(new_room_operator_onboarding_index_path, action: "replace")
+      else
+        turbolinks_redirect(new_operator_onboarding_path)
+      end
+    else
+      render :new_room, status: 422
     end
   end
 end

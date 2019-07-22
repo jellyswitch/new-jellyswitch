@@ -1,57 +1,60 @@
-<%= form_for(@room, remote: true) do |f| %>
-  <%= render "shared/error_messages" , model: @room %>
+<%= form_with(model: room, url: url, local: true) do |f| %>
+  <%= render "shared/error_messages", model: room %>
 
   <div class="form-group">
-    <%= f.label :name %>
-    <%= f.text_field :name, class: "form-control" %>
+    <%= f.label :name, "What is this room called?" %>
+    <%= f.text_field :name, placeholder: "Conference Room", class: "form-control" %>
   </div>
 
   <div class="form-group">
     <%= f.label :description %>
-    <%= f.text_area :description, class: "form-control" %>
+    <%= f.text_area :description, placeholder: "Awesome space for productive people", class: "form-control" %>
   </div>
   
   <div class="form-group">
-    <%= f.label :capacity %>
+    <%= f.label :capacity, "Roughly how many people can sit comfortably in this room?" %>
     <%= f.text_field :capacity, class: "form-control" %>
   </div>
 
   <div class="form-group">
-    <%= f.label :square_footage %>
+    <%= f.label :square_footage, "How big is this room (sq ft)?" %>
     <%= f.number_field :square_footage, class: "form-control" %>
   </div>
 
   <div class="form-group">
     <div class="form-check">
       <%= f.check_box :whiteboard, class: "form-check-input" %>
-      <%= f.label :whiteboard, class: "form-check-label" %>
+      <%= f.label :whiteboard, "Check this box if this room has a whiteboard", class: "form-check-label" %>
     </div>
   </div>
 
   <div class="form-group">
     <div class="form-check">
       <%= f.check_box :av, class: "form-check-input" %>
-      <%= f.label :av, "Has AV equipment", {class: "form-check-label"} %>
+      <%= f.label :av, "Check this box if this room has AV equipment", {class: "form-check-label"} %>
     </div>
   </div>
 
   <div class="form-group">
     <div class="form-check">
       <%= f.check_box :visible, class: "form-check-input" %>
-      <%= f.label :visible, "Visible", {class: "form-check-label"} %>
+      <%= f.label :visible, "Check this box to make this room visible right away", {class: "form-check-label"} %>
     </div>
   </div>
 
   <div class="form-group">
     <div class="form-check">
       <%= f.check_box :rentable, class: "form-check-input" %>
-      <%= f.label :rentable, "Available for rent to non-members", {class: "form-check-label"} %>
+      <%= f.label :rentable, "Check this box to make this room available to rent for non-members", {class: "form-check-label"} %>
     </div>
   </div>
 
-  <div class="form-group">
-    <%= f.label :hourly_rate_in_cents %>
-    <%= f.number_field :hourly_rate_in_cents, value: 600 %>
+  <%= f.label :amount_in_cents, "(For non-members) How much does this room cost per hour?" %>
+  <div class="input-group">
+    <div class="input-group-prepend">
+      <span class="input-group-text">$</span>
+    </div>
+    <%= f.text_field :hourly_rate_in_cents, class: "form-control" %>
   </div>
 
   <div class="form-group">
@@ -59,5 +62,6 @@
     <%= f.file_field :photo, class: "form-control-file" %>
   </div>
   
-  <%= f.submit label, class: "form-control btn btn-primary" %>
+  <%= f.submit "Add this room and add another", class: "btn btn-block btn-primary", name: "add_room_and_add_another" %>
+  <%= f.submit "Just add this room", class: "btn btn-block btn-outline-primary", name: "add_room" %>
 <%- end %>

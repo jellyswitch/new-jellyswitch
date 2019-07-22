@@ -15,7 +15,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= check_box_tag :foo, nil, current_tenant.day_pass_types.count > 0 %><%= link_to "Set up day passes", new_day_pass_type_operator_onboarding_index_path %>
+          <%= check_box_tag :foo, nil, current_tenant.day_pass_types.count > 0 %> <%= link_to "Set up day passes", new_day_pass_type_operator_onboarding_index_path %>
         </div>
       </div>
     </li>
@@ -23,7 +23,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= check_box_tag :foo %> Add reservable conference and/or phone rooms
+          <%= check_box_tag :foo, nil, current_location.rooms.count > 0 %> <%= link_to "Add reservable conference and/or phone rooms", new_room_operator_onboarding_index_path %>
         </div>
       </div>
     </li>
