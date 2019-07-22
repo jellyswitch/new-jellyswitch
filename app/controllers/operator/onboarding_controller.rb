@@ -3,6 +3,7 @@ class Operator::OnboardingController < Operator::BaseController
   include PlansHelper
   include DayPassTypesHelper
   include RoomsHelper
+  include UsersHelper
 
   def new
   end
@@ -67,6 +68,29 @@ class Operator::OnboardingController < Operator::BaseController
       end
     else
       render :new_room, status: 422
+    end
+  end
+
+  def add_members
+  end
+  
+  def new_member
+    @user = current_tenant.users.new
+  end
+
+  def create_member
+    result = CreateUser.call(params: user_params, operator: current_tenant)
+
+    if result.success?
+      flash[:success] = "Member #{result.user.name} added."
+      if params[:add_member_and_create_another].present?
+        turbolinks_redirect(new_member_operator_onboarding_index_path, action: "replace")
+      else
+        turbolinks_redirect(new_operator_onboarding_path, action: "replace")
+      end
+    else
+      flash[:error] = result.message
+      render :new_member, status: 422
     end
   end
 end

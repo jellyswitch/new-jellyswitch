@@ -145,6 +145,9 @@ Rails.application.routes.draw do
       post :create_day_pass_type
       get :new_room
       post :create_room
+      get :add_members
+      get :new_member
+      post :create_member
     end
   end
   resources :offices, controller: "operator/offices"

@@ -1,5 +1,7 @@
 # typed: false
 class Operator::UsersController < Operator::BaseController
+  include UsersHelper
+  
   def index
     find_approved_users
     @unapproved_users = User.for_space(current_tenant).unapproved
@@ -287,16 +289,6 @@ class Operator::UsersController < Operator::BaseController
   end
 
   private
-
-  def user_params
-    result = params.require(:user).permit(
-      :name, :email, :password, :password_confirmation,
-      :bio, :linkedin, :twitter, :website, :profile_photo,
-      :approved, :admin, :add_member, :add_member_and_create_another,
-      :always_allow_building_access
-    )
-    result
-  end
 
   def user_password_params
     params.require(:user).permit(:password, :password_confirmation)
