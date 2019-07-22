@@ -15,7 +15,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= check_box_tag :foo %> Set up day passes
+          <%= check_box_tag :foo, nil, current_tenant.day_pass_types.count > 0 %><%= link_to "Set up day passes", new_day_pass_type_operator_onboarding_index_path %>
         </div>
       </div>
     </li>

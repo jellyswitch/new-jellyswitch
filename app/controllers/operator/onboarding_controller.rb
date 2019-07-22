@@ -1,6 +1,7 @@
 class Operator::OnboardingController < Operator::BaseController
   before_action :background_image
   include PlansHelper
+  include DayPassTypesHelper
 
   def new
   end
@@ -25,6 +26,27 @@ class Operator::OnboardingController < Operator::BaseController
       end
     else
       render :new_membership_plan
+    end
+  end
+
+  def new_day_pass_type
+    @day_pass_type = current_tenant.day_pass_types.new
+  end
+
+  def create_day_pass_type
+    result = CreateDayPassType.call(params: day_pass_type_params)
+
+    @day_pass_type = result.day_pass_type
+
+    if result.success?
+      if params[:add_day_pass_type_and_add_another].present?
+        turbolinks_redirect(new_day_pass_type_operator_onboarding_index_path, action: "replace")
+      else
+        turbolinks_redirect(new_operator_onboarding_path)
+      end
+    else
+      flash[:error] = result.message
+      render :new_day_pass_type, status: 422
     end
   end
 end

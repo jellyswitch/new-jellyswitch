@@ -141,6 +141,8 @@ Rails.application.routes.draw do
     collection do
       get :new_membership_plan
       post :create_membership_plan
+      get :new_day_pass_type
+      post :create_day_pass_type
     end
   end
   resources :offices, controller: "operator/offices"

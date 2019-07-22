@@ -5,7 +5,7 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">New Day Pass Type</h4>
-      <%= render 'form', day_pass_type: @day_pass_type %>
+      <%= render 'form', day_pass_type: @day_pass_type, url: day_pass_types_path %>
       <%= link_to 'Back', day_pass_types_path %>
     </div>
   </div>

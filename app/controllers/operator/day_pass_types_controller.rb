@@ -1,5 +1,6 @@
 # typed: true
 class Operator::DayPassTypesController < Operator::BaseController
+  include DayPassTypesHelper
   before_action :find_day_pass_type, only: [:show, :edit, :update, :destroy]
 
   def index
@@ -30,8 +31,11 @@ class Operator::DayPassTypesController < Operator::BaseController
 
     @day_pass_type = result.day_pass_type
     if result.success?
-      flash[:success] = "Day pass type was successfully created."
-      turbolinks_redirect(day_pass_type_path(@day_pass_type))
+      if params[:add_day_pass_type_and_add_another].present?
+        turbolinks_redirect(new_day_pass_type_path, action: "replace")
+      else
+        turbolinks_redirect(day_pass_type_path(@day_pass_type))
+      end
     else
       flash[:error] = result.message
       render :new, status: 422
@@ -72,9 +76,5 @@ class Operator::DayPassTypesController < Operator::BaseController
 
   def find_day_pass_types
     @day_pass_types = DayPassType.all
-  end
-
-  def day_pass_type_params
-    params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code)
   end
 end
