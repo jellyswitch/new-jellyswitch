@@ -91,7 +91,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def find_organizations
     @organizations = Organization.all.select do |org|
-      org.has_billing?
+      org.has_stripe_customer? && org.out_of_band?
     end
   end
 
