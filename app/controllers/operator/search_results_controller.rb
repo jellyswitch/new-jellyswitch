@@ -26,6 +26,7 @@ class Operator::SearchResultsController < Operator::BaseController
         :email, 
         :organization, 
         :owner], 
+      where: {operator_id: current_tenant.id},
       models: [FeedItem, User, Organization, Room, Door, Location],
       operator: "or"
     )
