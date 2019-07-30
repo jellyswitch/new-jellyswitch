@@ -26,10 +26,10 @@ class Operator::SearchResultsController < Operator::BaseController
         :email, 
         :organization, 
         :owner], 
-      where: {operator_id: current_tenant.id},
       models: [FeedItem, User, Organization, Room, Door, Location],
       operator: "or"
     )
+    @results = @results.select {|r| r.operator == current_tenant}
     render :create, status: 200
   end
 end
