@@ -20,7 +20,7 @@
   </div>
   <dl class="row mt-3">
     <dt class="col-sm-3">Email address</dt>
-    <dd class="col-sm"><%= mail_to @user.email %></dd>
+    <dd class="col-sm" data-turbolinks="false"><%= mail_to @user.email %></dd>
   </dl>
   <dl class="row mt-3">
     <dt class="col-sm-3">Always has building access?</dt>
@@ -41,7 +41,6 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Usage</h4>
-
   <%= render "usage", user: @user, usage_report: @usage_report %>
 <% end %>
 
