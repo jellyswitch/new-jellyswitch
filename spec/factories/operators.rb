@@ -52,6 +52,13 @@ FactoryBot.define do
       end
     end
 
+    trait :with_multiple_locations do
+      after(:create) do |operator|
+        create(:location, operator: operator)
+        create(:location, operator: operator)
+      end
+    end
+
     trait :with_users do
       transient do
         user_count { 5 }
