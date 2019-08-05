@@ -95,6 +95,26 @@ class Operator::OnboardingController < Operator::BaseController
     end
   end
 
+  def new_kisi
+  end
+
+  def create_kisi
+    api_key = params[:kisi_api_key]
+    if api_key.blank?
+      flash[:error] = "Please enter an API key below."
+      render :new_kisi
+    else
+      current_tenant.update(kisi_api_key: api_key)
+      turbolinks_redirect(new_door_operator_onboarding_index_path)
+    end
+  end
+
+  def new_door
+  end
+
+  def create_door
+  end
+
   def skip
     current_tenant.update(skip_onboarding: true)
     turbolinks_redirect(feed_items_path)

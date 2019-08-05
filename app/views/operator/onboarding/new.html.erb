@@ -31,7 +31,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= check_box_tag :foo, nil, current_location.doors.count > 0 %> Set up building access
+          <%= check_box_tag :foo, nil, current_location.doors.count > 0 %> <%= link_to "Set up building access", new_kisi_operator_onboarding_index_path %>
         </div>
       </div>
     </li>

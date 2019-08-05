@@ -148,6 +148,10 @@ Rails.application.routes.draw do
       get :add_members
       get :new_member
       post :create_member
+      get :new_kisi
+      post :create_kisi
+      get :new_door
+      post :add_door
       get :skip
     end
   end
