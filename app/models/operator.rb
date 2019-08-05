@@ -18,6 +18,7 @@
 #  kisi_api_key           :string
 #  membership_text        :string
 #  name                   :string           not null
+#  skip_onboarding        :boolean          default(FALSE), not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null
 #  stripe_access_token    :string
@@ -130,6 +131,14 @@ class Operator < ApplicationRecord
 
   def memberships_enabled?
     plans.individual.visible.available.count > 0
+  end
+
+  def onboarded?
+    plans.count > 0 &&
+    day_pass_types.count > 0 &&
+    rooms.count > 0 &&
+    doors.count > 0 &&
+    members.count > 0
   end
 
   private

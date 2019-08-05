@@ -3,13 +3,17 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
 
   def index
-    find_feed_items
-    @all_active = "active"
-    @questions_active = nil
-    @activity_active = nil
-    @notes_active = nil
-    @expenses_active = nil
-    authorize @feed_items
+    if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
+      turbolinks_redirect(new_operator_onboarding_path, action: "replace")
+    else
+      find_feed_items
+      @all_active = "active"
+      @questions_active = nil
+      @activity_active = nil
+      @notes_active = nil
+      @expenses_active = nil
+      authorize @feed_items
+    end
   end
 
   def questions

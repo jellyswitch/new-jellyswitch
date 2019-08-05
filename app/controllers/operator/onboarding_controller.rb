@@ -1,5 +1,6 @@
 class Operator::OnboardingController < Operator::BaseController
   before_action :background_image
+  before_action :authorize_onboarding
   include PlansHelper
   include DayPassTypesHelper
   include RoomsHelper
@@ -17,7 +18,7 @@ class Operator::OnboardingController < Operator::BaseController
 
     result = Billing::Plans::CreatePlan.call(
       plan: @plan,
-      operator: current_tenant
+      operator: current_tenant,
     )
 
     if result.success?
@@ -73,7 +74,7 @@ class Operator::OnboardingController < Operator::BaseController
 
   def add_members
   end
-  
+
   def new_member
     @user = current_tenant.users.new
   end
@@ -92,5 +93,16 @@ class Operator::OnboardingController < Operator::BaseController
       flash[:error] = result.message
       render :new_member, status: 422
     end
+  end
+
+  def skip
+    current_tenant.update(skip_onboarding: true)
+    turbolinks_redirect(feed_items_path)
+  end
+
+  private
+
+  def authorize_onboarding
+    authorize :onboarding, :show?
   end
 end

@@ -148,6 +148,7 @@ Rails.application.routes.draw do
       get :add_members
       get :new_member
       post :create_member
+      get :skip
     end
   end
   resources :offices, controller: "operator/offices"
