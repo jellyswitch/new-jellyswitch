@@ -151,7 +151,8 @@ Rails.application.routes.draw do
       get :new_kisi
       post :create_kisi
       get :new_door
-      post :add_door
+      post :create_door
+      post :destroy_door
       get :skip
     end
   end

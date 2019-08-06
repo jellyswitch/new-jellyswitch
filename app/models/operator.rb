@@ -138,7 +138,7 @@ class Operator < ApplicationRecord
     day_pass_types.count > 0 &&
     rooms.count > 0 &&
     doors.count > 0 &&
-    members.count > 0
+    users.members.count > 0
   end
 
   private

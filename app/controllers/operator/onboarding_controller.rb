@@ -96,6 +96,9 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_kisi
+    if current_tenant.kisi_api_key.present?
+      turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
+    end
   end
 
   def create_kisi
@@ -110,9 +113,42 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_door
+    result = Onboarding::GetKisiDoors.call(operator: current_tenant)
+
+    if result.success?
+      @doors = result.doors
+    else
+      @doors = []
+      flash[:error] = result.message
+    end
   end
 
   def create_door
+    door = current_location.doors.new(
+      name: params[:door_name],
+      kisi_id: params[:kisi_id],
+    )
+
+    if door.save
+      flash[:success] = "Door added."
+    else
+      flash[:error] = "There was a problem adding your door."
+    end
+    turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
+  end
+
+  def destroy_door
+    door = current_location.doors.find_by(kisi_id: params[:kisi_id])
+    if door.present?
+      if door.destroy
+        flash[:success] = "Door removed."
+      else
+        flash[:error] = "There was a problem removing that door."
+      end
+    else
+      flash[:error] = "No such door."
+    end
+    turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
   end
 
   def skip
