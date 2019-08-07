@@ -14,7 +14,13 @@
       <tr>
         <td><%= link_to day_pass.user.name, user_path(day_pass.user) %></td>
         <td><%= day_pass.pretty_day %></td>
-        <td><%= day_pass.day_pass_type.name %></td>
+        <td>
+          <% if day_pass.day_pass_type.present? %>
+            <%= day_pass.day_pass_type.name %>
+          <% else %>
+            DELETED
+          <% end %>
+        </td>
       </tr>
     <% end %>
   </table>
