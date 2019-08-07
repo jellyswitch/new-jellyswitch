@@ -1,6 +1,7 @@
 class Operator::OnboardingController < Operator::BaseController
   before_action :background_image
   before_action :authorize_onboarding
+  include ErrorsHelper
   include PlansHelper
   include DayPassTypesHelper
   include RoomsHelper
@@ -93,6 +94,36 @@ class Operator::OnboardingController < Operator::BaseController
       flash[:error] = result.message
       render :new_member, status: 422
     end
+  end
+
+  def new_stripe_members
+    result = Onboarding::FetchStripeCustomers.call(operator: current_tenant)
+
+    if result.success?
+      @customers = result.customers
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(add_members_operator_onboarding_index_path, action: "replace")
+    end
+  end
+
+  def create_stripe_members
+    user = current_tenant.users.new(
+      name: params[:name],
+      email: params[:email],
+      stripe_customer_id: params[:stripe_customer_id],
+      card_added: params[:card_added] == "true",
+      password: "pizza123",
+      approved: true
+    )
+
+    if user.save
+      flash[:success] = "Member added."
+    else
+      flash[:error] = errors_for(user)
+    end
+
+    turbolinks_redirect(new_stripe_members_operator_onboarding_index_path, action: "replace")
   end
 
   def new_kisi

@@ -151,6 +151,8 @@ Rails.application.routes.draw do
       get :add_members
       get :new_member
       post :create_member
+      get :new_stripe_members
+      post :create_stripe_members
       get :new_kisi
       post :create_kisi
       get :new_door
