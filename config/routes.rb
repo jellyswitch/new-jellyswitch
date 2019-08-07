@@ -16,6 +16,9 @@ Rails.application.routes.draw do
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
     get "/signup", to: "onboarding#new_user", as: :operator_signup
+    get "/choose_operator", to: "sessions#choose_operator", as: :choose_operator
+    get "/password_form", to: "sessions#password_form", as: :password_form
+    post "/real_login", to: "sessions#real_create", as: :real_login
 
     get :stripe_connect_setup, to: "landing#stripe_connect_setup", as: :stripe_connect_setup
 
