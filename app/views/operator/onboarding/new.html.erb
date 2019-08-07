@@ -69,3 +69,7 @@
   </div>
   </div>
 <% end %>
+
+<% if current_tenant.demo? %>
+  <%= render "shared/stripe_connect_modal" %>
+<% end %>
