@@ -49,7 +49,6 @@ FactoryBot.define do
     contact_phone { Faker::PhoneNumber.phone_number }
     square_footage { 2000 }
     skip_onboarding { true }
-    billing_state { "production" }
     sequence(:subdomain) { |n| "test-#{n}" }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
 
