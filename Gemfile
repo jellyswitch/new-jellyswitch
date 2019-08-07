@@ -20,6 +20,7 @@ gem 'image_processing', '~> 1.2'
 gem "interactor-rails", "~> 2.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
+gem 'money'
 gem 'octicons_helper'
 gem 'pagy'
 gem 'pg'

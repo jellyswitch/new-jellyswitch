@@ -111,6 +111,7 @@ module SessionsHelper
     checkout
     forget(current_user)
     session.delete(:user_id)
+    session.delete(:email)
     unset_location
     @current_user = nil
   end

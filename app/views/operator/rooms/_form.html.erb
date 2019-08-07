@@ -1,63 +1,8 @@
-<%= form_for(@room, remote: true) do |f| %>
-  <%= render "shared/error_messages" , model: @room %>
+<%= form_with(model: room, url: url, local: true) do |f| %>
+  <%= render "shared/error_messages", model: room %>
 
-  <div class="form-group">
-    <%= f.label :name %>
-    <%= f.text_field :name, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :description %>
-    <%= f.text_area :description, class: "form-control" %>
-  </div>
+  <%= render "operator/rooms/form_fields", f: f %>
   
-  <div class="form-group">
-    <%= f.label :capacity %>
-    <%= f.text_field :capacity, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :square_footage %>
-    <%= f.number_field :square_footage, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <div class="form-check">
-      <%= f.check_box :whiteboard, class: "form-check-input" %>
-      <%= f.label :whiteboard, class: "form-check-label" %>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <div class="form-check">
-      <%= f.check_box :av, class: "form-check-input" %>
-      <%= f.label :av, "Has AV equipment", {class: "form-check-label"} %>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <div class="form-check">
-      <%= f.check_box :visible, class: "form-check-input" %>
-      <%= f.label :visible, "Visible", {class: "form-check-label"} %>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <div class="form-check">
-      <%= f.check_box :rentable, class: "form-check-input" %>
-      <%= f.label :rentable, "Available for rent to non-members", {class: "form-check-label"} %>
-    </div>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :hourly_rate_in_cents %>
-    <%= f.number_field :hourly_rate_in_cents, value: 600 %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :photo %>
-    <%= f.file_field :photo, class: "form-control-file" %>
-  </div>
-  
-  <%= f.submit label, class: "form-control btn btn-primary" %>
+  <%= f.submit "Add this room and add another", class: "btn btn-block btn-primary", name: "add_room_and_add_another" %>
+  <%= f.submit "Just add this room", class: "btn btn-block btn-outline-primary", name: "add_room" %>
 <%- end %>

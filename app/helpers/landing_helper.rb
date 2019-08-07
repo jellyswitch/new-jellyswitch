@@ -3,7 +3,11 @@ module LandingHelper
   def landing_redirect
     if logged_in? && current_location.present?
       if admin?
-        redirect_to feed_items_path
+        if current_tenant.onboarded? || current_tenant.skip_onboarding?
+          redirect_to feed_items_path
+        else
+          redirect_to new_operator_onboarding_path
+        end
       else
         if member?
           if approved?

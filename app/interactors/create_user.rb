@@ -20,6 +20,7 @@ class CreateUser
     blob = { type: "new-user" }
     create_feed_item(@user.operator, @user, blob)
 
+    
     result = CreateStripeCustomer.call(user: @user)
 
     if !result.success?

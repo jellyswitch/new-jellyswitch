@@ -1,5 +1,5 @@
-<%= form_for(@user, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
-  <%= render "shared/error_messages" , model: @user %>
+<%= form_with(model: user, url: url, html: {multipart: true}, local: true, data: { type: :html }) do |f| %>
+  <%= render "shared/error_messages" , model: user %>
 
   <h2>Basic Information</h2>
   <div class="form-group">
@@ -58,6 +58,7 @@
     <%= f.label :website %>
     <%= f.text_field :website, class: "form-control" %>
   </div>
-  <%= f.submit "Add member", class: "form-control btn btn-primary", name: "add_member" %>
-  <%= f.submit "Add member and add another", class: "form-control btn btn-outline-primary mt-3", name: "add_member_and_create_another" %>
+
+  <%= f.submit "Add member and add another", class: "btn btn-block btn-primary", name: "add_member_and_create_another" %>
+  <%= f.submit "Just add this member", class: "btn btn-block btn-outline-primary  ", name: "add_member" %>
 <% end %>

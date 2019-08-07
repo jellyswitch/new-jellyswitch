@@ -15,8 +15,27 @@ Rails.application.routes.draw do
     delete "/logout", to: "sessions#destroy", as: :operator_logout
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
-    get "/signup", to: "users#new", as: :operator_signup
+    get "/signup", to: "onboarding#new_user", as: :operator_signup
+    get "/choose_operator", to: "sessions#choose_operator", as: :choose_operator
+    get "/password_form", to: "sessions#password_form", as: :password_form
+    post "/real_login", to: "sessions#real_create", as: :real_login
 
+    get :stripe_connect_setup, to: "landing#stripe_connect_setup", as: :stripe_connect_setup
+
+    resources :onboarding do
+      collection do
+        get :new_user
+        post :create_user
+        get :new_user_info
+        post :create_user_info
+        get :new_location
+        post :create_location
+        get :new_member_info
+        post :create_member_info
+        get :new_images
+        post :create_images
+      end
+    end
     resources :operators
     resources :operator_surveys do
       collection do
@@ -121,6 +140,27 @@ Rails.application.routes.draw do
   end
   resources :locations, controller: "operator/locations"
   resources :member_feedbacks, controller: "operator/member_feedbacks"
+  resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
+    collection do
+      get :new_membership_plan
+      post :create_membership_plan
+      get :new_day_pass_type
+      post :create_day_pass_type
+      get :new_room
+      post :create_room
+      get :add_members
+      get :new_member
+      post :create_member
+      get :new_stripe_members
+      post :create_stripe_members
+      get :new_kisi
+      post :create_kisi
+      get :new_door
+      post :create_door
+      post :destroy_door
+      get :skip
+    end
+  end
   resources :offices, controller: "operator/offices"
   resources :office_leases, controller: "operator/office_leases"
   resources :organizations, controller: "operator/organizations" do

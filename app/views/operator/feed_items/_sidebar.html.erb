@@ -1,4 +1,12 @@
+
+<% if !current_tenant.onboarded? && current_tenant.skip_onboarding? %>
+  <div class="d-flex justify-content-center mb-2">
+    <%= link_to "Resume onboarding", new_operator_onboarding_path, class: "btn btn-block btn-sm btn-success" %>
+  </div>
+<% end %>
+
 <%= render "operator/search_results/form" %>
+
 
 <div class="d-flex justify-content-center">
   <div class="btn-group mt-2" role="group" aria-label="Filter">
@@ -23,4 +31,5 @@
     <%= link_to new_feed_item_path, class: "btn btn-info" do %>
       <i class="fas fa-edit"></i>
     <% end %>
+  </div>
 </div>

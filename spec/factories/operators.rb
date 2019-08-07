@@ -18,6 +18,7 @@
 #  kisi_api_key           :string
 #  membership_text        :string
 #  name                   :string           not null
+#  skip_onboarding        :boolean          default(FALSE), not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null
 #  stripe_access_token    :string
@@ -29,6 +30,10 @@
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
+#
+# Indexes
+#
+#  index_operators_on_subdomain  (subdomain) UNIQUE
 #
 
 FactoryBot.define do
@@ -43,6 +48,7 @@ FactoryBot.define do
     contact_email { Faker::Internet.unique.safe_email }
     contact_phone { Faker::PhoneNumber.phone_number }
     square_footage { 2000 }
+    skip_onboarding { true }
     sequence(:subdomain) { |n| "test-#{n}" }
     stripe_user_id { ENV['STRIPE_ACCOUNT_ID'] }
 

@@ -18,6 +18,7 @@
 #  kisi_api_key           :string
 #  membership_text        :string
 #  name                   :string           not null
+#  skip_onboarding        :boolean          default(FALSE), not null
 #  snippet                :string           default("Generic snippet about the space"), not null
 #  square_footage         :integer          default(0), not null
 #  stripe_access_token    :string
@@ -30,8 +31,15 @@
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
 #
+# Indexes
+#
+#  index_operators_on_subdomain  (subdomain) UNIQUE
+#
 
 class Operator < ApplicationRecord
+  extend FriendlyId
+  friendly_id :name, use: :slugged, slug_column: :subdomain
+  
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors
@@ -65,6 +73,7 @@ class Operator < ApplicationRecord
            :mark_invoice_paid,
            :create_or_update_customer_payment,
            :charge_invoice,
+           :retrieve_stripe_customers,
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }
@@ -130,6 +139,14 @@ class Operator < ApplicationRecord
 
   def memberships_enabled?
     plans.individual.visible.available.count > 0
+  end
+
+  def onboarded?
+    plans.count > 0 &&
+    day_pass_types.count > 0 &&
+    rooms.count > 0 &&
+    doors.count > 0 &&
+    users.members.count > 0
   end
 
   private

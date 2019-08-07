@@ -32,6 +32,10 @@ module StripeUtils
     stripe_request(stripe_customer, :create, customer_args)
   end
 
+  def retrieve_stripe_customers
+    stripe_request("Customer", :list, {})
+  end
+
   def retrieve_stripe_customer(customer)
     stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id)
   end

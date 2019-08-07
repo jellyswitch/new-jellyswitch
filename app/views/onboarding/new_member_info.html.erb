@@ -1,0 +1,42 @@
+<% title "Onboarding" %>
+
+<%= render "steps", step: 4 %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Some information for your members</h4>
+  <%= form_with(url: create_member_info_onboarding_index_path, method: :post, local: true) do |f| %>
+    <%= f.hidden_field :location_id, value: @location.id %>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :wifi_name, "Wifi Name" %>
+        <%= f.text_field :wifi_name, placeholder: "Awesomesauce", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :wifi_password, "Wifi Password" %>
+        <%= f.text_field :wifi_name, placeholder: "coworkingrocks", class: "form-control" %>
+      </div>
+    </div>
+    
+    <div class="row mb-3">
+      <div class="col"><label>Contact information</label></div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.text_field :contact_name, placeholder: "Contact Name", class: "form-control" %>
+      </div>
+      <div class="col">
+        <%= f.text_field :contact_phone, placeholder: "(123) 555-1234", class: "form-control" %>
+      </div>
+      <div class="col">
+        <%= f.text_field :contact_name, placeholder: "Email Address", class: "form-control" %>
+      </div>
+    </div>
+
+    <%= f.submit "Next", class: "btn btn-block btn-primary" %>
+  <% end %>
+<% end %>

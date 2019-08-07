@@ -1,42 +1,50 @@
-<div class="row">
-  <div class="col-lg-1"></div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= @production_reports.count %> production spaces</h4>
-  </div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= @production_reports.sum(&:active_member_count) %> active memberships</h4>
-  </div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= @production_reports.sum(&:staff_count) %> active staff members</h4>
-  </div>
-  <div class="col-lg-1"></div>
-</div>
+<% title "Dashboard" %>
 
-<div class="row mt-4">
-  <div class="col-lg-1"></div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= @production_reports.sum(&:active_lease_count) %> active leases</h4>
-  </div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= @production_reports.sum(&:active_lease_member_count) %> members under active leases</h4>
-  </div>
-  <div class="col-lg">
-    <h4 class="display-4"><%= number_with_delimiter(@production_reports.sum(&:square_footage)) %> square footage</h4>
-  </div>
-  <div class="col-lg-1"></div>
-</div>
+<%= list_wrapper do %>
+  <%= list_item do %>
+    <div class="row">
+      <div class="col-lg-1"></div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= @production_reports.count %> production spaces</h4>
+      </div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= @production_reports.sum(&:active_member_count) %> active memberships</h4>
+      </div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= @production_reports.sum(&:staff_count) %> active staff members</h4>
+      </div>
+      <div class="col-lg-1"></div>
+    </div>
 
-<div class="row mt-5">
-  <div class="col-lg-1"></div>
-  <div class="col">
-    <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
+    <div class="row mt-4">
+      <div class="col-lg-1"></div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= @production_reports.sum(&:active_lease_count) %> active leases</h4>
+      </div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= @production_reports.sum(&:active_lease_member_count) %> members under active leases</h4>
+      </div>
+      <div class="col-lg">
+        <h4 class="display-4"><%= number_with_delimiter(@production_reports.sum(&:square_footage)) %> square footage</h4>
+      </div>
+      <div class="col-lg-1"></div>
+    </div>
+  <% end %>
 
-    <h3 class="display-3">Production Instances</h3>
-    <%= render "operators_table", reports: @production_reports %>
+  <%= list_item do %>
+    <div class="row mt-5">
+      <div class="col-lg-1"></div>
+      <div class="col">
+        <%= link_to "New Operator", new_operator_path, class: "btn btn-primary btn-sm" %>
 
-    <h3 class="display-3">Demo Instances</h3>
-    <%= render "operators_table", reports: @demo_reports %>    
+        <h3 class="display-3">Production Instances</h3>
+        <%= render "operators_table", reports: @production_reports %>
 
-  </div>
-  <div class="col-lg-1"></div>
-</div>
+        <h3 class="display-3">Demo Instances</h3>
+        <%= render "operators_table", reports: @demo_reports %>    
+
+      </div>
+      <div class="col-lg-1"></div>
+    </div>
+  <% end %>
+<% end %>
