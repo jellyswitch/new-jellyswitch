@@ -19,7 +19,7 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <h4 class="display-4 text-center mt-4">Edit Room</h4>
-      <%= form_with(model: @room, url: room_path(@room), local: true) do |f| %>
+      <%= form_with(model: @room, url: room_path(@room), remote: true) do |f| %>
         <%= render "shared/error_messages", model: room %>
 
         <%= render "operator/rooms/form_fields", f: f %>

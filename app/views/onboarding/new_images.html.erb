@@ -4,7 +4,7 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Photos make your app beautiful</h4>
-  <%= form_with(url: create_images_onboarding_index_path, method: :post, local: true) do |f| %>
+  <%= form_with(url: create_images_onboarding_index_path, method: :post, remote: true) do |f| %>
     <%= f.hidden_field :location_id, value: @location.id %>
 
     <div class="form-group custom-file mb-3 mt-3">

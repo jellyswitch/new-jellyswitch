@@ -82,7 +82,7 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col">
-          <%= form_with(local: true, url: create_kisi_operator_onboarding_index_path, method: :post) do |f| %>
+          <%= form_with(remote: true, url: create_kisi_operator_onboarding_index_path, method: :post) do |f| %>
             <%= f.text_field :kisi_api_key, placeholder: "Paste your Kisi API key here", class: "form-control" %>
             <%= f.submit "Next", class: "btn btn-block btn-primary mt-2" %>
           <% end %>

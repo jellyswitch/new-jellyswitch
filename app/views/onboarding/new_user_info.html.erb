@@ -4,7 +4,7 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Just a few quick things to set up your account...</h4>
-  <%= form_with(url: create_user_info_onboarding_index_path, method: :post, local: true) do |f| %>
+  <%= form_with(url: create_user_info_onboarding_index_path, method: :post, remote: true) do |f| %>
     <div class="row mb-3">
       <%= f.text_field :operator_name, placeholder: "Your company name", class: "form-control col" %>
     </div>
