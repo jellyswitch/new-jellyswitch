@@ -31,6 +31,10 @@
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
 #
+# Indexes
+#
+#  index_operators_on_subdomain  (subdomain) UNIQUE
+#
 
 FactoryBot.define do
   factory :operator do

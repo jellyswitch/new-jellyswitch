@@ -6,8 +6,7 @@ class Onboarding::CreateOperator
 
   def call
     operator = Operator.new(
-      name: email,
-      subdomain: email.parameterize
+      name: email
     )
 
     if operator.save

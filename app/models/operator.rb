@@ -31,8 +31,15 @@
 #  updated_at             :datetime         not null
 #  stripe_user_id         :string
 #
+# Indexes
+#
+#  index_operators_on_subdomain  (subdomain) UNIQUE
+#
 
 class Operator < ApplicationRecord
+  extend FriendlyId
+  friendly_id :name, use: :slugged, slug_column: :subdomain
+  
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors

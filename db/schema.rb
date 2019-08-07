@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_08_05_230022) do
+ActiveRecord::Schema.define(version: 2019_08_07_174732) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -271,6 +271,7 @@ ActiveRecord::Schema.define(version: 2019_08_05_230022) do
     t.boolean "checkin_required", default: false, null: false
     t.string "membership_text"
     t.boolean "skip_onboarding", default: false, null: false
+    t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
   create_table "organizations", force: :cascade do |t|
