@@ -13,6 +13,7 @@ module Jellyswitch
     def member_csv
       CSV.generate(headers: true) do |csv|
         csv << ["Name", 
+          "Account Creation Date",
           "Email", 
           "Member of organization?", 
           "Organization",
@@ -30,6 +31,7 @@ module Jellyswitch
           end
 
           csv << [user.name, 
+            short_date(user.created_at),
             user.email, 
             boolean_to_yesno(user.member_of_organization?), 
             user.organization_name,
