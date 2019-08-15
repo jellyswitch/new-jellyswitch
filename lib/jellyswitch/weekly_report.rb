@@ -47,6 +47,6 @@ class Jellyswitch::WeeklyReport
 
     @unanswered_questions = @questions.unanswered
 
-    @admins = operator.users.admins
+    @admins = operator.users.admins.non_superadmins
   end
 end
