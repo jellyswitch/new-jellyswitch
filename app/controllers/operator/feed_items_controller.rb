@@ -159,11 +159,9 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def turn_into_expense
-    if @feed_item.is_expense_feed?
-      @feed_item.parse_amount
-      @feed_item.set_expense
-      @feed_item.save
-    end
+    @feed_item.parse_amount
+    @feed_item.set_expense
+    @feed_item.save
   end
 
   def not_an_expense

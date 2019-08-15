@@ -41,12 +41,12 @@ class Jellyswitch::WeeklyReport
     @unpaid_invoices = operator.invoices.for_week(@week_start, @week_end).open
     @revenue = @paid_invoices.sum(:amount_due).to_f / 100.0
 
-    @management_notes = operator.feed_items.notes
+    @management_notes = operator.feed_items.notes.for_week(@week_start, @week_end)
 
     @questions = @management_notes.questions
 
     @unanswered_questions = @questions.unanswered
 
-    @admins = operator.users.admins
+    @admins = operator.users.admins.non_superadmins
   end
 end

@@ -61,8 +61,14 @@
     </div>
     <div class="row">
       <p class="col">
-        Your members made a total of <strong><%= weekly_update.reservations %> room reservations</strong> <%= up_down_arrow(weekly_update.reservations, weekly_update.prev_reservations).html_safe %> last week, 
-        <%= reservations_in_english(weekly_update.rooms) %>.
+        Your members made a total of <strong><%= weekly_update.reservations %> room reservations</strong> <%= up_down_arrow(weekly_update.reservations, weekly_update.prev_reservations).html_safe %> last week:
+        <ul>
+          <% weekly_update.rooms.each do |room| %>
+            <li>
+              <%= number_to_percentage(room['percent'].to_f * 100, precision: 0) %> of which were in <%= room['name'] %>
+            </li>
+          <% end %>
+        </ul>
       </p>
     </div>
   </li>

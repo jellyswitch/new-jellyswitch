@@ -30,6 +30,7 @@ class FeedItem < ApplicationRecord
   acts_as_tenant :operator
 
   scope :for_operator, ->(operator) { where(operator: operator).where("blob->> 'type' != ?", "new-user") }
+  scope :for_week, -> (week_start, week_end) { where('feed_items.created_at > ? and feed_items.created_at <= ?', week_start, week_end) }
   scope :expenses, -> { where(expense: true) }
 
   # Types of feed_items
