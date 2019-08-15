@@ -1,10 +1,4 @@
 module WeeklyUpdateHelper
-  def reservations_in_english(rooms)
-    rooms.map do |room|
-      "#{number_to_percentage(room['percent'].to_f * 100, precision: 0)} of which were in #{room['name']}"
-    end.to_sentence
-  end
-
   def admins_in_english(users)
     users.map do |user|
       link_to user.name, user_path
