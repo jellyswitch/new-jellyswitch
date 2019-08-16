@@ -22,7 +22,7 @@
       <div class="col-1"></div>
       <div class="col">
         Starts on
-        <%= select "subscription", "start_day", options_for_select(days_option_for_current_month), {},  { class: "form-control form-control-sm" } %>
+        <%= select "subscription", "start_day", options_for_select(days_option_for_current_month), {}, {class: "form-control form-control-sm" } %>
       </div>
       <div class="col-1"></div>
     </div>
@@ -39,5 +39,10 @@
     <div class="col-1"></div>
     <%= f.submit label, id: 'stripe-submit', class: "form-control btn btn-primary col", data: { acc: 'add-payment' } %>
     <div class="col-1"></div>
+  </div>
+  <div class="row">
+    <small class="text-center col">
+      Note: You will be automatically charged monthly for this membership
+    </small>
   </div>
 <% end %>
