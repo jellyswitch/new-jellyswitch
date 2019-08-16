@@ -1,7 +1,7 @@
-<% title "Checkins" %>
+<% title "Check-ins" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center">Checkins</h4>
+  <h4 class="display-4 text-center">Check-ins</h4>
 
   <% @report.checkins_by_day.each do |report| %>
     <p class="lead"><%= report.label %></p>
@@ -10,7 +10,7 @@
 <% end %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center">Revenue from Checkins</h4>
+  <h4 class="display-4 text-center">Revenue from Check-ins</h4>
 
   <% @report.checkin_revenue_by_day.each do |report| %>
     <p class="lead"><%= report.label %></p>
