@@ -65,7 +65,7 @@ class OperatorsController < ApplicationController
   end
 
   def find_operator(key = :id)
-    @operator = Operator.find(params[key])
+    @operator = Operator.friendly.find(params[key])
   end
 
   def operator_params
