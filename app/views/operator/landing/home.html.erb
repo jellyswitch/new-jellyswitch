@@ -4,14 +4,20 @@
   <%= render "shared/building_access_card" %>
 <% end %>
 
-<%= wide_card do %>
-  <%= render "shared/send_feedback_card" %>
+<% if current_tenant.announcements.count > 0 %>
+  <%= wide_card do %>
+    <%= render "shared/announcements_card" %>
+  <% end %>
 <% end %>
 
 <% if current_location.rooms.visible.count > 0 %>
   <%= wide_card do %>
     <%= render "shared/reservations_card" %>
   <% end %>
+<% end %>
+
+<%= wide_card do %>
+  <%= render "shared/send_feedback_card" %>
 <% end %>
 
 <%= wide_card do %>

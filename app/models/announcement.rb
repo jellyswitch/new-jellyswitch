@@ -13,4 +13,6 @@
 class Announcement < ApplicationRecord
   belongs_to :operator
   belongs_to :user
+
+  scope :latest, -> { order("created_at DESC").first }
 end
