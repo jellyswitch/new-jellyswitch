@@ -25,8 +25,9 @@ class Operator::SearchResultsController < Operator::BaseController
         :stripe_customer_id, 
         :email, 
         :organization, 
-        :owner], 
-      models: [FeedItem, User, Organization, Room, Door, Location],
+        :owner,
+        :announcement], 
+      models: [FeedItem, User, Organization, Room, Door, Location, Announcement],
       operator: "or"
     )
     @results = @results.select {|r| r.operator == current_tenant}

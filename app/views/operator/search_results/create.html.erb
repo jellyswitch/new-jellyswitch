@@ -9,6 +9,8 @@
     <%= card_wrapper do %>
       <%- @results.each do |item| %>
         <% case item.class.name %>
+          <% when "Announcement" %>
+            <%= render "operator/announcements/announcement", announcement: item %>
           <% when "FeedItem" %>
             <%= render "operator/feed_items/feed_item", feed_item: item, comments: item.feed_item_comments.count > 0 %>
           <% when "User" %>

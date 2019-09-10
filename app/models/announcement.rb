@@ -11,8 +11,15 @@
 #
 
 class Announcement < ApplicationRecord
+  searchkick
   belongs_to :operator
   belongs_to :user
 
   scope :latest, -> { order("created_at DESC").first }
+
+  def search_data
+    {
+      announcement: body
+    }
+  end
 end
