@@ -95,6 +95,7 @@ Rails.application.routes.draw do
       get "update_expenses", to: "operator/accounting#update_expenses"
     end
   end
+  resources :announcements, controller: "operator/announcements"
   resources :checkins, controller: "operator/checkins" do
     collection do
       get :required, to: "operator/checkins#required"

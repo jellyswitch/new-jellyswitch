@@ -72,7 +72,7 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def create
     authorize FeedItem.new
-
+    
     if params[:mgmt_note].present? # management note
       result = CreatePostFeedItem.call(
         blob: { text: feed_item_params[:text], type: "post" },
@@ -90,9 +90,20 @@ class Operator::FeedItemsController < Operator::BaseController
       end
 
     else # announcement
-
+      result = Announcements::Create.call(
+        body: feed_item_params[:text],
+        user: current_user,
+        operator: current_tenant
+      )
+      
+      if result.success?
+        flash[:success] = "Announcement posted."
+        turbolinks_redirect(announcements_path, action: "restore")
+      else
+        flash[:error] = result.message
+        turbolinks_redirect(feed_items_path, action: "restore")
+      end
     end
-
   rescue => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"

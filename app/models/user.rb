@@ -37,6 +37,7 @@
 class User < ApplicationRecord
   searchkick
   # Relationships
+  has_many :announcements
   has_many :checkins
   has_many :day_passes
   has_many :door_punches
@@ -70,7 +71,6 @@ class User < ApplicationRecord
   scope :non_superadmins, -> { where(superadmin: false) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(superadmin: true) }
-
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
   def search_data
