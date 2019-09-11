@@ -4,7 +4,7 @@
   <div class="col-lg-3"></div>
   <div class="col-lg">
     <% if policy(Announcement.new).new? %>
-      <%= link_to "Post an announcement", new_feed_item_path, class: "btn btn-block btn-primary mb-2" %>
+      <%= link_to "Post an announcement", new_announcement_path, class: "btn btn-block btn-primary mb-2" %>
     <% end %>
 
     <% if @announcements.count > 0 %>

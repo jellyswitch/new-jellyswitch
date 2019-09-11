@@ -1,0 +1,12 @@
+<%= form_for(announcement, html: {multipart: true}, local: mobile_app_request? && ios_request?, data: { type: :html }) do |f| %>
+  <%= render "shared/error_messages" , model: announcement %>
+  <div class="form-group row m-0 p-0 mt-0">
+    <%= f.text_area :body, placeholder: "Type a new announcement...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
+  </div>
+
+  <div class="form-group row m-0 p-0">
+    <%= f.submit "Post announcement", class: "form-control btn btn-primary col", id: "submit" %>
+  </div>
+<%- end %>
+
+<%= render "shared/disable_button", submit_id: "#submit", text_id: "#text" %>

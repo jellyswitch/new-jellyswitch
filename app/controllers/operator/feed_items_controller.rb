@@ -73,36 +73,19 @@ class Operator::FeedItemsController < Operator::BaseController
   def create
     authorize FeedItem.new
     
-    if params[:mgmt_note].present? # management note
-      result = CreatePostFeedItem.call(
-        blob: { text: feed_item_params[:text], type: "post" },
-        user: current_user,
-        operator: current_tenant,
-        photos: feed_item_params[:photos],
-      )
+    result = CreatePostFeedItem.call(
+      blob: { text: feed_item_params[:text], type: "post" },
+      user: current_user,
+      operator: current_tenant,
+      photos: feed_item_params[:photos],
+    )
 
-      if result.success?
-        flash[:success] = "Posted!"
-        turbolinks_redirect(feed_items_path, action: "restore")
-      else
-        flash[:error] = result.message
-        turbolinks_redirect(feed_items_path, action: "restore")
-      end
-
-    else # announcement
-      result = Announcements::Create.call(
-        body: feed_item_params[:text],
-        user: current_user,
-        operator: current_tenant
-      )
-      
-      if result.success?
-        flash[:success] = "Announcement posted."
-        turbolinks_redirect(announcements_path, action: "restore")
-      else
-        flash[:error] = result.message
-        turbolinks_redirect(feed_items_path, action: "restore")
-      end
+    if result.success?
+      flash[:success] = "Posted!"
+      turbolinks_redirect(feed_items_path, action: "restore")
+    else
+      flash[:error] = result.message
+      turbolinks_redirect(feed_items_path, action: "restore")
     end
   rescue => e
     Rollbar.error(e)
