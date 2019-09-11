@@ -4,8 +4,11 @@
     <%= f.text_area :body, placeholder: "Type a new announcement...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
   </div>
 
-  <div class="form-group row m-0 p-0">
-    <%= f.submit "Post announcement", class: "form-control btn btn-primary col", id: "submit" %>
+  <div class="form-group row m-0 p-0 mt-1">
+    <button class="form-control btn btn-primary col" id="submit">
+      <i class="fas fa-bullhorn"></i>
+      Post announcement
+    </button>
   </div>
 <%- end %>
 
