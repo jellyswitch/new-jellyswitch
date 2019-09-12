@@ -1,4 +1,4 @@
-<%= form_for(announcement, html: {multipart: true}, local: mobile_app_request? && ios_request?, data: { type: :html }) do |f| %>
+<%= form_for(announcement, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages" , model: announcement %>
   <div class="form-group row m-0 p-0 mt-0">
     <%= f.text_area :body, placeholder: "Type a new announcement...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
