@@ -17,7 +17,7 @@ class Navigation::Default < SimpleDelegator
       {title: "Home", path: feed_items_path},
       {title: "Search", path: new_search_result_path},
       {title: "Building Access", path: doors_path},
-      {title: "Members & Groups", path: members_groups_path},
+      {title: "Members, Groups, & Announcements", path: members_groups_path},
       {title: "Offices & Leases", path: offices_leases_path},
       {title: "Rooms & Reservations", path: rooms_path},
       {title: "Plans & Day Passes", path: plans_day_passes_path},

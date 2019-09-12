@@ -25,6 +25,14 @@
 <% end %>
 
 <%= wide_card do %>
+  <h4 class="display-4 text-center">Announcements</h4>
+  <p>
+    <%= current_tenant.name %> has <%= current_tenant.announcements.count %> announcements.
+  </p>
+  <%= link_to "View Announcements", announcements_path, class: "btn btn-block btn-primary" %>
+<% end %>
+
+<%= wide_card do %>
   <h4 class="display-4 text-center">Approval Queue</h4>
   <% if current_tenant.approval_required? %>  
     <p>

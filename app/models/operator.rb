@@ -39,7 +39,8 @@
 class Operator < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged, slug_column: :subdomain
-  
+
+  has_many :announcements
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors

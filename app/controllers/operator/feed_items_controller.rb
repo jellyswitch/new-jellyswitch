@@ -72,7 +72,7 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def create
     authorize FeedItem.new
-
+    
     result = CreatePostFeedItem.call(
       blob: { text: feed_item_params[:text], type: "post" },
       user: current_user,

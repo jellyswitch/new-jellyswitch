@@ -9,17 +9,11 @@ class Notifications::PushNotifier
     puts "Pushing message: #{@message}"
     validate!
 
-    apn = Houston::Client.production # change this
-    apn.certificate = @operator.push_notification_certificate.download
+    @apn = Houston::Client.production
+    @apn.certificate = @operator.push_notification_certificate.download
 
-    @operator.users.admins.each do |user|
-      if user.ios_token.present?
-        notification = Houston::Notification.new(device: user.ios_token)
-        notification.alert = @message
-
-        apn.push(notification)
-        puts "Pushed message: #{@message} to device: #{user.ios_token}"
-      end
+    recipients.each do |user|
+      push(user, @message)
     end
   end
 
@@ -30,6 +24,26 @@ class Notifications::PushNotifier
 
     if !@operator.push_notification_certificate.attached?
       context.fail!(message: "Operator #{@operator.name} has no push notification certificate.")
+    end
+  end
+
+  def push(user, message)
+    if user.ios_token.present?
+      notification = Houston::Notification.new(device: user.ios_token)
+      notification.alert = message
+
+      @apn.push(notification)
+      puts "Pushed message: #{message} to device: #{user.ios_token}"
+    end
+  end
+
+  def recipients
+    if context.members && context.members == true
+      @operator.users.all.select do |user|
+        user.admin? || user.superadmin? || user.member?(operator)
+      end
+    else
+      @operator.users.admins
     end
   end
 end
