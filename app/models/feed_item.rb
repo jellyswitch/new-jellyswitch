@@ -56,6 +56,8 @@ class FeedItem < ApplicationRecord
 
   def action_text
     case type
+    when "announcement"
+      "posted an announcement"
     when "reservation"
       "reserved a room"
     when "feedback"
@@ -135,6 +137,10 @@ class FeedItem < ApplicationRecord
   end
 
   # Lazy relationships
+
+  def announcement
+    blob_relation("announcement_id", Announcement.unscoped)
+  end
 
   def reservation
     blob_relation("reservation_id", Reservation.unscoped)

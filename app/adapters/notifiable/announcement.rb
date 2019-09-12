@@ -2,16 +2,14 @@
 module Notifiable
   class Announcement < SimpleDelegator
     def notify
-      # create_feed_item
+      create_feed_item
       send_notification
     end
 
     private
 
     def create_feed_item
-      operator = location.operator
-
-      blob = {type: "checkin", checkin_id: id}
+      blob = {type: "announcement", announcement_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob)
     end
 
