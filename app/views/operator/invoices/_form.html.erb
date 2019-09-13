@@ -1,0 +1,37 @@
+<%= form_with(url: invoices_path, local: true, html: {class: "form"}) do |f| %>
+  <%= f.hidden_field :user_id, value: user.id %>
+
+  <div class="form-group">
+    <%= f.label :member %>
+    <%= f.text_field :member, value: user.name, disabled: true, class: "form-control" %>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col">
+      <label>Amount</label>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text">$</span>
+        </div>
+        <%= f.text_field :amount, class: "form-control" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_area :description, class: "form-control", placeholder: "What is this invoice for?" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :payment_method %>
+    <%= f.text_field :payment_method, value: user.payment_method, disabled: true, class: "form-control" %>
+  </div>
+
+  <div class="row mb-3 mt-3 text-center">
+    <small class="col">To use a different payment method, please update the member's payment method on their profile.</small>
+  </div>
+
+  <%= f.submit "Invoice Customer", class: "btn btn-block btn-primary" %>
+
+<% end %>

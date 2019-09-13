@@ -54,6 +54,43 @@ class Operator::InvoicesController < Operator::BaseController
     turbolinks_redirect(referrer_or_root, action: "replace")
   end
 
+  def new
+    authorize Invoice.new
+    @user = current_tenant.users.find(params[:user_id])
+    @invoice = @user.invoices.new
+
+    unless @user
+      flash[:error] = "Create a new invoice from a customer's profile page."
+      turbolinks_redirect(invoices_path, action: "replace")
+    end
+  end
+
+  def create
+    authorize Invoice.new
+
+    @user = current_tenant.users.find(params[:user_id])
+
+    if @user
+      result = Billing::Invoices::Custom::Create.call(
+        user: @user,
+        amount: params[:amount],
+        description: params[:description]
+      )
+
+      if result.success?
+        flash[:success] = "Invoice created."
+        turbolinks_redirect(user_path(@user))
+      else
+        flash[:error] = result.message
+        @invoice = @user.invoices.new
+        render :new
+      end
+    else
+      flash[:error] = "No such user."
+      turbolinks_redirect(root_path)
+    end
+  end
+
   private
 
   def find_invoice(key=:id)

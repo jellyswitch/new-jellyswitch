@@ -30,6 +30,14 @@ class InvoicePolicy < ApplicationPolicy
     admin?
   end
 
+  def new?
+    admin?
+  end
+
+  def create?
+    admin?
+  end
+
   private
 
   def card_added?
