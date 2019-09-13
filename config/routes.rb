@@ -128,7 +128,7 @@ Rails.application.routes.draw do
     end
     resources :comments, controller: "operator/feed_item_comments", only: [:create]
   end
-  resources :invoices, only: [:index], controller: "operator/invoices" do
+  resources :invoices, only: [:index, :new, :create], controller: "operator/invoices" do
     resources :refunds, only: [:create], controller: "operator/refunds"
     get :mark_paid, to: "operator/mark_invoices_paid#update"
     collection do
