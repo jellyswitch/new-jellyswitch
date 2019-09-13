@@ -1,7 +1,7 @@
 <% title "New Invoice" %>
 
 <%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
+  <li class="breadcrumb-item"><%= link_to @billable.name, @billable %></li>
   <li class="breadcrumb-item active" aria-current="page">New Invoice</li>  
 <% end %>
 
@@ -11,7 +11,7 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         <h4 class="display-4 text-center">New Invoice</h4>
-        <%= render "form", invoice: @invoice, user: @user %>
+        <%= render "form", invoice: @invoice, billable: @billable %>
       <% end %>
     <% end %>
   </div>

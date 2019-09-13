@@ -78,4 +78,37 @@ class Organization < ApplicationRecord
   def has_stripe_customer?
     stripe_customer_id.present?
   end
+
+  def card_last_4_digits
+    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
+      if stripe_customer.sources.data.count < 1
+        nil
+      else
+        cards = stripe_customer.sources.data.select { |source| source.object == "card" }
+        if cards.first
+          if cards.first.respond_to? :last4
+            cards.first.last4
+          else
+            nil
+          end
+        else
+          nil
+        end
+      end
+    else
+      nil
+    end
+  end
+
+  def payment_method
+    if has_billing?
+      "Credit card on file"
+    else
+      if out_of_band?
+        "Via cash or check"
+      else
+        "None"
+      end
+    end
+  end
 end

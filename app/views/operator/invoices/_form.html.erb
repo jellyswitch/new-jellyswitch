@@ -1,9 +1,10 @@
 <%= form_with(url: invoices_path, local: true, html: {class: "form"}) do |f| %>
-  <%= f.hidden_field :user_id, value: user.id %>
+  <%= f.hidden_field :billable_type, value: billable.class.name %>
+  <%= f.hidden_field :billable_id, value: billable.id %>
 
   <div class="form-group">
-    <%= f.label :member %>
-    <%= f.text_field :member, value: user.name, disabled: true, class: "form-control" %>
+    <%= f.label :billable_to %>
+    <%= f.text_field :billable, value: billable.name, disabled: true, class: "form-control" %>
   </div>
 
   <div class="row mb-3">
@@ -25,7 +26,7 @@
 
   <div class="form-group">
     <%= f.label :payment_method %>
-    <%= f.text_field :payment_method, value: user.payment_method, disabled: true, class: "form-control" %>
+    <%= f.text_field :payment_method, value: billable.payment_method, disabled: true, class: "form-control" %>
   </div>
 
   <div class="row mb-3 mt-3 text-center">
