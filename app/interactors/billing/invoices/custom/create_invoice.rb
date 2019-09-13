@@ -17,11 +17,27 @@ class Billing::Invoices::Custom::CreateInvoice
       stripe_account: billable.operator.stripe_user_id
     })
 
+    invoice_args = {
+      customer: billable.stripe_customer_id,
+      auto_advance: true
+    }
+
+    if billable.out_of_band?
+      invoice_args = invoice_args.merge!(
+        {
+          billing: 'send_invoice',
+          days_until_due: 30
+        }
+      )
+    else
+      invoice_args = invoice_args.merge!(
+        billing: 'charge_automatically'
+      )
+    end
+
+
     @invoice = Stripe::Invoice.create(
-      {
-        customer: billable.stripe_customer_id,
-        auto_advance: true
-      },
+      invoice_args,
       {
         api_key: billable.operator.stripe_secret_key,
         stripe_account: billable.operator.stripe_user_id
