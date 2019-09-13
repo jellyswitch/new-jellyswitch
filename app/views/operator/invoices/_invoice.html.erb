@@ -41,21 +41,21 @@
 
       <% if invoice.paid?  %>
         <div class="clearfix mb-1"></div>
-        <%= button_to "Refund", invoice_refunds_path(invoice), class: "btn btn-block btn-secondary" %>
+        <%= button_to "Refund", invoice_refunds_path(invoice), remote: true, data: {disable_with: "Refunding..."}, class: "btn btn-block btn-secondary" %>
       <% end %>
 
       <% if invoice.voidable?  %>
         <div class="clearfix mb-1"></div>
-        <%= button_to "Void", invoice_refunds_path(invoice), class: "btn btn-block btn-secondary" %>
+        <%= button_to "Void", invoice_refunds_path(invoice), class: "btn btn-block btn-secondary", remote: true, data: {disable_with: "Voiding..."} %>
       <% end %>
 
       <% if invoice.open? %>
         <div class="clearfix mb-1"></div>
-        <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-block btn-success" %>
+        <%= link_to "Mark as paid", invoice_mark_paid_path(invoice), class: "btn btn-block btn-success", remote: true, data: {disable_with: "Marking as paid..."} %>
 
         <% if policy(invoice).charge? %>
           <div class="clearfix mb-1"></div>
-          <%= link_to "Pay with card on file", invoice_charge_path(invoice), class: "btn btn-block btn-success" %>
+          <%= link_to "Pay with card on file", invoice_charge_path(invoice), class: "btn btn-block btn-success", remote: true, data: {disable_with: "Charging card..."} %>
         <% end %>
       <% end %>
     </div>

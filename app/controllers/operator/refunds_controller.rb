@@ -14,7 +14,7 @@ class Operator::RefundsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    redirect_to invoices_path
+    turbolinks_redirect(invoices_path, action: "replace")
   rescue Exception => e
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
