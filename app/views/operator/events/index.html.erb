@@ -7,7 +7,11 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         <h4 class="display-4 text-center">What's Happening?</h4>
-        <%= link_to "Create a new event", new_event_path, class: "btn btn-block btn-primary" %>
+        <%= link_to new_event_path, class: "btn btn-block btn-primary" do %>
+          <i class="far fa-calendar-alt"></i>
+          &nbsp;
+          Create an event
+        <% end %>
       <% end %>
 
       <%= list_item do %>
