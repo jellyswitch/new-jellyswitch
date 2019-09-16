@@ -5,17 +5,21 @@ class Operator::EventsController < Operator::BaseController
 
   def index
     find_events
+    authorize @events
   end
 
   def show
     find_event
+    authorize @event
   end
 
   def new
     @event = Event.new
+    authorize @event
   end
 
   def create
+    authorize Event.new
     result = Events::Create.call(
       location: current_location,
       user: current_user,
