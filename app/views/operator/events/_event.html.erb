@@ -1,0 +1,21 @@
+<h4 class="display-4 text-center"><%= event.title %></h4>
+
+<% if event.image.attached? %>
+  <%= image_tag event.thumbnail, class: "rounded-square" %>
+<% end %>
+
+<p><%= simple_format(event.description) %></p>
+
+<p>
+  Starts at: <%= link_to pretty_datetime(event.starts_at), event_path(event) %>
+</p>
+
+<% if event.ends_at.present? %>
+  <p>
+    Ends at: <%= pretty_datetime(event.ends_at) %>
+  </p>
+<% end %>
+
+<p>
+  Created by <%= link_to event.user.name, users_path(event.user) %>
+</p>

@@ -1,0 +1,40 @@
+<%= form_with(model: event, local: true, html: {class: "form", multipart: true}, data: {type: :html}) do |f| %>
+  <%= render "shared/error_messages" , model: event %>
+  <div class="form-group">
+    <%= f.label :title %>
+    <%= f.text_field :title, placeholder: "Title", class: "form-control" %>
+  </div>
+
+  <div class="form-group row m-0 p-0 mt-2">
+    
+    <div class="col pl-0 m-0">
+      <%= f.label :image, "Add an image" do %>
+        <span class="btn btn-sm btn-info">Add an image</span>
+        <%= f.file_field :image,
+                         multiple: false,
+                         direct_upload: false,
+                         accept: 'image/png,image/gif,image/jpeg,image/jpg',
+                         class: "form-control-file d-none"
+        %>
+      <%- end %>
+    </div>
+    
+  </div>
+
+  <div class="form-group">
+    <%= f.label :description %>
+    <%= f.text_area :description, placeholder: "Description", class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :starts_at %>
+    <%= f.datetime_select :starts_at, {}, class: "form-control" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :end_at, "Ends at (optional)" %>
+    <%= f.datetime_select :ends_at, {}, class: "form-control" %>
+  </div>
+
+  <%= f.submit "Create event", class: "btn btn-block btn-primary" %>
+<% end %>

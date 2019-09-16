@@ -112,6 +112,10 @@ class Operator::LandingController < Operator::BaseController
     authorize :dashboard, :show?
   end
 
+  def announcements_events
+    authorize :dashboard, :show?
+  end
+
   def privacy_policy
   end
 end

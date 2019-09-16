@@ -60,6 +60,7 @@ class Location < ApplicationRecord
 
   has_many :checkins
   has_many :doors
+  has_many :events
   has_many :rooms
   has_many :offices
   has_many :office_leases

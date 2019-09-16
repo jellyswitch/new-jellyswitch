@@ -1,0 +1,21 @@
+
+<% title "What's Happening?" %>
+
+<div class="row mt-1 mb-0 p-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center">What's Happening?</h4>
+        <%= link_to "Create a new event", new_event_path, class: "btn btn-block btn-primary" %>
+      <% end %>
+
+      <%= list_item do %>
+        <% @events.each do |event| %>
+          <%= render event %>
+        <% end %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-3"></div>
+</div>

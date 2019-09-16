@@ -1,0 +1,25 @@
+# == Schema Information
+#
+# Table name: events
+#
+#  id          :bigint(8)        not null, primary key
+#  description :text
+#  ends_at     :datetime
+#  starts_at   :datetime         not null
+#  title       :string           not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  location_id :integer          not null
+#  user_id     :integer          not null
+#
+
+class Event < ApplicationRecord
+  belongs_to :location
+  belongs_to :user
+
+  has_one_attached :image
+
+  def thumbnail
+    image.variant(resize: "180x180", auto_orient: true)
+  end
+end
