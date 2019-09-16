@@ -51,6 +51,12 @@
             Post an announcement
           <% end %>
 
+          <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
+            <i class="far fa-calendar-alt"></i>
+            &nbsp;
+            Create an event
+          <% end %>
+
           <div class="list-group-item">
             <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
           </div>

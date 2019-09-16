@@ -36,5 +36,11 @@
     <%= f.datetime_select :ends_at, {}, class: "form-control" %>
   </div>
 
-  <%= f.submit "Create event", class: "btn btn-block btn-primary" %>
+  <div class="form-group row m-0 p-0">
+    <button class="form-control btn btn-primary col" id="submit" data-disable-with="Creating...">
+      <i class="far fa-calendar-alt"></i>      
+      &nbsp;
+      Create event
+    </button>
+  </div>
 <% end %>
