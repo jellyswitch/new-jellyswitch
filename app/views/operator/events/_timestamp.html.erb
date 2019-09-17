@@ -1,0 +1,7 @@
+<h6 class="text-danger col">
+  <% if event.ends_at.present? %>
+    <%= pretty_timestamps(event.starts_at, event.ends_at) %>
+  <% else %>
+    <%= pretty_time(event.starts_at) %>
+  <% end %>
+</h6>
