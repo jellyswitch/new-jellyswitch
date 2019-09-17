@@ -2,6 +2,7 @@
 class Operator::LandingController < Operator::BaseController
   before_action :background_image
   include LandingHelper
+  include EventHelper
 
   def index
     landing_redirect
@@ -10,6 +11,7 @@ class Operator::LandingController < Operator::BaseController
   def home
     @doors = Door.all
     @member_feedback = MemberFeedback.new
+    find_upcoming_events
     response.headers["Turbolinks-Location"] = home_url
     home_redirect
   end

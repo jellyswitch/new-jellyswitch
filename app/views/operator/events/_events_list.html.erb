@@ -2,16 +2,17 @@
   <%= list_item do %>
     <div class="row">
       <div class="col">
-        <h5 class="mb-0"><%= human_time_from_now(event_hash.first) %></h5>
-        <span class="text-secondary mt-0"><%= short_date(event_hash.first) %></span>
+        <%= render "operator/events/time_bucket_header", date: event_hash.first %>
       </div>
     </div>
-    <% event_hash.last.each do |event| %>
-      <div class="row mt-2 mb-5">
-        <div class="col">
-          <%= render "event_item", event: event %>
+    <%= list_wrapper do %>
+      <% event_hash.last.each do |event| %>
+        <div class="row mt-2 mb-5">
+          <div class="col">
+            <%= render "operator/events/event_item", event: event %>
+          </div>
         </div>
-      </div>
+      <% end %>
     <% end %>
   <% end %>
 <% end %>
