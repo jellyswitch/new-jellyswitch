@@ -39,7 +39,7 @@ module ApplicationHelper
     elsif date.to_date == Date.yesterday
       "Yesterday"
     else
-      long_date(date)
+      date.strftime("%A")
     end
   end
 

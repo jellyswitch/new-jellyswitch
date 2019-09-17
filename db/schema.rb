@@ -112,6 +112,7 @@ ActiveRecord::Schema.define(version: 2019_09_16_175712) do
     t.integer "user_id", null: false
     t.integer "location_id", null: false
     t.datetime "starts_at", null: false
+    t.string "location_string"
     t.datetime "ends_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false

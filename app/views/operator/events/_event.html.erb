@@ -1,4 +1,13 @@
 <div class="row">
+  <h6 class="text-danger col">
+    <i class="fas fa-clock"></i>
+    &nbsp;
+    <%= human_time_from_now(event.starts_at) %>
+    <%= render "timestamp", event: event %>
+  </h6>
+</div>
+
+<div class="row">
   <div class="col-4">
     <% if event.image.attached? %>
       <%= image_tag event.thumbnail, class: "rounded img-fluid" %>
@@ -8,14 +17,24 @@
   </div>
   <div class="col-8">
     <div class="row">
-      <%= render "timestamp", event: event %>
-    </div>
-    <div class="row">
       <h5 class="col"><%= event.title %></h5>
     </div>
     <div class="row">
       <div class="col">
+        <span class="fas fa-user-alt"></span>
+        &nbsp;
         Hosted by <%= event.user.name.titleize %>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <span class="fas fa-building"></span>
+        &nbsp;
+        <% if event.location_string.present? %>
+          <%= event.location_string.titleize %>
+        <% else %>
+          <%= event.location.name.titleize %>
+        <% end %>
       </div>
     </div>
   </div>
