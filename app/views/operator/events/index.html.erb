@@ -14,9 +14,17 @@
         <% end %>
       <% end %>
 
-      <%= list_item do %>
-        <% @events.each do |event| %>
-          <%= render event %>
+      <% @events.each do |event_hash| %>
+        <%= list_item do %>
+          <div class="row">
+            <div class="col">
+              <h4 class="display-4"><%= human_time_from_now(event_hash.first) %></h4>
+              <%= short_date(event_hash.first) %>
+            </div>
+          </div>
+          <% event_hash.last.each do |event| %>
+            <%= render event %>
+          <% end %>
         <% end %>
       <% end %>
     <% end %>

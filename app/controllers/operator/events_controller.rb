@@ -5,7 +5,7 @@ class Operator::EventsController < Operator::BaseController
 
   def index
     find_events
-    authorize @events
+    authorize Event
   end
 
   def show
