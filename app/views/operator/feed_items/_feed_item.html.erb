@@ -1,3 +1,3 @@
-<% unless feed_item.type == "new-user" %>
+<% unless feed_item.type == "new-user" || feed_item.type == "reservation" %>
   <%= feed_item_card(feed_item, comments) %>
 <% end %>
