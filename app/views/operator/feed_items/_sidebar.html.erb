@@ -47,8 +47,8 @@
 
   <% if @events.first.last.count > 0 %>
     <% @events.first.last.each do |event| %>
-      <%= link_to event_path(event), class: "list-group-item list-group-item-action d-flx m-0", style: "border: 0;" do %>
-        <i class="fas fa-clock"></i>
+      <%= link_to event_path(event), class: "list-group-item list-group-item-action d-flx m-0" do %>
+        <i class="far fa-calendar-alt"></i>
         &nbsp;
         <%= event.title %>
         &nbsp;

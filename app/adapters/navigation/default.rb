@@ -15,9 +15,9 @@ class Navigation::Default < SimpleDelegator
   def admin_nav_items
     items = [
       {title: "Home", path: feed_items_path},
-      {title: "Search", path: new_search_result_path},
       {title: "Building Access", path: doors_path},
-      {title: "Announcements & Events", path: announcements_events_path},
+      {title: "Announcements", path: announcements_path},
+      {title: "What's Happening?", path: events_path},
       {title: "Members & Groups", path: members_groups_path},
       {title: "Offices & Leases", path: offices_leases_path},
       {title: "Rooms & Reservations", path: rooms_path},
@@ -31,7 +31,7 @@ class Navigation::Default < SimpleDelegator
 
     if operator.locations.count > 1
       items = items.insert(
-        3,
+        4,
         {title: "Change Location", path: edit_set_location_path}
       )
     end
