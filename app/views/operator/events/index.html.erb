@@ -14,23 +14,14 @@
         <% end %>
       <% end %>
 
-      <% @events.each do |event_hash| %>
-        <%= list_item do %>
-          <div class="row">
-            <div class="col">
-              <h5 class="mb-0"><%= human_time_from_now(event_hash.first) %></h5>
-              <span class="text-secondary mt-0"><%= short_date(event_hash.first) %></span>
-            </div>
-          </div>
-          <% event_hash.last.each do |event| %>
-            <div class="row mt-2 mb-5">
-              <div class="col">
-                <%= render "event_item", event: event %>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
+      <%= link_to past_events_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
+        <i class="fas fa-history"></i>
+        &nbsp;
+        Past Events
       <% end %>
+
+      <%= render "events_list", events: @events %>
+
     <% end %>
   </div>
   <div class="col-lg-3"></div>

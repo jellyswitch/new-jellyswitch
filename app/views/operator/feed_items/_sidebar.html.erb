@@ -8,7 +8,7 @@
 <%= render "operator/search_results/form" %>
 
 
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center mb-2">
   <div class="btn-group mt-2" role="group" aria-label="Filter">
     <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbolinks-action" => "replace"} %>
 
@@ -33,6 +33,31 @@
     </button>
   </div>
 </div>
+
+<%= list_wrapper do %>
+  <%= list_item do %>
+    <h6>What's Happening?</h6>
+  <% end %>
+
+  <%= list_item do %>
+    <i class="fas fa-briefcase mt-2"></i>
+    &nbsp;
+    <%= @reservations %> room reservations
+  <% end %>
+
+  <% if @events.first.last.count > 0 %>
+    <% @events.first.last.each do |event| %>
+      <%= link_to event_path(event), class: "list-group-item list-group-item-action d-flx m-0", style: "border: 0;" do %>
+        <i class="fas fa-clock"></i>
+        &nbsp;
+        <%= event.title %>
+        &nbsp;
+        <strong class="text-danger"><%= render "operator/events/timestamp", event: event %></strong>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>
 
 <div class="modal fade" id="newModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-dialog-centered" role="document">

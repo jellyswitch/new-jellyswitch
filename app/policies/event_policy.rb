@@ -4,6 +4,10 @@ class EventPolicy < ApplicationPolicy
     admin?
   end
 
+  def past?
+    admin?
+  end
+
   def new?
     admin?
   end

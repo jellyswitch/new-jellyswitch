@@ -116,7 +116,11 @@ Rails.application.routes.draw do
       get "keys", to: "operator/doors#keys"
     end
   end
-  resources :events, controller: "operator/events"
+  resources :events, controller: "operator/events" do
+    collection do
+      get :past, to: "operator/events#past"
+    end
+  end
   resources :feed_items, controller: "operator/feed_items" do
     collection do
       get :questions

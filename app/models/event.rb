@@ -19,6 +19,9 @@ class Event < ApplicationRecord
   belongs_to :user
 
   has_one_attached :image
+  
+  scope :future, -> () { where("starts_at >= ?", Time.current) }
+  scope :past, -> () { where("starts_at < ?", Time.current) }
 
   def thumbnail
     image.variant(resize: "180x180", auto_orient: true)

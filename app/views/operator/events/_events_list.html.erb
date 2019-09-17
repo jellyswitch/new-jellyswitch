@@ -1,0 +1,17 @@
+<% @events.each do |event_hash| %>
+  <%= list_item do %>
+    <div class="row">
+      <div class="col">
+        <h5 class="mb-0"><%= human_time_from_now(event_hash.first) %></h5>
+        <span class="text-secondary mt-0"><%= short_date(event_hash.first) %></span>
+      </div>
+    </div>
+    <% event_hash.last.each do |event| %>
+      <div class="row mt-2 mb-5">
+        <div class="col">
+          <%= render "event_item", event: event %>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

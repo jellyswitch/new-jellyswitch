@@ -8,6 +8,11 @@ class Operator::EventsController < Operator::BaseController
     authorize Event
   end
 
+  def past
+    find_past_events
+    authorize Event
+  end
+
   def show
     find_event
     authorize @event
