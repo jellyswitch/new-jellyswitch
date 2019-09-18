@@ -24,7 +24,7 @@ class Events::Create
       offset = zone.now.formatted_offset
       time_input = "#{params[:ends_at]} #{offset}"
 
-      params[:ends_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p")
+      params[:ends_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p %Z")
     end
 
     event = Event.new(params)
