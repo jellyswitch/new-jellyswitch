@@ -15,7 +15,7 @@ class Operator::FeedItemsController < Operator::BaseController
       @expenses_active = nil
 
       # what's happening
-      find_events
+      find_todays_events
       @reservations = current_location.rooms.map do |room|
         room.reservations.today
       end.flatten.uniq.count

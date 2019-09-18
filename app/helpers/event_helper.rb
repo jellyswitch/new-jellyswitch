@@ -11,6 +11,10 @@ module EventHelper
     @events = current_location.events.future.limit(1).order("starts_at ASC").group_by_day(&:starts_at)
   end
 
+  def find_todays_events
+    @events = current_location.events.today.order("starts_at ASC")
+  end
+
   def find_event
     @event = current_location.events.find(params[:id])
   end
