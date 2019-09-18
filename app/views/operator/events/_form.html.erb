@@ -51,7 +51,11 @@
 <% end %>
 
 <script type="text/javascript">
-  $(function () {
+  document.addEventListener("turbolinks:load", () => {
+    var callback = function(e) {
+      $("#ends_at").datetimepicker('minDate', $("#starts_at").datetimepicker('viewDate'));
+    };
+    
     $('#starts_at').datetimepicker({
         sideBySide: true,
         stepping: 5,
@@ -67,7 +71,10 @@
         }
     });
 
+    $("#starts_at").on("change.datetimepicker", callback);
+
     $('#ends_at').datetimepicker({
+        userCurrent: false,
         sideBySide: true,
         stepping: 5,
         widgetPositioning: {
