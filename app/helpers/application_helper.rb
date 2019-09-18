@@ -31,6 +31,18 @@ module ApplicationHelper
     "#{long_date(a)} - #{long_date(b)}"
   end
 
+  def human_time_from_now(date)
+    if date.to_date == Date.today
+      "Today"
+    elsif date.to_date == Date.tomorrow
+      "Tomorrow"
+    elsif date.to_date == Date.yesterday
+      "Yesterday"
+    else
+      date.strftime("%A")
+    end
+  end
+
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
       office_lease.subscription.plan.present?

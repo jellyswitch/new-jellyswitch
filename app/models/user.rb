@@ -41,6 +41,7 @@ class User < ApplicationRecord
   has_many :checkins
   has_many :day_passes
   has_many :door_punches
+  has_many :events
   has_many :feed_items
   has_many :feed_item_comments
   has_many :invoices, as: :billable

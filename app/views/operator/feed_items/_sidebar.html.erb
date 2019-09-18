@@ -8,7 +8,7 @@
 <%= render "operator/search_results/form" %>
 
 
-<div class="d-flex justify-content-center">
+<div class="d-flex justify-content-center mb-2">
   <div class="btn-group mt-2" role="group" aria-label="Filter">
     <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbolinks-action" => "replace"} %>
 
@@ -34,6 +34,37 @@
   </div>
 </div>
 
+<%= list_wrapper do %>
+  <li class="list-group-item m-0 pt-3 pb-2" style="border-bottom: 0px;">
+    <h5>What's Happening?</h5>  
+  </li>
+
+  <%= list_item do %>
+    <i class="fas fa-briefcase mt-2"></i>
+    &nbsp;
+    <%= @reservations %> room reservations
+  <% end %>
+
+  <% if @events.first && @events.first.last.count > 0 %>
+    <% @events.first.last.each do |event| %>
+      <%= link_to event_path(event), class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
+        <i class="far fa-calendar-alt"></i>
+        &nbsp;
+        <%= event.title %>
+        &nbsp;
+        <strong class="text-danger"><%= render "operator/events/timestamp", event: event %></strong>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= link_to events_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
+    <div class="text-center">
+      View all
+      <i class="fas fa-arrow-right"></i>
+    </div>
+  <% end %>
+
+<% end %>
+
 <div class="modal fade" id="newModal" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
@@ -49,6 +80,12 @@
             <i class="fas fa-bullhorn"></i>
             &nbsp;
             Post an announcement
+          <% end %>
+
+          <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
+            <i class="far fa-calendar-alt"></i>
+            &nbsp;
+            Create an event
           <% end %>
 
           <div class="list-group-item">

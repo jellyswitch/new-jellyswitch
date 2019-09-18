@@ -18,14 +18,5 @@ class Billing::Reservations::SaveRoomReservation
     create_feed_item(context.user.operator, context.user, blob)
 
     message = "#{reservation.user.name} has reserved #{reservation.room.name}"
-
-    result = Notifications::PushNotifier.call(
-      message: message,
-      operator: context.user.operator
-    )
-
-    if !result.success?
-      Rollbar.error("Error pushing notification: #{result.message}")
-    end
   end
 end

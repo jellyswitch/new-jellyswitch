@@ -1,0 +1,18 @@
+<% @events.each do |event_hash| %>
+  <%= list_item do %>
+    <div class="row">
+      <div class="col">
+        <%= render "operator/events/time_bucket_header", date: event_hash.first %>
+      </div>
+    </div>
+    <%= list_wrapper do %>
+      <% event_hash.last.each do |event| %>
+        <div class="row mt-2 mb-5">
+          <div class="col">
+            <%= render "operator/events/event_item", event: event %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

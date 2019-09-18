@@ -14,6 +14,8 @@
 //= require jquery
 //= require popper
 //= require bootstrap-sprockets
+//= require moment
+//= require tempusdominus-bootstrap-4.js
 //= require activestorage
 //= require turbolinks
 //= require Chart.bundle

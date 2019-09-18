@@ -1,6 +1,7 @@
 # typed: false
 class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
+  include EventHelper
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
@@ -12,6 +13,13 @@ class Operator::FeedItemsController < Operator::BaseController
       @activity_active = nil
       @notes_active = nil
       @expenses_active = nil
+
+      # what's happening
+      find_events
+      @reservations = current_location.rooms.map do |room|
+        room.reservations.today
+      end.flatten.uniq.count
+
       authorize @feed_items
     end
   end

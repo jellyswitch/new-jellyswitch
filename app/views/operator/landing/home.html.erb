@@ -10,6 +10,24 @@
   <% end %>
 <% end %>
 
+<% if current_location.events.future.count > 0 %>
+  <%= wide_card do %>
+    <div class="row">
+      <div class="col">
+        <%= render "operator/events/time_bucket_header", date: @events.first.first %>
+      </div>
+    </div>
+
+    <div class="row mt-2 mb-5">
+      <div class="col">
+        <%= render "operator/events/event_item", event: @events.first.last.first %>
+      </div>
+    </div>
+
+    <%= link_to "View all events", events_path, class: "btn btn-block btn-primary" %>
+  <% end %>
+<% end %>
+
 <% if current_location.rooms.visible.count > 0 %>
   <%= wide_card do %>
     <%= render "shared/reservations_card" %>

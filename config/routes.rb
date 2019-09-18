@@ -79,6 +79,7 @@ Rails.application.routes.draw do
   get "/offices_leases", to: "operator/landing#offices_leases", as: :offices_leases
   get "/plans_day_passes", to: "operator/landing#plans_day_passes", as: :plans_day_passes
   get "/customization", to: "operator/landing#customization", as: :customization
+  get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
 
   # Admin namespace (for operator resources)
   namespace :operator do
@@ -113,6 +114,11 @@ Rails.application.routes.draw do
     get "open", to: "operator/doors#open"
     collection do
       get "keys", to: "operator/doors#keys"
+    end
+  end
+  resources :events, controller: "operator/events" do
+    collection do
+      get :past, to: "operator/events#past"
     end
   end
   resources :feed_items, controller: "operator/feed_items" do
