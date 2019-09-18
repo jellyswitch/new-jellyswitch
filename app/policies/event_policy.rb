@@ -19,4 +19,12 @@ class EventPolicy < ApplicationPolicy
   def show?
     member? || admin?
   end
+
+  def edit?
+    admin?
+  end
+
+  def update?
+    admin?
+  end
 end

@@ -39,4 +39,29 @@ class Operator::EventsController < Operator::BaseController
       @event = Event.new(event_params)
     end
   end
+
+  def edit
+    find_event
+    authorize @event
+  end
+
+  def update
+    find_event
+    authorize @event
+
+    result = Events::Update.call(
+      event: @event,
+      location: current_location,
+      user: current_user,
+      event_params: event_params
+    )
+
+    if result.success?
+      flash[:success] = "Event updated."
+      turbolinks_redirect(event_path(result.event), action: "replace")
+    else
+      flash[:error] = result.message
+      render :edit
+    end
+  end
 end
