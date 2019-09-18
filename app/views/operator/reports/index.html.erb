@@ -4,6 +4,11 @@
   <h4 class="display-4 mb-5 text-center">Data Reports</h4>
 
   <dl class="row">
+    <dt class="col-lg-6">Weekly Updates</dt>
+    <dd class="col"><%= link_to "View Weekly Updates", weekly_updates_path, class: "btn btn-primary btn-block" %></dd>
+  </dl>
+
+  <dl class="row">
     <dt class="col-lg-6"><%= @report.active_member_count %> active members</dt>
     <dd class="col"><%= link_to "View Data", active_members_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>

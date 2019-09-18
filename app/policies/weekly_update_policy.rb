@@ -13,6 +13,6 @@ class WeeklyUpdatePolicy < ApplicationPolicy
   end
 
   def new?
-    superadmin?
+    user.id == User.first.id # only dave can do this
   end
 end
