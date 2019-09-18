@@ -10,13 +10,21 @@ class Events::Create
     })
 
     if params[:starts_at].present?
-      params[:starts_at] = Time.strptime(params[:starts_at], "%m/%d/%Y %l:%M %p")
+      zone = ActiveSupport::TimeZone[location.time_zone]
+      offset = zone.now.formatted_offset
+      time_input = "#{params[:starts_at]} #{offset}"
+
+      params[:starts_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p %Z")
     else
       context.fail!(message: "You must provide a start date for your event.")
     end
 
     if params[:ends_at].present?
-      params[:ends_at] = Time.strptime(params[:ends_at], "%m/%d/%Y %l:%M %p")
+      zone = ActiveSupport::TimeZone[location.time_zone]
+      offset = zone.now.formatted_offset
+      time_input = "#{params[:ends_at]} #{offset}"
+
+      params[:ends_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p")
     end
 
     event = Event.new(params)
