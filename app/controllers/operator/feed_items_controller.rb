@@ -2,6 +2,8 @@
 class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
   before_action :find_todays_events
+  before_action :find_room_reservations
+
   include EventHelper
 
   def index
@@ -16,9 +18,6 @@ class Operator::FeedItemsController < Operator::BaseController
       @expenses_active = nil
 
       # what's happening
-      @reservations = current_location.rooms.map do |room|
-        room.reservations.today
-      end.flatten.uniq.count
 
       authorize @feed_items
     end
@@ -175,5 +174,11 @@ class Operator::FeedItemsController < Operator::BaseController
   def not_an_expense
     @feed_item.unset_expense
     @feed_item.save
+  end
+
+  def find_room_reservations
+    @reservations = current_location.rooms.map do |room|
+      room.reservations.today
+    end.flatten.uniq.count
   end
 end
