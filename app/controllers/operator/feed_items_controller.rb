@@ -1,6 +1,7 @@
 # typed: false
 class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
+  before_action :find_todays_events
   include EventHelper
 
   def index
@@ -15,7 +16,6 @@ class Operator::FeedItemsController < Operator::BaseController
       @expenses_active = nil
 
       # what's happening
-      find_todays_events
       @reservations = current_location.rooms.map do |room|
         room.reservations.today
       end.flatten.uniq.count
