@@ -1,0 +1,59 @@
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+<div class="container">
+
+<p>Hello <%= @user.name.titleize %>,</p>
+
+<p>
+  Exciting news! <%= @user.operator.name %> now has its very own mobile app in the app store. Download it here, or find links on <%= @user.operator.name %>'s website:
+</p>
+
+<ul>
+  <li>
+    iOS App Store:
+    <a href="<%= @user.operator.ios_url %>" target="_blank"><%= @user.operator.ios_url %></a>
+  </li>
+  <li>
+    Google Play Store:
+    <a href="<%= @user.operator.android_url %>" target="_blank"><%= @user.operator.android_url %></a>
+  </li>
+</ul>
+
+<p>
+  We will be transitioning all members to it ASAP and look forward to giving you an even better experience at <%= @user.operator.name %>.
+</p>
+
+<p>
+  We've created an account for you already. Simply log in with the following credentials:
+</p>
+
+<ul>
+  <li>Email: <b><%= @user.email %></b></li>
+  <li>Password: <b><%= @password %></b></li>
+</ul>
+  
+<p>  
+  We've already transferred over all of your account information, including your membership plan. (And, of course, please change your password as soon as possible!)
+</p>
+
+<p>
+  This new mobile app will allow you to:
+</p>
+
+<ul>
+  <li>Open the door</li>
+  <li>Reserve rooms for phone calls and meetings</li>
+  <li>Give us anonymous feedback about your experience so we can improve</li>
+  <li>Stay up to date on the events happening at <%= @user.operator.name %></li>
+  <li>Manage your membership</li>
+  <li>...and more</li>
+</ul>
+
+<p>
+  Happy coworking!
+</p>
+
+<p>
+  - The <%= @user.operator.name %> Team
+</p>
+</div>
