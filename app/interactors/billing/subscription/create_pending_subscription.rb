@@ -1,6 +1,7 @@
 # typed: true
 class Billing::Subscription::CreatePendingSubscription
   include Interactor
+  include ErrorsHelper
 
   delegate :subscription, :user, :start_day, to: :context
 
@@ -15,10 +16,12 @@ class Billing::Subscription::CreatePendingSubscription
       context.fail!(message: "Can't add more than one pending memberships. Cancel any existing pending memberships first, and try again.")
     end
 
+    subscription.billable = BillableFactory.for(subscription).billable
+
     if subscription.save
       context.subscription = subscription
     else
-      context.fail!(message: "There was a problem creating this subscription.")
+      context.fail!(message: "There was a problem creating this subscription (#{errors_for(subscription)}).")
     end
   end
 end
