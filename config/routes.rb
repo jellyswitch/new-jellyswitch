@@ -236,6 +236,7 @@ Rails.application.routes.draw do
     get :out_of_band, to: "operator/users#out_of_band"
     get :credit_card, to: "operator/users#credit_card"
     get :bill_to_organization, to: "operator/users#bill_to_organization"
+    get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
   end
   resources :weekly_updates, controller: "operator/weekly_updates"
 end

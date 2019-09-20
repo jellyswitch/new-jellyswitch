@@ -13,6 +13,11 @@ class UserMailer < ApplicationMailer
     @user = user
     @password = password
 
-    mail to: @user.email, subject: "Welcome to #{user.operator.name}!", from: @user.operator.contact_email
+    from_addr = @user.operator.contact_email
+    if from_addr.blank?
+      from_addr = "noreply@jellyswitch.com"
+    end
+
+    mail to: @user.email, subject: "Welcome to #{user.operator.name}!", from: from_addr
   end
 end

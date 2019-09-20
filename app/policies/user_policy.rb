@@ -76,6 +76,10 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin?
   end
 
+  def set_password_and_send_email?
+    admin?
+  end
+
   private
 
   def owner_or_admin?

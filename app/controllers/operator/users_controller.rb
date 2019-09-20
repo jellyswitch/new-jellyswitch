@@ -163,6 +163,21 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def set_password_and_send_email
+    find_user(:user_id)
+    authorize @user
+    background_image
+
+    result = Onboarding::SetPasswordAndSendEmail.call(user: @user)
+
+    if result.success?
+      flash[:success] = "Password and onboarding email sent."
+    else
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
   def memberships
     find_user(:user_id)
     authorize @user
