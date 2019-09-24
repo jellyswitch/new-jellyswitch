@@ -5,19 +5,35 @@
   <li class="breadcrumb-item active" aria-current="page">Member Directory</li>
 <% end %>
 
-<%= wide_card do %>
-  <%- if admin? %>
-    <div class="row mb-3">
-      <div class="col">
-        <%= link_to "Add Member", add_member_users_path, class: "btn btn-block btn-primary" %>
-      </div>
-    </div>
-  <%- end %>
+<div class="row mt-1 mb-0 p-0">
+  <div class="col-lg-2"></div>
+  <div class="col-lg-6 m-0 p-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center">Member Directory</h4>
+        <% if admin? %>
+          <div class="row mb-3 mt-3">
+            <div class="col">
+              <%= link_to add_member_users_path, class: "btn btn-block btn-primary" do %>
+                <i class="fas fa-users"></i>
+                &nbsp;
+                Add Member
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
 
-  <h5 class="text-center">Unapproved Members</h5>
-  <%= render "member_list", users: @unapproved_users %>
+      <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
+        <i class="fas fa-hand-paper"></i>
+        &nbsp;
+        View approval queue
+      <% end %>
 
-
-  <h5 class="text-center mt-3">Members</h5>
-  <%= render "member_list", users: @users %>
-<%- end %>
+      <% @users.each do |user| %>
+        <%= render "list_item", user: user %>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-1"></div>
+</div>
