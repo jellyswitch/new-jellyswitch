@@ -1,7 +1,7 @@
 module WeeklyUpdateHelper
   def admins_in_english(users)
     users.map do |user|
-      link_to user.name, user_path
+      link_to user.name, user_path(user)
     end.to_sentence
   end
 
