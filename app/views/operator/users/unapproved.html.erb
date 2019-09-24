@@ -1,30 +1,23 @@
 <% title "Approval Queue" %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">Approval Queue</h4>
-      <p class="lead text-center mb-3 mt-3">These users are currently awaiting approval.</p>
-      <% if @users.count < 1 %>
-        <p>(none)</p>
-      <% else %>
-        <table class="table">
-          <tr>
-            <th>Name</th>
-            <th>Signed Up</th>
-            <th></th>
-          </tr>
-          <% @users.each do |user| %>
-            <tr>
-              <td><%= link_to user.name, user_path(user) %></td>
-              <td><%= time_ago_in_words(user.created_at) %> ago</td>
-              <td><%= render "approval_toggle", user: user %></td>
-            </tr>
-          <% end %>
-        </table>
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Members & Groups", members_groups_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Member Directory", users_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Approval Queue</li>
+<% end %>
+
+<div class="row mt-1 mb-0 p-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center">Approval Queue</h4>
       <% end %>
-    </div>
+
+      <% @users.each do |user| %>
+        <%= render "approval_card", user: user %>
+      <% end %>
+    <% end %>
   </div>
-  <div class="col-sm-3"></div>
+  <div class="col-lg-3"></div>
 </div>
