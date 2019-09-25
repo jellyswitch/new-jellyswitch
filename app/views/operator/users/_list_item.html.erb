@@ -4,11 +4,11 @@
   <li class="list-group-item">
 <%- end %>
 
-  <div class="row">
-    <div>
+  <div class="row mb-2 mt-2">
+    <div class="col-2">
       <%= render "shared/small_profile_photo", user: user %>
     </div>
-    <div class="ml-2">
+    <div class="col">
       <p class="mb-1 pt-2">
         <%= user.name %>
         <% if user.member?(current_tenant) %>

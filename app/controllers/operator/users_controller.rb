@@ -1,24 +1,28 @@
 # typed: false
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
+  before_action :background_image
   
   def index
     find_approved_users
-    @unapproved_users = User.for_space(current_tenant).unapproved
+    @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
+    @archived_users = User.for_space(current_tenant).archived.order("name")
     authorize @users
-    background_image
   end
 
   def unapproved
     find_unapproved_users
     authorize @users
-    background_image
+  end
+
+  def archived
+    find_archived_users
+    authorize @users
   end
 
   def show
     find_user
     authorize @user
-    background_image
 
     @usage_report = Jellyswitch::UsageReport.new(@user)
 
@@ -38,20 +42,17 @@ class Operator::UsersController < Operator::BaseController
       flash[:success] = "Please log out first."
       redirect_to root_path
     end
-    background_image
   end
 
   def add_member
     @user = User.new
     @user.approved = true
     authorize @user
-    background_image
   end
 
   def edit
     find_user
     authorize @user
-    background_image
   end
 
   def create
@@ -87,7 +88,6 @@ class Operator::UsersController < Operator::BaseController
       end
     else
       @user = result.user
-      background_image
       if result.message
         flash[:error] = result.message
       end
@@ -124,7 +124,6 @@ class Operator::UsersController < Operator::BaseController
   def change_password
     find_user(:user_id)
     authorize @user
-    background_image
   end
 
   def update_password
@@ -166,7 +165,6 @@ class Operator::UsersController < Operator::BaseController
   def set_password_and_send_email
     find_user(:user_id)
     authorize @user
-    background_image
 
     result = Onboarding::SetPasswordAndSendEmail.call(user: @user)
 
@@ -181,13 +179,11 @@ class Operator::UsersController < Operator::BaseController
   def memberships
     find_user(:user_id)
     authorize @user
-    background_image
   end
 
   def day_passes
     find_user(:user_id)
     authorize @user
-    background_image
   end
 
   def reservations
@@ -196,7 +192,6 @@ class Operator::UsersController < Operator::BaseController
 
     @pagy, @reservations = pagy(@user.reservations.order("created_at DESC").all)
     @reservations = @reservations.decorate
-    background_image
   end
 
   def invoices
@@ -204,7 +199,6 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
 
     @invoices = @user.invoices
-    background_image
   end
 
   def approve
@@ -227,9 +221,35 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(approval_redirect_path)
   end
 
+  def archive
+    find_user(:user_id)
+    authorize @user
+
+    if @user.member?(current_tenant)
+      flash[:error] = "Cannot archive an active member."
+    else
+      if @user.update(archived: true, approved: false)
+        flash[:success] = "User archived (and unapproved)."
+      else
+        flash[:error] = "Couldn't archive user."
+      end
+    end
+    turbolinks_redirect(user_path(@user))
+  end
+
+  def unarchive
+    find_user(:user_id)
+    authorize @user
+    if @user.update(archived: false, approved: true)
+      flash[:success] = "User unarchived."
+    else
+      flash[:error] = "Couldn't unarchive user."
+    end
+    turbolinks_redirect(user_path(@user))
+  end
+
   def edit_billing
     find_user(:user_id)
-    background_image
     include_stripe
   end
 
@@ -315,32 +335,5 @@ class Operator::UsersController < Operator::BaseController
 
   def payment_method_params
     params.require(:user).permit(:out_of_band)
-  end
-
-  def admin_hook
-    if User.count < 1
-      @user.admin = true
-    end
-  end
-
-  def find_user(key = :id)
-    @user = User.friendly.find(params[key])
-  end
-
-  def find_approved_users
-    @users = User.for_space(current_tenant).approved.order("name")
-  end
-
-  def find_unapproved_users
-    @users = User.for_space(current_tenant).unapproved.order("name")
-  end
-
-  def approval_redirect_path
-    if params[:feed_item]
-      feed_item = FeedItem.find params[:feed_item]
-      feed_item_path(feed_item)
-    else
-      user_path(@user)
-    end
   end
 end

@@ -39,11 +39,24 @@
     <h5>What's Happening?</h5>  
   </li>
 
-  <%= list_item do %>
+  <li class="list-group-item list-group-item-action m-0">
     <i class="fas fa-briefcase mt-2"></i>
     &nbsp;
     <%= @reservations %> room reservations today
+  </li>
+
+  <% if @unapproved_members.count > 0 %>
+  
+    <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
+      <i class="fas fa-hand-paper"></i>
+      &nbsp;
+      <%= @unapproved_members.count %> members awaiting approval
+      <i class="fas fa-arrow-right"></i>
+    <% end %>
+  
   <% end %>
+
+
 
   <% if @events.count > 0 %>
     <% @events.each do |event| %>
@@ -86,6 +99,12 @@
             <i class="far fa-calendar-alt"></i>
             &nbsp;
             Create an event
+          <% end %>
+
+          <%= link_to add_member_users_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Add a member
           <% end %>
 
           <div class="list-group-item">

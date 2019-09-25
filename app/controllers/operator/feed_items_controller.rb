@@ -3,6 +3,7 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
   before_action :find_todays_events
   before_action :find_room_reservations
+  before_action :find_unapproved_members
 
   include EventHelper
 
@@ -16,8 +17,6 @@ class Operator::FeedItemsController < Operator::BaseController
       @activity_active = nil
       @notes_active = nil
       @expenses_active = nil
-
-      # what's happening
 
       authorize @feed_items
     end
@@ -180,5 +179,9 @@ class Operator::FeedItemsController < Operator::BaseController
     @reservations = current_location.rooms.map do |room|
       room.reservations.today
     end.flatten.uniq.count
+  end
+
+  def find_unapproved_members
+    @unapproved_members = current_tenant.users.unapproved
   end
 end
