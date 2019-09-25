@@ -27,7 +27,13 @@
       <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
         <i class="fas fa-hand-paper"></i>
         &nbsp;
-        View approval queue
+        View approval queue (<%= @unapproved_users.count %> members)
+      <% end %>
+
+      <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
+        <i class="fas fa-archive"></i>
+        &nbsp;
+        View archived members (<%= @archived_users.count %> members)
       <% end %>
 
       <% @users.each do |user| %>

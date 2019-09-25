@@ -161,6 +161,10 @@ class User < ApplicationRecord
     owned_organization.present?
   end
 
+  def visible?
+    !archived?
+  end
+
   def owned_organization
     operator.organizations.find_by(owner_id: self.id)
   end

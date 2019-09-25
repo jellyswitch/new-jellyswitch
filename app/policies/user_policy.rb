@@ -8,6 +8,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def archived?
+    admin?
+  end
+
   def show?
     owner_or_admin? 
   end
@@ -77,6 +81,14 @@ class UserPolicy < ApplicationPolicy
   end
 
   def set_password_and_send_email?
+    admin?
+  end
+
+  def archive?
+    admin?
+  end
+
+  def unarchive?
     admin?
   end
 

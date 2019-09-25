@@ -21,6 +21,10 @@ module UsersHelper
     @users = User.for_space(current_tenant).unapproved.visible.order("name")
   end
 
+  def find_archived_users
+    @users = User.for_space(current_tenant).archived.order("name")
+  end
+
   def approval_redirect_path
     if params[:feed_item]
       feed_item = FeedItem.find params[:feed_item]

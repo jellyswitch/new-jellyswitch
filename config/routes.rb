@@ -219,7 +219,8 @@ Rails.application.routes.draw do
   resources :users, controller: "operator/users" do
     collection do
       get "add_member", to: "operator/users#add_member"
-      get "unapproved", to: "operator/users#unapproved"
+      get :archived, to: "operator/users#archived"
+      get :unapproved, to: "operator/users#unapproved"
     end
     get :approve, to: "operator/users#approve"
     get :archive, to: "operator/users#archive"
