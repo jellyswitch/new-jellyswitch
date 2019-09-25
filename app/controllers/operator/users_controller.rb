@@ -227,6 +227,26 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(approval_redirect_path)
   end
 
+  def archive
+    find_user(:user_id)
+    if @user.update(archived: true)
+      flash[:success] = "User archived."
+    else
+      flash[:error] = "Couldn't archive user."
+    end
+    turbolinks_redirect(user_path(@user))
+  end
+
+  def unarchive
+    find_user(:user_id)
+    if @user.update(archived: false)
+      flash[:success] = "User unarchived."
+    else
+      flash[:error] = "Couldn't unarchive user."
+    end
+    turbolinks_redirect(user_path(@user))
+  end
+
   def edit_billing
     find_user(:user_id)
     background_image
@@ -315,32 +335,5 @@ class Operator::UsersController < Operator::BaseController
 
   def payment_method_params
     params.require(:user).permit(:out_of_band)
-  end
-
-  def admin_hook
-    if User.count < 1
-      @user.admin = true
-    end
-  end
-
-  def find_user(key = :id)
-    @user = User.friendly.find(params[key])
-  end
-
-  def find_approved_users
-    @users = User.for_space(current_tenant).approved.order("name")
-  end
-
-  def find_unapproved_users
-    @users = User.for_space(current_tenant).unapproved.order("name")
-  end
-
-  def approval_redirect_path
-    if params[:feed_item]
-      feed_item = FeedItem.find params[:feed_item]
-      feed_item_path(feed_item)
-    else
-      user_path(@user)
-    end
   end
 end

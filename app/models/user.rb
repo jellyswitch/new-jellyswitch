@@ -67,13 +67,15 @@ class User < ApplicationRecord
   # Scopes
   scope :approved, -> { where(approved: true) }
   scope :unapproved, -> { where(approved: false) }
+  scope :archived, -> { where(archived: true) }
+  scope :visible, -> { where(archived: false) }
   scope :members, -> { where(admin: false) }
   scope :admins, -> { where(admin: true) }
   scope :non_superadmins, -> { where(superadmin: false) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(superadmin: true) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
-
+  
   def search_data
     {
       name: name,
