@@ -224,10 +224,15 @@ class Operator::UsersController < Operator::BaseController
   def archive
     find_user(:user_id)
     authorize @user
-    if @user.update(archived: true)
-      flash[:success] = "User archived."
+
+    if @user.member?(current_tenant)
+      flash[:error] = "Cannot archive an active member."
     else
-      flash[:error] = "Couldn't archive user."
+      if @user.update(archived: true)
+        flash[:success] = "User archived."
+      else
+        flash[:error] = "Couldn't archive user."
+      end
     end
     turbolinks_redirect(user_path(@user))
   end
