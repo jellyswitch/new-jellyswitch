@@ -17,20 +17,20 @@
               <%= link_to add_member_users_path, class: "btn btn-block btn-primary" do %>
                 <i class="fas fa-users"></i>
                 &nbsp;
-                Add Member
+                Add a member
               <% end %>
             </div>
           </div>
         <% end %>
       <% end %>
 
-      <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
+      <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px;" do %>
         <i class="fas fa-hand-paper"></i>
         &nbsp;
         View approval queue (<%= @unapproved_users.count %> members)
       <% end %>
 
-      <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
+      <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px; border-bottom: 0px;" do %>
         <i class="fas fa-archive"></i>
         &nbsp;
         View archived members (<%= @archived_users.count %> members)
