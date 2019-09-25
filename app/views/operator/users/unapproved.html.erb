@@ -14,8 +14,14 @@
         <h4 class="display-4 text-center">Approval Queue</h4>
       <% end %>
 
-      <% @users.each do |user| %>
-        <%= render "approval_card", user: user %>
+      <% if @users.count < 1 %>
+        <%= list_item do %>
+          <p class="text-center text-muted">Your approval queue is empty.</p>
+        <% end %>
+      <% else %>
+        <% @users.each do |user| %>
+          <%= render "approval_card", user: user %>
+        <% end %>
       <% end %>
     <% end %>
   </div>

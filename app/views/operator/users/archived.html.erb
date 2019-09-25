@@ -12,9 +12,14 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         <h4 class="display-4 text-center">Archived Members</h4>
-
+      <% end %>
+      <% if @users.count < 1 %>
+        <%= list_item do %>
+          <p class="text-center text-muted">Your member archive is empty.</p>
+        <% end %>
+      <% else %>
         <% @users.each do |user| %>
-        <%= render "list_item", user: user %>
+          <%= render "list_item", user: user %>
         <% end %>
       <% end %>
     <% end %>
