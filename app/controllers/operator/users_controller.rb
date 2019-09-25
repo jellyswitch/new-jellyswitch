@@ -228,8 +228,8 @@ class Operator::UsersController < Operator::BaseController
     if @user.member?(current_tenant)
       flash[:error] = "Cannot archive an active member."
     else
-      if @user.update(archived: true)
-        flash[:success] = "User archived."
+      if @user.update(archived: true, approved: false)
+        flash[:success] = "User archived (and unapproved)."
       else
         flash[:error] = "Couldn't archive user."
       end
@@ -240,7 +240,7 @@ class Operator::UsersController < Operator::BaseController
   def unarchive
     find_user(:user_id)
     authorize @user
-    if @user.update(archived: false)
+    if @user.update(archived: false, approved: true)
       flash[:success] = "User unarchived."
     else
       flash[:error] = "Couldn't unarchive user."
