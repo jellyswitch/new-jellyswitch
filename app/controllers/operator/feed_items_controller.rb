@@ -182,6 +182,6 @@ class Operator::FeedItemsController < Operator::BaseController
   end
 
   def find_unapproved_members
-    @unapproved_members = current_tenant.users.unapproved
+    @unapproved_members = current_tenant.users.unapproved.visible
   end
 end
