@@ -1,5 +1,9 @@
-<% if mobile_app_request? && ios_request? %>
-  <%= render @navigation.mobile, paths: @navigation.paths.to_json.html_safe %>
+<% if mobile_app_request? %>
+  <% if ios_request? %>
+    <%= render @navigation.ios, paths: @navigation.paths.to_json.html_safe %>
+  <% else %>
+    <%= render @navigation.android, paths: @navigation.paths.to_json.html_safe %>
+  <% end %>
 <% else %>
   <%= render @navigation.web, paths: @navigation.paths %>
 <% end %>

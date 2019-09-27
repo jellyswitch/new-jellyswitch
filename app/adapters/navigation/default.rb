@@ -8,8 +8,12 @@ class Navigation::Default < SimpleDelegator
     @user = user
   end
 
-  def mobile
-    "layouts/mobile_nav"
+  def ios
+    "layouts/ios_nav"
+  end
+
+  def android
+    "layouts/android_nav"
   end
 
   def admin_nav_items
