@@ -88,11 +88,15 @@ module ApplicationHelper
   end
 
   def ios_request?
-    has_user_agent? && user_agent.match(/(Jellyswitch)/).present? && !android_request?
+    has_user_agent? && user_agent.match(/(Jellyswitch)/).present? && !old_android_request? && !android_request?
   end
 
   def android_request?
     has_user_agent? && user_agent.match(/(Jellyswitch\/Android\/1\.2)/).present?
+  end
+
+  def old_android_request?
+    has_user_agent? && user_agent.match(/(Jellyswitch\/Android)/).present?
   end
 
   def days_option_for_current_month
