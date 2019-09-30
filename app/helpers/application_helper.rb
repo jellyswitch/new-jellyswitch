@@ -76,7 +76,7 @@ module ApplicationHelper
   end
 
   def mobile_app_request?
-    ios_request? || android_request?
+    ios_request? || android_request? || old_android_request?
   end
 
   def user_agent
