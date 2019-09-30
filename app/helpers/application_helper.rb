@@ -92,7 +92,7 @@ module ApplicationHelper
   end
 
   def android_request?
-    has_user_agent? && user_agent.match(/(Jellyswitch\/Android)/)
+    has_user_agent? && user_agent.match(/(Jellyswitch\/Android\/1\.2)/)
   end
 
   def days_option_for_current_month
