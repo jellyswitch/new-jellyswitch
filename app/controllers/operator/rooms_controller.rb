@@ -16,7 +16,7 @@ class Operator::RoomsController < Operator::BaseController
     end
     background_image
 
-    @pagy, @reservations = pagy(Reservation.for_room(@room))
+    @pagy, @reservations = pagy(Reservation.for_room(@room).order("created_at DESC"))
 
     respond_to do |format|
       format.html
