@@ -1,4 +1,4 @@
-<%= form_with(url: invoices_path, local: true, html: {class: "form"}) do |f| %>
+<%= form_with(url: invoices_path, remote: true, html: {class: "form"}) do |f| %>
   <%= f.hidden_field :billable_type, value: billable.class.name %>
   <%= f.hidden_field :billable_id, value: billable.id %>
 
@@ -33,6 +33,6 @@
     <small class="col">To use a different payment method, please update the member's payment method on their profile.</small>
   </div>
 
-  <%= f.submit "Invoice Customer", class: "btn btn-block btn-primary" %>
+  <%= f.submit "Invoice Customer", class: "btn btn-block btn-primary", data: {disable_with: "Invoicing..."} %>
 
 <% end %>
