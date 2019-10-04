@@ -78,7 +78,14 @@
   <h4 class="display-4 text-center mt-4">Invoices</h4>
   <div class="card-body list-group list-group-flush p-0">
     <% if @user.bill_to_organization? %>
-      <%= link_to "Create new invoice", new_invoice_path(organization_id: @user.organization.id), class: "btn btn-block btn-primary" %>
+      <% if @user.organization.present? %>
+        <%= link_to "Create new invoice", new_invoice_path(organization_id: @user.organization.id), class: "btn btn-block btn-primary" %>
+      <% else %>
+        <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
+        <div class="text-center">
+          <small>This user is marked as "bill to group" but is not a member of a group.</small>
+        </div>  
+      <% end %>
     <% elsif @user.out_of_band? || @user.card_added? %>
       <%= link_to "Create new invoice", new_invoice_path(user_id: @user.id), class: "btn btn-block btn-primary" %>
     <% else %>
