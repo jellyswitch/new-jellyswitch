@@ -181,11 +181,6 @@ class User < ApplicationRecord
     organization.present?
   end
 
-  def approved?
-    return true if organization && organization.has_active_lease?
-    approved
-  end
-
   def authenticated?(remember_token)
     return false if remember_digest.nil?
     BCrypt::Password.new(remember_digest).is_password?(remember_token)
