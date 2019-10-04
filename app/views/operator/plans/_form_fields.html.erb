@@ -1,0 +1,46 @@
+<div class="form-group">
+  <%= f.label :name, "What is this plan called?" %>
+  <%= f.text_field :name, placeholder: "Full Time Membership", class: "form-control" %>
+</div>
+
+<%= f.hidden_field :plan_type, value: "individual" %>
+
+<%= f.label :amount_in_cents, "How much does this plan cost?" %>
+<div class="input-group">
+  <div class="input-group-prepend">
+    <span class="input-group-text">$</span>
+  </div>
+  <%= f.text_field :amount_in_cents, class: "form-control" %>
+</div>
+
+<div class="form-group">
+  <%= f.label :interval, "How frequent should members be charged?" %>
+  <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control" %>
+</div>
+
+<div class="form-group">
+  <div class="form-check">
+    <%= f.check_box :visible, class: "form-check-input" %>
+    <%= f.label :visible, "Check this box if you want this plan to be visible to new members", class: "form-check-label" %>
+  </div>
+
+  <div class="form-check">
+    <%= f.check_box :available, class: "form-check-input" %>
+    <%= f.label :available, "Check this box if you want this plan to be available right away", class: "form-check-label" %>
+  </div>
+
+  <div class="form-check">
+    <%= f.check_box :always_allow_building_access, class: "form-check-input" %>
+    <%= f.label :always_allow_building_access, "Check this box if members on this plan should be granted 24/7 building access", class: "form-check-label" %>
+  </div>
+
+  <div class="form-check">
+    <%= f.check_box :has_day_limit, class: "form-check-input" %>
+    <%= f.label :has_day_limit, "Check this box if this plan only includes a limited number of days per month", class: "form-check-label" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :day_limit, "Number of days included per month" %>
+    <%= f.number_field :day_limit, class: "form-control", value: 10 %>
+  </div>
+</div>
