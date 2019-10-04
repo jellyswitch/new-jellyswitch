@@ -6,62 +6,14 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @office.name %></li>
 <% end %>
 
-  
-<%= wide_card do %>
-  <% office = @office %>
-  <div class="card border-light">
-    <div class="card-body">
-      <div class="row">
-        <div>
-          <% if office.has_photo? %>
-            <%= image_tag office.square_photo, class: "img-thumbnail", style: "width: 50px;" %>
-          <% end %>
-        </div>
-        <div class="ml-4 mb-1">
-          <div class="row">
-            <h5 class="display-5">
-              <%= link_to office.name, office %>
-            </h5>
-          </div>
-          <div class="row">
-            <p>Capacity: <strong><%= office.capacity %></strong></p>
-          </div>
-
-          <div class="row">
-            <p>Square footage: <strong><%= number_with_delimiter(office.square_footage) %></strong></p>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <p><%= office.description %></p>
-      </div>
-      <div class="row">
-        <p>
-          <% if office.has_active_lease? %>
-            <% office.active_leases.each do |lease| %>
-              Leased by <%= link_to lease.group_name, organization_path(lease.organization) %><br />
-              (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
-              <br />
-            <% end %>
-          <% end %>
-        </p>
-      </div>
-
-      <div class="row">
-        <div class="col">
-          <% if office.has_active_lease? %>
-            <% office.active_leases.each do |lease| %>
-              <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
-            <% end %>
-          <% else %>
-            <%= link_to "Add Lease", new_office_lease_path, class: "btn btn-block btn-primary" %>
-          <% end %>
-          <%= link_to "Edit Office", edit_office_path(office), class: "btn btn-block btn-secondary" %>
-        </div>
-      </div>
-    </div>
+<div class="row mt-1 mb-0 p-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <%= render "operator/offices/office_detail", office: @office %>
+      <% end %>
+    <% end %>
   </div>
-
-
-<% end %>
+  <div class="col-lg-3"></div>
+</div>
