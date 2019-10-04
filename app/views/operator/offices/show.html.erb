@@ -1,14 +1,67 @@
 <% title @office.name %>
 
-<% if !mobile_app_request? %>
-  <nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-      <li class="breadcrumb-item"><%= link_to "offices", offices_path %></li>
-      <li class="breadcrumb-item"><%= @office.name %></li>
-    </ol>
-  </nav>
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Available", available_offices_path %></li>
+  <li class="breadcrumb-item active" aria-current="page"><%= @office.name %></li>
 <% end %>
+
   
 <%= wide_card do %>
-  <%= render @office %>
+  <% office = @office %>
+  <div class="card border-light">
+    <div class="card-body">
+      <div class="row">
+        <div>
+          <% if office.has_photo? %>
+            <%= image_tag office.square_photo, class: "img-thumbnail", style: "width: 50px;" %>
+          <% end %>
+        </div>
+        <div class="ml-4 mb-1">
+          <div class="row">
+            <h5 class="display-5">
+              <%= link_to office.name, office %>
+            </h5>
+          </div>
+          <div class="row">
+            <p>Capacity: <strong><%= office.capacity %></strong></p>
+          </div>
+
+          <div class="row">
+            <p>Square footage: <strong><%= number_with_delimiter(office.square_footage) %></strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <p><%= office.description %></p>
+      </div>
+      <div class="row">
+        <p>
+          <% if office.has_active_lease? %>
+            <% office.active_leases.each do |lease| %>
+              Leased by <%= link_to lease.group_name, organization_path(lease.organization) %><br />
+              (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
+              <br />
+            <% end %>
+          <% end %>
+        </p>
+      </div>
+
+      <div class="row">
+        <div class="col">
+          <% if office.has_active_lease? %>
+            <% office.active_leases.each do |lease| %>
+              <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+            <% end %>
+          <% else %>
+            <%= link_to "Add Lease", new_office_lease_path, class: "btn btn-block btn-primary" %>
+          <% end %>
+          <%= link_to "Edit Office", edit_office_path(office), class: "btn btn-block btn-secondary" %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
 <% end %>

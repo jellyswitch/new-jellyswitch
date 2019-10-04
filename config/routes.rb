@@ -168,7 +168,11 @@ Rails.application.routes.draw do
       get :skip
     end
   end
-  resources :offices, controller: "operator/offices"
+  resources :offices, controller: "operator/offices" do
+    collection do
+      get :available, to: "operator/offices#available"
+    end
+  end
   resources :office_leases, controller: "operator/office_leases"
   resources :organizations, controller: "operator/organizations" do
     post :billing, to: "operator/organization_billing#create"

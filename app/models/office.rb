@@ -72,4 +72,8 @@ class Office < ApplicationRecord
   def card_photo
     photo.variant(combine_options: {auto_orient: true, resize: "x200"})
   end
+
+  def thumbnail
+    photo.variant(resize: "180x180", auto_orient: true)
+  end
 end

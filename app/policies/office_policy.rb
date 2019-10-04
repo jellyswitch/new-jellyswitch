@@ -23,4 +23,8 @@ class OfficePolicy < ApplicationPolicy
   def update?
     admin?
   end
+
+  def available?
+    admin?
+  end
 end

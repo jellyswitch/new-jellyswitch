@@ -1,54 +1,24 @@
-<div class="card border-light">
-  <div class="card-body">
+<div class="row">
+  <div class="col-4">
+    <% if office.photo.attached? %>
+      <%= image_tag office.thumbnail, class: "rounded img-fluid" %>
+    <% else %>
+      <%= image_tag "profile-125x125.jpg", class: "rounded img-fluid" %>
+    <% end %>
+  </div>
+  <div class="col-7">
     <div class="row">
-      <div>
-        <% if office.has_photo? %>
-          <%= image_tag office.square_photo, class: "img-thumbnail", style: "width: 50px;" %>
-        <% end %>
-      </div>
-      <div class="ml-4 mb-1">
-        <div class="row">
-          <h5 class="display-5">
-            <%= link_to office.name, office %>
-          </h5>
-        </div>
-        <div class="row">
-          <p>Capacity: <strong><%= office.capacity %></strong></p>
-        </div>
-
-        <div class="row">
-          <p>Square footage: <strong><%= number_with_delimiter(office.square_footage) %></strong></p>
-        </div>
-      </div>
-    </div>
-
-    <div class="row">
-      <p><%= office.description %></p>
+      <h5 class="col"><%= office.name %></h5>
     </div>
     <div class="row">
-      <p>
-        <% if office.has_active_lease? %>
-          <% office.active_leases.each do |lease| %>
-            Leased by <%= link_to lease.group_name, organization_path(lease.organization) %><br />
-            (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
-            <br />
-          <% end %>
-        <% end %>
-      </p>
+      <% if office.has_active_lease? %>
+        <h6 class="text-danger col">Occupied</h6>
+      <% else %>
+        <h6 class="text-success col">Available</h6>
+      <% end %>
     </div>
-
-    <div class="row">
-      <div class="col">
-        <% if office.has_active_lease? %>
-          <% office.active_leases.each do |lease| %>
-            <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
-          <% end %>
-        <% else %>
-          <%= link_to "Add Lease", new_office_lease_path, class: "btn btn-block btn-primary" %>
-        <% end %>
-        <%= link_to "Edit Office", edit_office_path(office), class: "btn btn-block btn-secondary" %>
-      </div>
-    </div>
-
+  </div>
+  <div class="col-1">
+    <i class="fas fa-chevron-right"></i>
   </div>
 </div>

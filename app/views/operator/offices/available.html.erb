@@ -1,11 +1,16 @@
-<% title "Offices" %>
+<% title "Available Offices" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Available</li>
+<% end %>
 
 <div class="row mt-1 mb-0 p-0">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <h4 class="display-4 text-center">Offices</h4>
+        <h4 class="display-4 text-center">Available Offices</h4>
 
         <div class="text-center">
           <small>
@@ -22,22 +27,9 @@
         <% end %>
       <% end %>
 
-      <%= link_to available_offices_path, class: "list-group-item list-group-item-action d-flx m-0" do %>
-        <div class="row">
-          <div class="col-11">
-            <i class="fas fa-door-open"></i>
-            &nbsp;
-            <%= @available_offices.count %> <%= quantize(@available_offices.count, "office") %> available for lease
-          </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
-      <% end %>
-
       <% if @offices.count < 1 %>
         <%= list_item do %>
-          <p class="lead text-center">No occupied offices.</p>
+          <p class="lead text-center">No available offices.</p>
         <% end %>
       <% else %>
         <% @offices.each do |office| %>

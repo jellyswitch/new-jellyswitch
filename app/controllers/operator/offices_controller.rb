@@ -4,8 +4,9 @@ class Operator::OfficesController < Operator::BaseController
   before_action :background_image, except: [:create, :update]
 
   def index
-    @offices = current_tenant.offices.order(:name)
-    authorize @offices
+    @offices = current_tenant.offices.order(:name).occupied
+    @available_offices = current_tenant.offices.available_for_lease
+    authorize Office
   end
 
   def show
@@ -46,6 +47,11 @@ class Operator::OfficesController < Operator::BaseController
       flash[:error] = "Could not update office"
       render :edit, status: 422
     end
+  end
+
+  def available
+    @offices = current_tenant.offices.available_for_lease
+    authorize @offices
   end
 
   private
