@@ -1,11 +1,12 @@
 # typed: false
 class Operator::FeedItemsController < Operator::BaseController
+  include EventHelper
+  include UsersHelper
+
   before_action :background_image
   before_action :find_todays_events
   before_action :find_room_reservations
-  before_action :find_unapproved_members
-
-  include EventHelper
+  before_action :find_unapproved_users
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
@@ -179,9 +180,5 @@ class Operator::FeedItemsController < Operator::BaseController
     @reservations = current_location.rooms.map do |room|
       room.reservations.today
     end.flatten.uniq.count
-  end
-
-  def find_unapproved_members
-    @unapproved_members = current_tenant.users.unapproved.visible
   end
 end

@@ -45,12 +45,12 @@
     <%= @reservations %> room reservations today
   </li>
 
-  <% if @unapproved_members.count > 0 %>
+  <% if @users.count > 0 %>
   
     <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
       <i class="fas fa-hand-paper"></i>
       &nbsp;
-      <%= @unapproved_members.count %> members awaiting approval
+      <%= @users.count %> members awaiting approval
       <i class="fas fa-arrow-right"></i>
     <% end %>
   
