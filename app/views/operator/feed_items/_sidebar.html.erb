@@ -48,10 +48,16 @@
   <% if @users.count > 0 %>
   
     <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-      <i class="fas fa-hand-paper"></i>
-      &nbsp;
-      <%= @users.count %> members awaiting approval
-      <i class="fas fa-arrow-right"></i>
+      <div class="row">
+        <div class="col-11">
+          <i class="fas fa-hand-paper"></i>
+          &nbsp;
+          <%= @users.count %> members awaiting approval
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      </div>
     <% end %>
   
   <% end %>
@@ -69,10 +75,17 @@
       <% end %>
     <% end %>
   <% end %>
+
   <%= link_to events_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-    <div class="text-center">
-      View all events
-      <i class="fas fa-arrow-right"></i>
+    <div class="row">
+      <div class="col-11">
+        <div class="text-center">
+          View all events
+        </div>
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
     </div>
   <% end %>
 
