@@ -3,7 +3,7 @@
     Amount:
   </dt>
   <dd class="col">
-    <%= number_to_currency(feed_item.invoice.amount_paid.to_f / 100.0) %>
+    <%= number_to_currency(feed_item.invoice.amount_due.to_f / 100.0) %>
   </dd>
 
   <dt class="col-6">
