@@ -114,6 +114,13 @@ class Room < ApplicationRecord
   def calendar
     cal = Icalendar::Calendar.new
     cal.x_wr_calname = "Reservations: #{name}"
+
+    cal.timezone do |t|
+      Time.use_zone(location.time_zone) do
+        t.tzid = Time.zone.tzinfo.name
+      end
+    end
+
     reservations.each do |reservation|
       cal.event do |e|
         e.dtstart = reservation.datetime_in
