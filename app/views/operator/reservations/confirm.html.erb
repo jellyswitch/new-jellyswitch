@@ -40,7 +40,7 @@
   </dl>
 
   <% if current_user.member?(current_tenant, day=@day) || admin? || current_user.has_billing? %>
-    <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary" %>
+    <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", data: {disable_with: "Reserving..."} %>
   <% else %>
     <%= render "billing" %>
   <% end %>
