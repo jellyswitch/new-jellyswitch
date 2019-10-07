@@ -61,6 +61,10 @@ class Office < ApplicationRecord
     office_leases.active
   end
 
+  def active_lease
+    office_leases.active.first
+  end
+
   def has_photo?
     photo.attached?
   end

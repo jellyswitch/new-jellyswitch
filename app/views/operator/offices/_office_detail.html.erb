@@ -11,11 +11,7 @@
       <h5 class="col"><%= office.name %></h5>
     </div>
     <div class="row">
-      <% if office.has_active_lease? %>
-        <h6 class="text-danger col">Occupied</h6>
-      <% else %>
-        <h6 class="text-success col">Available</h6>
-      <% end %>
+      <%= render "operator/offices/subheader", office: office %>
     </div>
     <div class="row">
       <div class="col">
