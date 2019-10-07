@@ -23,7 +23,7 @@ class Navigation::Default < SimpleDelegator
       {title: "Announcements", path: announcements_path},
       {title: "What's Happening?", path: events_path},
       {title: "Members & Groups", path: members_groups_path},
-      {title: "Offices & Leases", path: offices_leases_path},
+      {title: "Offices & Leases", path: offices_path},
       {title: "Rooms & Reservations", path: rooms_path},
       {title: "Plans & Day Passes", path: plans_day_passes_path},
       {title: "Invoices & Expenses", path: accounting_index_path},

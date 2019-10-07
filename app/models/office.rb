@@ -49,6 +49,12 @@ class Office < ApplicationRecord
       or(offices.where('office_leases.end_date <= ?', Time.current))
   end
 
+  def self.upcoming_renewals(num_days=60)
+    offices = visible.left_outer_joins(:office_leases)
+
+    offices.where('office_leases.end_date >= ? AND office_leases.end_date < ?', Time.current, Time.current + num_days.days).order("office_leases.end_date ASC").select {|o| o.active_lease.present? }
+  end
+
   def self.occupied
     visible.select { |office| office.has_active_lease? }
   end
@@ -57,8 +63,16 @@ class Office < ApplicationRecord
     active_leases.count > 0
   end
 
+  def available?
+    !has_active_lease?
+  end
+
   def active_leases
     office_leases.active
+  end
+
+  def active_lease
+    office_leases.active.first
   end
 
   def has_photo?
@@ -71,5 +85,9 @@ class Office < ApplicationRecord
 
   def card_photo
     photo.variant(combine_options: {auto_orient: true, resize: "x200"})
+  end
+
+  def thumbnail
+    photo.variant(resize: "180x180", auto_orient: true)
   end
 end

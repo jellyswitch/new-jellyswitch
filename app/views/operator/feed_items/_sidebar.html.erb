@@ -48,15 +48,49 @@
   <% if @users.count > 0 %>
   
     <%= link_to unapproved_users_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-      <i class="fas fa-hand-paper"></i>
-      &nbsp;
-      <%= @users.count %> members awaiting approval
-      <i class="fas fa-arrow-right"></i>
+      <div class="row">
+        <div class="col-11">
+          <i class="fas fa-hand-paper"></i>
+          &nbsp;
+          <%= @users.count %> members awaiting approval
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      </div>
     <% end %>
   
   <% end %>
 
+  <% if @delinquent_invoices.count > 0 %>
+    <%= link_to delinquent_invoices_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0;" do %>
+      <div class="row">
+        <div class="col-11">
+          <i class="fas fa-dollar-sign"></i>
+          &nbsp;
+          <%= @delinquent_invoices.count %> <%= quantize(@delinquent_invoices.count, "delinquent invoice") %>
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 
+  <% if @upcoming_renewals.count > 0 %>
+    <%= link_to upcoming_renewals_offices_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0;" do %>
+      <div class="row">
+        <div class="col-11">
+          <i class="fas fa-user-clock"></i>
+          &nbsp;
+          <%= @upcoming_renewals.count %> <%= quantize(@upcoming_renewals.count, "upcoming renewal") %>
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
 
   <% if @events.count > 0 %>
     <% @events.each do |event| %>
@@ -69,10 +103,17 @@
       <% end %>
     <% end %>
   <% end %>
+
   <%= link_to events_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-    <div class="text-center">
-      View all events
-      <i class="fas fa-arrow-right"></i>
+    <div class="row">
+      <div class="col-11">
+        <div class="text-center">
+          View all events
+        </div>
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
     </div>
   <% end %>
 
@@ -106,6 +147,13 @@
             &nbsp;
             Add a member
           <% end %>
+
+          <%= link_to new_office_lease_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-file-alt"></i>
+            &nbsp;
+            Add an office lease
+          <% end %>
+
 
           <div class="list-group-item">
             <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
