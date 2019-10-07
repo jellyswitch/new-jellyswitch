@@ -52,7 +52,7 @@ class Operator::OfficesController < Operator::BaseController
 
   def available
     @offices = current_tenant.offices.available_for_lease
-    authorize @offices
+    authorize Office
   end
 
   def upcoming_renewals
