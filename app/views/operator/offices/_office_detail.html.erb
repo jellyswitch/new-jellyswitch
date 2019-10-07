@@ -54,10 +54,18 @@
   <div class="col">
     <% if office.has_active_lease? %>
       <% office.active_leases.each do |lease| %>
-        <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+        <%= link_to office_lease_path(lease), class: "btn btn-block btn-primary" do %>
+          <i class="fas fa-file-alt"></i>
+          &nbsp;
+          View lease
+        <% end %>
       <% end %>
     <% else %>
-      <%= link_to "Add Lease", new_office_lease_path, class: "btn btn-block btn-primary" %>
+      <%= link_to new_office_lease_path, class: "btn btn-block btn-primary" do %>
+        <i class="fas fa-file-alt"></i>
+        &nbsp;
+        Add a lease
+      <% end %>
     <% end %>
   </div>
 </div>
