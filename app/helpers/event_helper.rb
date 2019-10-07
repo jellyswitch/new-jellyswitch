@@ -4,7 +4,7 @@ module EventHelper
   end
 
   def find_past_events
-    @events = current_location.events.past.order("starts_at ASC").group_by_day(&:starts_at)
+    @events = current_location.events.past.order("starts_at ASC").group_by_day(reverse: true) { |i| i.starts_at }
   end
 
   def find_upcoming_events
