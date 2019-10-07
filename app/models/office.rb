@@ -46,7 +46,7 @@ class Office < ApplicationRecord
 
     offices.
       where(office_leases: { office: nil }).
-      or(offices.where('office_leases.end_date <= ?', Time.current))
+      or(offices.where('office_leases.end_date <= ?', Time.current)).select {|o| o.available? }
   end
 
   def self.upcoming_renewals(num_days=60)
