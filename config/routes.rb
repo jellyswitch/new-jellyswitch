@@ -171,6 +171,7 @@ Rails.application.routes.draw do
   resources :offices, controller: "operator/offices" do
     collection do
       get :available, to: "operator/offices#available"
+      get :upcoming_renewals, to: "operator/offices#upcoming_renewals"
     end
   end
   resources :office_leases, controller: "operator/office_leases"

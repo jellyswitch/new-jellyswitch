@@ -49,6 +49,12 @@ class Office < ApplicationRecord
       or(offices.where('office_leases.end_date <= ?', Time.current))
   end
 
+  def self.upcoming_renewals(num_days=60)
+    offices = visible.left_outer_joins(:office_leases)
+
+    offices.where('office_leases.end_date >= ? AND office_leases.end_date <= ?', Time.current, Time.current + num_days.days).order("office_leases.end_date ASC")
+  end
+
   def self.occupied
     visible.select { |office| office.has_active_lease? }
   end

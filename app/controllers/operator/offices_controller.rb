@@ -6,6 +6,7 @@ class Operator::OfficesController < Operator::BaseController
   def index
     @offices = current_tenant.offices.order(:name).occupied
     @available_offices = current_tenant.offices.available_for_lease
+    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
     authorize Office
   end
 
@@ -51,6 +52,11 @@ class Operator::OfficesController < Operator::BaseController
 
   def available
     @offices = current_tenant.offices.available_for_lease
+    authorize @offices
+  end
+
+  def upcoming_renewals
+    @offices = current_tenant.offices.upcoming_renewals(60)
     authorize @offices
   end
 

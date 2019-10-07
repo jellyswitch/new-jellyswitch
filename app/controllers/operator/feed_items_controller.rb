@@ -7,6 +7,7 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :find_todays_events
   before_action :find_room_reservations
   before_action :find_unapproved_users
+  before_action :find_upcoming_renewals
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
@@ -180,5 +181,9 @@ class Operator::FeedItemsController < Operator::BaseController
     @reservations = current_location.rooms.map do |room|
       room.reservations.today
     end.flatten.uniq.count
+  end
+
+  def find_upcoming_renewals
+    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
   end
 end

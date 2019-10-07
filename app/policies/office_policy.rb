@@ -27,4 +27,8 @@ class OfficePolicy < ApplicationPolicy
   def available?
     admin?
   end
+
+  def upcoming_renewals?
+    admin?
+  end
 end
