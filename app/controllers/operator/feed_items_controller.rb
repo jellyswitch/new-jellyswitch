@@ -8,6 +8,7 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :find_room_reservations
   before_action :find_unapproved_users
   before_action :find_upcoming_renewals
+  before_action :find_delinquent_invoices
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
@@ -185,5 +186,9 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def find_upcoming_renewals
     @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
+  end
+
+  def find_delinquent_invoices
+    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
   end
 end
