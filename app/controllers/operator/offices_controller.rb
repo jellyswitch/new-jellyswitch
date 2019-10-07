@@ -57,7 +57,7 @@ class Operator::OfficesController < Operator::BaseController
 
   def upcoming_renewals
     @offices = current_tenant.offices.upcoming_renewals(60)
-    authorize @offices
+    authorize Office
   end
 
   private
