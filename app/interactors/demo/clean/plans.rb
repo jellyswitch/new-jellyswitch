@@ -5,6 +5,7 @@ class Demo::Clean::Plans
 
   def call
     operator.plans.each do |plan|
+      plan.stripe_plan.delete
       plan.delete
     end
   end

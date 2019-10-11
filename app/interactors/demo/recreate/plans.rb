@@ -6,7 +6,7 @@ class Demo::Recreate::Plans
   def call
     plans.each do |plan|
       result = Billing::Plans::CreatePlan.call(
-        plan: plan,
+        plan: Plan.new(plan),
         operator: operator
       )
       if !result.success?
@@ -17,12 +17,13 @@ class Demo::Recreate::Plans
 
   private
 
-  def day_pass_types
+  def plans
     [
       {
         name: "Dedicated Desk",
         amount_in_cents: 50000,
         interval: "monthly",
+        plan_type: "individual",
         available: true,
         visible: true,
         operator_id: operator.id
@@ -31,6 +32,7 @@ class Demo::Recreate::Plans
         name: "Full Time Membership",
         amount_in_cents: 35000,
         interval: "monthly",
+        plan_type: "individual",
         available: true,
         visible: true,
         operator_id: operator.id
@@ -39,6 +41,7 @@ class Demo::Recreate::Plans
         name: "Part Time Membership",
         amount_in_cents: 20000,
         interval: "monthly",
+        plan_type: "individual",
         available: true,
         visible: true,
         operator_id: operator.id

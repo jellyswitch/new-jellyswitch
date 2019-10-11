@@ -14,7 +14,8 @@ class Demo::Clean
     Demo::Clean::WeeklyUpdates,
     Demo::Clean::Locations,
     Demo::Recreate::Locations,
-    Demo::Recreate::DayPassTypes
+    Demo::Recreate::DayPassTypes,
+    Demo::Recreate::Plans,
   )
 
 end

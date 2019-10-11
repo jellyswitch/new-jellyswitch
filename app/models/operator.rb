@@ -71,6 +71,7 @@ class Operator < ApplicationRecord
            :create_stripe_refund,
            :retrieve_stripe_refund,
            :create_stripe_subscription,
+           :retrieve_stripe_plans,
            :create_stripe_plan,
            :mark_invoice_paid,
            :create_or_update_customer_payment,
