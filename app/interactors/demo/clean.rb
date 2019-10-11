@@ -16,6 +16,7 @@ class Demo::Clean
     Demo::Recreate::Locations,
     Demo::Recreate::DayPassTypes,
     Demo::Recreate::Plans,
+    Demo::Recreate::Doors,
   )
 
 end
