@@ -18,3 +18,13 @@ task weekly_updates: :environment do
     WeeklyUpdateJob.perform_later
   end
 end
+
+task :clean_demo do
+  result = Demo::Clean.call(subdomain: 'the-first-order')
+
+  if result.success?
+    puts "Success!"
+  else
+    puts result.message
+  end
+end
