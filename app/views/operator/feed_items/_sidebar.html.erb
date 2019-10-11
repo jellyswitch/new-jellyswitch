@@ -73,6 +73,8 @@
           <i class="fas fa-dollar-sign"></i>
           &nbsp;
           <%= @delinquent_invoices.count %> <%= quantize(@delinquent_invoices.count, "delinquent invoice") %>
+          -
+          <span class="text-danger"><%= number_to_currency(@delinquent_amount) %></span>
         </div>
         <div class="col-1">
           <i class="fas fa-chevron-right"></i>
