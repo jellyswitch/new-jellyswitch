@@ -12,7 +12,8 @@ class Demo::Clean
     Demo::Clean::Plans,
     Demo::Clean::DayPassTypes,
     Demo::Clean::WeeklyUpdates,
-    Demo::Clean::Locations
+    Demo::Clean::Locations,
+    Demo::Recreate::Locations,
   )
 
 end
