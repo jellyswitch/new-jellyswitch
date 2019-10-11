@@ -9,6 +9,10 @@ class Demo::Recreate::DayPassTypes
         params: dpt,
 
       )
+
+      if !result.success?
+        context.fail!(message: result.message)
+      end
     end
   end
 
@@ -18,7 +22,7 @@ class Demo::Recreate::DayPassTypes
     [
       {
         name: "Standard Day Pass",
-        amount_in_cents: 3500,
+        amount_in_cents: 3000,
         available: true,
         visible: true,
         operator_id: operator.id

@@ -19,7 +19,7 @@ task weekly_updates: :environment do
   end
 end
 
-task :clean_demo do
+task clean_demo: :environment do
   result = Demo::Clean.call(subdomain: 'the-first-order')
 
   if result.success?
