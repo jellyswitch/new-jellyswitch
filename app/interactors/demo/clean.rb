@@ -3,7 +3,9 @@ class Demo::Clean
 
   organize(
     Demo::SelectOperator,
-    Demo::Clean::Invoices
+    Demo::Clean::Invoices,
+    Demo::Clean::Organizations,
+    Demo::Clean::Members
   )
 
 end
