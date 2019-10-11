@@ -5,7 +5,14 @@ class Demo::Clean
     Demo::SelectOperator,
     Demo::Clean::Invoices,
     Demo::Clean::Organizations,
-    Demo::Clean::Members
+    Demo::Clean::Members,
+    Demo::Clean::Offices,
+    Demo::Clean::Rooms,
+    Demo::Clean::Doors,
+    Demo::Clean::Plans,
+    Demo::Clean::DayPassTypes,
+    Demo::Clean::WeeklyUpdates,
+    Demo::Clean::Locations
   )
 
 end
