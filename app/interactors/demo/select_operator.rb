@@ -7,7 +7,11 @@ class Demo::SelectOperator
     operator = Operator.find_by(subdomain: subdomain)
 
     if operator
-      context.operator = operator
+      if operator.production?
+        context.fail!(message: "Can't run task on production instance: #{operator.name}")
+      else
+        context.operator = operator
+      end
     else
       context.fail!(message: "Could not find operator with subdomain: #{subdomain}.")
     end
