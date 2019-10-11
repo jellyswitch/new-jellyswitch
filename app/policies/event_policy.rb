@@ -27,4 +27,8 @@ class EventPolicy < ApplicationPolicy
   def update?
     admin?
   end
+
+  def rsvp?
+    member? || admin?
+  end
 end
