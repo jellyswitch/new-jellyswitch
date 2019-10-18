@@ -6,7 +6,7 @@ class Demo::Clean
     Demo::Clean::Invoices, # TODO (Leases, Checkins, Memberships, Day Passes, Refunds, Invoices)
     Demo::Clean::Organizations, # TODO
     Demo::Clean::Members, # TODO (Members, Reservations, Feedbacks, Announcements, Events, Door Punches, Feed Items, Feed Item Comments)
-    Demo::Clean::Offices, # TODO
+    Demo::Clean::Offices,
     Demo::Clean::Rooms,
     Demo::Clean::Doors,
     Demo::Clean::Plans,
@@ -18,6 +18,7 @@ class Demo::Clean
     Demo::Recreate::Plans,
     Demo::Recreate::Doors,
     Demo::Recreate::Rooms,
+    Demo::Recreate::Offices
   )
 
 end
