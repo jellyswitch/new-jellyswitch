@@ -19,7 +19,13 @@ class Demo::Recreate::Reservations
             day = week_start + offset
             (1..4).each do |hour_offset|
               loc.rooms.each do |room|
-                create_reservation(room, day + (8+hour_offset).hours)
+                if loc.rooms.first == room
+                  create_reservation(room, day + (8+hour_offset).hours)
+                  create_reservation(room, day + (10+hour_offset).hours)
+                  create_reservation(room, day + (13+hour_offset).hours)
+                else
+                  create_reservation(room, day + (8+hour_offset).hours)
+                end
               end
             end
           end

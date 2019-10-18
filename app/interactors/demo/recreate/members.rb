@@ -3,13 +3,6 @@ class Demo::Recreate::Members
 
   organize(
     Demo::Recreate::CreateMembers,
-    Demo::Recreate::Memberships,
-    Demo::Recreate::Reservations,
-    # Demo::Recreate::MemberFeedbacks,
-    # Demo::Recreate::Announcements,
-    # Demo::Recreate::Events,
-    # Demo::Recreate::DoorPunches,
-    # Demo::Recreate::FeedItems,
-    # Demo::Recreate::FeedItemComments,
+    Demo::Recreate::Memberships
   )
 end
