@@ -11,5 +11,4 @@ class Demo::Clean::Members
     Demo::Clean::Reservations,
     Demo::Clean::DeleteMembers,
   )
-
 end

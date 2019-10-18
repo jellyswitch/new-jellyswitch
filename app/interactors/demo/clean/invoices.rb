@@ -9,5 +9,4 @@ class Demo::Clean::Invoices
     Demo::Clean::Refunds,
     Demo::Clean::DeleteInvoices
   )
-
 end
