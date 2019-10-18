@@ -11,7 +11,7 @@ class Demo::Clean
     Demo::Clean::Doors,
     Demo::Clean::Plans,
     Demo::Clean::DayPassTypes,
-    Demo::Clean::WeeklyUpdates, # TODO
+    Demo::Clean::WeeklyUpdates,
     Demo::Clean::Locations,
     Demo::Recreate::Locations,
     Demo::Recreate::DayPassTypes,
@@ -22,7 +22,7 @@ class Demo::Clean
     Demo::Recreate::Members,
     Demo::Recreate::Reservations,
     Demo::Recreate::MemberFeedbacks,
-    # Demom::Recreate::DayPasses,
+    # Demo::Recreate::DayPasses,
     # Demo::Recreate::Announcements,
     # Demo::Recreate::Events,
     # Demo::Recreate::DoorPunches,

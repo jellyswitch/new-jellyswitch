@@ -14,7 +14,12 @@ class Demo::Recreate::Locations
         city: location[:city],
         state: location[:state],
         zip: location[:zip],
-        time_zone: location[:time_zone]
+        time_zone: location[:time_zone],
+        contact_name: "Dave Paola",
+        contact_email: "dave@jellyswitch.com",
+        contact_phone: "(530) 539-4799",
+        wifi_name: "South Lake Coworking",
+        wifi_password: "SLTCommunity123!"
       )
   
       if !result.success?
