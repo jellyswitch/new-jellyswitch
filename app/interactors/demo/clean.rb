@@ -5,7 +5,7 @@ class Demo::Clean
     Demo::SelectOperator,
     Demo::Clean::Invoices, # TODO (Leases, Checkins, Memberships, Day Passes, Refunds, Invoices)
     Demo::Clean::Organizations, # TODO
-    Demo::Clean::Members, # TODO (Members, Reservations, Feedbacks, Announcements, Events, Door Punches, Feed Items, Feed Item Comments)
+    Demo::Clean::Members,
     Demo::Clean::Offices,
     Demo::Clean::Rooms,
     Demo::Clean::Doors,
@@ -18,7 +18,8 @@ class Demo::Clean
     Demo::Recreate::Plans,
     Demo::Recreate::Doors,
     Demo::Recreate::Rooms,
-    Demo::Recreate::Offices
+    Demo::Recreate::Offices,
+    Demo::Recreate::Members
   )
 
 end
