@@ -5,7 +5,6 @@ class Demo::Recreate::CreateMembers
   delegate :operator, to: :context
 
   def call
-    puts people_data.inspect
     people_data.each do |data|
       result = CreateUser.call(
         operator: operator,
@@ -19,7 +18,10 @@ class Demo::Recreate::CreateMembers
 
       if result.success?
         result.user.profile_photo.attach(io: File.open(Rails.root.join("app/assets/images/demo/people/#{data[:profile_photo_path]}")), filename: data[:profile_photo_path])
-        result.user.update(approved: data[:approved])
+        result.user.update(
+          approved: data[:approved],
+          out_of_band: true
+        )
       else
         context.fail!(message: result.message + errors_for(result.user))
       end
