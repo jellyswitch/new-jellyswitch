@@ -4,11 +4,7 @@ class Demo::Recreate::Reservations
   delegate :operator, to: :context
 
   def call
-    # go back 6 weeks
-    # Make 110 room reservations each week
-    # that means 22 per weekday
-    # that means 4 per room per weekday
-
+    puts 'Creating reservations...'
     operator.locations.each do |loc|
       Time.use_zone(loc.time_zone) do
         # go back 6 weeks
@@ -32,6 +28,7 @@ class Demo::Recreate::Reservations
         end
       end
     end
+    puts "done."
   end
 
   private
