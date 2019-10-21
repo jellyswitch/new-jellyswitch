@@ -152,7 +152,7 @@ class FeedItem < ApplicationRecord
   end
 
   def day_pass
-    blob_relation("day_pass_id", DayPass)
+    blob_relation("day_pass_id", DayPass.unscoped)
   end
 
   def subscription

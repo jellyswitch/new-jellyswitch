@@ -22,14 +22,14 @@ class Demo::Clean
     Demo::Recreate::Members,
     Demo::SelectOperator,
     Demo::Recreate::Reservations,
-    Demo::Recreate::MemberFeedbacks
-    # Demo::Recreate::DayPasses,
+    Demo::Recreate::MemberFeedbacks,
+    Demo::Recreate::DayPasses,
     # Demo::Recreate::Announcements,
     # Demo::Recreate::Events,
     # Demo::Recreate::DoorPunches,
     # Demo::Recreate::FeedItems,
     # Demo::Recreate::FeedItemComments,
-    # Demo::Recreate::WeeklyUpdates
+    Demo::Recreate::WeeklyUpdates
   )
 
 end
