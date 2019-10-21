@@ -3,7 +3,7 @@ class Demo::Clean
 
   organize(
     Demo::SelectOperator,
-    Demo::Clean::Invoices, # TODO (Leases, Checkins, Refunds, Invoices)
+    Demo::Clean::Invoices, # TODO (Leases)
     Demo::Clean::Organizations, # TODO
     Demo::Clean::Members,
     Demo::Clean::Offices,
@@ -29,6 +29,7 @@ class Demo::Clean
     # Demo::Recreate::DoorPunches,
     Demo::Recreate::FeedItems,
     # Demo::Recreate::FeedItemComments,
+    Demo::Recreate::Invoices,
     Demo::Recreate::WeeklyUpdates
   )
 
