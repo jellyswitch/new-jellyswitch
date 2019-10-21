@@ -23,4 +23,8 @@ class Event < ApplicationRecord
   scope :future, -> () { where("starts_at >= ?", Time.current) }
   scope :past, -> () { where("starts_at < ?", Time.current) }
   scope :today, -> () { where(starts_at: Time.current.beginning_of_day..Time.current.end_of_day) }
+
+  def thumbnail
+    image.variant(resize: "180x180", auto_orient: true)
+  end
 end
