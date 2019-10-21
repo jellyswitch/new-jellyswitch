@@ -20,7 +20,6 @@ class Demo::Clean
     Demo::Recreate::Rooms,
     Demo::Recreate::Offices,
     Demo::Recreate::Members,
-    # Demo::Recreate::Admins,
     Demo::SelectOperator,
     Demo::Recreate::Reservations,
     Demo::Recreate::MemberFeedbacks,

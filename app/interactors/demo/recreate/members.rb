@@ -3,6 +3,7 @@ class Demo::Recreate::Members
 
   organize(
     Demo::Recreate::CreateMembers,
+    Demo::Recreate::Admins,
     Demo::Recreate::Memberships
   )
 end

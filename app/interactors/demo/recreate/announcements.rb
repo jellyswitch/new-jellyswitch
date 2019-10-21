@@ -8,7 +8,7 @@ class Demo::Recreate::Announcements
     messages.each do |msg|
       ::Announcements::Create.call(
         body: msg,
-        user: operator.users.approved.sample,
+        user: operator.users.admins.sample,
         operator: operator,
         created_at: temp_day
       )
