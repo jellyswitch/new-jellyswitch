@@ -27,7 +27,7 @@ class Demo::Clean
     Demo::Recreate::Announcements,
     # Demo::Recreate::Events,
     # Demo::Recreate::DoorPunches,
-    # Demo::Recreate::FeedItems,
+    Demo::Recreate::FeedItems,
     # Demo::Recreate::FeedItemComments,
     Demo::Recreate::WeeklyUpdates
   )

@@ -1,10 +1,28 @@
 class Demo::Recreate::FeedItems
   include Interactor
+  include RandomTimestamps
 
   delegate :operator, to: :context
 
   def call
-
+    puts "Creating management notes..."
+    (0..3).each do |week|
+      week_start = Time.current.beginning_of_week - week.weeks
+      
+      (1..5).each do |offset|
+        day = week_start + offset
+        (1..4).each do |hour_offset|
+          CreatePostFeedItem.call(
+            blob: { text: management_notes.sample, type: "post" },
+            user: operator.users.admins.sample,
+            operator: operator,
+            photos: [],
+            created_at: day + (8+hour_offset).hours
+          )
+        end
+      end
+    end
+    puts "done."
   end
 
   private
