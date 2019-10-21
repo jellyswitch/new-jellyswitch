@@ -88,7 +88,7 @@ module SessionsHelper
   end
 
   def has_reservation?
-    current_user.reservations.any? do |reservation|
+    current_user.present? && current_user.reservations.any? do |reservation|
       reservation.datetime_in.day == Time.current.day
     end
   end

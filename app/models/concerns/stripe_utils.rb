@@ -73,6 +73,10 @@ module StripeUtils
     stripe_request(stripe_plan, :create, plan_args)
   end
 
+  def retrieve_stripe_plans
+    stripe_request("Plan", :list, {})
+  end
+
   def create_stripe_invoice(user)
     invoice_args = { customer: user.stripe_customer_id }
 

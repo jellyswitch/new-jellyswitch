@@ -12,7 +12,7 @@ module Notifiable
       operator = location.operator
 
       blob = {type: "checkin", checkin_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob)
+      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
     def send_notification
