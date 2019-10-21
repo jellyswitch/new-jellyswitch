@@ -15,7 +15,7 @@ class CreateMemberFeedback
     context.member_feedback = member_feedback
 
     blob = {type: "feedback", member_feedback_id: member_feedback.id}
-    create_feed_item(context.operator, context.user, blob)
+    create_feed_item(context.operator, context.user, blob, created_at: member_feedback.created_at)
 
     message = "New member feedback"
 

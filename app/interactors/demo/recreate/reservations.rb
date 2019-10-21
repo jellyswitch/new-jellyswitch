@@ -8,7 +8,7 @@ class Demo::Recreate::Reservations
     operator.locations.each do |loc|
       Time.use_zone(loc.time_zone) do
         # go back 6 weeks
-        (0..6).each do |week|
+        (0..3).each do |week|
           week_start = Time.current.beginning_of_week - week.weeks
           
           (1..5).each do |offset|

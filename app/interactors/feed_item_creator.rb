@@ -12,6 +12,11 @@ module FeedItemCreator
       feed_item.updated_at = options[:day]
     end
 
+    if options[:created_at].present?
+      feed_item.created_at = options[:created_at]
+      feed_item.updated_at = options[:created_at]
+    end
+
     feed_item.save!
   end
 
@@ -26,6 +31,11 @@ module FeedItemCreator
     if options[:day].present?
       feed_item.created_at = options[:day]
       feed_item.updated_at = options[:day]
+    end
+
+    if options[:created_at].present?
+      feed_item.created_at = options[:created_at]
+      feed_item.updated_at = options[:created_at]
     end
 
     if !feed_item.save

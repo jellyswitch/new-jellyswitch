@@ -1,5 +1,6 @@
 class Demo::Recreate::MemberFeedbacks
   include Interactor
+  include RandomTimestamps
 
   delegate :operator, to: :context
 
@@ -11,7 +12,9 @@ class Demo::Recreate::MemberFeedbacks
           anonymous: [true, false].sample,
           comment: comments.sample,
           user_id: user.id,
-          operator_id: operator.id
+          operator_id: operator.id,
+          created_at: temp_day,
+          updated_at: temp_day
         },
         operator: operator,
         user: user

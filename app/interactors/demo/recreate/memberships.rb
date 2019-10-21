@@ -1,6 +1,7 @@
 class Demo::Recreate::Memberships
   include Interactor
   include ErrorsHelper
+  include RandomTimestamps
 
   delegate :operator, to: :context
 
@@ -33,7 +34,8 @@ class Demo::Recreate::Memberships
 
   def subscribe(user, plan)
     subscription = Subscription.new(
-      plan_id: plan.id
+      plan_id: plan.id,
+      created_at: temp_day
     )
     
     subscription.active = true
@@ -45,11 +47,10 @@ class Demo::Recreate::Memberships
       user: user,
       start_day: Time.current + 2.hours,
       out_of_band: true,
-      operator: operator
+    operator: operator
     )
 
     if !result.success?
-      puts subscription.inspect
       context.fail!(message: result.message)
     end
   end

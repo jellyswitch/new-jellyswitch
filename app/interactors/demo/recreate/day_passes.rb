@@ -1,5 +1,6 @@
 class Demo::Recreate::DayPasses
   include Interactor
+  include RandomTimestamps
 
   delegate :operator, to: :context
 
@@ -8,7 +9,7 @@ class Demo::Recreate::DayPasses
     operator.locations.each do |loc|
       Time.use_zone(loc.time_zone) do
         # go back 6 weeks
-        (0..6).each do |week|
+        (1..6).each do |week|
           week_start = Time.current.beginning_of_week - week.weeks
           
           create_day_passes(week_start)
@@ -23,10 +24,11 @@ class Demo::Recreate::DayPasses
   def create_day_passes(week)
     # pick a user at random
     user = operator.users.approved.sample
-    
+
     day_pass_params = {
-      day: week + Array(1..5).sample.days,
-      day_pass_type: operator.day_pass_types.sample.id
+      day: temp_day,
+      day_pass_type: operator.day_pass_types.sample.id,
+      created_at: temp_day
     }
 
     result = DayPassInteractorFactory.for(nil, operator).call(

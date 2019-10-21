@@ -12,7 +12,7 @@ module Notifiable
       operator = subscribable.operator
       blob = { type: 'subscription', subscription_id: id }
 
-      FeedItemCreator.create_feed_item(operator, subscribable, blob)
+      FeedItemCreator.create_feed_item(operator, subscribable, blob, created_at: created_at)
     end
 
     def send_notification
