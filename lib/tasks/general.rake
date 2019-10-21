@@ -20,7 +20,7 @@ task weekly_updates: :environment do
 end
 
 task clean_demo: :environment do
-  result = Demo::Clean.call(subdomain: 'the-first-order')
+  result = Demo::Clean.call(subdomain: 'southlakecoworking')
 
   if result.success?
     puts "Success!"
