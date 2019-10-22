@@ -1,14 +1,20 @@
 class Announcements::Save
   include Interactor
 
-  delegate :body, :user, :operator, to: :context
+  delegate :body, :user, :operator, :created_at, to: :context
 
   def call
-    announcement = Announcement.new(
+    params = {
       body: body,
       user: user,
       operator: operator
-    )
+    }
+
+    if created_at.present?
+      params[:created_at] = created_at
+    end
+
+    announcement = Announcement.new(params)
 
     if !announcement.save
       context.fail!(message: "Failed to save announcement.")

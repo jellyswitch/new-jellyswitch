@@ -44,6 +44,7 @@ class Operator < ApplicationRecord
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors
+  has_many :door_punches
   has_many :feed_items
   has_many :invoices
   has_many :member_feedbacks
@@ -70,6 +71,7 @@ class Operator < ApplicationRecord
            :create_stripe_refund,
            :retrieve_stripe_refund,
            :create_stripe_subscription,
+           :retrieve_stripe_plans,
            :create_stripe_plan,
            :mark_invoice_paid,
            :create_or_update_customer_payment,
@@ -146,7 +148,7 @@ class Operator < ApplicationRecord
     plans.count > 0 &&
     day_pass_types.count > 0 &&
     rooms.count > 0 &&
-    doors.count > 0 &&
+    (doors.count > 0 || locations.all? {|l| l.building_access_instructions.present? })&&
     users.members.count > 0
   end
 

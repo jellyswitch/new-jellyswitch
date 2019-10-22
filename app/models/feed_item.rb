@@ -125,8 +125,11 @@ class FeedItem < ApplicationRecord
   end
 
   def parse_amount
-    amount = (text.scan(/\$\d+.*\d+/).first.tr!("$", "").to_f * 100).to_i
-    blob["amount"] = amount
+    raw = text.scan(/\$\d+.*\d+/).first
+    if raw.present?
+      amount = (raw.tr!("$", "").to_f * 100).to_i
+      blob["amount"] = amount
+    end
   end
 
   def set_expense
@@ -152,7 +155,7 @@ class FeedItem < ApplicationRecord
   end
 
   def day_pass
-    blob_relation("day_pass_id", DayPass)
+    blob_relation("day_pass_id", DayPass.unscoped)
   end
 
   def subscription

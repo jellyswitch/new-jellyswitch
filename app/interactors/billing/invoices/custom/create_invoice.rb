@@ -1,7 +1,7 @@
 class Billing::Invoices::Custom::CreateInvoice
   include Interactor
 
-  delegate :billable, :amount, :description, to: :context
+  delegate :billable, :amount, :description, :created_at, to: :context
 
   def call
     dollars = Money.from_amount(amount.to_i, "USD")
@@ -44,9 +44,15 @@ class Billing::Invoices::Custom::CreateInvoice
       }
     )
 
-    result = ::CreateInvoice.call(stripe_invoice: @invoice)
+    if created_at.present?
+      result = ::CreateInvoice.call(stripe_invoice: @invoice, created_at: created_at)
+    else
+      result = ::CreateInvoice.call(stripe_invoice: @invoice)
+    end
+
     if !result.success?
       context.fail!(message: result.message)
     end
+    context.invoice = result.invoice
   end
 end

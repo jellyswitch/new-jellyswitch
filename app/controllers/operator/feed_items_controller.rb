@@ -190,5 +190,6 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def find_delinquent_invoices
     @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
+    @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
   end
 end

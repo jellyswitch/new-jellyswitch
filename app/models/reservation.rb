@@ -25,8 +25,8 @@ class Reservation < ApplicationRecord
   scope :not_cancelled, ->() { where(cancelled: false) }
   scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
   scope :for_room, -> (room) { where(room_id: room.id) }
-  scope :for_week, -> (week_start, week_end) { where('created_at > ? and created_at <= ?', week_start, week_end) }
-  scope :today, -> () { where(created_at: Time.current.beginning_of_day..Time.current.end_of_day) }
+  scope :for_week, -> (week_start, week_end) { where('datetime_in > ? and datetime_in <= ?', week_start, week_end) }
+  scope :today, -> () { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
   
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
