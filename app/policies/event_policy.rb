@@ -17,7 +17,7 @@ class EventPolicy < ApplicationPolicy
   end
 
   def show?
-    member? || admin?
+    true  
   end
 
   def edit?
@@ -29,6 +29,6 @@ class EventPolicy < ApplicationPolicy
   end
 
   def rsvp?
-    member? || admin?
+    true
   end
 end

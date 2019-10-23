@@ -16,7 +16,11 @@ module EventHelper
   end
 
   def find_event
-    @event = current_location.events.find(params[:id])
+    if current_location.present?
+      @event = current_location.events.find(params[:id])
+    else
+      @event = Event.find(params[:id])
+    end
   end
 
   def event_params
