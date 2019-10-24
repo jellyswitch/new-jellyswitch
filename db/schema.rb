@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_09_25_165330) do
+ActiveRecord::Schema.define(version: 2019_10_23_225232) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -362,6 +362,14 @@ ActiveRecord::Schema.define(version: 2019_09_25_165330) do
     t.integer "hourly_rate_in_cents", default: 0, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
+  end
+
+  create_table "rsvps", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "event_id", null: false
+    t.boolean "going", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "subdomains", force: :cascade do |t|

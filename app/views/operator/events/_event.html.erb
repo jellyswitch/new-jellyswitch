@@ -28,22 +28,7 @@
           </div>
         </div>
 
-        <% if policy(event).rsvp? %>
-          <div class="row mt-3">
-            <div class="col">
-              <h5 class="">Are you going?</h5>
-            </div>
-          </div>
-          <div class="row mt-2 mb-3">
-            <div class="col">
-              <%= link_to "I'm going", "#", class: "btn btn-block btn-primary" %>
-            </div>
-            <div class="col">
-              <%= link_to "I'm going", "#", class: "btn btn-block btn-info" %>
-            </div>
-          </div>
-        <% end %>
-
+        <%= render "operator/events/rsvp", event: event %>
 
         <div class="row mt-2">
           <div class="col-1">

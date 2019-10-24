@@ -120,6 +120,12 @@ Rails.application.routes.draw do
     collection do
       get :past, to: "operator/events#past"
     end
+    resources :rsvps, controller: "operator/rsvps" do
+      collection do
+        get :going, to: "operator/rsvps#going"
+        get :not_going, to: "operator/rsvps#not_going"
+      end
+    end
   end
   resources :feed_items, controller: "operator/feed_items" do
     collection do
