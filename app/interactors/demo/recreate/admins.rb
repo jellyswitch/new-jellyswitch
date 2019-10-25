@@ -5,19 +5,19 @@ class Demo::Recreate::Admins
   delegate :operator, to: :context
 
   def call
-    slugs.each do |slug|
+    names.each do |name|
 
-      user = User.friendly.find(slug)
+      user = operator.users.find_by(name: name)
       user.update(admin: true)
     end
   end
 
   private
 
-  def slugs
+  def names
     [
-      "alix-conyer",
-      "brent-stellar"
+      "Alix Conyer",
+      "Brent Stellar"
     ]
   end
 end
