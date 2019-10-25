@@ -13,4 +13,17 @@
 class Rsvp < ApplicationRecord
   belongs_to :event
   belongs_to :user
+
+  scope :for_user, -> (user) { where(user_id: user.id) }
+  scope :for_event, -> (event) { where(event_id: event.id) }
+  scope :going, -> () { where(going: true) }
+  scope :not_going, -> () { where(going: false) }
+
+  def going?
+    going == true
+  end
+
+  def not_going?
+    going == false
+  end
 end

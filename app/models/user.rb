@@ -53,6 +53,7 @@ class User < ApplicationRecord
   has_many :reservations
   has_many :subscriptions, as: :subscribable
   has_many :refunds
+  has_many :rsvps
 
   # Slugs
   extend FriendlyId

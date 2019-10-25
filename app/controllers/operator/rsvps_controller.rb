@@ -16,7 +16,16 @@ class Operator::RsvpsController < Operator::BaseController
   end
 
   def not_going
+    result = Events::NotGoing.call(
+      event: @event,
+      user: current_user
+    )
 
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(event_path(@event), action: "replace")
   end
 
   private

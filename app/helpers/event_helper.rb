@@ -26,4 +26,17 @@ module EventHelper
   def event_params
     p = params.require(:event).permit(:title, :description, :starts_at, :ends_at, :image, :location_string)
   end
+
+  def rsvped?(user, event)
+    rsvp(user, event).present?
+  end
+
+  def rsvp(user, event)
+    found = event.rsvps.for_user(user).for_event(event)
+    if found.count > 0
+      found.first
+    else
+      nil
+    end
+  end
 end
