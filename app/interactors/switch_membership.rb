@@ -12,6 +12,7 @@ class SwitchMembership
 
       new_subscription.subscribable = old_subscription.subscribable
       new_subscription.billable = old_subscription.billable
+      new_subscription.start_date = old_subscription.start_date
 
       new_subscription.stripe_subscription_id = old_subscription.stripe_subscription_id
 
