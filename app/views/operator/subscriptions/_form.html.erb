@@ -6,10 +6,10 @@
   <div class="form-group row">
 
     <% if admin? %>
-      <%= f.collection_select :plan_id, Plan.available.individual, :id, :pretty_name, { class: "form-control form-control-sm col" } %>
+      <%= f.collection_select :plan_id, Plan.available.individual, :id, :pretty_name, {}, { class: "form-control form-control-sm col" } %>
     <% else %>
       <div class="col-1"></div>
-      <%= f.collection_select :plan_id, Plan.for_individuals, :id, :pretty_name, { class: "form-control form-control-sm col" } %>
+      <%= f.collection_select :plan_id, Plan.for_individuals, :id, :pretty_name, {}, { class: "form-control form-control-sm col" } %>
       <div class="col-1"></div>
     <% end %>
   </div>
