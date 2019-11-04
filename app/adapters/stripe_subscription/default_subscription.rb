@@ -1,18 +1,18 @@
 # typed: true
 module StripeSubscription
   class DefaultSubscription < SimpleDelegator
-    attr_accessor :subscription, :start_day
+    attr_accessor :subscription
 
-    def initialize(subscription, start_day)
+    def initialize(subscription)
       @subscription = subscription
-      @start_day = start_day
     end
 
     def subscription_args
       {
         customer: subscription.billable.stripe_customer_id,
         items: [{ plan: subscription.plan.stripe_plan_id }],
-        prorate: false
+        prorate: false,
+        billing_cycle_anchor: subscription.start_date.to_time.to_i
       }
     end
   end

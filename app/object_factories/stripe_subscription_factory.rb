@@ -1,18 +1,10 @@
 # typed: true
 class StripeSubscriptionFactory
-  def self.for(subscription, start_day)
+  def self.for(subscription)
     if subscription.billable.out_of_band?
-      if start_day.present?
-        StripeSubscription::OutOfBandSpecifiedStartDay
-      else
-        StripeSubscription::OutOfBandDefaultStartDay
-      end
+      StripeSubscription::OutOfBand
     else
-      if start_day.present?
-        StripeSubscription::InBandSpecifiedStartDay
-      else
-        StripeSubscription::InBandDefaultStartDay
-      end
-    end.new(subscription, start_day)
+      StripeSubscription::InBand
+    end.new(subscription)
   end
 end
