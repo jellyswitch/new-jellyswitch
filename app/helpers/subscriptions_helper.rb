@@ -8,7 +8,7 @@ module SubscriptionsHelper
     if params[:subscription][:start_day].present?
       Time.zone.at(params[:subscription][:start_day].to_i) + 2.hours
     else
-      nil
+      Time.zone.now + 2.hours
     end
   end
 end

@@ -115,4 +115,12 @@ class Plan < ApplicationRecord
   def pretty_price
     "#{pretty_amount} / #{short_interval}"
   end
+
+  def lease?
+    plan_type == "lease"
+  end
+
+  def individual?
+    plan_type == "individual"
+  end
 end
