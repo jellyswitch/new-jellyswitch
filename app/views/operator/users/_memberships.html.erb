@@ -63,6 +63,9 @@
       <dt class="col-sm-3">Plan</dt>
       <dd class="col-sm"><%= subscription.plan.plan_name %></dd>
 
+      <dt class="col-sm-3">Subscribe Date</dt>
+      <dd class="col-sm"><%= short_date(subscription.created_at) %></dd>
+
       <dt class="col-sm-3">Start Date</dt>
       <dd class="col-sm"><%= short_date(subscription.created_at) %></dd>
 
@@ -76,9 +79,12 @@
           <strong>Billed to:</strong> <span class="badge badge-danger"><%= subscription.billable_type %></span>
         <% end %>
       </dd>
+
       <% if subscription.plan.has_day_limit? %>
-        <p>Days remaining: <%= subscription.days_left %></p>
+        <dt class="col-sm-3">Days remaining</dt>
+        <dd class="col-sm"><%= subscription.days_left %></dd>
       <% end %>
+      
     </dl>
 
     <div class="row">
@@ -109,7 +115,7 @@
                   <div class="form-group row">
                     <div class="col-1"></div>
                     <div class="col">
-                      <%= f.submit "Update membership", id: 'stripe-submit', class: "form-control btn btn-primary btn-block", data: { acc: 'add-payment' } %>
+                      <%= f.submit "Change membership", id: 'stripe-submit', class: "form-control btn btn-primary btn-block", data: { acc: 'add-payment' } %>
                     </div>
                     <div class="col-1"></div>
                   </div>
