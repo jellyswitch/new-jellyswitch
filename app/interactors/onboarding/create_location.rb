@@ -2,7 +2,8 @@ class Onboarding::CreateLocation
   include Interactor
   include ErrorsHelper
 
-  delegate :operator, :name, :description, :square_footage, :street_address, :city, :state, :zip, :time_zone, to: :context
+  delegate :operator, :name, :description, :square_footage, :street_address, :city, :state, :zip, :time_zone,
+    :contact_name, :contact_email, :contact_phone, :wifi_name, :wifi_password, to: :context
 
   def call
     loc = operator.locations.new(
@@ -13,7 +14,12 @@ class Onboarding::CreateLocation
       city: city,
       state: state,
       zip: zip,
-      time_zone: time_zone
+      time_zone: time_zone,
+      contact_name: contact_name,
+      contact_phone: contact_phone,
+      contact_email: contact_email,
+      wifi_name: wifi_name,
+      wifi_password: wifi_password
     )
 
     if loc.save

@@ -40,7 +40,7 @@ class Demo::Recreate::Locations
         city: "South Lake Tahoe",
         state: "CA",
         zip: 96150,
-        time_zone: "Pacific Time (US & Canada)"
+        time_zone: "Pacific Time (US & Canada)",
       },
       {
         name: "Lakeview",
