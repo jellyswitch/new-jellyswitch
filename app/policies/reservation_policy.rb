@@ -24,6 +24,10 @@ class ReservationPolicy < ApplicationPolicy
     admin?
   end
 
+  def today?
+    admin?
+  end
+
   private
 
   def future?
