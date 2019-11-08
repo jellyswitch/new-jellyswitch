@@ -20,6 +20,7 @@
           <div class="row mb-2">
             <div class="col">
               <h5 class="mb-0"><%= room[:room].name %></h5>
+              <span class="text-secondary"><%= room[:room].location.name %></span>
               <h6 class="text-danger mt-2">
                 <%= render "hour_label", hours: room[:hours] %>
               </h6>
