@@ -124,6 +124,7 @@ Rails.application.routes.draw do
       collection do
         get :going, to: "operator/rsvps#going"
         get :not_going, to: "operator/rsvps#not_going"
+        get :register, to: "operator/rsvps#register"
       end
     end
   end

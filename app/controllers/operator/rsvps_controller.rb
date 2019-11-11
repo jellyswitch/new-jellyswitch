@@ -28,6 +28,22 @@ class Operator::RsvpsController < Operator::BaseController
     turbolinks_redirect(event_path(@event), action: "replace")
   end
 
+  def register
+    result = Events::RegisterAndGoing.call(
+      event: @event,
+      email: params[:email]
+    )
+
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    log_in(result.user)
+    set_location(@event.location)
+
+    turbolinks_redirect(event_path(@event), action: "replace")
+  end
+
   private
 
   def find_event

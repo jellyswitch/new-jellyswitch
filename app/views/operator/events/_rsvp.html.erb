@@ -74,18 +74,11 @@
       </div>
       <div class="row mt-2 mb-3">
         <div class="col">
-          <button type="button" class="btn btn-block btn-success" data-toggle="modal" data-target="#newModal" data-focus="true">
+          <button type="button" class="btn btn-block btn-success" data-toggle="modal" data-target="#goingModal" data-focus="true">
             <i class="fas fa-check"></i>
             &nbsp;
-            I'm going
+            I'm interested
           </button>
-        </div>
-        <div class="col">
-          <%= link_to not_going_event_rsvps_path(event_id: event.id), class: "btn btn-block btn-secondary" do %>
-            <i class="fas fa-times"></i>
-            &nbsp;
-            I'm not going
-          <% end %>
         </div>
       </div>
     <% end %>

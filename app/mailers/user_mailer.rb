@@ -20,4 +20,17 @@ class UserMailer < ApplicationMailer
 
     mail to: @user.email, subject: "Welcome to #{user.operator.name}!", from: from_addr
   end
+
+  def event_registration(user, password, event)
+    @user = user
+    @password = password
+    @event = event
+
+    from_addr = @user.operator.contact_email
+    if from_addr.blank?
+      from_addr = "noreply@jellyswitch.com"
+    end
+
+    mail to: @user.email, subject: "You've RSVPed to #{@event.title}", from: from_addr
+  end
 end

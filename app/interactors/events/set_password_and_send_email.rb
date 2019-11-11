@@ -1,8 +1,8 @@
-class Onboarding::SetPasswordAndSendEmail
+class Events::SetPasswordAndSendEmail
   include Interactor
   include ErrorsHelper
 
-  delegate :user, to: :context
+  delegate :user, :event, to: :context
 
   def call
     context.password = Faker::Science.element
@@ -10,6 +10,6 @@ class Onboarding::SetPasswordAndSendEmail
       context.fail!(message: "Unable to update password (#{errors_for(user)}).")
     end
 
-    UserMailer.onboarding(user, context.password).deliver_later
+    UserMailer.event_registration(user, context.password, event).deliver_later
   end
 end

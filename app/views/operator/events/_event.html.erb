@@ -99,20 +99,21 @@
   <div class="col-lg-3"></div>
 </div>
 
-
-
-
-
-<div class="modal fade" id="newModal" tabindex="-1" role="dialog" aria-hidden="true">
+<div class="modal fade" id="goingModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-body">
-        <label>Enter your email address</label>
-        <input type="text" class="form-control" placeholder="Email Address..." />
+        <%= form_with(method: :get, url: register_event_rsvps_path(@event)) do |f| %>
+          <div class="form-group">
+            <%= f.label :email, "Enter your email address to RSVP" %>
+            <%= f.text_field :email, placeholder: "Email address...", class: "form-control" %>
+          </div>
+          <%= f.submit "Register and RSVP", class: "btn btn-block btn-primary" %>
+        <% end %>
 
-
-        <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-block btn-secondary mt-3" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
 </div> 
+
