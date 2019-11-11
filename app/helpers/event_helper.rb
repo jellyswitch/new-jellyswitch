@@ -1,6 +1,6 @@
 module EventHelper
-  def find_events
-    @events = current_location.events.future.order("starts_at ASC").group_by_day(&:starts_at)
+  def find_events(location)
+    @events = location.events.future.order("starts_at ASC").group_by_day(&:starts_at)
   end
 
   def find_past_events

@@ -1,11 +1,11 @@
 # typed: true
 class EventPolicy < ApplicationPolicy
   def index?
-    member? || admin?
+    true
   end
 
   def past?
-    member? || admin?
+    true
   end
 
   def new?

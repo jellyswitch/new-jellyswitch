@@ -4,7 +4,7 @@ class Operator::EventsController < Operator::BaseController
   before_action :background_image
 
   def index
-    find_events
+    find_events(detect_location)
     authorize Event
   end
 
@@ -62,6 +62,24 @@ class Operator::EventsController < Operator::BaseController
     else
       flash[:error] = result.message
       render :edit
+    end
+  end
+
+  def detect_location
+    if current_location.present?
+      current_location
+    else
+      if params[:location_id].present?
+        loc = current_tenant.locations.find(params[:location_id])
+        if loc.present?
+          set_location(loc)
+          loc
+        else
+          raise "Invalid location ID."
+        end
+      else
+        raise "Invalid location."
+      end
     end
   end
 end
