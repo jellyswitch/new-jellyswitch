@@ -1,27 +1,15 @@
 <% title @event.title %>
 
 <%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "What's Happening?", events_path %></li>
+  <% if current_location.present? %>
+    <li class="breadcrumb-item"><%= link_to "What's Happening?", events_path %></li>
+  <% else %>
+    <li class="breadcrumb-item"><%= link_to "What's Happening?", events_path(location_id: @event.location.id) %></li>
+  <% end %>
   <li class="breadcrumb-item active" aria-current="page"><%= @event.title %></li>
 <% end %>
 
-<% if !mobile_app_request? && current_tenant.has_mobile_app_links? %>
-  <div class="row mt-1">
-    <div class="col-md-4"></div>
-    <div class="col-md-2 text-center align-middle">
-      <a href="<%= current_tenant.ios_url %>">
-        <img alt="Get it on the app store" src="https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2019-03-26&kind=iossoftware&bubble=ios_apps" width=135 height=40>
-      </a>
-    </div>
-
-    <div class="col-md-2 text-center align-middle" style="margin-top: -10px;">
-      <a href="<%= current_tenant.android_url %>">
-        <img alt='Get it on Google Play' src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height=60>
-      </a>
-    </div>
-    <div class="col-md-4"></div>
-  </div>
-<% end %>
+<%= render "operator/events/apps" %>
 
 <%= render @event %>
 
