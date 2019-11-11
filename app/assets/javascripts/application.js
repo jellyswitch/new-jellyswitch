@@ -20,6 +20,7 @@
 //= require Chart.bundle
 //= require chartkick
 //= require pagy
+//= require ahoy
 //= require_tree .
 
 // This is required to get Turbolinks 5 to work with non-GET form errors

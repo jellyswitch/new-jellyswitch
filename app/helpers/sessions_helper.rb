@@ -3,6 +3,7 @@ module SessionsHelper
   # Logs in the given user
   def log_in(user)
     session[:user_id] = user.id
+    ahoy.authenticate(user)
   end
 
   def set_location(location)
