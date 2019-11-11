@@ -7,7 +7,7 @@ gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
 gem "aws-sdk-s3", require: false
 gem 'bcrypt'
-gem 'bootstrap', '~> 4.1.3'
+gem 'bootstrap', '~> 4.3.1'
 gem 'chartkick'
 gem 'draper'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
