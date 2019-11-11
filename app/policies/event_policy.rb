@@ -29,6 +29,6 @@ class EventPolicy < ApplicationPolicy
   end
 
   def rsvp?
-    true
+    record.starts_at >= Time.current
   end
 end
