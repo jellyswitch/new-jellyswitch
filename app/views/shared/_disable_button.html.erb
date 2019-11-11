@@ -1,6 +1,6 @@
 <script>
   $('<%= submit_id %>').attr('disabled', true);
-  $('<%= text_id %>').keyup(function () {
+  $('<%= text_id %>').bind("change keyup input", function () {
     var disable = false;
     var text = $("<%= text_id %>").val()
     console.log(text)

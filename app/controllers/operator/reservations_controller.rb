@@ -1,6 +1,7 @@
 # typed: false
 class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
+  include ReservationHelper
 
   def show
     find_reservation
@@ -135,6 +136,11 @@ class Operator::ReservationsController < Operator::BaseController
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
+  end
+
+  def today
+    authorize Reservation
+    @rooms = find_todays_reservations(current_tenant)
   end
 
   private

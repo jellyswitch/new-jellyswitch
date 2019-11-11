@@ -215,6 +215,7 @@ Rails.application.routes.draw do
       get :confirm, to: "operator/reservations#confirm"
       get :create_reservation, to: "operator/reservations#create_reservation"
       post :update_billing_and_create_reservation, to: "operator/reservations#update_billing_and_create_reservation"
+      get :today, to: "operator/reservations#today"
     end
   end
   resources :rooms, controller: "operator/rooms", except: [:destroy] do

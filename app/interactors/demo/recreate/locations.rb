@@ -34,17 +34,17 @@ class Demo::Recreate::Locations
     [
       {
         name: "The Summit",
-        description: "Cowork Tahoe is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
+        description: "South Lake Coworking is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
         square_footage: 11000,
         street_address: "3079 Harrison Ave.",
         city: "South Lake Tahoe",
         state: "CA",
         zip: 96150,
-        time_zone: "Pacific Time (US & Canada)"
+        time_zone: "Pacific Time (US & Canada)",
       },
       {
         name: "Lakeview",
-        description: "Cowork Tahoe is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
+        description: "South Lake Coworking is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
         square_footage: 5000,
         street_address: "3079 Harrison Ave.",
         city: "South Lake Tahoe",
@@ -54,7 +54,7 @@ class Demo::Recreate::Locations
       },
       {
         name: "Basecamp",
-        description: "Cowork Tahoe is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
+        description: "South Lake Coworking is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.",
         square_footage: 1000,
         street_address: "3079 Harrison Ave.",
         city: "South Lake Tahoe",

@@ -7,6 +7,7 @@
 #  active                 :boolean          default(TRUE), not null
 #  billable_type          :string
 #  pending                :boolean          default(FALSE), not null
+#  start_date             :date             not null
 #  subscribable_type      :string
 #  created_at             :datetime         not null
 #  updated_at             :datetime         not null
@@ -29,6 +30,7 @@ class Subscription < ApplicationRecord
   belongs_to :plan
   belongs_to :billable, polymorphic: true
   belongs_to :subscribable, polymorphic: true
+  has_many :office_leases
 
   # Scopes
   scope :active, -> { where(active: true) }

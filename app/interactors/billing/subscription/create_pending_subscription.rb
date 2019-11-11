@@ -17,6 +17,7 @@ class Billing::Subscription::CreatePendingSubscription
     end
 
     subscription.billable = BillableFactory.for(subscription).billable
+    subscription.start_date = start_day
 
     if subscription.save
       context.subscription = subscription

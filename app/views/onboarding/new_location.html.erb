@@ -21,14 +21,7 @@
 
     <div class="row mb-3">
       <div class="col">
-        <%= f.label :square_footage, "Square Footage" %>
-        <%= f.number_field :square_footage, placeholder: "", class: "form-control" %>
-      </div>
-    </div>
-
-    <div class="row mb-3">
-      <div class="col">
-        <%= f.label :street_address, "Description" %>
+        <%= f.label :street_address, "Street Address" %>
         <%= f.text_field :street_address, placeholder: "123 Awesomesauce Ave.", class: "form-control" %>
       </div>
     </div>
@@ -41,12 +34,19 @@
 
       <div class="col">
         <%= f.label :state, "State" %>
-        <%= f.text_field :street_address, placeholder: "California", class: "form-control" %>
+        <%= f.text_field :state, placeholder: "California", class: "form-control" %>
       </div>
 
       <div class="col">
         <%= f.label :zip, "Zip Code" %>
         <%= f.text_field :zip, placeholder: "12345", class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col">
+        <%= f.label :square_footage, "Square Footage" %>
+        <%= f.number_field :square_footage, placeholder: "", class: "form-control" %>
       </div>
     </div>
 

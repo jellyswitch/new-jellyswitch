@@ -20,6 +20,14 @@ class ReservationPolicy < ApplicationPolicy
     admin? || (owner? && future?)
   end
 
+  def long_duration?
+    admin?
+  end
+
+  def today?
+    admin?
+  end
+
   private
 
   def future?
