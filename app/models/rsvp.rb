@@ -13,7 +13,7 @@
 
 class Rsvp < ApplicationRecord
   visitable :ahoy_visit
-  
+
   belongs_to :event
   belongs_to :user
 

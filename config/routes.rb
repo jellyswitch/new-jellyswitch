@@ -120,6 +120,7 @@ Rails.application.routes.draw do
     collection do
       get :past, to: "operator/events#past"
     end
+    resources :analytics, controller: "operator/events/analytics"
     resources :rsvps, controller: "operator/rsvps" do
       collection do
         get :going, to: "operator/rsvps#going"
