@@ -1,5 +1,6 @@
 # typed: true
 class UserMailer < ApplicationMailer
+  helper LayoutHelper
 
   def password_reset(user, operator)
     @user = user
@@ -30,7 +31,7 @@ class UserMailer < ApplicationMailer
     if from_addr.blank?
       from_addr = "noreply@jellyswitch.com"
     end
-
-    mail to: @user.email, subject: "You've RSVPed to #{@event.title}", from: from_addr
+    
+    mail to: @user.email, subject: "You're all set for #{@event.title}!", from: from_addr
   end
 end
