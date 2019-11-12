@@ -16,15 +16,28 @@
 
       <%= list_item do %>
         <div class="row">
-          <div class="col">Visitors</div>
+          <div class="col">Web Visitors</div>
         </div>
         <%= line_chart Ahoy::Visit.where("landing_page LIKE ?", "%events/#{@event.id}%").group_by_day('ahoy_visits.started_at', last: 30, time_zone: @event.location.time_zone).count %>
-       
       <% end %>
 
       <%= list_item do %>
         <div class="row">
-          <div class="col">Going</div>
+          <div class="col">
+            RSVP Referrers
+            <br />
+            <span class="text-muted">(Latest-visit attribution)</span>
+          </div>
+        </div>
+        <%= pie_chart @event.rsvps.joins(:ahoy_visit).group('referring_domain').count %>
+      <% end %>
+
+      <%= list_item do %>
+        <div class="row">
+          <div class="col">
+            Going
+            <span class="text-muted">(<%= @event.rsvps.going.count %>)</span>
+          </div>
         </div>
       <% end %>
 
