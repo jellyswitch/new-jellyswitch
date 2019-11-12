@@ -3,7 +3,7 @@ class Operator::RsvpsController < Operator::BaseController
   before_action :find_event
 
   def going
-    result = Events::Going.call(
+    result = ::Events::Going.call(
       event: @event,
       user: current_user
     )
@@ -16,7 +16,7 @@ class Operator::RsvpsController < Operator::BaseController
   end
 
   def not_going
-    result = Events::NotGoing.call(
+    result = ::Events::NotGoing.call(
       event: @event,
       user: current_user
     )

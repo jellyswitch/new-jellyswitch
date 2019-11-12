@@ -161,7 +161,7 @@
               <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; min-width: 100%;" width="100%">
                 <tr>
                   <td class="align-center" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; text-align: center;" valign="top" align="center">
-                    <a href="http://htmlemail.io" target="_blank" style="color: #3498db; text-decoration: underline;">
+                    <a href="<%= home_url(subdomain: @event.location.operator.subdomain) %>" target="_blank" style="color: #3498db; text-decoration: underline;">
                       <img src="<%= polymorphic_url(@event.location.operator.logo_image, subdomain: @event.location.operator.subdomain) %>" width="70" alt="Logo" align="center" style="border: none; -ms-interpolation-mode: bicubic; max-width: 100%;">
                     </a>
                   </td>
@@ -170,6 +170,7 @@
             </div>
 
             <!-- END HEADER -->
+
             <table border="0" cellpadding="0" cellspacing="0" class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #fff; border-radius: 4px;" width="100%">
 
               <!-- START MAIN CONTENT AREA -->
@@ -184,40 +185,7 @@
                     <tr>
                       <td style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top;" valign="top">
                         <p class="align-center" style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px; text-align: center;">Download our app to access your event:</p>
-                        <table border="0" cellpadding="0" cellspacing="0" class="" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box; min-width: 100% !important;" width="100%">
-                          <tbody>
-                            <tr>
-                              <td align="center" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; padding-bottom: 16px;" valign="top">
-                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
-                                  <tbody>
-                                    <tr>
-                                      <td style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; border-radius: 4px; text-align: center;" valign="top" align="center">
-                                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: auto;">
-                                          <tbody>
-                                            <tr>
-                                              <td align="center" class="content-block" style="font-family: Helvetica, sans-serif; vertical-align: top; padding-top: 0; padding-bottom: 24px; font-size: 12px; color: #999999; text-align: center;" valign="top" align="center">
-                                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
-                                                  <tr>
-                                                    <td style="font-family: Helvetica, sans-serif; vertical-align: top; font-size: 12px; color: #999999; text-align: center;" valign="top" align="center">
-                                                      <a href="<%= @event.location.operator.ios_url %>" style="text-decoration: underline; color: #999999; font-size: 12px; text-align: center;"><img src="<%= image_url('appstore.png') %>", width="135" height="40" alt="Download from App Store" style="border: none; -ms-interpolation-mode: bicubic; max-width: 100%;"></a>
-                                                      &nbsp;
-                                                      <a href="<%= @event.location.operator.android_url %>" style="text-decoration: underline; color: #999999; font-size: 12px; text-align: center;"><img src="<%= image_url('playstore.png') %>" width="135" height="40" alt="Available on Google Play" style="border: none; -ms-interpolation-mode: bicubic; max-width: 100%;"></a>
-                                                      &nbsp;
-                                                    </td>
-                                                  </tr>
-                                                </table>
-                                              </td>
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </td>
-                                    </tr>
-                                  </tbody>
-                                </table>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
+                        <%= render "user_mailer/app_links", operator: @event.location.operator, host: @host %>
                       </td>
                     </tr>
                   </table>

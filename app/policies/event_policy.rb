@@ -28,6 +28,10 @@ class EventPolicy < ApplicationPolicy
     admin?
   end
 
+  def destroy?
+    admin?
+  end
+
   def rsvp?
     record.starts_at >= Time.current
   end
