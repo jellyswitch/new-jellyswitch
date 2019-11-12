@@ -9,6 +9,26 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @event.title %></li>
 <% end %>
 
+<%= content_for :head do %>
+  <meta name="description" content="<%= @event.description.slice(0, 155) %>" />
+
+  <!-- Twitter Card data -->
+  <meta name="twitter:card" content="<%= @event.description %>">
+  <meta name="twitter:title" content="<%= @event.title %> at <%= current_tenant.name %>">
+  <meta name="twitter:description" content="<%= @event.description.slice(0, 255) %>">
+  
+  <!-- Twitter Summary card images must be at least 120x120px -->
+  <meta name="twitter:image" content="<%= polymorphic_url(@event.image) %>">
+
+  <!-- Facebook -->
+  <meta property="og:title" content="<%= @event.title %> at <%= current_tenant.name %>" />
+  <meta property="og:image" content="<%= polymorphic_url(@event.image) %>" />
+  <meta property="og:url" content="<%= event_url(@event) %>" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="<%= current_tenant.name %>" />
+  <meta property="og:description" content="<%= @event.description %>" />
+<% end %>
+
 <%= render "operator/events/apps" %>
 
 <%= render @event %>
