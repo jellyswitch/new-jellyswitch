@@ -19,6 +19,11 @@ class Rsvp < ApplicationRecord
 
   scope :for_user, -> (user) { where(user_id: user.id) }
   scope :for_event, -> (event) { where(event_id: event.id) }
+  scope :today, -> () do
+    day_start = Time.current.beginning_of_day
+    day_end = day_start.end_of_day
+    joins(:event).where("events.starts_at > ? AND events.starts_at < ?", day_start, day_end)
+  end
   scope :going, -> () { where(going: true) }
   scope :not_going, -> () { where(going: false) }
 

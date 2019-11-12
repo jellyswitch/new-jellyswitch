@@ -29,7 +29,7 @@ class Operator::RsvpsController < Operator::BaseController
   end
 
   def register
-    result = Events::RegisterAndGoing.call(
+    result = ::Events::RegisterAndGoing.call(
       event: @event,
       email: params[:email]
     )

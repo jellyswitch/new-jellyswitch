@@ -40,4 +40,15 @@ class Ahoy::Visit < ApplicationRecord
 
   has_many :events, class_name: "Ahoy::Event"
   belongs_to :user, optional: true
+
+  scope :mobile, -> () { where("user_agent LIKE ?", "%Jellyswitch%") }
+  scope :web, -> () { where("user_agent NOT LIKE ?", "%Jellyswitch%") }
+
+  def web?
+    !mobile?
+  end
+
+  def mobile?
+    user_agent.match(/(Jellyswitch)/).present?
+  end
 end

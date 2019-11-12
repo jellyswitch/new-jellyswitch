@@ -31,7 +31,7 @@ module LandingHelper
   end
 
   def home_redirect
-    if member? || admin? || has_reservation?
+    if member? || admin? || has_reservation? || has_rsvp?
       # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path
@@ -68,5 +68,9 @@ module LandingHelper
 
   def always_has_access?
     current_user.has_building_access_lease? || current_user.always_allow_building_access?
+  end
+
+  def has_rsvp?
+    current_user.rsvps.going.today.count > 0
   end
 end
