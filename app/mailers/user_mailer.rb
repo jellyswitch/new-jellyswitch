@@ -1,5 +1,6 @@
 # typed: true
 class UserMailer < ApplicationMailer
+  helper ApplicationHelper
   helper LayoutHelper
 
   def password_reset(user, operator)
