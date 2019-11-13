@@ -5,23 +5,32 @@
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
 
-      <%= link_to user_memberships_path(current_user), class: "list-group-item list-group-item-action d-flx m-0", style: "border-bottom: 0px;" do %>
-        <div class="row">
-          <div class="col-11">
-            <i class="fas fa-users-cog"></i>
-            &nbsp;
-            Manage my membership
-          </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
+      <%= list_item do %>
+        <%= render "shared/building_access_card" %>
       <% end %>
 
-      <%= link_to user_reservations_path(current_user), class: "list-group-item list-group-item-action d-flx m-0", style: "border-bottom: 0px;" do %>
+      <div class="list-group-item m-0" style="border-top: 0px; border-bottom: 0px;">
+        <h5 class="card-title">Quick Actions</h5>
+      </div>
+      <% if current_user.has_active_subscription? %>
+        <%= link_to user_memberships_path(current_user), class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px;" do %>
+          <div class="row">
+            <div class="col-11">
+              <i class="fas fa-users-cog"></i>
+              &nbsp;
+              Manage my membership
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
+      <%= link_to user_reservations_path(current_user), class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px;" do %>
         <div class="row">
           <div class="col-11">
-            <i class="fas fa-briefcase mt-2"></i>
+            <i class="fas fa-briefcase"></i>
             &nbsp;
             See my room reservations
           </div>
@@ -31,9 +40,21 @@
         </div>
       <% end %>
 
-      <%= list_item do %>
-        <%= render "shared/building_access_card" %>
+      <%= link_to  user_invoices_path(current_user), class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px; border-bottom: 0px;" do %>
+        <div class="row">
+          <div class="col-11">
+            <i class="fas fa-dollar-sign"></i>
+            &nbsp;
+            <span class="ml-2">
+              See my invoices
+            </span>
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
       <% end %>
+    
 
       <% if current_tenant.announcements.count > 0 %>
         <%= list_item do %>
