@@ -236,6 +236,7 @@ Rails.application.routes.draw do
       get :archived, to: "operator/users#archived"
       get :unapproved, to: "operator/users#unapproved"
     end
+    get :about, to: "operator/users#about"
     get :approve, to: "operator/users#approve"
     get :archive, to: "operator/users#archive"
     get :billing, to: "operator/users#edit_billing"
@@ -251,6 +252,7 @@ Rails.application.routes.draw do
     get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"
     get :unarchive, to: "operator/users#unarchive"
+    get :usage, to: "operator/users#usage"
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"
     patch "update_payment_method", to: "operator/users#update_payment_method"

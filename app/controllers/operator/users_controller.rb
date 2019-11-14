@@ -33,6 +33,17 @@ class Operator::UsersController < Operator::BaseController
     end
   end
 
+  def about
+    find_user(:user_id)
+    authorize @user
+  end
+
+  def usage
+    find_user(:user_id)
+    authorize @user
+    @usage_report = Jellyswitch::UsageReport.new(@user)
+  end
+
   def new
     @user = User.new
     authorize @user

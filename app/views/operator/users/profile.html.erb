@@ -1,48 +1,131 @@
 <% title @user.name %>
 
-<%= wide_card do %>
-  <p class="lead text-center mb-3 mt-3">This data is only visible to administrators</p>
-  <div class="row">
-    <div class="col-2">
-      <%= render "shared/small_profile_photo", user: @user %>
-    </div>
-    <div class="col">
-      <h5 class="mb-1">
-        <%= link_to @user.name, user_path(@user) %>
-      </h5>
-      <small>
-        Joined
-        <%= time_ago_in_words(@user.created_at) %>
-        ago
-        (<%= @user.created_at.strftime("%F") %>)
-      </small>
-    </div>
-  </div>
-  <dl class="row mt-3">
-    <dt class="col-sm-3">Email address</dt>
-    <dd class="col-sm" data-turbolinks="false"><%= mail_to @user.email %></dd>
-  </dl>
-  <dl class="row mt-3">
-    <dt class="col-sm-3">Always has building access?</dt>
-    <dd class="col-sm">
-      <% if @user.always_allow_building_access? %>
-        Yes
-      <% else %>
-        No
-      <% end %>
-    </dd>
-  </dl>
-  <div class="row mt-4">
-    <div class="col">
-      <%= render "admin", user: @user %>
-    </div>
-  </div>
-<% end %>
+<div class="row mt-0 mb-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 pl-0 pr-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Usage</h4>
-  <%= render "usage", user: @user, usage_report: @usage_report %>
-<% end %>
+        <div class="row">
+          <div class="col-2">
+            <%= render "shared/small_profile_photo", user: @user %>
+          </div>
+          <div class="col">
+            <h5 class="mb-1">
+              <%= link_to @user.name, user_path(@user) %>
+            </h5>
+            <small>
+              Joined
+              <%= time_ago_in_words(@user.created_at) %>
+              ago
+              (<%= @user.created_at.strftime("%F") %>)
+            </small>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#newModal">
+              <i class="fas fa-plus"></i>
+              &nbsp;
+              Quick add
+            </button>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to user_set_password_and_send_email_path(@user), class: "btn btn-block btn-info", data: { confirm: "This will reset #{@user.name}'s password. Are you sure?'", disable_with: "Sending..."} do %>
+              <i class="fas fa-redo-alt"></i>
+              &nbsp;
+              Send onboarding email
+            <% end %>
+          </div>
+        </div>
+
+      <% end %>
+
+      <%= link_to user_about_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-info"></i>
+            &nbsp;
+            About
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_usage_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="far fa-chart-bar"></i>
+            &nbsp;
+            Usage
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-3"></div>
+</div>
+
+
+<div class="modal fade" id="newModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="list-group list-group-flush">
+          <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-briefcase"></i>
+            &nbsp;
+            Reserve a room
+          <% end %>
+
+          <%= link_to new_feed_item_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-edit"></i>
+            &nbsp;
+            Post a management note
+          <% end %>
+
+          <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-bullhorn"></i>
+            &nbsp;
+            Post an announcement
+          <% end %>
+
+          <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
+            <i class="far fa-calendar-alt"></i>
+            &nbsp;
+            Create an event
+          <% end %>
+
+          <%= link_to add_member_users_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Add a member
+          <% end %>
+
+          <%= link_to new_office_lease_path, class: "list-group-item list-group-item-action" do %>
+            <i class="fas fa-file-alt"></i>
+            &nbsp;
+            Add an office lease
+          <% end %>
+
+
+          <div class="list-group-item">
+            <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <%= wide_card do %>
   <h4 class="display-4 text-center mt-4">Payment Method</h4>

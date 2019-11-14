@@ -16,6 +16,14 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin? 
   end
 
+  def about?
+    admin?
+  end
+
+  def usage?
+    admin?
+  end
+
   def new?
     true # anyone can sign up
   end
