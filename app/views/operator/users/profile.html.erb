@@ -83,6 +83,71 @@
           </div>
         </div>
       <% end %>
+
+      <%= link_to user_membership_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Membership
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_admin_day_passes_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-ticket-alt"></i>
+            &nbsp;
+            Day Passes
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_checkins_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-hourglass-start"></i>
+            &nbsp;
+            Check-ins
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_organization_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Group Membership
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_admin_invoices_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-dollar-sign"></i>
+            &nbsp;
+            Invoices
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
     <% end %>
   </div>
   <div class="col-lg-3"></div>
@@ -139,53 +204,3 @@
     </div>
   </div>
 </div>
-
-<%= wide_card do %>
-  <%= render "memberships", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Pending Membership</h4>
-  <%= render "pending_memberships", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Day Passes</h4>
-  <%= render "day_passes", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Check-ins</h4>
-  <%= render "checkins", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Organization</h4>
-  <%= render "organization_form", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Invoices</h4>
-  <div class="card-body list-group list-group-flush p-0">
-    <% if @user.bill_to_organization? %>
-      <% if @user.organization.present? %>
-        <%= link_to "Create new invoice", new_invoice_path(organization_id: @user.organization.id), class: "btn btn-block btn-primary" %>
-      <% else %>
-        <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
-        <div class="text-center">
-          <small>This user is marked as "bill to group" but is not a member of a group.</small>
-        </div>  
-      <% end %>
-    <% elsif @user.out_of_band? || @user.card_added? %>
-      <%= link_to "Create new invoice", new_invoice_path(user_id: @user.id), class: "btn btn-block btn-primary" %>
-    <% else %>
-      <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
-      <div class="text-center">
-        <small>Set a payment method to create a new invoice</small>
-      </div>
-    <% end %>
-
-    <%= render "invoices", user: @user %>
-  </div>
-<% end %>
-

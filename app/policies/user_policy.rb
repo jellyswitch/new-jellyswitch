@@ -28,6 +28,26 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def membership?
+    admin?
+  end
+
+  def admin_day_passes?
+    admin?
+  end
+
+  def checkins?
+    admin?
+  end
+
+  def organization?
+    admin?
+  end
+
+  def admin_invoices?
+    admin?
+  end
+
   def new?
     true # anyone can sign up
   end

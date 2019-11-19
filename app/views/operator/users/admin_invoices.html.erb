@@ -1,0 +1,37 @@
+<% title "Invoices" %>
+
+<div class="row mt-0 mb-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 pl-0 pr-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        
+        <h4 class="display-4 text-center mt-4">Invoices</h4>
+          <div class="card-body list-group list-group-flush p-0">
+            <% if @user.bill_to_organization? %>
+              <% if @user.organization.present? %>
+                <%= link_to "Create new invoice", new_invoice_path(organization_id: @user.organization.id), class: "btn btn-block btn-primary" %>
+              <% else %>
+                <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
+                <div class="text-center">
+                  <small>This user is marked as "bill to group" but is not a member of a group.</small>
+                </div>  
+              <% end %>
+            <% elsif @user.out_of_band? || @user.card_added? %>
+              <%= link_to "Create new invoice", new_invoice_path(user_id: @user.id), class: "btn btn-block btn-primary" %>
+            <% else %>
+              <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
+              <div class="text-center">
+                <small>Set a payment method to create a new invoice</small>
+              </div>
+            <% end %>
+
+            <%= render "invoices", user: @user %>
+          </div>
+        
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-3"></div>
+</div>
+
