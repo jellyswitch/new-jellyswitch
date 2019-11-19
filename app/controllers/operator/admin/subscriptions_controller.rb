@@ -8,11 +8,19 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     @subscription = new_subscription
     start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
-
-    interactor = Billing::Subscription::CreateSubscription
     
-    if out_of_band == false && @subscription.subscribable.card_added == false
-      interactor = Billing::Subscription::CreatePendingSubscription
+    interactor = if @subscription.subscribable.bill_to_organization
+      Billing::Subscription::CreateSubscription
+    else
+      if out_of_band
+        Billing::Subscription::CreateSubscription
+      else
+        if @subscription.subscribable.card_added
+          Billing::Subscription::CreateSubscription
+        else
+          Billing::Subscription::CreatePendingSubscription
+        end
+      end
     end
     
     result = interactor.call(
