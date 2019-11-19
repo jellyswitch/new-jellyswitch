@@ -50,4 +50,9 @@ module LayoutHelper
     page_title
   end
 
+  def invoice_button(user, classes)
+    render "operator/users/new_invoice_button", user: user, classes: classes do
+      yield
+    end
+  end
 end
