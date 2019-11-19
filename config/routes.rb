@@ -248,6 +248,7 @@ Rails.application.routes.draw do
     get :invoices, to: "operator/users#invoices"
     get :memberships, to: "operator/users#memberships"
     get :out_of_band, to: "operator/users#out_of_band"
+    get :payment_method, to: "operator/users#payment_method"
     get :reservations, to: "operator/users#reservations"
     get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"

@@ -44,6 +44,11 @@ class Operator::UsersController < Operator::BaseController
     @usage_report = Jellyswitch::UsageReport.new(@user)
   end
 
+  def payment_method
+    find_user(:user_id)
+    authorize @user
+  end
+
   def new
     @user = User.new
     authorize @user

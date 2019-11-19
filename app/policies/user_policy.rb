@@ -24,6 +24,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def payment_method?
+    admin?
+  end
+
   def new?
     true # anyone can sign up
   end
