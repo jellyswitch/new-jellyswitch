@@ -8,7 +8,7 @@
         
         <h4 class="display-4 text-center mt-4">Invoices</h4>
           <div class="card-body list-group list-group-flush p-0">
-            <%= invoice_button(@user, "btn btn-primary btn-block") do %>
+            <%= render(NewInvoiceButtonComponent, user: @user, classes: "btn btn-primary btn-block") do %>
               <i class="fas fa-dollar-sign"></i>
               &nbsp;
               New Invoice
