@@ -1,9 +1,7 @@
 <div class="row mt-2">
   <div class="col">
-    <% if user.has_billing? || user.out_of_band? %>
-      <%= render "operator/admin/day_passes/form", day_pass: DayPass.new, label: "Add day pass", user: user %>
-    <% else %>
-      <small><strong>NOTE</strong>: This user does not have a credit card on file.</small>
+    <%= render(NewDayPassButtonComponent, user: user, classes: "btn btn-primary btn-block") do %>
+      Add day pass
     <% end %>
   </div>
 </div>
@@ -15,7 +13,7 @@
     </div>
   </div>
 <% else %>
-  <h5 class="display-5 text-center">Past Day Passes:</h5>
+  <h5 class="display-5 text-center mt-3">Past Day Passes:</h5>
   <ul class="list-group list-group-flush">
     <% user.day_passes.order('day DESC').each do |day_pass| %>
       <li class="list-group-item text-center">

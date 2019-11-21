@@ -7,6 +7,8 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require "action_view/component/base"
+
 module Bristlecone
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.

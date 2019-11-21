@@ -2,6 +2,11 @@
 class Operator::Admin::DayPassesController < Operator::BaseController
   include DayPassesHelper
 
+  def new
+    authorize DayPass.new
+    @user = current_tenant.users.find(params[:user_id])
+  end
+
   def create
     authorize DayPass.new
 

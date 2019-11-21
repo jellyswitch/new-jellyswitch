@@ -1,0 +1,59 @@
+<% title "Payment Method" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Payment Method</li>
+<% end %>
+
+<div class="row mt-0 mb-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 pl-0 pr-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <div class="row">
+          <div class="col">
+            <h4 class="display-4">Payment method</h4>
+            <p>Tap to change:</p>
+            <ul class="list-group mt-4">
+              <% if @user.card_added? %>
+                <% if @user.out_of_band? %>
+                  <%= link_to "Card ending in #{@user.card_last_4_digits}", user_credit_card_path(user), class: "list-group-item" %>
+                <% else %>
+                  <% if @user.bill_to_organization? %>
+                    <%= link_to "Card ending in #{@user.card_last_4_digits}", user_credit_card_path(@user), class: "list-group-item" %>
+                  <% else %>
+                    <li class="list-group-item active">Card ending in <%= @user.card_last_4_digits %></li>
+                  <% end %>
+                <% end %>
+              <% else %>
+                <li class="list-group-item disabled">No card on file</li>
+              <% end %>
+
+              <% if @user.out_of_band? && !@user.bill_to_organization? %>
+                <li class="list-group-item active">Via cash or check</li>
+              <% else %>
+                <%= link_to "Via cash or check", user_out_of_band_path(@user), class: "list-group-item" %>
+              <% end %>
+
+              <% if @user.member_of_organization? %>
+                <% if @user.bill_to_organization? %>
+                  <li class="list-group-item active">Bill to group (<%= @user.organization.name %>)</li>
+                <% else %>
+                  <%= link_to "Bill to group (#{@user.organization.name})", user_bill_to_organization_path(@user), class: "list-group-item" %>
+                <% end %>
+              <% else %>
+                <% if @user.bill_to_organization %>
+                  <span class="badge badge-danger">User is not a member of a group</span>
+                <% end %>
+                <li class="list-group-item disabled">Group billing unavailable (not a member of a group)</li>
+              <% end %>
+            </ul>
+          </div>
+        </div>
+
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-3"></div>
+</div>
+

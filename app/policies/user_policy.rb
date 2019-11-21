@@ -16,6 +16,38 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin? 
   end
 
+  def about?
+    admin?
+  end
+
+  def usage?
+    admin?
+  end
+
+  def payment_method?
+    admin?
+  end
+
+  def membership?
+    admin?
+  end
+
+  def admin_day_passes?
+    admin?
+  end
+
+  def checkins?
+    admin?
+  end
+
+  def organization?
+    admin?
+  end
+
+  def admin_invoices?
+    admin?
+  end
+
   def new?
     true # anyone can sign up
   end
