@@ -1,5 +1,5 @@
 <% if user.has_billing? || user.out_of_band? %>
-  <%= link_to new_admin_day_pass_path, class: classes do %>
+  <%= link_to new_operator_admin_day_pass_path(user_id: user.id), class: classes do %>
     <%= content %>
   <% end %>
 <% else %>
