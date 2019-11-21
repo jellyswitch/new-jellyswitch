@@ -1,6 +1,7 @@
 <%= form_for(@user, url: user_update_organization_path(@user), class: "form-inline", remote: true) do |f| %>
-  <div class="input-group">
+  <div class="input-group mb-3">
     <%= f.select :organization_id, Organization.options_for_select, {}, { class: "form-control"} %>
-    <%= f.submit "Update", class: "btn btn-primary btn-sm" %>
+  </div>
+  <%= f.submit "Update group", class: "btn btn-primary btn-block" %>
   </div>
 <%- end %>
