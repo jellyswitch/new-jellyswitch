@@ -28,7 +28,7 @@
             <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#newModal">
               <i class="fas fa-plus"></i>
               &nbsp;
-              Quick add
+              Quick actions
             </button>
           </div>
         </div>
@@ -169,47 +169,24 @@
           <% end %>
 
           <%= render(NewDayPassButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
-            <i class="fas fa-dollar-sign"></i>
+            <i class="fas fa-ticket-alt"></i>
             &nbsp;
             Add a day pass
           <% end %>
 
-          <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-briefcase"></i>
-            &nbsp;
-            Reserve a room
+          <% if @user.has_active_subscription? %>
+            <%= link_to subscription_path(@user.subscriptions.active.first), method: :delete, remote: true, class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-times"></i>
+              &nbsp;
+              Cancel membership
+            <% end %>
+          <% else %>
+            <%= render(NewMembershipButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+              <i class="fas fa-users"></i>
+              &nbsp;
+              Add a membership
+            <% end %>
           <% end %>
-
-          <%= link_to new_feed_item_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-edit"></i>
-            &nbsp;
-            Post a management note
-          <% end %>
-
-          <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-bullhorn"></i>
-            &nbsp;
-            Post an announcement
-          <% end %>
-
-          <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
-            <i class="far fa-calendar-alt"></i>
-            &nbsp;
-            Create an event
-          <% end %>
-
-          <%= link_to add_member_users_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-users"></i>
-            &nbsp;
-            Add a member
-          <% end %>
-
-          <%= link_to new_office_lease_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-file-alt"></i>
-            &nbsp;
-            Add an office lease
-          <% end %>
-
 
           <div class="list-group-item">
             <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
