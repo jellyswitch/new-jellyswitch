@@ -29,4 +29,8 @@ class Event < ApplicationRecord
   def thumbnail
     image.variant(resize: "180x180", auto_orient: true)
   end
+
+  def social_image
+    image.variant(resize: "300x300", auto_orient: true)
+  end
 end

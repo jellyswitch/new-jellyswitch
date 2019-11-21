@@ -16,17 +16,24 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="<%= @event.title %> at <%= current_tenant.name %>">
   <meta name="twitter:description" content="<%= @event.description.slice(0, 255) %>">
+  <meta name="twitter:label1" content="Location" />
+  <meta name="twitter:data1" content="<%= pretty_location(@event) %>" />
+  <meta name="twitter:label1" content="When" />
+  <meta name="twitter:data1" content="<%= long_date(@event.starts_at) %>" />
   
   <!-- Twitter Summary card images must be at least 120x120px -->
-  <meta name="twitter:image" content="<%= polymorphic_url(@event.image) %>">
+  <meta name="twitter:image" content="<%= polymorphic_url(@event.social_image) %>">
 
   <!-- Facebook -->
   <meta property="og:title" content="<%= @event.title %> at <%= current_tenant.name %>" />
-  <meta property="og:image" content="<%= polymorphic_url(@event.image) %>" />
+  <meta property="og:image" content="<%= polymorphic_url(@event.social_image) %>" />
   <meta property="og:url" content="<%= event_url(@event) %>" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="<%= current_tenant.name %>" />
   <meta property="og:description" content="<%= @event.description %>" />
+  
+
+
 <% end %>
 
 <%= render @event %>

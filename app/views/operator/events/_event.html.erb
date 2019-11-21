@@ -86,11 +86,7 @@
             <i class="fas fa-map-pin"></i>
           </div>
           <div class="col-11">
-            <% if event.location_string.present? %>
-              <%= event.location_string.titleize %>
-            <% else %>
-              <%= event.location.name.titleize %>
-            <% end %>
+            <%= pretty_location(event) %>
           </div>
         </div>
 

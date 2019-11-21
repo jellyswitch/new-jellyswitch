@@ -39,4 +39,12 @@ module EventHelper
       nil
     end
   end
+
+  def pretty_location(event)
+    if event.location_string.present?
+      event.location_string.titleize
+    else
+      event.location.name.titleize
+    end
+  end
 end
