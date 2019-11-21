@@ -13,7 +13,8 @@
   <meta name="description" content="<%= @event.description.slice(0, 155) %>" />
 
   <!-- Twitter Card data -->
-  <meta name="twitter:card" content="<%= @event.description.slice(0, 155) %>">
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:card" content="<%= @event.description %>">
   <meta name="twitter:title" content="<%= @event.title %> at <%= current_tenant.name %>">
   <meta name="twitter:description" content="<%= @event.description.slice(0, 255) %>">
   
