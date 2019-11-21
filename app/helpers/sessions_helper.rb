@@ -42,6 +42,10 @@ module SessionsHelper
   end
 
   def current_location
+    if !defined?(current_tenant)
+      return nil
+    end
+    
     # this will only return nil if there is more than one location to choose and one has NOT been selected already
 
     # In case I"m a superadmin and my location is set to a different operator
