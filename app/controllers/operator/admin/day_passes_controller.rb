@@ -2,6 +2,10 @@
 class Operator::Admin::DayPassesController < Operator::BaseController
   include DayPassesHelper
 
+  def new
+    authorize DayPass.new
+  end
+
   def create
     authorize DayPass.new
 

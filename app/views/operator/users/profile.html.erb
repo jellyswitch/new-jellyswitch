@@ -167,6 +167,13 @@
             &nbsp;
             Create new invoice
           <% end %>
+
+          <%= render(NewDayPassButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <i class="fas fa-dollar-sign"></i>
+            &nbsp;
+            Add a day pass
+          <% end %>
+
           <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
             <i class="fas fa-briefcase"></i>
             &nbsp;

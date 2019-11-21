@@ -1,0 +1,9 @@
+<% if user.has_billing? || user.out_of_band? %>
+  <%= link_to new_admin_day_pass_path, class: classes do %>
+    <%= content %>
+  <% end %>
+<% else %>
+  <%= link_to "#", class: "#{classes} disabled" do %>
+    Cannot add day pass: No payment method on file
+  <% end %>
+<% end %>
