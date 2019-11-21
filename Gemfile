@@ -3,8 +3,10 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.5.1'
 gem 'dotenv-rails', require: 'dotenv/rails-now'
+gem "actionview-component"
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
+gem 'ahoy_matey'
 gem "aws-sdk-s3", require: false
 gem 'bcrypt'
 gem 'bootstrap', '~> 4.3.1'

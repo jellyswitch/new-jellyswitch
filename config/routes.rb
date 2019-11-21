@@ -120,6 +120,14 @@ Rails.application.routes.draw do
     collection do
       get :past, to: "operator/events#past"
     end
+    resources :analytics, controller: "operator/events/analytics"
+    resources :rsvps, controller: "operator/rsvps" do
+      collection do
+        get :going, to: "operator/rsvps#going"
+        get :not_going, to: "operator/rsvps#not_going"
+        get :register, to: "operator/rsvps#register"
+      end
+    end
   end
   resources :feed_items, controller: "operator/feed_items" do
     collection do
@@ -228,21 +236,29 @@ Rails.application.routes.draw do
       get :archived, to: "operator/users#archived"
       get :unapproved, to: "operator/users#unapproved"
     end
+    get :about, to: "operator/users#about"
+    get :admin_day_passes, to: "operator/users#admin_day_passes"
+    get :admin_invoices, to: "operator/users#admin_invoices"
     get :approve, to: "operator/users#approve"
     get :archive, to: "operator/users#archive"
     get :billing, to: "operator/users#edit_billing"
     post :billing, to: "operator/users#update_billing"
     get :bill_to_organization, to: "operator/users#bill_to_organization"
+    get :checkins, to: "operator/users#checkins"
     get :credit_card, to: "operator/users#credit_card"
     get "change_password", to: "operator/users#change_password"
     get :day_passes, to: "operator/users#day_passes"
     get :invoices, to: "operator/users#invoices"
+    get :membership, to: "operator/users#membership"
     get :memberships, to: "operator/users#memberships"
     get :out_of_band, to: "operator/users#out_of_band"
+    get :organization, to: "operator/users#organization"
+    get :payment_method, to: "operator/users#payment_method"
     get :reservations, to: "operator/users#reservations"
     get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"
     get :unarchive, to: "operator/users#unarchive"
+    get :usage, to: "operator/users#usage"
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"
     patch "update_payment_method", to: "operator/users#update_payment_method"

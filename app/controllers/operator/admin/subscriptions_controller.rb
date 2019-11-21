@@ -2,6 +2,11 @@
 class Operator::Admin::SubscriptionsController < Operator::BaseController
   include SubscriptionsHelper
 
+  def new
+    authorize Subscription.new
+    @user = current_tenant.users.find(params[:user_id])
+  end
+
   def create
     authorize Subscription, :new?
 

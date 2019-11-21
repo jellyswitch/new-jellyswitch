@@ -1,11 +1,11 @@
 # typed: true
 class EventPolicy < ApplicationPolicy
   def index?
-    member? || admin?
+    true
   end
 
   def past?
-    member? || admin?
+    true
   end
 
   def new?
@@ -17,7 +17,7 @@ class EventPolicy < ApplicationPolicy
   end
 
   def show?
-    member? || admin?
+    true  
   end
 
   def edit?
@@ -26,5 +26,13 @@ class EventPolicy < ApplicationPolicy
 
   def update?
     admin?
+  end
+
+  def destroy?
+    admin?
+  end
+
+  def rsvp?
+    record.starts_at >= Time.current
   end
 end

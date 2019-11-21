@@ -18,6 +18,8 @@ class Event < ApplicationRecord
   belongs_to :location
   belongs_to :user
 
+  has_many :rsvps
+
   has_one_attached :image
   
   scope :future, -> () { where("starts_at >= ?", Time.current) }

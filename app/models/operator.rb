@@ -58,6 +58,8 @@ class Operator < ApplicationRecord
   has_many :locations
   has_many :weekly_updates
 
+  has_many :events, through: :locations
+
   has_one_attached :background_image
   has_one_attached :logo_image
   has_one_attached :terms_of_service

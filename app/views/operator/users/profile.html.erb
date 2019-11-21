@@ -1,100 +1,198 @@
 <% title @user.name %>
 
-<%= wide_card do %>
-  <p class="lead text-center mb-3 mt-3">This data is only visible to administrators</p>
-  <div class="row">
-    <div class="col-2">
-      <%= render "shared/small_profile_photo", user: @user %>
-    </div>
-    <div class="col">
-      <h5 class="mb-1">
-        <%= link_to @user.name, user_path(@user) %>
-      </h5>
-      <small>
-        Joined
-        <%= time_ago_in_words(@user.created_at) %>
-        ago
-        (<%= @user.created_at.strftime("%F") %>)
-      </small>
-    </div>
-  </div>
-  <dl class="row mt-3">
-    <dt class="col-sm-3">Email address</dt>
-    <dd class="col-sm" data-turbolinks="false"><%= mail_to @user.email %></dd>
-  </dl>
-  <dl class="row mt-3">
-    <dt class="col-sm-3">Always has building access?</dt>
-    <dd class="col-sm">
-      <% if @user.always_allow_building_access? %>
-        Yes
-      <% else %>
-        No
+<div class="row mt-0 mb-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 pl-0 pr-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+
+        <div class="row">
+          <div class="col-2">
+            <%= render "shared/small_profile_photo", user: @user %>
+          </div>
+          <div class="col">
+            <h5 class="mb-1">
+              <%= link_to @user.name, user_path(@user) %>
+            </h5>
+            <small>
+              Joined
+              <%= time_ago_in_words(@user.created_at) %>
+              ago
+              (<%= @user.created_at.strftime("%F") %>)
+            </small>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <button type="button" class="btn btn-block btn-primary" data-toggle="modal" data-target="#newModal">
+              <i class="fas fa-plus"></i>
+              &nbsp;
+              Quick actions
+            </button>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to user_set_password_and_send_email_path(@user), class: "btn btn-block btn-info", data: { confirm: "This will reset #{@user.name}'s password. Are you sure?'", disable_with: "Sending..."} do %>
+              <i class="fas fa-redo-alt"></i>
+              &nbsp;
+              Send onboarding email
+            <% end %>
+          </div>
+        </div>
+
       <% end %>
-    </dd>
-  </dl>
-  <div class="row mt-4">
-    <div class="col">
-      <%= render "admin", user: @user %>
-    </div>
-  </div>
-<% end %>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Usage</h4>
-  <%= render "usage", user: @user, usage_report: @usage_report %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Payment Method</h4>
-  <%= render "payment_method", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <%= render "memberships", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Pending Membership</h4>
-  <%= render "pending_memberships", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Day Passes</h4>
-  <%= render "day_passes", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Check-ins</h4>
-  <%= render "checkins", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Organization</h4>
-  <%= render "organization_form", user: @user %>
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Invoices</h4>
-  <div class="card-body list-group list-group-flush p-0">
-    <% if @user.bill_to_organization? %>
-      <% if @user.organization.present? %>
-        <%= link_to "Create new invoice", new_invoice_path(organization_id: @user.organization.id), class: "btn btn-block btn-primary" %>
-      <% else %>
-        <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
-        <div class="text-center">
-          <small>This user is marked as "bill to group" but is not a member of a group.</small>
-        </div>  
+      <%= link_to user_about_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-info"></i>
+            &nbsp;
+            &nbsp;
+            About
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
       <% end %>
-    <% elsif @user.out_of_band? || @user.card_added? %>
-      <%= link_to "Create new invoice", new_invoice_path(user_id: @user.id), class: "btn btn-block btn-primary" %>
-    <% else %>
-      <%= link_to "Create new invoice", "#", class: "btn btn-block btn-primary disabled" %>
-      <div class="text-center">
-        <small>Set a payment method to create a new invoice</small>
-      </div>
+
+      <%= link_to user_usage_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="far fa-chart-bar"></i>
+            &nbsp;
+            Usage
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_payment_method_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-credit-card"></i>
+            &nbsp;
+            Update payment method
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_membership_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Membership
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_admin_day_passes_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-ticket-alt"></i>
+            &nbsp;
+            Day Passes
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_checkins_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-hourglass-start"></i>
+            &nbsp;
+            &nbsp;
+            Check-ins
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_organization_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-users"></i>
+            &nbsp;
+            Group
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
+      <%= link_to user_admin_invoices_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="fas fa-dollar-sign"></i>
+            &nbsp;
+            &nbsp;
+            Invoices
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
     <% end %>
-
-    <%= render "invoices", user: @user %>
   </div>
-<% end %>
+  <div class="col-lg-3"></div>
+</div>
 
+
+<div class="modal fade" id="newModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="list-group list-group-flush">
+          <%= render(NewInvoiceButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <i class="fas fa-dollar-sign"></i>
+            &nbsp;
+            Create new invoice
+          <% end %>
+
+          <%= render(NewDayPassButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <i class="fas fa-ticket-alt"></i>
+            &nbsp;
+            Add a day pass
+          <% end %>
+
+          <% if @user.has_active_subscription? %>
+            <%= link_to subscription_path(@user.subscriptions.active.first), method: :delete, remote: true, class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-times"></i>
+              &nbsp;
+              Cancel membership
+            <% end %>
+          <% else %>
+            <%= render(NewMembershipButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+              <i class="fas fa-users"></i>
+              &nbsp;
+              Add a membership
+            <% end %>
+          <% end %>
+
+          <div class="list-group-item">
+            <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

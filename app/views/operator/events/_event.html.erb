@@ -1,57 +1,133 @@
-<div class="row">
-  <h6 class="text-danger col">
-    <i class="fas fa-clock"></i>
-    &nbsp;
-    <%= human_time_from_now(event.starts_at) %>
-    <%= render "timestamp", event: event %>
-  </h6>
+<%= render "operator/events/apps" %>
+
+<div class="row mt-0 mb-0 p-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <div class="row">
+          <h6 class="text-danger col">
+            <i class="fas fa-clock"></i>
+            &nbsp;
+            <%= human_time_from_now(event.starts_at) %>
+            <%= render "timestamp", event: event %>
+          </h6>
+        </div>
+
+        <div class="row">
+          <div class="col-4">
+            <% if event.image.attached? %>
+              <%= image_tag event.thumbnail, class: "rounded img-fluid" %>
+            <% else %>
+              <%= image_tag "profile-125x125.jpg", class: "rounded img-fluid" %>
+            <% end %>
+          </div>
+
+          <div class="col-8">
+            <div class="row">
+              <h4 class="display-4 col"><%= event.title %></h4>
+            </div>
+          </div>
+        </div>
+
+        <% if policy(event).edit? %>
+          <div class="row mt-2 mb-2">
+            <div class="col">
+              <%= link_to edit_event_path(event), class: "btn btn-block btn-light" do %>
+                <i class="fas fa-pencil-alt"></i>
+                &nbsp;
+                Edit
+              <% end %>
+            </div>
+
+            <div class="col">
+              <%= link_to event_analytics_path(event), class: "btn btn-block btn-light" do %>
+                <i class="fas fa-chart-line"></i>
+                &nbsp;
+                Analytics
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <%= render "operator/events/rsvp", event: event %>
+
+        <hr />
+
+        <div class="row mt-3">
+          <div class="col-1">
+            <span class="fas fa-user-alt"></span>
+          </div>
+          <div class="col-11">
+            Hosted by <%= event.user.name.titleize %>
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-1">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="col-11">
+            <div class="row">
+              <div class="col">
+                <%= long_date(event.starts_at) %>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <%= render "timestamp", event: event %>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row mt-2">
+          <div class="col-1">
+            <i class="fas fa-map-pin"></i>
+          </div>
+          <div class="col-11">
+            <% if event.location_string.present? %>
+              <%= event.location_string.titleize %>
+            <% else %>
+              <%= event.location.name.titleize %>
+            <% end %>
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <h4 class="display-4">Details</h4>
+            <p>
+              <%= simple_format(auto_link(event.description)) %>
+            </p>
+          </div>
+        </div>
+
+        <div class="row mt-3 d-flex">
+          <%= image_tag google_map(center: @event.location.full_address), class: "w-100 h-100" %>
+        </div>
+
+      <% end %>
+    <% end %>
+  </div>
+  <div class="col-lg-3"></div>
 </div>
 
-<div class="row">
-  <div class="col-4">
-    <% if event.image.attached? %>
-      <%= image_tag event.thumbnail, class: "rounded img-fluid" %>
-    <% else %>
-      <%= image_tag "profile-125x125.jpg", class: "rounded img-fluid" %>
-    <% end %>
-  </div>
-  <div class="col-8">
-    <div class="row">
-      <h5 class="col"><%= event.title %></h5>
-    </div>
-    <div class="row">
-      <div class="col">
-        <span class="fas fa-user-alt"></span>
-        &nbsp;
-        Hosted by <%= event.user.name.titleize %>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <span class="fas fa-building"></span>
-        &nbsp;
-        <% if event.location_string.present? %>
-          <%= event.location_string.titleize %>
-        <% else %>
-          <%= event.location.name.titleize %>
+<div class="modal fade" id="goingModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <%= form_with(method: :get, url: register_event_rsvps_path(@event)) do |f| %>
+          <div class="form-group">
+            <%= f.label :email, "Enter your email address to RSVP" %>
+            <%= f.text_field :email, placeholder: "Email address...", class: "form-control" %>
+          </div>
+          <%= f.submit "Register and RSVP", class: "btn btn-block btn-primary" %>
         <% end %>
+
+        <button type="button" class="btn btn-block btn-secondary mt-3" data-dismiss="modal">Cancel</button>
       </div>
     </div>
-    <% if policy(event).edit? %>
-      <div class="row">
-        <div class="col">
-          <%= link_to "Edit this event", edit_event_path(event), class: "btn btn-block btn-info" %>
-        </div>
-      </div>
-    <% end %>
   </div>
-</div>
-<hr />
-<div class="row mt-3">
-  <div class="col">
-    <h5>Details</h5>
-    <p>
-      <%= simple_format(auto_link(event.description)) %>
-    </p>
-  </div>
-</div>
+</div> 
+

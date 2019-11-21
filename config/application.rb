@@ -7,6 +7,8 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
+require "action_view/component/base"
+
 module Bristlecone
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
@@ -27,5 +29,9 @@ module Bristlecone
 
 
     config.action_mailer.default_url_options = { host: ENV['HOST'] }
+
+    config.action_mailer.preview_path = "#{Rails.root}/spec/mailers"
+
+    config.action_controller.asset_host = ENV['ASSET_HOST']
   end
 end
