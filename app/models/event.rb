@@ -31,6 +31,6 @@ class Event < ApplicationRecord
   end
 
   def social_image
-    image.variant(resize: "300x300", auto_orient: true)
+    image.variant(resize: "500x500", auto_orient: true)
   end
 end
