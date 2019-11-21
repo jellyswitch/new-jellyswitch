@@ -12,7 +12,7 @@ Rails.application.routes.draw do
     get :welcome, to: "landing#welcome"
 
     # Authentication
-    delete "/logout", to: "sessions#destroy", as: :operator_logout
+    delete "/logout", to: "sessions#destroy", as: :logout
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
     get "/signup", to: "onboarding#new_user", as: :operator_signup
@@ -58,7 +58,7 @@ Rails.application.routes.draw do
   root "operator/landing#index"
 
   # Operator Authentication
-  delete "/logout", to: "operator/sessions#destroy"
+  delete "/logout", to: "operator/sessions#destroy", as: :operator_logout
   get "/logout", to: "sessions#destroy"
   post "/login", to: "operator/sessions#create"
   get "/login", to: "operator/sessions#new"
