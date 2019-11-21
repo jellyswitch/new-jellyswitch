@@ -7,19 +7,19 @@
       <%= list_item do %>
 
         <div class="row mt-2">
-          <div class="col-lg-4 col-1"></div>
-          <div class="col-lg-2 col-5 text-center align-middle">
+          <div class="col-lg-2 col-1"></div>
+          <div class="col-lg-4 col-5">
             <a href="<%= current_tenant.ios_url %>">
               <img alt="Get it on the app store" src="https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2019-03-26&kind=iossoftware&bubble=ios_apps" width=135 height=40>
             </a>
           </div>
 
-          <div class="col-lg-2 col-5 text-center align-middle" style="margin-top: -10px;">
+          <div class="col-lg-4 col-5">
             <a href="<%= current_tenant.android_url %>">
               <img alt='Get it on Google Play' src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height=60>
             </a>
           </div>
-          <div class="col-lg-4 col-1"></div>
+          <div class="col-lg-2 col-1"></div>
         </div>
       
       <% end %>
