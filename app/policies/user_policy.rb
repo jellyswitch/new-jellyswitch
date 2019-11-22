@@ -76,6 +76,10 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin?
   end
 
+  def remove_from_organization?
+    admin?
+  end
+
   def update_organization?
     admin?
   end

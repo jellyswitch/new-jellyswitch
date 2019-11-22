@@ -261,6 +261,7 @@ Rails.application.routes.draw do
     get :out_of_band, to: "operator/users#out_of_band"
     get :organization, to: "operator/users#organization"
     get :payment_method, to: "operator/users#payment_method"
+    get :remove_from_organization, to: "operator/users#remove_from_organization"
     get :reservations, to: "operator/users#reservations"
     get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"

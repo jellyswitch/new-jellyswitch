@@ -188,6 +188,14 @@
             <% end %>
           <% end %>
 
+          <% if @user.member_of_organization? %>
+            <%= link_to user_remove_from_organization_path(@user), class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-times"></i>
+              &nbsp;
+              Remove from <%= @user.organization.name %>
+            <% end %>
+          <% end %>
+
           <div class="list-group-item">
             <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
           </div>
