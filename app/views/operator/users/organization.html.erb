@@ -16,6 +16,22 @@
         <%= render "organization_form", user: @user %>
         
       <% end %>
+
+      <% if @user.member_of_organization? %>
+        <%= link_to organization_path(@user.organization), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-users"></i>
+              &nbsp;
+              View <%= @user.organization.name %>
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
     <% end %>
   </div>
   <div class="col-lg-3"></div>

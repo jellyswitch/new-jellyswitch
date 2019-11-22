@@ -184,8 +184,15 @@ Rails.application.routes.draw do
   end
   resources :office_leases, controller: "operator/office_leases"
   resources :organizations, controller: "operator/organizations" do
-    post :billing, to: "operator/organization_billing#create"
     post :add_member, to: "operator/organization_members#create"
+    get :billing, to: "operator/organizations#billing"
+    post :billing, to: "operator/organization_billing#create"
+    get :credit_card, to: "operator/organizations#credit_card"
+    get :invoices, to: "operator/organizations#invoices"
+    get :leases, to: "operator/organizations#leases"
+    get :members, to: "operator/organizations#members"
+    get :out_of_band, to: "operator/organizations#out_of_band"
+    get :payment_method, to: "operator/organizations#payment_method"
   end
   resources :operators, as: :operator_operators, controller: "operator/operators" do
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
@@ -254,6 +261,7 @@ Rails.application.routes.draw do
     get :out_of_band, to: "operator/users#out_of_band"
     get :organization, to: "operator/users#organization"
     get :payment_method, to: "operator/users#payment_method"
+    get :remove_from_organization, to: "operator/users#remove_from_organization"
     get :reservations, to: "operator/users#reservations"
     get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"

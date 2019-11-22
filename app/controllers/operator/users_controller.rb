@@ -203,6 +203,19 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def remove_from_organization
+    find_user(:user_id)
+    authorize @user
+
+    if @user.update(organization_id: nil)
+      flash[:success] = "Removed from group."
+    else
+      flash[:error] = "Unable to remove from group."
+    end
+
+    turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
   def set_password_and_send_email
     find_user(:user_id)
     authorize @user
