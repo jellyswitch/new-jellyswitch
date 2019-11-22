@@ -1,75 +1,95 @@
 <% title @organization.name %>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center"><%= @organization.name %></h4>
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Members & Groups", members_groups_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Groups", organizations_path %></li>
+  <li class="breadcrumb-item active" aria-current="page"><%= @organization.name %></li>
+<% end %>
 
-  <dl class="row">
-    <dt class="col-sm-3">Owner</dt>
-    <dd class="col-sm">
-      <%= link_to @organization.owner.name, user_path(@organization.owner) %>
-    </dd>
-  </dl>
 
-  <dl class="row">
-    <dt class="col-sm-3">Created</dt>
-    <dd class="col-sm">
-      <%= time_ago_in_words(@organization.created_at) %> ago
-    </dd>
-  </dl>
+<div class="row mt-0 mb-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 pl-0 pr-0">
+    <%= list_wrapper do %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center"><%= @organization.name %></h4>
 
-  <dl class="row">
-    <dt class="col-sm-3">Payment Method</dt>
-    <dd class="col-sm">
-      <% if @organization.out_of_band %>
-        Organization is paying via cash, check, or otherwise.
-      <% else %>
-        Organization has a card on file. 
+        <dl class="row">
+          <dt class="col-sm-3">Owner</dt>
+          <dd class="col-sm">
+            <%= link_to @organization.owner.name, user_path(@organization.owner) %>
+          </dd>
+        </dl>
+
+        <dl class="row">
+          <dt class="col-sm-3">Created</dt>
+          <dd class="col-sm">
+            <%= time_ago_in_words(@organization.created_at) %> ago
+          </dd>
+        </dl>
+
+        <dl class="row">
+          <dt class="col-sm-3">Payment Method</dt>
+          <dd class="col-sm">
+            <% if @organization.out_of_band %>
+              Organization is paying via cash, check, or otherwise.
+            <% else %>
+              Organization has a card on file. 
+            <% end %>
+          </dd>
+        </dl>
+
+        <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
+
+
       <% end %>
-    </dd>
-  </dl>
 
-  <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
-<% end %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center">Members</h4>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center">Members</h4>
+        <p class="text-muted text-center">(Right-click or CMD-click to select multiple)</p>
 
-  <p class="text-muted text-center">(Right-click or CMD-click to select multiple)</p>
+        <%= render 'add_members', organization: @organization %>
 
-  <%= render 'add_members', organization: @organization %>
+        <% @organization.users.each do |member| %>
+          <%= render "operator/users/member_card", member: member %>
+        <% end %>
+      <% end %>
 
-  <% @organization.users.each do |member| %>
-    <%= render "operator/users/member_card", member: member %>
-  <% end %>
-<% end %>
+      <%= list_item do %>
+        <h4 class="display-4 text-center">Leases</h4>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center">Leases</h4>
+        <% if @organization.has_active_lease? %>
+          <% @organization.active_leases.each do |lease| %>
+            <div class="row">
+              <p>
+                Leased <%= link_to lease.office_name, office_path(lease.office) %> (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
+              </p>
+              <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+            </div>      
+          <% end %>
+        <% end %>
 
-  <% if @organization.has_active_lease? %>
-    <% @organization.active_leases.each do |lease| %>
-      <div class="row">
-        <p>
-          Leased <%= link_to lease.office_name, office_path(lease.office) %> (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
-        </p>
-        <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
-      </div>      
+      <% end %>
+
+
+      <%= list_item do %>
+        <h4 class="display-4 text-center">Invoices</h4>
+        <ul class="list-group list-group-flush">
+          <% if @organization.has_billing? || @organization.out_of_band? %>
+            <%= link_to "Create new invoice", new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary" %>
+          <% else %>
+            <%= link_to "Create new invoice", new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary disabled" %>
+            <div class="text-center">
+              <small>Set a payment method to create a new invoice</small>
+            </div>
+          <% end %>
+          <%= render @organization.invoices %>
+        </ul>
+      <% end %>
+
     <% end %>
-  <% end %>
+  </div>
+  <div class="col-lg-3"></div>
+</div>
 
-<% end %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center">Invoices</h4>
-  <ul class="list-group list-group-flush">
-    <% if @organization.has_billing? || @organization.out_of_band? %>
-      <%= link_to "Create new invoice", new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary" %>
-    <% else %>
-      <%= link_to "Create new invoice", new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary disabled" %>
-      <div class="text-center">
-        <small>Set a payment method to create a new invoice</small>
-      </div>
-    <% end %>
-    <%= render @organization.invoices %>
-  </ul>
-<% end %>
