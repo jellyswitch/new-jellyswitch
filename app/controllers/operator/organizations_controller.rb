@@ -1,6 +1,6 @@
 # typed: false
 class Operator::OrganizationsController < Operator::BaseController
-  before_action :find_organization, except: [:index, :new, :create]
+  before_action :find_organization, except: [:index, :new, :create, :credit_card, :out_of_band]
 
   def index
     find_organizations
@@ -61,6 +61,32 @@ class Operator::OrganizationsController < Operator::BaseController
     Rollbar.error(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
+  end
+
+  def credit_card
+    find_organization(:organization_id)
+    authorize @organization
+
+    if @organization.update(out_of_band: false)
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = "Could not update payment method."
+    end
+
+    turbolinks_redirect(organization_path(@organization), action: "replace")
+  end
+
+  def out_of_band
+    find_organization(:organization_id)
+    authorize @organization
+
+    if @organization.update(out_of_band: true)
+      flash[:success] = "Payment method updated."
+    else
+      flash[:error] = "Could not update payment method."
+    end
+
+    turbolinks_redirect(organization_path(@organization), action: "replace")
   end
 
   private

@@ -1,35 +1,46 @@
+<h4 class="display-4">Payment method</h4>
 <p>Tap to change:</p>
 <ul class="list-group mt-4">
-  <% if user.card_added? %>
-    <% if user.out_of_band? %>
-      <%= link_to "Card ending in #{user.card_last_4_digits}", user_credit_card_path(user), class: "list-group-item" %>
+  <% if card_added? %>
+    <% if cash_or_check? %>
+      <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
     <% else %>
-      <% if user.bill_to_organization? %>
-        <%= link_to "Card ending in #{user.card_last_4_digits}", user_credit_card_path(user), class: "list-group-item" %>
+      <% if user? %>
+        <% if bill_to_group? %>
+          <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
+        <% else %>
+          <li class="list-group-item active">Card ending in <%= last_4_digits %></li>
+        <% end %>
       <% else %>
-        <li class="list-group-item active">Card ending in <%= user.card_last_4_digits %></li>
+        <% if cash_or_check? %>
+          <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
+        <% else %>
+          <li class="list-group-item active">Card ending in <%= last_4_digits %></li>
+        <% end %>
       <% end %>
     <% end %>
   <% else %>
     <li class="list-group-item disabled">No card on file</li>
   <% end %>
 
-  <% if user.out_of_band? && !user.bill_to_organization? %>
+  <% if cash_or_check? && !bill_to_group? %>
     <li class="list-group-item active">Via cash or check</li>
   <% else %>
-    <%= link_to "Via cash or check", user_out_of_band_path(user), class: "list-group-item" %>
+    <%= link_to "Via cash or check", cash_or_check_path, class: "list-group-item" %>
   <% end %>
 
-  <% if user.member_of_organization? %>
-    <% if user.bill_to_organization? %>
-      <li class="list-group-item active">Bill to group (<%= user.organization.name %>)</li>
+  <% if billable_to_group? %>
+    <% if member_of_group? %>
+      <% if bill_to_group? %>
+        <li class="list-group-item active">Bill to group (<%= group_name %>)</li>
+      <% else %>
+        <%= link_to "Bill to group (#{group_name})", bill_to_group_path, class: "list-group-item" %>
+      <% end %>
     <% else %>
-      <%= link_to "Bill to group (#{user.organization.name})", user_bill_to_organization_path(user), class: "list-group-item" %>
+      <% if bill_to_group? %>
+        <span class="badge badge-danger">User is not a member of a group</span>
+      <% end %>
+      <li class="list-group-item disabled">Group billing unavailable (not a member of a group)</li>
     <% end %>
-  <% else %>
-    <% if user.bill_to_organization %>
-      <span class="badge badge-danger">User is not a member of a group</span>
-    <% end %>
-    <li class="list-group-item disabled">Group billing unavailable (not a member of a group)</li>
   <% end %>
 </ul>

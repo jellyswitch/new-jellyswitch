@@ -186,6 +186,8 @@ Rails.application.routes.draw do
   resources :organizations, controller: "operator/organizations" do
     post :billing, to: "operator/organization_billing#create"
     post :add_member, to: "operator/organization_members#create"
+    get :credit_card, to: "operator/organizations#credit_card"
+    get :out_of_band, to: "operator/organizations#out_of_band"
   end
   resources :operators, as: :operator_operators, controller: "operator/operators" do
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"

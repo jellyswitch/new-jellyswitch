@@ -72,7 +72,15 @@ class Organization < ApplicationRecord
   end
 
   def has_billing?
-    has_stripe_customer? && stripe_customer.sources["data"].count > 0
+    has_stripe_customer? && card_added?
+  end
+
+  def card_added
+    stripe_customer.sources["data"].count > 0
+  end
+
+  def card_added?
+    card_added
   end
 
   def has_stripe_customer?

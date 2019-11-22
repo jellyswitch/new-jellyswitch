@@ -27,4 +27,12 @@ class OrganizationPolicy < ApplicationPolicy
   def destroy?
     admin?
   end
+
+  def credit_card?
+    (admin? || user.organization_owner?) && record.card_added?
+  end
+
+  def out_of_band?
+    admin? || user.organization_owner?
+  end
 end

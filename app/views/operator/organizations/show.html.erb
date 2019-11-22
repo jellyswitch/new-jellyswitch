@@ -28,21 +28,17 @@
           </dd>
         </dl>
 
-        <dl class="row">
-          <dt class="col-sm-3">Payment Method</dt>
-          <dd class="col-sm">
-            <% if @organization.out_of_band %>
-              Organization is paying via cash, check, or otherwise.
-            <% else %>
-              Organization has a card on file. 
-            <% end %>
-          </dd>
-        </dl>
-
         <%= link_to "Edit", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
 
 
       <% end %>
+    <% end %>
+
+    <div class="p-3">
+      <%= render(PaymentMethodComponent, billable: @organization) %>
+    </div>
+  
+    <%= list_wrapper do %>
 
       <%= list_item do %>
         <h4 class="display-4 text-center">Members</h4>
