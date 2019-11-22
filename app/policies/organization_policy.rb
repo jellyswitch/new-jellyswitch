@@ -39,4 +39,20 @@ class OrganizationPolicy < ApplicationPolicy
   def billing?
     admin? || user.organization_owner?
   end
+
+  def payment_method?
+    admin? || user.organization_owner?
+  end
+
+  def members?
+    admin? || user.organization_owner?
+  end
+
+  def leases?
+    admin? || user.organization_owner?
+  end
+
+  def invoices?
+    admin? || user.organization_owner?
+  end
 end
