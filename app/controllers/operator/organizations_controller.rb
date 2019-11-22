@@ -1,6 +1,6 @@
 # typed: false
 class Operator::OrganizationsController < Operator::BaseController
-  before_action :find_organization, except: [:index, :new, :create, :credit_card, :out_of_band]
+  before_action :find_organization, except: [:index, :new, :create, :credit_card, :out_of_band, :billing]
 
   def index
     find_organizations
@@ -87,6 +87,12 @@ class Operator::OrganizationsController < Operator::BaseController
     end
 
     turbolinks_redirect(organization_path(@organization), action: "replace")
+  end
+
+  def billing
+    find_organization(:organization_id)
+    authorize @organization
+    include_stripe
   end
 
   private

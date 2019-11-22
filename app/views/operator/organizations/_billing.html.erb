@@ -3,7 +3,7 @@
   <div class="card-body">
     <h4 class="display-4 text-center mt-4 card-title">Update billing information</h4>
     <p class="lead text-center mb-3 mt-3">To replace your current card on file, please enter your credit card information below.</p>
-    <%= form_with(remote: true, url: organization_billing_path(organization), html: {id: "stripe-form" }) do |f| %>
+    <%= form_with(remote: true, url: organization_billing_path(organization), method: :post, html: {id: "stripe-form" }) do |f| %>
       <div class="form-group row">
         <%= render 'shared/billing' %>
         <div class="col-1"></div>

@@ -35,4 +35,8 @@ class OrganizationPolicy < ApplicationPolicy
   def out_of_band?
     admin? || user.organization_owner?
   end
+
+  def billing?
+    admin? || user.organization_owner?
+  end
 end

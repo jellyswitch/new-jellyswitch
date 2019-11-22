@@ -42,5 +42,7 @@
       <% end %>
       <li class="list-group-item disabled">Group billing unavailable (not a member of a group)</li>
     <% end %>
+  <% else %>
+    <%= link_to "Update credit card", organization_billing_path(billable), class: "btn btn-block btn-primary mt-3" %>
   <% end %>
 </ul>

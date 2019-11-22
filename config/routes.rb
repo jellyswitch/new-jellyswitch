@@ -184,6 +184,7 @@ Rails.application.routes.draw do
   end
   resources :office_leases, controller: "operator/office_leases"
   resources :organizations, controller: "operator/organizations" do
+    get :billing, to: "operator/organizations#billing"
     post :billing, to: "operator/organization_billing#create"
     post :add_member, to: "operator/organization_members#create"
     get :credit_card, to: "operator/organizations#credit_card"
