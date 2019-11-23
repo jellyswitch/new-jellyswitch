@@ -30,7 +30,7 @@ class Event < ApplicationRecord
     if image.attached?
       image.variant(resize: "180x180", auto_orient: true)
     else
-      nil
+      ""
     end
   end
 
@@ -38,7 +38,7 @@ class Event < ApplicationRecord
     if image.attached?
       image.variant(resize: "500x500", auto_orient: true)
     else
-      nil
+      ""
     end
   end
 end
