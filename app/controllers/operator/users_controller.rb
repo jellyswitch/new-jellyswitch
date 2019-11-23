@@ -38,6 +38,13 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
   end
 
+  def ltv
+    find_user(:user_id)
+    authorize @user
+
+    @months = (Time.current.year * 12 + Time.current.month) - (@user.created_at.year * 12 + @user.created_at.month)
+  end
+
   def usage
     find_user(:user_id)
     authorize @user
