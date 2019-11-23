@@ -256,6 +256,7 @@ Rails.application.routes.draw do
     get "change_password", to: "operator/users#change_password"
     get :day_passes, to: "operator/users#day_passes"
     get :invoices, to: "operator/users#invoices"
+    get :ltv, to: "operator/users#ltv"
     get :membership, to: "operator/users#membership"
     get :memberships, to: "operator/users#memberships"
     get :out_of_band, to: "operator/users#out_of_band"

@@ -20,6 +20,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def ltv?
+    admin?
+  end
+
   def usage?
     admin?
   end
