@@ -35,3 +35,4 @@ rspec.xml
 .DS_Store
 .env
 *.dump
+*.code-workspace
