@@ -22,11 +22,15 @@
   <meta name="twitter:data1" content="<%= long_date(@event.starts_at) %>" />
   
   <!-- Twitter Summary card images must be at least 120x120px -->
-  <meta name="twitter:image" content="<%= polymorphic_url(@event.social_image) %>">
+  <% if @event.image.attached? %>
+    <meta name="twitter:image" content="<%= polymorphic_url(@event.social_image) %>">
+  <% end %>
 
   <!-- Facebook -->
   <meta property="og:title" content="<%= @event.title %> at <%= current_tenant.name %>" />
-  <meta property="og:image" content="<%= polymorphic_url(@event.image) %>" />
+  <% if @event.image.attached? %>
+    <meta property="og:image" content="<%= polymorphic_url(@event.image) %>" />
+  <% end %>
   <meta property="og:url" content="<%= event_url(@event) %>" />
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="<%= current_tenant.name %>" />

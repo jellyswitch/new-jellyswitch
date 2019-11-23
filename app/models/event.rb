@@ -27,18 +27,10 @@ class Event < ApplicationRecord
   scope :today, -> () { where(starts_at: Time.current.beginning_of_day..Time.current.end_of_day) }
 
   def thumbnail
-    if image.attached?
-      image.variant(resize: "180x180", auto_orient: true)
-    else
-      ""
-    end
+    image.variant(resize: "180x180", auto_orient: true)
   end
 
   def social_image
-    if image.attached?
-      image.variant(resize: "500x500", auto_orient: true)
-    else
-      ""
-    end
+    image.variant(resize: "500x500", auto_orient: true)
   end
 end
