@@ -1,7 +1,7 @@
 # typed: false
 class Operator::OrganizationsController < Operator::BaseController
   before_action :find_organization, except: [:index, :new, :create, :credit_card,
-    :out_of_band, :billing, :payment_method, :members, :leases, :invoices]
+    :out_of_band, :billing, :payment_method, :members, :leases, :invoices, :ltv]
 
   def index
     find_organizations
@@ -114,6 +114,13 @@ class Operator::OrganizationsController < Operator::BaseController
   def invoices
     find_organization(:organization_id)
     authorize @organization
+  end
+
+  def ltv
+    find_organization(:organization_id)
+    authorize @organization
+
+    @months = (Time.current.year * 12 + Time.current.month) - (@organization.created_at.year * 12 + @organization.created_at.month)
   end
 
   private

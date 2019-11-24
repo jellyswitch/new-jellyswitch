@@ -45,6 +45,19 @@
         </div>
       <% end %>
 
+      <%= link_to organization_ltv_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
+        <div class="row">
+          <div class="col-lg-10 col-11">
+            <i class="far fa-chart-bar"></i>
+            &nbsp;
+            Lifetime Value (LTV)
+          </div>
+          <div class="col-1">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </div>
+      <% end %>
+
       <%= link_to organization_invoices_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">

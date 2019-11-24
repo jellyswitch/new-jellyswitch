@@ -55,4 +55,8 @@ class OrganizationPolicy < ApplicationPolicy
   def invoices?
     admin? || user.organization_owner?
   end
+
+  def ltv?
+    admin?
+  end
 end

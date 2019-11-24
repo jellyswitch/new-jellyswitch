@@ -190,6 +190,7 @@ Rails.application.routes.draw do
     get :credit_card, to: "operator/organizations#credit_card"
     get :invoices, to: "operator/organizations#invoices"
     get :leases, to: "operator/organizations#leases"
+    get :ltv, to: "operator/organizations#ltv"
     get :members, to: "operator/organizations#members"
     get :out_of_band, to: "operator/organizations#out_of_band"
     get :payment_method, to: "operator/organizations#payment_method"
