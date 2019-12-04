@@ -5,38 +5,69 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @plan.name %></li>
 <% end %>
 
-<%= wide_card do %>
+<%= render(FullWidth) do %>
+  <%= list_wrapper do %>
+    
+    <%= list_item do %>
   
-  <h4 class="display-4 text-center mt-4"><%= @plan.name %></h4>
-  <%= render "actions", plan: @plan %>
-  <dl class="row">
-    <dt class="col-sm">Amount</dt>
-    <dd class="col-sm"><%= dollar_amount(@plan.amount_in_cents) %></dd>
-  </dl> 
-  <dl class="row">
-    <dt class="col-sm">Interval</dt>
-    <dd class="col-sm"><%= @plan.interval %></dd>
-  </dl>
-  <dl class="row">
-    <dt class="col-sm">Visible?</dt>
-    <dd class="col-sm"><%= @plan.visible? %></dd>
-  </dl> 
-  <dl class="row">
-    <dt class="col-sm">Available</dt>
-    <dd class="col-sm"><%= @plan.available? %></dd>
-  </dl>
-  <dl class="row">
-    <dt class="col-sm">Always has building access?</dt>
-    <dd class="col-sm"><%= boolean_to_yesno(@plan.always_allow_building_access) %></dd>
-  </dl>
-  <dl class="row">
-    <dt class="col-sm">Has a limit on days included?</dt>
-    <dd class="col-sm"><%= boolean_to_yesno(@plan.has_day_limit?) %></dd>
-  </dl>
-  <% if @plan.has_day_limit? %>
-    <dl class="row">
-      <dt class="col-sm">Number of days included</dt>
-      <dd class="col-sm"><%= @plan.day_limit%></dd>
-    </dl>
+      <h4 class="display-4 text-center mt-4"><%= @plan.name %></h4>
+
+      <dl class="row">
+        <dt class="col-sm">Price</dt>
+        <dd class="col-sm">
+          <%= dollar_amount(@plan.amount_in_cents) %> / <%= @plan.stripe_interval %>
+        </dd>
+      </dl> 
+
+      <% if @plan.visible? %>
+        <div class="row">
+          <div class="col">
+            <i class="fas fa-check"></i>
+            &nbsp;
+            Visible to new members
+          </div>
+        </div>
+      <% end %>
+
+      <% if @plan.available? %>
+        <div class="row">
+          <div class="col">
+            <i class="fas fa-check"></i>
+            &nbsp;
+            Available for admins to add
+          </div>
+        </div>
+      <% end %>
+
+      <% if @plan.always_allow_building_access? %>
+        <div class="row">
+          <div class="col">
+            <i class="fas fa-check"></i>
+            &nbsp;
+            Includes 24/7 building access
+          </div>
+        </div>
+      <% end %>
+
+      <% if @plan.has_day_limit? %>
+        <div class="row">
+          <div class="col">
+            <strong><%= @plan.day_limit %></strong> days included
+          </div>
+        </div>
+      <% end %>
+
+      <div class="row mt-3">
+        <div class="col">
+          <%- if @plan.available? %>
+            <%= link_to "Archive", plan_path(@plan), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+          <%- else %>
+            <%= link_to "Unarchive", plan_unarchive_path(@plan), method: :post, remote: true, class: "btn btn-block btn-warning" %>
+          <%- end %>
+        </div>
+      </div>
+
+    <% end %>
   <% end %>
 <% end %>
+

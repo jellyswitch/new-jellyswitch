@@ -1,5 +1,0 @@
-<%- if plan.available? %>
-  <%= link_to "Archive", plan_path(plan), method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
-<%- else %>
-  <%= link_to "Unarchive", plan_unarchive_path(plan), method: :post, remote: true, class: "btn btn-sm btn-warning" %>
-<%- end %>
