@@ -5,14 +5,11 @@
 
   <div class="form-group row">
 
-    <% if admin? %>
-      <%= f.collection_select :plan_id, Plan.available.individual, :id, :pretty_name, {}, { class: "form-control form-control-sm col" } %>
-    <% else %>
-      <div class="col-1"></div>
-      <%= f.collection_select :plan_id, Plan.for_individuals, :id, :pretty_name, {}, { class: "form-control form-control-sm col" } %>
-      <div class="col-1"></div>
-    <% end %>
+    <div class="col-1"></div>
+    <%= f.collection_select :plan_id, current_location.plans.for_individuals, :id, :pretty_name, {}, { class: "form-control form-control-sm col" } %>
+    <div class="col-1"></div>
   </div>
+
   <% if defined?(user_id) %>
     <%= f.hidden_field :subscribable_id, value: user_id %>
   <% end %>
