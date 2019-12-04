@@ -55,8 +55,8 @@
 
 class Location < ApplicationRecord
   searchkick
-  belongs_to :operator
-  acts_as_tenant :operator
+  belongs_to :operator # TODO: delete this
+  acts_as_tenant :operator # TODO: scope?
 
   has_many :checkins
   has_many :doors
@@ -66,6 +66,7 @@ class Location < ApplicationRecord
   has_many :office_leases
   has_many :feed_items
   has_many :member_feedbacks
+  has_and_belongs_to_many :plans
 
   has_one_attached :background_image
   has_one_attached :photo

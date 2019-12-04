@@ -26,10 +26,12 @@
 
 class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
+  acts_as_tenant :operator # TODO: scope this
+
   # Relationships
   has_many :subscriptions
-  belongs_to :operator
-  acts_as_tenant :operator
+  belongs_to :operator # TODO: delete this
+  has_and_belongs_to_many :locations
 
   # Slugs
   extend FriendlyId
