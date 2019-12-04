@@ -1,0 +1,13 @@
+<div class="d-flex align-items-center">
+  <span style="font-size: 20pt">
+    <i class="<%= icon_class %>"></i>
+  </span>
+  &nbsp;
+  <% if predicate %>
+    <%= content %>
+  <% else %>
+    <span class="text-muted">
+      <%= content %>
+    </span>
+  <% end %>
+</div>

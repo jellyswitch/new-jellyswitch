@@ -43,4 +43,9 @@
     <%= f.label :day_limit, "Number of days included per month" %>
     <%= f.number_field :day_limit, class: "form-control", value: 10 %>
   </div>
+
+  <div class="form-group">
+    <%= f.label "Which locations is this plan available at?" %>
+    <%= f.select :location_ids, options_from_collection_for_select(current_tenant.locations.all, :id, :name, plan.locations.map(&:id)), {}, { multiple: true, class: "form-control"} %>
+  </div>
 </div>

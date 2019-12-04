@@ -14,35 +14,30 @@
 
       <%= render "operator/plans/price", plan: @plan %>
 
-      <% if @plan.visible? %>
-        <div class="row">
-          <div class="col">
-            <i class="fas fa-check"></i>
-            &nbsp;
-            Visible to new members
-          </div>
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: @plan.visible?) do %>
+              Visible to new members
+          <% end %>
         </div>
-      <% end %>
+      </div>
 
-      <% if @plan.available? %>
-        <div class="row">
-          <div class="col">
-            <i class="fas fa-check"></i>
-            &nbsp;
-            Available for admins to add
-          </div>
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: @plan.available?) do %>
+            Available for admins
+          <% end %>
         </div>
-      <% end %>
+      </div>
+    
 
-      <% if @plan.always_allow_building_access? %>
-        <div class="row">
-          <div class="col">
-            <i class="fas fa-check"></i>
-            &nbsp;
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: @plan.always_allow_building_access?) do %>
             Includes 24/7 building access
-          </div>
+          <% end %>
         </div>
-      <% end %>
+      </div>
 
       <% if @plan.has_day_limit? %>
         <div class="row">
