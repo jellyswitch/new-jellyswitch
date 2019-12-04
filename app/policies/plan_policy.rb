@@ -4,6 +4,10 @@ class PlanPolicy < ApplicationPolicy
     admin?
   end
 
+  def archived?
+    admin?
+  end
+
   def show?
     admin?
   end

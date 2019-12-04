@@ -1,17 +1,21 @@
 # typed: false
 class Operator::PlansController < Operator::BaseController
   include PlansHelper
+  before_action :background_image
 
   def index
     find_plans
     authorize @plans
-    background_image
+  end
+
+  def archived
+    find_plans
+    authorize @plans
   end
 
   def new
     @plan = Plan.new
     authorize @plan
-    background_image
   end
 
   def create
@@ -39,13 +43,11 @@ class Operator::PlansController < Operator::BaseController
   def show
     find_plan
     authorize @plan
-    background_image
   end
 
   def edit
     find_plan
     authorize @plan
-    background_image
   end
 
   def update
