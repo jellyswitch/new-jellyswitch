@@ -108,4 +108,8 @@ If you encounter issues w/ elastic search, try running this command:
 
 `curl -u elastic:changeme -XPUT 'localhost:9200/_cluster/settings' -H 'Content-Type: application/json' -d '{"persistent":{"cluster.blocks.read_only":false}}'`
 
+Can also try PUT to `/_all/_settings` this: `{
+  "index.blocks.read_only_allow_delete": false
+}`
+
 (From [https://github.com/ankane/searchkick/issues/1040](https://github.com/ankane/searchkick/issues/1040)
