@@ -44,6 +44,9 @@ class Plan < ApplicationRecord
   scope :invisible, -> { where(visible: false) }
   scope :individual, -> { where(plan_type: 'individual') }
   scope :for_individuals, -> { individual.available.visible }
+  scope :for_location, ->(location) do
+    joins(:locations).where(locations: {id: location.id})
+  end
   scope :lease, -> { where(plan_type: 'lease') }
   scope :nonzero, -> { where('amount_in_cents > 0') }
   scope :free, -> { where('amount_in_cents <= 0') }
