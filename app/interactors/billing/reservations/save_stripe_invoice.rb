@@ -4,9 +4,10 @@ class Billing::Reservations::SaveStripeInvoice
   delegate :user, :reservation, to: :context
 
   def call
-    operator = reservation.room.location.operator
+    location = reservation.room.location
+    operator = location.operator
 
-    if !user.member?(reservation.room.location, day=reservation.datetime_in) && !user.admin?
+    if user.should_charge_for_reservation?(location)
       @invoice_item = Stripe::InvoiceItem.create({
         customer: reservation.user.stripe_customer_id,
         currency: 'usd',

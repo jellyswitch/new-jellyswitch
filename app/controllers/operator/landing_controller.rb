@@ -21,7 +21,7 @@ class Operator::LandingController < Operator::BaseController
       redirect_to root_path
     end
 
-    if (current_user.member_at_location?(current_location) && approved?) || admin? || (current_user.has_reservation? && current_user.approved?)
+    if (current_user.allowed_in?(current_location) && approved?)
       redirect_to home_path
     end
   end

@@ -1,11 +1,11 @@
 # typed: true
 class ReservationPolicy < ApplicationPolicy
   def new?
-    admin? || (member? && approved?)
+    admin? || (user.allowed_in?(location) && approved?)
   end
 
   def create?
-    admin? || (member? && approved?)
+    admin? || (user.allowed_in?(location) && approved?)
   end
 
   def show?
@@ -13,7 +13,7 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    (member? && approved? && owner?) || admin?
+    admin? || (user.allowed_in?(location) && approved?)
   end
 
   def cancel?

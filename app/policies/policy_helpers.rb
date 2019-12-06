@@ -14,14 +14,6 @@ module PolicyHelpers
     is_user? && user.superadmin?
   end
 
-  def member?
-    if @location.nil?
-      false
-    else
-      is_user? && (user.member?(@location) || checked_in?)
-    end
-  end
-
   def checked_in?
     if @location.nil?
       false
@@ -40,10 +32,6 @@ module PolicyHelpers
 
   def operator?
     admin? && (user.operator_id == record.id)
-  end
-  
-  def admin_or_member?
-    raise "Use individual permission predicates instead"
   end
 
   def owner_or_admin?

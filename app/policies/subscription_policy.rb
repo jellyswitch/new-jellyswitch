@@ -9,15 +9,15 @@ class SubscriptionPolicy < ApplicationPolicy
   end
 
   def edit?
-    admin? || (owner? && member? && approved?)
+    admin? || (owner? && user.member?(location) && approved?)
   end
 
   def update?
-    admin? || (owner? && member? && approved?)
+    admin? || (owner? && user.member?(location) && approved?)
   end
 
   def destroy?
-    admin? || (owner? && member? && approved?)
+    admin? || (owner? && user.member?(location) && approved?)
   end
 
   private

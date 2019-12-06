@@ -1,4 +1,6 @@
 module Permissions
+  # Included as a module in the User class
+
   def allowed_in?(location)
     member?(location) || 
     has_active_day_pass? || 
@@ -15,6 +17,18 @@ module Permissions
     end
   end
 
+  def should_charge_for_reservation?(location)
+    !(member?(location) || has_active_day_pass? || has_active_lease? || admin?)
+  end
+
+  def can_see_all_rooms?(location)
+    member?(location) ||
+    has_active_day_pass? ||
+    checked_in?(location) ||
+    has_active_lease? ||
+    admin?
+  end
+
   def has_rsvp?
     rsvps.going.today.count > 0
   end
@@ -24,7 +38,7 @@ module Permissions
   end
 
   def member?(location, day = Time.current)
-    has_active_subscription_at_location?(location) || has_active_day_pass?(day=day) || has_active_lease?
+    has_active_subscription_at_location?(location)
   end
 
   def has_active_subscription_at_location?(location)

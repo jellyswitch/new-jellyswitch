@@ -79,6 +79,7 @@ class User < ApplicationRecord
   scope :superadmins, -> { where(superadmin: true) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
+  # Permissions
   delegate  :member_at_operator?,
             :member?,
             :has_active_subscription_at_location?,
@@ -99,6 +100,8 @@ class User < ApplicationRecord
             :checked_in?,
             :has_reservation?,
             :allowed_in?,
+            :should_charge_for_reservation?,
+            :can_see_all_rooms?,
             to: :user_permissions
   
   def search_data

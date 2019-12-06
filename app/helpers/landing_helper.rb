@@ -9,7 +9,7 @@ module LandingHelper
           redirect_to new_operator_onboarding_path
         end
       else
-        if current_user.member?(current_location)
+        if current_user.allowed_in?(current_location)
           if approved?
             if current_tenant.checkin_required? && !current_user.checked_in?(current_location)
               redirect_to required_checkins_path
@@ -32,7 +32,6 @@ module LandingHelper
 
   def home_redirect
     if current_location.present? && current_user.allowed_in?(current_location)
-      # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path
       else
