@@ -109,7 +109,7 @@ class Operator::ReservationsController < Operator::BaseController
     }, user: current_user)
     
     @reservation = result.reservation
-
+    
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       turbolinks_redirect(reservation_path(@reservation), action: "restore")

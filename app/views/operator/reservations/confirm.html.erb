@@ -41,11 +41,11 @@
 
   <% if current_user.should_charge_for_reservation?(current_location) %>
     <% if current_user.has_billing? %>
-      <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", data: {disable_with: "Reserving..."} %>
+      <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", remote: true, data: {disable_with: "Reserving..."} %>
     <% else %>
       <%= render "billing" %>
     <% end %>
   <% else %>
-    <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", data: {disable_with: "Reserving..."} %>
+    <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", remote: true, data: {disable_with: "Reserving..."} %>
   <% end %>
 <% end %>
