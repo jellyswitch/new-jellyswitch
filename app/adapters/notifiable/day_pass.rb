@@ -12,7 +12,7 @@ module Notifiable
       operator = day_pass_type.operator
 
       blob = {type: "day-pass", day_pass_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob, created_at: day)
+      FeedItemCreator.create_feed_item(operator, user, blob)
     end
 
     def send_notification
