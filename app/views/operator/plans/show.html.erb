@@ -74,8 +74,20 @@
       <div class="row mt-3">
         <div class="col">
           <%- if @plan.available? %>
-            <%= link_to "Edit", edit_plan_path(@plan), class: "btn btn-block btn-primary" %>
-            <%= link_to "Archive", plan_path(@plan), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+            <%= link_to edit_plan_path(@plan), class: "btn btn-block btn-primary" do %>
+              <i class="fas fa-pencil-alt"></i>
+              &nbsp;
+              Edit
+            <% end %>
+            <%= link_to plan_path(@plan), method: :delete, remote: true, class: "btn btn-block btn-danger" do %>
+              <i class="fas fa-archive"></i>
+              &nbsp;
+              Archive
+            <% end %>
+
+            <div class="row mb-3 mt-3 text-center">
+              <small class="col">Archiving will make the plan unavailable for new members.</small>
+            </div>
           <%- else %>
             <%= link_to "Unarchive", plan_unarchive_path(@plan), method: :post, remote: true, class: "btn btn-block btn-warning" %>
           <%- end %>

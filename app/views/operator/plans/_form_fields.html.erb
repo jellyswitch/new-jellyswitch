@@ -5,13 +5,26 @@
 
 <%= f.hidden_field :plan_type, value: "individual" %>
 
-<%= f.label :amount_in_cents, "How much does this plan cost?" %>
-<div class="input-group">
-  <div class="input-group-prepend">
-    <span class="input-group-text">$</span>
+<% if plan.new_record? %>
+  <%= f.label :amount_in_cents, "How much does this plan cost?" %>
+  <div class="input-group">
+    <div class="input-group-prepend">
+      <span class="input-group-text">$</span>
+    </div>
+    <%= f.text_field :amount_in_cents, class: "form-control" %>
   </div>
-  <%= f.text_field :amount_in_cents, class: "form-control" %>
-</div>
+<% else %>
+  <%= f.label :amount_in_cents, "How much does this plan cost?" %>
+  <div class="input-group">
+    <div class="input-group-prepend">
+      <span class="input-group-text">$</span>
+    </div>
+    <%= f.text_field :amount_in_cents, class: "form-control", disabled: true %>
+  </div>
+  <div class="row mb-3 mt-3">
+    <small class="col">(You cannot change the price of a plan after it's created.)</small>
+  </div>
+<% end %>
 
 <div class="form-group">
   <%= f.label :interval, "How frequent should members be charged?" %>
