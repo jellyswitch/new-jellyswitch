@@ -194,7 +194,7 @@
               Cancel membership
             <% end %>
           <% else %>
-            <%= render(NewMembershipButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <%= render(Buttons::NewMembership, user: @user, classes: "list-group-item list-group-item-action") do %>
               <i class="fas fa-users"></i>
               &nbsp;
               Add a membership
