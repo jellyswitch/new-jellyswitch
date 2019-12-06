@@ -5,7 +5,7 @@ class Announcements::SendEmail
 
   def call
     announcement.operator.users.all.each do |user|
-      if user.admin? || user.superadmin? || user.member?(announcement.operator)
+      if user.admin? || user.superadmin? || user.member_at_operator?(announcement.operator)
         AnnouncementMailer.notification(announcement, user).deliver_later
       end
     end

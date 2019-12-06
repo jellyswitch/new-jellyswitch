@@ -9,7 +9,7 @@ module LandingHelper
           redirect_to new_operator_onboarding_path
         end
       else
-        if member?
+        if current_user.member?(current_location)
           if approved?
             if current_tenant.checkin_required? && !checked_in?
               redirect_to required_checkins_path
@@ -31,7 +31,7 @@ module LandingHelper
   end
 
   def home_redirect
-    if member? || admin? || has_reservation? || has_rsvp?
+    if allowed_in?
       # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path
@@ -61,6 +61,16 @@ module LandingHelper
   end
 
   private
+  
+  def allowed_in?
+    current_user.member?(current_location) || 
+    current_user.has_active_day_pass? || 
+    checked_in? || 
+    current_user.has_active_lease? || 
+    admin? || 
+    has_reservation? || 
+    has_rsvp?
+  end
 
   def checked_in?
     current_user.checked_in?(current_location)
@@ -73,4 +83,5 @@ module LandingHelper
   def has_rsvp?
     current_user.rsvps.going.today.count > 0
   end
+
 end

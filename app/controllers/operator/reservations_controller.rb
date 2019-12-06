@@ -50,7 +50,7 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = params[:duration].to_i
 
     parse_time
-    if !(current_user.member?(current_tenant, day=@day) || admin? || current_user.has_billing?)
+    if !(current_user.member?(current_location, day=@day) || admin? || current_user.has_billing?)
       include_stripe
     end
   end

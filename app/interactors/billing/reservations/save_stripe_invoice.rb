@@ -6,7 +6,7 @@ class Billing::Reservations::SaveStripeInvoice
   def call
     operator = reservation.room.location.operator
 
-    if !user.member?(operator, day=reservation.datetime_in) && !user.admin?
+    if !user.member?(reservation.room.location, day=reservation.datetime_in) && !user.admin?
       @invoice_item = Stripe::InvoiceItem.create({
         customer: reservation.user.stripe_customer_id,
         currency: 'usd',

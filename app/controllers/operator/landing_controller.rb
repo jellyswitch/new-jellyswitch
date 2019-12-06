@@ -81,7 +81,7 @@ class Operator::LandingController < Operator::BaseController
     if !logged_in?
       redirect_to root_path
     else
-      if (member? && approved?) || admin?
+      if (current_user.member?(current_location) && approved?) || admin?
         redirect_to home_path
       end
     end

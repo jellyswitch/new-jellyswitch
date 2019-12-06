@@ -286,7 +286,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    if @user.member?(current_tenant)
+    if @user.member_at_operator?(current_tenant)
       flash[:error] = "Cannot archive an active member."
     else
       if @user.update(archived: true, approved: false)
