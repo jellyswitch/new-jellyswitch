@@ -1,11 +1,12 @@
 class OnOffSwitch < ApplicationComponent
-  def initialize(predicate:)
+  def initialize(predicate:, path:)
     @predicate = predicate
+    @path = path
   end
 
   private
 
-  attr_reader :predicate
+  attr_reader :predicate, :path
   
   def icon_class
     if predicate

@@ -16,7 +16,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: @plan.visible?) do %>
+          <%= render(OnOffSwitch, predicate: @plan.visible?, path: plan_toggle_visibility_path(@plan)) do %>
               Visible to new members
           <% end %>
         </div>
@@ -24,7 +24,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: @plan.available?) do %>
+          <%= render(OnOffSwitch, predicate: @plan.available?, path: plan_toggle_availability_path(@plan)) do %>
             Available for admins
           <% end %>
         </div>
@@ -33,7 +33,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: @plan.always_allow_building_access?) do %>
+          <%= render(OnOffSwitch, predicate: @plan.always_allow_building_access?, path: plan_toggle_building_access_path(@plan)) do %>
             Includes 24/7 building access
           <% end %>
         </div>

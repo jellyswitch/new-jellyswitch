@@ -96,6 +96,42 @@ class Operator::PlansController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def toggle_visibility
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :visible)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
+  def toggle_availability
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :available)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
+  def toggle_building_access
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :always_allow_building_access)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
   private
 
   def find_plans

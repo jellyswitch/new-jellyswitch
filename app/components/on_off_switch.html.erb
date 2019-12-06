@@ -1,7 +1,9 @@
 <div class="d-flex align-items-center">
-  <span style="font-size: 20pt">
-    <i class="<%= icon_class %>"></i>
-  </span>
+  <%= link_to path, class: "text-body", remote: true do %>
+    <span style="font-size: 20pt">
+      <i class="<%= icon_class %>"></i>
+    </span>
+  <% end %>
   &nbsp;
   <% if predicate %>
     <%= content %>
