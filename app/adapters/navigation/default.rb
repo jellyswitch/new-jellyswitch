@@ -49,14 +49,16 @@ class Navigation::Default < SimpleDelegator
       {title: "What's Happening?", path: events_path}
     ]
 
-    if location.rooms.visible.count > 0
-      items << {title: "Reserve a room", path: rooms_path}
-    end
+    if user.allowed_in?(location) && user.approved?
+      if location.rooms.visible.count > 0
+        items << {title: "Reserve a room", path: rooms_path}
+      end
 
-    if location.doors.count > 0
-      items << {title: "Building Access", path: keys_doors_path}
+      if location.doors.count > 0
+        items << {title: "Building Access", path: keys_doors_path}
+      end
     end
-
+    
     items << {title: "My Account", path: user_path(user)}
 
     if operator.locations.count > 1
