@@ -44,7 +44,17 @@
         <dl class="row">
           <dt class="col-sm-3">Lease End Date</dt>
           <dd class="col-sm">
-            <%= short_date(@office_lease.end_date) %>
+            <div class="row">
+              <div class="col">
+                <%= short_date(@office_lease.end_date) %>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col">
+                <small class="text-primary"><strong>NOTE:</strong> This will auto-renew unless explicitly cancelled.</small>
+              </div>
+            </div>
+
           </dd>
         </dl>
 
