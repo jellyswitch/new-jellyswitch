@@ -175,7 +175,7 @@
     <div class="modal-content">
       <div class="modal-body">
         <div class="list-group list-group-flush">
-          <%= render(NewInvoiceButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+          <%= render(Buttons::NewInvoice, user: @user, classes: "list-group-item list-group-item-action") do %>
             <i class="fas fa-dollar-sign"></i>
             &nbsp;
             Create new invoice
