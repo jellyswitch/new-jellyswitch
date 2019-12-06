@@ -181,7 +181,7 @@
             Create new invoice
           <% end %>
 
-          <%= render(NewDayPassButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+          <%= render(Buttons::NewDayPass, user: @user, classes: "list-group-item list-group-item-action") do %>
             <i class="fas fa-ticket-alt"></i>
             &nbsp;
             Add a day pass
