@@ -1,4 +1,4 @@
-class FullWidth < ApplicationComponent
+class Layout::FullWidth < ApplicationComponent
   def initialize(options = {})
   end
 
