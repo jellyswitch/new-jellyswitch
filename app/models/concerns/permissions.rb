@@ -77,4 +77,8 @@ module Permissions
   def has_profile_photo?
     profile_photo.attached?
   end
+
+  def checked_in?(location)
+    checkins.for_location(location).open.count > 0
+  end
 end

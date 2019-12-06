@@ -11,7 +11,7 @@ module LandingHelper
       else
         if current_user.member?(current_location)
           if approved?
-            if current_tenant.checkin_required? && !checked_in?
+            if current_tenant.checkin_required? && !current_user.checked_in?(current_location)
               redirect_to required_checkins_path
             else
               redirect_to home_path
@@ -36,7 +36,7 @@ module LandingHelper
       if !approved? && !admin?
         redirect_to wait_path
       else
-        if !admin? && !always_has_access? && current_tenant.checkin_required? && !checked_in?
+        if !admin? && !always_has_access? && current_tenant.checkin_required? && !current_user.checked_in?(current_location)
           redirect_to required_checkins_path
         else
           render :home
@@ -65,15 +65,11 @@ module LandingHelper
   def allowed_in?
     current_user.member?(current_location) || 
     current_user.has_active_day_pass? || 
-    checked_in? || 
+    current_user.checked_in?(current_location) || 
     current_user.has_active_lease? || 
     admin? || 
     has_reservation? || 
     has_rsvp?
-  end
-
-  def checked_in?
-    current_user.checked_in?(current_location)
   end
 
   def always_has_access?

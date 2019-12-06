@@ -45,7 +45,7 @@ class Navigation::Default < SimpleDelegator
 
   def member_nav_items
     items = [
-      {title: "Home", path: home_path},
+      {title: "Home", path: root_path},
       {title: "What's Happening?", path: events_path}
     ]
 

@@ -96,6 +96,7 @@ class User < ApplicationRecord
             :member_of_organization?,
             :authenticated?, 
             :has_profile_photo?, 
+            :checked_in?,
             to: :user_permissions
   
   def search_data
@@ -208,10 +209,6 @@ class User < ApplicationRecord
     else
       ["#{user.name} (Organization: #{user.organization.name})", user.id]
     end
-  end
-
-  def checked_in?(location)
-    checkins.for_location(location).open.count > 0
   end
 
   # Stripe Stuff
