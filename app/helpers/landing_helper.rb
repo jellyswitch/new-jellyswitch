@@ -31,7 +31,7 @@ module LandingHelper
   end
 
   def home_redirect
-    if allowed_in?
+    if current_location.present? && current_user.allowed_in?(current_location)
       # they have an active membership
       if !approved? && !admin?
         redirect_to wait_path
@@ -61,23 +61,8 @@ module LandingHelper
   end
 
   private
-  
-  def allowed_in?
-    current_user.member?(current_location) || 
-    current_user.has_active_day_pass? || 
-    current_user.checked_in?(current_location) || 
-    current_user.has_active_lease? || 
-    admin? || 
-    has_reservation? || 
-    has_rsvp?
-  end
 
   def always_has_access?
     current_user.has_building_access_lease? || current_user.always_allow_building_access?
   end
-
-  def has_rsvp?
-    current_user.rsvps.going.today.count > 0
-  end
-
 end

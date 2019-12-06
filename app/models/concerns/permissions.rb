@@ -1,4 +1,24 @@
 module Permissions
+  def allowed_in?(location)
+    member?(location) || 
+    has_active_day_pass? || 
+    checked_in?(location) || 
+    has_active_lease? || 
+    admin? || 
+    has_reservation? || 
+    has_rsvp?
+  end
+
+  def has_reservation?
+    reservations.any? do |reservation|
+      reservation.datetime_in.day == Time.current.day
+    end
+  end
+
+  def has_rsvp?
+    rsvps.going.today.count > 0
+  end
+
   def member_at_operator?(operator, day = Time.current)
     has_active_subscription? || has_active_day_pass?(day=day) || has_active_lease?
   end

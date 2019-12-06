@@ -97,6 +97,8 @@ class User < ApplicationRecord
             :authenticated?, 
             :has_profile_photo?, 
             :checked_in?,
+            :has_reservation?,
+            :allowed_in?,
             to: :user_permissions
   
   def search_data
