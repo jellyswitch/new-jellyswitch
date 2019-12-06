@@ -9,7 +9,7 @@ class RoomPolicy < ApplicationPolicy
       is_user?
     else
       admin? || 
-      (user.allowed_in? && approved?)
+      (user.allowed_in?(location) && approved?)
     end
   end
 
