@@ -55,8 +55,8 @@
 
 class Location < ApplicationRecord
   searchkick
-  belongs_to :operator # TODO: delete this
-  acts_as_tenant :operator # TODO: scope?
+  belongs_to :operator
+  acts_as_tenant :operator
 
   has_many :checkins
   has_many :doors

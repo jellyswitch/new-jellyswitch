@@ -26,11 +26,11 @@
 
 class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
-  acts_as_tenant :operator # TODO: scope this
+  acts_as_tenant :operator
 
   # Relationships
   has_many :subscriptions
-  belongs_to :operator # TODO: delete this
+  belongs_to :operator
   has_and_belongs_to_many :locations
 
   # Slugs
