@@ -19,14 +19,10 @@ class WebhooksController < ApplicationController
           error(result.message)
         end
       end
-    when "invoice.payment_succeeded"
-      update_status(@event.data.object)
-    when "invoice.payment_failed"
-      update_status(@event.data.object)
-    when "invoice.voided"
-      update_status(@event.data.object)
-    when "invoice.marked_uncollectible"
-      update_status(@event.data.object)
+    when "invoice.payment_succeeded", "invoice.payment_failed", "invoice.voided", "invoice.marked_uncollectible"
+      if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
+        update_status(@event.data.object)
+      end
     else
       error("Unrecognized webhook type: #{@event.type}")
     end
