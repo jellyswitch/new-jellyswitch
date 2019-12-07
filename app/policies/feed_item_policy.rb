@@ -16,7 +16,7 @@ class FeedItemPolicy < ApplicationPolicy
     admin?
   end
 
-  def expenses?
+  def financial?
     admin?
   end
 
