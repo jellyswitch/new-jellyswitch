@@ -127,10 +127,12 @@ class FeedItem < ApplicationRecord
   end
 
   def parse_amount
-    raw = text.scan(/\$\d+.*\d+/).first
-    if raw.present?
-      amount = (raw.tr!("$", "").to_f * 100).to_i
-      blob["amount"] = amount
+    if text.present?
+      raw = text.scan(/\$\d+.*\d+/).first
+      if raw.present?
+        amount = (raw.tr!("$", "").to_f * 100).to_i
+        blob["amount"] = amount
+      end
     end
   end
 
