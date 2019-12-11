@@ -155,6 +155,11 @@ Rails.application.routes.draw do
   end
   resources :locations, controller: "operator/locations"
   resources :member_feedbacks, controller: "operator/member_feedbacks"
+  resources :modules, controller: "operator/modules" do
+    collection do
+      get :announcements
+    end
+  end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
       get :new_membership_plan
