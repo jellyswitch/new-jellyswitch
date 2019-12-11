@@ -134,7 +134,7 @@ Rails.application.routes.draw do
       get :questions
       get :activity
       get :notes
-      get :expenses
+      get :financial
     end
     member do
       post "set_expense_status"

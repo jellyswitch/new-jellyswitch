@@ -2,6 +2,7 @@
 class Operator::FeedItemsController < Operator::BaseController
   include EventHelper
   include UsersHelper
+  include FeedItemsHelper
 
   before_action :background_image
   before_action :find_todays_events
@@ -19,7 +20,7 @@ class Operator::FeedItemsController < Operator::BaseController
       @questions_active = nil
       @activity_active = nil
       @notes_active = nil
-      @expenses_active = nil
+      @financial_active = nil
 
       authorize @feed_items
     end
@@ -31,7 +32,7 @@ class Operator::FeedItemsController < Operator::BaseController
     @questions_active = "active"
     @activity_active = nil
     @notes_active = nil
-    @expenses_active = nil
+    @financial_active = nil
     authorize @feed_items
     render :index
   end
@@ -42,7 +43,7 @@ class Operator::FeedItemsController < Operator::BaseController
     @questions_active = nil
     @activity_active = "active"
     @notes_active = nil
-    @expenses_active = nil
+    @financial_active = nil
     authorize @feed_items
     render :index
   end
@@ -53,18 +54,18 @@ class Operator::FeedItemsController < Operator::BaseController
     @questions_active = nil
     @activity_active = nil
     @notes_active = "active"
-    @expenses_active = nil
+    @financial_active = nil
     authorize @feed_items
     render :index
   end
 
-  def expenses
-    find_expenses
+  def financial
+    find_financial
     @all_active = nil
     @questions_active = nil
     @activity_active = nil
     @notes_active = nil
-    @expenses_active = "active"
+    @financial_active = "active"
     authorize @feed_items
     render :index
   end
@@ -131,65 +132,5 @@ class Operator::FeedItemsController < Operator::BaseController
     not_an_expense
     @comments = params[:comments] == "true"
     render :set_expense_status
-  end
-
-  private
-
-  def new_feed_item
-    @feed_item = FeedItem.new
-  end
-
-  def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC"))
-  end
-
-  def find_questions
-    @pagy, @feed_items = pagy(FeedItem.unscoped.questions.for_operator(current_tenant).order("updated_at DESC"))
-  end
-
-  def find_activity
-    @pagy, @feed_items = pagy(FeedItem.unscoped.activity.for_operator(current_tenant).order("updated_at DESC"))
-  end 
-
-  def find_notes
-    @pagy, @feed_items = pagy(FeedItem.unscoped.notes.for_operator(current_tenant).order("updated_at DESC"))
-  end
-
-  def find_expenses
-    @pagy, @feed_items = pagy(FeedItem.unscoped.expenses.for_operator(current_tenant).order("updated_at DESC"))
-  end
-
-  def feed_item_params
-    params.require(:feed_item).permit(:text, photos: [])
-  end
-
-  def find_feed_item(key = :id)
-    @feed_item = FeedItem.unscoped.find(params[key])
-  end
-
-  def turn_into_expense
-    @feed_item.parse_amount
-    @feed_item.set_expense
-    @feed_item.save
-  end
-
-  def not_an_expense
-    @feed_item.unset_expense
-    @feed_item.save
-  end
-
-  def find_room_reservations
-    @reservations = current_location.rooms.map do |room|
-      room.reservations.today
-    end.flatten.uniq.count
-  end
-
-  def find_upcoming_renewals
-    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
-  end
-
-  def find_delinquent_invoices
-    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
-    @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
   end
 end

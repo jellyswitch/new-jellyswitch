@@ -41,6 +41,7 @@ class FeedItem < ApplicationRecord
   scope :questions, -> { where("blob->> 'text' LIKE '%\?%'") }
   scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin") }
   scope :notes, -> { where("blob->> 'type' = ? AND expense = ?", "post", false) }
+  scope :financial, -> { where("blob->> 'type' IN (?) OR expense = ?", "refund", true) }
   scope :expenses, -> { where(expense: true) }
   scope :unanswered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NULL') }
   scope :answered, -> { left_outer_joins(:feed_item_comments).where('feed_item_comments.id IS NOT NULL') }
@@ -126,10 +127,12 @@ class FeedItem < ApplicationRecord
   end
 
   def parse_amount
-    raw = text.scan(/\$\d+.*\d+/).first
-    if raw.present?
-      amount = (raw.tr!("$", "").to_f * 100).to_i
-      blob["amount"] = amount
+    if text.present?
+      raw = text.scan(/\$\d+.*\d+/).first
+      if raw.present?
+        amount = (raw.tr!("$", "").to_f * 100).to_i
+        blob["amount"] = amount
+      end
     end
   end
 
