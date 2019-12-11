@@ -19,11 +19,21 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: current_tenant.announcements_enabled?, path: announcements_modules_path) do %>
+          <%= render(OnOffSwitch, predicate: policy(:announcement).enabled?, path: announcements_modules_path) do %>
             Announcements
           <% end %>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: policy(:event).enabled?, path: events_modules_path) do %>
+            Events
+          <% end %>
+        </div>
+      </div>
+
+
     <% end %>
   <% end %>
 <% end %>

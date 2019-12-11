@@ -153,10 +153,12 @@
             <% end %>
           <% end %>
 
-          <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
-            <i class="far fa-calendar-alt"></i>
-            &nbsp;
-            Create an event
+          <% if policy(:event).enabled? %>
+            <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
+              <i class="far fa-calendar-alt"></i>
+              &nbsp;
+              Create an event
+            <% end %>
           <% end %>
 
           <%= link_to add_member_users_path, class: "list-group-item list-group-item-action" do %>

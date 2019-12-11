@@ -14,4 +14,14 @@ class Operator::ModulesController < Operator::BaseController
 
     turbolinks_redirect(modules_path, action: "replace")
   end
+
+  def events
+    result = ToggleValue.call(object: current_tenant, value: :events_enabled)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(modules_path, action: "replace")
+  end
 end

@@ -1,38 +1,46 @@
 # typed: true
 class EventPolicy < ApplicationPolicy
   def index?
-    true
+    enabled?
   end
 
   def past?
-    true
+    enabled?
   end
 
   def new?
-    admin?
+    enabled? && admin?
   end
 
   def create?
-    admin?
+    enabled? && admin?
   end
 
   def show?
-    true  
+    enabled?
   end
 
   def edit?
-    admin?
+    enabled? && admin?
   end
 
   def update?
-    admin?
+    enabled? && admin?
   end
 
   def destroy?
-    admin?
+    enabled? && admin?
   end
 
   def rsvp?
+    enabled? && future?
+  end
+  
+  def future?
     record.starts_at >= Time.current
+  end
+
+  def enabled?
+    operator.events_enabled?
   end
 end
