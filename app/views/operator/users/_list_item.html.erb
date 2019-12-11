@@ -11,7 +11,7 @@
     <div class="col">
       <p class="mb-1 pt-2">
         <%= user.name %>
-        <% if user.member?(current_tenant) %>
+        <% if user.member_at_operator?(current_tenant) %>
           <% if user.has_active_subscription? %>
             <span class="badge badge-success">Member</span>
           <% end %>

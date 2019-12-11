@@ -1,17 +1,21 @@
 # typed: false
 class Operator::PlansController < Operator::BaseController
   include PlansHelper
+  before_action :background_image
 
   def index
     find_plans
     authorize @plans
-    background_image
+  end
+
+  def archived
+    find_plans
+    authorize @plans
   end
 
   def new
     @plan = Plan.new
     authorize @plan
-    background_image
   end
 
   def create
@@ -39,13 +43,11 @@ class Operator::PlansController < Operator::BaseController
   def show
     find_plan
     authorize @plan
-    background_image
   end
 
   def edit
     find_plan
     authorize @plan
-    background_image
   end
 
   def update
@@ -94,6 +96,42 @@ class Operator::PlansController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def toggle_visibility
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :visible)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
+  def toggle_availability
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :available)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
+  def toggle_building_access
+    find_plan(:plan_id)
+    authorize @plan
+    
+    result = ToggleValue.call(object: @plan, value: :always_allow_building_access)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+    turbolinks_redirect(plan_path(@plan), action: "replace")
+  end
+
   private
 
   def find_plans
@@ -105,6 +143,6 @@ class Operator::PlansController < Operator::BaseController
   end
 
   def plan_update_params
-    params.require(:plan).permit(:visible, :available, :always_allow_building_access)
+    params.require(:plan).permit(:visible, :available, :always_allow_building_access, location_ids: [])
   end
 end

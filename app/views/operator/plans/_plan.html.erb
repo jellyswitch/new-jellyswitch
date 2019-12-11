@@ -1,19 +1,11 @@
-<ul class="list-group-item row">
-  <div class="col">
-    <h5 class="display-5 text-center"><%= plan.name %></h5>
-    <p>
-      Price: <%= number_to_currency(plan.amount_in_cents / 100.0) %>
-    </p>
-    <p>
-      Visible: <%= boolean_to_yesno(plan.visible?) %>
-    </p>
-    <% if view %>
-      <%= link_to 'View', plan, class: "btn btn-block btn-primary" %>
-    <% end %>
-    <%- if plan.available? %>
-      <%= link_to 'Archive', plan, method: :delete, remote: true, class: "btn btn-block btn-danger" %>
-    <% else %>
-      <%= link_to "Unarchive", plan_unarchive_path(plan), method: :post, remote: true, class: "btn btn-block btn-warning" %>
-    <%- end %>
+<%= list_item do %>
+  <div class="row">
+    <div class="col">
+      <h5><%= plan.name %></h5>
+      <%= render "operator/plans/price", plan: plan %>
+
+      <%= link_to 'View', plan, class: "btn btn-block btn-primary mt-3" %>
+
+    </div>
   </div>
-</ul>
+<% end %>

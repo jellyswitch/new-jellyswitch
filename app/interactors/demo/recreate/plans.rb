@@ -26,7 +26,8 @@ class Demo::Recreate::Plans
         plan_type: "individual",
         available: true,
         visible: true,
-        operator_id: operator.id
+        operator_id: operator.id,
+        location_ids: operator.locations.map(&:id)
       },
       {
         name: "Full Time Membership",
@@ -35,7 +36,8 @@ class Demo::Recreate::Plans
         plan_type: "individual",
         available: true,
         visible: true,
-        operator_id: operator.id
+        operator_id: operator.id,
+        location_ids: operator.locations.map(&:id)
       },
       {
         name: "Part Time Membership",
@@ -44,7 +46,8 @@ class Demo::Recreate::Plans
         plan_type: "individual",
         available: true,
         visible: true,
-        operator_id: operator.id
+        operator_id: operator.id,
+        location_ids: operator.locations.map(&:id)
       },
     ]
   end

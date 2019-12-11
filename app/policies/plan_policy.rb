@@ -4,6 +4,10 @@ class PlanPolicy < ApplicationPolicy
     admin?
   end
 
+  def archived?
+    admin?
+  end
+
   def show?
     admin?
   end
@@ -29,6 +33,18 @@ class PlanPolicy < ApplicationPolicy
   end
 
   def unarchive?
+    admin?
+  end
+
+  def toggle_visibility?
+    admin?
+  end
+
+  def toggle_availability?
+    admin?
+  end
+
+  def toggle_building_access?
     admin?
   end
 end

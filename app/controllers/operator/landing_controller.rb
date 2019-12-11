@@ -21,7 +21,7 @@ class Operator::LandingController < Operator::BaseController
       redirect_to root_path
     end
 
-    if (member? && approved?) || admin? || (has_reservation? && approved?)
+    if (current_user.allowed_in?(current_location) && approved?)
       redirect_to home_path
     end
   end
@@ -81,7 +81,7 @@ class Operator::LandingController < Operator::BaseController
     if !logged_in?
       redirect_to root_path
     else
-      if (member? && approved?) || admin?
+      if (current_user.member?(current_location) && approved?) || admin?
         redirect_to home_path
       end
     end

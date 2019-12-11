@@ -8,7 +8,8 @@ class RoomPolicy < ApplicationPolicy
     if record.rentable?
       is_user?
     else
-      admin? || (member? && approved?)
+      admin? || 
+      (user.allowed_in?(location) && approved?)
     end
   end
 

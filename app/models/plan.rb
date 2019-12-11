@@ -26,10 +26,12 @@
 
 class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
+  acts_as_tenant :operator
+
   # Relationships
   has_many :subscriptions
   belongs_to :operator
-  acts_as_tenant :operator
+  has_and_belongs_to_many :locations
 
   # Slugs
   extend FriendlyId
@@ -42,6 +44,9 @@ class Plan < ApplicationRecord
   scope :invisible, -> { where(visible: false) }
   scope :individual, -> { where(plan_type: 'individual') }
   scope :for_individuals, -> { individual.available.visible }
+  scope :for_location, ->(location) do
+    joins(:locations).where(locations: {id: location.id})
+  end
   scope :lease, -> { where(plan_type: 'lease') }
   scope :nonzero, -> { where('amount_in_cents > 0') }
   scope :free, -> { where('amount_in_cents <= 0') }

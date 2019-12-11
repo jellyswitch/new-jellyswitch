@@ -25,10 +25,10 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def open?
-    admin? || (approved? && member?)
+    admin? || (user.allowed_in?(location) && approved?)
   end
 
   def keys?
-    admin? || (approved? && member?)
+    admin? || (user.allowed_in?(location) && approved?)
   end
 end

@@ -40,7 +40,7 @@ class Notifications::PushNotifier
   def recipients
     if context.members && context.members == true
       @operator.users.all.select do |user|
-        user.admin? || user.superadmin? || user.member?(@operator)
+        user.admin? || user.superadmin? || user.member_at_operator?(@operator)
       end
     else
       @operator.users.admins

@@ -88,16 +88,6 @@ module SessionsHelper
     logged_in? && current_user.superadmin?
   end
 
-  def member?
-    current_user.present? && (current_user.member?(current_tenant) || current_user.checked_in?(current_location))
-  end
-
-  def has_reservation?
-    current_user.present? && current_user.reservations.any? do |reservation|
-      reservation.datetime_in.day == Time.current.day
-    end
-  end
-
   def pending?
     current_user.present? && current_user.pending?
   end

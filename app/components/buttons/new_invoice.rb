@@ -1,4 +1,4 @@
-class NewInvoiceButtonComponent < ApplicationComponent
+class Buttons::NewInvoice < ApplicationComponent
   validates :user, presence: true
 
   def initialize(user: nil, classes: "")

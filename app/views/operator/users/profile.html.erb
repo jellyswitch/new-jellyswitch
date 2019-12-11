@@ -175,13 +175,13 @@
     <div class="modal-content">
       <div class="modal-body">
         <div class="list-group list-group-flush">
-          <%= render(NewInvoiceButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+          <%= render(Buttons::NewInvoice, user: @user, classes: "list-group-item list-group-item-action") do %>
             <i class="fas fa-dollar-sign"></i>
             &nbsp;
             Create new invoice
           <% end %>
 
-          <%= render(NewDayPassButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+          <%= render(Buttons::NewDayPass, user: @user, classes: "list-group-item list-group-item-action") do %>
             <i class="fas fa-ticket-alt"></i>
             &nbsp;
             Add a day pass
@@ -194,7 +194,7 @@
               Cancel membership
             <% end %>
           <% else %>
-            <%= render(NewMembershipButtonComponent, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <%= render(Buttons::NewMembership, user: @user, classes: "list-group-item list-group-item-action") do %>
               <i class="fas fa-users"></i>
               &nbsp;
               Add a membership

@@ -15,6 +15,7 @@ class Demo::Clean
     Demo::Clean::Locations,
     Demo::Recreate::Locations,
     Demo::Recreate::DayPassTypes,
+    Demo::SelectOperator,
     Demo::Recreate::Plans,
     Demo::Recreate::Doors,
     Demo::Recreate::Rooms,

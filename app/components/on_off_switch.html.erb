@@ -1,0 +1,17 @@
+<div class="d-flex align-items-center">
+  <%= link_to path, class: "text-body", remote: true do %>
+    <span style="font-size: 20pt">
+      <% if predicate %>
+        <span class="text-success">
+          <i class="<%= icon_class %>"></i>
+        </span>
+      <% else %>
+        <span class="text-danger">
+          <i class="<%= icon_class %>"></i>
+        </span>
+      <% end %>
+    </span>
+  <% end %>
+  &nbsp;
+  <%= content %>
+</div>

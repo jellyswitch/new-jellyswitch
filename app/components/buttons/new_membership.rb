@@ -1,4 +1,4 @@
-class NewMembershipButtonComponent < ApplicationComponent
+class Buttons::NewMembership < ApplicationComponent
   def initialize(user:, classes:)
     @user = user
     @classes = classes
