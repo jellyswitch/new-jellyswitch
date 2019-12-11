@@ -52,5 +52,4 @@ class ApplicationPolicy
   end
 
   protected
-
 end

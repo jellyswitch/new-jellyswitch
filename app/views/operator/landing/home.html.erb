@@ -55,8 +55,7 @@
         </div>
       <% end %>
     
-
-      <% if current_tenant.announcements.count > 0 %>
+      <% current_tenant.announcements_enabled? && if current_tenant.announcements.count > 0 %>
         <%= list_item do %>
           <%= render "shared/announcements_card" %>
         <% end %>

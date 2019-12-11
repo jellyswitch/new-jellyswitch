@@ -1,5 +1,6 @@
 class Navigation::Default < SimpleDelegator
   include Rails.application.routes.url_helpers
+  include Pundit
   attr_reader :operator, :location, :user
 
   def initialize(operator, location, user)
@@ -17,10 +18,16 @@ class Navigation::Default < SimpleDelegator
   end
 
   def admin_nav_items
-    items = [
-      {title: "Home", path: feed_items_path},
-      {title: "Building Access", path: doors_path},
-      {title: "Announcements", path: announcements_path},
+    items = []
+
+    items << {title: "Home", path: feed_items_path}
+    items << {title: "Building Access", path: doors_path}
+
+    if policy(:announcement).enabled?
+      items << {title: "Announcements", path: announcements_path}
+    end
+
+    [
       {title: "What's Happening?", path: events_path},
       {title: "Members & Groups", path: members_groups_path},
       {title: "Offices & Leases", path: offices_path},
@@ -31,7 +38,9 @@ class Navigation::Default < SimpleDelegator
       {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
-    ]
+    ].each do |item|
+      items << item
+    end
 
     if operator.locations.count > 1
       items = items.insert(
@@ -113,4 +122,7 @@ class Navigation::Default < SimpleDelegator
     ]
   end
 
+  def pundit_user
+    UserContext.new(user, operator, location)
+  end
 end

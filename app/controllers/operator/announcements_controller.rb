@@ -4,9 +4,7 @@ class Operator::AnnouncementsController < Operator::BaseController
 
   def index
     find_announcements
-  end
-
-  def show
+    authorize @announcements
   end
 
   def new

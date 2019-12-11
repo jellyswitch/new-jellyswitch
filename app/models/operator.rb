@@ -5,6 +5,7 @@
 #
 #  id                     :bigint(8)        not null, primary key
 #  android_url            :string
+#  announcements_enabled  :boolean          default(TRUE), not null
 #  approval_required      :boolean          default(TRUE), not null
 #  billing_state          :string           default("demo"), not null
 #  building_address       :string           default("not set"), not null
