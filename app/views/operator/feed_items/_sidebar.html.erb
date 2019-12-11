@@ -145,10 +145,12 @@
             Post a management note
           <% end %>
 
-          <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-bullhorn"></i>
-            &nbsp;
-            Post an announcement
+          <% if current_tenant.announcements_enabled? %>
+            <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-bullhorn"></i>
+              &nbsp;
+              Post an announcement
+            <% end %>
           <% end %>
 
           <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
