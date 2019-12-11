@@ -15,6 +15,7 @@
 #  contact_phone          :string
 #  day_pass_cost_in_cents :integer          default(2500), not null
 #  email_enabled          :boolean          default(FALSE), not null
+#  events_enabled         :boolean          default(TRUE), not null
 #  ios_url                :string
 #  kisi_api_key           :string
 #  membership_text        :string

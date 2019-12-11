@@ -27,8 +27,10 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Announcements", path: announcements_path}
     end
 
+    if policy(:event).enabled?
+      items << {title: "What's Happening?", path: events_path}
+    end
     [
-      {title: "What's Happening?", path: events_path},
       {title: "Members & Groups", path: members_groups_path},
       {title: "Offices & Leases", path: offices_path},
       {title: "Rooms & Reservations", path: rooms_path},
@@ -54,10 +56,13 @@ class Navigation::Default < SimpleDelegator
 
   def member_nav_items
     items = [
-      {title: "Home", path: root_path},
-      {title: "What's Happening?", path: events_path}
+      {title: "Home", path: root_path}
     ]
 
+    if policy(:event).enabled?
+      items << {title: "What's Happening?", path: events_path}
+    end
+    
     if user.allowed_in?(location) && user.approved?
       if location.rooms.visible.count > 0
         items << {title: "Reserve a room", path: rooms_path}

@@ -55,13 +55,13 @@
         </div>
       <% end %>
     
-      <% current_tenant.announcements_enabled? && if current_tenant.announcements.count > 0 %>
+      <% policy(:announcement).enabled? && if current_tenant.announcements.count > 0 %>
         <%= list_item do %>
           <%= render "shared/announcements_card" %>
         <% end %>
       <% end %>
 
-      <% if current_location.events.future.count > 0 %>
+      <% if policy(:event).enabled? && if current_location.events.future.count > 0 %>
         <%= list_item do %>
           <div class="row">
             <div class="col">

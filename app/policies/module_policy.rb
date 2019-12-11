@@ -7,5 +7,9 @@ class ModulePolicy < ApplicationPolicy
   def announcements?
     admin?
   end
+  
+  def events?
+    admin?
+  end
 
 end
