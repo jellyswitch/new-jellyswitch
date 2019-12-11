@@ -61,7 +61,7 @@
         <% end %>
       <% end %>
 
-      <% if policy(:event).enabled? && if current_location.events.future.count > 0 %>
+      <% if policy(:event).enabled? && current_location.events.future.count > 0 %>
         <%= list_item do %>
           <div class="row">
             <div class="col">
