@@ -153,7 +153,7 @@ class Operator < ApplicationRecord
     plans.count > 0 &&
     day_pass_types.count > 0 &&
     rooms.count > 0 &&
-    (doors.count > 0 || locations.all? {|l| l.building_access_instructions.present? })&&
+    ((door_integration_enabled? && doors.count > 0) || locations.all? {|l| l.building_access_instructions.present? }) &&
     users.members.count > 0
   end
 
