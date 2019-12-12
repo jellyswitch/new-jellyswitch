@@ -21,6 +21,7 @@
 #  kisi_api_key             :string
 #  membership_text          :string
 #  name                     :string           not null
+#  rooms_enabled            :boolean          default(TRUE), not null
 #  skip_onboarding          :boolean          default(FALSE), not null
 #  snippet                  :string           default("Generic snippet about the space"), not null
 #  square_footage           :integer          default(0), not null
