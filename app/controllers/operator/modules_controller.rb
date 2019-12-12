@@ -24,4 +24,14 @@ class Operator::ModulesController < Operator::BaseController
 
     turbolinks_redirect(modules_path, action: "replace")
   end
+
+  def door_integration
+    result = ToggleValue.call(object: current_tenant, value: :door_integration_enabled)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(modules_path, action: "replace")
+  end
 end

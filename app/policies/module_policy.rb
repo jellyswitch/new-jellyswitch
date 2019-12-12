@@ -12,4 +12,7 @@ class ModulePolicy < ApplicationPolicy
     admin?
   end
 
+  def door_integration?
+    admin?
+  end
 end
