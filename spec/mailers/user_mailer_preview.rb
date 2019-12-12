@@ -1,5 +1,13 @@
 
 class UserMailerPreview < ActionMailer::Preview
+  def password_reset
+    UserMailer.password_reset(User.first, User.first.operator)
+  end
+
+  def onboarding
+    UserMailer.onboarding(User.first, "pizza123")
+  end
+
   def event_registration
     UserMailer.event_registration(User.first, "pizza123", Event.last)
   end
