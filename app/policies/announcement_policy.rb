@@ -1,6 +1,6 @@
 class AnnouncementPolicy < ApplicationPolicy
   def index?
-    enabled? && (admin? || (member_at_operator?(operator) && approved?))
+    enabled? && (admin? || (user.member_at_operator?(operator) && approved?))
   end
 
   def new?
