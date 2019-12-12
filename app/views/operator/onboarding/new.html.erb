@@ -42,16 +42,18 @@
       </div>
     </li>
 
-    <li class="list-group-item">
-      <div class="row">
-        <div class="col-1">
-          <%= render "checkbox", checked: current_location.doors.count > 0 %>
+    <% if policy(:door).enabled? %>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-1">
+            <%= render "checkbox", checked: current_location.doors.count > 0 %>
+          </div>
+          <div class="col">
+            <%= link_to "Set up building access", new_kisi_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
+          </div>
         </div>
-        <div class="col">
-          <%= link_to "Set up building access", new_kisi_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
-        </div>
-      </div>
-    </li>
+      </li>
+    <% end %>
 
     <li class="list-group-item">
       <div class="row">

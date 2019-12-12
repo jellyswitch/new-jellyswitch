@@ -31,4 +31,8 @@ class DoorPolicy < ApplicationPolicy
   def keys?
     admin? || (user.allowed_in?(location) && approved?)
   end
+
+  def enabled?
+    operator.door_integration_enabled?
+  end
 end

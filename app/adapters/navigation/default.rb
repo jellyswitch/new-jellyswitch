@@ -21,7 +21,10 @@ class Navigation::Default < SimpleDelegator
     items = []
 
     items << {title: "Home", path: feed_items_path}
-    items << {title: "Building Access", path: doors_path}
+
+    if policy(:door).enabled?
+      items << {title: "Building Access", path: doors_path}
+    end
 
     if policy(:announcement).enabled?
       items << {title: "Announcements", path: announcements_path}
@@ -108,7 +111,7 @@ class Navigation::Default < SimpleDelegator
       {title: "Home", path: home_path}
     ]
 
-    if location.doors.count > 0
+    if policy(:door).enabled? && location.doors.count > 0
       items << {title: "Building Access", path: keys_doors_path}
     else
       if location.rooms.visible.count > 0

@@ -4,9 +4,22 @@
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
+    
+      <% if current_location.building_access_instructions.present? %>
+        <%= list_item do %>
+          <%= render(AccessInstructions::CheckinInstructions, operator: current_tenant, location: current_location) %>
+        <% end %>
+      <% end %>
 
-      <%= list_item do %>
-        <%= render "shared/building_access_card" %>
+      <% if policy(:door).enabled? %>
+        <%= list_item do %>
+          <%= render(AccessInstructions::DoorButtons, 
+            operator: current_tenant, 
+            location: current_location, 
+            mobile_app_request: mobile_app_request?,
+            has_access: active_working_hours?(current_location) || has_building_access?(current_user), 
+            doors: @doors) %>
+        <% end %>
       <% end %>
 
       <div class="list-group-item m-0" style="border-top: 0px; border-bottom: 0px;">

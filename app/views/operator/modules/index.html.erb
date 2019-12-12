@@ -33,6 +33,14 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: policy(:door).enabled?, path: door_integration_modules_path) do %>
+            Door Integration
+          <% end %>
+        </div>
+      </div>
+
 
     <% end %>
   <% end %>
