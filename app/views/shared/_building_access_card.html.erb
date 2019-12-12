@@ -1,49 +1,15 @@
-<% if policy(:door).enabled? && @doors.count > 0 %>
-
-  <%= list_item do %>
-    <h5 class="card-title">
-      <% if @doors.count < 1 %>
-        Check-in Instructions
-      <% else %>
-        <% if policy(:door).enabled? %>
-          Building Access
-        <% end %>
+<%= list_item do %>
+  <h5 class="card-title">
+    <% if @doors.count < 1 %>
+      Check-in Instructions
+    <% else %>
+      <% if policy(:door).enabled? %>
+        Building Access
       <% end %>
-    </h5>
-
-    <% if policy(:door).enabled? %>
-      <% if !mobile_app_request? && current_tenant.has_mobile_app_links? %>
-        <div class="row mt-4">
-          <div class="col text-center">
-            <p>To open the door, please download our mobile app below and sign in:</p>
-          </div>
-        </div>
-        <div class="row">
-
-          <div class="col text-center align-middle">
-            <a href="<%= current_tenant.ios_url %>">
-              <img alt="Get it on the app store" src="https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2019-03-26&kind=iossoftware&bubble=ios_apps" width=135 height=40>
-            </a>
-          </div>
-
-          <div class="col text-center align-middle" style="margin-top: -10px;">
-            <a href="<%= current_tenant.android_url %>">
-              <img alt='Get it on Google Play' src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height=60>
-            </a>
-          </div>
-
-        </div>
-      <% else %>
-        <% if active_working_hours?(current_location) || has_building_access?(current_user) %>
-          <%= render "operator/doors/keys", doors: @doors %>
-        <% else %>
-          <div class="row mt-4">
-            <div class="col text-center">
-              <p>Building access is only available between <%= format_working_hours(current_location, "and") %></p>
-            </div>
-          </div>
-        <% end %>
-      <% end %>    
     <% end %>
+  </h5>
+
+  <% if policy(:door).enabled? %>
+    <%= render(AccessInstructions::DoorButtons, operator: current_tenant, location: current_location, mobile_app_request: mobile_app_request?, show_doors: active_working_hours?(current_location) || has_building_access?(current_user), doors: @doors) %>
   <% end %>
 <% end %>
