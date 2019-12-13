@@ -159,6 +159,10 @@ class Operator < ApplicationRecord
     users.members.count > 0
   end
 
+  def has_active_office_leases?
+    office_leases.active.count > 0
+  end
+
   private
 
   class StripeOperator < SimpleDelegator

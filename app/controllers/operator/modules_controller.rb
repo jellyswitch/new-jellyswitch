@@ -46,10 +46,14 @@ class Operator::ModulesController < Operator::BaseController
   end
 
   def offices
-    result = ToggleValue.call(object: current_tenant, value: :offices_enabled)
-    
-    if !result.success?
-      flash[:error] = result.message
+    if current_tenant.has_active_office_leases?
+      flash[:error] = "Terminate active office leases before disabling."
+    else
+      result = ToggleValue.call(object: current_tenant, value: :offices_enabled)
+      
+      if !result.success?
+        flash[:error] = result.message
+      end
     end
 
     turbolinks_redirect(modules_path, action: "replace")
