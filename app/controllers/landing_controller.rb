@@ -27,10 +27,18 @@ class LandingController < ApplicationController
 
       if result.success?
         flash[:success] = "Your account has been connected to Stripe."
-        redirect_to new_operator_onboarding_url(subdomain: current_user.operator.subdomain)
+        if current_user.operator.onboarded?
+          redirect_to modules_url(subdomain: current_user.operator.subdomain)
+        else
+          redirect_to new_operator_onboarding_url(subdomain: current_user.operator.subdomain)
+        end
       else
         flash[:error] = "There was a problem storing your Stripe credentials. (#{result.message})"
-        redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        if current_user.operator.onboarded?
+          redirect_to modules_url(subdomain: current_user.operator.subdomain)
+        else
+          redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        end
       end
     end
   rescue Exception => e
