@@ -1,22 +1,32 @@
 # typed: true
 class OfficeLeasePolicy < ApplicationPolicy
   def index?
-    admin?
+    enabled? && admin?
   end
 
   def show?
-    admin? || record.organization.owner == user
+    enabled? && (admin? || owner?)
   end
 
   def new?
-    admin?
+    enabled? && admin?
   end
 
   def create?
-    admin?
+    enabled? && admin?
   end
 
   def destroy?
-    admin?
+    enabled? && admin?
+  end
+
+  def enabled?
+    operator.offices_enabled?
+  end
+
+  private
+
+  def owner?
+    record.organization.owner == user
   end
 end

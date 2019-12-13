@@ -6,7 +6,9 @@
   <p class="lead text-center">Quick Actions</p>
   <%= link_to "View my membership", user_memberships_path(current_user), class: "btn btn-block btn-primary" %>
   <%= link_to "View my day passes", user_day_passes_path(current_user), class: "btn btn-block btn-primary" %>
-  <%= link_to "View my reservations", user_reservations_path(current_user), class: "btn btn-block btn-primary" %>
+  <% if policy(:room).enabled? %>
+    <%= link_to "View my reservations", user_reservations_path(current_user), class: "btn btn-block btn-primary" %>
+  <% end %>
   <%= link_to "View my invoices", user_invoices_path(current_user), class: "btn btn-block btn-primary" %>
   <% if current_user.organization_owner? %>
     <%= link_to "View my group", organization_path(current_user.owned_organization), class: "btn btn-block btn-primary" %>

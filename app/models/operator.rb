@@ -21,6 +21,7 @@
 #  kisi_api_key             :string
 #  membership_text          :string
 #  name                     :string           not null
+#  offices_enabled          :boolean          default(TRUE), not null
 #  rooms_enabled            :boolean          default(TRUE), not null
 #  skip_onboarding          :boolean          default(FALSE), not null
 #  snippet                  :string           default("Generic snippet about the space"), not null
@@ -156,6 +157,10 @@ class Operator < ApplicationRecord
     ((rooms_enabled? && rooms.count > 0) || true ) &&
     (((door_integration_enabled? && doors.count > 0) || true) || locations.all? {|l| l.building_access_instructions.present? }) &&
     users.members.count > 0
+  end
+
+  def has_active_office_leases?
+    office_leases.active.count > 0
   end
 
   private
