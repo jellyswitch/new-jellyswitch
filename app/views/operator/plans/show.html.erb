@@ -60,13 +60,7 @@
           </div>
         </div>
         <% @plan.locations.each do |location| %>
-          <div class="row">
-            <div class="col">
-              <i class="fas fa-check"></i>
-              &nbsp;
-              <%= location.name %>
-            </div>
-          </div>
+          <%= render "operator/plans/location_check", location: location %>
         <% end %>
       <% end %>
 

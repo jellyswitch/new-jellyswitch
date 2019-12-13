@@ -1,6 +1,6 @@
 <div class="form-group">
   <%= f.label :name, "What is this plan called?" %>
-  <%= f.text_field :name, placeholder: "Full Time Membership", class: "form-control" %>
+  <%= f.text_field :name, placeholder: "Full Time Membership", class: "form-control", disabled: !plan.new_record? %>
 </div>
 
 <%= f.hidden_field :plan_type, value: "individual" %>
