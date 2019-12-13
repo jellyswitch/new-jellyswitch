@@ -19,4 +19,8 @@ class ModulePolicy < ApplicationPolicy
   def rooms?
     admin?
   end
+
+  def offices?
+    admin?
+  end
 end

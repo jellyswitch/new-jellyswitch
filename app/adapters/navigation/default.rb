@@ -34,13 +34,12 @@ class Navigation::Default < SimpleDelegator
       items << {title: "What's Happening?", path: events_path}
     end
 
-    [
-      {title: "Members & Groups", path: members_groups_path},
-      {title: "Offices & Leases", path: offices_path}
-    ].each do |item|
-      items << item
-    end
+    items << {title: "Members & Groups", path: members_groups_path}
 
+    if policy(:office).enabled?
+      items << {title: "Offices & Leases", path: offices_path}
+    end
+    
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
     end

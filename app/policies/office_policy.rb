@@ -1,34 +1,38 @@
 # typed: true
 class OfficePolicy < ApplicationPolicy
   def index?
-    admin?
+    enabled? && admin?
   end
 
   def show?
-    admin?
+    enabled? && admin?
   end
 
   def new?
-    admin?
+    enabled? && admin?
   end
 
   def create?
-    admin?
+    enabled? && admin?
   end
 
   def edit?
-    admin?
+    enabled? && admin?
   end
 
   def update?
-    admin?
+    enabled? && admin?
   end
 
   def available?
-    admin?
+    enabled? && admin?
   end
 
   def upcoming_renewals?
-    admin?
+    enabled? && admin?
+  end
+
+  def enabled?
+    operator.offices_enabled?
   end
 end

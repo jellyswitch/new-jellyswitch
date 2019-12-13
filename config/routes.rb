@@ -160,6 +160,7 @@ Rails.application.routes.draw do
       get :announcements
       get :door_integration
       get :events
+      get :offices
       get :rooms
     end
   end

@@ -44,4 +44,14 @@ class Operator::ModulesController < Operator::BaseController
 
     turbolinks_redirect(modules_path, action: "replace")
   end
+
+  def offices
+    result = ToggleValue.call(object: current_tenant, value: :offices_enabled)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(modules_path, action: "replace")
+  end
 end
