@@ -5,7 +5,7 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def show?
-    enabled && if record.rentable?
+    enabled? && if record.rentable?
       is_user?
     else
       admin? || 
