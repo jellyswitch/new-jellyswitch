@@ -79,7 +79,7 @@ class Navigation::Default < SimpleDelegator
         items << {title: "Reserve a room", path: rooms_path}
       end
 
-      if policy(:door_integration).enabled? && location.doors.count > 0
+      if policy(:door).enabled? && location.doors.count > 0
         items << {title: "Building Access", path: keys_doors_path}
       end
     end
