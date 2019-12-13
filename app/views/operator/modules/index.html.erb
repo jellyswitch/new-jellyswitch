@@ -27,6 +27,14 @@
 
       <div class="row">
         <div class="col">
+          <%= render(OnOffSwitch, predicate: policy(:room).enabled?, path: rooms_modules_path) do %>
+            Rooms & Reservations
+          <% end %>
+        </div>
+      </div>
+      
+      <div class="row">
+        <div class="col">
           <%= render(OnOffSwitch, predicate: policy(:event).enabled?, path: events_modules_path) do %>
             Events
           <% end %>
@@ -40,6 +48,7 @@
           <% end %>
         </div>
       </div>
+
 
 
     <% end %>

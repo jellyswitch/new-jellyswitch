@@ -15,4 +15,8 @@ class ModulePolicy < ApplicationPolicy
   def door_integration?
     admin?
   end
+
+  def rooms?
+    admin?
+  end
 end

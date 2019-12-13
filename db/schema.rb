@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2019_12_12_215721) do
+ActiveRecord::Schema.define(version: 2019_12_12_233129) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -343,6 +343,7 @@ ActiveRecord::Schema.define(version: 2019_12_12_215721) do
     t.boolean "announcements_enabled", default: true, null: false
     t.boolean "events_enabled", default: true, null: false
     t.boolean "door_integration_enabled", default: true, null: false
+    t.boolean "rooms_enabled", default: true, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

@@ -31,16 +31,18 @@
       </div>
     </li>
 
-    <li class="list-group-item">
-      <div class="row">
-        <div class="col-1">
-          <%= render "checkbox", checked: current_location.rooms.count > 0 %>
+    <% if policy(:room).enabled? %>
+      <li class="list-group-item">
+        <div class="row">
+          <div class="col-1">
+            <%= render "checkbox", checked: current_location.rooms.count > 0 %>
+          </div>
+          <div class="col">
+            <%= link_to "Add reservable conference and/or phone rooms", new_room_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
+          </div>
         </div>
-        <div class="col">
-          <%= link_to "Add reservable conference and/or phone rooms", new_room_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
-        </div>
-      </div>
-    </li>
+      </li>
+    <% end %>
 
     <% if policy(:door).enabled? %>
       <li class="list-group-item">

@@ -158,8 +158,9 @@ Rails.application.routes.draw do
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements
-      get :events
       get :door_integration
+      get :events
+      get :rooms
     end
   end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do

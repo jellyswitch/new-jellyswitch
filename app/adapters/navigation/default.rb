@@ -33,10 +33,19 @@ class Navigation::Default < SimpleDelegator
     if policy(:event).enabled?
       items << {title: "What's Happening?", path: events_path}
     end
+
     [
       {title: "Members & Groups", path: members_groups_path},
-      {title: "Offices & Leases", path: offices_path},
-      {title: "Rooms & Reservations", path: rooms_path},
+      {title: "Offices & Leases", path: offices_path}
+    ].each do |item|
+      items << item
+    end
+
+    if policy(:room).enabled?
+      items << {title: "Rooms & Reservations", path: rooms_path}
+    end
+
+    [
       {title: "Plans & Day Passes", path: plans_day_passes_path},
       {title: "Invoices & Expenses", path: accounting_index_path},
       {title: "Data", path: reports_path},
@@ -67,11 +76,11 @@ class Navigation::Default < SimpleDelegator
     end
     
     if user.allowed_in?(location) && user.approved?
-      if location.rooms.visible.count > 0
+      if policy(:room).enabled? && location.rooms.visible.count > 0
         items << {title: "Reserve a room", path: rooms_path}
       end
 
-      if location.doors.count > 0
+      if policy(:door_integration).enabled? && location.doors.count > 0
         items << {title: "Building Access", path: keys_doors_path}
       end
     end
@@ -113,13 +122,13 @@ class Navigation::Default < SimpleDelegator
 
     if policy(:door).enabled? && location.doors.count > 0
       items << {title: "Building Access", path: keys_doors_path}
-    else
-      if location.rooms.visible.count > 0
-        items << {title: "Reserve a room", path: rooms_path}
-      else
-        items << {title: "My Account", path: user_path(user)}
-      end
     end
+
+    if policy(:room).enabled? && location.rooms.visible.count > 0
+      items << {title: "Reserve a room", path: rooms_path}
+    end
+
+    items << {title: "My Account", path: user_path(user)}
     items
   end
 

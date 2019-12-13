@@ -1,11 +1,11 @@
 # typed: true
 class RoomPolicy < ApplicationPolicy
   def index?
-    is_user?
+    enabled? && is_user?
   end
 
   def show?
-    if record.rentable?
+    enabled && if record.rentable?
       is_user?
     else
       admin? || 
@@ -14,18 +14,22 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def new?
-    admin?
+    enabled? && admin?
   end
 
   def create?
-    admin?
+    enabled? && admin?
   end
 
   def edit?
-    admin?
+    enabled? && admin?
   end
 
   def update?
-    admin?
+    enabled? && admin?
+  end
+
+  def enabled?
+    operator.rooms_enabled?
   end
 end
