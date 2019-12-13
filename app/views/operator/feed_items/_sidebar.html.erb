@@ -39,17 +39,19 @@
     <h5>What's Happening?</h5>  
   </li>
 
-  <%= link_to today_reservations_path, class: "list-group-item list-group-item-action m-0" do %>
-    <div class="row">
-      <div class="col-lg-10 col-11">
-        <i class="fas fa-briefcase mt-2"></i>
-        &nbsp;
-        <%= @reservations %> reservations today
+  <% if policy(:room).enabled? %>
+    <%= link_to today_reservations_path, class: "list-group-item list-group-item-action m-0" do %>
+      <div class="row">
+        <div class="col-lg-10 col-11">
+          <i class="fas fa-briefcase mt-2"></i>
+          &nbsp;
+          <%= @reservations %> reservations today
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
       </div>
-      <div class="col-1">
-        <i class="fas fa-chevron-right"></i>
-      </div>
-    </div>
+    <% end %>
   <% end %>
 
   <% if @users.count > 0 %>
@@ -101,29 +103,31 @@
     <% end %>
   <% end %>
 
-  <% if @events.count > 0 %>
-    <% @events.each do |event| %>
-      <%= link_to event_path(event), class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-        <i class="far fa-calendar-alt"></i>
-        &nbsp;
-        <%= event.title %>
-        &nbsp;
-        <strong class="text-danger"><%= render "operator/events/timestamp", event: event %></strong>
+  <% if policy(:event).enabled? %>
+    <% if @events.count > 0 %>
+      <% @events.each do |event| %>
+        <%= link_to event_path(event), class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
+          <i class="far fa-calendar-alt"></i>
+          &nbsp;
+          <%= event.title %>
+          &nbsp;
+          <strong class="text-danger"><%= render "operator/events/timestamp", event: event %></strong>
+        <% end %>
       <% end %>
     <% end %>
-  <% end %>
 
-  <%= link_to events_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
-    <div class="row">
-      <div class="col-lg-10 col-11">
-        <div class="text-center">
-          View all events
+    <%= link_to events_path, class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
+      <div class="row">
+        <div class="col-lg-10 col-11">
+          <div class="text-center">
+            View all events
+          </div>
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
         </div>
       </div>
-      <div class="col-1">
-        <i class="fas fa-chevron-right"></i>
-      </div>
-    </div>
+    <% end %>
   <% end %>
 
 <% end %>
@@ -133,10 +137,13 @@
     <div class="modal-content">
       <div class="modal-body">
         <div class="list-group list-group-flush">
-          <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-briefcase"></i>
-            &nbsp;
-            Reserve a room
+
+          <% if policy(:room).enabled? %>
+            <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-briefcase"></i>
+              &nbsp;
+              Reserve a room
+            <% end %>
           <% end %>
 
           <%= link_to new_feed_item_path, class: "list-group-item list-group-item-action" do %>
@@ -145,7 +152,7 @@
             Post a management note
           <% end %>
 
-          <% if current_tenant.announcements_enabled? %>
+          <% if policy(:announcement).enabled? %>
             <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
               <i class="fas fa-bullhorn"></i>
               &nbsp;

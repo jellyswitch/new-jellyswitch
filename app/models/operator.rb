@@ -153,8 +153,8 @@ class Operator < ApplicationRecord
   def onboarded?
     plans.count > 0 &&
     day_pass_types.count > 0 &&
-    rooms.count > 0 &&
-    ((door_integration_enabled? && doors.count > 0) || locations.all? {|l| l.building_access_instructions.present? }) &&
+    ((rooms_enabled? && rooms.count > 0) || true ) &&
+    (((door_integration_enabled? && doors.count > 0) || true) || locations.all? {|l| l.building_access_instructions.present? }) &&
     users.members.count > 0
   end
 
