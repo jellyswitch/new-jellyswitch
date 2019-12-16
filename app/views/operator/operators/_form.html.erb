@@ -81,16 +81,6 @@
     <%- end %>
   </div>
 
-  <div class="form-group">
-    <%= f.label "Approval Required" %>
-    <%= f.check_box :approval_required, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label "Require check-in (even for day passers and members?)" %>
-    <%= f.check_box :checkin_required, class: "form-control" %>
-  </div>
-
   <div class="form-group custom-file mb-3">
     <label class="custom-file-label" for="customFile">Upload Terms of Service</label>
     <%= f.file_field :terms_of_service, placeholder: "Terms of Service", class: "custom-file-input" %>

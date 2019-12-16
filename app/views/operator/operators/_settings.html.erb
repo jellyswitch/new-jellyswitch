@@ -1,6 +1,20 @@
-<%= wide_card do %>
+<%= list_item do %>
   <h4 class="display-4 text-center">Global Settings</h4>
 
+  <h5>Configuration</h5>
+  <dl>
+    <%= render(OnOffSwitch, predicate: operator.approval_required?, path: operator_operator_approval_required_path(operator)) do %>
+      Approval required for new members
+    <% end %>
+
+    <%= render(OnOffSwitch, predicate: operator.checkin_required?, path: operator_operator_checkin_required_path(operator)) do %>
+      Require check-in (even for day passers and members)
+    <% end %>
+
+  </dl>
+
+  <hr />
+  <h5>About</h5>
   <dl>
     <dt>Name</dt>
     <dd><%= operator.name %></dd>
@@ -43,18 +57,12 @@
       <%- if operator.production? %>
         <pre><%= operator.stripe_user_id %></pre>
       <%- else %>
-        <%= link_to "Connect with Stripe", stripe_oauth_url(operator), class: "btn btn-sm btn-primary" %>
+        <i>Not set. Enable Billing & Payments in Modules</i>
       <%- end %>
     </dd>
 
     <dt>Subdomain</dt>
     <dd><pre><%= operator.subdomain %></pre></dd>
-
-    <dt>Approval required for new members</dt>
-    <dd><%= boolean_to_yesno(operator.approval_required) %></dd>
-
-    <dt>Require check-in (even for day passers and members?)</dt>
-    <dd><%= boolean_to_yesno(operator.checkin_required?) %></dd>
 
     <dt>iOS App Store Link</dt>
     <dd>

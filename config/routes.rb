@@ -209,6 +209,8 @@ Rails.application.routes.draw do
     get :payment_method, to: "operator/organizations#payment_method"
   end
   resources :operators, as: :operator_operators, controller: "operator/operators" do
+    get :approval_required, to: "operator/operators#approval_required"
+    get :checkin_required, to: "operator/operators#checkin_required"
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
   end
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
