@@ -57,7 +57,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:office).enabled?, path: offices_modules_path) do %>
+          <%= render(OnOffSwitch, predicate: policy(:office).enabled?, path: offices_modules_path, disabled: !policy(:payment).enabled? ) do %>
             Offices & Lease Management
           <% end %>
         </div>
