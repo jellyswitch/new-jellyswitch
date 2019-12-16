@@ -23,6 +23,11 @@
 <hr />
 <h5>Configuration</h5>
 <dl>
+
+  <%= render(OnOffSwitch, predicate: location.visible?, path: location_visible_path(location)) do %>
+    Visible to users
+  <% end %>
+
   <%= render(OnOffSwitch, predicate: location.allow_hourly?, path: location_allow_hourly_path(location)) do %>
     Allow hourly check-ins and check-outs
   <% end %>
@@ -31,10 +36,10 @@
     <dt>Hourly rate</dt>
     <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
   <% end %>
-  
-  <dt>Automatically provision free day passes to new users?</dt>
-  <dd><%= boolean_to_yesno(location.new_users_get_free_day_pass?) %></dd>
 
+  <%= render(OnOffSwitch, predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location)) do %>
+    Automatically provision free day passes to new users
+  <% end %>
 
   <dt>Working Hours</dt>
   <dd>
@@ -84,9 +89,6 @@
 
   <dt>Time Zone</dt>
   <dd><%= location.time_zone %></dd>
-
-  <dt>Visible?</dt>
-  <dd><%= boolean_to_yesno(location.visible) %></dd>
 
   <dt>Background</dt>
   <dd>

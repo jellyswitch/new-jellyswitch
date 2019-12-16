@@ -27,4 +27,12 @@ class LocationPolicy < ApplicationPolicy
   def allow_hourly?
     admin?
   end
+
+  def new_users_get_free_day_pass?
+    admin?
+  end
+
+  def visible?
+    admin?
+  end
 end

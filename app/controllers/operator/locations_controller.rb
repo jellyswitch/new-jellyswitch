@@ -73,6 +73,30 @@ class Operator::LocationsController < Operator::BaseController
     turbolinks_redirect(location_path(@location), action: "replace")
   end
 
+  def new_users_get_free_day_pass
+    find_location(:location_id)
+    authorize @location
+    result = ToggleValue.call(object: @location, value: :new_users_get_free_day_pass)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(location_path(@location), action: "replace")
+  end
+
+  def visible
+    find_location(:location_id)
+    authorize @location
+    result = ToggleValue.call(object: @location, value: :visible)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(location_path(@location), action: "replace")
+  end
+
   private
 
   def find_location(key=:id)
