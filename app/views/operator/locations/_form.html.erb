@@ -11,20 +11,12 @@
     <%= f.text_area :snippet, placeholder: "Description", class: "form-control" %>
   </div>
 
-  <div class="form-group">
-    <%= f.label :allow_hourly, "Allow check-ins and check-outs at an hourly rate?" %>
-    <%= f.check_box :allow_hourly, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :hourly_rate_in_cents %>
-    <%= f.number_field :hourly_rate_in_cents, placeholder: "300", class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label :new_users_get_free_day_pass, "Automatically provision free day passes to new users??" %>
-    <%= f.check_box :new_users_get_free_day_pass, class: "form-control" %>
-  </div>
+  <% if location.allow_hourly? %>
+    <div class="form-group">
+      <%= f.label :hourly_rate_in_cents %>
+      <%= f.number_field :hourly_rate_in_cents, placeholder: "300", class: "form-control" %>
+    </div>
+  <% end %>
 
   <div class="form-group">
     <%= f.label :contact_name, "Contact Name (for members)" %>
@@ -100,11 +92,6 @@
   <div class="form-group">
     <%= f.label :time_zone %>
     <%= f.time_zone_select(:time_zone, nil, {},  {class: "form-control form-control-sm"}) %>
-  </div>
-
-  <div class="form-group">
-    <%= f.label "Visible?" %>
-    <%= f.check_box :visible, class: "form-control" %>
   </div>
 
   <div class="form-group">

@@ -1,26 +1,5 @@
 <h4 class="display-4 text-center mt-3"><%= location.name %> Settings</h4>
 
-<h5>About</h5>
-
-<dl>
-  <dt>Name</dt>
-  <dd><%= location.name %></dd>
-
-  <dt>Homepage description</dt>
-  <dd><%= simple_format(location.snippet) %></dd>
-
-  <dt>Contact Name (for members)</dt>
-  <dd><%= location.contact_name %></dd>
-
-  <dt>Contact email (for members)</dt>
-  <dd><%= location.contact_email %></dd>
-
-  <dt>Contact phone (for members)</dt>
-  <dd><%= location.contact_phone %></dd>
-
-</dl>
-
-<hr />
 <h5>Configuration</h5>
 <dl>
 
@@ -42,6 +21,26 @@
       Automatically provision free day passes to new users
     <% end %>
   <% end %>
+</dl>
+
+<hr />
+<h5>About</h5>
+
+<dl>
+  <dt>Name</dt>
+  <dd><%= location.name %></dd>
+
+  <dt>Homepage description</dt>
+  <dd><%= simple_format(location.snippet) %></dd>
+
+  <dt>Contact Name (for members)</dt>
+  <dd><%= location.contact_name %></dd>
+
+  <dt>Contact email (for members)</dt>
+  <dd><%= location.contact_email %></dd>
+
+  <dt>Contact phone (for members)</dt>
+  <dd><%= location.contact_phone %></dd>
 
   <dt>Working Hours</dt>
   <dd>
