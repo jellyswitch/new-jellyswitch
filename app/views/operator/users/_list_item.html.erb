@@ -11,22 +11,24 @@
     <div class="col">
       <p class="mb-1 pt-2">
         <%= user.name %>
-        <% if user.member_at_operator?(current_tenant) %>
-          <% if user.has_active_subscription? %>
-            <span class="badge badge-success">Member</span>
+        <% if policy(:payment).enabled? %>
+          <% if user.member_at_operator?(current_tenant) %>
+            <% if user.has_active_subscription? %>
+              <span class="badge badge-success">Member</span>
+            <% end %>
+
+            <% if user.has_active_day_pass? %>
+              <span class="badge badge-primary">Day Pass</span>
+            <% end %>
+
+            <% if user.has_active_lease? %>
+              <span class="badge badge-info">Office Lease</span>
+            <% end %>
           <% end %>
 
-          <% if user.has_active_day_pass? %>
-            <span class="badge badge-primary">Day Pass</span>
+          <% if user.pending? %>
+            <span class="badge badge-warning">Pending Member</span>
           <% end %>
-
-          <% if user.has_active_lease? %>
-            <span class="badge badge-info">Office Lease</span>
-          <% end %>
-        <% end %>
-
-        <% if user.pending? %>
-          <span class="badge badge-warning">Pending Member</span>
         <% end %>
       </p>
     </div>
