@@ -7,16 +7,6 @@ class Operators::FinishStripeConnect
     operator = context.operator
     webhook_url = context.webhook_url
 
-    # Cancel subscriptions
-    operator.plans.each do |plan|
-      plan.subscriptions.each do |sub|
-        result = CancelSubscription.call(subscription: sub)
-        if !result.success?
-          context.fail!(message: result.message)
-        end
-      end
-    end
-
     # Store credentials
     response = HTTParty.post("https://connect.stripe.com/oauth/token", 
       query: {
