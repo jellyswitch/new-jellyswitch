@@ -31,7 +31,7 @@ module LandingHelper
   end
 
   def home_redirect
-    if current_location.present? && current_user.allowed_in?(current_location)
+    if current_location.present? && (current_user.allowed_in?(current_location) || (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking"))
       if !approved? && !admin?
         redirect_to wait_path
       else

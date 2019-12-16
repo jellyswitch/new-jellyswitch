@@ -3,39 +3,39 @@ class InvoicePolicy < ApplicationPolicy
   include PolicyHelpers
 
   def index?
-    admin?
+    admin? && billing_enabled?
   end
   
   def due?
-    admin?
+    admin? && billing_enabled?
   end
 
   def recent?
-    admin?
+    admin? && billing_enabled?
   end
 
   def delinquent?
-    admin?
+    admin? && billing_enabled?
   end
 
   def charge?
-    admin? && card_added?
+    admin? && card_added? && billing_enabled?
   end
 
   def groups?
-    admin?
+    admin? && billing_enabled?
   end
 
   def open?
-    admin?
+    admin? && billing_enabled?
   end
 
   def new?
-    admin?
+    admin? && billing_enabled?
   end
 
   def create?
-    admin?
+    admin? && billing_enabled?
   end
 
   private

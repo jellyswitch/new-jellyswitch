@@ -34,6 +34,14 @@ module PolicyHelpers
     admin? && (user.operator_id == record.id)
   end
 
+  def billing_disabled?
+    !billing_enabled?
+  end
+
+  def billing_enabled?
+    operator.production? || operator.subdomain == "southlakecoworking"
+  end
+
   def owner_or_admin?
     raise "Use individual permission predicates instead"
   end

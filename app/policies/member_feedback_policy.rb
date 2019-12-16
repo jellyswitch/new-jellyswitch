@@ -1,11 +1,11 @@
 # typed: true
 class MemberFeedbackPolicy < ApplicationPolicy
   def new?
-    true
+    is_user?
   end
 
   def create?
-    true
+    is_user?
   end
 
   def index?
