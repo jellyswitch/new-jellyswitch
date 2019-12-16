@@ -20,7 +20,12 @@
       <div class="row">
         <div class="col">
           <div class="d-flex align-items-center">
-            <%= link_to "#", class: "text-body", data: {toggle: "modal", target: "#stripeModal" } do %>
+            <% if mobile_app_request? %>
+              <% data_attrs = {} %>
+            <% else %>
+              <% data_attrs = {toggle: "modal", target: "#stripeModal" } %>
+            <% end %>
+            <%= link_to "#", class: "text-body", data: data_attrs do %>
               <span style="font-size: 20pt">
                 <% if policy(:payment).enabled? %>
                   <span class="text-success">
@@ -35,6 +40,12 @@
             <% end %>
             &nbsp;
             Billing & Payments
+            <% if !policy(:payment).enabled? &&  mobile_app_request? %>
+              <small class="text-muted">
+                &nbsp;
+                Can only be enabled on the web
+              </small>
+            <% end %>
           </div>
         </div>
       </div>
