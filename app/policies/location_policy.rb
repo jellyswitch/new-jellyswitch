@@ -23,4 +23,8 @@ class LocationPolicy < ApplicationPolicy
   def update?
     admin?
   end
+
+  def allow_hourly?
+    admin?
+  end
 end

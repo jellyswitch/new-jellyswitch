@@ -1,19 +1,13 @@
 <h4 class="display-4 text-center mt-3"><%= location.name %> Settings</h4>
+
+<h5>About</h5>
+
 <dl>
   <dt>Name</dt>
   <dd><%= location.name %></dd>
 
   <dt>Homepage description</dt>
   <dd><%= simple_format(location.snippet) %></dd>
-
-  <dt>Allow hourly check-ins and check-outs?</dt>
-  <dd><%= boolean_to_yesno(location.allow_hourly) %></dd>
-
-  <dt>Hourly rate</dt>
-  <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
-
-  <dt>Automatically provision free day passes to new users?</dt>
-  <dd><%= boolean_to_yesno(location.new_users_get_free_day_pass?) %></dd>
 
   <dt>Contact Name (for members)</dt>
   <dd><%= location.contact_name %></dd>
@@ -23,6 +17,24 @@
 
   <dt>Contact phone (for members)</dt>
   <dd><%= location.contact_phone %></dd>
+
+</dl>
+
+<hr />
+<h5>Configuration</h5>
+<dl>
+  <%= render(OnOffSwitch, predicate: location.allow_hourly?, path: location_allow_hourly_path(location)) do %>
+    Allow hourly check-ins and check-outs
+  <% end %>
+
+  <% if location.allow_hourly? %>
+    <dt>Hourly rate</dt>
+    <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
+  <% end %>
+  
+  <dt>Automatically provision free day passes to new users?</dt>
+  <dd><%= boolean_to_yesno(location.new_users_get_free_day_pass?) %></dd>
+
 
   <dt>Working Hours</dt>
   <dd>

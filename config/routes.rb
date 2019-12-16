@@ -153,7 +153,9 @@ Rails.application.routes.draw do
     end
     get :charge
   end
-  resources :locations, controller: "operator/locations"
+  resources :locations, controller: "operator/locations" do 
+    get :allow_hourly, to: "operator/locations#allow_hourly"
+  end
   resources :member_feedbacks, controller: "operator/member_feedbacks"
   resources :modules, controller: "operator/modules" do
     collection do

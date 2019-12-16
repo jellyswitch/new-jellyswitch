@@ -39,9 +39,13 @@ class Checkins::CreateStripeInvoice
   private
 
   def generate_invoice?
-    !(checkin.user.member?(checkin.location, day= checkin.datetime_in) ||
-      checkin.user.has_active_day_pass? ||
-      checkin.user.has_active_lease? ||
-      checkin.user.admin?)
+    if checkin.user.operator.production? || checkin.user.operator.subdomain == "southlakecoworking"
+      !(checkin.user.member?(checkin.location, day= checkin.datetime_in) ||
+        checkin.user.has_active_day_pass? ||
+        checkin.user.has_active_lease? ||
+        checkin.user.admin?)
+    else
+      false
+    end
   end
 end
