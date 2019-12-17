@@ -1,0 +1,17 @@
+<% title "Onboarding" %>
+
+<%= render "steps", step: 7 %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Just a few quick things to set up your account...</h4>
+  <hr />
+  <div class="row">
+    <div class="col">
+      <%= link_to "Take me to my Jellyswitch", landing_url(subdomain: current_user.operator.subdomain), action: "replace", class: "btn btn-block btn-success" %>
+    </div>
+
+    <div class="col">
+      <%= link_to "Show me what my members will see", home_url(subdomain: current_user.operator.subdomain), class: "btn btn-block btn-info" %>
+    </div>
+  </div>
+<% end %>

@@ -8,7 +8,7 @@ class Onboarding::UpdateOperatorName
     operator = user.operator
     operator.name = operator_name
     operator.subdomain = operator_name.parameterize
-
+    context.operator = operator
     unless operator.save
       context.fail!(message: errors_for(operator))
     end

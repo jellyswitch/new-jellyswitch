@@ -1,0 +1,24 @@
+<% title "Onboarding" %>
+
+<%= render "steps", step: 5 %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Just a few quick things to set up your account...</h4>
+  <hr />
+  <h5>Do you do any of these tasks every day?</h5>
+  <%= form_with(url: create_daily_tasks_onboarding_index_path, method: :post, local: true) do |f| %>
+    <% @tasks.each do |task| %>
+      <div class="form-check">
+        <%= f.check_box task.first, class: "form-check-input" %>
+        <%= f.label task.first, task.last, class: "form-check-label" %>  
+      </div>
+    <% end %>
+
+    <div class="form-group row m-0 mt-3 p-0">
+      <button class="form-control btn btn-primary col" id="submit" data-disable-with="Processing...">
+        Next
+      </button>
+    </div>
+  <% end %>
+
+<% end %>
