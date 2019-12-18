@@ -1,9 +1,11 @@
 <% title "Onboarding" %>
 
-<%= render "steps", step: 2 %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Just a few quick things to set up your account...</h4>
+<%= render(Layout::Freola::FlatIcon, 
+  title: "Let's get started!", 
+  body: "Just a couple things to make your app beautiful...", 
+  footer_text: nil, 
+  footer_link: nil,
+  icon: :group) do %>
   <%= form_with(url: create_user_and_locations_onboarding_index_path, method: :post, remote: true) do |f| %>
     <div class="row mb-3">
       <%= f.text_field :operator_name, placeholder: "Your company name", class: "form-control col" %>
@@ -17,11 +19,15 @@
       <%= f.password_field :password, placeholder: "Create a password here...", class: "form-control col" %>
     </div>
 
-    <div class="form-group custom-file mb-3 mt-3">
-      <label class="custom-file-label" for="customFile">Choose a logo image</label>
-      <%= f.file_field :logo_image, placeholder: "Logo File Path", class: "custom-file-input" %>
+    <div class="row">
+      <div class="form-group custom-file mb-3">
+        <label class="custom-file-label" for="customFile">Upload your logo</label>
+        <%= f.file_field :logo_image, placeholder: "Logo File Path", class: "custom-file-input" %>
+      </div>
     </div>
-
-    <%= f.submit "Next", class: "btn btn-block btn-primary col" %>
+    
+    <div class="row">
+      <%= f.submit "Next", class: "btn btn-block btn-primary" %>
+    </div>
   <% end %>
 <% end %>
