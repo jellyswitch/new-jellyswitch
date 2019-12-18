@@ -1,26 +1,19 @@
 <% title "Onboarding" %>
 
-<%= render "steps", step: 3 %>
-
-<%= wide_card do %>
-  <h4 class="display-4 text-center mt-4">Just a few quick things to set up your account...</h4>
-  <hr />
-  <div class="row">
-    <div class="col text-center">
-      <h5>Do you host events?</h5>
-      <p>
-        Spaces that host events grow faster!
-      </p>
+<section class="fdb-block fp-active" data-block-type="call_to_action" data-id="3" draggable="true">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-md-8 text-center" style="z-index: 10000;">
+        <h1>
+          Do you have any events scheduled?
+        </h1>
+        <p class="mt-5">
+          <%= link_to "Yes, I'll add an event now", add_event_onboarding_index_path, class: "btn btn-primary" %>
+        </p>
+        <p class="mt-2">
+          <%= link_to "Skip this step", daily_tasks_onboarding_index_path, class: "btn btn-secondary" %>
+        </p>
+      </div>
     </div>
   </div>
-
-  <div class="row">
-    <div class="col">
-      <%= link_to "Yes, I'll add an event now", add_event_onboarding_index_path, class: "btn btn-block btn-success" %>
-    </div>
-
-    <div class="col">
-      <%= link_to "Skip this step", daily_tasks_onboarding_index_path, class: "btn btn-block btn-info" %>
-    </div>
-  </div>
-<% end %>
+</section>
