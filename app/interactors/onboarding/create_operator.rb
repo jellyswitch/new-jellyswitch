@@ -6,7 +6,8 @@ class Onboarding::CreateOperator
 
   def call
     operator = Operator.new(
-      name: email
+      name: email,
+      skip_onboarding: true
     )
 
     if operator.save
