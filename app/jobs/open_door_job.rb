@@ -6,7 +6,7 @@ class OpenDoorJob < ApplicationJob
 
   def perform(door, user)
     response = HTTParty.post(url(door), headers: headers(door))
-    DoorPunch.create!(user: user, door: @door, json: response)
+    DoorPunch.create!(user: user, door: door, json: response)
   rescue StandardError => e
     Rollbar.error(e.message)
   end
