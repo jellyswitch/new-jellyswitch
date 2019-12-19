@@ -11,18 +11,16 @@
     <p class="lead text-center"><%= @door.name %></p>
     <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, label: "Punches" %>
     <p>Kisi ID: <pre><%= @door.kisi_id %></pre></p>
-    <table class="table">
-      <tr>
-        <th>When</th>
-        <th>Who</th>
-      </tr>
-      <%- @punches.each do |punch| %>
-        <tr>
-          <td><%= punch.pretty_datetime %></td>
-          <td><%= link_to punch.user.name, user_path(punch.user) %></td>
-        </tr>
-      <%- end %>
-    </table>
+    <% @punches.each do |punch| %>
+      <dl class="row">
+        <dt class="col-lg-6">
+          <%= punch.pretty_datetime %>
+        </dt>
+          <dd class="col">
+            <%= link_to punch.user.name, user_path(punch.user) %>
+          </dd>
+      </dl>
+    <% end %>
     <%== pagy_bootstrap_responsive_nav(@pagy) %>
   <% end %>
 <% end %>
