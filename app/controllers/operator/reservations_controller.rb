@@ -10,11 +10,11 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def choose_day
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
   end
 
   def choose_time_post
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     if params[:day].present?
       @day = Date.parse(params[:day])
     else
@@ -25,7 +25,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def choose_time
     # requires room, day
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     if params[:day].present?
       @day = Date.parse(params[:day])
     else
@@ -35,7 +35,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def choose_duration
     # require room, day, time
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
 
@@ -44,7 +44,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def confirm
     # requires room, day, time, duration
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
@@ -56,7 +56,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def update_billing_and_create_reservation
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
@@ -94,7 +94,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def create_reservation
-    @room = current_tenant.rooms.visible.find(params[:room_id])
+    @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
