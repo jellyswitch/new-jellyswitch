@@ -3,5 +3,6 @@ class Operator::DoorPunchesController < Operator::BaseController
 
   def show
     @door_punch = DoorPunch.find(params[:id])
+    authorize @door_punch
   end
 end
