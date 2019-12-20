@@ -3,6 +3,14 @@
 <%= list_wrapper do %>
   <%= list_item do %>
     <div class="row">
+      <div class="col">
+        <%= line_chart Operator.group_by_month(:created_at).count %>
+      </div>
+    </div>
+  <% end %>
+
+  <%= list_item do %>
+    <div class="row">
       <div class="col-lg-1"></div>
       <div class="col-lg">
         <p class="lead"><%= @production_reports.count + @demo_reports.count %> total instances</p>
