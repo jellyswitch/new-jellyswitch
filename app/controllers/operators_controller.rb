@@ -11,7 +11,7 @@ class OperatorsController < ApplicationController
     @demo_reports = @demo_operators.all.map do |operator|
       Jellyswitch::Report.new(operator)
     end
-
+    
     @production_staff = @production_reports.sum(&:staff_count)
     @demo_staff = @demo_reports.sum(&:staff_count)
   end
