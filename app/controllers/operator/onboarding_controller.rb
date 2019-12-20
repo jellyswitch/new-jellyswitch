@@ -26,7 +26,7 @@ class Operator::OnboardingController < Operator::BaseController
       if params[:add_plan_and_add_another].present?
         turbolinks_redirect(new_membership_plan_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(new_operator_onboarding_path)
+        turbolinks_redirect(feed_items_path, action: "replace")
       end
     else
       render :new_membership_plan
@@ -46,7 +46,7 @@ class Operator::OnboardingController < Operator::BaseController
       if params[:add_day_pass_type_and_add_another].present?
         turbolinks_redirect(new_day_pass_type_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(new_operator_onboarding_path)
+        turbolinks_redirect(feed_items_path, action: "replace")
       end
     else
       flash[:error] = result.message
@@ -66,7 +66,7 @@ class Operator::OnboardingController < Operator::BaseController
       if params[:add_room_and_add_another].present?
         turbolinks_redirect(new_room_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(new_operator_onboarding_path)
+        turbolinks_redirect(feed_items_path, action: "replace")
       end
     else
       render :new_room, status: 422
@@ -88,7 +88,7 @@ class Operator::OnboardingController < Operator::BaseController
       if params[:add_member_and_create_another].present?
         turbolinks_redirect(new_member_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(new_operator_onboarding_path, action: "replace")
+        turbolinks_redirect(feed_items_path, action: "replace")
       end
     else
       flash[:error] = result.message
