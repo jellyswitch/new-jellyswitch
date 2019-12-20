@@ -22,10 +22,14 @@
     <title><%= title || current_tenant.name %></title>
   </head>
 
-  <% if @background_image && @background_image.attached? %>
-    <body style="background-image: url('<%= url_for(@background_image) %>'); background-repeat: no-repeat; background-size: cover;">
+  <% if @background_image %>
+    <% if @background_image.attached? %>
+      <body style="background-image: url('<%= url_for(@background_image) %>'); background-repeat: no-repeat; background-size: cover;">
+    <% else %>
+      <body style="background-color: #dfe9fd;">
+    <% end %>
   <% else %>
-    <body>
+    <body style="background-color: #dfe9fd;">
   <% end %>
     <%= render "layouts/nav_renderer" %>
     <div class="container-fluid" style="min-height: 100vh;">

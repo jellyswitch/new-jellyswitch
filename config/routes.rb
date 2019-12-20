@@ -27,13 +27,15 @@ Rails.application.routes.draw do
         get :new_user
         post :create_user
         get :new_user_info
-        post :create_user_info
-        get :new_location
-        post :create_location
-        get :new_member_info
-        post :create_member_info
-        get :new_images
-        post :create_images
+        post :create_user_and_locations
+        get :choose_events
+        get :add_event
+        post :create_event
+        get :daily_tasks
+        post :create_daily_tasks
+        get :favorite_parts
+        post :create_favorite_parts
+        get :finalize
       end
     end
     resources :operators
@@ -116,6 +118,7 @@ Rails.application.routes.draw do
       get "keys", to: "operator/doors#keys"
     end
   end
+  resources :door_punches, controller: "operator/door_punches"
   resources :events, controller: "operator/events" do
     collection do
       get :past, to: "operator/events#past"

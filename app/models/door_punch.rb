@@ -4,6 +4,7 @@
 # Table name: door_punches
 #
 #  id          :bigint(8)        not null, primary key
+#  json        :jsonb
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  door_id     :integer
