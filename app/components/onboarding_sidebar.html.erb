@@ -21,7 +21,7 @@
       <% end %>
     <% end %>
 
-    <% if operator.day_pass_types.count < 1 %>
+    <% if show_day_pass_types? %>
       <%= link_to new_day_pass_type_operator_onboarding_index_path, class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">
@@ -36,7 +36,7 @@
       <% end %>
     <% end %>
 
-    <% if location.rooms.count < 1 %>
+    <% if show_rooms? %>
       <%= link_to new_room_operator_onboarding_index_path, class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">
@@ -51,7 +51,7 @@
       <% end %>
     <% end %>
 
-    <% if location.doors.count < 1 %>
+    <% if show_doors? %>
       <%= link_to new_kisi_operator_onboarding_index_path, class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">
@@ -66,7 +66,7 @@
       <% end %>
     <% end %>
 
-    <% if operator.users.members.count < 1 %>
+    <% if show_members? %>
       <%= link_to add_members_operator_onboarding_index_path, class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">
@@ -94,7 +94,6 @@
     <% end %>
 
     <%= render "shared/stripe_connect_modal" %>
-
 
     <small class="list-group-item">After you connect a Stripe account, you can sell memberships, day passes, and more!</small>
   <% end %>
