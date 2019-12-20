@@ -1,1 +1,1 @@
-rvm use 2.5.1@bristlecone --create
+rvm use 2.5.7@bristlecone --create
