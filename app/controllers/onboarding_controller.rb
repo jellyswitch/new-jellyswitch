@@ -25,7 +25,8 @@ class  OnboardingController < ApplicationController
       user: current_user,
       name: params[:name],
       password: params[:password],
-      operator_name: params[:operator_name]
+      operator_name: params[:operator_name],
+      logo: params[:logo_image]
     )
 
     if result.success?

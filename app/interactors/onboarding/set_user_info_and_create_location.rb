@@ -4,5 +4,6 @@ class Onboarding::SetUserInfoAndCreateLocation
   organize(
     Onboarding::SetUserInfo,
     Onboarding::CreateDerivedLocation,
+    Onboarding::UploadLogo
   )
 end
