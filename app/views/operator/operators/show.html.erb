@@ -5,4 +5,6 @@
   <li class="breadcrumb-item active" aria-current="page">Customize Jellyswitch</li>
 <% end %>
 
-<%= render "settings", operator: @operator %>
+<%= render(Layout::FullWidth) do %>
+  <%= render "settings", operator: @operator %>
+<% end %>

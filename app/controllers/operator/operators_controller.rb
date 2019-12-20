@@ -53,6 +53,28 @@ class Operator::OperatorsController < Operator::BaseController
     turbolinks_redirect(referrer_or_root)
   end
 
+  def approval_required
+    find_operator
+    result = ToggleValue.call(object: @operator, value: :approval_required)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
+  end
+
+  def checkin_required
+    find_operator
+    result = ToggleValue.call(object: @operator, value: :checkin_required)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
+  end
+
   private
 
   def find_operator

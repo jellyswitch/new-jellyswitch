@@ -1,50 +1,50 @@
 # typed: true
 class PlanPolicy < ApplicationPolicy
   def index?
-    admin?
+    admin? && billing_enabled?
   end
 
   def archived?
-    admin?
+    admin? && billing_enabled?
   end
 
   def show?
-    admin?
+    admin? && billing_enabled?
   end
 
   def edit?
-    admin?
+    admin? && billing_enabled?
   end
 
   def new?
-    admin?
+    admin? && billing_enabled?
   end
 
   def create?
-    admin?
+    admin? && billing_enabled?
   end
 
   def update?
-    admin?
+    admin? && billing_enabled?
   end
 
   def destroy?
-    admin?
+    admin? && billing_enabled?
   end
 
   def unarchive?
-    admin?
+    admin? && billing_enabled?
   end
 
   def toggle_visibility?
-    admin?
+    admin? && billing_enabled?
   end
 
   def toggle_availability?
-    admin?
+    admin? && billing_enabled?
   end
 
   def toggle_building_access?
-    admin?
+    admin? && billing_enabled?
   end
 end

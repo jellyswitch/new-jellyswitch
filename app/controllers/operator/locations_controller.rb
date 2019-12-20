@@ -61,10 +61,46 @@ class Operator::LocationsController < Operator::BaseController
     end
   end
 
+  def allow_hourly
+    find_location(:location_id)
+    authorize @location
+    result = ToggleValue.call(object: @location, value: :allow_hourly)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(location_path(@location), action: "replace")
+  end
+
+  def new_users_get_free_day_pass
+    find_location(:location_id)
+    authorize @location
+    result = ToggleValue.call(object: @location, value: :new_users_get_free_day_pass)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(location_path(@location), action: "replace")
+  end
+
+  def visible
+    find_location(:location_id)
+    authorize @location
+    result = ToggleValue.call(object: @location, value: :visible)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(location_path(@location), action: "replace")
+  end
+
   private
 
-  def find_location
-    @location = Location.find(params[:id])
+  def find_location(key=:id)
+    @location = Location.find(params[key])
   end
 
   def setup_hours

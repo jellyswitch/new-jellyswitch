@@ -1,35 +1,35 @@
 # typed: true
 class DoorPolicy < ApplicationPolicy
   def index?
-    admin?
+    enabled? && admin?
   end
 
   def show?
-    admin?
+    enabled? && admin?
   end
 
   def new?
-    admin?
+    enabled? && admin?
   end
 
   def create?
-    admin?
+    enabled? && admin?
   end
 
   def update?
-    admin?
+    enabled? && admin?
   end
 
   def edit?
-    admin?
+    enabled? && admin?
   end
 
   def open?
-    admin? || (user.allowed_in?(location) && approved?)
+    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
   end
 
   def keys?
-    admin? || (user.allowed_in?(location) && approved?)
+    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
   end
 
   def enabled?

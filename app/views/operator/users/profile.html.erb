@@ -85,43 +85,45 @@
         </div>
       <% end %>
 
-      <%= link_to user_payment_method_path(@user), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-credit-card"></i>
-            &nbsp;
-            Update payment method
+      <% if policy(:payment).enabled? %>
+        <%= link_to user_payment_method_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-credit-card"></i>
+              &nbsp;
+              Update payment method
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
-      <% end %>
+        <% end %>
 
-      <%= link_to user_membership_path(@user), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-users"></i>
-            &nbsp;
-            Membership
+        <%= link_to user_membership_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-users"></i>
+              &nbsp;
+              Membership
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
-      <% end %>
+        <% end %>
 
-      <%= link_to user_admin_day_passes_path(@user), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-ticket-alt"></i>
-            &nbsp;
-            Day Passes
+        <%= link_to user_admin_day_passes_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-ticket-alt"></i>
+              &nbsp;
+              Day Passes
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
+        <% end %>
       <% end %>
 
       <%= link_to user_checkins_path(@user), class: "list-group-item list-group-item-action m-0" do %>
@@ -151,19 +153,22 @@
         </div>
       <% end %>
 
-      <%= link_to user_admin_invoices_path(@user), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-dollar-sign"></i>
-            &nbsp;
-            &nbsp;
-            Invoices
+      <% if policy(:payment).enabled? %>
+        <%= link_to user_admin_invoices_path(@user), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-dollar-sign"></i>
+              &nbsp;
+              &nbsp;
+              Invoices
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
+        <% end %>
       <% end %>
+
     <% end %>
   </div>
   <div class="col-lg-3"></div>
@@ -175,29 +180,31 @@
     <div class="modal-content">
       <div class="modal-body">
         <div class="list-group list-group-flush">
-          <%= render(Buttons::NewInvoice, user: @user, classes: "list-group-item list-group-item-action") do %>
-            <i class="fas fa-dollar-sign"></i>
-            &nbsp;
-            Create new invoice
-          <% end %>
-
-          <%= render(Buttons::NewDayPass, user: @user, classes: "list-group-item list-group-item-action") do %>
-            <i class="fas fa-ticket-alt"></i>
-            &nbsp;
-            Add a day pass
-          <% end %>
-
-          <% if @user.has_active_subscription? %>
-            <%= link_to subscription_path(@user.subscriptions.active.first), method: :delete, remote: true, class: "list-group-item list-group-item-action" do %>
-              <i class="fas fa-times"></i>
+          <% if policy(:payment).enabled? %>
+            <%= render(Buttons::NewInvoice, user: @user, classes: "list-group-item list-group-item-action") do %>
+              <i class="fas fa-dollar-sign"></i>
               &nbsp;
-              Cancel membership
+              Create new invoice
             <% end %>
-          <% else %>
-            <%= render(Buttons::NewMembership, user: @user, classes: "list-group-item list-group-item-action") do %>
-              <i class="fas fa-users"></i>
+
+            <%= render(Buttons::NewDayPass, user: @user, classes: "list-group-item list-group-item-action") do %>
+              <i class="fas fa-ticket-alt"></i>
               &nbsp;
-              Add a membership
+              Add a day pass
+            <% end %>
+
+            <% if @user.has_active_subscription? %>
+              <%= link_to subscription_path(@user.subscriptions.active.first), method: :delete, remote: true, class: "list-group-item list-group-item-action" do %>
+                <i class="fas fa-times"></i>
+                &nbsp;
+                Cancel membership
+              <% end %>
+            <% else %>
+              <%= render(Buttons::NewMembership, user: @user, classes: "list-group-item list-group-item-action") do %>
+                <i class="fas fa-users"></i>
+                &nbsp;
+                Add a membership
+              <% end %>
             <% end %>
           <% end %>
 

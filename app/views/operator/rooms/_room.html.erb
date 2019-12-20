@@ -23,7 +23,7 @@
         <div class="row">
           <span class="text-dark">Seats <strong><%= room.capacity %></strong> people</span>
         </div>
-        <% if room.rentable? %>
+        <% if room.rentable? && policy(:payment).enabled? %>
           <div class="row">
             <span class="text-dark">Available for <%= number_to_currency(room.hourly_rate_in_cents.to_f / 100.0) %> / hr</span>
           </div>

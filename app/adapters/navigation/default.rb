@@ -44,9 +44,16 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Rooms & Reservations", path: rooms_path}
     end
 
+    if policy(:payment).enabled?
+      [
+        {title: "Plans & Day Passes", path: plans_day_passes_path},
+        {title: "Invoices & Expenses", path: accounting_index_path}
+      ].each do |item|
+        items << item
+      end
+    end
+
     [
-      {title: "Plans & Day Passes", path: plans_day_passes_path},
-      {title: "Invoices & Expenses", path: accounting_index_path},
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(user)},

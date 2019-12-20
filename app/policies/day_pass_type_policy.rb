@@ -1,11 +1,11 @@
 # typed: true
 class DayPassTypePolicy < ApplicationPolicy
   def index?
-    admin?
+    admin? && billing_enabled?
   end
 
   def show?
-    admin?
+    admin? && billing_enabled?
   end
 
   def edit?
@@ -13,18 +13,18 @@ class DayPassTypePolicy < ApplicationPolicy
   end
 
   def new?
-    admin?
+    admin? && billing_enabled?
   end
 
   def create?
-    admin?
+    admin? && billing_enabled?
   end
 
   def update?
-    admin?
+    admin? && billing_enabled?
   end
 
   def destroy?
-    admin?
+    admin? && billing_enabled?
   end
 end

@@ -81,7 +81,7 @@ class Operator::LandingController < Operator::BaseController
     if !logged_in?
       redirect_to root_path
     else
-      if (current_user.member?(current_location) && approved?) || admin?
+      if (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking") || (current_user.member?(current_location) && approved?) || admin?
         redirect_to home_path
       end
     end

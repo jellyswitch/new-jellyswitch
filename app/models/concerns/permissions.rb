@@ -18,15 +18,23 @@ module Permissions
   end
 
   def should_charge_for_reservation?(location)
-    !(member?(location) || has_active_day_pass? || has_active_lease? || admin?)
+    if operator.production? || operator.subdomain == "southlakecoworking"
+      !(member?(location) || has_active_day_pass? || has_active_lease? || admin?)
+    else
+      false
+    end
   end
 
   def can_see_all_rooms?(location)
-    member?(location) ||
-    has_active_day_pass? ||
-    checked_in?(location) ||
-    has_active_lease? ||
-    admin?
+    if operator.production? || operator.subdomain == "southlakecoworking"
+      member?(location) ||
+      has_active_day_pass? ||
+      checked_in?(location) ||
+      has_active_lease? ||
+      admin?
+    else
+      true
+    end
   end
 
   def has_rsvp?

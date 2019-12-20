@@ -58,31 +58,33 @@
         </div>
       <% end %>
 
-      <%= link_to organization_invoices_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-dollar-sign"></i>
-            &nbsp;
-            &nbsp;
-            Invoices
+      <% if policy(:payment).enabled? %>
+        <%= link_to organization_invoices_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-dollar-sign"></i>
+              &nbsp;
+              &nbsp;
+              Invoices
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
-      <% end %>
+        <% end %>
 
-      <%= link_to organization_payment_method_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
-        <div class="row">
-          <div class="col-lg-10 col-11">
-            <i class="fas fa-credit-card"></i>
-            &nbsp;
-            Update payment method
+        <%= link_to organization_payment_method_path(@organization), class: "list-group-item list-group-item-action m-0" do %>
+          <div class="row">
+            <div class="col-lg-10 col-11">
+              <i class="fas fa-credit-card"></i>
+              &nbsp;
+              Update payment method
+            </div>
+            <div class="col-1">
+              <i class="fas fa-chevron-right"></i>
+            </div>
           </div>
-          <div class="col-1">
-            <i class="fas fa-chevron-right"></i>
-          </div>
-        </div>
+        <% end %>
       <% end %>
 
       <% if policy(:office).enabled? %>

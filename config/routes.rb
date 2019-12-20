@@ -27,13 +27,15 @@ Rails.application.routes.draw do
         get :new_user
         post :create_user
         get :new_user_info
-        post :create_user_info
-        get :new_location
-        post :create_location
-        get :new_member_info
-        post :create_member_info
-        get :new_images
-        post :create_images
+        post :create_user_and_locations
+        get :choose_events
+        get :add_event
+        post :create_event
+        get :daily_tasks
+        post :create_daily_tasks
+        get :favorite_parts
+        post :create_favorite_parts
+        get :finalize
       end
     end
     resources :operators
@@ -154,7 +156,11 @@ Rails.application.routes.draw do
     end
     get :charge
   end
-  resources :locations, controller: "operator/locations"
+  resources :locations, controller: "operator/locations" do 
+    get :allow_hourly, to: "operator/locations#allow_hourly"
+    get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
+    get :visible, to: "operator/locations#visible"
+  end
   resources :member_feedbacks, controller: "operator/member_feedbacks"
   resources :modules, controller: "operator/modules" do
     collection do
@@ -206,6 +212,8 @@ Rails.application.routes.draw do
     get :payment_method, to: "operator/organizations#payment_method"
   end
   resources :operators, as: :operator_operators, controller: "operator/operators" do
+    get :approval_required, to: "operator/operators#approval_required"
+    get :checkin_required, to: "operator/operators#checkin_required"
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
   end
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"

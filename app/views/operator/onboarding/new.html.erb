@@ -73,7 +73,3 @@
   </div>
   </div>
 <% end %>
-
-<% if current_tenant.demo? && current_tenant.subdomain != "southlakecoworking" %>
-  <%= render "shared/stripe_connect_modal" %>
-<% end %>
