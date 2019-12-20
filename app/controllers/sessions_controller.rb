@@ -30,7 +30,7 @@ class SessionsController < ApplicationController
     email = session[:email]
 
     users = User.where(email: email, superadmin: false, admin: true)
-    @operators = users.map(&:operator)
+    @operators = users.collect(&:operator).uniq.compact
   end
 
   def password_form
