@@ -4,6 +4,10 @@ class OperatorsController < ApplicationController
     find_operators
     authorize @production_operators
 
+    @all_reports = @operators.all.map do |operator|
+      Jellyswitch::Report.new(operator)
+    end
+
     @production_reports = @production_operators.all.map do |operator|
       Jellyswitch::Report.new(operator)
     end
@@ -60,6 +64,7 @@ class OperatorsController < ApplicationController
   private
 
   def find_operators
+    @operators = Operator.order("created_at DESC").all
     @production_operators = Operator.production.order("created_at ASC").all
     @demo_operators = Operator.demo.order("created_at ASC").all
   end
