@@ -70,7 +70,7 @@ class Operator::DoorsController < Operator::BaseController
     find_door(:door_id)
     authorize @door
     log_door_punch
-    OpenDoorJob.perform_later(@door)
+    OpenDoorJob.perform_later(@door, current_user)
     response.headers["Turbolinks-Location"] = home_url
     redirect_to home_path
   end
