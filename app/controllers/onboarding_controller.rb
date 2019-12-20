@@ -73,7 +73,7 @@ class  OnboardingController < ApplicationController
       key = task.first
       if params[key].to_i == 1
         CreatePostFeedItem.call(
-          blob: { text: task.last, type: "post" },
+          blob: { text: task[1], type: "post" },
           user: current_user,
           operator: current_user.operator,
           photos: []
@@ -110,15 +110,15 @@ class  OnboardingController < ApplicationController
   
   def possible_tasks
     [
-      [:lights_music, "Turn on the lights and select music for the common area"],
-      [:run_dishwasher, "Run the dishwasher"],
-      [:take_out_trash, "Take out the trash"],
-      [:restock_snacks, "Restock snacks and drinks"],
-      [:make_coffee, "Make a fresh pot of coffee"],
-      [:give_tour, "Give a tour"],
-      [:deliver_packages, "Deliver packages"],
-      [:pay_bills, "Pay the bills"],
-      [:adjust_heater, "Adjust the heater / AC"]
+      [:lights_music, "Turned on the lights and started music in the common area", "Turn on the lights and select music for the common area"],
+      [:run_dishwasher, "Ran the dishwasher", "Run the dishwasher"],
+      [:take_out_trash, "Took the trash out", "Take out the trash"],
+      [:restock_snacks, "Restocked the snacks and beverages in the fridge", "Restock snacks and drinks"],
+      [:make_coffee, "Made a fresh pot of coffee", "Make a fresh pot of coffee"],
+      [:give_tour, "Gave a tour", "Give a tour"],
+      [:deliver_packages, "Delivered a package to member", "Deliver packages"],
+      [:pay_bills, "Paid all bills", "Pay the bills"],
+      [:adjust_heater, "Adjusted the thermostat, it was too cold", "Adjust the heater / AC"]
     ]
   end
 
