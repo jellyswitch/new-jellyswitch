@@ -2,6 +2,6 @@ class PaymentPolicy < ApplicationPolicy
   include PolicyHelpers
 
   def enabled?
-    operator.production? && operator.subdomain != "southlakecoworking"
+    operator.production?
   end
 end

@@ -112,7 +112,7 @@ class Operator < ApplicationRecord
   end
 
   def production?
-    billing_state == "production"
+    billing_state == "production" || subdomain == "southlakecoworking"
   end
 
   def stripe_secret_key
