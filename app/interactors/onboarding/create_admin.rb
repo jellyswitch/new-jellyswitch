@@ -12,6 +12,7 @@ class Onboarding::CreateAdmin
       operator_id: operator.id
     )
     if user.save
+      user.profile_photo.attach(io: image = File.open(Rails.root.join("app/assets/images/avatars/1.jpg")), filename: "1.jpg")
       context.user = user
     else
       context.fail!(message: errors_for(user))
