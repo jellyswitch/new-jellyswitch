@@ -17,6 +17,7 @@
 #  name                         :string
 #  out_of_band                  :boolean          default(FALSE), not null
 #  password_digest              :string
+#  phone                        :string
 #  remember_digest              :string
 #  reset_digest                 :string
 #  reset_sent_at                :datetime

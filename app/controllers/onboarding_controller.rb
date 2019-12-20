@@ -25,6 +25,7 @@ class  OnboardingController < ApplicationController
       user: current_user,
       name: params[:name],
       password: params[:password],
+      phone: params[:phone],
       operator_name: params[:operator_name],
       logo: params[:logo_image]
     )

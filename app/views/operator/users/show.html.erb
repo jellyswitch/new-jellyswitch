@@ -35,6 +35,15 @@
       <dt class="col-6">Email address</dt>
       <dd class="col"><%= @user.email %></dd>
 
+      <dt class="col-6">Phone number</dt>
+      <dd class="col">
+        <% if @user.phone.present? %>
+          <%= number_to_phone(@user.phone) %>
+        <% else %>
+          <i>Not set</i>
+        <% end %>
+      </dd>
+
       <dt class="col-6">Profile Photo</dt>
       <dd class="col">
         <%- if @user.has_profile_photo? %>
