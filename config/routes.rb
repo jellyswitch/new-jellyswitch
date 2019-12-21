@@ -6,7 +6,7 @@ Rails.application.routes.draw do
   end
   constraints subdomain: "app" do
     # Root
-    root "landing#index"
+    get '/', to: "landing#index"
 
     # Typeform
     get :welcome, to: "landing#welcome"
