@@ -5,7 +5,7 @@
     <th><small>Active Members</small></th>
     <th><small>Lease members</small></th>
     <th><small>Billing Status</small></th>
-    <th><small>App status</small></th>
+    <th><small>iOS/Android apps</small></th>
     <th><small>Push Notification<small></th>
     <th><small>Actions</small></th>
   </tr>
@@ -23,6 +23,8 @@
       <td>
         <% if report.operator.production? %>
           <span class="badge badge-success">Stripe connected</span>
+        <% else %>
+          <span class="badge badge-warning">Billing disabled</span>
         <% end %>
       </td>
       <td>
@@ -36,9 +38,9 @@
       </td>
       <td>
         <% if report.operator.push_notification_certificate.attached? %>
-          <span class="badge badge-success">Cert exists</span>
+          <span class="badge badge-success">Notifications ready</span>
         <% else %>
-          <span class="badge badge-danger">No cert</span>
+          <span class="badge badge-danger">Need cert</span>
         <% end %>
       </td>
       <td>

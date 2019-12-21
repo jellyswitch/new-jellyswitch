@@ -2,6 +2,7 @@
 
 <%= list_wrapper do %>
   <%= list_item do %>
+    <p class="lead text-center">Instances per month</p>
     <div class="row">
       <div class="col">
         <%= line_chart Operator.group_by_month(:created_at).count %>
@@ -38,6 +39,24 @@
       </div>
 
       <div class="col-lg-1"></div>
+    </div>
+  <% end %>
+
+  <%= list_item do %>
+    <div class="row">
+      <div class="col-1"></div>
+      <div class="col-6">
+        <p class="lead">Instances with billing enabled</p>
+        <ul class="list-group">
+          <% @production_reports.each do |report| %>
+            <%= link_to landing_url(subdomain: report.operator.subdomain), class: "list-group-item list-group-item-action", target: "_blank" do %>
+              <%= report.name %>
+              <i class="fas fa-external-link-alt"></i>
+            <% end %>
+          <% end %>
+        </ul>
+      </div>
+      <div class="col-5"></div>
     </div>
   <% end %>
 
