@@ -86,7 +86,11 @@ Rails.application.routes.draw do
   # Admin namespace (for operator resources)
   namespace :operator do
     namespace :admin do
-      resources :subscriptions
+      resources :subscriptions do
+        collection do
+          post :confirm
+        end
+      end
       resources :day_passes
     end
   end

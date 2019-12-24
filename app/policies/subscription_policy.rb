@@ -8,6 +8,10 @@ class SubscriptionPolicy < ApplicationPolicy
     is_user?  && billing_enabled?
   end
 
+  def confirm?
+    is_user?  && billing_enabled?
+  end
+
   def edit?
     admin? || (owner? && user.member?(location) && approved? && billing_enabled?)
   end

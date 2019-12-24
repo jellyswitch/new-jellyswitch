@@ -7,6 +7,14 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     @user = current_tenant.users.find(params[:user_id])
   end
 
+  def confirm
+    authorize Subscription, :new?
+
+    @subscription = new_subscription
+    @user = User.find(subscription_params[:subscribable_id])
+    
+  end
+
   def create
     authorize Subscription, :new?
 

@@ -128,4 +128,8 @@ class Plan < ApplicationRecord
   def individual?
     plan_type == "individual"
   end
+
+  def annual?
+    interval == "annually"
+  end
 end
