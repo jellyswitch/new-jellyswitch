@@ -12,7 +12,6 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     @subscription = new_subscription
     @user = User.find(subscription_params[:subscribable_id])
-    
   end
 
   def create
