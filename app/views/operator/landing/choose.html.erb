@@ -13,7 +13,7 @@
   <% end %>
 
   <% if current_tenant.day_passes_enabled? %>
-    <%= render "day_pass", day_pass_types: @day_pass_types %>
+    <%= render(MemberOnboarding::DayPass, day_pass_types: @day_pass_types, new_day_pass_path: new_day_pass_path) %>
   <% end %>
 
   <% if current_tenant.memberships_enabled? %>
