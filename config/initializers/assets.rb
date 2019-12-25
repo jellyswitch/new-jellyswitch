@@ -13,7 +13,7 @@ Rails.application.config.assets.paths << Pagy.root.join('javascripts')
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-Rails.application.config.assets.precompile += %w( stripe_handler.js simplegrid.css bootstrap-grid.css)
+Rails.application.config.assets.precompile += %w( stripe_handler.js simplegrid.css bootstrap-grid.css trix.js trix.css)
 Dir.glob("#{Rails.root}/app/assets/images/**/").each do |path|
   Rails.application.config.assets.paths << path
 end
