@@ -71,6 +71,7 @@ class Plan < ApplicationRecord
       "weekly" => "week",
       "monthly" => "month",
       "quarterly" => "quarter",
+      "biannually" => "6-months",
       "annually" => "year"
     }[interval]
   end
@@ -81,6 +82,7 @@ class Plan < ApplicationRecord
       "weekly" => "week",
       "monthly" => "month",
       "quarterly" => "month",
+      "biannually" => "month",
       "annually" => "year"
     }[interval]
   end
@@ -88,6 +90,8 @@ class Plan < ApplicationRecord
   def stripe_interval_count
     if quarterly?
       3
+    elsif biannually?
+      6
     else
       1
     end
@@ -99,6 +103,7 @@ class Plan < ApplicationRecord
       "weekly" => "wk",
       "monthly" => "mo",
       "quarterly" => "qt",
+      "biannually" => "2x-yr",
       "annually" => "yr"
     }[interval]
   end
@@ -112,6 +117,7 @@ class Plan < ApplicationRecord
     "daily",
     "monthly",
     "quarterly",
+    "biannually",
     "annually"
   ]
 
@@ -156,5 +162,9 @@ class Plan < ApplicationRecord
 
   def quarterly?
     interval == "quarterly"
+  end
+  
+  def biannually?
+    interval == "biannually"
   end
 end
