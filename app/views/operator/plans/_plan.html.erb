@@ -11,6 +11,12 @@
     </div>
   </div>
 
+  <div class="row">
+    <div class="col">
+      Includes <strong><%= plan.credits %> credits</strong>
+    </div>
+  </div>
+
   <% plan.locations.each do |location| %>
     <%= render "operator/plans/location_check", location: location %>
   <% end %>
