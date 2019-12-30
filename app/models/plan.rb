@@ -155,6 +155,6 @@ class Plan < ApplicationRecord
   end
 
   def quarterly?
-    interval = "quarterly"
+    interval == "quarterly"
   end
 end
