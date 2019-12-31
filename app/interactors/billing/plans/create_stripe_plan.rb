@@ -8,6 +8,7 @@ class Billing::Plans::CreateStripePlan
     stripe_plan = Stripe::Plan.create({
       amount: plan.amount_in_cents,
       interval: plan.stripe_interval,
+      interval_count: plan.stripe_interval_count,
       product: { name: plan.plan_name },
       currency: 'usd',
       id: plan.plan_slug

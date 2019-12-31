@@ -13,6 +13,11 @@
     </div>
     <%= f.text_field :amount_in_cents, class: "form-control" %>
   </div>
+
+  <div class="form-group">
+    <%= f.label :interval, "How frequent should members be charged?" %>
+    <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control" %>
+  </div>
 <% else %>
   <%= f.label :amount_in_cents, "How much does this plan cost?" %>
   <div class="input-group">
@@ -24,12 +29,13 @@
   <div class="row mb-3 mt-3">
     <small class="col">(You cannot change the price of a plan after it's created.)</small>
   </div>
+
+  <div class="form-group">
+    <%= f.label :interval, "How frequent should members be charged?" %>
+    <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control", disabled: true %>
+  </div>
 <% end %>
 
-<div class="form-group">
-  <%= f.label :interval, "How frequent should members be charged?" %>
-  <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control" %>
-</div>
 
 <div class="form-group">
   <div class="form-check">

@@ -65,13 +65,36 @@ class Plan < ApplicationRecord
     "#{operator.name} #{name}"
   end
 
+  def display_interval
+    {
+      "daily" => "day",
+      "weekly" => "week",
+      "monthly" => "month",
+      "quarterly" => "quarter",
+      "biannually" => "6-months",
+      "annually" => "year"
+    }[interval]
+  end
+
   def stripe_interval
     {
       "daily" => "day",
       "weekly" => "week",
       "monthly" => "month",
+      "quarterly" => "month",
+      "biannually" => "month",
       "annually" => "year"
     }[interval]
+  end
+
+  def stripe_interval_count
+    if quarterly?
+      3
+    elsif biannually?
+      6
+    else
+      1
+    end
   end
 
   def short_interval
@@ -79,6 +102,8 @@ class Plan < ApplicationRecord
       "daily" => "day",
       "weekly" => "wk",
       "monthly" => "mo",
+      "quarterly" => "qt",
+      "biannually" => "2x-yr",
       "annually" => "yr"
     }[interval]
   end
@@ -91,6 +116,8 @@ class Plan < ApplicationRecord
   INTERVAL_OPTIONS = [
     "daily",
     "monthly",
+    "quarterly",
+    "biannually",
     "annually"
   ]
 
@@ -131,5 +158,13 @@ class Plan < ApplicationRecord
 
   def annual?
     interval == "annually"
+  end
+
+  def quarterly?
+    interval == "quarterly"
+  end
+  
+  def biannually?
+    interval == "biannually"
   end
 end
