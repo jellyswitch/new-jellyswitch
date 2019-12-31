@@ -7,6 +7,15 @@ class Billing::Invoices::MarkInvoiceAsPaid
   def call
     if operator.mark_invoice_paid(invoice, paid_out_of_band: true)
       invoice.update(status: 'paid')
+
+      result = Billing::Invoices::AddCreditsToSubscribable.call(
+        invoice: invoice,
+        operator: operator
+      )
+
+      if !result.success?
+        context.fail!(message: result.message)
+      end
     else
       context.fail!(message: 'Failed to mark invoice as paid.')
     end
