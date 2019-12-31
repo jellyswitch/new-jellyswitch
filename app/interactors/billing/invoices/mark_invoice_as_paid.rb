@@ -9,8 +9,7 @@ class Billing::Invoices::MarkInvoiceAsPaid
       invoice.update(status: 'paid')
 
       result = Billing::Invoices::AddCreditsToSubscribable.call(
-        invoice: invoice,
-        operator: operator
+        invoice: invoice
       )
 
       if !result.success?
