@@ -12,6 +12,8 @@ class FeedItemComponent < ApplicationComponent
 
   def show_feed_item?
     case feed_item.type
+    when "announcement"
+      true
     when "reservation"
       feed_item.operator.reservation_notifications?
     when "new-user"
@@ -35,6 +37,8 @@ class FeedItemComponent < ApplicationComponent
 
   def subcomponent
     case feed_item.type
+    when "announcement"
+      FeedItems::Announcement
     when "reservation"
       FeedItems::Reservation
     else
