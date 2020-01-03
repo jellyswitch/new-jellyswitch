@@ -1,5 +1,5 @@
 # typed: true
-class CreateMemberFeedback
+class MemberFeedback::Create
   include Interactor
   include FeedItemCreator
 
