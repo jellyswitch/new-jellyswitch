@@ -1,5 +1,5 @@
 # typed: true
-class CreateRefund
+class Billing::Invoices::Refunds::Save
   include Interactor
   include FeedItemCreator
   delegate :operator, :invoice, to: :context

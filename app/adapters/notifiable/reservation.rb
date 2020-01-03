@@ -1,23 +1,22 @@
-# typed: false
 module Notifiable
-  class Announcement < Notifiable::Default
+  class Reservation < Notifiable::Default
     private
 
     def create_feed_item
-      blob = {type: "announcement", announcement_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+      blob = {type: "reservation", reservation_id: id}
+      FeedItemCreator.create_feed_item(room.operator, user, blob)
     end
 
     def should_send_notification?
-      true
+      operator.reservation_notifications?
     end
 
     def send_notification
-      message = "#{user.name} posted an announcement to #{operator.name}."
+      message = "#{user.name} has reserved #{room.name}"
 
       result = Notifications::PushNotifier.call(
         message: message,
-        operator: operator
+        operator: room.operator
       )
 
       if result.failure?

@@ -1,19 +1,18 @@
-# typed: false
 module Notifiable
-  class Announcement < Notifiable::Default
+  class MemberFeedback < Notifiable::Default
     private
 
     def create_feed_item
-      blob = {type: "announcement", announcement_id: id}
+      blob = {type: "feedback", member_feedback_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
     def should_send_notification?
-      true
+      operator.member_feedback_notifications?
     end
 
     def send_notification
-      message = "#{user.name} posted an announcement to #{operator.name}."
+      message = "New member feedback"
 
       result = Notifications::PushNotifier.call(
         message: message,

@@ -30,13 +30,9 @@ module LayoutHelper
   end
 
   def list_item
-    render "layouts/list_item" do
+    render(ListItem) do
       yield
     end
-  end
-
-  def feed_item_card(feed_item, comments)
-    render "operator/feed_items/feed_item_card", feed_item: feed_item, comments: comments
   end
 
   def breadcrumb

@@ -1,19 +1,18 @@
-# typed: false
 module Notifiable
-  class Announcement < Notifiable::Default
+  class User < Notifiable::Default
     private
 
     def create_feed_item
-      blob = {type: "announcement", announcement_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+      blob = { type: "new-user" }
+      FeedItemCreator.create_feed_item(operator, self.__getobj__, blob)
     end
 
     def should_send_notification?
-      true
+      operator.signup_notifications?
     end
 
     def send_notification
-      message = "#{user.name} posted an announcement to #{operator.name}."
+      message = "New user signup"
 
       result = Notifications::PushNotifier.call(
         message: message,

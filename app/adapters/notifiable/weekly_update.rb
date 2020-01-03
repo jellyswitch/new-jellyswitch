@@ -1,17 +1,16 @@
 # typed: false
 module Notifiable
-  class WeeklyUpdate < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class WeeklyUpdate < Notifiable::Default
     private
 
     def create_feed_item
       blob = {type: "weekly-update", weekly_update_id: id}
       user = User.first # Dave???
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+    end
+
+    def should_send_notification?
+      true
     end
 
     def send_notification

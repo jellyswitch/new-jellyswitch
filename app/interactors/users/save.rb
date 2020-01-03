@@ -1,5 +1,5 @@
 # typed: true
-class CreateUser
+class Users::Save
   include Interactor
   include FeedItemCreator
 
@@ -17,10 +17,8 @@ class CreateUser
       context.fail!(message: "Unable to sign up. Please see below for errors.")
     end
 
-    blob = { type: "new-user" }
-    create_feed_item(@user.operator, @user, blob)
-
-    
+    context.notifiable = @user
+   
     result = CreateStripeCustomer.call(user: @user)
 
     if !result.success?

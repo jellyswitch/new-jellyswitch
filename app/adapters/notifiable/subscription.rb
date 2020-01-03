@@ -1,11 +1,6 @@
 # typed: false
 module Notifiable
-  class Subscription < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Subscription < Notifiable::Default
     private
 
     def create_feed_item
@@ -13,6 +8,10 @@ module Notifiable
       blob = { type: 'subscription', subscription_id: id }
 
       FeedItemCreator.create_feed_item(operator, subscribable, blob, created_at: created_at)
+    end
+
+    def should_send_notification?
+      operator.membership_notifications?
     end
 
     def send_notification
