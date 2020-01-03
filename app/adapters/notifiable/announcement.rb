@@ -8,6 +8,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
+    def should_send_notification?
+      true
+    end
+
     def send_notification
       message = "#{user.name} posted an announcement to #{operator.name}."
 

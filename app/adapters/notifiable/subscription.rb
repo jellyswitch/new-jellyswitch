@@ -10,6 +10,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, subscribable, blob, created_at: created_at)
     end
 
+    def should_send_notification?
+      operator.membership_notifications?
+    end
+
     def send_notification
       operator = subscribable.operator
       message = "#{subscribable.name} has subscribed to #{plan.pretty_name}"

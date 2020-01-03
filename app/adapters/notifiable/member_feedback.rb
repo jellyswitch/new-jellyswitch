@@ -7,6 +7,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
+    def should_send_notification?
+      operator.member_feedback_notifications?
+    end
+
     def send_notification
       message = "New member feedback"
 

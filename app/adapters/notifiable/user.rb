@@ -7,6 +7,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, self.__getobj__, blob)
     end
 
+    def should_send_notification?
+      operator.signup_notifications?
+    end
+
     def send_notification
       message = "New user signup"
 

@@ -9,6 +9,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
+    def should_send_notification?
+      true
+    end
+
     def send_notification
       message = "Your weekly update has been posted in the feed. Take a look!"
 

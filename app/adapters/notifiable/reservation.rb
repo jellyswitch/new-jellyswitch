@@ -7,6 +7,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(room.operator, user, blob)
     end
 
+    def should_send_notification?
+      operator.reservation_notifications?
+    end
+
     def send_notification
       message = "#{user.name} has reserved #{room.name}"
 

@@ -10,6 +10,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, user, blob)
     end
 
+    def should_send_notification?
+      operator.day_pass_notifications?
+    end
+
     def send_notification
       operator = day_pass_type.operator
       message = "#{user.name} has purchased a day pass"
