@@ -15,7 +15,7 @@ class FeedItemComponent < ApplicationComponent
     when "reservation"
       feed_item.operator.reservation_notifications?
     when "new-user"
-      false
+      feed_item.operator.signup_notifications?
     when "checkin"
       feed_item.operator.checkin_notifications?
     when "day-pass"
