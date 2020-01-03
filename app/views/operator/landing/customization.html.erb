@@ -7,7 +7,7 @@
       <p>
         Enable and disable various modules of your Jellyswitch app.
       </p>
-      <%= link_to "View Modules", modules_path, class: "btn btn-block btn-primary", data: { "turbolinks-action" => "restore" } %>
+      <%= link_to "View Modules", modules_path, class: "btn btn-block btn-primary" %>
     <% end %>
 
     <%= list_item do %>
@@ -17,7 +17,7 @@
         Set up your account name, homepage description, enable the approval queue, required check-ins, and more.
       </p>
 
-      <%= link_to "Customize Jellyswitch", operator_path(current_tenant, subdomain: current_tenant.subdomain), class: "btn btn-block btn-primary", data: { "turbolinks-action" => "restore" } %>
+      <%= link_to "Customize Jellyswitch", operator_path(current_tenant, subdomain: current_tenant.subdomain), class: "btn btn-block btn-primary" %>
     <% end %>
 
     <%= list_item do %>
@@ -27,7 +27,7 @@
         Customize what shows up in your team's feed and which events trigger push notifications.
       </p>
 
-      <%= link_to "Configure Notifications", notifications_path, class: "btn btn-block btn-primary", data: { "turbolinks-action" => "restore" } %>
+      <%= link_to "Configure Notifications", notifications_path, class: "btn btn-block btn-primary" %>
     <% end %>
   
     <%= list_item do %>
