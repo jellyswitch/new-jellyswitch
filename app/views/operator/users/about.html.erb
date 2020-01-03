@@ -50,6 +50,15 @@
             <% end %>
           </dd>
         </dl>
+
+        <% if superadmin? %>
+          <dl class="row">
+            <dt class="col-sm-3">Stripe Customer ID</dt>
+            <dd class="col-sm">
+              <pre><%= @user.stripe_customer_id %></pre>
+            </dd>
+          </dl>
+        <% end %>
         <div class="row mt-4">
           <div class="col">
             <div class="row">
