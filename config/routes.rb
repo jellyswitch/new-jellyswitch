@@ -89,6 +89,7 @@ Rails.application.routes.draw do
       resources :subscriptions do
         collection do
           post :confirm
+          get :choose_start_date
         end
       end
       resources :day_passes
