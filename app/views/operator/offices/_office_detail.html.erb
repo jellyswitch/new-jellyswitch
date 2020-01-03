@@ -78,14 +78,25 @@
   <div class="col">
     <h5 class="display-5 text-center">Expired Leases</h5>
 
-    
     <% if office.office_leases.inactive.count < 1 %>
       No expired leases on file.
     <% else %>
       <% office.office_leases.inactive.each do |lease| %>
-        Leased by <%= link_to lease.group_name, organization_path(lease.organization) %><br />
-        (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
-        <br />
+        <div class="row">
+          <div class="col">
+            Leased by <%= link_to lease.group_name, organization_path(lease.organization) %>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+          </div>
+        </div>
       <% end %>
     <% end %>
   </div>
