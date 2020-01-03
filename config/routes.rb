@@ -176,6 +176,11 @@ Rails.application.routes.draw do
       get :rooms
     end
   end
+  resources :notifications, controller: "operator/notifications" do
+    collection do
+      get :reservations
+    end
+  end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
       get :new_membership_plan
