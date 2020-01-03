@@ -1,11 +1,6 @@
 # typed: false
 module Notifiable
-  class Announcement < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Announcement < Notifiable::Default
     private
 
     def create_feed_item

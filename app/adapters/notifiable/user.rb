@@ -1,10 +1,5 @@
 module Notifiable
-  class User < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class User < Notifiable::Default
     private
 
     def create_feed_item

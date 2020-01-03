@@ -1,10 +1,5 @@
 module Notifiable
-  class Reservation < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Reservation < Notifiable::Default
     private
 
     def create_feed_item

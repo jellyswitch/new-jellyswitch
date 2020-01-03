@@ -1,10 +1,5 @@
 module Notifiable
-  class MemberFeedback < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class MemberFeedback < Notifiable::Default
     private
 
     def create_feed_item

@@ -1,11 +1,6 @@
 # typed: false
 module Notifiable
-  class Checkin < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Checkin < Notifiable::Default
     private
 
     def create_feed_item
