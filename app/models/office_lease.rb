@@ -57,6 +57,10 @@ class OfficeLease < ApplicationRecord
       Time.current.between?(start_date, end_date)
   end
 
+  def subscription_active?
+    subscription.active?
+  end
+
   def group_name
     organization.name
   end
