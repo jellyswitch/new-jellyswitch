@@ -5,7 +5,41 @@ class Operator::NotificationsController < Operator::BaseController
   end
 
   def reservations
-    result = ToggleValue.call(object: current_tenant, value: :reservation_notifications)
+    setting(:reservation_notifications)
+  end
+
+  def memberships
+    setting(:membership_notifications)
+  end
+
+  def day_passes
+    setting(:day_pass_notifications)
+  end
+
+  def signups
+    setting(:signup_notifications)
+  end
+
+  def checkins
+    setting(:checkin_notifications)
+  end
+
+  def refunds
+    setting(:refund_notifications)
+  end
+
+  def posts
+    setting(:post_notifications)
+  end
+
+  def feedback
+    setting(:member_feedback_notifications)
+  end
+
+  private
+
+  def setting(symbol)
+    result = ToggleValue.call(object: current_tenant, value: symbol)
     
     if !result.success?
       flash[:error] = result.message

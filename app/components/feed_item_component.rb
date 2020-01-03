@@ -11,18 +11,25 @@ class FeedItemComponent < ApplicationComponent
   attr_reader :feed_item, :comments
 
   def show_feed_item?
-    if feed_item.type == "reservation"
-      if feed_item.operator.reservation_notifications?
-        true
-      else
-        false
-      end
+    case feed_item.type
+    when "reservation"
+      feed_item.operator.reservation_notifications?
+    when "new-user"
+      false
+    when "checkin"
+      feed_item.operator.checkin_notifications?
+    when "day-pass"
+      feed_item.operator.day_pass_notifications?
+    when "feedback"
+      feed_item.operator.member_feedback_notifications?
+    when "subscription"
+      feed_item.operator.membership_notifications?
+    when "refund"
+      feed_item.operator.refund_notifications?
+    when "post"
+      feed_item.operator.post_notifications?
     else
-      if feed_item.type == "new-user"
-        false
-      else
-        true
-      end
+      false
     end
   end
 

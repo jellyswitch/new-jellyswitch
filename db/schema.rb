@@ -357,6 +357,13 @@ ActiveRecord::Schema.define(version: 2020_01_03_182719) do
     t.boolean "rooms_enabled", default: true, null: false
     t.boolean "offices_enabled", default: true, null: false
     t.boolean "reservation_notifications", default: false, null: false
+    t.boolean "membership_notifications", default: true, null: false
+    t.boolean "signup_notifications", default: false, null: false
+    t.boolean "day_pass_notifications", default: true, null: false
+    t.boolean "member_feedback_notifications", default: true, null: false
+    t.boolean "checkin_notifications", default: true, null: false
+    t.boolean "refund_notifications", default: true, null: false
+    t.boolean "post_notifications", default: true, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
