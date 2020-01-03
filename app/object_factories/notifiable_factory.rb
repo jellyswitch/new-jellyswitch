@@ -8,6 +8,8 @@ class NotifiableFactory
       Notifiable::Checkin
     when 'DayPass'
       Notifiable::DayPass
+    when 'Reservation'
+      Notifiable::Reservation
     when 'Subscription'
       Notifiable::Subscription
     when 'WeeklyUpdate'
