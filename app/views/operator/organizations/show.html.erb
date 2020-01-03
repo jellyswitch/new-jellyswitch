@@ -28,6 +28,15 @@
           </dd>
         </dl>
 
+        <% if superadmin? %>
+          <dl class="row">
+            <dt class="col-sm-3">Stripe Customer ID</dt>
+            <dd class="col-sm">
+              <pre><%= @organization.stripe_customer_id %></pre>
+            </dd>
+          </dl>
+        <% end %>
+
         <%= link_to "Edit group info", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
 
       <% end %>
