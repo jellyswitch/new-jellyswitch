@@ -81,7 +81,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def create_member
-    result = CreateUser.call(params: user_params, operator: current_tenant)
+    result = Users::Create.call(params: user_params, operator: current_tenant)
 
     if result.success?
       flash[:success] = "Member #{result.user.name} added."

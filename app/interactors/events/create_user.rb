@@ -4,7 +4,7 @@ class Events::CreateUser
   delegate :event, :email, to: :context
 
   def call
-    result = ::CreateUser.call(
+    result = ::Users::Create.call(
       params: {
         name: email,
         email: email,

@@ -1,5 +1,5 @@
 # typed: true
-class CreateUser
+class Users::Create
   include Interactor
   include FeedItemCreator
 

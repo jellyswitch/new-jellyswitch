@@ -6,7 +6,7 @@ class Demo::Recreate::CreateMembers
 
   def call
     people_data.each do |data|
-      result = CreateUser.call(
+      result = Users::Create.call(
         operator: operator,
         params: {
           name: data[:name],
