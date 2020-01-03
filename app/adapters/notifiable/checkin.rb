@@ -11,7 +11,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      operator.checkin_notifications?
+      location.operator.checkin_notifications?
     end
 
     def send_notification
