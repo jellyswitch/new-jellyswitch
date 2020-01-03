@@ -35,10 +35,6 @@ module LayoutHelper
     end
   end
 
-  def feed_item_card(feed_item, comments)
-    render "operator/feed_items/feed_item_card", feed_item: feed_item, comments: comments
-  end
-
   def breadcrumb
     render "layouts/breadcrumb" do
       yield
