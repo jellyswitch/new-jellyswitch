@@ -1,5 +1,5 @@
 module Notifiable
-  class Reservation < SimpleDelegator
+  class MemberFeedback < SimpleDelegator
     def notify
       create_feed_item
       send_notification
@@ -8,16 +8,16 @@ module Notifiable
     private
 
     def create_feed_item
-      blob = {type: "reservation", reservation_id: id}
-      FeedItemCreator.create_feed_item(room.operator, user, blob)
+      blob = {type: "feedback", member_feedback_id: id}
+      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
     def send_notification
-      message = "#{user.name} has reserved #{room.name}"
+      message = "New member feedback"
 
       result = Notifications::PushNotifier.call(
         message: message,
-        operator: room.operator
+        operator: operator
       )
 
       if result.failure?
