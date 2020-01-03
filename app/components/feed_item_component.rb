@@ -25,4 +25,13 @@ class FeedItemComponent < ApplicationComponent
       end
     end
   end
+
+  def subcomponent
+    case feed_item.type
+    when "reservation"
+      FeedItems::Reservation
+    else
+      "operator/feed_items/#{feed_item.type.underscore}_feed_item"
+    end
+  end
 end

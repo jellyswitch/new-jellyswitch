@@ -41,7 +41,7 @@
     <div class="row mt-3">
       <div class="col-2"></div>
       <div class="col">
-        <%= render "operator/feed_items/#{feed_item.type.underscore}_feed_item", feed_item: feed_item %>
+        <%= render(subcomponent, feed_item: feed_item) %>
       </div>
     </div>
     
