@@ -14,6 +14,8 @@ class NotifiableFactory
       Notifiable::Reservation
     when 'Subscription'
       Notifiable::Subscription
+    when 'User'
+      Notifiable::User
     when 'WeeklyUpdate'
       Notifiable::WeeklyUpdate
     end.new(notifiable)
