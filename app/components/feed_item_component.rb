@@ -39,6 +39,8 @@ class FeedItemComponent < ApplicationComponent
     case feed_item.type
     when "announcement"
       FeedItems::Announcement
+    when "checkin"
+      FeedItems::Checkin
     when "reservation"
       FeedItems::Reservation
     else
