@@ -30,7 +30,7 @@ module LayoutHelper
   end
 
   def list_item
-    render "layouts/list_item" do
+    render(ListItem) do
       yield
     end
   end
