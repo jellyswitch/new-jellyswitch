@@ -3,7 +3,7 @@
 require 'fileutils'
 
 def help_message
-  "Usage: android_images.rb SOURCE_DIR DESTINATION_DIR"
+  "Usage: android_images.rb SOURCE_DIR DESTINATION_DIR\nWhere SOURCE_DIR looks like: PROJECT/appiconmaker/Android\nWhere DESTINATION_DIR looks like: PROJECT/demoapp/src/main/res"
 end
 
 def path(base, name)
