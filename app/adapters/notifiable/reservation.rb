@@ -8,7 +8,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      operator.reservation_notifications?
+      room.operator.reservation_notifications?
     end
 
     def send_notification
