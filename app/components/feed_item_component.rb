@@ -30,6 +30,8 @@ class FeedItemComponent < ApplicationComponent
       feed_item.operator.refund_notifications?
     when "post"
       feed_item.operator.post_notifications?
+    when "weekly-update"
+      true
     else
       false
     end
