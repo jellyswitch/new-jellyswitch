@@ -17,7 +17,7 @@ class JellyswitchMail < MailHatch
   end
 
   def announcement(announcement, recipient)
-    notification(
+    async_notification(
       to: "#{recipient.name} <#{recipient.email}>",
       from: "#{announcement.user.name} <#{operator.contact_email}>",
       text: announcement.body,

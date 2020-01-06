@@ -21,6 +21,10 @@ class MailHatch
     @sendgrid_api_key = sendgrid_api_key
   end
 
+  def async_notification(to:, from:, text:, subject:)
+    async(:notification, {to: to, from: from, text: text, subject: subject})
+  end
+
   def notification(to:, from:, text:, subject:)
     body = {
       api_key: api_key,
@@ -47,6 +51,11 @@ class MailHatch
   end
 
   private
+
+  def async(method_name, args)
+    puts "ASYNC"
+    MailHatchJob.perform_later(self, method_name, args)
+  end
 
   def post(body)
     if debug
