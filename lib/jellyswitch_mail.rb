@@ -1,5 +1,8 @@
 class JellyswitchMail < MailHatch
+  attr_reader :operator
+
   def initialize(operator, dry_run: false)
+    @operator = operator
     super(
       api_key: "JJQe43a&u=W9F3+t&PkVKZ(^P2uiaH>jkfj%{KVMarnuiT4cKQxR4D4XQ2q2fs&M",
       brand_color: "#ff9900", 
@@ -11,15 +14,14 @@ class JellyswitchMail < MailHatch
       title: operator.name,
       address: operator.building_address
     )
-
   end
 
   def announcement(announcement, recipient)
     notification(
       to: "#{recipient.name} <#{recipient.email}>",
-      from: "#{announcement.user.name} <#{announcement.user.email}>",
+      from: "#{announcement.user.name} <#{operator.contact_email}>",
       text: announcement.body,
-      subject: "Announcement from #{announcement.operator.name}"
+      subject: "Announcement from #{operator.name}"
     )
   end
 end

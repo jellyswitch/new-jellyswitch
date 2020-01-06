@@ -60,10 +60,10 @@ class MailHatch
     if dry_run
       "Dry Run"
     else
-      resp = HTTParty.post(url, headers: headers, body: body.to_json )
-      if resp.code != 200
-        Rollbar.error("MailHatch error", http_response: resp.to_h)
-      end
+      resp = HTTParty.post(url, headers: headers, body: body.to_json)
+
+      raise MailHatchError.new(resp["message"]) if resp["status"] != 200
+
       resp
     end
   end
