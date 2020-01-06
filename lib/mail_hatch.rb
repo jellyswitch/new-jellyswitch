@@ -53,7 +53,6 @@ class MailHatch
   private
 
   def async(method_name, args)
-    puts "ASYNC"
     MailHatchJob.perform_later(self, method_name, args)
   end
 

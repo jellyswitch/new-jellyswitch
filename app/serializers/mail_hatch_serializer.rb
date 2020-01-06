@@ -4,7 +4,6 @@ class MailHatchSerializer < ActiveJob::Serializers::ObjectSerializer
   end
 
   def serialize(mh)
-    puts "SERIALIZE"
     super(
       api_key: mh.api_key,
       brand_color: mh.brand_color,
@@ -19,7 +18,6 @@ class MailHatchSerializer < ActiveJob::Serializers::ObjectSerializer
   end
 
   def deserialize(hash)
-    puts "DESERIALIZE"
     mh = OpenStruct.new(hash)
     MailHatch.new(
       api_key: mh.api_key,
