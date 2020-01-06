@@ -1,24 +1,30 @@
 class MailHatch
-  attr_reader :url, :api_key, :operator_name, :address, :brand_color, :debug, :dry_run, :ios_store_url, :google_play_store_url
+  attr_reader :api_key,
+    :brand_color, 
+    :debug, 
+    :dry_run,
+    :sendgrid_api_key,
+    :title,
+    :address,
+    :ios_store_url,
+    :google_play_store_url
 
-  def initialize(api_key: "JJQe43a&u=W9F3+t&PkVKZ(^P2uiaH>jkfj%{KVMarnuiT4cKQxR4D4XQ2q2fs&M", brand_color: "#ff9900", 
-    debug: false, dry_run: false,
-    ios_store_url: "",
-    google_play_store_url: "")
+  def initialize(api_key:,brand_color:,debug: false, dry_run: false, sendgrid_api_key:, title:, address:, ios_store_url:, google_play_store_url:)
     @api_key = api_key
-    @url = "https://api.mailhatch.io/api/v1/send"
-    @operator_name = operator_name || "Cowork Tahoe"
-    @address = address || "3079 Harrison Ave, South Lake Tahoe, CA 96150"
+    @title = title
+    @address = address
     @brand_color = brand_color
     @debug = debug
     @dry_run = dry_run
     @ios_store_url = ios_store_url
     @google_play_store_url = google_play_store_url
+    @sendgrid_api_key = sendgrid_api_key
   end
 
-  def announcement(to: "dave@jellyswitch.com", from: "dave@jellyswitch.com", text: "This is a test", subject: "Test announcement")
+  def notification(to:, from:, text:, subject:)
     body = {
       api_key: api_key,
+      sendgrid_api_key: sendgrid_api_key,
       to: to,
       from: from,
       text: text,
@@ -29,7 +35,7 @@ class MailHatch
       google_play_store_url: google_play_store_url,
       data: {
         message: text,
-        title: operator_name,
+        title: title,
         address: address,
       },
       design: {
@@ -54,11 +60,19 @@ class MailHatch
     if dry_run
       "Dry Run"
     else
-      HTTParty.post(url, headers: headers, body: body.to_json )
+      resp = HTTParty.post(url, headers: headers, body: body.to_json )
+      if resp.code != 200
+        Rollbar.error("MailHatch error", http_response: resp.to_h)
+      end
+      resp
     end
   end
 
   def headers
     {"Content-Type": "application/json"}
+  end
+
+  def url
+    "https://api.mailhatch.io/api/v1/send"
   end
 end
