@@ -17,12 +17,17 @@ class Billing::Reservations::ChargeCredits
       if !user.update(credit_balance: ending_balance(user, @charge_amount))
         context.fail!(message: "Unable to set user credit balance.")
       end
+
+      if !reservation.update(credit_cost: @charge_amount)
+        context.fail!(message: "Unable to record credit cost on reservation.")
+      end
     end
   end
 
   def rollback
     if user.operator.credits_enabled?
       user.update(credit_balance: @existing_balance)
+      reservation.update(credit_cost: 0)
     end
   end
 end
