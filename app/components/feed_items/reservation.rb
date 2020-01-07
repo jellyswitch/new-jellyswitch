@@ -8,4 +8,8 @@ class FeedItems::Reservation < ApplicationComponent
   private
 
   attr_reader :feed_item
+
+  def credits_enabled?
+    feed_item.operator.credits_enabled?
+  end
 end

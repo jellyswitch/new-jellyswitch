@@ -26,4 +26,13 @@
   <dd class="col">
     <%= feed_item.reservation.minutes %> <%= quantize(feed_item.reservation.minutes, "minute") %>
   </dd>
+
+  <% if credits_enabled? %>
+    <dt class="col-6">
+      Credits Used
+    </dt>
+    <dd class="col">
+      <%= render CreditAmount, amount: reservation_cost(feed_item.reservation.room, feed_item.reservation.minutes) %>
+    </dd>
+  <% end %>
 </dl>
