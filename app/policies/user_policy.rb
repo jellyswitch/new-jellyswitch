@@ -20,6 +20,14 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def credits?
+    admin?
+  end
+
+  def add_credits?
+    admin?
+  end
+
   def ltv?
     admin?
   end

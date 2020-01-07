@@ -287,6 +287,7 @@ Rails.application.routes.draw do
       get :unapproved, to: "operator/users#unapproved"
     end
     get :about, to: "operator/users#about"
+    post :add_credits, to: "operator/users#add_credits"
     get :admin_day_passes, to: "operator/users#admin_day_passes"
     get :admin_invoices, to: "operator/users#admin_invoices"
     get :approve, to: "operator/users#approve"
@@ -296,6 +297,7 @@ Rails.application.routes.draw do
     get :bill_to_organization, to: "operator/users#bill_to_organization"
     get :checkins, to: "operator/users#checkins"
     get :credit_card, to: "operator/users#credit_card"
+    get :credits, to: "operator/users#credits"
     get "change_password", to: "operator/users#change_password"
     get :day_passes, to: "operator/users#day_passes"
     get :invoices, to: "operator/users#invoices"
