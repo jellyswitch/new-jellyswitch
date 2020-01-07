@@ -11,7 +11,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      operator.membership_notifications?
+      subscribable.operator.membership_notifications?
     end
 
     def send_notification
