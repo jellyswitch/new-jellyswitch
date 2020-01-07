@@ -170,6 +170,7 @@ Rails.application.routes.draw do
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements
+      get :credits
       get :door_integration
       get :events
       get :offices

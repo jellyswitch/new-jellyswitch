@@ -23,4 +23,8 @@ class ModulePolicy < ApplicationPolicy
   def offices?
     admin?
   end
+
+  def credits?
+    admin?
+  end
 end
