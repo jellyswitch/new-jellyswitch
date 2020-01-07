@@ -10,13 +10,10 @@ class Billing::Reservations::SaveRoomReservation
     reservation.datetime_in = reservation.datetime_in.beginning_of_half_hour
 
     context.reservation = reservation
+    context.notifiable = reservation
+
     if !reservation.save
       context.fail!(message: "Unable to save reservation.")
     end
-
-    blob = {type: "reservation", reservation_id: reservation.id}
-    create_feed_item(context.user.operator, context.user, blob)
-
-    message = "#{reservation.user.name} has reserved #{reservation.room.name}"
   end
 end

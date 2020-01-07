@@ -7,7 +7,7 @@ def path(base, name)
 end
 
 def help_message
-  "Usage: ios_images.rb SOURCE_DIR DESTINATION_DIR\nWhere DESTINATION_DIR looks like: PROJECT/Assets.xcassets/AppIcon.appiconset"
+  "Usage: ios_images.rb SOURCE_DIR DESTINATION_DIR\nWhere SOURCE_DIR looks like: PROJECT/appiconmaker/iOS\nWhere DESTINATION_DIR looks like: PROJECT/Assets.xcassets"
 end
 
 def main

@@ -8,8 +8,14 @@ class NotifiableFactory
       Notifiable::Checkin
     when 'DayPass'
       Notifiable::DayPass
+    when 'MemberFeedback'
+      Notifiable::MemberFeedback
+    when 'Reservation'
+      Notifiable::Reservation
     when 'Subscription'
       Notifiable::Subscription
+    when 'User'
+      Notifiable::User
     when 'WeeklyUpdate'
       Notifiable::WeeklyUpdate
     end.new(notifiable)

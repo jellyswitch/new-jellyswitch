@@ -89,6 +89,7 @@ Rails.application.routes.draw do
       resources :subscriptions do
         collection do
           post :confirm
+          get :choose_start_date
         end
       end
       resources :day_passes
@@ -173,6 +174,18 @@ Rails.application.routes.draw do
       get :events
       get :offices
       get :rooms
+    end
+  end
+  resources :notifications, controller: "operator/notifications" do
+    collection do
+      get :checkins
+      get :day_passes
+      get :feedback
+      get :memberships
+      get :posts
+      get :reservations
+      get :refunds
+      get :signups
     end
   end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do

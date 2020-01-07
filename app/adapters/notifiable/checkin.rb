@@ -1,11 +1,6 @@
 # typed: false
 module Notifiable
-  class Checkin < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Checkin < Notifiable::Default
     private
 
     def create_feed_item
@@ -13,6 +8,10 @@ module Notifiable
 
       blob = {type: "checkin", checkin_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+    end
+
+    def should_send_notification?
+      location.operator.checkin_notifications?
     end
 
     def send_notification

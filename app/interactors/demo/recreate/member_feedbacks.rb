@@ -7,7 +7,7 @@ class Demo::Recreate::MemberFeedbacks
   def call
     puts "Creating member feedbacks... (#{operator.users.count})"
     operator.users.each do |user|
-      CreateMemberFeedback.call(
+      MemberFeedback::Create.call(
         member_feedback_params: {
           anonymous: [true, false].sample,
           comment: comments.sample,

@@ -105,7 +105,7 @@ class Operator::UsersController < Operator::BaseController
 
   def create
     authorize User.new
-    result = CreateUser.call(params: user_params, operator: current_tenant)
+    result = Users::Create.call(params: user_params, operator: current_tenant)
 
     if result.success?
       if admin? # admin is creating the user

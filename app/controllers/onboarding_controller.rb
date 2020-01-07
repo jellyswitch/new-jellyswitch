@@ -91,7 +91,7 @@ class  OnboardingController < ApplicationController
 
   def create_favorite_parts
     comment = possible_favorite_parts.select { |p| p.first == params[:favorite_part].to_sym }.first.last
-    result = CreateMemberFeedback.call(
+    result = MemberFeedback::Create.call(
       member_feedback_params: {
         anonymous: true,
         comment: "I love #{comment.downcase}!",

@@ -1,16 +1,15 @@
 # typed: false
 module Notifiable
-  class Announcement < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class Announcement < Notifiable::Default
     private
 
     def create_feed_item
       blob = {type: "announcement", announcement_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+    end
+
+    def should_send_notification?
+      true
     end
 
     def send_notification

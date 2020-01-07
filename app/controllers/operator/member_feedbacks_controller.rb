@@ -8,7 +8,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
 
   def create
     authorize MemberFeedback.new
-    result = CreateMemberFeedback.call(member_feedback_params: member_feedback_params, user: current_user, operator: current_tenant)
+    result = MemberFeedback::Create.call(member_feedback_params: member_feedback_params, user: current_user, operator: current_tenant)
     @member_feedback = result.member_feedback
     
     if result.success?

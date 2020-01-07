@@ -1,11 +1,6 @@
 # typed: false
 module Notifiable
-  class DayPass < SimpleDelegator
-    def notify
-      create_feed_item
-      send_notification
-    end
-
+  class DayPass < Notifiable::Default
     private
 
     def create_feed_item
@@ -13,6 +8,10 @@ module Notifiable
 
       blob = {type: "day-pass", day_pass_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob)
+    end
+
+    def should_send_notification?
+      operator.day_pass_notifications?
     end
 
     def send_notification
