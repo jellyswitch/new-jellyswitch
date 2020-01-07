@@ -28,6 +28,9 @@
             <span class="text-dark">Available for <%= number_to_currency(room.hourly_rate_in_cents.to_f / 100.0) %> / hr</span>
           </div>
         <% end %>
+        <div class="row">
+          <span class="text-dark">Costs <strong><%= room.credit_cost %></strong> credits per hour</span>
+        </div>
       </div>
     </div>
 

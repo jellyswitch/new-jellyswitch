@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(version: 2019_12_30_232313) do
-=======
-ActiveRecord::Schema.define(version: 2020_01_03_182719) do
->>>>>>> master
+ActiveRecord::Schema.define(version: 2020_01_07_185937) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -438,6 +434,7 @@ ActiveRecord::Schema.define(version: 2020_01_03_182719) do
     t.integer "square_footage", default: 0, null: false
     t.boolean "rentable", default: false, null: false
     t.integer "hourly_rate_in_cents", default: 0, null: false
+    t.integer "credit_cost", default: 0, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
