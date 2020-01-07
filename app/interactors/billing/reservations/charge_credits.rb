@@ -5,20 +5,24 @@ class Billing::Reservations::ChargeCredits
   delegate :reservation_params, :user, to: :context
 
   def call
-    @existing_balance = user.credit_balance
+    if user.operator.credits_enabled?
+      @existing_balance = user.credit_balance
 
-    @charge_amount = reservation_cost(reservation_params[:room], reservation_params[:minutes])
+      @charge_amount = reservation_cost(reservation_params[:room], reservation_params[:minutes])
 
-    if user.credit_balance < @charge_amount
-      context.fail!(message: "Insufficient credit balance.")
-    end
+      if user.credit_balance < @charge_amount
+        context.fail!(message: "Insufficient credit balance.")
+      end
 
-    if !user.update(credit_balance: ending_balance(user, @charge_amount))
-      context.fail!(message: "Unable to set user credit balance.")
+      if !user.update(credit_balance: ending_balance(user, @charge_amount))
+        context.fail!(message: "Unable to set user credit balance.")
+      end
     end
   end
 
   def rollback
-    user.update(credit_balance: @existing_balance)
+    if user.operator.credits_enabled?
+      user.update(credit_balance: @existing_balance)
+    end
   end
 end

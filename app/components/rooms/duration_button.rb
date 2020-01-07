@@ -40,4 +40,8 @@ class Rooms::DurationButton < ApplicationComponent
   def has_enough_credits?
     balance >= 0
   end
+
+  def credits_enabled?
+    room.operator.credits_enabled?
+  end
 end

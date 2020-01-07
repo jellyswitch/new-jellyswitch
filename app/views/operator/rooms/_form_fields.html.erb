@@ -46,10 +46,12 @@
     </div>
   </div>
 
-  <div class="form-group">
-    <%= f.label :square_footage, "What is the credit cost per hour for this room?" %>
-    <%= f.number_field :credit_cost, class: "form-control" %>
-  </div>
+  <% if policy(:credit).enabled? %>
+    <div class="form-group">
+      <%= f.label :credit_cost, "What is the credit cost per hour for this room?" %>
+      <%= f.number_field :credit_cost, class: "form-control" %>
+    </div>
+  <% end %>
 
   <%= f.label :amount_in_cents, "(For non-members) How much does this room cost per hour?" %>
   <div class="input-group">

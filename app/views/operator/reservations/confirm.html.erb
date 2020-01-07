@@ -35,27 +35,30 @@
       </dd>
     <% end %>
 
-    <dt class="col-6">Hourly Credit Cost</dt>
-    <dd class="col">
-      <%= render CreditAmount, amount: @room.credit_cost %>
-    </dd>
-    
-    <dt class="col-6">Your credit balance</dt>
-    <dd class="col">
-      <%= render CreditAmount, amount: current_user.credit_balance %>
-    </dd>
+    <% if policy(:credit).enabled? %>
+      <dt class="col-6">Hourly Credit Cost</dt>
+      <dd class="col">
+        <%= render CreditAmount, amount: @room.credit_cost %>
+      </dd>
+      
+      <dt class="col-6">Your credit balance</dt>
+      <dd class="col">
+        <%= render CreditAmount, amount: current_user.credit_balance %>
+      </dd>
 
-    <dt class="col-6">Total credit cost</dt>
-    <dd class="col">
-      <%= render CreditAmount, amount: reservation_cost(@room, @duration) %>
-    </dd>
+      <dt class="col-6">Total credit cost</dt>
+      <dd class="col">
+        <%= render CreditAmount, amount: reservation_cost(@room, @duration) %>
+      </dd>
 
 
-    <dt class="col-6">Your remaining balance</dt>
-    <dd class="col">
-      <%= render CreditAmount, amount: ending_balance(current_user, reservation_cost(@room, @duration)) %>
-    </dd>
+      <dt class="col-6">Your remaining balance</dt>
+      <dd class="col">
+        <%= render CreditAmount, amount: ending_balance(current_user, reservation_cost(@room, @duration)) %>
+      </dd>
+    <% end %>
   </dl>
+
   <% if current_user.should_charge_for_reservation?(current_location) %>
     <% if current_user.has_billing? %>
       <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", remote: true, data: {disable_with: "Reserving..."} %>

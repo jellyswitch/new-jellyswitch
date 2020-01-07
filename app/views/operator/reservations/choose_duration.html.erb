@@ -13,17 +13,19 @@
     <dt class="col-6">Room</dt>
     <dd class="col"><%= @room.name %></dd>
 
-    <dt class="col-6">Hourly Credit Cost</dt>
-    <dd class="col"><%= @room.credit_cost %></dd>
-
-    <dt class="col-6">Your credit balance</dt>
-    <dd class="col"><%= current_user.credit_balance %></dd>
-
     <dt class="col-6">Day</dt>
     <dd class="col"><%= short_date(@day) %></dd>
 
     <dt class="col-6">Time</dt>
     <dd class="col"><%= pretty_time(@hour) %></dd>
+
+    <% if policy(:credit).enabled? %>
+      <dt class="col-6">Hourly Credit Cost</dt>
+      <dd class="col"><%= @room.credit_cost %></dd>
+
+      <dt class="col-6">Your credit balance</dt>
+      <dd class="col"><%= current_user.credit_balance %></dd>
+    <% end %>
   </dl>
 
   <%= render Rooms::DurationButtons, room: @room, day: @day, hour: @hour, datetime_in: @datetime_in, user: current_user %>
