@@ -13,6 +13,12 @@
     <dt class="col-6">Room</dt>
     <dd class="col"><%= @room.name %></dd>
 
+    <dt class="col-6">Hourly Credit Cost</dt>
+    <dd class="col"><%= @room.credit_cost %></dd>
+
+    <dt class="col-6">Your credit balance</dt>
+    <dd class="col"><%= current_user.credit_balance %></dd>
+
     <dt class="col-6">Day</dt>
     <dd class="col"><%= short_date(@day) %></dd>
 

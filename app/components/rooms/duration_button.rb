@@ -1,5 +1,6 @@
 class Rooms::DurationButton < ApplicationComponent
   include ApplicationHelper
+  include CreditHelper
 
   def initialize(room:, day:, hour:, user:, duration: duration)
     @room = room
@@ -13,6 +14,14 @@ class Rooms::DurationButton < ApplicationComponent
 
   attr_reader :room, :day, :hour, :user, :duration
 
+  def positive_label
+    "#{label} (costs #{number_to_human(reservation_cost(room, duration))} credits)"
+  end
+
+  def negative_label
+    "#{label} (#{number_to_human(-balance)} more credits needed)"
+  end
+
   def label
     if duration < 60
       delimiter = quantize(duration, "minute")
@@ -22,5 +31,13 @@ class Rooms::DurationButton < ApplicationComponent
       delimiter = quantize(hours, "hour")
       "#{number_to_human(hours)} #{delimiter}"
     end
+  end
+
+  def balance
+    user.credit_balance - reservation_cost(room, duration)
+  end
+
+  def has_enough_credits?
+    balance >= 0
   end
 end
