@@ -20,7 +20,7 @@
     <dd class="col"><%= pretty_time(@hour) %></dd>
   </dl>
 
-  <%= render Rooms::DurationButtons, room: @room, day: @day, hour: @hour, datetime_in: @datetime_in %>
+  <%= render Rooms::DurationButtons, room: @room, day: @day, hour: @hour, datetime_in: @datetime_in, user: current_user %>
 
   
 <% end %>
