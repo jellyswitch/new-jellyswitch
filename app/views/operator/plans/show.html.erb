@@ -14,11 +14,13 @@
 
       <%= render "operator/plans/price", plan: @plan %>
 
-      <div class="row">
-        <div class="col">
-          Includes <strong><%= render CreditAmount, amount: @plan.credits %></strong>
+      <% if policy(:credit).enabled? %>
+        <div class="row">
+          <div class="col">
+            Includes <strong><%= render CreditAmount, amount: @plan.credits %></strong>
+          </div>
         </div>
-      </div>
+      <% end %>
 
       <div class="row">
         <div class="col">
