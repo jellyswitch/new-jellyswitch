@@ -3,6 +3,7 @@ class Billing::Reservations::CreateRoomReservation
   
   organize(
     Billing::Reservations::SaveRoomReservation,
+    Billing::Reservations::ChargeCredits,
     Billing::Reservations::SaveStripeInvoice,
     CreateNotifications
   )

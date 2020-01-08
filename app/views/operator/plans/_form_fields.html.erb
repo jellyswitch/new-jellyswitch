@@ -36,6 +36,12 @@
   </div>
 <% end %>
 
+<% if policy(:credit).enabled? %>
+  <div class="form-group">
+    <%= f.label :credits, "How many credits per billing cycle does this plan include?" %>
+    <%= f.text_field :credits, placeholder: "Number of credits per billing cycle", class: "form-control" %>
+  </div>
+<% end %>
 
 <div class="form-group">
   <div class="form-check">

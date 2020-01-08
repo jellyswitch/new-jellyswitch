@@ -16,6 +16,12 @@
 
       <div class="row">
         <div class="col">
+          Includes <strong><%= render CreditAmount, amount: @plan.credits %></strong>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
           <%= render(OnOffSwitch, predicate: @plan.available?, path: plan_toggle_availability_path(@plan)) do %>
             Available
           <% end %>

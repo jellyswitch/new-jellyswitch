@@ -46,5 +46,13 @@ class CreateInvoice
     invoice = Invoice.create!(params)
 
     context.invoice = invoice
+
+    result = Billing::Invoices::AddCreditsToSubscribable.call(
+      invoice: invoice
+    )
+
+    if !result.success?
+      context.fail!(message: result.message)
+    end
   end
 end

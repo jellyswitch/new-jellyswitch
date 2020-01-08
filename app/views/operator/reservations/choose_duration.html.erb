@@ -6,45 +6,31 @@
   <li class="breadcrumb-item active" aria-current="page">How long?</li>
 <% end %>
 
-<%= wide_card do %>
-  <h4 class="display-4 text-center">How long?</h4>
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">How long?</h4>
 
-  <dl class="row">
-    <dt class="col-6">Room</dt>
-    <dd class="col"><%= @room.name %></dd>
+    <dl class="row">
+      <dt class="col-6">Room</dt>
+      <dd class="col"><%= @room.name %></dd>
 
-    <dt class="col-6">Day</dt>
-    <dd class="col"><%= short_date(@day) %></dd>
+      <dt class="col-6">Day</dt>
+      <dd class="col"><%= short_date(@day) %></dd>
 
-    <dt class="col-6">Time</dt>
-    <dd class="col"><%= pretty_time(@hour) %></dd>
-  </dl>
+      <dt class="col-6">Time</dt>
+      <dd class="col"><%= pretty_time(@hour) %></dd>
 
-  <% if @room.available_at?(@datetime_in) %>
-    <%= link_to "30 minutes", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 30), class: "btn btn-block btn-primary" %>
-  
-    <% if @room.available_at?(@datetime_in + 30.minutes) %>
-      <%= link_to "1 hour", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 60), class: "btn btn-block btn-primary" %>
+      <% if policy(:credit).enabled? %>
+        <dt class="col-6">Hourly Credit Cost</dt>
+        <dd class="col"><%= @room.credit_cost %></dd>
 
-      <% if @room.available_at?(@datetime_in + 60.minutes) %>
-        <%= link_to "1.5 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 90), class: "btn btn-block btn-primary" %>
-
-        <% if @room.available_at?(@datetime_in + 90.minutes) %>
-          <%= link_to "2 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 120), class: "btn btn-block btn-primary" %>
-
-          <% if policy(Reservation).long_duration? %>
-
-            <% if @room.available_at?(@datetime_in + 120.minutes) && @room.available_at?(@datetime_in + 150.minutes) %>
-              <%= link_to "3 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 180), class: "btn btn-block btn-primary" %>
-
-              <% if @room.available_at?(@datetime_in + 150.minutes) && @room.available_at?(@datetime_in + 180.minutes) %>
-                <%= link_to "4 hours", confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: 240), class: "btn btn-block btn-primary" %>
-              <% end %>
-            <% end %>
-          <% end %>
-
-        <% end %>
+        <dt class="col-6">Your credit balance</dt>
+        <dd class="col"><%= current_user.credit_balance %></dd>
       <% end %>
-    <% end %>
+    </dl>
+
+    <%= render Rooms::DurationButtons, room: @room, day: @day, hour: @hour, datetime_in: @datetime_in, user: current_user %>
+
+    
   <% end %>
 <% end %>

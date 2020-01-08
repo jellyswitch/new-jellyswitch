@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_03_182719) do
+ActiveRecord::Schema.define(version: 2020_01_07_233839) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -364,6 +364,7 @@ ActiveRecord::Schema.define(version: 2020_01_03_182719) do
     t.boolean "checkin_notifications", default: true, null: false
     t.boolean "refund_notifications", default: true, null: false
     t.boolean "post_notifications", default: true, null: false
+    t.boolean "credits_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -417,6 +418,7 @@ ActiveRecord::Schema.define(version: 2020_01_03_182719) do
     t.datetime "updated_at", null: false
     t.boolean "cancelled", default: false, null: false
     t.integer "minutes", default: 0, null: false
+    t.integer "credit_cost", default: 0, null: false
   end
 
   create_table "rooms", force: :cascade do |t|
@@ -434,6 +436,7 @@ ActiveRecord::Schema.define(version: 2020_01_03_182719) do
     t.integer "square_footage", default: 0, null: false
     t.boolean "rentable", default: false, null: false
     t.integer "hourly_rate_in_cents", default: 0, null: false
+    t.integer "credit_cost", default: 0, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end

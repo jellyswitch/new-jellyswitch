@@ -97,6 +97,10 @@ class Invoice < ApplicationRecord
     refunds.length > 0
   end
 
+  def paid?
+    status == "paid"
+  end
+
   def payment_method
     if stripe_invoice
       stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Cash or check"

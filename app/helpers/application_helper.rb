@@ -1,10 +1,12 @@
 # typed: false
 module ApplicationHelper
+  include CreditHelper
   include ErrorsHelper
-  include PlansHelper
   include LandingHelper
   include LayoutHelper
+  include PlansHelper
   include WeeklyUpdateHelper
+
   include Pagy::Frontend
 
   def pretty_datetime(input)

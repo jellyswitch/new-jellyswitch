@@ -64,6 +64,7 @@ class Operator < ApplicationRecord
   has_many :weekly_updates
 
   has_many :events, through: :locations
+  has_many :subscriptions, through: :plans
 
   has_one_attached :background_image
   has_one_attached :logo_image
@@ -84,6 +85,8 @@ class Operator < ApplicationRecord
            :create_or_update_customer_payment,
            :charge_invoice,
            :retrieve_stripe_customers,
+           :list_stripe_subscriptions,
+           :stripe_request,
            to: :stripe_operator
 
   scope :production, -> { where(billing_state: "production") }

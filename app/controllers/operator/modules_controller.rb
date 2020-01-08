@@ -6,54 +6,41 @@ class Operator::ModulesController < Operator::BaseController
   end
 
   def announcements
-    result = ToggleValue.call(object: current_tenant, value: :announcements_enabled)
-    
-    if !result.success?
-      flash[:error] = result.message
-    end
-
-    turbolinks_redirect(modules_path, action: "replace")
+    setting(:announcements_enabled)
   end
 
   def events
-    result = ToggleValue.call(object: current_tenant, value: :events_enabled)
-    
-    if !result.success?
-      flash[:error] = result.message
-    end
-
-    turbolinks_redirect(modules_path, action: "replace")
+    setting(:events_enabled)
   end
 
   def door_integration
-    result = ToggleValue.call(object: current_tenant, value: :door_integration_enabled)
-    
-    if !result.success?
-      flash[:error] = result.message
-    end
-
-    turbolinks_redirect(modules_path, action: "replace")
+    setting(:door_integration_enabled)
   end
 
   def rooms
-    result = ToggleValue.call(object: current_tenant, value: :rooms_enabled)
-    
-    if !result.success?
-      flash[:error] = result.message
-    end
+    setting(:rooms_enabled)
+  end
 
-    turbolinks_redirect(modules_path, action: "replace")
+  def credits
+    setting(:credits_enabled)
   end
 
   def offices
     if current_tenant.has_active_office_leases?
       flash[:error] = "Terminate active office leases before disabling."
+      turbolinks_redirect(modules_path, action: "replace")
     else
-      result = ToggleValue.call(object: current_tenant, value: :offices_enabled)
-      
-      if !result.success?
-        flash[:error] = result.message
-      end
+      setting(:offices_enabled)
+    end
+  end
+
+  private
+
+  def setting(symbol)
+    result = ToggleValue.call(object: current_tenant, value: symbol)
+    
+    if !result.success?
+      flash[:error] = result.message
     end
 
     turbolinks_redirect(modules_path, action: "replace")

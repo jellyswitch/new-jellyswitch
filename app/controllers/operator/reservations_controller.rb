@@ -2,6 +2,7 @@
 class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
   include ReservationHelper
+  include CreditHelper
 
   def show
     find_reservation

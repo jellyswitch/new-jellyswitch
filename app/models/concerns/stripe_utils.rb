@@ -60,6 +60,10 @@ module StripeUtils
     stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 
+  def list_stripe_subscriptions
+    stripe_request(Subscription, :list, {})
+  end
+
   def create_stripe_plan(plan)
     plan_args = {
       amount: plan.amount_in_cents,
@@ -141,7 +145,7 @@ module StripeUtils
     false
   end
 
-  private
+  
 
   def stripe_request(klass, action, request_args)
     operator_stripe_credentials = {
