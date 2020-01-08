@@ -1,12 +1,7 @@
 <%- title "Comment" %>
 
-<div class="row mt-3 mb-2">
-  <div class="col-lg-2 order-2 order-lg-1"></div>
-  <div class="col-lg-6 order-3 order-lg-2">
-    <div id="feed-item-<%= @feed_item.id %>">
-      <%= render(FeedItemComponent, feed_item: @feed_item, comments: true) %>
-    </div>
+<%= render Layout::FullWidth do %>
+  <div id="feed-item-<%= @feed_item.id %>">
+    <%= render(FeedItemComponent, feed_item: @feed_item, comments: true) %>
   </div>
-
-  <div class="col-lg-1 order-4"></div>
-</div>
+<% end %>

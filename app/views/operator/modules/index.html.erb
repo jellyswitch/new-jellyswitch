@@ -66,13 +66,15 @@
         </div>
       </div>
 
-      <div class="row">
-        <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:credit).enabled?, path: credits_modules_path) do %>
-            Reservation Credits
-          <% end %>
+      <% if superadmin? %>
+        <div class="row">
+          <div class="col">
+            <%= render(OnOffSwitch, predicate: policy(:credit).enabled?, path: credits_modules_path) do %>
+              Reservation Credits
+            <% end %>
+          </div>
         </div>
-      </div>
+      <% end %>
 
       <div class="row">
         <div class="col">
