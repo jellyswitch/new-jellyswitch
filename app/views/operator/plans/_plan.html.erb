@@ -11,12 +11,14 @@
     </div>
   </div>
 
-  <div class="row">
-    <div class="col">
-      Includes <strong><%= render CreditAmount, amount: plan.credits %></strong>
+  <% if policy(:credit).enabled? %>
+    <div class="row">
+      <div class="col">
+        Includes <strong><%= render CreditAmount, amount: plan.credits %></strong>
+      </div>
     </div>
-  </div>
-
+  <% end %>
+  
   <% plan.locations.each do |location| %>
     <%= render "operator/plans/location_check", location: location %>
   <% end %>
