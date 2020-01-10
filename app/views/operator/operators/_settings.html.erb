@@ -118,15 +118,6 @@
         <i>Not uploaded</i>
       <%- end %>
     </dd>
-
-    <dt>Push Notification Certificate</dt>
-    <dd>
-      <%- if operator.push_notification_certificate.attached? %>
-        Uploaded
-      <%- else %>
-        Not Uploaded
-      <%- end %>
-    </dd>
   </dl>
 
   <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>

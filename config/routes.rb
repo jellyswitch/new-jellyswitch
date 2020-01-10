@@ -104,6 +104,7 @@ Rails.application.routes.draw do
     end
   end
   resources :announcements, controller: "operator/announcements"
+  resources :app_configs, controller: "operator/app_configs"
   resources :checkins, controller: "operator/checkins" do
     collection do
       get :required, to: "operator/checkins#required"
