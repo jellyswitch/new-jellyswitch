@@ -103,7 +103,8 @@
     <dt>Logo</dt>
     <dd>
       <%- if operator.logo_image.attached? %>
-        <%= image_tag(operator.logo_image.variant(resize: "500x500"), width: 150, height: 150) %>
+        <%= %>
+        <%= link_to "Download", rails_blob_path(operator.logo_image, disposition: "attachment") %>
       <%- else %>
         <i>Not uploaded</i>
       <%- end %>
@@ -112,7 +113,7 @@
     <dt>Background</dt>
     <dd>
       <%- if operator.background_image.attached? %>
-        <%= image_tag(operator.background_image.variant(resize: "500x500"), width: 150, height: 150) %>
+        <%= link_to "Download", rails_blob_path(operator.background_image, disposition: "attachment") %>
       <%- else %>
         <i>Not uploaded</i>
       <%- end %>
@@ -128,5 +129,5 @@
     </dd>
   </dl>
 
-      <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
+  <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
 <% end %>
