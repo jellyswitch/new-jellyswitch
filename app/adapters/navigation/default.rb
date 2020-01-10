@@ -57,8 +57,7 @@ class Navigation::Default < SimpleDelegator
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(user)},
-      {title: "Member Dashboard", path: home_path},
-      {title: "App Config", path: app_configs_path}
+      {title: "Member Dashboard", path: home_path}
     ].each do |item|
       items << item
     end
@@ -70,6 +69,9 @@ class Navigation::Default < SimpleDelegator
       )
     end
 
+    if user.superadmin?
+      items << {title: "App Config", path: app_configs_path}
+    end
     items
   end
 
