@@ -31,7 +31,6 @@ module StripeSubscription
         if lease.present?
           lease.end_date.to_time.to_i
         else
-          puts "LEASE NOT PASSED"
           nil
         end
       else
