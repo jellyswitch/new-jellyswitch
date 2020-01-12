@@ -55,8 +55,8 @@ module StripeUtils
     stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
   end
 
-  def create_stripe_subscription(subscription)
-    subscribable = StripeSubscriptionFactory.for(subscription)
+  def create_stripe_subscription(subscription, lease: nil)
+    subscribable = StripeSubscriptionFactory.for(subscription, lease)
     stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 

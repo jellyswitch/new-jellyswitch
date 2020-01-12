@@ -93,4 +93,12 @@ class Subscription < ApplicationRecord
     report = Jellyswitch::UsageReport.new(subscribable)
     plan.day_limit - report.days_used_count
   end
+
+  def has_end_date?
+    stripe_subscription.cancel_at.present?
+  end
+
+  def end_date
+    Time.at(stripe_subscription.cancel_at)
+  end
 end

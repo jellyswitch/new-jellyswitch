@@ -11,7 +11,7 @@ class Billing::Leasing::CreateStripeSubscription
 
     stripe_start_date = (Time.zone.at(initial_invoice_date.to_time.to_i) + 2.hours).to_i
 
-    stripe_subscription = operator.create_stripe_subscription(subscription)
+    stripe_subscription = operator.create_stripe_subscription(subscription, lease: office_lease)
     subscription.update(stripe_subscription_id: stripe_subscription.id)
   rescue StandardError => e
     context.fail!(message: e.message)
