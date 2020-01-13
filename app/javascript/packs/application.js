@@ -44,4 +44,4 @@ document.addEventListener("turbolinks:load", () => {
   })
 })
 
-
+import './pagy.js.erb'
