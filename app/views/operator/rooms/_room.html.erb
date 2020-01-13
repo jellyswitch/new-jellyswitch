@@ -45,19 +45,18 @@
           </div>
         <% end %>
         <div class="row mt-2">
-          <%= link_to "Reserve Later", choose_day_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>        </div>
+          <%= link_to "Reserve Later", choose_day_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>
+        </div>
         <% if admin? %>
           <div class="row mt-2">
-            <div class="col m-0 pl-0">
-              <%= link_to "Edit Room", edit_room_path(room), class: "btn btn-block btn-secondary" %>
-            </div>
-            <div class="col m-0 pr-0">
-              <% if mobile_app_request? %>
-                <%= link_to "Subscribe available on desktop", "#", class: "btn btn-block btn-info disabled"%>
-              <% else %>
-                <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "btn btn-block btn-info" %>
-              <% end %>
-            </div>
+            <%= link_to "Edit Room", edit_room_path(room), class: "col btn btn-block btn-secondary" %>
+          </div>
+          <div class="row mt-2">
+            <% if mobile_app_request? %>
+              <%= link_to "Subscribe available on desktop", "#", class: "col btn btn-block btn-info disabled"%>
+            <% else %>
+              <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "col btn btn-block btn-info" %>
+            <% end %>
           </div>
         <% end %>
       </div>
