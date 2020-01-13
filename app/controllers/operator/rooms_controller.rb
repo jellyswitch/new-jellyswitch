@@ -1,6 +1,7 @@
 # typed: false
 class Operator::RoomsController < Operator::BaseController
   include RoomsHelper
+  include SessionsHelper
   decorates_assigned :rooms, :hidden_rooms, :room, :rentable_rooms, :reservations
 
   def index
@@ -85,6 +86,10 @@ class Operator::RoomsController < Operator::BaseController
   end
 
   def find_room(key=:id)
-    @room = Room.friendly.find(params[key])
+    @room = if logged_in?
+      Room
+    else
+      Room.unscoped
+    end.friendly.find(params[key])
   end
 end
