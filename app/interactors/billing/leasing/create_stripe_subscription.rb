@@ -9,7 +9,7 @@ class Billing::Leasing::CreateStripeSubscription
     organization = subscription.subscribable
     initial_invoice_date = office_lease.initial_invoice_date
 
-    stripe_start_date = (Time.zone.at(initial_invoice_date.end_of_day.to_time.to_i) + 2.hours).to_i
+    stripe_start_date = (Time.zone.at(initial_invoice_date.end_of_day.to_time.to_i)).to_i
 
     stripe_subscription = operator.create_stripe_subscription(subscription)
     subscription.update(stripe_subscription_id: stripe_subscription.id)
