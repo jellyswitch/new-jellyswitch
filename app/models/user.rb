@@ -204,7 +204,7 @@ class User < ApplicationRecord
   end
 
   def self.lease_options_for_select(operator)
-    User.for_space(operator).non_superadmins.all.map do |user|
+    User.for_space(operator).non_superadmins.order(:name).all.map do |user|
       option_helper(user)
     end
   end

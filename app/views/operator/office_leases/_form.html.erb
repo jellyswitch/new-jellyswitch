@@ -36,12 +36,12 @@
 
   <div class="form-group">
     <%= f.label :end_date, "Lease End Date" %>
-    <%= f.date_select :end_date, { order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+    <%= f.date_select :end_date, { order: [:month, :day, :year], default: Time.zone.now + 1.year}, class: "form-control form-control-sm col ml-1 mr-1" %>
   </div>
 
   <div class="form-group">
     <%= f.label :initial_invoice_date, "Next Invoice Date" %>
-    <%= f.date_select :initial_invoice_date, { order: [:month, :day, :year], default: Time.current + 1.day}, class: "form-control form-control-sm col ml-1 mr-1" %>
+    <%= f.date_select :initial_invoice_date, { order: [:month, :day, :year], default: Time.zone.now + 1.day}, class: "form-control form-control-sm col ml-1 mr-1" %>
   </div>
 
   <div class="form-group">

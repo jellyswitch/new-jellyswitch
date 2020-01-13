@@ -12,6 +12,18 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     @subscription = new_subscription
     @user = User.find(subscription_params[:subscribable_id])
+
+    turbolinks_redirect(
+      choose_start_date_operator_admin_subscriptions_path(plan_id: subscription_params[:plan_id], subscribable_id: subscription_params[:subscribable_id]),
+       action: "replace")
+  end
+
+  def choose_start_date
+    authorize Subscription, :new?
+
+    subscribable = User.find(params[:subscribable_id])
+    @user = subscribable
+    @subscription = Subscription.new(plan_id: params[:plan_id], active: true, subscribable: subscribable)
   end
 
   def create

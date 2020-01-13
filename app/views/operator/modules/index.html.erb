@@ -66,6 +66,16 @@
         </div>
       </div>
 
+      <% if superadmin? %>
+        <div class="row">
+          <div class="col">
+            <%= render(OnOffSwitch, predicate: policy(:credit).enabled?, path: credits_modules_path) do %>
+              Reservation Credits
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
       <div class="row">
         <div class="col">
           <%= render(OnOffSwitch, predicate: policy(:office).enabled?, path: offices_modules_path, disabled: !policy(:payment).enabled? ) do %>

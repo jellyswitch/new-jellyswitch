@@ -10,7 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
+<<<<<<< HEAD
 ActiveRecord::Schema.define(version: 2019_12_25_194819) do
+=======
+ActiveRecord::Schema.define(version: 2020_01_07_233839) do
+>>>>>>> master
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -356,6 +360,15 @@ ActiveRecord::Schema.define(version: 2019_12_25_194819) do
     t.boolean "door_integration_enabled", default: true, null: false
     t.boolean "rooms_enabled", default: true, null: false
     t.boolean "offices_enabled", default: true, null: false
+    t.boolean "reservation_notifications", default: false, null: false
+    t.boolean "membership_notifications", default: true, null: false
+    t.boolean "signup_notifications", default: false, null: false
+    t.boolean "day_pass_notifications", default: true, null: false
+    t.boolean "member_feedback_notifications", default: true, null: false
+    t.boolean "checkin_notifications", default: true, null: false
+    t.boolean "refund_notifications", default: true, null: false
+    t.boolean "post_notifications", default: true, null: false
+    t.boolean "credits_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -387,6 +400,7 @@ ActiveRecord::Schema.define(version: 2019_12_25_194819) do
     t.boolean "always_allow_building_access", default: true, null: false
     t.boolean "has_day_limit", default: false, null: false
     t.integer "day_limit", default: 0, null: false
+    t.integer "credits", default: 0, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -408,6 +422,7 @@ ActiveRecord::Schema.define(version: 2019_12_25_194819) do
     t.datetime "updated_at", null: false
     t.boolean "cancelled", default: false, null: false
     t.integer "minutes", default: 0, null: false
+    t.integer "credit_cost", default: 0, null: false
   end
 
   create_table "rooms", force: :cascade do |t|
@@ -425,6 +440,7 @@ ActiveRecord::Schema.define(version: 2019_12_25_194819) do
     t.integer "square_footage", default: 0, null: false
     t.boolean "rentable", default: false, null: false
     t.integer "hourly_rate_in_cents", default: 0, null: false
+    t.integer "credit_cost", default: 0, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
@@ -488,6 +504,7 @@ ActiveRecord::Schema.define(version: 2019_12_25_194819) do
     t.boolean "bill_to_organization", default: false, null: false
     t.boolean "archived", default: false, null: false
     t.string "phone"
+    t.integer "credit_balance", default: 0, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

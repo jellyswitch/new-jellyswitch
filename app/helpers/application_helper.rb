@@ -1,10 +1,12 @@
 # typed: false
 module ApplicationHelper
+  include CreditHelper
   include ErrorsHelper
-  include PlansHelper
   include LandingHelper
   include LayoutHelper
+  include PlansHelper
   include WeeklyUpdateHelper
+
   include Pagy::Frontend
 
   def pretty_datetime(input)
@@ -32,11 +34,11 @@ module ApplicationHelper
   end
 
   def human_time_from_now(date)
-    if date.to_date == Date.today
+    if date == Time.zone.today
       "Today"
-    elsif date.to_date == Date.tomorrow
+    elsif date == Time.zone.tomorrow
       "Tomorrow"
-    elsif date.to_date == Date.yesterday
+    elsif date == Time.zone.yesterday
       "Yesterday"
     else
       date.strftime("%A")

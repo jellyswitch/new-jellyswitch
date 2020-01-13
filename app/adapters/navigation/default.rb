@@ -69,6 +69,9 @@ class Navigation::Default < SimpleDelegator
       )
     end
 
+    if user.superadmin?
+      items << {title: "App Config", path: app_configs_path}
+    end
     items
   end
 

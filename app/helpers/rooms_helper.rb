@@ -10,7 +10,8 @@ module RoomsHelper
       :visible, 
       :av,
       :rentable,
-      :hourly_rate_in_cents
+      :hourly_rate_in_cents,
+      :credit_cost
       )
     dollars = Money.from_amount(p[:hourly_rate_in_cents].to_i, "USD")
     p[:hourly_rate_in_cents] = dollars.cents

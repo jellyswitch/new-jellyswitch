@@ -105,7 +105,7 @@ class Operator::UsersController < Operator::BaseController
 
   def create
     authorize User.new
-    result = CreateUser.call(params: user_params, operator: current_tenant)
+    result = Users::Create.call(params: user_params, operator: current_tenant)
 
     if result.success?
       if admin? # admin is creating the user
@@ -356,6 +356,29 @@ class Operator::UsersController < Operator::BaseController
     end
 
     turbolinks_redirect(user_path(@user), action: "replace")
+  end
+
+  def credits
+    find_user(:user_id)
+    authorize @user
+  end
+
+  def add_credits
+    find_user(:user_id)
+    authorize @user
+
+    result = Users::AddCredits.call(
+      user: @user,
+      amount: params[:amount].to_i
+    )
+
+    if result.success?
+      flash[:success] = "Credits added."
+    else
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(user_credits_path(@user), action: "replace")
   end
 
   def out_of_band
