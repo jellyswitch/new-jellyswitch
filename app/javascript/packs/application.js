@@ -21,6 +21,9 @@ require("@rails/ujs").start()
 require("@rails/activestorage").start()
 require("turbolinks").start()
 
+require("chartkick")
+require("chart.js")
+
 import 'bootstrap'
 
 // This is required to get Turbolinks 5 to work with non-GET form errors

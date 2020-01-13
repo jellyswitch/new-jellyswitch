@@ -11,8 +11,6 @@
 // about supported directives.
 //
 
-//= require Chart.bundle
-//= require chartkick
 //= require pagy
 //= require ahoy
 //= require_tree .
