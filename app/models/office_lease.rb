@@ -68,4 +68,8 @@ class OfficeLease < ApplicationRecord
   def office_name
     office.name
   end
+
+  def set_end_date!
+    subscription.set_end_date!(end_date.to_time)
+  end
 end
