@@ -15,7 +15,6 @@ class Operator::OfficeLeasesController < Operator::BaseController
   def new
     @office_lease = OfficeLease.new
     @office_lease.build_subscription
-    @office_lease.end_date = Time.zone.now + 1.year
     @office_lease.subscription.build_plan
     find_organizations
     find_offices

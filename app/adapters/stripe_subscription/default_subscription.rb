@@ -21,7 +21,7 @@ module StripeSubscription
     def billing_cycle_anchor
       if subscription.plan.plan_type == "lease"
         if lease.present?
-          lease.initial_invoice_date.to_time.to_i
+          lease.initial_invoice_date.to_time.to_i + 2.hours
         else
           nil # today
         end
