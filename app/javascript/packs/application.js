@@ -17,7 +17,9 @@
 
 console.log('Hello World from Webpacker')
 
-require("@rails/ujs").start()
+import Rails from '@rails/ujs';
+Rails.start();
+
 require("@rails/activestorage").start()
 require("turbolinks").start()
 
