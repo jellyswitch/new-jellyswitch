@@ -18,6 +18,7 @@
 console.log('Hello World from Webpacker')
 
 require("@rails/ujs").start()
+require("@rails/activestorage").start()
 require("turbolinks").start()
 
 import 'bootstrap'
