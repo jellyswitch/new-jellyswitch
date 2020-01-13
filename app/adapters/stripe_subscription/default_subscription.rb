@@ -29,7 +29,7 @@ module StripeSubscription
         if subscription.start_date == Time.zone.today
           nil # today
         else
-          subscription.start_date.to_time.to_i
+          subscription.start_date.to_time.to_i + 2.hours
         end
       end
     end
