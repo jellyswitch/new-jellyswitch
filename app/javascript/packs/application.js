@@ -17,8 +17,10 @@
 
 console.log('Hello World from Webpacker')
 
-var Turbolinks = require("turbolinks")
-Turbolinks.start()
+require("@rails/ujs").start()
+require("turbolinks").start()
+
+import 'bootstrap'
 
 // This is required to get Turbolinks 5 to work with non-GET form errors
 // see https://github.com/turbolinks/turbolinks/issues/85#issuecomment-219799657
@@ -34,3 +36,5 @@ document.addEventListener("turbolinks:load", () => {
     scrollTo(0, 0)
   })
 })
+
+
