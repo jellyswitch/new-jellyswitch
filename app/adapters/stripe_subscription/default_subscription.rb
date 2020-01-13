@@ -19,10 +19,18 @@ module StripeSubscription
     end
 
     def billing_cycle_anchor
-      if subscription.start_date == Time.zone.today
-        nil
+      if subscription.plan.plan_type == "lease"
+        if lease.present?
+          lease.initial_invoice_date.to_time.to_i
+        else
+          nil # today
+        end
       else
-        subscription.start_date.to_time.to_i
+        if subscription.start_date == Time.zone.today
+          nil # today
+        else
+          subscription.start_date.to_time.to_i
+        end
       end
     end
 
