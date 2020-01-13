@@ -24,6 +24,9 @@ require("turbolinks").start()
 require("chartkick")
 require("chart.js")
 
+import ahoy from "ahoy.js";
+window.ahoy = ahoy
+
 import 'bootstrap'
 
 // This is required to get Turbolinks 5 to work with non-GET form errors

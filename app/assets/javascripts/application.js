@@ -12,7 +12,6 @@
 //
 
 //= require pagy
-//= require ahoy
 //= require_tree .
 
 
