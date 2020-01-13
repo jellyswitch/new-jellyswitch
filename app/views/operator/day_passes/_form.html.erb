@@ -1,4 +1,4 @@
-<%= javascript_include_tag "stripe_handler.js" %>
+<%= javascript_pack_tag "stripe_handler.js" %>
 
 <%= form_for(day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
   <div class="form-group row">

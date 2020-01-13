@@ -1,4 +1,4 @@
-<%= javascript_include_tag "stripe_handler.js" %>
+<%= javascript_pack_tag "stripe_handler.js" %>
 
 <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
   <%= render "shared/error_messages", model: subscription %>
