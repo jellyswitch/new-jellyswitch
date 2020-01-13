@@ -35,13 +35,13 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Office lease created."
-      turbolinks_redirect(office_leases_path)
+      turbolinks_redirect(office_lease_path(result.office_lease))
     else
       flash[:error] = result.message
       find_organizations
       find_offices
       find_plans
-      render :new, status: 422
+      turbolinks_redirect(new_office_lease_path, action: "replace")
     end
   end
 
