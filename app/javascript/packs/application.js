@@ -16,3 +16,21 @@
 // const imagePath = (name) => images(name, true)
 
 console.log('Hello World from Webpacker')
+
+var Turbolinks = require("turbolinks")
+Turbolinks.start()
+
+// This is required to get Turbolinks 5 to work with non-GET form errors
+// see https://github.com/turbolinks/turbolinks/issues/85#issuecomment-219799657
+// for more information
+
+document.addEventListener("turbolinks:load", () => {
+  document.body.addEventListener("ajax:error", (e) => {
+    if (e.detail[2].status !== 422) {
+      return
+    }
+    document.body = e.detail[0].body
+    Turbolinks.dispatch("turbolinks:load")
+    scrollTo(0, 0)
+  })
+})
