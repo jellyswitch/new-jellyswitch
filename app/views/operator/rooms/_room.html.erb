@@ -52,7 +52,11 @@
               <%= link_to "Edit Room", edit_room_path(room), class: "btn btn-block btn-secondary" %>
             </div>
             <div class="col m-0 pr-0">
-              <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "btn btn-block btn-info" %>
+              <% if ios_request? %>
+                <%= link_to "Subscribe", room_url(room, protocol: "CALSHOW", format: :ics), class: "btn btn-block btn-info" %>
+              <% else %>
+                <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "btn btn-block btn-info" %>
+              <% end %>
             </div>
           </div>
         <% end %>
