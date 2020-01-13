@@ -22,6 +22,7 @@ class Operator::RoomsController < Operator::BaseController
     respond_to do |format|
       format.html
       format.ics do
+        headers["Content-Type"] = "text/calendar"
         render plain: @room.calendar.to_ical
       end
     end
