@@ -24,32 +24,12 @@ class WebhooksController < ApplicationController
         update_status(@event.data.object)
       end
     when "customer.subscription.deleted"
-      subscription = Subscription.find_by(stripe_subscription_id: @event.data.object.id)
-      
-      if subscription.present?
-        if subscription.active?
-          if subscription.office_leases.count > 0
-            result = Billing::Leasing::TerminateOfficeLease.call(
-              office_lease: subscription.office_leases.first,
-              subscription: subscription
-            )
+      result = Webhooks::SubscriptionDeleted.call(event: @event)
 
-            if result.success?
-              ok
-            else
-              Rollbar.error(result.message) if @event.livemode
-              error(result.message)
-            end
-          else
-            ok # TODO handle cancelling of memberships
-          end
-        else
-          ok
-        end
+      if result.success?
+        ok
       else
-        msg = "customer.subscription.deleted: No such subscription #{@event.data.object.id}"
-        Rollbar.error(msg) if @event.livemode
-        error(msg)
+        error(result.message)
       end
     else
       error("Unrecognized webhook type: #{@event.type}")

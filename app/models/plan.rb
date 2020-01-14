@@ -167,4 +167,18 @@ class Plan < ApplicationRecord
   def biannually?
     interval == "biannually"
   end
+
+  def has_commitment_interval?
+    commitment_interval.present?
+  end
+
+  def commitment_duration
+    {
+      "weekly" => commitment_interval.weeks,
+      "monthly" => commitment_interval.months,
+      "quarterly" => commitment_interval.months * 3,
+      "biannually" => commitment_interval.months * 3 * 2,
+      "annually" => commitment_interval.years,
+    }[interval]
+  end
 end
