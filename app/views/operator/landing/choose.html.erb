@@ -41,7 +41,7 @@
 
   <% if policy(:room).enabled? && current_location.rentable_rooms_enabled? %>
     <%= list_item do %>
-      <%= render "rooms", rooms: @rooms %>
+      <%= render(MemberOnboarding::Rooms, rooms: @rooms) %>
     <% end %>
   <% end %>
 <% end %>
