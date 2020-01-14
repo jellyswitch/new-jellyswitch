@@ -27,16 +27,20 @@
     <% end %>
   <% end %>
 
-  <%= list_item do %>
-    <% if current_tenant.day_passes_enabled? %>
+  <% if current_tenant.day_passes_enabled? %>
+    <%= list_item do %>
       <%= render(MemberOnboarding::DayPass, day_pass_types: @day_pass_types, new_day_pass_path: new_day_pass_path, location: current_location) %>
     <% end %>
+  <% end %>
 
-    <% if current_tenant.memberships_enabled? %>
+  <% if current_tenant.memberships_enabled? %>
+    <%= list_item do %>
       <%= render "memberships", plans: @plans %>
     <% end %>
+  <% end %>
 
-    <% if policy(:room).enabled? && current_location.rentable_rooms_enabled? %>
+  <% if policy(:room).enabled? && current_location.rentable_rooms_enabled? %>
+    <%= list_item do %>
       <%= render "rooms", rooms: @rooms %>
     <% end %>
   <% end %>
