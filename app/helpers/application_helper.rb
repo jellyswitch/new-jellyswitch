@@ -174,6 +174,11 @@ module ApplicationHelper
     "#{rate} / hr"
   end
 
+  def hourly_rate_room(room)
+    rate = number_to_currency(dollar_amount(room.hourly_rate_in_cents))
+    "#{rate} / hr"
+  end
+
   private
 
   def working_hours_config(location)
