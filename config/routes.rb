@@ -117,7 +117,11 @@ Rails.application.routes.draw do
       get :redeem_paid, to: "operator/day_passes#redeem_paid"
     end
   end
-  resources :day_pass_types, controller: "operator/day_pass_types"
+  resources :day_pass_types, controller: "operator/day_pass_types" do
+    get :available, to: "operator/day_pass_types#available"
+    get :visible, to: "operator/day_pass_types#visible"
+    get :always_allow_building_access, to: "operator/day_pass_types#always_allow_building_access"
+  end
   resources :doors, controller: "operator/doors" do
     get "open", to: "operator/doors#open"
     collection do
