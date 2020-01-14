@@ -41,7 +41,7 @@ class WebhooksController < ApplicationController
               error(result.message)
             end
           else
-            Rollbar.error("Stripe subscription cancelled: #{subscription.id}") if @event.livemode
+            ok # TODO handle cancelling of memberships
           end
         else
           ok
