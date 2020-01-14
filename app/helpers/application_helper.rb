@@ -169,6 +169,11 @@ module ApplicationHelper
     render "layouts/no_cache"
   end
 
+  def hourly_rate(loc)
+    rate = number_to_currency(dollar_amount(loc.hourly_rate_in_cents))
+    "#{rate} / hr"
+  end
+
   private
 
   def working_hours_config(location)

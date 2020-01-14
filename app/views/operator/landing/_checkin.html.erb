@@ -1,17 +1,24 @@
 <div class="row mb-2 mr-1 ml-1">
-
   <div class="col mt-3">
-    <strong class="row">
-      Hourly Rate
-    </strong>
-    <p class="row mt-3" style="height: 100px;">
-      Check in now and pay <%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %> / hr. Includes access to the building, wifi, and a flex desk.
-    </p>
-    <div class="row">
+    <h5 class="text-center">
+      <i class="fas fa-hourglass-start"></i>
+      &nbsp;
+      Check In
+    </h5>
+    <div class="mt-3">
+      Pay as you go. You'll be charged when you check out.
+    </div>
+    <div class="mt-3">
+      Our current rate is: &nbsp;<span class="text-success font-weight-bold"><%= hourly_rate(location) %></span>
+    </div>
+    <div class="mt-3">
+      Pro-rated to the minute, and includes access to the building, wifi, and a flex desk. Only available during working hours.
+    </div>
+    <div class="row mt-3">
       <% if user.has_billing? %>
-        <%= link_to "Check in now", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
+        <%= link_to "Check in now for #{hourly_rate(current_location)}", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
       <% else %>
-        <%= link_to "Check in now", new_checkin_path, class: "btn btn-primary col m-2" %>
+        <%= link_to "Check in now for #{hourly_rate(current_location)}", new_checkin_path, class: "btn btn-primary col m-2" %>
       <% end %>
     </div>
   </div>
