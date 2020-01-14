@@ -10,11 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
-ActiveRecord::Schema.define(version: 2019_12_25_194819) do
-=======
-ActiveRecord::Schema.define(version: 2020_01_07_233839) do
->>>>>>> master
+ActiveRecord::Schema.define(version: 2020_01_14_180449) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -401,6 +397,7 @@ ActiveRecord::Schema.define(version: 2020_01_07_233839) do
     t.boolean "has_day_limit", default: false, null: false
     t.integer "day_limit", default: 0, null: false
     t.integer "credits", default: 0, null: false
+    t.integer "commitment_interval"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 

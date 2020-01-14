@@ -68,6 +68,18 @@ class Operator::DayPassTypesController < Operator::BaseController
     turbolinks_redirect(day_pass_types_url)
   end
 
+  def visible
+    setting(:visible)
+  end
+
+  def always_allow_building_access
+    setting(:always_allow_building_access)
+  end
+
+  def available
+    setting(:available)
+  end
+
   private
 
   def find_day_pass_type(key = :id)
@@ -76,5 +88,16 @@ class Operator::DayPassTypesController < Operator::BaseController
 
   def find_day_pass_types
     @day_pass_types = DayPassType.all
+  end
+
+  def setting(symbol)
+    find_day_pass_type(:day_pass_type_id)
+    result = ToggleValue.call(object: @day_pass_type, value: symbol)
+    
+    if !result.success?
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(day_pass_type_path(@day_pass_type), action: "replace")
   end
 end

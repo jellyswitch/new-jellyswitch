@@ -54,6 +54,14 @@
         </div>
       <% end %>
 
+      <% if @plan.has_commitment_interval? %>
+        <div class="row">
+          <div class="col">
+            <strong><%= @plan.commitment_interval %></strong> <%= @plan.display_interval %> commitment
+          </div>
+        </div>
+      <% end %>
+
       <div class="mt-3"></div>
       <% if @plan.locations.count < 1 %>
         <div class="row">

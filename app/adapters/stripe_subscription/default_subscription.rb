@@ -46,7 +46,11 @@ module StripeSubscription
           nil
         end
       else
-        nil
+        if subscription.plan.has_commitment_interval?
+          (subscription.start_date + subscription.plan.commitment_duration).to_time.to_i
+        else
+          nil
+        end
       end
     end
   end

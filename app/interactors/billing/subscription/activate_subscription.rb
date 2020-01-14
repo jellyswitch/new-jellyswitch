@@ -12,6 +12,10 @@ class Billing::Subscription::ActivateSubscription
     subscription.active = true
     subscription.pending = false
 
+    if subscription.start_date.past?
+      subscription.start_date = Time.zone.now + 2.hours
+    end
+
     if subscription.save
       context.subscription = subscription
     else
