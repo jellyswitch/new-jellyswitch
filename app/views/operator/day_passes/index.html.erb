@@ -1,29 +1,25 @@
 <%- title "Day Passes" %>
 
-<div class="row mt-3 mb-2">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="display-4 text-center">Day Passes</h4>
-        <table class="table table-sm">
-          <%- @day_passes.each do |day_pass| %>
-            <tr>
-              <td>
-                <%= day_pass.pretty_day %>
-              </td>
-              <td>
-                <% if day_pass.user.present? %>
-                  <%= link_to day_pass.user.name, user_path(day_pass.user) %>
-                <% else %>
-                  <i>Deleted User</i>
-                <% end %>
-              </td>
-            </tr>
-          <%- end %>
-        </table>  
-      </div>
-    </div>
-  </div>
-  <div class="col-sm-3"></div>
-</div>
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      <i class="fas fa-ticket-alt"></i>
+      &nbsp;
+      Day Passes
+    </h4>
+  <% end %>
+  <% if current_tenant.day_pass_types.visible.available.count == 1 %>
+    <%= list_item do %>
+      <%= render(MemberOnboarding::DayPassItem, day_pass_type: current_tenant.day_pass_types.visible.available.first) %>
+    <% end %>
+  <% else %>
+    <% current_day_pass_types.visible.available.each do |day_pass_type| %>
+      <%= list_item do %>
+        <%= render(MemberOnboarding::DayPassItem, day_pass_type: day_pass_type) %>
+      <% end %>
+    <% end %>
+  <% end %>
+  <%= list_item do %>
+    <%= link_to "I have a discount code", code_day_passes_path, class: "btn btn-block btn-info" %>
+  <% end %>
+<% end %>

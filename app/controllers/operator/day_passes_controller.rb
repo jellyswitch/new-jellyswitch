@@ -10,6 +10,7 @@ class Operator::DayPassesController < Operator::BaseController
 
   def new
     @day_pass = DayPass.new
+    find_day_pass_type
     authorize @day_pass
     include_stripe
   end
@@ -86,7 +87,7 @@ class Operator::DayPassesController < Operator::BaseController
           turbolinks_redirect(code_day_passes_path, action: "replace")
         end
       else
-        turbolinks_redirect(redeem_paid_day_passes_path(code: params[:code]))
+        turbolinks_redirect(redeem_paid_day_passes_path(code: params[:code], day_pass_type_id: result.day_pass_type_id ))
       end
     else
       flash[:error] = result.message
@@ -122,5 +123,9 @@ class Operator::DayPassesController < Operator::BaseController
 
   def day_pass_params
     params.require(:day_pass).permit(:day, :day_pass_type)
+  end
+
+  def find_day_pass_type(key=:day_pass_type_id)
+    @day_pass_type = current_tenant.day_pass_types.find(params[key])
   end
 end
