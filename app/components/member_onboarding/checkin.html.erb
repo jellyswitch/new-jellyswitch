@@ -15,10 +15,10 @@
       Pro-rated to the minute, and includes access to the building, wifi, and a flex desk. Only available during working hours.
     </div>
     <div class="row mt-3">
-      <% if user.has_billing? %>
-        <%= link_to "Check in now for #{hourly_rate(current_location)}", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
+      <% if has_billing %>
+        <%= link_to "Check in now for #{hourly_rate(location)}", checkins_path, method: :post, remote: true, class: "btn btn-primary col m-2" %>
       <% else %>
-        <%= link_to "Check in now for #{hourly_rate(current_location)}", new_checkin_path, class: "btn btn-primary col m-2" %>
+        <%= link_to "Check in now for #{hourly_rate(location)}", new_checkin_path, class: "btn btn-primary col m-2" %>
       <% end %>
     </div>
   </div>
