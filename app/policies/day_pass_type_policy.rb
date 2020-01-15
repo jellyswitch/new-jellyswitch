@@ -9,7 +9,7 @@ class DayPassTypePolicy < ApplicationPolicy
   end
 
   def edit?
-    false # We don't want to edit day passes for accounting purposes
+    admin? && billing_enabled?
   end
 
   def new?

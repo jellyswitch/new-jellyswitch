@@ -5,6 +5,12 @@
   </div>
 </div>
 
+<div class="row">
+  <div class="col">
+    <%= day_pass_type.description %>
+  </div>
+</div>
+
 <div class="row mt-3">
   <div class="col">
     <%= link_to "Select #{day_pass_type.name}", new_day_pass_path(day_pass_type_id: day_pass_type.id), class: "btn btn-block btn-primary" %>

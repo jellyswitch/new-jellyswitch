@@ -10,9 +10,14 @@ module DayPassTypesHelper
   end
 
   def day_pass_type_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
     p
+  end
+
+
+  def day_pass_type_update_params
+    params.require(:day_pass_type).permit(:code, :description)
   end
 end
