@@ -15,4 +15,8 @@ class SubscriptionDeleted::AlreadyCancelled < SimpleDelegator
   def success?
     @result
   end
+
+  def message
+    "AlreadyCancelled::Message for #{subscription.stripe_subscription_id}"
+  end
 end
