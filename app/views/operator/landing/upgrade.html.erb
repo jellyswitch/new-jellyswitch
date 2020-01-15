@@ -5,7 +5,7 @@
   <p class="lead text-center mb-3 mt-3">You have hit the limit of your membership plan. To proceed, please choose an option below:</p>
   
   <% if current_location.allow_hourly? %>
-    <%= render "checkin", location: current_location, user: current_user %>
+    <%= render(MemberOnboarding::Checkin, location: current_location, has_billing: current_user.has_billing?) %>
   <% end %>
 
   <div class="row mb-2 mr-1 ml-1">

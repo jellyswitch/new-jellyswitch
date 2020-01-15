@@ -20,6 +20,8 @@ class DayPassType < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  has_rich_text :description
+
   # Scopes
   scope :available, -> { where(available: true) }
   scope :visible, -> { where(visible: true) }

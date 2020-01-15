@@ -154,7 +154,7 @@ module ApplicationHelper
   end
 
   def membership_text(plan)
-    if current_tenant.membership_text.present?
+    if plan.operator.membership_text.present?
       "Memberships start at #{display_price(plan)} and include #{current_tenant.membership_text}."
     else
       "Memberships start at #{display_price(plan)} and vary from flexible desk space to full private offices."
@@ -167,6 +167,16 @@ module ApplicationHelper
 
   def no_cache
     render "layouts/no_cache"
+  end
+
+  def hourly_rate(loc)
+    rate = number_to_currency(dollar_amount(loc.hourly_rate_in_cents))
+    "#{rate} / hr"
+  end
+
+  def hourly_rate_room(room)
+    rate = number_to_currency(dollar_amount(room.hourly_rate_in_cents))
+    "#{rate} / hr"
   end
 
   private

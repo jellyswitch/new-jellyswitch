@@ -2,27 +2,24 @@
 class Operator::DayPassTypesController < Operator::BaseController
   include DayPassTypesHelper
   before_action :find_day_pass_type, only: [:show, :edit, :update, :destroy]
+  before_action :background_image
 
   def index
     find_day_pass_types
     authorize @day_pass_types
-    background_image
   end
 
   def show
     authorize @day_pass_type
-    background_image
   end
 
   def new
     @day_pass_type = DayPassType.new
     authorize @day_pass_type
-    background_image
   end
 
   def edit
     authorize @day_pass_type
-    background_image
   end
 
   def create
@@ -49,7 +46,7 @@ class Operator::DayPassTypesController < Operator::BaseController
   def update
     authorize @day_pass_type
 
-    if @day_pass_type.update(day_pass_type_params)
+    if @day_pass_type.update(day_pass_type_update_params)
       flash[:success] = "Day pass type was successfully updated."
       turbolinks_redirect(day_pass_type_path(@day_pass_type))
     else

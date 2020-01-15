@@ -1,18 +1,10 @@
-<% title "Buy a Day Pass" %>
+<% title "Day Pass" %>
 
-<div class="row mt-3">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <h4 class="display-4 text-center mt-4">New Day Pass</h4>
-      <p class="lead text-center mb-3 mt-3">When would you like to use your day pass?</p>
-      <%= render "form", day_pass: @day_pass, label: "Purchase", user: current_user %>
-      <%= link_to "I have a discount code", code_day_passes_path, class: "btn btn-block btn-info" %>
-      <%= render "shared/terms_of_service" %>
-      <p class="text-muted">
-        <%= link_to "Go Back", choose_path, data: {"turbolinks-action" => "restore"} %>
-      </p>
-    </div>
-  </div>
-  <div class="col-sm-3"></div>
-</div>
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center mt-4">Confirm Day Pass</h4>
+    <p class="lead text-center mb-3 mt-3">When would you like to use your day pass?</p>
+    <%= render "form", day_pass: @day_pass, label: "Confirm and purchase", user: current_user %>
+    <%= render "shared/terms_of_service" %>
+  <% end %>
+<% end %>

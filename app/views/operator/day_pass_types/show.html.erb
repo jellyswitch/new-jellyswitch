@@ -5,7 +5,7 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @day_pass_type.name %></li>
 <% end %>
 
-<%= wide_card do %>
+<%= render Layout::FullWidth do %>
   <div class="list-group list-group-flush">
     <%= render @day_pass_type, view: false %>
   </div>

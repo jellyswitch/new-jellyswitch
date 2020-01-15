@@ -21,6 +21,8 @@ import Rails from '@rails/ujs';
 Rails.start();
 
 require("@rails/activestorage").start()
+require("trix")
+require("@rails/actiontext")
 require("turbolinks").start()
 
 require("chartkick")
