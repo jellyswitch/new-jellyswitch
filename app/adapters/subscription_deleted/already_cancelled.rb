@@ -6,10 +6,13 @@ class SubscriptionDeleted::AlreadyCancelled < SimpleDelegator
   end
 
   def perform
+    if subscription.active?
+      @result = subscription.update(active: false)
+    end
     self
   end
 
   def success?
-    true # to hack the interactor pattern return value
+    @result
   end
 end
