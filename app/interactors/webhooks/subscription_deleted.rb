@@ -11,7 +11,7 @@ class Webhooks::SubscriptionDeleted
 
       if !result.success?
         Rollbar.error(result.message) if event.livemode
-        context.fail!(result.message)
+        context.fail!(message: result.message)
       end
     else
       # subscription cannot be found
