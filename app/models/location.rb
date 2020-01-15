@@ -71,8 +71,6 @@ class Location < ApplicationRecord
   has_one_attached :background_image
   has_one_attached :photo
 
-  has_rich_text :day_pass_content
-
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true
 
