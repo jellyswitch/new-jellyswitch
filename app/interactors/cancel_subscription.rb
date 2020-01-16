@@ -12,7 +12,11 @@ class CancelSubscription
     end
 
     begin
-      subscription.cancel_stripe!
+      if subscription.stripe_subscription.status == "canceled"
+        Rollbar.error("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
+      else
+        subscription.cancel_stripe!
+      end
     rescue Exception => e
       undo_deactivate(subscription)
       Rollbar.error("Interactor Failure: #{e.message}")
