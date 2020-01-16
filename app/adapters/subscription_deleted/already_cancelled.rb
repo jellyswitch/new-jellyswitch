@@ -6,10 +6,7 @@ class SubscriptionDeleted::AlreadyCancelled < SimpleDelegator
   end
 
   def perform
-    if subscription.active?
-      @result = subscription.update(active: false)
-    end
-    self
+    @result = subscription.update(active: false)
   end
 
   def success?
