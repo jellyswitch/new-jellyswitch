@@ -5,7 +5,7 @@
     <div class="col-1"></div>
     <div class="col">
       Pick a plan:
-      <%= f.collection_select :plan_id, Plan.available.individual, :id, :pretty_name, {}, { class: "form-control form-control-sm" } %>
+      <%= f.collection_select :plan_id, Plan.available.individual.order(:name), :id, :pretty_name, {}, { class: "form-control form-control-sm" } %>
     </div>
     <div class="col-1"></div>
   </div>
