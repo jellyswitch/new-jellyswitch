@@ -7,6 +7,7 @@ class SubscriptionDeleted::AlreadyCancelled < SimpleDelegator
 
   def perform
     @result = subscription.update(active: false)
+    self
   end
 
   def success?
