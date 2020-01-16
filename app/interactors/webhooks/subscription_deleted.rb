@@ -10,8 +10,9 @@ class Webhooks::SubscriptionDeleted
       result = SubscriptionDeletedFactory.for(subscription).perform
 
       if !result.success?
-        Rollbar.error(result.message) if event.livemode
-        context.fail!(message: "SubscriptionDeletedFactory: #{result.message}")
+        msg = "SubscriptionDeletedFactory: #{result.message}"
+        Rollbar.error(msg) if event.livemode
+        context.fail!(message: msg)
       end
     else
       # subscription cannot be found
