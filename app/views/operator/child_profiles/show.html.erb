@@ -17,12 +17,18 @@
 
       <dt>Birthday</dt>
       <dd><%= short_date(@child_profile.birthday) %></dd>
+
+      <dt>Photo</dt>
+      <dd>
+        <%= image_tag(@child_profile.thumbnail) %>
+      </dd>
+
+      <dt>Notes</dt>
+      <dd>
+        <%= @child_profile.notes %>
+      </dd>
     </dl>
 
-    <div class="row">
-      <div class="col">
-        <%= @child_profile.notes %>
-      </div>
-    </div>
+    <%= link_to "Edit this profile", edit_child_profile_path(@child_profile), class: "btn btn-info btn-block" %>
   <% end %>
 <% end %>
