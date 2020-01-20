@@ -20,7 +20,11 @@
 
       <dt>Photo</dt>
       <dd>
-        <%= image_tag(@child_profile.thumbnail) %>
+        <% if @child_profile.photo.attached? %>
+          <%= image_tag(@child_profile.thumbnail) %>
+        <% else %>
+          <i>None</i>
+        <% end %>
       </dd>
 
       <dt>Notes</dt>
