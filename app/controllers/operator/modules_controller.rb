@@ -34,6 +34,10 @@ class Operator::ModulesController < Operator::BaseController
     end
   end
 
+  def childcare
+    setting(:childcare_enabled)
+  end
+
   private
 
   def setting(symbol)

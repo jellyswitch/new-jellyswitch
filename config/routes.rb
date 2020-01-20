@@ -175,6 +175,7 @@ Rails.application.routes.draw do
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements
+      get :childcare
       get :credits
       get :door_integration
       get :events

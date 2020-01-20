@@ -27,4 +27,8 @@ class ModulePolicy < ApplicationPolicy
   def credits?
     admin?
   end
+
+  def childcare?
+    admin?
+  end
 end

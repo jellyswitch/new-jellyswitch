@@ -100,6 +100,14 @@
         </div>
       </div>
 
+      <div class="row">
+        <div class="col">
+          <%= render(OnOffSwitch, predicate: policy(:childcare).enabled?, path: childcare_modules_path) do %>
+            Childcare
+          <% end %>
+        </div>
+      </div>
+
 
 
     <% end %>
