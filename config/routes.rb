@@ -110,6 +110,8 @@ Rails.application.routes.draw do
       get :required, to: "operator/checkins#required"
     end
   end
+  resources :childcare, controller: "operator/childcare"
+  resources :child_profiles, controller: "operator/child_profiles"
   resources :day_passes, controller: "operator/day_passes" do
     collection do
       get :code, to: "operator/day_passes#code"

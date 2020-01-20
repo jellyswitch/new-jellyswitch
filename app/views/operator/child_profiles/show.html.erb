@@ -1,0 +1,28 @@
+<% title "Child Profile" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Child Profiles", child_profiles_path %></li>
+  <li class="breadcrumb-item active" aria-current="page"><%= @child_profile.name %></li>
+<% end %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      Child Profile
+    </h4>
+
+    <dl>
+      <dt>Name</dt>
+      <dd><%= @child_profile.name %>
+
+      <dt>Birthday</dt>
+      <dd><%= short_date(@child_profile.birthday) %></dd>
+    </dl>
+
+    <div class="row">
+      <div class="col">
+        <%= @child_profile.notes %>
+      </div>
+    </div>
+  <% end %>
+<% end %>

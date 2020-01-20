@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_20_211028) do
+ActiveRecord::Schema.define(version: 2020_01_20_221847) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -107,6 +107,14 @@ ActiveRecord::Schema.define(version: 2020_01_20_211028) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
+  end
+
+  create_table "child_profiles", force: :cascade do |t|
+    t.string "name"
+    t.datetime "birthday"
+    t.integer "user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "day_pass_types", force: :cascade do |t|
