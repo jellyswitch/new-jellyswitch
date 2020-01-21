@@ -112,6 +112,7 @@ Rails.application.routes.draw do
   end
   resources :childcare, controller: "operator/childcare"
   resources :child_profiles, controller: "operator/child_profiles"
+  resources :childcare_slots, controller: "operator/childcare_slots"
   resources :day_passes, controller: "operator/day_passes" do
     collection do
       get :code, to: "operator/day_passes#code"

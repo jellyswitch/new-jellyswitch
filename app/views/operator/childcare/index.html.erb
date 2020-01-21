@@ -3,10 +3,8 @@
 <%= render Layout::FullWidth do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">
-      My Childcare
+      Childcare
     </h4>
-
-    <p>You have X child profiles and Y existing childcare reservations.</p>
   <% end %>
 
   <%= link_to child_profiles_path, class: "list-group-item list-group-item-action" do %>
@@ -15,6 +13,19 @@
         <i class="fas fa-child"></i>
         &nbsp;
         My child profiles
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+  <%= link_to childcare_slots_path, class: "list-group-item list-group-item-action" do %>
+    <div class="row">
+      <div class="col-lg-10 col-11">
+        <i class="fas fa-calendar-alt"></i>
+        &nbsp;
+        View & edit availability
       </div>
       <div class="col-1">
         <i class="fas fa-chevron-right"></i>
