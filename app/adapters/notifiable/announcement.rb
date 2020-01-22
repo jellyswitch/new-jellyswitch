@@ -13,7 +13,7 @@ module Notifiable
     end
 
     def send_notification
-      message = "#{user.name} posted an announcement to #{operator.name}."
+      message = "New announcement from #{operator.name}: #{body}"
 
       result = Notifications::PushNotifier.call(
         message: message,
