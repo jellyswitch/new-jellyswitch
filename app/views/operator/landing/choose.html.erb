@@ -35,7 +35,7 @@
 
   <% if current_tenant.memberships_enabled? %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::Memberships, plans: @plans) %>
+      <%= render(MemberOnboarding::Memberships, plans: @plans, location: current_location) %>
     <% end %>
   <% end %>
 

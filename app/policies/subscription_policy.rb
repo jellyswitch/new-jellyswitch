@@ -1,5 +1,9 @@
 # typed: true
 class SubscriptionPolicy < ApplicationPolicy
+  def index?
+    is_user? && billing_enabled?
+  end
+  
   def new?
     is_user? && billing_enabled?
   end

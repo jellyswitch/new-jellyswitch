@@ -145,6 +145,6 @@ class Operator::PlansController < Operator::BaseController
   def plan_update_params
     params.require(:plan).permit(:visible, 
       :available, :always_allow_building_access, 
-      :credits, location_ids: [])
+      :credits, :description, location_ids: [])
   end
 end

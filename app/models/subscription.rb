@@ -107,4 +107,12 @@ class Subscription < ApplicationRecord
     s.cancel_at = date.to_i
     s.save
   end
+
+  def has_canceled_at?
+    stripe_subscription.canceled_at.present?
+  end
+
+  def canceled_at
+    Time.at(stripe_subscription.canceled_at)
+  end
 end
