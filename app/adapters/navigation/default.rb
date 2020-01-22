@@ -31,7 +31,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     if policy(:event).enabled?
-      items << {title: "What's Happening?", path: events_path}
+      items << {title: "Events", path: events_path}
     end
 
     items << {title: "Members & Groups", path: members_groups_path}
@@ -81,7 +81,7 @@ class Navigation::Default < SimpleDelegator
     ]
 
     if policy(:event).enabled?
-      items << {title: "What's Happening?", path: events_path}
+      items << {title: "Events", path: events_path}
     end
     
     if user.allowed_in?(location) && user.approved?
