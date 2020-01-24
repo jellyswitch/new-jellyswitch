@@ -29,6 +29,7 @@ class DayPassType < ApplicationRecord
   scope :free, -> { where(amount_in_cents: 0) }
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
   scope :for_code, -> (code) { where(code: code) }
+  scope :cheapest, -> { order('amount_in_cents ASC').first }
 
   def self.options_for_select(operator)
     where(operator_id: operator.id).available.visible
