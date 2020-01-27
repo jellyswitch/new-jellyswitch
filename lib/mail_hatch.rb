@@ -35,9 +35,9 @@ class MailHatch
       template: "notification", 
       theme: "minimal",
       subject: subject,
-      ios_store_url: ios_store_url,
-      google_play_store_url: google_play_store_url,
       data: {
+        ios_store_url: ios_store_url,
+        google_play_store_url: google_play_store_url,
         message: text,
         title: title,
         address: address,
