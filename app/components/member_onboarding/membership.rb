@@ -7,5 +7,9 @@ class MemberOnboarding::Membership < ApplicationComponent
 
   private
 
+  def credit_enabled?
+    plan.operator.credits_enabled?
+  end
+
   attr_reader :plan
 end

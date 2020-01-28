@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_14_180449) do
+ActiveRecord::Schema.define(version: 2020_01_28_165221) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -107,6 +107,23 @@ ActiveRecord::Schema.define(version: 2020_01_14_180449) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
+  end
+
+  create_table "child_profiles", force: :cascade do |t|
+    t.string "name"
+    t.datetime "birthday"
+    t.integer "user_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "childcare_slots", force: :cascade do |t|
+    t.string "name"
+    t.integer "week_day"
+    t.boolean "deleted"
+    t.integer "location_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "day_pass_types", force: :cascade do |t|
@@ -255,6 +272,7 @@ ActiveRecord::Schema.define(version: 2020_01_14_180449) do
     t.boolean "open_thursday", default: true, null: false
     t.boolean "open_friday", default: true, null: false
     t.boolean "open_saturday", default: false, null: false
+    t.integer "credit_cost_in_cents", default: 0, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"
@@ -365,6 +383,7 @@ ActiveRecord::Schema.define(version: 2020_01_14_180449) do
     t.boolean "refund_notifications", default: true, null: false
     t.boolean "post_notifications", default: true, null: false
     t.boolean "credits_enabled", default: false, null: false
+    t.boolean "childcare_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

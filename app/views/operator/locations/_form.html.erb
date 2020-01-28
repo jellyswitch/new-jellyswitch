@@ -18,6 +18,13 @@
     </div>
   <% end %>
 
+  <% if policy(:credit).enabled? %>
+    <div class="form-group">
+      <%= f.label :credit_cost_in_cents %>
+      <%= f.number_field :credit_cost_in_cents, placeholder: "300", class: "form-control" %>
+    </div>
+  <% end %>
+
   <div class="form-group">
     <%= f.label :contact_name, "Contact Name (for members)" %>
     <%= f.text_field :contact_name, placeholder: "Contact Name", class: "form-control" %>
