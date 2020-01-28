@@ -6,6 +6,7 @@
 #  id                   :bigint(8)        not null, primary key
 #  av                   :boolean          default(FALSE), not null
 #  capacity             :integer          default(1), not null
+#  credit_cost          :integer          default(0), not null
 #  description          :text
 #  hourly_rate_in_cents :integer          default(0), not null
 #  name                 :string           not null
