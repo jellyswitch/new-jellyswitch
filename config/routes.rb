@@ -110,6 +110,11 @@ Rails.application.routes.draw do
       get :required, to: "operator/checkins#required"
     end
   end
+  resources :credit_purchases, controller: "operator/credit_purchases" do
+    collection do
+      get :confirm, to: "operator/credit_purchases#confirm"
+    end
+  end
   resources :day_passes, controller: "operator/day_passes" do
     collection do
       get :code, to: "operator/day_passes#code"
@@ -180,6 +185,7 @@ Rails.application.routes.draw do
       get :events
       get :offices
       get :rooms
+      get :reservation_credits_settings
     end
   end
   resources :notifications, controller: "operator/notifications" do

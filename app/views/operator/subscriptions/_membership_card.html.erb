@@ -46,8 +46,24 @@
   </dd>
 </dl>
 
+<% if policy(:credit).enabled? && subscription.subscribable.class == User %>
+  <dl class="row mt-3">
+    <dt class="col-6">Current credit balance</dt>
+    <dd class="col">
+      <%= number_with_delimiter(subscription.subscribable.credit_balance) %>
+    </dd>
+  </dl>
+<% end %>
+
 <% if subscription.active? %>
-  <div class="row">
+  <% if policy(:credit).enabled? %>
+    <div class="row mt-3">
+      <div class="col">
+        <%= link_to "Buy more credits", new_credit_purchase_path, class: "btn btn-block btn-success" %>
+      </div>
+    </div>
+  <% end %>
+  <div class="row mt-3">
     <div class="col">
       <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
     </div>
@@ -57,4 +73,5 @@
       <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
     </div>
   </div>
+  
 <%- end %>

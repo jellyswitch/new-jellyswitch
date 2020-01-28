@@ -8,6 +8,10 @@
   <% end %>
 
   <% if policy(:payment).enabled? %>
+    <%= render(OnOffSwitch, predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location)) do %>
+      Automatically provision free day passes to new users
+    <% end %>
+    
     <%= render(OnOffSwitch, predicate: location.allow_hourly?, path: location_allow_hourly_path(location)) do %>
       Allow hourly check-ins and check-outs
     <% end %>
@@ -15,10 +19,6 @@
     <% if location.allow_hourly? %>
       <dt>Hourly rate</dt>
       <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
-    <% end %>
-
-    <%= render(OnOffSwitch, predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location)) do %>
-      Automatically provision free day passes to new users
     <% end %>
   <% end %>
 </dl>
