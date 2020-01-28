@@ -1,0 +1,9 @@
+<% title "Childcare Reservation" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Childcare Reservation</h4>
+
+    <%= render(Childcare::Reservation, childcare_reservation: @childcare_reservation) %>
+  <% end %>
+<% end %>

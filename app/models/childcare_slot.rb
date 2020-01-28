@@ -13,10 +13,19 @@
 
 class ChildcareSlot < ApplicationRecord
   belongs_to :location
+  has_many :childcare_reservations
 
   scope :visible, -> { where(deleted: false) }
 
   def visible?
     deleted == false
+  end
+
+  def weekday_name
+    Date::DAYNAMES[week_day]
+  end
+
+  def pretty_name
+    "#{weekday_name} #{name}"
   end
 end

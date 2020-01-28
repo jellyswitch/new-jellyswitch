@@ -1,0 +1,21 @@
+<% title "New Reservation" %>
+
+<div id="fullwidth">
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">New Childcare Reservation</h4>
+
+    <%= form_with(model: @childcare_reservation, url: select_slot_childcare_reservations_path, method: :get) do |f| %>
+      <%= f.label :date, "What day would you like to reserve?" %>
+
+      <div class="form-group row">
+        <div class="col-1"></div>
+        <%= f.date_select :date, { default: Time.zone.today, order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
+        <div class="col-1"></div>
+      </div>
+
+      <%= f.submit "Next", class: "btn btn-primary btn-block" %>
+    <% end %>
+  <% end %>
+<% end %>
+</div>

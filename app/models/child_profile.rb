@@ -12,6 +12,7 @@
 
 class ChildProfile < ApplicationRecord
   belongs_to :user
+  has_many :childcare_reservations
 
   has_rich_text :notes
 
