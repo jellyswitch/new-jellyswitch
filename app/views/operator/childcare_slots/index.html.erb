@@ -16,8 +16,8 @@
   <% end %>
 
   <% @childcare_slots.each do |slot| %>
-    <%= list_item do %>
-      <%= Date::DAYNAMES[slot.week_day] %> <%= slot.name %>
+    <%= link_to childcare_slot_path(slot), class: "list-group-item list-group-item-action" do %>
+      <%= render(Childcare::Slot, childcare_slot: slot) %>
     <% end %>
   <% end %>
 <% end %>

@@ -22,10 +22,31 @@ class Operator::ChildcareSlotsController < Operator::BaseController
     end
   end
 
+  def show
+    find_childcare_slot
+    authorize @childcare_slot
+  end
+
+  def destroy
+    find_childcare_slot
+    authorize @childcare_slot
+
+    if @childcare_slot.update(deleted: true)
+      turbolinks_redirect(childcare_slots_path, action: "replace")
+    else
+      flash[:error] = "Something went wrong."
+      turbolinks_redirect(childcare_slot_path(@childcare_slot), action: "replace")
+    end
+  end
+
   private
 
   def find_childcare_slots
     @childcare_slots = current_location.childcare_slots.visible.order(:week_day)
+  end
+
+  def find_childcare_slot(key=:id)
+    @childcare_slot = current_location.childcare_slots.find(params[key])
   end
 
   def childcare_slot_params

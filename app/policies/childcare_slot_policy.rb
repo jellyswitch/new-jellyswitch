@@ -11,6 +11,14 @@ class ChildcareSlotPolicy < ApplicationPolicy
     enabled? && admin?
   end
 
+  def show?
+    enabled? && admin?
+  end
+
+  def destroy?
+    enabled? && admin?
+  end
+
   def enabled?
     operator.childcare_enabled?
   end
