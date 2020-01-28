@@ -28,6 +28,8 @@ class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
   acts_as_tenant :operator
 
+  has_rich_text :description
+
   # Relationships
   has_many :subscriptions
   belongs_to :operator

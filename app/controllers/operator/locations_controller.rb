@@ -141,7 +141,8 @@ class Operator::LocationsController < Operator::BaseController
       :flex_square_footage, :common_square_footage, :building_access_instructions,
       :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass,
       :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
-      :open_friday, :open_saturday, :working_day_start, :working_day_end
+      :open_friday, :open_saturday, :working_day_start, :working_day_end, 
+      :credit_cost_in_cents
     )
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_21_223042) do
+ActiveRecord::Schema.define(version: 2020_01_28_165221) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -272,6 +272,7 @@ ActiveRecord::Schema.define(version: 2020_01_21_223042) do
     t.boolean "open_thursday", default: true, null: false
     t.boolean "open_friday", default: true, null: false
     t.boolean "open_saturday", default: false, null: false
+    t.integer "credit_cost_in_cents", default: 0, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

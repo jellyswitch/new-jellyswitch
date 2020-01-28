@@ -113,6 +113,11 @@ Rails.application.routes.draw do
   resources :childcare, controller: "operator/childcare"
   resources :child_profiles, controller: "operator/child_profiles"
   resources :childcare_slots, controller: "operator/childcare_slots"
+  resources :credit_purchases, controller: "operator/credit_purchases" do
+    collection do
+      get :confirm, to: "operator/credit_purchases#confirm"
+    end
+  end
   resources :day_passes, controller: "operator/day_passes" do
     collection do
       get :code, to: "operator/day_passes#code"
@@ -184,6 +189,7 @@ Rails.application.routes.draw do
       get :events
       get :offices
       get :rooms
+      get :reservation_credits_settings
     end
   end
   resources :notifications, controller: "operator/notifications" do

@@ -1,11 +1,16 @@
 # typed: false
 class Operator::SubscriptionsController < Operator::BaseController
   include SubscriptionsHelper
+  before_action :background_image
+
+  def index
+    authorize Subscription.new
+  end
 
   def new
     @subscription = Subscription.new
     authorize @subscription
-    background_image
+    find_plan
     include_stripe
   end
 
@@ -109,5 +114,9 @@ class Operator::SubscriptionsController < Operator::BaseController
     subscription.subscribable = current_user
     subscription.active = true
     subscription
+  end
+
+  def find_plan(key=:plan_id)
+    @plan = current_location.plans.find(params[key])
   end
 end
