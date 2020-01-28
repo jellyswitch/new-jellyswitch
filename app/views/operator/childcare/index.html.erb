@@ -45,4 +45,19 @@
       </div>
     </div>
   <% end %>
+
+  <% if @upcoming_reservations.count > 0 %>
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Upcoming Reservations</h4>
+    <% end %>
+    <% @upcoming_reservations.each do |reservation| %>
+      <%= list_item do %>
+        <%= render Childcare::Reservation, childcare_reservation: reservation %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= list_item do %>
+      <p>No upcoming reservations.</p>
+    <% end %>
+  <% end %>
 <% end %>

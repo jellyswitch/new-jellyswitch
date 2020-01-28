@@ -43,6 +43,7 @@ class User < ApplicationRecord
   has_many :announcements
   has_many :checkins
   has_many :child_profiles
+  has_many :childcare_reservations, through: :child_profiles
   has_many :day_passes
   has_many :door_punches
   has_many :events
