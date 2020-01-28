@@ -3,12 +3,33 @@ class Operator::ChildcareSlotsController < Operator::BaseController
 
   def index
     find_childcare_slots
+    authorize @childcare_slots
+  end
+
+  def new
+    @childcare_slot = current_location.childcare_slots.new
+    authorize @childcare_slot
+  end
+
+  def create
+    @childcare_slot = current_location.childcare_slots.new(childcare_slot_params)
+
+    if @childcare_slot.save
+      turbolinks_redirect(childcare_slots_path, action: "replace")
+    else
+      flash[:error] = "Something went wrong."
+      turbolinks_redirect(new_childcare_slot_path, action: "replace")
+    end
   end
 
   private
 
   def find_childcare_slots
-    current_location.childcare_slots.visible.order(:week_day)
+    @childcare_slots = current_location.childcare_slots.visible.order(:week_day)
+  end
+
+  def childcare_slot_params
+    params.require(:childcare_slot).permit(:name, :week_day, :location_id)
   end
 
 end

@@ -14,4 +14,10 @@
       Add availability
     <% end %>
   <% end %>
+
+  <% @childcare_slots.each do |slot| %>
+    <%= list_item do %>
+      <%= Date::DAYNAMES[slot.week_day] %> <%= slot.name %>
+    <% end %>
+  <% end %>
 <% end %>

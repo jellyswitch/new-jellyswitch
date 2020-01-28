@@ -118,10 +118,10 @@ ActiveRecord::Schema.define(version: 2020_01_28_165221) do
   end
 
   create_table "childcare_slots", force: :cascade do |t|
-    t.string "name"
-    t.integer "week_day"
-    t.boolean "deleted"
-    t.integer "location_id"
+    t.string "name", null: false
+    t.integer "week_day", null: false
+    t.boolean "deleted", default: false, null: false
+    t.integer "location_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
