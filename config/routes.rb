@@ -185,6 +185,7 @@ Rails.application.routes.draw do
       get :events
       get :offices
       get :rooms
+      get :reservation_credits_settings
     end
   end
   resources :notifications, controller: "operator/notifications" do

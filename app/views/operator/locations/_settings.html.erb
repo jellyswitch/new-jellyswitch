@@ -21,12 +21,6 @@
       <dd><%= number_to_currency(location.hourly_rate_in_cents.to_f / 100.0) %></dd>
     <% end %>
   <% end %>
-
-  <% if policy(:credit).enabled? %>
-    <dt>Credit Cost</dt>
-    <dd><%= number_to_currency(dollar_amount(location.credit_cost_in_cents)) %></dd>
-  <% end %>
-
 </dl>
 
 <hr />

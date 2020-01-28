@@ -34,6 +34,19 @@ class Operator::ModulesController < Operator::BaseController
     end
   end
 
+  def reservation_credits_settings
+    location = current_tenant.locations.find(params[:location_id])
+
+    dollars = Money.from_amount(params[:credit_cost].to_i, "USD")
+    amount_in_cents = dollars.cents
+
+
+    if !location.update(credit_cost_in_cents: amount_in_cents)
+      flash[:error] = "Something went wrong."
+    end
+    turbolinks_redirect(modules_path, action: "replace")
+  end
+
   private
 
   def setting(symbol)

@@ -27,4 +27,8 @@ class ModulePolicy < ApplicationPolicy
   def credits?
     admin?
   end
+
+  def reservation_credits_settings?
+    admin? && credits?
+  end
 end
