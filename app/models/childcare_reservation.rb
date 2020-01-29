@@ -17,4 +17,7 @@ class ChildcareReservation < ApplicationRecord
 
   default_scope { where(cancelled: false) }
   scope :upcoming, -> { where("date >= ?", Time.zone.now) }
+  scope :for_date, -> (date) { where(date: date) }
+  scope :for_slot, -> (childcare_slot) {where(childcare_slot_id: childcare_slot.id)}
+  scope :for_profile, -> (child_profile) { where(child_profile_id: child_profile.id) }
 end

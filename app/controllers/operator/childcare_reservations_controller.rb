@@ -23,16 +23,22 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     childcare_slot = current_location.childcare_slots.find(params[:childcare_slot_id])
     child_profile = current_user.child_profiles.find(params[:child_profile_id])
 
-    @childcare_reservation = ChildcareReservation.new(
-      date: date,
-      childcare_slot: childcare_slot,
-      child_profile: child_profile
-    )
-    if @childcare_reservation.save
-      turbolinks_redirect(childcare_reservation_path(@childcare_reservation), action: "replace")
-    else
-      flash[:error] = "Something went wrong."
+    if ChildcareReservation.for_date(date).for_slot(childcare_slot).for_profile(child_profile).count > 0
+      # this child profile already has a reservation on this date for this slot
+      flash[:error] = "That child profile already has a reservation for that day."
       turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+    else
+      @childcare_reservation = ChildcareReservation.new(
+        date: date,
+        childcare_slot: childcare_slot,
+        child_profile: child_profile
+      )
+      if @childcare_reservation.save
+        turbolinks_redirect(childcare_reservation_path(@childcare_reservation), action: "replace")
+      else
+        flash[:error] = "Something went wrong."
+        turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+      end
     end
   end
 
