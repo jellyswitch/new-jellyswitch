@@ -99,7 +99,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     if policy(:childcare).enabled?
-      items << {title: "Childcare", path: childcare_path}
+      items << {title: "Childcare", path: childcare_index_path}
     end
     
     items << {title: "My Account", path: user_path(user)}

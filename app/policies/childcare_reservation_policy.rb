@@ -4,22 +4,28 @@ class ChildcareReservationPolicy < ApplicationPolicy
   end
 
   def new?
-    enabled? && admin?
+    enabled?
   end
 
   def create?
-    enabled? && admin?
+    enabled?
   end
 
   def show?
-    enabled? && admin?
+    enabled? && admin_or_owner?
   end
 
   def destroy?
-    enabled? && admin?
+    enabled? && admin_or_owner?
   end
 
   def enabled?
     operator.childcare_enabled?
+  end
+
+  private
+
+  def admin_or_owner?
+    admin? || record.child_profile.user == user
   end
 end

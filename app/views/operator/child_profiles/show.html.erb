@@ -1,7 +1,8 @@
 <% title "Child Profile" %>
 
 <%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Child Profiles", child_profiles_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Childcare", childcare_index_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Profiles", child_profiles_path %></li>
   <li class="breadcrumb-item active" aria-current="page"><%= @child_profile.name %></li>
 <% end %>
 

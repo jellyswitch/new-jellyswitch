@@ -33,17 +33,19 @@
     </div>
   <% end %>
 
-  <%= link_to childcare_slots_path, class: "list-group-item list-group-item-action" do %>
-    <div class="row">
-      <div class="col-lg-10 col-11">
-        <i class="fas fa-calendar-alt"></i>
-        &nbsp;
-        View & edit availability
+  <% if policy(:childcare_slot).index? %>
+    <%= link_to childcare_slots_path, class: "list-group-item list-group-item-action" do %>
+      <div class="row">
+        <div class="col-lg-10 col-11">
+          <i class="fas fa-calendar-alt"></i>
+          &nbsp;
+          View & edit availability
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
       </div>
-      <div class="col-1">
-        <i class="fas fa-chevron-right"></i>
-      </div>
-    </div>
+    <% end %>
   <% end %>
 
   <% if @upcoming_reservations.count > 0 %>
