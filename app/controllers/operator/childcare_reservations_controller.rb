@@ -41,6 +41,19 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     authorize @childcare_reservation
   end
 
+  def destroy
+    find_childcare_reservation
+    authorize @childcare_reservation
+
+    if @childcare_reservation.update(cancelled: true)
+      flash[:success] = "Reservation cancelled."
+      turbolinks_redirect(childcare_index_path, action: "replace")
+    else
+      flash[:error] = "Something went wrong."
+      turbolinks_redirect(childcare_reservation_path(@childcare_reservation), action: "replace")
+    end
+  end
+
   private
 
   def find_childcare_reservation(key=:id)

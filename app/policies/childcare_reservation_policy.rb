@@ -16,7 +16,7 @@ class ChildcareReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    enabled? && admin_or_owner?
+    enabled? && ((future? && owner?) || admin?)
   end
 
   def enabled?
@@ -26,6 +26,14 @@ class ChildcareReservationPolicy < ApplicationPolicy
   private
 
   def admin_or_owner?
-    admin? || record.child_profile.user == user
+    admin? || owner?
+  end
+
+  def future?
+    record.date > Time.zone.now
+  end
+
+  def owner?
+    record.child_profile.user == user
   end
 end

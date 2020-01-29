@@ -55,6 +55,9 @@
     <% @upcoming_reservations.each do |reservation| %>
       <%= list_item do %>
         <%= render Childcare::Reservation, childcare_reservation: reservation %>
+        <% if policy(reservation).show? %>
+          <%= link_to "View reservation", childcare_reservation_path(reservation), class: "btn btn-block btn-primary" %>
+        <% end %>
       <% end %>
     <% end %>
   <% else %>

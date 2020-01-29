@@ -121,6 +121,7 @@ ActiveRecord::Schema.define(version: 2020_01_28_195223) do
     t.integer "childcare_slot_id", null: false
     t.integer "child_profile_id", null: false
     t.date "date", null: false
+    t.boolean "cancelled", default: false, null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
