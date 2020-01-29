@@ -61,6 +61,8 @@ class FeedItem < ApplicationRecord
     case type
     when "announcement"
       "posted an announcement"
+    when "childcare-reservation"
+      "made a childcare reservation"
     when "reservation"
       "reserved a room"
     when "feedback"
@@ -148,6 +150,10 @@ class FeedItem < ApplicationRecord
 
   def announcement
     blob_relation("announcement_id", Announcement.unscoped)
+  end
+
+  def childcare_reservation
+    blob_relation("childcare_reservation_id", ChildcareReservation.unscoped)
   end
 
   def reservation
