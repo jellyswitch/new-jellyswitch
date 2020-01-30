@@ -54,6 +54,10 @@ module FeedItemsHelper
     @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
   end
 
+  def find_upcoming_childcare_reservations
+    @upcoming_childcare_reservations = current_tenant.childcare_reservations.upcoming.all
+  end
+
   def find_delinquent_invoices
     @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
     @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
