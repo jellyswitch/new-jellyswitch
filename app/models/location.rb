@@ -13,6 +13,7 @@
 #  contact_email                :string
 #  contact_name                 :string
 #  contact_phone                :string
+#  credit_cost_in_cents         :integer          default(0), not null
 #  flex_square_footage          :integer          default(0), not null
 #  hourly_rate_in_cents         :integer          default(0), not null
 #  name                         :string
@@ -59,6 +60,8 @@ class Location < ApplicationRecord
   acts_as_tenant :operator
 
   has_many :checkins
+  has_many :childcare_slots
+  has_many :childcare_reservations, through: :childcare_slots
   has_many :doors
   has_many :events
   has_many :rooms

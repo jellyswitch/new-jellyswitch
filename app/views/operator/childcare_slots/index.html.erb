@@ -1,0 +1,23 @@
+<% title "Childcare Slots" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      Childcare Availability
+    </h4>
+
+    <p>Viewing availability for <%= current_location.name %>. Change locations to view & edit availability at other locations.</p>
+    
+    <%= link_to new_childcare_slot_path, class: "btn btn-block btn-primary" do %>
+      <i class="fas fa-calendar-alt"></i>
+      &nbsp;
+      Add availability
+    <% end %>
+  <% end %>
+
+  <% @childcare_slots.each do |slot| %>
+    <%= link_to childcare_slot_path(slot), class: "list-group-item list-group-item-action" do %>
+      <%= render(Childcare::Slot, childcare_slot: slot) %>
+    <% end %>
+  <% end %>
+<% end %>

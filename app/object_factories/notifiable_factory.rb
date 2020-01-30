@@ -6,6 +6,8 @@ class NotifiableFactory
       Notifiable::Announcement
     when 'Checkin'
       Notifiable::Checkin
+    when 'ChildcareReservation'
+      Notifiable::ChildcareReservation
     when 'DayPass'
       Notifiable::DayPass
     when 'MemberFeedback'

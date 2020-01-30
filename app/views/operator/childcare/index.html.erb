@@ -1,0 +1,68 @@
+<% title "Childcare" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      Childcare
+    </h4>
+  <% end %>
+
+  <%= link_to new_childcare_reservation_path, class: "list-group-item list-group-item-action" do %>
+    <div class="row">
+      <div class="col-lg-10 col-11">
+        <i class="fas fa-calendar-week"></i>
+        &nbsp;
+        Make a reservation
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+  <%= link_to child_profiles_path, class: "list-group-item list-group-item-action" do %>
+    <div class="row">
+      <div class="col-lg-10 col-11">
+        <i class="fas fa-child"></i>
+        &nbsp;
+        My child profiles
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+  <% if policy(:childcare_slot).index? %>
+    <%= link_to childcare_slots_path, class: "list-group-item list-group-item-action" do %>
+      <div class="row">
+        <div class="col-lg-10 col-11">
+          <i class="fas fa-calendar-alt"></i>
+          &nbsp;
+          View & edit availability
+        </div>
+        <div class="col-1">
+          <i class="fas fa-chevron-right"></i>
+        </div>
+      </div>
+    <% end %>
+  <% end %>
+
+  <% if @upcoming_reservations.count > 0 %>
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Upcoming Reservations</h4>
+    <% end %>
+    <% @upcoming_reservations.each do |reservation| %>
+      <%= list_item do %>
+        <%= render Childcare::Reservation, childcare_reservation: reservation %>
+        <% if policy(reservation).show? %>
+          <%= link_to "View reservation", childcare_reservation_path(reservation), class: "btn btn-block btn-primary" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= list_item do %>
+      <p>No upcoming reservations.</p>
+    <% end %>
+  <% end %>
+<% end %>

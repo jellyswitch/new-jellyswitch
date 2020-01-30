@@ -10,6 +10,7 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :find_unapproved_users
   before_action :find_upcoming_renewals
   before_action :find_delinquent_invoices
+  before_action :find_upcoming_childcare_reservations
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?

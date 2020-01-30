@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_28_165221) do
+ActiveRecord::Schema.define(version: 2020_01_28_195223) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -117,11 +117,20 @@ ActiveRecord::Schema.define(version: 2020_01_28_165221) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "childcare_reservations", force: :cascade do |t|
+    t.integer "childcare_slot_id", null: false
+    t.integer "child_profile_id", null: false
+    t.date "date", null: false
+    t.boolean "cancelled", default: false, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
   create_table "childcare_slots", force: :cascade do |t|
-    t.string "name"
-    t.integer "week_day"
-    t.boolean "deleted"
-    t.integer "location_id"
+    t.string "name", null: false
+    t.integer "week_day", null: false
+    t.boolean "deleted", default: false, null: false
+    t.integer "location_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end

@@ -53,6 +53,10 @@ class Navigation::Default < SimpleDelegator
       end
     end
 
+    if policy(:childcare).enabled?
+      items << {title: "Childcare", path: childcare_index_path}
+    end
+
     [
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
@@ -92,6 +96,10 @@ class Navigation::Default < SimpleDelegator
       if policy(:door).enabled? && location.doors.count > 0
         items << {title: "Building Access", path: keys_doors_path}
       end
+    end
+
+    if policy(:childcare).enabled?
+      items << {title: "Childcare", path: childcare_index_path}
     end
     
     items << {title: "My Account", path: user_path(user)}

@@ -1,0 +1,27 @@
+<% title "Add Availability" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      Add Childcare Availability
+    </h4>
+
+    <%= form_with(model: @childcare_slot, url: childcare_slots_path, method: :post) do |f| %>
+      <%= f.hidden_field :location_id, value: @childcare_slot.location_id %>
+
+      <div class="form-group">
+        <%= f.label :week_day %>
+        <%= f.select :week_day, I18n.t('date.day_names').zip(0..6), class: "form-control" %>
+      </div>
+
+      <div class="form-group">
+        <%= f.label :name, "Description" %>
+        <%= f.text_field :name, placeholder: "Morning / All day", class: "form-control" %>
+      </div>
+
+
+
+      <%= f.submit "Add availability", class: "btn btn-primary btn-block" %>
+    <% end %>
+  <% end %>
+<% end %>

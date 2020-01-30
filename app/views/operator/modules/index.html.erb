@@ -98,6 +98,15 @@
         </div>
       </div>
 
+      <% if superadmin? %>
+        <div class="row">
+          <div class="col">
+            <%= render(ModuleToggle, predicate: policy(:childcare).enabled?, path: childcare_modules_path, label: "Childcare") do %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+      
       <div class="row">
         <div class="col">
           <%= render(ModuleToggle, predicate: policy(:credit).enabled?, path: credits_modules_path, label: "Reservation Credits") do %>
@@ -144,9 +153,6 @@
             </dd>
           </dl>
         <% end %>
-        
-
-
 
       <% end %>
     <% end %>

@@ -34,6 +34,10 @@ class Operator::ModulesController < Operator::BaseController
     end
   end
 
+  def childcare
+    setting(:childcare_enabled)
+  end
+  
   def reservation_credits_settings
     location = current_tenant.locations.find(params[:location_id])
 

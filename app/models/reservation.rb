@@ -5,6 +5,7 @@
 #
 #  id          :bigint(8)        not null, primary key
 #  cancelled   :boolean          default(FALSE), not null
+#  credit_cost :integer          default(0), not null
 #  datetime_in :datetime         not null
 #  hours       :integer          default(1), not null
 #  minutes     :integer          default(0), not null

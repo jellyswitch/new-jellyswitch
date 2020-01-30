@@ -7,6 +7,8 @@
 #  always_allow_building_access :boolean          default(TRUE), not null
 #  amount_in_cents              :integer          not null
 #  available                    :boolean          default(TRUE), not null
+#  commitment_interval          :integer
+#  credits                      :integer          default(0), not null
 #  day_limit                    :integer          default(0), not null
 #  has_day_limit                :boolean          default(FALSE), not null
 #  interval                     :string           not null

@@ -20,6 +20,8 @@ class FeedItemComponent < ApplicationComponent
       feed_item.operator.signup_notifications?
     when "checkin"
       feed_item.operator.checkin_notifications?
+    when "childcare-reservation"
+      true
     when "day-pass"
       feed_item.operator.day_pass_notifications?
     when "feedback"
@@ -43,6 +45,8 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::Announcement
     when "checkin"
       FeedItems::Checkin
+    when "childcare-reservation"
+      FeedItems::ChildcareReservation
     when "reservation"
       FeedItems::Reservation
     else

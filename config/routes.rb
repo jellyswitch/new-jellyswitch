@@ -110,6 +110,14 @@ Rails.application.routes.draw do
       get :required, to: "operator/checkins#required"
     end
   end
+  resources :childcare, controller: "operator/childcare"
+  resources :child_profiles, controller: "operator/child_profiles"
+  resources :childcare_reservations, controller: "operator/childcare_reservations" do
+    collection do 
+      get :select_slot, to: "operator/childcare_reservations#select_slot"
+    end
+  end
+  resources :childcare_slots, controller: "operator/childcare_slots"
   resources :credit_purchases, controller: "operator/credit_purchases" do
     collection do
       get :confirm, to: "operator/credit_purchases#confirm"
@@ -180,6 +188,7 @@ Rails.application.routes.draw do
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements
+      get :childcare
       get :credits
       get :door_integration
       get :events
