@@ -130,7 +130,7 @@ class Operator < ApplicationRecord
   end
 
   def stripe_secret_key
-    if production?
+    if production? && subdomain != "southlakecoworking"
       Rails.configuration.stripe[:secret_key]
     else
       Rails.configuration.stripe[:test_secret_key]
