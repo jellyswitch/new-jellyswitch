@@ -11,7 +11,7 @@
     <div class="input-group-prepend">
       <span class="input-group-text">$</span>
     </div>
-    <%= f.text_field :amount_in_cents, class: "form-control" %>
+    <%= f.text_field :amount_in_cents , class: "form-control" %>
   </div>
 
   <div class="form-group">
@@ -24,7 +24,7 @@
     <div class="input-group-prepend">
       <span class="input-group-text">$</span>
     </div>
-    <%= f.text_field :amount_in_cents, class: "form-control", disabled: true %>
+    <%= f.text_field :amount_in_cents, value: dollar_amount(plan.amount_in_cents), class: "form-control", disabled: true %>
   </div>
   <div class="row mb-3 mt-3">
     <small class="col">(You cannot change the price of a plan after it's created.)</small>
