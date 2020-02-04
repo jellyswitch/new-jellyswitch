@@ -49,7 +49,9 @@ class Subscription < ApplicationRecord
   end
 
   def has_stripe_subscription?
-    stripe_subscription_id.present?
+    stripe_subscription_id.present? && stripe_subscription.id.present?
+  rescue StandardError => e
+    false
   end
 
   def stripe_subscription
