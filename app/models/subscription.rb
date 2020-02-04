@@ -95,7 +95,7 @@ class Subscription < ApplicationRecord
   end
 
   def has_end_date?
-    stripe_subscription.cancel_at.present?
+    has_stripe_subscription? && stripe_subscription.cancel_at.present?
   end
 
   def end_date

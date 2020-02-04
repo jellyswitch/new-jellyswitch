@@ -63,15 +63,26 @@
       </div>
     </div>
   <% end %>
-  <div class="row mt-3">
-    <div class="col">
-      <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+  <% if !subscription.has_stripe_subscription? %>
+    <div class="row">
+      <div class="col">
+        <span class="text-danger">
+          <strong>Stripe sync error</strong>
+          <br />
+          <p>This membership is not in sync with Stripe. Please email <%= mail_to "hello@jellyswitch.com", "hello@jellyswitch.com" %> to resolve.
+        </span>
+      </div>
     </div>
-  </div>
-  <div class="row mt-3">
-    <div class="col">
-      <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+  <% else %>
+    <div class="row mt-3">
+      <div class="col">
+        <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+      </div>
     </div>
-  </div>
-  
-<%- end %>
+    <div class="row mt-3">
+      <div class="col">
+        <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+      </div>
+    </div>
+  <% end %>  
+<% end %>
