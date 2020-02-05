@@ -1,0 +1,40 @@
+<% title "Childcare" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Childcare</li>
+<% end %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Childcare</h4>
+
+    <div class="row">
+      <div class="col">
+        Current reservation balance:
+        &nbsp;
+        <%= render CreditAmount, amount: @user.childcare_reservation_balance %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @user.childcare_reservations.count > 0 %>
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Reservations</h4>
+    <% end %>
+
+    <% @user.childcare_reservations.each do |reservation| %>
+      <%= list_item do %>
+        <%= render Childcare::Reservation, childcare_reservation: reservation %>
+        <% if policy(reservation).show? %>
+          <%= link_to "View reservation", childcare_reservation_path(reservation), class: "btn btn-block btn-primary" %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% else %>
+    <%= list_item do %>
+      <p>No reservations.</p>
+    <% end %>
+  <% end %>
+
+<% end %>

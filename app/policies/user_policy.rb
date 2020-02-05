@@ -20,6 +20,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def childcare?
+    admin?
+  end
+
   def credits?
     admin?
   end

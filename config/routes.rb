@@ -316,6 +316,7 @@ Rails.application.routes.draw do
     post :billing, to: "operator/users#update_billing"
     get :bill_to_organization, to: "operator/users#bill_to_organization"
     get :checkins, to: "operator/users#checkins"
+    get :childcare, to: "operator/users#childcare"
     get :credit_card, to: "operator/users#credit_card"
     get :credits, to: "operator/users#credits"
     get "change_password", to: "operator/users#change_password"

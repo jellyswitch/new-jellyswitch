@@ -363,6 +363,11 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
   end
 
+  def childcare
+    find_user(:user_id)
+    authorize @user
+  end
+
   def add_credits
     find_user(:user_id)
     authorize @user
