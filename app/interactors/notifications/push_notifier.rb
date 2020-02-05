@@ -34,6 +34,8 @@ class Notifications::PushNotifier
 
       @apn.push(notification)
       puts "Pushed message: #{message} to device: #{user.ios_token}"
+    else
+      puts "Cannot push message to #{user.email} since iOS token is: #{user.ios_token}"
     end
   end
 
