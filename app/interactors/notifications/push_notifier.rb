@@ -40,11 +40,13 @@ class Notifications::PushNotifier
   end
 
   def recipients
-    if context.members && context.members == true
+    if context.members.present? && context.members == true
+      puts "Pushing to all members"
       @operator.users.all.select do |user|
         user.admin? || user.superadmin? || user.member_at_operator?(@operator)
       end
     else
+      puts "Pushing only to admins"
       @operator.users.admins
     end
   end
