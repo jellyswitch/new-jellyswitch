@@ -17,7 +17,8 @@ module Notifiable
 
       result = Notifications::PushNotifier.call(
         message: message,
-        operator: operator
+        operator: operator,
+        members: true
       )
 
       if result.failure?
