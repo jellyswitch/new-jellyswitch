@@ -26,7 +26,8 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     result = Childcare::CreateReservation.call(
       date: date,
       childcare_slot: childcare_slot,
-      child_profile: child_profile
+      child_profile: child_profile,
+      operator: current_tenant
     )
 
     if result.success?
