@@ -5,7 +5,15 @@
   </div>
 
   <div class="form-group row m-0 p-0 mt-1">
-    <%= f.submit "Post Announcement", class: "form-control btn btn-primary col", id: "submit", data: {disable_with: "Posting..."} %>
+    <% if mobile_app_request? %>
+      <%= f.submit "Post Announcement", class: "form-control btn btn-primary col", id: "submit", data: {disable_with: "Posting..."} %>
+    <% else %>
+      <button class="form-control btn btn-primary col" id="submit" data-confirm="This will send an announcement to all of your members. Are you sure?" data-disable-with="Posting...">
+        <i class="fas fa-bullhorn"></i>
+        &nbsp;
+        Post announcement
+      </button>
+    <% end %>
   </div>
 <%- end %>
 
