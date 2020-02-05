@@ -1,15 +1,11 @@
-<%= form_for(announcement, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
+<%= form_with(model: announcement, html: {multipart: true}, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages" , model: announcement %>
   <div class="form-group row m-0 p-0 mt-0">
     <%= f.text_area :body, placeholder: "Type a new announcement...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
   </div>
 
   <div class="form-group row m-0 p-0 mt-1">
-    <button class="form-control btn btn-primary col" id="submit" data-confirm="This will send an announcement to all of your members. Are you sure?", data-disable-with="Posting announcement...">
-      <i class="fas fa-bullhorn"></i>
-      &nbsp;
-      Post announcement
-    </button>
+    <%= f.submit "Post Announcement", class: "form-control btn btn-primary col", id: "submit", data: {confirm: "This will send an announcement to all of your members. Are you sure?", disable_with: "Posting..."} %>
   </div>
 <%- end %>
 
