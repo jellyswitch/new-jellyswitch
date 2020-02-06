@@ -2,7 +2,7 @@ class Billing::Reservations::ChargeCredits
   include Interactor
   include CreditHelper
 
-  delegate :reservation_params, :user, to: :context
+  delegate :reservation, :reservation_params, :user, to: :context
 
   def call
     if user.operator.credits_enabled?
