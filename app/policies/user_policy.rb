@@ -20,6 +20,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def childcare?
+    owner_or_admin?
+  end
+
   def credits?
     admin?
   end

@@ -1,7 +1,7 @@
 class Childcare::SaveReservation
   include Interactor
 
-  delegate :child_profile, :childcare_slot, :date, to: :context
+  delegate :operator, :child_profile, :childcare_slot, :date, to: :context
 
   def call
     if ChildcareReservation.for_date(date).for_slot(childcare_slot).for_profile(child_profile).count > 0

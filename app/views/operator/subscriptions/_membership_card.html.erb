@@ -55,6 +55,15 @@
   </dl>
 <% end %>
 
+<% if policy(:childcare).enabled? && subscription.subscribable.class == User %>
+  <dl class="row mt-3">
+    <dt class="col-6">Current childcare reservation balance</dt>
+    <dd class="col">
+      <%= number_with_delimiter(subscription.subscribable.childcare_reservation_balance) %>
+    </dd>
+  </dl>
+<% end %>
+
 <% if subscription.active? %>
   <% if policy(:credit).enabled? %>
     <div class="row mt-3">

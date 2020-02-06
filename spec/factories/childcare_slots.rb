@@ -3,6 +3,7 @@
 # Table name: childcare_slots
 #
 #  id          :bigint(8)        not null, primary key
+#  capacity    :integer          default(0), not null
 #  deleted     :boolean          default(FALSE), not null
 #  name        :string           not null
 #  week_day    :integer          not null

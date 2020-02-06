@@ -1,5 +1,6 @@
 # typed: false
 module ApplicationHelper
+  include ChildcareHelper
   include CreditHelper
   include ErrorsHelper
   include LandingHelper

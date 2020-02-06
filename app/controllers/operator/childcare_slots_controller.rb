@@ -27,6 +27,24 @@ class Operator::ChildcareSlotsController < Operator::BaseController
     authorize @childcare_slot
   end
 
+  def edit
+    find_childcare_slot
+    authorize @childcare_slot
+  end
+
+  def update
+    find_childcare_slot
+    authorize @childcare_slot
+
+    if @childcare_slot.update(childcare_slot_params)
+      flash[:success] = "Availability updated."
+      turbolinks_redirect(childcare_slot_path(@childcare_slot), action: "replace")
+    else
+      flash[:error] = "Something went wrong."
+      turbolinks_redirect(edit_childcare_slot_path(@childcare_slot), action: "replace")
+    end
+  end
+
   def destroy
     find_childcare_slot
     authorize @childcare_slot
@@ -50,7 +68,7 @@ class Operator::ChildcareSlotsController < Operator::BaseController
   end
 
   def childcare_slot_params
-    params.require(:childcare_slot).permit(:name, :week_day, :location_id)
+    params.require(:childcare_slot).permit(:name, :week_day, :location_id, :capacity)
   end
 
 end

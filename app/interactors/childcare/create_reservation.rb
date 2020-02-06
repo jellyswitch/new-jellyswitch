@@ -3,6 +3,7 @@ class Childcare::CreateReservation
 
   organize(
     Childcare::SaveReservation,
+    Childcare::ChargeCredits,
     CreateNotifications
   )
 end

@@ -5,7 +5,7 @@ module Notifiable
 
     def create_feed_item
       blob = {type: "childcare-reservation", childcare_reservation_id: id}
-      FeedItemCreator.create_feed_item(child_profile.user.operator, child_profile.user, blob, created_at: created_at)
+      FeedItemCreator.create_feed_item(childcare_slot.location.operator, child_profile.user, blob, created_at: created_at)
     end
 
     def should_send_notification?

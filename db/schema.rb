@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_01_28_195223) do
+ActiveRecord::Schema.define(version: 2020_02_05_231637) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -133,6 +133,7 @@ ActiveRecord::Schema.define(version: 2020_01_28_195223) do
     t.integer "location_id", null: false
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "capacity", default: 0, null: false
   end
 
   create_table "day_pass_types", force: :cascade do |t|
@@ -426,6 +427,7 @@ ActiveRecord::Schema.define(version: 2020_01_28_195223) do
     t.integer "day_limit", default: 0, null: false
     t.integer "credits", default: 0, null: false
     t.integer "commitment_interval"
+    t.integer "childcare_reservations", default: 0, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -530,6 +532,7 @@ ActiveRecord::Schema.define(version: 2020_01_28_195223) do
     t.boolean "archived", default: false, null: false
     t.string "phone"
     t.integer "credit_balance", default: 0, null: false
+    t.integer "childcare_reservation_balance", default: 0, null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

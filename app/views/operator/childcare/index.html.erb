@@ -5,9 +5,18 @@
     <h4 class="display-4 text-center">
       Childcare
     </h4>
+
+    <% if !admin? %>
+      <dl class="row">
+        <dt class="col-5">Current balance</dt>
+        <dd class="col">
+          <%= render ChildcareBalance, amount: current_user.childcare_reservation_balance %>
+        </dd>
+      </dl>
+    <% end %>
   <% end %>
 
-  <%= link_to new_childcare_reservation_path, class: "list-group-item list-group-item-action" do %>
+  <%= link_to new_childcare_reservation_path, class: "list-group-item list-group-item-action #{class_for_childcare_button(current_user)}" do %>
     <div class="row">
       <div class="col-lg-10 col-11">
         <i class="fas fa-calendar-week"></i>
