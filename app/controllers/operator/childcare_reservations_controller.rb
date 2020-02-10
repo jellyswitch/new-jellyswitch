@@ -23,18 +23,23 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     childcare_slot = current_location.childcare_slots.find(params[:childcare_slot_id])
     child_profile = current_user.child_profiles.find(params[:child_profile_id])
 
-    result = Childcare::CreateReservation.call(
-      date: date,
-      childcare_slot: childcare_slot,
-      child_profile: child_profile,
-      operator: current_tenant
-    )
-
-    if result.success?
-      turbolinks_redirect(childcare_reservation_path(result.childcare_reservation), action: "replace")
-    else
-      flash[:error] = result.message
+    if childcare_slot.remaining_capacity_on_day(date) < 1
+      flash[:error] = "There are no more spots left on that day."
       turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+    else
+      result = Childcare::CreateReservation.call(
+        date: date,
+        childcare_slot: childcare_slot,
+        child_profile: child_profile,
+        operator: current_tenant
+      )
+
+      if result.success?
+        turbolinks_redirect(childcare_reservation_path(result.childcare_reservation), action: "replace")
+      else
+        flash[:error] = result.message
+        turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+      end
     end
   end
 

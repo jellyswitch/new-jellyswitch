@@ -29,4 +29,12 @@ class ChildcareSlot < ApplicationRecord
   def pretty_name
     "#{weekday_name} #{name}"
   end
+
+  def name_with_capacity(day)
+    "#{pretty_name} (#{remaining_capacity_on_day(day)} spots left)"
+  end
+
+  def remaining_capacity_on_day(day)
+    capacity - childcare_reservations.for_date(day).count
+  end
 end
