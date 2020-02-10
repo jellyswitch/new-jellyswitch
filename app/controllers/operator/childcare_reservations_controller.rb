@@ -7,6 +7,11 @@ class Operator::ChildcareReservationsController < Operator::BaseController
   end
   
   def new
+    authorize :childcare_reservation
+    if current_user.child_profiles.count < 1
+      flash[:info] = "Please create a child profile first."
+      turbolinks_redirect(new_child_profile_path, action: "replace")
+    end
   end
 
   def select_slot
