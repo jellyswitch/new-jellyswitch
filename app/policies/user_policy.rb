@@ -32,6 +32,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def add_childcare_reservations?
+    admin?
+  end
+
   def ltv?
     admin?
   end

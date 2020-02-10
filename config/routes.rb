@@ -307,6 +307,7 @@ Rails.application.routes.draw do
       get :unapproved, to: "operator/users#unapproved"
     end
     get :about, to: "operator/users#about"
+    post :add_childcare_reservations, to: "operator/users#add_childcare_reservations"
     post :add_credits, to: "operator/users#add_credits"
     get :admin_day_passes, to: "operator/users#admin_day_passes"
     get :admin_invoices, to: "operator/users#admin_invoices"

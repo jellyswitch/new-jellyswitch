@@ -15,6 +15,14 @@
         <%= render ChildcareBalance, amount: @user.childcare_reservation_balance %>
       </dd>
     </dl>
+
+    <%= form_with(url: user_add_childcare_reservations_path, method: :post, class: 'form') do |f| %>
+      <div class="form-group">
+        <%= f.number_field :amount, placeholder: "Number of reservations", class: "form-control" %>
+      </div>
+
+      <%= f.submit "Add to balance", class: "btn btn-primary btn-block" %>
+    <% end %>
   <% end %>
 
   <% if @user.childcare_reservations.count > 0 %>

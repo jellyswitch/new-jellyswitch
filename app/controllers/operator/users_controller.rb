@@ -386,6 +386,24 @@ class Operator::UsersController < Operator::BaseController
     turbolinks_redirect(user_credits_path(@user), action: "replace")
   end
 
+  def add_childcare_reservations
+    find_user(:user_id)
+    authorize @user
+
+    result = Users::AddChildcareReservations.call(
+      user: @user,
+      amount: params[:amount].to_i
+    )
+
+    if result.success?
+      flash[:success] = "Balance added."
+    else
+      flash[:error] = result.message
+    end
+
+    turbolinks_redirect(user_childcare_path(@user), action: "replace")
+  end
+
   def out_of_band
     find_user(:user_id)
     result = Billing::Payment::SetToOutOfBand.call(user: @user)
