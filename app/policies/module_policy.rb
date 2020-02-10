@@ -35,4 +35,8 @@ class ModulePolicy < ApplicationPolicy
   def reservation_credits_settings?
     admin? && credits?
   end
+
+  def childcare_reservations_settings?
+    admin? && childcare?
+  end
 end

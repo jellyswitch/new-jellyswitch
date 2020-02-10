@@ -1,4 +1,4 @@
-<%= form_with(model: childcare_slot, url: childcare_slots_path, method: :post) do |f| %>
+<%= form_with(model: childcare_slot, url: url, remote: true) do |f| %>
   <%= f.hidden_field :location_id, value: childcare_slot.location_id %>
 
   <div class="form-group">

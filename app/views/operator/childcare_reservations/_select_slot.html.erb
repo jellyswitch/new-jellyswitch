@@ -9,7 +9,7 @@
 
       <div class="form-group">
         <%= f.label :childcare_slot_id, "Select a slot" %>
-        <%= f.collection_select :childcare_slot_id, @slots, :id, :pretty_name, {}, {class: "form-control"} %>
+        <%= render Childcare::SlotSelectTag, f: f, slots: @slots, date: @date %>
       </div>
 
       <div class="form-group">

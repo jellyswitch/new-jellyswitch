@@ -4,6 +4,7 @@ class Billing::Credits::CreditAccount
   delegate :amount, :user, :location, to: :context
 
   def call
-    user.update(credit_balance: amount)
+    new_amount = user.credit_balance + amount
+    user.update(credit_balance: new_amount)
   end
 end
