@@ -16,6 +16,11 @@
       <dt>Name</dt>
       <dd><%= @child_profile.name %>
 
+      <% if admin? %>
+        <dt>Parent</dt>
+        <dd><%= link_to @child_profile.user.name, user_path(@child_profile.user) %></dd>
+      <% end %>
+
       <dt>Birthday</dt>
       <dd><%= short_date(@child_profile.birthday) %></dd>
 

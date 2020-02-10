@@ -34,7 +34,11 @@
       <div class="col-lg-10 col-11">
         <i class="fas fa-child"></i>
         &nbsp;
-        My child profiles
+        <% if admin? %>
+          All child profiles
+        <% else %>
+          My child profiles
+        <% end %>
       </div>
       <div class="col-1">
         <i class="fas fa-chevron-right"></i>

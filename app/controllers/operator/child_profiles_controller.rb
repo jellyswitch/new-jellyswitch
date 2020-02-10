@@ -50,7 +50,11 @@ class Operator::ChildProfilesController < Operator::BaseController
   private
 
   def find_child_profiles
-    @child_profiles = current_user.child_profiles
+    if admin?
+      @child_profiles = current_tenant.child_profiles
+    else
+      @child_profiles = current_user.child_profiles
+    end
   end
 
   def find_child_profile(key=:id)
