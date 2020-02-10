@@ -16,12 +16,20 @@
       </dd>
     </dl>
 
-    <%= form_with(url: user_add_childcare_reservations_path, method: :post, class: 'form') do |f| %>
-      <div class="form-group">
-        <%= f.number_field :amount, placeholder: "Number of reservations", class: "form-control" %>
-      </div>
+    <% if admin? %>
+      <%= form_with(url: user_add_childcare_reservations_path, method: :post, class: 'form') do |f| %>
+        <div class="form-group">
+          <%= f.number_field :amount, placeholder: "Number of reservations", class: "form-control" %>
+        </div>
 
-      <%= f.submit "Add to balance", class: "btn btn-primary btn-block" %>
+        <%= f.submit "Add to balance", class: "btn btn-primary btn-block" %>
+      <% end %>
+    <% else %>
+      <div class="row mt-3">
+        <div class="col">
+          <%= link_to "Buy more childcare reservations", new_childcare_reservation_purchase_path, class: "btn btn-block btn-success" %>
+        </div>
+      </div>
     <% end %>
   <% end %>
 

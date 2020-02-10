@@ -51,6 +51,18 @@ class Operator::ModulesController < Operator::BaseController
     turbolinks_redirect(modules_path, action: "replace")
   end
 
+  def childcare_reservations_settings
+    location = current_tenant.locations.find(params[:location_id])
+
+    dollars = Money.from_amount(params[:childcare_reservation_cost].to_i, "USD")
+    amount_in_cents = dollars.cents
+
+    if !location.update(childcare_reservation_cost_in_cents: amount_in_cents)
+      flash[:error] = "Something went wrong."
+    end
+    turbolinks_redirect(modules_path, action: "replace")
+  end
+
   private
 
   def setting(symbol)
