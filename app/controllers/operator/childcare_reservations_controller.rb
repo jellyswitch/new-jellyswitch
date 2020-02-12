@@ -15,7 +15,7 @@ class Operator::ChildcareReservationsController < Operator::BaseController
   end
 
   def select_slot
-    @date = parse_date(params)
+    @date = Date.parse(params[:date])
     @slots = current_location.childcare_slots.visible.where(week_day: @date.wday).order(:week_day, :name)
     if @slots.count < 1
       flash[:error] = "No childcare available on #{short_date(@date)}"
@@ -70,10 +70,6 @@ class Operator::ChildcareReservationsController < Operator::BaseController
 
   def find_childcare_reservation(key=:id)
     @childcare_reservation = ChildcareReservation.find(params[key])
-  end
-
-  def parse_date(obj)
-    Date.new(obj["date(1i)"].to_i, obj["date(2i)"].to_i, obj["date(3i)"].to_i)
   end
 
   def childcare_reservation_params

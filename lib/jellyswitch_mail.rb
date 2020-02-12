@@ -26,6 +26,35 @@ class JellyswitchMail < MailHatch
     )
   end
 
+  def childcare_confirmation(childcare_reservation, user)
+    from_addr = user.operator.contact_email
+    if from_addr.blank?
+      from_addr = "noreply@jellyswitch.com"
+    end
+
+    text = """
+      Hi #{user.name},
+      
+      This is a confirmation that you've booked childcare for #{childcare_reservation.child_profile.name}. Your reservation details are below:
+
+      Slot: #{childcare_reservation.childcare_slot.pretty_name}
+      Date: #{short_date(childcare_reservation.date)}
+
+      Thanks, and have a great day!
+
+      #{user.operator.contact_name},
+      #{user.operator.name}
+    """
+  
+
+    async_notification(
+      to: "#{user.name} <#{user.email}>",
+      from: from_addr,
+      subject: "Childcare confirmation",
+      text: simple_format(text)
+    )
+  end
+
   def onboarding(user, password)
     from_addr = user.operator.contact_email
     if from_addr.blank?
@@ -63,5 +92,11 @@ class JellyswitchMail < MailHatch
       subject: "Welcome to #{user.operator.name}!",
       text: simple_format(text)
     )
+  end
+
+  private
+
+  def short_date(date)
+    date.strftime("%m/%d/%Y")
   end
 end

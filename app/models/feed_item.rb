@@ -35,6 +35,7 @@ class FeedItem < ApplicationRecord
 
   # Types of feed_items
   scope :member_feedbacks, -> { where("blob->> 'type' = ?", "feedback") }
+  scope :childcare_reservations, -> { where("blob->> 'type' = ?", "childcare-reservation") }
   scope :day_passes, -> { where("blob->> 'type' = ?", "day-pass") }
   scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
   scope :announcements, -> { where("blob->> 'type' = ?", "announcement") }

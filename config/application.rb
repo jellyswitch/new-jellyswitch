@@ -33,6 +33,7 @@ module Bristlecone
     config.action_mailer.preview_path = "#{Rails.root}/spec/mailers"
 
     config.action_controller.asset_host = ENV['ASSET_HOST']
+    config.beginning_of_week = :sunday
     config.hosts.clear
   end
 end
