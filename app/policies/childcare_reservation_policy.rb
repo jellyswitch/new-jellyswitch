@@ -23,6 +23,10 @@ class ChildcareReservationPolicy < ApplicationPolicy
     operator.childcare_enabled?
   end
 
+  def confirm?
+    enabled?
+  end
+
   private
 
   def admin_or_owner?
