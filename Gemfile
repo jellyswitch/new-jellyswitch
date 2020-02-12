@@ -41,6 +41,7 @@ gem 'rollbar'
 gem 'sass-rails', '~> 5.0'
 gem 'searchkick'
 gem 'sidekiq'
+gem "simple_calendar", "~> 2.0"
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
