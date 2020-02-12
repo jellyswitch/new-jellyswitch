@@ -11,7 +11,7 @@ class Childcare::ChargeCredits
       if !user.admin?
         @existing_balance = user.childcare_reservation_balance
 
-        if user.credit_balance < 1
+        if @existing_balance < 1
           context.fail!(message: "Insufficient credit balance.")
         end
 
