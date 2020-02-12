@@ -1,4 +1,4 @@
-<% if spots_available < 1 %>
+<% if spots_available < 1 || past? %>
   <span class="text-secondary">
     <%= date.mday %>
   </span>

@@ -20,6 +20,10 @@
 @import "trix";
 @import "simple_calendar";
 
+.simple-calendar .past {
+  background: #DDD;
+}
+
 <% ["primary", "secondary", "success", "danger", "info", "warning", "light", "dark"].each do |color| %>
 
   <% if Rails.application.config.x.customization.send(color.to_sym).present? %>

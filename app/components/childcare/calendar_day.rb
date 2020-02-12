@@ -31,4 +31,7 @@ class Childcare::CalendarDay < ApplicationComponent
     end
   end
 
+  def past?
+    date < Time.current
+  end
 end
