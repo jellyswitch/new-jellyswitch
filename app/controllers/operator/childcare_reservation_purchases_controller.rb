@@ -26,7 +26,6 @@ class Operator::ChildcareReservationPurchasesController < Operator::BaseControll
   end
 
   def confirm
-    authorize :childcare_reservation, :confirm?
     @amount = params[:amount].to_i
   end
 end
