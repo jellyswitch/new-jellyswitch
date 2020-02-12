@@ -120,7 +120,7 @@ Rails.application.routes.draw do
   resources :childcare_slots, controller: "operator/childcare_slots"
   resources :childcare_reservation_purchases, controller: "operator/childcare_reservation_purchases" do
     collection do
-      get :confirm, to: "operator/childcare_reservation_purchases#confirm"
+      post :confirm, to: "operator/childcare_reservation_purchases#confirm"
     end
   end
   resources :credit_purchases, controller: "operator/credit_purchases" do

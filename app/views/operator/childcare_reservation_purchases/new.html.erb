@@ -11,7 +11,7 @@
         </div>
       </div>
 
-      <%= form_with(url: confirm_childcare_reservation_purchases_path, method: :get) do |f| %>
+      <%= form_with(url: confirm_childcare_reservation_purchases_path, method: :post, remote: true) do |f| %>
 
         <div class="form-group mt-3 mb-3">
           <%= f.number_field :amount, placeholder: 10, class: "form-control" %>
