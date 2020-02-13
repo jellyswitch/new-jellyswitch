@@ -5,12 +5,50 @@
   <li class="breadcrumb-item">My Reservations</li>
 <% end %>
 
-<%= wide_card do %>
-  <h4 class="display-4">My Reservations</h4>
-  <ul class="list-group list-group-flush">
-    <% @reservations.each do |reservation| %>
-      <%= render "operator/reservations/reservation_card", reservation: reservation %>
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">My Reservations</h4>
+  <% end %>
+
+  <% if @reservations.count < 1 %>
+    <%= list_item do %>
+      <p class="lead text-center">No upcoming reservations.</p>
     <% end %>
-  </ul>
-  <%== pagy_bootstrap_responsive_nav(@pagy) %>
+  <% else %>
+    <% @reservations.each do |res_hash| %>
+      <%= list_item do %>
+        <div class="row">
+          <div class="col">
+            <%= render "operator/events/time_bucket_header", date: res_hash.first %>
+          </div>
+        </div>
+        <%= list_wrapper do %>
+          <% res_hash.last.each do |reservation| %>
+            <div class="row mt-2 mb-5">
+              <div class="col">
+                <div class="row">
+                  <div class="col">
+                    <div class="row">
+                      <div class="col">
+                        <span class="text-danger">
+                          <%= pretty_time(reservation.datetime_in) %>
+                        </span>
+                        for <%= reservation.minutes %> minutes
+                      </div>
+                    </div>
+                    <div class="row">
+                      <div class="col">
+                        Location: <%= link_to reservation.room.name, room_path(reservation.room) %>
+                        
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
 <% end %>

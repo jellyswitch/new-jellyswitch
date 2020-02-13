@@ -251,8 +251,11 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @pagy, @reservations = pagy(@user.reservations.order("created_at DESC").all)
-    @reservations = @reservations.decorate
+    @reservations = @user.reservations.order("datetime_in ASC").group_by_day(&:datetime_in)
+    @reservations.keys.each do |key|
+      @reservations[key] = @reservations[key].map(&:decorate)
+    end
+
   end
 
   def invoices
