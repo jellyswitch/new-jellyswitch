@@ -5,12 +5,32 @@
   <li class="breadcrumb-item">My Reservations</li>
 <% end %>
 
-<%= wide_card do %>
-  <h4 class="display-4">My Reservations</h4>
-  <ul class="list-group list-group-flush">
-    <% @reservations.each do |reservation| %>
-      <%= render "operator/reservations/reservation_card", reservation: reservation %>
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">My Reservations</h4>
+  <% end %>
+
+  <%= link_to user_past_reservations_path(@user), class: "list-group-item list-group-item-action d-flx m-0" do %>
+    <div class="row">
+      <div class="col-11">
+        <i class="fas fa-history"></i>
+        &nbsp;
+        Past Reservations
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+
+  <% if @reservations.count < 1 %>
+    <%= list_item do %>
+      <p class="lead text-center">No upcoming reservations.</p>
     <% end %>
-  </ul>
-  <%== pagy_bootstrap_responsive_nav(@pagy) %>
+  <% else %>
+    <% @reservations.each do |res_hash| %>
+      <%= render Reservations::DayList, reservation_hash: res_hash %>
+    <% end %>
+  <% end %>
 <% end %>

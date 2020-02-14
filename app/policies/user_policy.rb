@@ -116,6 +116,10 @@ class UserPolicy < ApplicationPolicy
     owner_or_admin?
   end
 
+  def past_reservations?
+    owner_or_admin?
+  end
+
   def invoices?
     owner_or_admin?
   end

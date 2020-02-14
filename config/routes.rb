@@ -334,6 +334,7 @@ Rails.application.routes.draw do
     get :memberships, to: "operator/users#memberships"
     get :out_of_band, to: "operator/users#out_of_band"
     get :organization, to: "operator/users#organization"
+    get :past_reservations, to: "operator/users#past_reservations"
     get :payment_method, to: "operator/users#payment_method"
     get :remove_from_organization, to: "operator/users#remove_from_organization"
     get :reservations, to: "operator/users#reservations"
