@@ -29,6 +29,8 @@ class Reservation < ApplicationRecord
   scope :for_week, -> (week_start, week_end) { where('datetime_in > ? and datetime_in <= ?', week_start, week_end) }
   scope :for_day, -> (day) { where(datetime_in: day.beginning_of_day..day.end_of_day) }
   scope :today, -> () { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
+  scope :future, -> () { where("datetime_in >= ?", Time.current) }
+  scope :past, -> () { where("datetime_in < ?", Time.current) }
   
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")

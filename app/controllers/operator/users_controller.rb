@@ -251,11 +251,14 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @reservations = @user.reservations.order("datetime_in ASC").group_by_day(&:datetime_in)
-    @reservations.keys.each do |key|
-      @reservations[key] = @reservations[key].map(&:decorate)
-    end
+    find_upcoming_reservations
+  end
 
+  def past_reservations
+    find_user(:user_id)
+    authorize @user
+
+    find_past_reservations
   end
 
   def invoices
@@ -445,5 +448,20 @@ class Operator::UsersController < Operator::BaseController
 
   def payment_method_params
     params.require(:user).permit(:out_of_band)
+  end
+
+  def find_upcoming_reservations
+    @reservations = @user.reservations.future.order("datetime_in ASC").limit(100).group_by_day(&:datetime_in)
+    @reservations.keys.each do |key|
+      @reservations[key] = @reservations[key].map(&:decorate)
+    end
+  end
+
+  def find_past_reservations
+    @reservations = @user.reservations.past.order("datetime_in ASC").limit(100).group_by_day(reverse: true) {|r| r.datetime_in }
+    @reservations.keys.each do |key|
+      @reservations[key] = @reservations[key].map(&:decorate)
+    end
+
   end
 end

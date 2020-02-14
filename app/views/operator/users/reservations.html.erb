@@ -10,45 +10,27 @@
     <h4 class="display-4 text-center">My Reservations</h4>
   <% end %>
 
+  <%= link_to user_past_reservations_path(@user), class: "list-group-item list-group-item-action d-flx m-0" do %>
+    <div class="row">
+      <div class="col-11">
+        <i class="fas fa-history"></i>
+        &nbsp;
+        Past Reservations
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+
   <% if @reservations.count < 1 %>
     <%= list_item do %>
       <p class="lead text-center">No upcoming reservations.</p>
     <% end %>
   <% else %>
     <% @reservations.each do |res_hash| %>
-      <%= list_item do %>
-        <div class="row">
-          <div class="col">
-            <%= render "operator/events/time_bucket_header", date: res_hash.first %>
-          </div>
-        </div>
-        <%= list_wrapper do %>
-          <% res_hash.last.each do |reservation| %>
-            <div class="row mt-2 mb-5">
-              <div class="col">
-                <div class="row">
-                  <div class="col">
-                    <div class="row">
-                      <div class="col">
-                        <span class="text-danger">
-                          <%= pretty_time(reservation.datetime_in) %>
-                        </span>
-                        for <%= reservation.minutes %> minutes
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col">
-                        Location: <%= link_to reservation.room.name, room_path(reservation.room) %>
-                        
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% end %>
-        <% end %>
-      <% end %>
+      <%= render Reservations::DayList, reservation_hash: res_hash %>
     <% end %>
   <% end %>
 <% end %>
