@@ -7,6 +7,6 @@
   <% end %>
 
   <% @posts.each do |post| %>
-    <%= link_to post.title, post_path(post), class: "list-group-item list-group-item-action" %>
+    <%= render Posts::PostLink, post: post %>
   <% end %>
 <% end %>
