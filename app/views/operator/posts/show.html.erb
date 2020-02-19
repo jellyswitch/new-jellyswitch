@@ -1,0 +1,9 @@
+<% title @post.title %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center"><%= @post.title %></h4>
+
+    <%= @post.content %>
+  <% end %>
+<% end %>

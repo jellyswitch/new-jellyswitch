@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_10_231355) do
+ActiveRecord::Schema.define(version: 2020_02_19_211826) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -430,6 +430,21 @@ ActiveRecord::Schema.define(version: 2020_02_10_231355) do
     t.integer "commitment_interval"
     t.integer "childcare_reservations", default: 0, null: false
     t.index ["operator_id"], name: "index_plans_on_operator_id"
+  end
+
+  create_table "post_replies", force: :cascade do |t|
+    t.integer "post_id", null: false
+    t.integer "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "posts", force: :cascade do |t|
+    t.integer "location_id", null: false
+    t.integer "user_id", null: false
+    t.string "title", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
   end
 
   create_table "refunds", force: :cascade do |t|

@@ -270,6 +270,7 @@ Rails.application.routes.draw do
       get :archived, to: "operator/plans#archived"
     end
   end
+  resources :posts, controller: "operator/posts"
   resources :reports, controller: "operator/reports" do
     collection do
       get :member_csv

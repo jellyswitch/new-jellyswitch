@@ -73,10 +73,11 @@ class Operator < ApplicationRecord
   has_many :locations
   has_many :weekly_updates
 
-  has_many :events, through: :locations
-  has_many :subscriptions, through: :plans
   has_many :childcare_reservations, through: :locations
   has_many :child_profiles, through: :users
+  has_many :events, through: :locations
+  has_many :posts, through: :locations
+  has_many :subscriptions, through: :plans
 
   has_one_attached :background_image
   has_one_attached :logo_image
