@@ -1,9 +1,24 @@
 <% title @post.title %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Bulletin Board", posts_path %></li>
+  <li class="breadcrumb-item active" aria-current="page"><%= @post.title %></li>
+<% end %>
+
 <%= render Layout::FullWidth do %>
   <%= list_item do %>
     <h4 class="display-4 text-center"><%= @post.title %></h4>
 
     <%= @post.content %>
+  <% end %>
+
+  <% @post.post_replies.each do |post_reply| %>
+    <%= list_item do %>
+      <%= post_reply.content %>
+    <% end %>
+  <% end %>
+
+  <%= list_item do %>
+    <%= render "operator/post_replies/form", post_reply: @post.post_replies.new %>
   <% end %>
 <% end %>

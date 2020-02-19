@@ -10,4 +10,8 @@ module PostsHelper
   def post_params
     params.require(:post).permit(:content, :title)
   end
+
+  def post_reply_params
+    params.require(:post_reply).permit(:content, :post_id)
+  end
 end

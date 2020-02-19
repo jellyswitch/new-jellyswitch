@@ -1,5 +1,10 @@
 <% title "New Post" %>
 
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Bulletin Board", posts_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">New Post</li>
+<% end %>
+
 <%= render Layout::FullWidth do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">New Post</h4>

@@ -271,6 +271,7 @@ Rails.application.routes.draw do
     end
   end
   resources :posts, controller: "operator/posts"
+  resources :post_replies, controller: "operator/post_replies", only: [:create]
   resources :reports, controller: "operator/reports" do
     collection do
       get :member_csv
