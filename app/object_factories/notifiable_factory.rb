@@ -12,6 +12,8 @@ class NotifiableFactory
       Notifiable::DayPass
     when 'MemberFeedback'
       Notifiable::MemberFeedback
+    when 'Post'
+      Notifiable::Post
     when 'Reservation'
       Notifiable::Reservation
     when 'Subscription'

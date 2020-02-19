@@ -13,12 +13,16 @@ class Operator::PostsController < Operator::BaseController
   end
 
   def create
-    @post = current_location.posts.new(post_params)
-    @post.user = current_user
-    if @post.save
-      turbolinks_redirect(post_path(@post))
+    result = Posts::Create.call(
+      location: current_location,
+      user: current_user,
+      params: post_params
+    )
+
+    if result.success?
+      turbolinks_redirect(post_path(result.post))
     else
-      flash[:error] = "Something went wrong."
+      flash[:error] = result.message
       turbolinks_redirect(new_post_path, action: "replace")
     end
   end
