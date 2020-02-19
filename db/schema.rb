@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_19_211826) do
+ActiveRecord::Schema.define(version: 2020_02_19_215846) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -395,6 +395,7 @@ ActiveRecord::Schema.define(version: 2020_02_19_211826) do
     t.boolean "post_notifications", default: true, null: false
     t.boolean "credits_enabled", default: false, null: false
     t.boolean "childcare_enabled", default: false, null: false
+    t.boolean "bulletin_board_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

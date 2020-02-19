@@ -1,17 +1,25 @@
 class PostPolicy < ApplicationPolicy
   def index?
-    admin? || (user.member_at_operator?(operator) && approved?)
+    can_see?
   end
 
   def new?
-    admin? || (user.member_at_operator?(operator) && approved?)
+    can_see?
   end
 
   def create?
-    admin? || (user.member_at_operator?(operator) && approved?)
+    can_see?
   end
 
   def show?
-    admin? || (user.member_at_operator?(operator) && approved?)
+    can_see?
+  end
+
+  def enabled?
+    operator.bulletin_board_enabled?
+  end
+
+  def can_see?
+    enabled? && (admin? || (user.member_at_operator?(operator) && approved?))
   end
 end
