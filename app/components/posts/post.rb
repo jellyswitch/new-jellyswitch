@@ -8,4 +8,8 @@ class Posts::Post < ApplicationComponent
   private
 
   attr_accessor :post
+
+  def replies
+    post.post_replies.order(:created_at)
+  end
 end

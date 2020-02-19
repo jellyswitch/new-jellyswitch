@@ -2,8 +2,7 @@
   <%= f.hidden_field :post_id, value: @post.id %>
 
   <div class="form-group">
-    <%= f.label :content, "New Reply" %>
-    <%= f.rich_text_area :content %>
+    <%= f.rich_text_area :content, placeholder: "Add a reply" %>
   </div>
 
   <%= f.submit "Post Reply", class: "btn btn-primary btn-block" %>

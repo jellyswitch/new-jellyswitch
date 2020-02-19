@@ -7,14 +7,4 @@
 
 <%= render Layout::FullWidth do %>
   <%= render Posts::Post, post: @post %>
-
-  <% @post.post_replies.each do |post_reply| %>
-    <%= list_item do %>
-      <%= post_reply.content %>
-    <% end %>
-  <% end %>
-
-  <%= list_item do %>
-    <%= render "operator/post_replies/form", post_reply: @post.post_replies.new %>
-  <% end %>
 <% end %>
