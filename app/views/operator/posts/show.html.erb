@@ -6,11 +6,7 @@
 <% end %>
 
 <%= render Layout::FullWidth do %>
-  <%= list_item do %>
-    <h4 class="display-4 text-center"><%= @post.title %></h4>
-
-    <%= @post.content %>
-  <% end %>
+  <%= render Posts::Post, post: @post %>
 
   <% @post.post_replies.each do |post_reply| %>
     <%= list_item do %>
