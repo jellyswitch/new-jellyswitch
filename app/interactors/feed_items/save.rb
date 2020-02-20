@@ -1,5 +1,4 @@
-# typed: true
-class CreatePostFeedItem
+class FeedItems::Save
   include Interactor
 
   delegate :blob, :operator, :user, :photos, :created_at, to: :context
@@ -28,13 +27,7 @@ class CreatePostFeedItem
       context.fail!(message: "Unable to post management note.")
     end
 
-    result = Notifications::PushNotifier.call(
-      message: "#{@feed_item.user.name} posted a new management note",
-      operator: @feed_item.operator,
-    )
-
-    if !result.success?
-      Rollbar.error("Error pushing notification: #{result.message}")
-    end
+    context.notifiable = @feed_item
+    context.feed_item = @feed_item
   end
 end

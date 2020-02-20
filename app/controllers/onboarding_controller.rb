@@ -73,7 +73,7 @@ class  OnboardingController < ApplicationController
     possible_tasks.each do |task|
       key = task.first
       if params[key].to_i == 1
-        CreatePostFeedItem.call(
+        FeedItems::Create.call(
           blob: { text: task[1], type: "post" },
           user: current_user,
           operator: current_user.operator,
