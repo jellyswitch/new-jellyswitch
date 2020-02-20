@@ -43,6 +43,8 @@ class Subscription < ApplicationRecord
 
   accepts_nested_attributes_for :plan
 
+  delegate :operator, to: :subscribable
+
   # Instance methods
   def cancel_stripe!
     stripe_subscription.delete

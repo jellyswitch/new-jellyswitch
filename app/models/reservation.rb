@@ -31,6 +31,8 @@ class Reservation < ApplicationRecord
   scope :today, -> () { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
   scope :future, -> () { where("datetime_in >= ?", Time.current) }
   scope :past, -> () { where("datetime_in < ?", Time.current) }
+
+  delegate :operator, to: :room
   
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")

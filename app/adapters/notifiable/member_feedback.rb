@@ -11,17 +11,12 @@ module Notifiable
       operator.member_feedback_notifications?
     end
 
-    def send_notification
-      message = "New member feedback"
+    def message
+      "New member feedback"
+    end
 
-      result = Notifications::PushNotifier.call(
-        message: message,
-        operator: operator
-      )
-
-      if result.failure?
-        Rollbar.error("Error pushing notification: #{result.message}")
-      end
+    def recipients
+      operator.users.admins
     end
   end
 end

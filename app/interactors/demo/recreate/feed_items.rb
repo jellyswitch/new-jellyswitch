@@ -12,7 +12,7 @@ class Demo::Recreate::FeedItems
       (1..5).each do |offset|
         day = week_start + offset
         (1..4).each do |hour_offset|
-          CreatePostFeedItem.call(
+          FeedItems::Create.call(
             blob: { text: management_notes.sample, type: "post" },
             user: operator.users.admins.sample,
             operator: operator,

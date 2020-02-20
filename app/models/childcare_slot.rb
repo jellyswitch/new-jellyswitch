@@ -18,6 +18,8 @@ class ChildcareSlot < ApplicationRecord
 
   scope :visible, -> { where(deleted: false) }
 
+  delegate :operator, to: :location
+
   def visible?
     deleted == false
   end

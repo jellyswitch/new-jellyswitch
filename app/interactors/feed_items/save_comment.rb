@@ -1,5 +1,4 @@
-# typed: true
-class CreateFeedItemComment
+class FeedItems::SaveComment
   include Interactor
 
   def call
@@ -23,13 +22,7 @@ class CreateFeedItemComment
       context.fail!(message: msg)
     end
 
-    result = Notifications::PushNotifier.call(
-      message: "#{@feed_item_comment.user.name} replied to a recent management note",
-      operator: @feed_item.operator
-    )
-
-    if !result.success?
-      Rollbar.error("Error pushing notification: #{result.message}")
-    end
+    context.notifiable = @feed_item_comment
+    context.feed_item_comment = @feed_item_comment
   end
 end

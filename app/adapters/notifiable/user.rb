@@ -11,17 +11,12 @@ module Notifiable
       operator.signup_notifications?
     end
 
-    def send_notification
-      message = "New user signup"
+    def message
+      "New user signup: #{name}"
+    end
 
-      result = Notifications::PushNotifier.call(
-        message: message,
-        operator: operator
-      )
-
-      if result.failure?
-        Rollbar.error("Error pushing notification: #{result.message}")
-      end
+    def recipients
+      operator.users.admins
     end
   end
 end

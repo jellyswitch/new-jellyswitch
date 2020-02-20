@@ -31,6 +31,8 @@ class Checkin < ApplicationRecord
   scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
   scope :for_week, -> (week_start, week_end) { where('datetime_in > ? and datetime_in <= ?', week_start, week_end) }
 
+  delegate :operator, to: :location
+
   def charge_description
     "Hourly charge for #{location.name}"
   end

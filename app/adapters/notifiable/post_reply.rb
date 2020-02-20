@@ -11,20 +11,12 @@ module Notifiable
       true
     end
 
-    def send_notification
-      message = "#{user.name} has replied to your post"
-      recipients = [post.user]
+    def message
+      "#{user.name} has replied to your post"
+    end
 
-      result = Notifications::PushNotifier.call(
-        message: message,
-        operator: operator,
-        members: false,
-        recipients: recipients
-      )
-
-      if result.failure?
-        Rollbar.error("Error pushing notification: #{result.message}")
-      end
+    def recipients
+      [post.user]
     end
   end
 end
