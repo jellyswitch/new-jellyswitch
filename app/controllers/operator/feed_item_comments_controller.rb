@@ -4,7 +4,7 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     find_feed_item
     authorize @feed_item
 
-    result = CreateFeedItemComment.call(
+    result = FeedItems::CreateComment.call(
       feed_item: @feed_item,
       params: feed_item_comment_params,
       user: current_user

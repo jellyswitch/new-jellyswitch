@@ -1,5 +1,4 @@
-# typed: true
-class CreateFeedItemComment
+class FeedItems::CreateComment
   include Interactor
 
   def call
