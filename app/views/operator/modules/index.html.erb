@@ -61,6 +61,13 @@
 
       <div class="row">
         <div class="col">
+          <%= render(ModuleToggle, predicate: policy(:post).enabled?, path: bulletin_board_modules_path, label: "Bulletin Board") do %>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
           <%= render(ModuleToggle, predicate: policy(:room).enabled?, path: rooms_modules_path, label: "Rooms & Reservations") do %>
           <% end %>
         </div>

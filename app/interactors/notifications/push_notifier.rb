@@ -7,12 +7,14 @@ class Notifications::PushNotifier
     @operator = context.operator
 
     puts "Pushing message: #{@message}"
+    puts recipients.inspect
     validate!
 
     @apn = Houston::Client.production
     @apn.certificate = @operator.push_notification_certificate.download
 
     recipients.each do |user|
+      puts "Pushing message to #{user.name}: #{@message}"
       push(user, @message)
     end
   end
@@ -33,14 +35,16 @@ class Notifications::PushNotifier
       notification.alert = message
 
       @apn.push(notification)
-      puts "Pushed message: #{message} to device: #{user.ios_token}"
+      puts "Pushed message: #{message} to #{user.name}'s device: #{user.ios_token}"
     else
       puts "Cannot push message to #{user.email} since iOS token is: #{user.ios_token}"
     end
   end
 
   def recipients
-    if context.members.present? && context.members == true
+    if context.recipients.present?
+      context.recipients
+    elsif context.members.present? && context.members == true
       puts "Pushing message to all members"
       @operator.users.all.select do |user|
         user.admin? || user.superadmin? || user.member_at_operator?(@operator)

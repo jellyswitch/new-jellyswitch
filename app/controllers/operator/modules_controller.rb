@@ -9,6 +9,10 @@ class Operator::ModulesController < Operator::BaseController
     setting(:announcements_enabled)
   end
 
+  def bulletin_board
+    setting(:bulletin_board_enabled)
+  end
+
   def events
     setting(:events_enabled)
   end

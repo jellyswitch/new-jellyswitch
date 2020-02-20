@@ -193,6 +193,7 @@ Rails.application.routes.draw do
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements
+      get :bulletin_board
       get :childcare
       get :credits
       get :door_integration
@@ -270,6 +271,8 @@ Rails.application.routes.draw do
       get :archived, to: "operator/plans#archived"
     end
   end
+  resources :posts, controller: "operator/posts"
+  resources :post_replies, controller: "operator/post_replies", only: [:create]
   resources :reports, controller: "operator/reports" do
     collection do
       get :member_csv

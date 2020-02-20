@@ -7,6 +7,10 @@ class ModulePolicy < ApplicationPolicy
   def announcements?
     admin?
   end
+
+  def bulletin_board?
+    admin?
+  end
   
   def events?
     admin?

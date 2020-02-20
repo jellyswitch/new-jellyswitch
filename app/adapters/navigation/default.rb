@@ -30,6 +30,10 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Announcements", path: announcements_path}
     end
 
+    if policy(:post).enabled?
+      items << {title: "Bulletin Board", path: posts_path}
+    end
+
     if policy(:event).enabled?
       items << {title: "Events", path: events_path}
     end
@@ -83,6 +87,10 @@ class Navigation::Default < SimpleDelegator
     items = [
       {title: "Home", path: root_path}
     ]
+
+    if policy(:post).enabled?
+      items << {title: "Bulletin Board", path: posts_path}
+    end
 
     if policy(:event).enabled?
       items << {title: "Events", path: events_path}
