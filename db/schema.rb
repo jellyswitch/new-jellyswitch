@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_19_215846) do
+ActiveRecord::Schema.define(version: 2020_02_20_200742) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -550,6 +550,7 @@ ActiveRecord::Schema.define(version: 2020_02_19_215846) do
     t.string "phone"
     t.integer "credit_balance", default: 0, null: false
     t.integer "childcare_reservation_balance", default: 0, null: false
+    t.string "android_token"
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

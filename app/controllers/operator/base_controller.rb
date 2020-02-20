@@ -1,8 +1,8 @@
-# typed: false
 class Operator::BaseController < ApplicationController
   set_current_tenant_by_subdomain(:operator, :subdomain)
   layout "operator"
   before_action :store_ios_token, if: :logged_in?
+  before_action :store_android_token, if: :logged_in?
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
   before_action :reset_location, if: :logged_in?
@@ -28,6 +28,15 @@ class Operator::BaseController < ApplicationController
       return if match.nil? || match[1].blank?
       token = match[1]
       current_user.update(ios_token: token)
+    end
+  end
+
+  def store_android_token
+    if logged_in?
+      match = request.user_agent.match(/.*token: (.*)/)
+      return if match.nil? || match[1].blank?
+      token = match[1]
+      current_user.update(android_token: token)
     end
   end
 
