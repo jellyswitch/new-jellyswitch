@@ -33,6 +33,7 @@ class Operator::BaseController < ApplicationController
 
   def store_android_token
     if logged_in?
+      puts request.user_agent
       match = request.user_agent.match(/.*token: (.*)/)
       return if match.nil? || match[1].blank?
       token = match[1]
