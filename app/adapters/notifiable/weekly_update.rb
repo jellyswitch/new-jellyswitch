@@ -13,17 +13,12 @@ module Notifiable
       true
     end
 
-    def send_notification
-      message = "Your weekly update has been posted in the feed. Take a look!"
+    def message
+      "Your weekly update has been posted in the feed. Take a look!"
+    end
 
-      result = Notifications::PushNotifier.call(
-        message: message,
-        operator: operator
-      )
-
-      if result.failure?
-        Rollbar.error("Error pushing notification: #{result.message}")
-      end
+    def recipients
+      operator.users.admins
     end
   end
 end
