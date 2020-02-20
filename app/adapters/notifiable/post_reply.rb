@@ -3,7 +3,7 @@ module Notifiable
     private
 
     def create_feed_item
-      blob = {type: "post-reply", post_reply_id: id}
+      blob = {type: "bulletin-board-post-reply", post_reply_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
 
