@@ -7,7 +7,6 @@ class Notifications::PushNotifier
     @operator = context.operator
 
     puts "Pushing message: #{@message}"
-    puts recipients.inspect
     validate!
 
     @apn = Houston::Client.production
