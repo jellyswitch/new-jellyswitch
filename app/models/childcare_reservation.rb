@@ -20,4 +20,7 @@ class ChildcareReservation < ApplicationRecord
   scope :for_date, -> (date) { where(date: date) }
   scope :for_slot, -> (childcare_slot) {where(childcare_slot_id: childcare_slot.id)}
   scope :for_profile, -> (child_profile) { where(child_profile_id: child_profile.id) }
+
+  delegate :operator, to: :childcare_slot
+  delegate :user, to: :child_profile
 end

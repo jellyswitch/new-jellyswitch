@@ -20,7 +20,7 @@ module Notifiable
     end
 
     def recipients
-      location.operator.users.admins
+      operator.users.admins
     end
   end
 end
