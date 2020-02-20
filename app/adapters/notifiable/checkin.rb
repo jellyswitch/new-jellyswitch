@@ -1,11 +1,7 @@
 # typed: false
 module Notifiable
   class Checkin < Notifiable::Default
-    private
-
     def create_feed_item
-      operator = location.operator
-
       blob = {type: "checkin", checkin_id: id}
       FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
     end
@@ -14,22 +10,17 @@ module Notifiable
       location.operator.checkin_notifications?
     end
 
-    def send_notification
-      operator = location.operator
+    def message
       message = "#{user.name} has checked into #{location.name}."
 
       unless user.approved?
         message = "Approval required: #{message}"
-
-        result = Notifications::PushNotifier.call(
-          message: message,
-          operator: operator
-        )
-  
-        if result.failure?
-          Rollbar.error("Error pushing notification: #{result.message}")
-        end
       end
+      message
+    end
+
+    def recipients
+      location.operator.users.admins
     end
   end
 end
