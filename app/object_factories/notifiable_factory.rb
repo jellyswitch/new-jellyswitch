@@ -12,6 +12,8 @@ class NotifiableFactory
       Notifiable::DayPass
     when 'FeedItem'
       Notifiable::FeedItem
+    when 'FeedItemComment'
+      Notifiable::FeedItemComment
     when 'MemberFeedback'
       Notifiable::MemberFeedback
     when 'Post'
