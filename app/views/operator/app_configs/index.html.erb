@@ -5,12 +5,21 @@
     <h4 class="display-4 text-center">Mobile App Config</h4>
 
     <dl>
-      <dt>Push Notification Certificate</dt>
+      <dt>iOS Push Notification Certificate</dt>
       <dd>
         <%- if current_tenant.push_notification_certificate.attached? %>
           Uploaded
         <%- else %>
           Not Uploaded
+        <%- end %>
+      </dd>
+
+      <dt>iOS Push Notification Certificate</dt>
+      <dd>
+        <%- if current_tenant.android_server_key.present? %>
+          Present
+        <%- else %>
+          Not Entered
         <%- end %>
       </dd>
 
