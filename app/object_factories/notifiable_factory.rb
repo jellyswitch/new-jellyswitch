@@ -14,6 +14,8 @@ class NotifiableFactory
       Notifiable::MemberFeedback
     when 'Post'
       Notifiable::Post
+    when 'PostReply'
+      Notifiable::PostReply
     when 'Reservation'
       Notifiable::Reservation
     when 'Subscription'

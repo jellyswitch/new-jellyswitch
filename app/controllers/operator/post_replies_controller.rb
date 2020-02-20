@@ -3,14 +3,16 @@ class Operator::PostRepliesController < Operator::BaseController
   before_action :background_image
 
   def create
-    @post_reply = PostReply.new(post_reply_params)
-    @post_reply.user = current_user
+    result = Posts::CreateReply.call(
+      user: current_user,
+      params: post_reply_params
+    )
 
-    if @post_reply.save
-      turbolinks_redirect(post_path(@post_reply.post))
+    if result.success?
+      turbolinks_redirect(post_path(result.post_reply.post))
     else
-      flash[:error] = "Something went wrong."
-      turbolinks_redirect(post_path(@post_reply.post), action: "replace")
+      flash[:error] = result.message
+      turbolinks_redirect(post_path(result.post_reply.post), action: "replace")
     end
   end
 end

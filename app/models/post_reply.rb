@@ -13,5 +13,7 @@ class PostReply < ApplicationRecord
   belongs_to :post
   belongs_to :user
 
+  delegate :operator, to: :post
+
   has_rich_text :content
 end
