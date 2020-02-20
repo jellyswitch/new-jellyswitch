@@ -28,7 +28,7 @@
   <h4 class="display-4 text-center">Approval Queue</h4>
   <% if current_tenant.approval_required? %>  
     <p>
-      <%= current_tenant.name %> has <%= current_tenant.users.members.unapproved.count %> members awaiting approval.
+      <%= current_tenant.name %> has <%= current_tenant.users.members.unapproved.visible.count %> members awaiting approval.
     </p>
 
     <%= link_to "View approval queue", unapproved_users_path, class: "btn btn-block btn-primary" %>
