@@ -38,9 +38,15 @@
       </td>
       <td>
         <% if report.operator.push_notification_certificate.attached? %>
-          <span class="badge badge-success">Notifications ready</span>
+          <span class="badge badge-success">iOS Ready</span>
         <% else %>
-          <span class="badge badge-danger">Need cert</span>
+          <span class="badge badge-danger">iOS Not ready</span>
+        <% end %>
+
+        <% if report.operator.android_server_key.present? %>
+          <span class="badge badge-success">Android Ready</span>
+        <% else %>
+          <span class="badge badge-danger">Android Not ready</span>
         <% end %>
       </td>
       <td>

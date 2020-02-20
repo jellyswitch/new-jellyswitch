@@ -205,6 +205,8 @@ GEM
     faraday (0.15.4)
       multipart-post (>= 1.2, < 3)
     fattr (2.4.0)
+    fcm (0.0.6)
+      httparty (~> 0.10, >= 0.10.0)
     ffi (1.11.3)
     flog (4.6.4)
       path_expander (~> 1.0)
@@ -527,6 +529,7 @@ DEPENDENCIES
   draper
   factory_bot_rails (~> 5.0.1)
   faker!
+  fcm
   friendly_id
   groupdate
   houston
