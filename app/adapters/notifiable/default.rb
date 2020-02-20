@@ -15,6 +15,8 @@ class Notifiable::Default < SimpleDelegator
     if message.blank?
       raise "Push notification message can't be blank."
     end
+    
+    recipients # will raise an error if not defined
   end
   
   def send_notification
