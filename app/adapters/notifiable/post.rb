@@ -11,17 +11,14 @@ module Notifiable
       true
     end
 
-    def send_notification
-      message = "New bulletin board post from #{user.name}: #{title}"
-
-      result = Notifications::PushNotifier.call(
-        message: message,
-        operator: operator,
-        members: true
-      )
-
-      if result.failure?
-        Rollbar.error("Error pushing notification: #{result.message}")
+    def message
+      "New bulletin board post from #{user.name}: #{title}"
+    end
+    
+    def recipients
+      # all members
+      operator.users.all.select do |user|
+        user.admin? || user.superadmin? || user.member_at_operator?(@operator)
       end
     end
   end
