@@ -180,6 +180,12 @@ module ApplicationHelper
     "#{rate} / hr"
   end
 
+  def link_to_modal(id)
+    render Bootstrap::LinkToModal, id: id do
+      yield
+    end
+  end
+
   private
 
   def working_hours_config(location)

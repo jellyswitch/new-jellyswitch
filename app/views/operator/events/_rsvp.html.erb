@@ -74,11 +74,11 @@
       </div>
       <div class="row mt-2 mb-3">
         <div class="col">
-          <button type="button" class="btn btn-block btn-success" data-toggle="modal" data-target="#goingModal" data-focus="true">
+          <%= link_to_modal "goingModal" do %>
             <i class="fas fa-check"></i>
             &nbsp;
             I'm interested
-          </button>
+          <% end %>
         </div>
       </div>
     <% end %>
