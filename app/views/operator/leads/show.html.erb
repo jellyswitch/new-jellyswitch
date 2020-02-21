@@ -1,0 +1,37 @@
+<% title "Lead" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="dislay-4 text-center"><%= @lead.user.name %></h4>
+  <% end %>
+  
+  <%= list_item do %>
+    <dl>
+      <dt>User</dt>
+      <dd><%= link_to @lead.user.name, user_path(@lead.user) %>
+
+      <dt>Status</dt>
+      <dd><%= @lead.status %></dd>
+
+      <dt>First Visit</dt>
+      <dd>
+        <%= short_date(@lead.ahoy_visit.started_at) %>
+      </dd>
+
+      <dt>Referrer</dt>
+      <dd>
+        <% if @lead.ahoy_visit.referrer.present? %>
+          <%= @lead.ahoy_visit.referrer %>
+        <% else %>
+          <i>None</i>
+        <% end %>
+      </dd>
+
+      <dt>Landing page</dt>
+      <dd>
+        <%= @lead.ahoy_visit.landing_page %>
+      </dd>
+    </dl>
+  <% end %>
+  
+<% end %>

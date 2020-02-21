@@ -6,19 +6,8 @@
   <% end %>
 
   <% @leads.each do |lead| %>
-    <%= list_item do %>
-      <dl>
-        <dt>User</dt>
-        <dd><%= lead.user.name %></dd>
-
-        <dt>Status</dt>
-        <dd><%= lead.status %></dd>
-
-        <dt>First Visit</dt>
-        <dd>
-          <%= short_date(lead.ahoy_visit.started_at) %>
-        </dd>
-      </dl>
+    <%= link_to lead_path(lead), class: "list-group-item list-group-item-action" do %>
+      <%= lead.user.name %>
     <% end %>
   <% end %>
 <% end %>
