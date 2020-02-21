@@ -16,6 +16,8 @@ class Lead < ApplicationRecord
   belongs_to :user
   belongs_to :ahoy_visit, class_name: "Ahoy::Visit"
 
+  has_many :lead_notes
+
   after_create :set_status
 
   def set_status

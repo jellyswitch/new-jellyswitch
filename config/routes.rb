@@ -186,6 +186,7 @@ Rails.application.routes.draw do
     get :charge
   end
   resources :leads, controller: "operator/leads"
+  resources :lead_notes, controller: "operator/lead_notes"
   resources :locations, controller: "operator/locations" do 
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"

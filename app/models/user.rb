@@ -53,6 +53,7 @@ class User < ApplicationRecord
   has_many :feed_item_comments
   has_many :invoices, as: :billable
   has_many :leads
+  has_many :lead_notes
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator

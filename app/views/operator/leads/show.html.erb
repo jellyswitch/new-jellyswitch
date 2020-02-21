@@ -33,5 +33,22 @@
       </dd>
     </dl>
   <% end %>
-  
+
+  <% @lead.lead_notes.each do |lead_note| %>
+    <%= list_item do %>
+      <%= lead_note.content %>
+    <% end %>
+  <% end %>
+
+  <%= list_item do %>
+    
+    <%= form_with(model: @lead.lead_notes.new, url: lead_notes_path(lead_id: @lead.id), method: :post, remote: true) do |f| %>
+      <%= f.rich_text_area :content, placeholder: "Say something..." %>
+
+      <%= f.hidden_field :user_id, value: current_user.id %>
+      <%= f.hidden_field :lead_id, value: @lead.id %>
+
+      <%= f.submit "Post a note", class: "btn btn-block btn-primary" %>
+    <% end %>
+  <% end %>
 <% end %>
