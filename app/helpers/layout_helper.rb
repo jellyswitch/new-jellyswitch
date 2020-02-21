@@ -36,9 +36,13 @@ module LayoutHelper
   end
 
   def breadcrumb
-    render "layouts/breadcrumb" do
+    render Bootstrap::Breadcrumb do
       yield
     end
+  end
+
+  def breadcrumb_item(label:, path: nil, active: false)
+    render Bootstrap::BreadcrumbItem, label: label, path: path, active: active
   end
 
   def title(page_title)

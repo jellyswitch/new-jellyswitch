@@ -1,5 +1,10 @@
 <% title "Lead" %>
 
+<%= breadcrumb do %>
+  <%= breadcrumb_item label: "Leads", path: leads_path %>
+  <%= breadcrumb_item label: @lead.user.name %>
+<% end %>
+
 <%= render Layout::FullWidth do %>
   <%= list_item do %>
     <h4 class="dislay-4 text-center"><%= @lead.user.name %></h4>
