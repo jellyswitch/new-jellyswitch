@@ -19,10 +19,31 @@ class Lead < ApplicationRecord
   has_many :lead_notes
 
   after_create :set_status
+  after_create :set_source
+
+  SOURCES = {
+    web: "web",
+    event: "event",
+    referral: "referral"
+  }
+
+  STATUSES = {
+    open: "open",
+    closed_lost: "closed-lost",
+    closed_won: "closed-won"
+  }
 
   def set_status
     if status.blank?
-      update(status: "open")
+      update(status: STATUSES[:open])
+    end
+  end
+
+  def set_source
+    if source.blank?
+      if ahoy_visit.present?
+        source.update(source: SOURCES[:web])
+      end
     end
   end
 

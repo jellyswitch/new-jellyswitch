@@ -107,12 +107,14 @@
           </div>
         </div>
 
-        <div class="row">
-          <div class="col">
-            <%= render(ModuleToggle, predicate: policy(:lead).enabled?, path: crm_modules_path, label: "CRM & Lead Tracking") do %>
-            <% end %>
+        <% if superadmin? %>
+          <div class="row">
+            <div class="col">
+              <%= render(ModuleToggle, predicate: policy(:lead).enabled?, path: crm_modules_path, label: "CRM & Lead Tracking") do %>
+              <% end %>
+            </div>
           </div>
-        </div>
+        <% end %>
         
         <div class="row mb-3">
           <div class="col">

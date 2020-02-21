@@ -11,6 +11,14 @@ class LeadPolicy < ApplicationPolicy
     can_see?
   end
 
+  def edit?
+    can_see?
+  end
+
+  def update?
+    can_see?
+  end
+
   def show?
     can_see?
   end

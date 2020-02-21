@@ -10,6 +10,10 @@ module LeadsHelper
   end
 
   def lead_note_params
-    params.require(:lead_note).permit(:user_id, :lead_id, :content)
+    params.require(:lead_note).permit(:user_id, :lead_id, :content, :source)
+  end
+
+  def lead_params
+    params.require(:lead).permit(:source, :status)
   end
 end

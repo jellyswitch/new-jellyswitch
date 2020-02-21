@@ -11,4 +11,19 @@ class Operator::LeadsController < Operator::BaseController
     find_lead
     authorize @lead
   end
+
+  def edit
+    find_lead
+    authorize @lead
+  end
+
+  def update
+    find_lead
+    authorize @lead
+
+    if !@lead.update(lead_params)
+      flash[:error]= "Something went wrong."
+    end
+    turbolinks_redirect(lead_path(@lead), action: "replace")
+  end
 end

@@ -8,6 +8,7 @@ class Crm::CreateLead
       lead = operator.leads.new
       lead.user = user
       lead.ahoy_visit = visit
+      lead.source = Lead::SOURCES[:event]
 
       if !lead.save
         context.fail!(message: "Could not create lead.")

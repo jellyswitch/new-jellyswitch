@@ -1,4 +1,24 @@
 <dl class="mt-3">
+  <hr />
+  <i>Properties</i>
+  <hr />
+
+  <dt>Status</dt>
+  <dd><%= lead.status %></dd>
+
+  <dt>Source</dt>
+  <dd>
+    <% if lead.source.present? %>
+      <%= lead.source %>
+    <% else %>
+      <i>None</i>
+    <% end %>
+  </dd>
+
+  <hr />
+  <i>Computed Properties</i>
+  <hr />
+
   <dt>Became a lead</dt>
   <dd>
     <% if lead.ahoy_visit.present? %>
@@ -13,12 +33,10 @@
   <dt>Email</dt>
   <dd><%= link_to lead.user.email, user_path(lead.user) %>
 
-  <dt>Status</dt>
-  <dd><%= lead.status %></dd>
 
   <dt>Referrer</dt>
   <dd>
-    <% if lead.ahoy_visit.referrer.present? %>
+    <% if lead.ahoy_visit.present? && lead.ahoy_visit.referrer.present? %>
       <%= lead.ahoy_visit.referrer %>
     <% else %>
       <i>None</i>
@@ -27,6 +45,10 @@
 
   <dt>Landing page</dt>
   <dd>
-    <%= lead.ahoy_visit.landing_page %>
+    <% if lead.ahoy_visit.present? && lead.ahoy_visit.landing_page.present? %>
+      <%= lead.ahoy_visit.landing_page %>
+    <% else %>
+      <i>None</i>
+    <% end %>
   </dd>
 </dl>
