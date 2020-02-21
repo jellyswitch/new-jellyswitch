@@ -6,6 +6,7 @@
 #  id                            :bigint(8)        not null, primary key
 #  admin                         :boolean          default(FALSE), not null
 #  always_allow_building_access  :boolean          default(FALSE), not null
+#  android_token                 :string
 #  approved                      :boolean          default(FALSE), not null
 #  archived                      :boolean          default(FALSE), not null
 #  bill_to_organization          :boolean          default(FALSE), not null
@@ -51,6 +52,8 @@ class User < ApplicationRecord
   has_many :feed_items
   has_many :feed_item_comments
   has_many :invoices, as: :billable
+  has_many :leads
+  has_many :lead_notes
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator

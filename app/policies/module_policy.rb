@@ -32,6 +32,10 @@ class ModulePolicy < ApplicationPolicy
     admin?
   end
 
+  def crm?
+    admin?
+  end
+
   def childcare?
     admin?
   end

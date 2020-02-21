@@ -31,7 +31,9 @@ class Operator::RsvpsController < Operator::BaseController
   def register
     result = ::Events::RegisterAndGoing.call(
       event: @event,
-      email: params[:email]
+      email: params[:email],
+      visit: current_visit,
+      operator: current_tenant
     )
 
     if result.success?

@@ -4,6 +4,10 @@ Rails.application.routes.draw do
     # Typeform
     get :welcome, to: "landing#welcome"
   end
+  constraints subdomain: "stats" do
+    require 'sidekiq/web'
+    mount Sidekiq::Web => '/sidekiq'
+  end
   constraints subdomain: "app" do
     # Root
     get '/', to: "landing#index"
@@ -185,6 +189,8 @@ Rails.application.routes.draw do
     end
     get :charge
   end
+  resources :leads, controller: "operator/leads"
+  resources :lead_notes, controller: "operator/lead_notes"
   resources :locations, controller: "operator/locations" do 
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
@@ -197,6 +203,7 @@ Rails.application.routes.draw do
       get :bulletin_board
       get :childcare
       get :credits
+      get :crm
       get :door_integration
       get :events
       get :offices

@@ -29,6 +29,10 @@ class Operator::ModulesController < Operator::BaseController
     setting(:credits_enabled)
   end
 
+  def crm
+    setting(:crm_enabled)
+  end
+
   def offices
     if current_tenant.has_active_office_leases?
       flash[:error] = "Terminate active office leases before disabling."
