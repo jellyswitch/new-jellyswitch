@@ -133,6 +133,22 @@
         <% end %>
       <% end %>
 
+      <% if policy(:post).enabled? && current_tenant.posts.count > 0 %>
+        <%= list_item do %>
+          <h5 class="card-title">
+            Bulletin Board
+          </h5>
+        <% end %>
+        
+        <% current_tenant.posts.order("created_at DESC").limit(2).each do |post| %>
+          <%= render Posts::PostLink, post: post %>
+        <% end %>
+
+        <%= list_item do %>
+          <%= link_to "Read the bulletin board", posts_path, class: "btn btn-block btn-primary" %>
+        <% end %>
+      <% end %>
+
       <%= list_item do %>
         <%= render "shared/send_feedback_card" %>
       <% end %>
