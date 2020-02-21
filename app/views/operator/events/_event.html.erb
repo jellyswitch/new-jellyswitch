@@ -109,21 +109,28 @@
   <div class="col-lg-3"></div>
 </div>
 
-<div class="modal fade" id="goingModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-body">
-        <%= form_with(method: :get, url: register_event_rsvps_path(@event)) do |f| %>
-          <div class="form-group">
-            <%= f.label :email, "Enter your email address to RSVP" %>
-            <%= f.text_field :email, placeholder: "Email address...", class: "form-control" %>
-          </div>
-          <%= f.submit "Register and RSVP", class: "btn btn-block btn-primary" %>
-        <% end %>
+<%= render Bootstrap::Modal, id: "goingModal" do %>
+  <ul class="nav nav-tabs" id="goingModalTab" role="tablist">
+    <li class="nav-item">
+      <a class="nav-link active" id="register-tab" data-toggle="tab" href="#register" role="tab" aria-controls="register" aria-selected="true">Register</a>
+    </li>
 
-        <button type="button" class="btn btn-block btn-secondary mt-3" data-dismiss="modal">Cancel</button>
-      </div>
+    <li class="nav-item">
+      <a class="nav-link" id="login-tab" data-toggle="tab" href="#login" role="tab" aria-controls="login" aria-selected="true">Log In</a>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane active" id="register" role="tabpanel" aria-labelledby="register-tab">
+      <%= render "operator/events/register_and_rsvp", event: @event %>
     </div>
+
+    <div class="tab-pane" id="login" role="tabpanel" aria-labelledby="login-tab">
+      <%= render "operator/events/login_and_rsvp", event: @event %>
+    </div>
+      
+    
   </div>
-</div> 
+<% end %>
+
 

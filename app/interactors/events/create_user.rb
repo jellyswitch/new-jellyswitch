@@ -4,6 +4,8 @@ class Events::CreateUser
   delegate :event, :email, to: :context
 
   def call
+    validate!
+
     result = ::Users::Create.call(
       params: {
         name: email,
@@ -26,5 +28,10 @@ class Events::CreateUser
     if !result.success?
       context.fail!(message: result.message)
     end
+  end
+
+  def validate!
+    context.fail!(message: "Please enter an email address.") unless email.present?
+    context.fail!(message: "That email address already has an account. Please log in instead.") if event.location.operator.users.find_by(email: email).present?
   end
 end

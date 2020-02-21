@@ -34,14 +34,30 @@ class Operator::RsvpsController < Operator::BaseController
       email: params[:email]
     )
 
-    if !result.success?
+    if result.success?
+      log_in(result.user)
+      set_location(@event.location)
+      turbolinks_redirect(event_path(@event), action: "replace")
+    else
       flash[:error] = result.message
     end
+  end
 
-    log_in(result.user)
-    set_location(@event.location)
+  def login
+    result = ::Events::LoginAndGoing.call(
+      email: params[:session][:email],
+      password: params[:session][:password],
+      operator: current_tenant,
+      event: @event
+    )
 
-    turbolinks_redirect(event_path(@event), action: "replace")
+    if result.success?
+      log_in(result.user)
+      set_location(@event.location)
+      turbolinks_redirect(event_path(@event), action: "replace")
+    else
+      flash[:error] = result.message
+    end
   end
 
   private
