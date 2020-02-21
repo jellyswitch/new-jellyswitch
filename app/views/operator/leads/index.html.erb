@@ -1,0 +1,24 @@
+<% title "Leads" %>
+
+<%= render Layout::FullWidth do %>
+  <%= list_item do %>
+    <h4 class="dislay-4 text-center">Leads</h4>
+  <% end %>
+
+  <% @leads.each do |lead| %>
+    <%= list_item do %>
+      <dl>
+        <dt>User</dt>
+        <dd><%= lead.user.name %></dd>
+
+        <dt>Status</dt>
+        <dd><%= lead.status %></dd>
+
+        <dt>First Visit</dt>
+        <dd>
+          <%= short_date(lead.ahoy_visit.started_at) %>
+        </dd>
+      </dl>
+    <% end %>
+  <% end %>
+<% end %>

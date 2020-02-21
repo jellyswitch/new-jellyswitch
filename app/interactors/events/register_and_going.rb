@@ -3,6 +3,7 @@ class Events::RegisterAndGoing
 
   organize(
     Events::CreateUser,
+    Crm::CreateLead,
     Events::Going
   )
 end

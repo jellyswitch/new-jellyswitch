@@ -4,11 +4,13 @@
 # Table name: operators
 #
 #  id                            :bigint(8)        not null, primary key
+#  android_server_key            :string
 #  android_url                   :string
 #  announcements_enabled         :boolean          default(TRUE), not null
 #  approval_required             :boolean          default(TRUE), not null
 #  billing_state                 :string           default("demo"), not null
 #  building_address              :string           default("not set"), not null
+#  bulletin_board_enabled        :boolean          default(FALSE), not null
 #  checkin_notifications         :boolean          default(TRUE), not null
 #  checkin_required              :boolean          default(FALSE), not null
 #  childcare_enabled             :boolean          default(FALSE), not null
