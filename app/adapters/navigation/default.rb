@@ -48,7 +48,9 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Rooms & Reservations", path: rooms_path}
     end
 
-    items << {title: "Leads", path: leads_path}
+    if policy(:lead).enabled?
+      items << {title: "Leads", path: leads_path}
+    end
 
     if policy(:payment).enabled?
       [

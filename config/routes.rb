@@ -199,6 +199,7 @@ Rails.application.routes.draw do
       get :bulletin_board
       get :childcare
       get :credits
+      get :crm
       get :door_integration
       get :events
       get :offices

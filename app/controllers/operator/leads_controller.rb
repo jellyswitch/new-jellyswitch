@@ -4,9 +4,11 @@ class Operator::LeadsController < Operator::BaseController
   
   def index
     find_leads
+    authorize @leads
   end
 
   def show
     find_lead
+    authorize @lead
   end
 end
