@@ -25,4 +25,9 @@ class Lead < ApplicationRecord
       update(status: "open")
     end
   end
+
+  def gravatar
+    hash = Digest::MD5.hexdigest(user.email)
+    "https://www.gravatar.com/avatar/#{hash}"
+  end
 end
