@@ -52,6 +52,8 @@
   <dt>Landing page</dt>
   <dd><%= ahoy_property(lead, :landing_page) %></dd>
 
-  <dt>Platform</dt>
-  <dd><%= ahoy_property(lead, :platform) %></dd>
+  <dt>Device / OS</dt>
+  <dd>
+    <%= ahoy_property(lead, :device_type) %> / <%= ahoy_property(lead, :os) %>
+  </dd>
 </dl>

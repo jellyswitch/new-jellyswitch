@@ -4,6 +4,10 @@ Rails.application.routes.draw do
     # Typeform
     get :welcome, to: "landing#welcome"
   end
+  constraints subdomain: "stats" do
+    require 'sidekiq/web'
+    mount Sidekiq::Web => '/sidekiq'
+  end
   constraints subdomain: "app" do
     # Root
     get '/', to: "landing#index"
