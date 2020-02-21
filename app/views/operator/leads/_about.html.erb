@@ -30,25 +30,28 @@
     <% end %>
   </dd>
 
+  <dt>Name</dt>
+  <dd><%= link_to lead.user.name, user_path(lead.user) %></dd>
+
   <dt>Email</dt>
   <dd><%= link_to lead.user.email, user_path(lead.user) %>
 
+  <dt>City</dt>
+  <dd>
+    <%= ahoy_property(lead, :city) %>
+  </dd>
+
+  <dt>Region</dt>
+  <dd>
+    <%= ahoy_property(lead, :region) %>
+  </dd>
 
   <dt>Referrer</dt>
-  <dd>
-    <% if lead.ahoy_visit.present? && lead.ahoy_visit.referrer.present? %>
-      <%= lead.ahoy_visit.referrer %>
-    <% else %>
-      <i>None</i>
-    <% end %>
-  </dd>
+  <dd><%= ahoy_property(lead, :referrer) %></dd>
 
   <dt>Landing page</dt>
-  <dd>
-    <% if lead.ahoy_visit.present? && lead.ahoy_visit.landing_page.present? %>
-      <%= lead.ahoy_visit.landing_page %>
-    <% else %>
-      <i>None</i>
-    <% end %>
-  </dd>
+  <dd><%= ahoy_property(lead, :landing_page) %></dd>
+
+  <dt>Platform</dt>
+  <dd><%= ahoy_property(lead, :platform) %></dd>
 </dl>

@@ -1,4 +1,12 @@
 module LeadsHelper
+  def ahoy_property(lead, prop)
+    if lead.ahoy_visit.present? && lead.ahoy_visit.send(prop).present?
+      lead.ahoy_visit.send(prop)
+    else
+      "none"
+    end
+  end
+
   private
 
   def find_leads
