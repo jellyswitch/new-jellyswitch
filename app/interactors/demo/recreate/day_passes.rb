@@ -28,7 +28,8 @@ class Demo::Recreate::DayPasses
     day_pass_params = {
       day: temp_day,
       day_pass_type: operator.day_pass_types.sample.id,
-      created_at: temp_day
+      created_at: temp_day,
+      operator: operator
     }
 
     result = DayPassInteractorFactory.for(nil, operator).call(
