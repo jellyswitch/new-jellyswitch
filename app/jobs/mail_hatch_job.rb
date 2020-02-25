@@ -1,4 +1,4 @@
-class MailHatchJob < ApplicationJob
+class MailHatchJob < ActiveJob::Base
   queue_as :mailers
 
   def perform(mail_hatch, method_name, args)
