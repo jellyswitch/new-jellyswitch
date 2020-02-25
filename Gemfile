@@ -23,6 +23,7 @@ gem 'image_processing', '~> 1.2'
 gem "interactor-rails", "~> 2.2.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
+gem 'mailhatch-rails', require: 'mail_hatch', path: "/Users/dave/projects/jellyswitch/mailhatch-rails"
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
 gem 'newrelic_rpm'
