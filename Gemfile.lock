@@ -20,11 +20,6 @@ GIT
     faker (1.9.3)
       i18n (>= 0.7)
 
-PATH
-  remote: /Users/dave/projects/jellyswitch/mail_hatch
-  specs:
-    mail_hatch (0.0.2)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -267,6 +262,7 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
+    mail_hatch (0.0.2)
     main (6.2.3)
       arrayfields (~> 4.7, >= 4.7.4)
       chronic (~> 0.6, >= 0.6.2)
@@ -545,7 +541,7 @@ DEPENDENCIES
   jbuilder (~> 2.5)
   jquery-rails
   listen (>= 3.0.5, < 3.2)
-  mail_hatch!
+  mail_hatch
   momentjs-rails (>= 2.9.0)
   money
   newrelic_rpm
