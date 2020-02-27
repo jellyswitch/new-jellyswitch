@@ -23,7 +23,7 @@ GIT
 PATH
   remote: /Users/dave/projects/jellyswitch/mail_hatch
   specs:
-    mail_hatch (0.0.1)
+    mail_hatch (0.0.2)
 
 GEM
   remote: https://rubygems.org/
