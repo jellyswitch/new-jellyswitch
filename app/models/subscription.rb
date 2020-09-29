@@ -87,11 +87,7 @@ class Subscription < ApplicationRecord
 
   def has_days_left?
     return true # ignore day limits for now
-    if plan.has_day_limit?
-      days_left > 0
-    else
-      true
-    end
+    !plan.has_day_limit? || days_left > 0
   end
 
   def days_left
