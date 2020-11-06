@@ -1,6 +1,6 @@
 GIT
-  remote: https://github.com/dpaola2/user-auth
-  revision: f791c1e13db9c0fae4dedd5f6f4c8fb24795a92a
+  remote: https://github.com/jellyswitch/user-auth
+  revision: 2d9548fa798da843e55a5124a051f0f032a1d97d
   specs:
     user-auth (0.0.2)
 
