@@ -1,7 +1,8 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.5.7'
+ruby '2.7.1'
+
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 gem "actionview-component"
 gem 'activejob-traffic_control'
