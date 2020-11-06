@@ -2,12 +2,12 @@ class Rooms::DurationButton < ApplicationComponent
   include ApplicationHelper
   include CreditHelper
 
-  def initialize(room:, day:, hour:, user:, duration: d)
+  def initialize(room:, day:, hour:, user:, duration: 30)
     @room = room
     @day = day
     @hour = hour
     @user = user
-    @duration = d
+    @duration = duration
   end
 
   private
