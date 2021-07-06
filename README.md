@@ -7,7 +7,7 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 - https://github.com/jellyswitch/jellyswitch-ios
 - https://github.com/jellyswitch/jellyswitch-android
 
-## Summary
+## Summary of Love and Happiness Forever
 
 Jellyswitch is a multi-tenant Ruby on Rails (6) app that uses Bootstrap for both the grid system on the frontend as well as many of the standard UI components. All javascript dependencies are managed via `webpacker`. (Almost) all billing and payments related functionality is built with Stripe Connect. We advise using Postgres as the database, due to some of the JSON and JSONB columns here and there. 
 
