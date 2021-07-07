@@ -3,8 +3,10 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby '2.6.6'
 
+gem 'rails', '~> 6.1', '>= 6.1.4'
+
 gem 'dotenv-rails', require: 'dotenv/rails-now'
-gem "actionview-component"
+gem "view_component", require: "view_component/engine"
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
 gem 'ahoy_matey'
@@ -34,14 +36,16 @@ gem 'pg'
 gem 'premailer-rails'
 gem 'puma', '~> 3.12'
 gem 'pundit'
-gem 'rails', '~> 6.0.2.1'
 gem 'rails_autolink'
 gem 'redis'
 gem 'remotipart', '~> 1.2'
 gem 'roadie-rails', '~> 2.0'
 gem 'request_store'
 gem 'rollbar'
+
 gem 'sass-rails', '~> 5.0'
+gem 'sassc', '~> 2.4'
+
 gem 'searchkick'
 gem 'sidekiq'
 gem "simple_calendar", "~> 2.0"
