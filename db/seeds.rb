@@ -32,7 +32,7 @@ class FakeData
     name = Faker::Name.unique.name
     email = Faker::Internet.unique.safe_email
     password = "password"
-    bio = Faker::GameOfThrones.quote
+    bio = Faker::GreekPhilosophers.quote
     path = user_photo_paths.shuffle.sample
 
     user = User.create!(
@@ -49,14 +49,63 @@ class FakeData
     user
   end
 
+  def fake_operator 
+    name = Faker::Name.unique.name
+    snippet = Faker::ChuckNorris.fact
+    wifi_name = Faker::Artist.name
+    wifi_password = "password"
+    building_address = Faker::Address.street_address
+    # approval_required = true
+    subdomain = Faker::Internet.domain_name
+    contact_name = Faker::Movies::Ghostbusters.character
+    contact_email = Faker::Internet.email
+    contact_phone = Faker::PhoneNumber.cell_phone
+    background_image = Faker::Fillmurray.image
+    logo_image = Faker::Company.logo
+    square_footage = Faker::Number.number(digits: 4)
+    # email_enabled = true 
+    kisi_api_key = Faker::Internet.uuid
+    # terms_of_service = Faker::Quotes::Shakespeare.hamlet_quote
+    # push_notification_certificate = 
+    ios_url = Faker::Internet.url
+    android_url = Faker::Internet.url
+    # checkin_required = true
+    android_server_key = Faker::Internet.uuid
+
+    operator = Operator.create!(
+      name: name,
+      snippet: snippet,
+      wifi_name: wifi_name,
+      wifi_password: wifi_password,
+      building_address: building_address,
+      approval_required: true,
+      subdomain: subdomain,
+      contact_name: contact_name,
+      contact_email: contact_email,
+      contact_phone: contact_phone,
+      background_image: background_image,
+      logo_image: logo_image,
+      square_footage: square_footage,
+      email_enabled: true,
+      kisi_api_key: kisi_api_key,
+      ios_url: ios_url,
+      android_url: android_url,
+      checkin_required: true,
+      android_server_key: android_server_key,
+    )
+    operator
+  end
+
   def fake_org
     name = Faker::Company.unique.name
     owner = fake_user
+    operator = fake_operator
     website = Faker::Internet.url
 
     org = Organization.create!(
       name: name,
       owner: owner,
+      operator: operator,
       website: website,
     )
     org
@@ -95,6 +144,7 @@ class FakeData
   def run
     fake_doors
     fake_plans
+    fake_operator
     ActiveRecord::Base.transaction do
       admins.each do |email|
         admin = User.create!(
@@ -102,7 +152,7 @@ class FakeData
           email: email,
           password: "pizza123",
           admin: true,
-          bio: Faker::GameOfThrones.quote,
+          bio: Faker::GreekPhilosophers.quote,
           approved: true,
         )
         admin.profile_photo.attach(
