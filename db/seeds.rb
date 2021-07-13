@@ -9,7 +9,7 @@
 
 class FakeData
   def admins
-    ["dpaola2@gmail.com"]
+    ["bryn.knowles@gmail.com"]
   end
 
   def user_photos
@@ -28,25 +28,26 @@ class FakeData
     room_photos.map { |num| "#{num}.jpg" }
   end
 
-  def fake_user
+  def fake_user(operator)
     name = Faker::Name.unique.name
     email = Faker::Internet.unique.safe_email
     password = "password"
     bio = Faker::GreekPhilosophers.quote
     path = user_photo_paths.shuffle.sample
 
-    user = User.create!(
+    User.create!(
+      operator: operator,
       name: name,
       email: email,
       password: password,
       bio: bio,
       approved: true,
     )
-    user.profile_photo.attach(
-      io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
-      filename: path,
-    )
-    user
+    # user.profile_photo.attach(
+    #   io: File.open(Rails.root.join("app/assets/images/avatars/#{path}")),
+    #   filename: path,
+    # )
+    
   end
 
   def fake_operator 
@@ -60,19 +61,19 @@ class FakeData
     contact_name = Faker::Movies::Ghostbusters.character
     contact_email = Faker::Internet.email
     contact_phone = Faker::PhoneNumber.cell_phone
-    background_image = Faker::Fillmurray.image
-    logo_image = Faker::Company.logo
+    # background_image = Faker::Fillmurray.image
+    # logo_image = Faker::Company.logo
     square_footage = Faker::Number.number(digits: 4)
     # email_enabled = true 
-    kisi_api_key = Faker::Internet.uuid
+    # kisi_api_key = Faker::Internet.uuid
     # terms_of_service = Faker::Quotes::Shakespeare.hamlet_quote
     # push_notification_certificate = 
-    ios_url = Faker::Internet.url
-    android_url = Faker::Internet.url
+    # ios_url = Faker::Internet.url
+    # android_url = Faker::Internet.url
     # checkin_required = true
-    android_server_key = Faker::Internet.uuid
+    # android_server_key = Faker::Internet.uuid
 
-    operator = Operator.create!(
+    Operator.create!(
       name: name,
       snippet: snippet,
       wifi_name: wifi_name,
@@ -83,36 +84,36 @@ class FakeData
       contact_name: contact_name,
       contact_email: contact_email,
       contact_phone: contact_phone,
-      background_image: background_image,
-      logo_image: logo_image,
+      # background_image: background_image,
+      # logo_image: logo_image,
       square_footage: square_footage,
       email_enabled: true,
-      kisi_api_key: kisi_api_key,
-      ios_url: ios_url,
-      android_url: android_url,
+      # kisi_api_key: kisi_api_key,
+      # ios_url: ios_url,
+      # android_url: android_url,
       checkin_required: true,
-      android_server_key: android_server_key,
+      # android_server_key: android_server_key,
     )
-    operator
+  
   end
 
-  def fake_org
+  def fake_org(operator)
     name = Faker::Company.unique.name
-    owner = fake_user
-    operator = fake_operator
+    owner = fake_user(operator)
     website = Faker::Internet.url
 
-    org = Organization.create!(
+    Organization.create!(
       name: name,
       owner: owner,
       operator: operator,
       website: website,
     )
-    org
+
   end
 
-  def fake_room
+  def fake_room(operator)
     room = Room.create!(
+      operator: operator,
       name: Faker::Ancient.unique.god,
       description: Faker::Company.catch_phrase,
       capacity: rand(1..5),
@@ -122,10 +123,10 @@ class FakeData
     )
 
     path = room_photo_paths.shuffle.sample # "2.jpg"
-    room.photo.attach(
-      io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
-      filename: path,
-    )
+    # room.photo.attach(
+    #   io: File.open(Rails.root.join("app/assets/images/rooms/#{path}")),
+    #   filename: path,
+    # )
     room
   end
 
@@ -142,39 +143,40 @@ class FakeData
   end
 
   def run
-    fake_doors
-    fake_plans
-    fake_operator
+    # fake_doors
+    # fake_plans
+    first_coworking_space = fake_operator
     ActiveRecord::Base.transaction do
       admins.each do |email|
         admin = User.create!(
-          name: "Dave Paola",
+          operator: first_coworking_space,
+          name: "Aliens",
           email: email,
           password: "pizza123",
           admin: true,
-          bio: Faker::GreekPhilosophers.quote,
+          bio: "", # Faker::GreekPhilosophers.quote,
           approved: true,
         )
-        admin.profile_photo.attach(
-          io: File.open(Rails.root.join("app/assets/images/avatars/dave.png")),
-          filename: "dave.png",
-        )
+        # admin.profile_photo.attach(
+        #   io: File.open(Rails.root.join("app/assets/images/avatars/dave.png")),
+        #   filename: "dave.png",
+        # )
       end
 
       25.times do
-        puts fake_user.name
+        puts fake_user(first_coworking_space).name
       end
 
       3.times do
-        org = fake_org
+        org = fake_org(first_coworking_space)
         3.times do
-          org.users << fake_user
+          org.users << fake_user(first_coworking_space)
         end
         puts org.name
       end
 
       5.times do
-        room = fake_room
+        room = fake_room(first_coworking_space)
         puts room.name
       end
     end
