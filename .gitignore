@@ -33,7 +33,7 @@ rspec.xml
 # Mine
 /vendor/*
 .DS_Store
-.env
+.env*
 *.dump
 *.code-workspace
 /public/packs
