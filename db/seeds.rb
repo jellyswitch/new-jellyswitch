@@ -51,12 +51,12 @@ class FakeData
   end
 
   def fake_operator
-    name = Faker::FunnyName.name
+    name = (ENV['HOST'].split('-').first.capitalize + "'s Coworking Space") || Faker::FunnyName.name
     snippet = Faker::ChuckNorris.fact
     wifi_name = Faker::Hobby.activity
     wifi_password = Faker::Cannabis.cannabinoid
     building_address = Faker::Address.full_address
-    subdomain = Faker::Beer.brand.downcase
+    subdomain = (ENV['HOST'].split('.').first) || Faker::Beer.brand.downcase
     contact_name = Faker::FunnyName.name
     contact_email = Faker::Internet.email
     contact_phone = Faker::PhoneNumber.phone_number
@@ -69,7 +69,7 @@ class FakeData
     # ios_url = Faker::Internet.url
     # android_url = Faker::Internet.url
     # android_server_key = Faker::Hobby.activity
-
+    puts "Operator: #{name} under subdomain: #{subdomain}"
     Operator.create!(
       name: name,
       snippet: snippet, 
@@ -160,8 +160,8 @@ class FakeData
         # )
       end
 
-      25.times do
-        puts fake_user(first_coworking_space).name
+      11.times do
+        puts "User: " + fake_user(first_coworking_space).name
       end
 
       3.times do
@@ -169,12 +169,8 @@ class FakeData
         3.times do
           org.users << fake_user(first_coworking_space)
         end
-        puts org.name
-      end
-
-      5.times do
-        room = fake_room(first_coworking_space)
-        puts room.name
+        puts "Organization: #{org.name}"
+        puts "with Users: #{org.users.pluck(:name).join(',')}"
       end
     end
   end
