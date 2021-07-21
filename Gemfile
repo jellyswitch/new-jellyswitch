@@ -6,7 +6,7 @@ ruby '2.6.6'
 gem 'rails', '~> 6.1', '>= 6.1.4'
 
 gem 'dotenv-rails', require: 'dotenv/rails-now'
-gem "view_component", require: "view_component/engine"
+gem "view_component", '~> 2.22', '>= 2.22.1', require: "view_component/engine"
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
 gem 'ahoy_matey'
