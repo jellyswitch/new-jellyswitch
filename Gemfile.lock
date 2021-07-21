@@ -6,13 +6,13 @@ GIT
 
 GIT
   remote: https://github.com/stripe/stripe-ruby
-  revision: 01146ac6b01cf952398766d0f3171e781aa15c1b
+  revision: ad7104adc195ccb8b64c44dfae2fb01ac39c3f5a
   specs:
-    stripe (5.35.0)
+    stripe (5.37.0)
 
 GIT
   remote: https://github.com/stympy/faker.git
-  revision: 51eb59f16fd10489845eb097eb919e8940a1ddbd
+  revision: 5169f7b03761b927ffa2bea39cd14b55c6bb0ca5
   branch: master
   specs:
     faker (2.18.0)
@@ -115,8 +115,8 @@ GEM
     autoprefixer-rails (10.2.5.1)
       execjs (> 0)
     aws-eventstream (1.1.1)
-    aws-partitions (1.474.0)
-    aws-sdk-core (3.115.0)
+    aws-partitions (1.479.0)
+    aws-sdk-core (3.117.0)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.239.0)
       aws-sigv4 (~> 1.1)
@@ -124,11 +124,11 @@ GEM
     aws-sdk-kms (1.44.0)
       aws-sdk-core (~> 3, >= 3.112.0)
       aws-sigv4 (~> 1.1)
-    aws-sdk-s3 (1.96.1)
+    aws-sdk-s3 (1.96.2)
       aws-sdk-core (~> 3, >= 3.112.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.1)
-    aws-sigv4 (1.2.3)
+    aws-sigv4 (1.2.4)
       aws-eventstream (~> 1, >= 1.0.2)
     bcrypt (3.1.16)
     better_errors (2.9.1)
@@ -152,7 +152,7 @@ GEM
       rack-test (>= 0.6.3)
       regexp_parser (>= 1.5, < 3.0)
       xpath (~> 3.2)
-    chartkick (4.0.4)
+    chartkick (4.0.5)
     childprocess (3.0.0)
     choice (0.2.0)
     chronic (0.10.2)
@@ -186,12 +186,12 @@ GEM
       activesupport (>= 5.0)
       request_store (>= 1.0)
       ruby2_keywords
-    elasticsearch (7.13.1)
-      elasticsearch-api (= 7.13.1)
-      elasticsearch-transport (= 7.13.1)
-    elasticsearch-api (7.13.1)
+    elasticsearch (7.13.3)
+      elasticsearch-api (= 7.13.3)
+      elasticsearch-transport (= 7.13.3)
+    elasticsearch-api (7.13.3)
       multi_json
-    elasticsearch-transport (7.13.1)
+    elasticsearch-transport (7.13.3)
       faraday (~> 1)
       multi_json
     errbase (0.2.1)
@@ -202,7 +202,7 @@ GEM
     factory_bot_rails (5.0.2)
       factory_bot (~> 5.0.2)
       railties (>= 4.2.0)
-    faraday (1.5.0)
+    faraday (1.5.1)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
       faraday-excon (~> 1.1)
@@ -217,7 +217,7 @@ GEM
     faraday-excon (1.1.0)
     faraday-httpclient (1.0.1)
     faraday-net_http (1.0.1)
-    faraday-net_http_persistent (1.1.0)
+    faraday-net_http_persistent (1.2.0)
     faraday-patron (1.0.0)
     fattr (2.4.0)
     fcm (1.0.3)
@@ -381,7 +381,7 @@ GEM
       method_source
       rake (>= 0.13)
       thor (~> 1.0)
-    rake (13.0.4)
+    rake (13.0.6)
     rb-fsevent (0.11.0)
     rb-inotify (0.10.1)
       ffi (~> 1.0)
@@ -421,7 +421,7 @@ GEM
       rexml
     ruby-vips (2.1.2)
       ffi (~> 1.12)
-    ruby2_keywords (0.0.4)
+    ruby2_keywords (0.0.5)
     ruby_dep (1.5.0)
     ruby_parser (3.16.0)
       sexp_processor (~> 4.15, >= 4.15.1)
@@ -459,7 +459,7 @@ GEM
       connection_pool (>= 2.2.2)
       rack (~> 2.0)
       redis (>= 4.2.0)
-    simple_calendar (2.4.2)
+    simple_calendar (2.4.3)
       rails (>= 3.0)
     sinatra (2.1.0)
       mustermann (~> 1.0)
@@ -505,7 +505,7 @@ GEM
     websocket-driver (0.7.5)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    working_hours (1.4.0)
+    working_hours (1.4.1)
       activesupport (>= 3.2)
       tzinfo
     xpath (3.2.0)
