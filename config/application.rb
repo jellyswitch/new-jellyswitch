@@ -3,11 +3,12 @@ require_relative 'boot'
 
 require 'rails/all'
 
+require "view_component/engine"
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require "view_component/engine"
 
 module Bristlecone
   class Application < Rails::Application

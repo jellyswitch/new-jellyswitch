@@ -1,3 +1,3 @@
 class ApplicationComponent < ViewComponent::Base
-  include ActiveModel::Conversion 
+  # include ActiveModel::Conversion 
 end

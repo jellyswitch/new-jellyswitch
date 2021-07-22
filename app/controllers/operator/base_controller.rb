@@ -1,4 +1,7 @@
 class Operator::BaseController < ApplicationController
+  protect_from_forgery with: :null_session
+  skip_before_action :verify_authenticity_token
+  # FIXME: re-enable CSRF protection
   set_current_tenant_by_subdomain(:operator, :subdomain)
   layout "operator"
   before_action :store_ios_token, if: :logged_in?

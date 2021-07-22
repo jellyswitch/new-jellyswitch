@@ -9,7 +9,7 @@
 
 class FakeData
   def admins
-    ["mi.shelbyrose@gmail.com"]
+    ["mi.shelbyrose@gmail.com", "bryn.knowles@gmail.com", "ben.damman@gmail.com"]
   end
 
   def user_photos
@@ -172,6 +172,10 @@ class FakeData
         puts "Organization: #{org.name}"
         puts "with Users: #{org.users.pluck(:name).join(',')}"
       end
+
+      location_name = "Coworking Location 1"
+      puts "Location: #{location_name}"
+      Location.create!({operator: first_coworking_space, name: location_name })
     end
   end
 end
