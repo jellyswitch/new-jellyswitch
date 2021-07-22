@@ -54,11 +54,11 @@ def main
 
     FileUtils.cp(src, dest, verbose: true)
   end
-  FileUtils.cp("../bristlecone/ios/Contents-AppIcon.json", path(dest_dir, "AppIcon.appiconset/Contents.json"))
+  FileUtils.cp("../jellyswitch/ios/Contents-AppIcon.json", path(dest_dir, "AppIcon.appiconset/Contents.json"))
   FileUtils.cp(path(source_dir, "Icon-1024.png"), path(dest_dir, "LaunchLogo.imageset/Icon-1024.png"))
-  FileUtils.cp("../bristlecone/ios/Contents-LaunchLogo.json", path(dest_dir, "LaunchLogo.imageset/Contents.json"))
+  FileUtils.cp("../jellyswitch/ios/Contents-LaunchLogo.json", path(dest_dir, "LaunchLogo.imageset/Contents.json"))
   FileUtils.cp(path(source_dir, "Icon-1024.png"), path(dest_dir, "SidebarIcon.imageset/Icon-1024.png"))
-  FileUtils.cp("../bristlecone/ios/Contents-SidebarIcon.json", path(dest_dir, "SidebarIcon.imageset/Contents.json"))
+  FileUtils.cp("../jellyswitch/ios/Contents-SidebarIcon.json", path(dest_dir, "SidebarIcon.imageset/Contents.json"))
 end
 
 puts ARGV.inspect

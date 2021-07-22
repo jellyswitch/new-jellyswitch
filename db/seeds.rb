@@ -151,6 +151,7 @@ class FakeData
           email: email,
           password: "pizza123",
           admin: true,
+          superadmin: true,
           bio: "", #Faker::Company.catch_phrase,
           approved: true,
         )

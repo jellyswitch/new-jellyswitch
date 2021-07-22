@@ -26248,7 +26248,7 @@ module Bootstrap
   def self.stylesheets_path(); end
 end
 
-module Bristlecone
+module Jellyswitch
   extend ::T::Sig
 end
 
