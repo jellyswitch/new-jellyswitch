@@ -5,7 +5,7 @@
   <li class="breadcrumb-item active" aria-current="page">Payment Method</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_wrapper do %>
     <%= list_item do %>
       <%= render(PaymentMethodComponent, billable: @user) %>

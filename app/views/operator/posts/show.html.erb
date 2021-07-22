@@ -5,6 +5,6 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @post.title %></li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
-  <%= render Posts::Post, post: @post %>
+<%= render Layout::FullWidth.new do %>
+  <%= render Posts::Post.new(post: @post) %>
 <% end %>

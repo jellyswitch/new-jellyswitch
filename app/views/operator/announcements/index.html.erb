@@ -15,7 +15,7 @@
       <%= list_wrapper do %>
         <% @announcements.each do |announcement| %>
           <%= list_item do %>
-            <%= render announcement %>
+            <%= render announcement.new %>
           <% end %>
         <% end %>
       <% end %>

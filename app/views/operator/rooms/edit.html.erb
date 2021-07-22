@@ -6,7 +6,7 @@
   <li class="breadcrumb-item active">Edit</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center mt-4">Edit Room</h4>
     <%= form_with(model: @room, url: room_path(@room), remote: true) do |f| %>

@@ -10,7 +10,7 @@
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <%= render "operator/admin/day_passes/form", day_pass: DayPass.new, label: "Add day pass", user: @user %>
+        <%= render "operator/admin/day_passes/form", day_pass: DayPass.new(label: "Add day pass", user: @user) %>
       <% end %>
     <% end %>
   </div>

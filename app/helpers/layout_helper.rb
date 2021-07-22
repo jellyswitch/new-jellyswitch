@@ -42,7 +42,7 @@ module LayoutHelper
   end
 
   def breadcrumb_item(label:, path: nil, active: false)
-    render Bootstrap::BreadcrumbItem.new, label: label, path: path, active: active
+    render Bootstrap::BreadcrumbItem.new(label: label, path: path, active: active)
   end
 
   def title(page_title)

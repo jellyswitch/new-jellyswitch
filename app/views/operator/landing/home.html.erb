@@ -141,7 +141,7 @@
         <% end %>
         
         <% current_tenant.posts.order("created_at DESC").limit(2).each do |post| %>
-          <%= render Posts::PostLink, post: post %>
+          <%= render Posts::PostLink.new(post: post) %>
         <% end %>
 
         <%= list_item do %>
