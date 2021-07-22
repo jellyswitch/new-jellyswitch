@@ -1,16 +1,16 @@
 source 'https://rubygems.org'
-git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+git_source(:github) { |repo| 'https://github.com/#{repo}.git' }
 
-ruby '2.6.6'
+ruby '2.7.1'
 
 gem 'rails', '~> 6.1', '>= 6.1.4'
 
 gem 'dotenv-rails', require: 'dotenv/rails-now'
-gem "view_component", '~> 2.22', '>= 2.22.1', require: "view_component/engine"
+gem 'view_component', '~> 2.22', '>= 2.22.1', require: 'view_component/engine'
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
 gem 'ahoy_matey'
-gem "aws-sdk-s3", require: false
+gem 'aws-sdk-s3', require: false
 gem 'bcrypt'
 gem 'bootstrap', '~> 4.3.1'
 gem 'chartkick'
@@ -23,10 +23,10 @@ gem 'houston'
 gem 'httparty'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
-gem "interactor-rails", "~> 2.2.0"
+gem 'interactor-rails', '~> 2.2.0'
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
-gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
+gem 'mail_hatch' #, path: '/Users/dave/projects/jellyswitch/mail_hatch'
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
 gem 'newrelic_rpm'
@@ -43,12 +43,11 @@ gem 'roadie-rails', '~> 2.0'
 gem 'request_store'
 gem 'rollbar'
 
-gem 'sass-rails', '~> 5.0'
-gem 'sassc', '~> 2.4'
+gem 'sassc-rails', '>= 2.1.2'
 
 gem 'searchkick'
 gem 'sidekiq'
-gem "simple_calendar", "~> 2.0"
+gem 'simple_calendar', '~> 2.0'
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
 gem 'turbolinks', '~> 5'
 gem 'uglifier', '>= 1.3.0'
@@ -62,7 +61,7 @@ group :development do
   gem 'binding_of_caller'
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'rails-erd'
-  gem 'user-auth', git: "https://github.com/jellyswitch/user-auth"
+  gem 'user-auth', git: 'https://github.com/jellyswitch/user-auth'
   gem 'web-console', '>= 3.3.0'
 end
 
@@ -78,6 +77,6 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'rails-controller-testing'
   gem 'rspec-rails', '~> 3.8'
-  gem "rspec_junit_formatter"
+  gem 'rspec_junit_formatter'
   gem 'factory_bot_rails', '~> 5.0.1'
 end
