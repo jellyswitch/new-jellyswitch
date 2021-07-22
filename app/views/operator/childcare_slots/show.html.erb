@@ -12,7 +12,7 @@
       Childcare Slot
     </h4>
 
-    <%= render(Childcare::Slot, childcare_slot: @childcare_slot) %>
+    <%= render(Childcare::Slot.new(childcare_slot: @childcare_slot)) %>
 
     <div class="row mt-2">
       <div class="col">

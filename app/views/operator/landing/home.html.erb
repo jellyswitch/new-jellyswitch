@@ -7,7 +7,7 @@
     
       <% if current_location.building_access_instructions.present? %>
         <%= list_item do %>
-          <%= render(AccessInstructions::CheckinInstructions, operator: current_tenant, location: current_location) %>
+          <%= render(AccessInstructions::CheckinInstructions.new(operator: current_tenant, location: current_location)) %>
         <% end %>
       <% end %>
 

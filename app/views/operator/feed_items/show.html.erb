@@ -2,6 +2,6 @@
 
 <%= render Layout::FullWidth.new do %>
   <div id="feed-item-<%= @feed_item.id %>">
-    <%= render(FeedItemComponent, feed_item: @feed_item, comments: true) %>
+    <%= render(FeedItemComponent.new(feed_item: @feed_item, comments: true)) %>
   </div>
 <% end %>

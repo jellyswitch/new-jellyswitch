@@ -10,12 +10,12 @@
   <% end %>
   <% if current_tenant.day_pass_types.visible.available.count == 1 %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::DayPassItem, day_pass_type: current_tenant.day_pass_types.visible.available.first) %>
+      <%= render(MemberOnboarding::DayPassItem.new(day_pass_type: current_tenant.day_pass_types.visible.available.first)) %>
     <% end %>
   <% else %>
     <% current_tenant.day_pass_types.visible.available.order(:amount_in_cents).each do |day_pass_type| %>
       <%= list_item do %>
-        <%= render(MemberOnboarding::DayPassItem, day_pass_type: day_pass_type) %>
+        <%= render(MemberOnboarding::DayPassItem.new(day_pass_type: day_pass_type)) %>
       <% end %>
     <% end %>
   <% end %>

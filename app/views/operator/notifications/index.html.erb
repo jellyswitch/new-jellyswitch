@@ -19,7 +19,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).reservations?, path: reservations_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).reservations?, path: reservations_notifications_path)) do %>
             Room reservations
           <% end %>
         </div>
@@ -27,7 +27,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).memberships?, path: memberships_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).memberships?, path: memberships_notifications_path)) do %>
             Memberships
           <% end %>
         </div>
@@ -35,7 +35,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).day_passes?, path: day_passes_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).day_passes?, path: day_passes_notifications_path)) do %>
             Day passes
           <% end %>
         </div>
@@ -43,7 +43,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).checkins?, path: checkins_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).checkins?, path: checkins_notifications_path)) do %>
             Checkins
           <% end %>
         </div>
@@ -51,7 +51,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).posts?, path: posts_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).posts?, path: posts_notifications_path)) do %>
             Management notes
           <% end %>
         </div>
@@ -59,7 +59,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).signups?, path: signups_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).signups?, path: signups_notifications_path)) do %>
             Signups
           <% end %>
         </div>
@@ -67,7 +67,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).refunds?, path: refunds_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).refunds?, path: refunds_notifications_path)) do %>
             Refunds
           <% end %>
         </div>
@@ -75,7 +75,7 @@
 
       <div class="row">
         <div class="col">
-          <%= render(OnOffSwitch, predicate: policy(:notification).member_feedback?, path: feedback_notifications_path) do %>
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).member_feedback?, path: feedback_notifications_path)) do %>
             Member feedback
           <% end %>
         </div>

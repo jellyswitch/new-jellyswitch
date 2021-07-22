@@ -3,16 +3,16 @@
 <h5>Configuration</h5>
 <dl>
 
-  <%= render(OnOffSwitch, predicate: location.visible?, path: location_visible_path(location)) do %>
+  <%= render(OnOffSwitch.new(predicate: location.visible?, path: location_visible_path(location))) do %>
     Visible to users
   <% end %>
 
   <% if policy(:payment).enabled? %>
-    <%= render(OnOffSwitch, predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location)) do %>
+    <%= render(OnOffSwitch.new(predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location))) do %>
       Automatically provision free day passes to new users
     <% end %>
     
-    <%= render(OnOffSwitch, predicate: location.allow_hourly?, path: location_allow_hourly_path(location)) do %>
+    <%= render(OnOffSwitch.new(predicate: location.allow_hourly?, path: location_allow_hourly_path(location))) do %>
       Allow hourly check-ins and check-outs
     <% end %>
 

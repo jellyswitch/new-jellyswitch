@@ -7,7 +7,7 @@
       <%= list_wrapper do %>
         <% @feed_items.each do |feed_item| %>
           <div id="feed-item-<%= feed_item.id %>">
-            <%= render(FeedItemComponent, feed_item: feed_item, comments: false) %>
+            <%= render(FeedItemComponent.new(feed_item: feed_item, comments: false)) %>
           </div>
         <% end %>
       <% end %>

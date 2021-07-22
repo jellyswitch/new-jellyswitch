@@ -54,35 +54,35 @@
 
       <div class="row">
         <div class="col">
-          <%= render(ModuleToggle, predicate: policy(:announcement).enabled?, path: announcements_modules_path, label: "Announcements") do %>
+          <%= render(ModuleToggle.new(predicate: policy(:announcement).enabled?, path: announcements_modules_path, label: "Announcements")) do %>
           <% end %>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
-          <%= render(ModuleToggle, predicate: policy(:post).enabled?, path: bulletin_board_modules_path, label: "Bulletin Board") do %>
+          <%= render(ModuleToggle.new(predicate: policy(:post).enabled?, path: bulletin_board_modules_path, label: "Bulletin Board")) do %>
           <% end %>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
-          <%= render(ModuleToggle, predicate: policy(:room).enabled?, path: rooms_modules_path, label: "Rooms & Reservations") do %>
+          <%= render(ModuleToggle.new(predicate: policy(:room).enabled?, path: rooms_modules_path, label: "Rooms & Reservations")) do %>
           <% end %>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
-          <%= render(ModuleToggle, predicate: policy(:office).enabled?, path: offices_modules_path, disabled: !policy(:payment).enabled?, label: "Offices & Lease Management" ) do %>
+          <%= render(ModuleToggle.new(predicate: policy(:office).enabled?, path: offices_modules_path, disabled: !policy(:payment).enabled?, label: "Offices & Lease Management" )) do %>
           <% end %>
         </div>
       </div>
 
       <div class="row">
         <div class="col">
-          <%= render(ModuleToggle, predicate: policy(:door).enabled?, path: door_integration_modules_path, label: "Door Integration") do %>
+          <%= render(ModuleToggle.new(predicate: policy(:door).enabled?, path: door_integration_modules_path, label: "Door Integration")) do %>
           <% end %>
         </div>
       </div>
@@ -102,7 +102,7 @@
 
         <div class="row">
           <div class="col">
-            <%= render(ModuleToggle, predicate: policy(:event).enabled?, path: events_modules_path, label: "Events") do %>
+            <%= render(ModuleToggle.new(predicate: policy(:event).enabled?, path: events_modules_path, label: "Events")) do %>
             <% end %>
           </div>
         </div>
@@ -110,7 +110,7 @@
         <% if superadmin? %>
           <div class="row">
             <div class="col">
-              <%= render(ModuleToggle, predicate: policy(:lead).enabled?, path: crm_modules_path, label: "CRM & Lead Tracking") do %>
+              <%= render(ModuleToggle.new(predicate: policy(:lead).enabled?, path: crm_modules_path, label: "CRM & Lead Tracking")) do %>
               <% end %>
             </div>
           </div>
@@ -118,7 +118,7 @@
         
         <div class="row mb-3">
           <div class="col">
-            <%= render(ModuleToggle, predicate: policy(:childcare).enabled?, path: childcare_modules_path, label: "Childcare") do %>
+            <%= render(ModuleToggle.new(predicate: policy(:childcare).enabled?, path: childcare_modules_path, label: "Childcare")) do %>
               <% if policy(:childcare).enabled? %>
                 <% current_tenant.locations.each do |location| %>
                   <%= form_with(url: childcare_reservations_settings_modules_path, method: :get) do |f| %>
@@ -150,7 +150,7 @@
         
         <div class="row">
           <div class="col">
-            <%= render(ModuleToggle, predicate: policy(:credit).enabled?, path: credits_modules_path, label: "Reservation Credits") do %>
+            <%= render(ModuleToggle.new(predicate: policy(:credit).enabled?, path: credits_modules_path, label: "Reservation Credits")) do %>
               <% if policy(:credit).enabled? %>
                 <% current_tenant.locations.each do |location| %>
                   <%= form_with(url: reservation_credits_settings_modules_path, method: :get) do |f| %>
