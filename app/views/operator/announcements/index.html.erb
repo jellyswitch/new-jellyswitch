@@ -1,6 +1,6 @@
 <% title "Announcements" %>
 
-<div class="row mt-1 mb-0 p-0">
+<div class="p-0 mt-1 mb-0 row">
   <div class="col-lg-3"></div>
   <div class="col-lg">
     <% if policy(Announcement.new).new? %>
@@ -21,7 +21,7 @@
       <% end %>
       
       <div class="mt-2">
-        <%== pagy_bootstrap_responsive_nav(@pagy) %>
+        <%== pagy_bootstrap_nav_js(@pagy) %>
       </div>
       
     <% else %>
