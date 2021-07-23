@@ -1,7 +1,6 @@
 # typed: false
 class Operator::SessionsController < Operator::BaseController
   before_action :background_image
-  skip_before_action :verify_authenticity_token
 
   def new
     authorize :session, :new?
