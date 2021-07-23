@@ -149,9 +149,7 @@
       <%= link_to "Resume onboarding", new_operator_onboarding_path, class: "btn btn-block btn-sm btn-success" %>
     </div>
   <% else %>
-    <%= render(OnboardingSidebar, 
-      operator: current_tenant, 
-      location: current_location) %>
+    <%= render(OnboardingSidebar.new(operator: current_tenant, location: current_location) %>
   <% end %>
 <% end %>
 
