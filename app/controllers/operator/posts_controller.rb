@@ -20,7 +20,7 @@ class Operator::PostsController < Operator::BaseController
     )
 
     if result.success?
-      turbolinks_redirect(post_path(result.post))
+      turbolinks_redirect(posts_path)
     else
       flash[:error] = result.message
       turbolinks_redirect(new_post_path, action: "replace")
