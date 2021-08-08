@@ -41,7 +41,11 @@
     <div class="row mt-3">
       <div class="col-2"></div>
       <div class="col">
-        <%= render(subcomponent.new(feed_item: feed_item)) %>
+        <%= if subcomponent.is_a?(String)
+            render subcomponent, feed_item: feed_item
+          else
+            render subcomponent.new(feed_item: feed_item)
+          end %>
       </div>
     </div>
     
