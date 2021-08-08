@@ -39,16 +39,16 @@ class FeedItemComponent < ApplicationComponent
     end
   end
 
-  def subcomponent(arg)
+  def subcomponent
     case feed_item.type
     when "announcement"
-      FeedItems::Announcement.new(arg)
+      FeedItems::Announcement
     when "checkin"
-      FeedItems::Checkin.new(arg)
+      FeedItems::Checkin
     when "childcare-reservation"
-      FeedItems::ChildcareReservation.new(arg)
+      FeedItems::ChildcareReservation
     when "reservation"
-      FeedItems::Reservation.new(arg)
+      FeedItems::Reservation
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end
