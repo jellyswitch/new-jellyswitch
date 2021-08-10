@@ -8,3 +8,4 @@ We would like to thank the following people who have contributed in various ways
 - Matt Spencer - @sirmspencer
 - Phil Dow - @phildow
 - Hassaan Chaudhry - @mhassaan
+- Shelby Talbert - @miShelbyT
