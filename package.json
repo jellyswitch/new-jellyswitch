@@ -19,10 +19,10 @@
     "tempusdominus-bootstrap-4": "^5.1.2",
     "tempusdominus-core": "5.0.3",
     "trix": "^1.0.0",
-    "turbolinks": "^5.2.0",
-    "webpack": "^4.0.0"
+    "turbolinks": "^5.2.0"
   },
   "devDependencies": {
+    "webpack-cli": "^4.7.2",
     "webpack-dev-server": "^3.11.0"
   }
 }

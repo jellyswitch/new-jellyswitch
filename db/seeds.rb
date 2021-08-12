@@ -9,7 +9,7 @@
 
 class FakeData
   def admins
-    ["mi.shelbyrose@gmail.com", "bryn.knowles@gmail.com", "ben.damman@gmail.com"]
+    ["mi.shelbyrose@gmail.com", "morra.dianna@gmail.com", "ben.damman@gmail.com"]
   end
 
   def user_photos
