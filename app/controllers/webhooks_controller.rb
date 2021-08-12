@@ -15,8 +15,13 @@ class WebhooksController < ApplicationController
         if result.success?
           ok
         else
-          Rollbar.error(result.message) if @event.livemode
-          error(result.message)
+          case result.message
+          when StripeRecordNotFound
+            ok
+          else
+            Rollbar.error(result.message) if @event.livemode
+            error(result.message)
+          end
         end
       end
     when "invoice.payment_succeeded", "invoice.payment_failed", "invoice.voided", "invoice.marked_uncollectible"
@@ -29,7 +34,13 @@ class WebhooksController < ApplicationController
       if result.success?
         ok
       else
-        error(result.message)
+        case result.message
+        when StripeRecordNotFound
+          ok
+        else
+          Rollbar.error(result.message) if @event.livemode
+          error(result.message)
+        end
       end
     else
       error("Unrecognized webhook type: #{@event.type}")
@@ -56,6 +67,15 @@ class WebhooksController < ApplicationController
     else
       Rollbar.error(result.message) if @event.livemode
       error(result.message)
+    end
+  end
+
+  class StripeRecordNotFound
+    # used to send 200 OK to Stripe so it does not retry indefinitely
+    def self.===(error_message)
+      it = error_message.downcase
+      return true if it.include? "cannot find billable with stripe customer id"
+      return true if it.include? "no such subscription"
     end
   end
 end

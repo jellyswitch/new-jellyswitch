@@ -1,6 +1,6 @@
 <% title "Settings" %>
 
-<%= render(Layout::FullWidth) do %>
+<%= render(Layout::FullWidth.new) do %>
   <%= list_item do %>
     <%= render "settings", location: @location %>
   <% end %>
