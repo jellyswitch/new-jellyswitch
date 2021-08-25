@@ -31,7 +31,9 @@ class Door < ApplicationRecord
 
   # Relationships
   has_many :door_punches
-  belongs_to :operator
+  belongs_to :operator, polymorphic: true
+  belongs_to :user, polymorphic: true
+  belongs_to :organization, polymorphic: true
   acts_as_scopable :operator, :location
 
   def search_data

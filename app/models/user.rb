@@ -48,6 +48,7 @@ class User < ApplicationRecord
   has_many :childcare_reservations, through: :child_profiles
   has_many :day_passes
   has_many :door_punches
+  has_many :doors
   has_many :events
   has_many :feed_items
   has_many :feed_item_comments

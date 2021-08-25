@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_07_07_064538) do
+ActiveRecord::Schema.define(version: 2021_08_25_221014) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -189,6 +189,8 @@ ActiveRecord::Schema.define(version: 2021_07_07_064538) do
     t.integer "operator_id", default: 1, null: false
     t.integer "kisi_id"
     t.bigint "location_id"
+    t.boolean "private"
+    t.integer "doorable_id"
     t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
   end

@@ -32,6 +32,7 @@ class Organization < ApplicationRecord
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
+  has_many :doors
 
   has_many :subscriptions, as: :subscribable
 
