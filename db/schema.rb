@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_08_25_221014) do
+ActiveRecord::Schema.define(version: 2021_08_25_233420) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -190,9 +190,11 @@ ActiveRecord::Schema.define(version: 2021_08_25_221014) do
     t.integer "kisi_id"
     t.bigint "location_id"
     t.boolean "private"
-    t.integer "doorable_id"
+    t.string "private_owner_type"
+    t.bigint "private_owner_id"
     t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
+    t.index ["private_owner_type", "private_owner_id"], name: "index_doors_on_private_owner"
   end
 
   create_table "events", force: :cascade do |t|

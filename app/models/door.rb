@@ -31,10 +31,15 @@ class Door < ApplicationRecord
 
   # Relationships
   has_many :door_punches
-  belongs_to :operator, polymorphic: true
-  belongs_to :user, polymorphic: true
-  belongs_to :organization, polymorphic: true
+  belongs_to :operator
   acts_as_scopable :operator, :location
+
+  # Private doors
+  belongs_to :private_owner, polymorphic: true, optional: true
+
+  def privately_owned?
+    private_owner_id? || private?
+  end
 
   def search_data
     {
