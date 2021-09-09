@@ -49,8 +49,10 @@ class User < ApplicationRecord
   has_many :day_passes
   has_many :door_punches
 
-  has_many :private_doors, as: :private_owner, class_name: "Door"
-  has_many :organizational_private_doors, through: :organization, source: :private_doors, source_type: "Door", as: :private_owner
+
+  def all_private_doors
+    (private_doors + organizational_private_doors).uniq
+  end
 
   has_many :events
   has_many :feed_items
@@ -63,10 +65,13 @@ class User < ApplicationRecord
   belongs_to :operator
   has_many :operator_surveys
   has_many :reservations
-  has_many :subscriptions, as: :subscribable
+  has_many :subscriptions,  as: :subscribable
   has_many :refunds
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
+
+  has_many :private_doors, as: :private_owner, class_name: "Door"
+  has_many :organizational_private_doors, as: :private_owner, through: :organization, class_name: "Organization"
 
   # Slugs
   extend FriendlyId
