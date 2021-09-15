@@ -47,10 +47,3 @@ class Door < ApplicationRecord
     }
   end
 end
-#new_door = Door.new(name: "Test", slug: "firstdoor", available: true, operator_id: 1, kisi_id: 23, location_id: 4, private: true)
-#Door.new(name: "Test", slug: "firstdoor", available: true, operator_id: 1, kisi_id: 23, location_id: 4, private: true)
-#User.create(email: "jorge@gmail.com", password: "password", password_confirmation: "password")
-#current_user = User.find(20)
-#current_user.organizational_private_doors
-#current_user = Door.first.private_owner
-#

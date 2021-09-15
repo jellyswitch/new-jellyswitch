@@ -34,6 +34,7 @@ class Organization < ApplicationRecord
   acts_as_tenant :operator
 
   has_many :organizational_private_doors, as: :private_owner, class_name: "Door"
+ 
 
   has_many :subscriptions, as: :subscribable
 
