@@ -48,6 +48,12 @@ class User < ApplicationRecord
   has_many :childcare_reservations, through: :child_profiles
   has_many :day_passes
   has_many :door_punches
+
+
+  def all_private_doors
+    (private_doors + organizational_private_doors).uniq
+  end
+
   has_many :events
   has_many :feed_items
   has_many :feed_item_comments
@@ -59,10 +65,13 @@ class User < ApplicationRecord
   belongs_to :operator
   has_many :operator_surveys
   has_many :reservations
-  has_many :subscriptions, as: :subscribable
+  has_many :subscriptions,  as: :subscribable
   has_many :refunds
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
+
+  has_many :private_doors, as: :private_owner, class_name: "Door"
+  has_many :organizational_private_doors, as: :private_owner, through: :organization, class_name: "Organization"
 
   # Slugs
   extend FriendlyId

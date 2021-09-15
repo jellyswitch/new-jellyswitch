@@ -34,6 +34,13 @@ class Door < ApplicationRecord
   belongs_to :operator
   acts_as_scopable :operator, :location
 
+  # Private doors
+  belongs_to :private_owner, polymorphic: true, optional: true
+
+  def privately_owned?
+    private_owner_id? || private?
+  end
+
   def search_data
     {
       name: name
