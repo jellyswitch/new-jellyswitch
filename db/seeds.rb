@@ -138,7 +138,7 @@ class FakeData
     Door.create!(name: "Front Door")
     Door.create!(name: "Back Door")
   end
-#Door.create(name: "Front Door", slug: "slug", available: true, operator_id: 2, kisi_id: 3, location_id: 1, private: true)
+
 
   def run
     # fake_doors
