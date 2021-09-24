@@ -51,7 +51,7 @@ class User < ApplicationRecord
 
 
   def all_private_doors
-    (private_doors + organizational_private_doors).uniq
+    (private_doors + organization.organizational_private_doors).uniq
   end
 
   has_many :events
