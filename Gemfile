@@ -41,7 +41,9 @@ gem 'remotipart', '~> 1.2'
 gem 'roadie-rails', '~> 2.0'
 gem 'request_store'
 gem 'rollbar'
-gem 'sass-rails', '~> 5.0'
+
+gem 'sassc-rails', '~> 2.1'
+
 gem 'searchkick'
 gem 'sidekiq'
 gem "simple_calendar", "~> 2.0"
