@@ -8,7 +8,7 @@ gem "actionview-component"
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.4.2'
 gem 'ahoy_matey'
-gem "aws-sdk-s3", require: false
+gem "aws-sdk-s3", '~> 1', require: false
 gem 'bcrypt'
 gem 'bootstrap', '~> 4.3.1'
 gem 'chartkick'

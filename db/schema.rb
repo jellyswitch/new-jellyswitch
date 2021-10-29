@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_02_21_213351) do
+ActiveRecord::Schema.define(version: 2021_10_20_233620) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,7 +43,14 @@ ActiveRecord::Schema.define(version: 2020_02_21_213351) do
     t.bigint "byte_size", null: false
     t.string "checksum", null: false
     t.datetime "created_at", null: false
+    t.string "service_name", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
   create_table "ahoy_events", force: :cascade do |t|
@@ -182,8 +189,12 @@ ActiveRecord::Schema.define(version: 2020_02_21_213351) do
     t.integer "operator_id", default: 1, null: false
     t.integer "kisi_id"
     t.bigint "location_id"
+    t.boolean "private"
+    t.string "private_owner_type"
+    t.bigint "private_owner_id"
     t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
+    t.index ["private_owner_type", "private_owner_id"], name: "index_doors_on_private_owner"
   end
 
   create_table "events", force: :cascade do |t|
@@ -332,9 +343,9 @@ ActiveRecord::Schema.define(version: 2020_02_21_213351) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "subscription_id"
+    t.bigint "location_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
-    t.bigint "location_id"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
@@ -583,6 +594,8 @@ ActiveRecord::Schema.define(version: 2020_02_21_213351) do
     t.jsonb "previous_blob"
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "doors", "locations"
   add_foreign_key "locations", "operators"
   add_foreign_key "office_leases", "locations"

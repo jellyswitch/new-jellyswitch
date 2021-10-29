@@ -510,7 +510,7 @@ DEPENDENCIES
   ahoy_matey
   annotate
   attractor
-  aws-sdk-s3
+  aws-sdk-s3 (~> 1)
   bcrypt
   better_errors
   binding_of_caller
