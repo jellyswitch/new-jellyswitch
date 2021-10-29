@@ -42,3 +42,6 @@ rspec.xml
 /yarn-error.log
 yarn-debug.log*
 .yarn-integrity
+
+/config/credentials/production.key
+.production-env
