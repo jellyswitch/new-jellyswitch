@@ -5609,7 +5609,7 @@ querystringify@^2.1.1:
 
 rails-erb-loader@^5.5.2:
   version "5.5.2"
-  resolved "https://registry.npmjs.org/rails-erb-loader/-/rails-erb-loader-5.5.2.tgz"
+  resolved "https://registry.yarnpkg.com/rails-erb-loader/-/rails-erb-loader-5.5.2.tgz#db3fa8ac89600f09d179a1a70a2ca18c592576ea"
   integrity sha512-cjQH9SuSvRPhnWkvjmmAW/S4AFVDfAtYnQO4XpKJ8xpRdZayT73iXoE+IPc3VzN03noZXhVmyvsCvKvHj4LY6w==
   dependencies:
     loader-utils "^1.1.0"
