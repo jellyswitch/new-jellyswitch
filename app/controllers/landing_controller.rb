@@ -25,7 +25,7 @@ class LandingController < ApplicationController
     else
       Rails.logger.warn "params['error'].present? FALSE"
       Rails.logger.warn "params[:code] is #{params[:code]}"
-      Rails.logger.warn "current_user.operator is #{current_user.operator}"
+      Rails.logger.warn "current_user.operator.subdomain is #{current_user.operator.subdomain}"
       Rails.logger.warn "stripe_webhooks_url is #{stripe_webhooks_url}"
 
       result = Operators::FinishStripeConnect.call(
