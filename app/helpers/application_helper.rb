@@ -87,6 +87,10 @@ module ApplicationHelper
     user_agent.present?
   end
 
+  def untethered_ios_request?
+    request.user_agent =~ /JellyswitchiOS/i
+  end
+
   def ios_request?
     has_user_agent? && user_agent.match(/(Jellyswitch)/).present? && !old_android_request? && !android_request?
   end

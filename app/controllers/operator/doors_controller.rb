@@ -71,8 +71,20 @@ class Operator::DoorsController < Operator::BaseController
     authorize @door
     log_door_punch
     OpenDoorJob.perform_later(@door, current_user)
-    response.headers["Turbolinks-Location"] = home_url
-    redirect_to home_path
+
+    respond_to do |format|
+      format.html {
+        if !untethered_ios_request?
+          response.headers["Turbolinks-Location"] = home_url
+          redirect_to home_path
+        else
+          raise("Nope")
+        end
+      }
+      format.js {
+        # render open.js.erb template
+      }
+    end
   end
 
   private

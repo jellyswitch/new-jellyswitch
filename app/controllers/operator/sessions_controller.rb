@@ -18,11 +18,16 @@ class Operator::SessionsController < Operator::BaseController
     if result.success?
       log_in(result.user)
       remember(result.user)
-      turbolinks_redirect(landing_path, action: "restore")
+      if untethered_ios_request?
+        turbolinks_redirect(mobile_door_access_path, action: "restore")
+      else
+        turbolinks_redirect(landing_path, action: "restore")
+      end      
     else
       flash[:error] = result.message
       turbolinks_redirect(login_path, action: "replace")
     end
+
   end
 
   def destroy

@@ -104,6 +104,8 @@ Click the "Visit" button to see this instance.
 
 ## Local Elastic Search
 
+`bin/rails searchkick:reindex:all` must be run initially.
+
 If you encounter issues w/ elastic search, try running this command: 
 
 `curl -u elastic:changeme -XPUT 'localhost:9200/_cluster/settings' -H 'Content-Type: application/json' -d '{"persistent":{"cluster.blocks.read_only":false}}'`

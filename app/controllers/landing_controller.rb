@@ -23,11 +23,6 @@ class LandingController < ApplicationController
       flash[:error] = params[:error_description]
       redirect_to landing_url(subdomain: current_user.operator.subdomain)
     else
-      Rails.logger.warn "params['error'].present? FALSE"
-      Rails.logger.warn "params[:code] is #{params[:code]}"
-      Rails.logger.warn "current_user.operator.subdomain is #{current_user.operator.subdomain}"
-      Rails.logger.warn "stripe_webhooks_url is #{stripe_webhooks_url}"
-
       result = Operators::FinishStripeConnect.call(
         stripe_code: params[:code],
         operator: current_user.operator,
