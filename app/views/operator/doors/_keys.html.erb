@@ -1,13 +1,46 @@
+<% if doors.count > 0 && untethered_ios %>
+
 <div class="row mt-3">
   <div class="col-sm-4"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <% if doors.count > 0 %>
-        <% doors.each do |door| %>
-          <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-info btn-lg w-100 mt-2 mb-2", data: {"turbolinks-action" => "restore"} %>
-        <% end %>
+      <script>
+        function displaySpinner(targetId) {
+          $(targetId).addClass("disabled").html("<div class=\"spinner-border spinner-border-sm text-light\" role=\"status\"><span class=\"sr-only\">Opening...</span></div>")
+        }
+      </script>
+      <% doors.each do |door| %>
+        <%= link_to "Open #{door.name}", door_open_path(door, format: :js), class: "btn btn-info btn-lg w-100 mt-2 mb-2", id: "door-#{door.id}", remote: true, onclick: "displaySpinner('#door-#{door.id}')" %>
       <% end %>
     </div>
   </div>
   <div class="col-sm-4"></div>
 </div>
+
+<% elsif doors.count > 0 && !untethered_ios %>
+
+<div class="row mt-3">
+  <div class="col-sm-4"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <% doors.each do |door| %>
+        <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-info btn-lg w-100 mt-2 mb-2", data: {"turbolinks-action" => "restore"} %>
+      <% end %>
+    </div>
+  </div>
+  <div class="col-sm-4"></div>
+</div>
+
+<% else %>
+
+<div class="row mt-3">
+  <div class="col-sm-4"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <div class="btn btn-info btn-lg w-100 mt-2 mb-2 disabled">No Doors Available</div>
+    </div>
+  </div>
+  <div class="col-sm-4"></div>
+</div>
+
+<% end %>

@@ -1,0 +1,16 @@
+<% title "Building Access" %>
+
+<div style="margin-top: 3em;">
+
+<% if policy(:door).enabled? %>
+  <%= list_item do %>
+    <%= render(AccessInstructions::DoorButtons, 
+      operator: current_tenant, 
+      location: current_location, 
+      mobile_app_request: mobile_app_request?,
+      has_access: active_working_hours?(current_location) || has_building_access?(current_user), 
+      doors: @doors) %>
+  <% end %>
+<% end %>
+
+</div>

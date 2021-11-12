@@ -6,6 +6,8 @@ class ApplicationController < ActionController::Base
   include Pagy::Backend
   include Pundit
 
+  skip_forgery_protection
+
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   def user_not_authorized

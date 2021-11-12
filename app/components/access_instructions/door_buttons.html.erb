@@ -1,4 +1,6 @@
-<h5 class="card-title">Building Access</h5>
+<% if !untethered_ios_request? %>
+  <h5 class="card-title">Building Access</h5>
+<% end %>
 
 <% if !mobile_app_request && operator.has_mobile_app_links? %>
   <div class="row mt-4">
@@ -9,7 +11,7 @@
   <%= render(AppLinks, operator: operator) %>
 <% else %>
   <% if has_access %>
-    <%= render "operator/doors/keys", doors: doors %>
+    <%= render "operator/doors/keys", doors: doors, untethered_ios: untethered_ios_request? %>
   <% else %>
     <div class="row mt-4">
       <div class="col text-center">

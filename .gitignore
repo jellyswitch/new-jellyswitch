@@ -45,3 +45,5 @@ yarn-debug.log*
 
 /config/credentials/production.key
 .production-env
+
+/config/credentials/development.key

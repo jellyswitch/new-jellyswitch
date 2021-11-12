@@ -1,12 +1,20 @@
 class Operator::BaseController < ApplicationController
-  set_current_tenant_by_subdomain(:operator, :subdomain)
-  layout "operator"
+  set_current_tenant_through_filter
+  before_action :set_tenant_based_on_subdomain
+  
   before_action :store_ios_token, if: :logged_in?
   before_action :store_android_token, if: :logged_in?
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
   before_action :reset_location, if: :logged_in?
   before_action :set_navigation
+
+  layout "operator"
+
+  def set_tenant_based_on_subdomain
+    subdomain = request.subdomains.first.downcase
+    set_current_tenant(Operator.where(subdomain: subdomain).first)
+  end
 
   def background_image
     @background_image = if current_tenant.present?

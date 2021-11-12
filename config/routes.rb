@@ -1,13 +1,16 @@
 # typed: strict
 Rails.application.routes.draw do
-  constraints subdomain: "apply" do
-    # Typeform
-    get :welcome, to: "landing#welcome"
+
+  namespace :mobile do
+    get "/door_access", to: "door_access#index"
   end
+
+  ## Regular endpoints ##
   constraints subdomain: "stats" do
     require 'sidekiq/web'
     mount Sidekiq::Web => '/sidekiq'
   end
+
   constraints subdomain: "app" do
     # Root
     get '/', to: "landing#index"
@@ -57,7 +60,6 @@ Rails.application.routes.draw do
   end
 
   # Privacy Policy
-
   get "/privacy-policy", to: "operator/landing#privacy_policy"
 
   # Operator root
