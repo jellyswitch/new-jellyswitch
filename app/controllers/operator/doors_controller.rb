@@ -90,7 +90,7 @@ class Operator::DoorsController < Operator::BaseController
   private
 
   def find_doors
-    @doors = Door.all
+    @doors = admin? ? Door.all : Door.where.not(private: true).all
   end
 
   def find_door(key=:id)
@@ -98,7 +98,7 @@ class Operator::DoorsController < Operator::BaseController
   end
 
   def door_params
-    params.require(:door).permit(:name, :kisi_id)
+    params.require(:door).permit(:name, :kisi_id, :private)
   end
 
   def log_door_punch

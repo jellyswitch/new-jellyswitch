@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2021_10_20_233620) do
+ActiveRecord::Schema.define(version: 2021_12_08_203335) do
 
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
 
   create_table "action_text_rich_texts", force: :cascade do |t|
@@ -190,11 +191,8 @@ ActiveRecord::Schema.define(version: 2021_10_20_233620) do
     t.integer "kisi_id"
     t.bigint "location_id"
     t.boolean "private"
-    t.string "private_owner_type"
-    t.bigint "private_owner_id"
     t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
-    t.index ["private_owner_type", "private_owner_id"], name: "index_doors_on_private_owner"
   end
 
   create_table "events", force: :cascade do |t|
@@ -272,9 +270,12 @@ ActiveRecord::Schema.define(version: 2021_10_20_233620) do
     t.string "source"
   end
 
+  create_table "location_resources", id: :serial, force: :cascade do |t|
+  end
+
   create_table "locations", force: :cascade do |t|
     t.string "name"
-    t.bigint "operator_id", null: false
+    t.bigint "operator_id"
     t.string "billing_state"
     t.string "building_address"
     t.string "city"
@@ -335,17 +336,17 @@ ActiveRecord::Schema.define(version: 2021_10_20_233620) do
   end
 
   create_table "office_leases", force: :cascade do |t|
-    t.bigint "operator_id", null: false
-    t.bigint "organization_id", null: false
-    t.bigint "office_id", null: false
+    t.bigint "operator_id"
+    t.bigint "organization_id"
+    t.bigint "office_id"
     t.date "start_date", null: false
     t.date "end_date", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "subscription_id"
-    t.bigint "location_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
+    t.bigint "location_id"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
@@ -354,7 +355,7 @@ ActiveRecord::Schema.define(version: 2021_10_20_233620) do
   end
 
   create_table "offices", force: :cascade do |t|
-    t.bigint "operator_id", null: false
+    t.bigint "operator_id"
     t.string "name"
     t.string "slug"
     t.integer "capacity", default: 1, null: false
@@ -597,14 +598,12 @@ ActiveRecord::Schema.define(version: 2021_10_20_233620) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "doors", "locations"
-  add_foreign_key "locations", "operators"
-  add_foreign_key "office_leases", "locations"
-  add_foreign_key "office_leases", "offices"
-  add_foreign_key "office_leases", "operators"
-  add_foreign_key "office_leases", "organizations"
-  add_foreign_key "office_leases", "subscriptions"
-  add_foreign_key "offices", "locations"
-  add_foreign_key "offices", "operators"
-  add_foreign_key "refunds", "invoices"
+  add_foreign_key "office_leases", "locations", on_delete: :nullify
+  add_foreign_key "office_leases", "offices", on_delete: :nullify
+  add_foreign_key "office_leases", "operators", on_delete: :nullify
+  add_foreign_key "office_leases", "organizations", on_delete: :nullify
+  add_foreign_key "office_leases", "subscriptions", on_delete: :nullify
+  add_foreign_key "offices", "locations", on_delete: :nullify
+  add_foreign_key "refunds", "invoices", on_delete: :nullify
   add_foreign_key "rooms", "locations"
 end
