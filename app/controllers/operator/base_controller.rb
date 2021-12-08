@@ -35,7 +35,6 @@ class Operator::BaseController < ApplicationController
       match = request.user_agent.match(/.*deviceToken: (.*)/)
       return if match.nil? || match[1].blank?
       token = match[1]
-      Rails.logger.info "store_ios_token token received"
       current_user.update(ios_token: token)
     end
   end
