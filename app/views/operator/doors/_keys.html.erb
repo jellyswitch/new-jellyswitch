@@ -10,7 +10,7 @@
         }
       </script>
       <% doors.each do |door| %>
-        <%= link_to "Open #{door.name}", door_open_path(door, format: :js), class: "btn btn-info btn-lg w-100 mt-2 mb-2", id: "door-#{door.id}", remote: true, onclick: "displaySpinner('#door-#{door.id}')" %>
+        <%= link_to "Open #{door.name}", door_open_path(door, format: :js), class: "btn btn-#{door.private? ? "secondary" : "info"} btn-lg w-100 mt-2 mb-2", id: "door-#{door.id}", remote: true, onclick: "displaySpinner('#door-#{door.id}')" %>
       <% end %>
     </div>
   </div>
@@ -24,7 +24,7 @@
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
       <% doors.each do |door| %>
-        <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-info btn-lg w-100 mt-2 mb-2", data: {"turbolinks-action" => "restore"} %>
+        <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-#{door.private? ? "secondary" : "info"} btn-lg w-100 mt-2 mb-2", data: {"turbolinks-action" => "restore"} %>
       <% end %>
     </div>
   </div>

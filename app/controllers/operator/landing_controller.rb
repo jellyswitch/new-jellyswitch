@@ -9,7 +9,7 @@ class Operator::LandingController < Operator::BaseController
   end
 
   def home
-    @doors = Door.all
+    find_doors
     @member_feedback = MemberFeedback.new
     find_upcoming_events
     response.headers["Turbolinks-Location"] = home_url
@@ -115,5 +115,11 @@ class Operator::LandingController < Operator::BaseController
   end
 
   def privacy_policy
+  end
+
+  private
+
+  def find_doors
+    @doors = current_user.admin? ? Door.all : Door.where.not(private: true).all
   end
 end

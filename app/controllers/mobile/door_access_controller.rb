@@ -15,7 +15,7 @@ class Mobile::DoorAccessController < Operator::BaseController
   end
 
   def find_doors
-    @doors = Door.all
+    @doors = current_user.admin? ? Door.all : Door.where.not(private: true).all
   end
 
   def find_door(key=:id)

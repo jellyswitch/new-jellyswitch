@@ -2,7 +2,7 @@
 
 <%= wide_card do %>
   <h4 class="display-4 text-center">Building Access</h4>
-  <%= render "operator/doors/keys", doors: @doors %>
+  <%= render "operator/doors/keys", doors: @doors, untethered_ios: untethered_ios_request? %>
 <% end %>
 
 <%= wide_card do %>
