@@ -120,6 +120,7 @@ class Operator::LandingController < Operator::BaseController
   private
 
   def find_doors
-    @doors = current_user.admin? ? Door.all : Door.where.not(private: true).all
+    @doors = Door.all
+    @doors = @doors.reject{|door| door.private? } unless admin?
   end
 end
