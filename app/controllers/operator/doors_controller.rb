@@ -2,7 +2,7 @@
 class Operator::DoorsController < Operator::BaseController
   def index
     find_doors
-    authorize @doors
+    authorize @doors, policy_class: ::DoorPolicy
     background_image
   end
 
@@ -62,7 +62,7 @@ class Operator::DoorsController < Operator::BaseController
 
   def keys
     find_doors
-    authorize @doors
+    authorize @doors, policy_class: ::DoorPolicy
     background_image
   end
 
