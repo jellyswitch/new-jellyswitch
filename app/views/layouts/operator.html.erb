@@ -39,5 +39,9 @@
       <%= render "layouts/flash" %>
       <%= yield %>
     </div>
+
+    <% if untethered_ios_request? %>
+      <div style="min-height: 6em;">&nbsp;</div>
+    <% end %>
   </body>
 </html>
