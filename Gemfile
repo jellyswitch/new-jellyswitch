@@ -49,7 +49,7 @@ gem 'searchkick'
 gem 'sidekiq'
 gem "simple_calendar", "~> 2.0"
 gem 'stripe', git: 'https://github.com/stripe/stripe-ruby'
-gem 'turbolinks', '~> 5'
+gem 'turbolinks', '5.2.1'
 gem 'uglifier', '>= 1.3.0'
 gem 'webpacker', '~> 5.x'
 gem 'working_hours'

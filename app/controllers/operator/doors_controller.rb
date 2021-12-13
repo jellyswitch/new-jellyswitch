@@ -78,7 +78,9 @@ class Operator::DoorsController < Operator::BaseController
           response.headers["Turbolinks-Location"] = home_url
           redirect_to home_path
         else
-          raise("Nope")
+          # unusual condition?
+          response.headers["Turbolinks-Location"] = home_url
+          redirect_to home_path
         end
       }
       format.js {
