@@ -11,7 +11,7 @@ class Jellyswitch::UsageReport
       v < 1
     end
   rescue
-    @reservations = []
+    @reservations = {}
   end
 
   def door_punches
@@ -19,7 +19,7 @@ class Jellyswitch::UsageReport
       v < 1
     end
   rescue
-    @door_punches = []
+    @door_punches = {}
   end
 
   def checkins
@@ -27,7 +27,7 @@ class Jellyswitch::UsageReport
       v < 1
     end
   rescue
-    @checkins = []
+    @checkins = {}
   end
 
   def day_passes
@@ -35,7 +35,7 @@ class Jellyswitch::UsageReport
       v < 1
     end
   rescue
-    @day_passes = []
+    @day_passes = {}
   end
 
   def days_used
