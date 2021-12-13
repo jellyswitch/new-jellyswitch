@@ -219,8 +219,8 @@ GEM
     geocoder (1.5.2)
     globalid (0.5.2)
       activesupport (>= 5.0)
-    groupdate (4.0.1)
-      activesupport (>= 4.2)
+    groupdate (5.2.3)
+      activesupport (>= 5)
     hashie (3.6.0)
     highline (2.0.1)
     hirb (0.7.3)
@@ -525,7 +525,7 @@ DEPENDENCIES
   faker!
   fcm
   friendly_id
-  groupdate
+  groupdate (~> 5.2, >= 5.2.3)
   houston
   httparty
   icalendar
