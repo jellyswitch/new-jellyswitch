@@ -1,4 +1,4 @@
-import Rails from '@rails/ujs';
+//import Rails from '@rails/ujs';
 
 function doStripe() {
   if (!document.getElementById('card-element')) {
