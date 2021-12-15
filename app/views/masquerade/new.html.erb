@@ -1,0 +1,6 @@
+<h1>Masquerade</h1>
+
+<%= form_with url: start_masquerading_path do |f| %>
+  <%= f.collection_select :user_id, @users, :id, :name %>
+  <%= f.submit "Start" %>
+<% end %>

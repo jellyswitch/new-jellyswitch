@@ -5,6 +5,11 @@ Rails.application.routes.draw do
     get "/door_access", to: "door_access#index"
   end
 
+  get "masquerade", to: "masquerade#new", as: :new_masquerade
+  post "masquerade", to: "masquerade#update", as: :start_masquerading
+  get "masquerade/current", to: "masquerade#show", as: :current_masquerading
+  delete "masquerade", to: "masquerade#destroy", as: :end_masquerading
+
   ## Regular endpoints ##
   constraints subdomain: "stats" do
     require 'sidekiq/web'
