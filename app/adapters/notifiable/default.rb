@@ -32,14 +32,18 @@ class Notifiable::Default < SimpleDelegator
       recipients.each do |user|
         puts "Pushing iOS notification to #{user.name}: #{message}"
 
-        if user.ios_token.present?
-          notification = Houston::Notification.new(device: user.ios_token)
-          notification.alert = message
-    
-          apn.push(notification)
-          puts "Pushed iOS message: #{message} to #{user.name}'s device: #{user.ios_token}"
-        else
-          puts "Cannot push iOS message to #{user.email} since iOS token is: #{user.ios_token}"
+        begin
+          if user.ios_token.present?
+            notification = Houston::Notification.new(device: user.ios_token)
+            notification.alert = message
+      
+            apn.push(notification)
+            puts "Pushed iOS message: #{message} to #{user.name}'s device: #{user.ios_token}"
+          else
+            puts "Cannot push iOS message to #{user.email} since iOS token is: #{user.ios_token}"
+          end
+        rescue => e
+          Rollbar.error(e, user_id: user.email, operator_id: operator.id, notification: message)
         end
 
       end
