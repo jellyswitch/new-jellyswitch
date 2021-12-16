@@ -23,11 +23,11 @@ class Operator::SessionsController < Operator::BaseController
       log_in(result.user)
       remember(result.user)
       if untethered_ios_request?
-        Rollbar.info("Operator::SessionsController#create untethered_ios_request?", edirecting_to: "mobile_door_access_path", email: @email, action: "replace")
-        turbolinks_redirect(mobile_door_access_path, action: "replace")
+        Rollbar.info("Operator::SessionsController#create untethered_ios_request?", edirecting_to: "mobile_door_access_path", email: @email, action: "restore")
+        turbolinks_redirect(mobile_door_access_path, action: "restore")
       else
-        Rollbar.info("Operator::SessionsController#create !untethered_ios_request?", edirecting_to: "landing_path", email: @email, action: "replace")
-        turbolinks_redirect(landing_path, action: "replace")
+        Rollbar.info("Operator::SessionsController#create !untethered_ios_request?", edirecting_to: "landing_path", email: @email, action: "restore")
+        turbolinks_redirect(landing_path, action: "restore")
       end
     else
       flash[:error] = result.message
