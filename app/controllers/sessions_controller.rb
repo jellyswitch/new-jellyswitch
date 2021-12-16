@@ -2,6 +2,7 @@
 class SessionsController < ApplicationController
   def new
     authorize :session, :new?
+    Rollbar.info("SessionsController#new")
   end
 
   def create
@@ -10,31 +11,36 @@ class SessionsController < ApplicationController
 
     if users.count < 1
       flash[:error] = "No such user found."
+      Rollbar.warning("SessionsController#create No such user found.", redirecting_to: "new_session_path")
       turbolinks_redirect(new_session_path)
     elsif users.count == 1
       if users.first.superadmin?
         # redirect to password form
         session[:email] = users.first.email
+        Rollbar.warning("SessionsController#create superadmin?", redirecting_to: "password_form_path", email: session[:email])
         turbolinks_redirect(password_form_path)
       else
+        Rollbar.warning("SessionsController#create !superadmin?", redirecting_to: "landing_url", email: users.first.email, subdomain: users.first.operator.subdomain)
         turbolinks_redirect( landing_url(subdomain: users.first.operator.subdomain) )
       end
     else
       # redirect to choose_operator
       session[:email] = params[:session][:email].downcase
+      Rollbar.warning("SessionsController#create users.count > 1", redirecting_to: "choose_operator_path", email: session[:email])
       turbolinks_redirect(choose_operator_path)
     end
   end
 
   def choose_operator
     email = session[:email]
-
     users = User.where(email: email, superadmin: false, admin: true)
     @operators = users.collect(&:operator).uniq.compact
+    Rollbar.info("SessionsController#choose_operator", operators: @operators, users: users, email: email)
   end
 
   def password_form
     email = session[:email]
+    Rollbar.info("SessionsController#password_form", email: email)
     
     @user = User.find_by(email: email, superadmin: true)
     if @user.blank?
@@ -44,6 +50,7 @@ class SessionsController < ApplicationController
   end
 
   def real_create
+    Rollbar.info("SessionsController#real_create", email: params[:session][:email].downcase)
     # for admins only
     user = User.find_by(email: params[:session][:email].downcase, superadmin: true)
     if user && user.authenticate(params[:session][:password])
@@ -58,6 +65,7 @@ class SessionsController < ApplicationController
 
   def destroy
     log_out
+    Rollbar.info("SessionsController#destroy")
     turbolinks_redirect(root_path, action: "restore")
   end
 end
