@@ -285,7 +285,7 @@ GEM
     money (6.13.4)
       i18n (>= 0.6.4, <= 2)
     msgpack (1.2.4)
-    multi_json (1.13.1)
+    multi_json (1.15.0)
     multi_xml (0.6.0)
     multipart-post (2.1.1)
     mustermann (1.1.1)
@@ -393,8 +393,7 @@ GEM
     roadie-rails (2.1.0)
       railties (>= 5.1, < 6.1)
       roadie (~> 3.1)
-    rollbar (2.18.2)
-      multi_json
+    rollbar (3.3.0)
     rspec-core (3.8.0)
       rspec-support (~> 3.8.0)
     rspec-expectations (3.8.2)

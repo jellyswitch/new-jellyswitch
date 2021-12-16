@@ -22,7 +22,7 @@ class Operator::SessionsController < Operator::BaseController
         turbolinks_redirect(mobile_door_access_path, action: "restore")
       else
         turbolinks_redirect(landing_path, action: "restore")
-      end      
+      end
     else
       flash[:error] = result.message
       turbolinks_redirect(login_path, action: "replace")
