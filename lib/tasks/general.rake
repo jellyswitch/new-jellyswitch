@@ -1,3 +1,5 @@
+require 'shellwords'
+
 task backfill_stripe_credentials: :environment do
   Operator.where(stripe_user_id: nil).each do |op|
     op.update(
@@ -32,5 +34,24 @@ task clean_demo: :environment do
     puts "Success!"
   else
     puts result.message
+  end
+end
+
+# rake test_apns <operator.id>
+task test_apns: :environment do
+  apn = Houston::Client.production
+
+  operator_id = ARGV[1].to_i || 243 # untethered by default
+  operator = Operator.find(operator_id)
+  
+  apn.certificate = operator.push_notification_certificate.download
+  
+  admin_users = User.admins.for_space(operator)
+  for tester in admin_users
+    break unless tester.ios_token?
+    notification = Houston::Notification.new(device: tester.ios_token)
+    notification.alert = 'This is a push notification test. This is only a test...'
+    notification.badge = 57
+    apn.push(notification)
   end
 end
