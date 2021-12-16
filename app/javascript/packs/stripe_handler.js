@@ -58,7 +58,7 @@ function doStripe() {
     console.log("setting has_token=true")
     console.log(window.has_token);
 
-    Rails.fire(form, 'submit');
+    window.Rails.fire(form, 'submit');
   };
 };
 

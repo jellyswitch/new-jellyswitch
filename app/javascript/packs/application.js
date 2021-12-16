@@ -17,6 +17,7 @@
 
 import Rails from '@rails/ujs';
 Rails.start();
+window.Rails = Rails;
 
 require("@rails/activestorage").start()
 require("trix")
