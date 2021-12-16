@@ -1,4 +1,4 @@
-<% if !ios_request? %>
+<% if untethered_ios_request? || !ios_request? %>
 
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="<%= root_path %>" data-turbolinks-action="restore">
