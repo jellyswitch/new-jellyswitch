@@ -4,7 +4,6 @@ class Mobile::DoorAccessController < Operator::BaseController
 
   def index
     find_doors
-    authorize @doors, policy_class: ::DoorPolicy
     background_image
   end
 
