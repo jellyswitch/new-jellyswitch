@@ -21,7 +21,7 @@ gem 'houston'
 gem 'httparty'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
-gem "interactor-rails", "~> 2.2.0"
+gem "interactor", "~> 3.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails'
 gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
