@@ -37,11 +37,11 @@ task clean_demo: :environment do
   end
 end
 
-# rake test_apns <operator.id>
+# rake test_apns
 task test_apns: :environment do
   apn = Houston::Client.production
 
-  operator_id = ARGV[1].to_i || 243 # untethered by default
+  operator_id = 243 # untethered by default
   operator = Operator.find(operator_id)
   
   apn.certificate = operator.push_notification_certificate.download
