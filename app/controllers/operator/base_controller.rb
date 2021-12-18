@@ -62,6 +62,7 @@ class Operator::BaseController < ApplicationController
   def set_resource_scopes
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
+      Rollbar.warning("ActsAsScopable.current_scope_resources failed to preload properly", current_tenant: current_tenant&.id, current_location: current_location&.id)
     end
 
     if current_tenant.blank?
