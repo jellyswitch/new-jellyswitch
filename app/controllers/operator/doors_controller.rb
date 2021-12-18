@@ -71,6 +71,7 @@ class Operator::DoorsController < Operator::BaseController
     authorize @door
     log_door_punch
     OpenDoorJob.perform_later(@door, current_user)
+    Rollbar.error("DoorsController#open current_user is nil", door: @door, xhr: xhr?) if current_user.nil?
 
     respond_to do |format|
       format.html {
