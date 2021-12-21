@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.4'
+ruby '2.6.9'
 
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 gem "actionview-component"
@@ -55,6 +55,7 @@ gem 'webpacker', '~> 5.x'
 gem 'working_hours'
 
 group :development do
+  gem 'foreman'
   gem 'annotate'
   gem 'attractor'
   gem 'better_errors'
