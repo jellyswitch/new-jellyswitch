@@ -68,6 +68,7 @@ class Operator::BaseController < ApplicationController
     end
 
     if current_tenant.blank?
+      Rollbar.warning("set_resource_scopes current_tenant.blank?", redirect_to: 404)
       redirect_to status: 404
     end
   end
