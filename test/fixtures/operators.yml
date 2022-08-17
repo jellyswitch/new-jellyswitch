@@ -1,0 +1,43 @@
+cowork_tahoe:
+  name: Cowork Tahoe
+  subdomain: tml
+  snippet: Cowork Tahoe is South Lake Tahoe’s first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs.
+  wifi_name: Mountain Lab
+  wifi_password: LabRats337
+  building_address: 3079 Harrison Ave, South Lake Tahoe, CA 96150
+  approval_required: true
+  contact_name: David Orr
+  contact_email: info@coworktahoe.com
+  contact_phone: 530-600-3447
+  day_pass_cost_in_cents: 2500
+  square_footage: 11000
+  email_enabled: false
+  kisi_api_key: 2d85cd593f3f71a03dd4de2475096505
+  stripe_user_id: acct_1JrA0qBKOLuysEMe
+  stripe_publishable_key: foobar
+  stripe_refresh_token: foobar
+  stripe_access_token: foobar
+  billing_state: production # TODO
+  ios_url: https://itunes.apple.com/us/app/cowork-tahoe-the-lab/id1457603889?mt=8
+  android_url: https://play.google.com/store/apps/details?id=com.jellyswitch.coworktahoe&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1
+  checkin_required: false
+  membership_text: Our part time and full time desk memberships can be purchased as recurring monthly subscriptions and include 24/7 access to the building, use of meeting rooms, fast internet, snacks, coffee, tea, & light printing.
+  skip_onboarding: false
+  announcements_enabled: true
+  events_enabled: true
+  door_integration_enabled: true
+  rooms_enabled: true
+  offices_enabled: true
+  reservation_notifications: false
+  membership_notifications: true
+  signup_notifications: false
+  day_pass_notifications: true
+  member_feedback_notifications: true
+  checkin_notifications: true
+  refund_notifications: true
+  post_notifications: true
+  credits_enabled: false
+  childcare_enabled: false
+  bulletin_board_enabled: true
+  android_server_key: some_server_key
+  crm_enabled: false
