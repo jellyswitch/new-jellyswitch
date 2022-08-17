@@ -13,7 +13,7 @@ default: &default
 
 development:
   <<: *default
-  url: postgres://uddk51cc08hui3:pc1a7c9fa951366a36c2e0d97c37d03e1bc0400fe485f97feb5eae88f3dd6d715@ec2-3-218-50-159.compute-1.amazonaws.com:5432/dc0maumls4di1g
+  database: jellyswitch_development
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
