@@ -41,7 +41,7 @@ gem 'remotipart', '~> 1.2'
 gem 'roadie-rails', '~> 2.0'
 gem 'request_store'
 
-gem 'rollbar', group: [:production]
+gem 'rollbar'
 
 gem 'sassc-rails', '~> 2.1'
 
