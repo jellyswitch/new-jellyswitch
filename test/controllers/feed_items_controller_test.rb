@@ -16,4 +16,9 @@ class FeedItemsControllerTest < ActionDispatch::IntegrationTest
     get feed_items_path, env: default_env
     assert_response :success
   end
+
+  test "should create a new feed item and redirect back to index (web)" do
+    post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: default_env
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
 end
