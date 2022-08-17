@@ -15,7 +15,11 @@ class ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
   def default_env
-    @default_env ||= { 'HTTP_USER_AGENT' => 'foobar' }
+    @default_env ||= { 'HTTP_USER_AGENT' => 'Something safari something else' }
+  end
+
+  def ios_env
+    @default_env ||= { 'HTTP_USER_AGENT' => 'something Jellyswitch something else deviceToken: abcdef12345' }
   end
 
   def log_in(user)

@@ -21,4 +21,9 @@ class FeedItemsControllerTest < ActionDispatch::IntegrationTest
     post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: default_env
     assert_redirected_to controller: "operator/feed_items", action: "index"
   end
+
+  test "should create a new feed item and redirect back to index (iOS)" do
+    post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: ios_env
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
 end

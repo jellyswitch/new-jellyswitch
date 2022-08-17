@@ -1,0 +1,5 @@
+
+# cowork_tahoe_push_notification_certificate:
+#   name: push_notification_certificate
+#   record: cowork_tahoe (Operator)
+#   blob: cowork_tahoe_push_notification_certificate_blob
