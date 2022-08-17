@@ -18,6 +18,7 @@
 #  contact_name                  :string
 #  contact_phone                 :string
 #  credits_enabled               :boolean          default(FALSE), not null
+#  crm_enabled                   :boolean          default(FALSE), not null
 #  day_pass_cost_in_cents        :integer          default(2500), not null
 #  day_pass_notifications        :boolean          default(TRUE), not null
 #  door_integration_enabled      :boolean          default(TRUE), not null

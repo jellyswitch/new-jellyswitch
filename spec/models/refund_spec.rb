@@ -16,7 +16,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (invoice_id => invoices.id)
+#  fk_rails_...  (invoice_id => invoices.id) ON DELETE => nullify
 #
 
 require 'rails_helper'
