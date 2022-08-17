@@ -14,8 +14,13 @@ end
 class ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
 
+  def default_env
+    @default_env ||= { 'HTTP_USER_AGENT' => 'foobar' }
+  end
+
   def log_in(user)
-    @current_user = user
-    ActsAsTenant.default_tenant = @current_user.operator
+    user.update(password: 'password')
+    ActsAsTenant.default_tenant = user.operator
+    post login_path( params: { session: { email: user.email, password: 'password' } } )
   end
 end

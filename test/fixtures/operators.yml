@@ -76,7 +76,7 @@ cowork_tahoe:
   android_url: https://play.google.com/store/apps/details?id=com.jellyswitch.coworktahoe&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1
   checkin_required: false
   membership_text: Our part time and full time desk memberships can be purchased as recurring monthly subscriptions and include 24/7 access to the building, use of meeting rooms, fast internet, snacks, coffee, tea, & light printing.
-  skip_onboarding: false
+  skip_onboarding: true
   announcements_enabled: true
   events_enabled: true
   door_integration_enabled: true
