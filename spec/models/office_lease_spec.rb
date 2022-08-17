@@ -11,9 +11,9 @@
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
 #  location_id                  :bigint(8)
-#  office_id                    :bigint(8)        not null
-#  operator_id                  :bigint(8)        not null
-#  organization_id              :bigint(8)        not null
+#  office_id                    :bigint(8)
+#  operator_id                  :bigint(8)
+#  organization_id              :bigint(8)
 #  subscription_id              :bigint(8)
 #
 # Indexes
@@ -26,11 +26,11 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (location_id => locations.id)
-#  fk_rails_...  (office_id => offices.id)
-#  fk_rails_...  (operator_id => operators.id)
-#  fk_rails_...  (organization_id => organizations.id)
-#  fk_rails_...  (subscription_id => subscriptions.id)
+#  fk_rails_...  (location_id => locations.id) ON DELETE => nullify
+#  fk_rails_...  (office_id => offices.id) ON DELETE => nullify
+#  fk_rails_...  (operator_id => operators.id) ON DELETE => nullify
+#  fk_rails_...  (organization_id => organizations.id) ON DELETE => nullify
+#  fk_rails_...  (subscription_id => subscriptions.id) ON DELETE => nullify
 #
 
 require 'rails_helper'

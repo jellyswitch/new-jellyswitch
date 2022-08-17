@@ -6,6 +6,7 @@
 #  id          :bigint(8)        not null, primary key
 #  available   :boolean          default(TRUE), not null
 #  name        :string           not null
+#  private     :boolean
 #  slug        :string           not null
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null

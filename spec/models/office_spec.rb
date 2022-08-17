@@ -13,7 +13,7 @@
 #  created_at     :datetime         not null
 #  updated_at     :datetime         not null
 #  location_id    :bigint(8)
-#  operator_id    :bigint(8)        not null
+#  operator_id    :bigint(8)
 #
 # Indexes
 #
@@ -22,8 +22,7 @@
 #
 # Foreign Keys
 #
-#  fk_rails_...  (location_id => locations.id)
-#  fk_rails_...  (operator_id => operators.id)
+#  fk_rails_...  (location_id => locations.id) ON DELETE => nullify
 #
 
 require 'rails_helper'

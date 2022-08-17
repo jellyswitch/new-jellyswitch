@@ -41,7 +41,7 @@
 #  zip                                 :string
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
-#  operator_id                         :bigint(8)        not null
+#  operator_id                         :bigint(8)
 #  stripe_user_id                      :string
 #
 # Indexes
@@ -49,10 +49,6 @@
 #  index_locations_on_operator_id     (operator_id)
 #  index_locations_on_state_and_city  (state,city)
 #  index_locations_on_zip             (zip)
-#
-# Foreign Keys
-#
-#  fk_rails_...  (operator_id => operators.id)
 #
 
 FactoryBot.define do
