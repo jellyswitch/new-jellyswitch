@@ -9,11 +9,9 @@ class Authenticate
     
     if user.present?
       if !user.authenticate(password)
-        Rollbar.warning("Authenticate#call Invalid password.")
         context.fail!(message: "Invalid password.")
       end
     else
-      Rollbar.warning("Authenticate#call !user.present?", message: "Please check that your email and password are accurate.", email: email, operator_id: operator.id)
       context.fail!(message: "Please check that your email and password are accurate.")
     end
   end

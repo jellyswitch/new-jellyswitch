@@ -40,7 +40,7 @@
 #
 
 class User < ApplicationRecord
-  # searchkick
+  searchkick
   # Relationships
   has_many :announcements
   has_many :checkins

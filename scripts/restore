@@ -1,1 +1,1 @@
-pg_restore --verbose --clean --no-acl --no-owner -h localhost -d bristlecone_development latest.dump
+pg_restore --verbose --clean --no-acl --no-owner -h localhost -d jellyswitch_development latest.dump

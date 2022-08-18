@@ -4,7 +4,6 @@ module SessionsHelper
   def log_in(user)
     session[:user_id] = user.id
     ahoy.authenticate(user)
-    Rollbar.info("SessionsHelper#log_in", user_id: user.id)
   end
 
   def set_location(location)
