@@ -41,7 +41,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      turbolinks_redirect(root_path)
+      redirect_to(root_path)
     else
       flash[:error] = result.message
       turbolinks_redirect(referrer_or_root)
@@ -53,7 +53,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   def edit
-    find_subscription
+    find_subscriptionx  
     authorize @subscription
     background_image
   end
