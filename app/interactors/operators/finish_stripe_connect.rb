@@ -16,7 +16,6 @@ class Operators::FinishStripeConnect
     })
     
     if response["error"].present?
-      Rails.logger.error "FinishStripeConnect: #{response["error_description"]}"
       context.fail!(message: response["error_description"])
     else
       stripe_user_id = response["stripe_user_id"]
@@ -45,10 +44,6 @@ class Operators::FinishStripeConnect
       failures = results.select { |result| !result.success? }
       if failures.count > 0
         context.fail!(message: "Failed to create stripe customers for all users: #{failures.first.message}")
-      end
-      
-      failures.each_with_index do |f,n|
-        Rails.logger.error "FinishStripeConnect failure #{n}: #{f.message}"
       end
 
       # Migrate plans
