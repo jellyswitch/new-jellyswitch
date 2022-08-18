@@ -53,7 +53,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   def edit
-    find_subscriptionx  
+    find_subscription
     authorize @subscription
     background_image
   end
