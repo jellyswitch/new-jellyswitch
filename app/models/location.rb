@@ -52,7 +52,7 @@
 #
 
 class Location < ApplicationRecord
-  # searchkick
+  searchkick
   belongs_to :operator
   acts_as_tenant :operator
 

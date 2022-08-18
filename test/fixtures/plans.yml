@@ -9,7 +9,7 @@ plan_one:
  created_at: Mon, 06 Jan 2020 10:17:53 PST -08:00
  updated_at: Tue, 22 Jun 2021 09:39:03 PDT -07:00
  stripe_plan_id: cowork-tahoe-part-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
- operator_id: 1
+ operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
  has_day_limit: true

@@ -31,7 +31,7 @@
 #
 
 class Room < ApplicationRecord
-  # searchkick
+  searchkick
   # Relationships
   has_many :reservations
   belongs_to :operator
