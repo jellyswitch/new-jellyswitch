@@ -39,7 +39,7 @@ class Operator::DayPassesController < Operator::BaseController
         flash[:success] = "Thanks! Your day pass will be available on #{short_date(@day_pass.day)}."
       end
       flash.keep
-      turbolinks_redirect(home_path)
+      redirect_to(home_path)
     else
       flash[:error] = result.message
       turbolinks_redirect(new_day_pass_path)
