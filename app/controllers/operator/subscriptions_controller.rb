@@ -91,6 +91,11 @@ class Operator::SubscriptionsController < Operator::BaseController
     )
 
     if result.success?
+      FeedItems::Create.call(
+        blob: { text: "#{current_user.name} canceled their membership", type: "post" },
+        user: current_tenant.users.admins.first,
+        operator: current_tenant,
+      )
       flash[:success] = "Membership cancelled."
       turbolinks_redirect(referrer_or_root)
     else
