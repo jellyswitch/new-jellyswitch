@@ -35,3 +35,25 @@ window.ahoy = ahoy
 import 'bootstrap'
 
 import './pagy.js.erb'
+
+;(function () {
+  var $doc = $(document)
+
+  $doc.on('ajax:send', 'form[data-remote=true]', function () {
+    var $form = $(this)
+    var $button = $form.find('[data-disable-with]')
+    if (!$button.length) return
+
+    $form.on('ajax:complete', function () {
+      // Use setTimeout to prevent race-condition when Rails re-enables the button
+      setTimeout(function () {
+        $button.each(function () { Rails.disableElement(this) })
+      }, 0)
+    })
+
+    // Prevent button from being cached in disabled state
+    $doc.one('turbolinks:before-cache', function () {
+      $button.each(function () { Rails.enableElement(this) })
+    })
+  })
+})()
