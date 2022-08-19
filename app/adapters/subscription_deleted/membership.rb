@@ -6,6 +6,6 @@ class SubscriptionDeleted::Membership < SimpleDelegator
   end
 
   def perform
-    CancelSubscription.call(subscription: subscription)
+    Billing::Subscription::CancelStripeSubscription.call(subscription: subscription)
   end
 end
