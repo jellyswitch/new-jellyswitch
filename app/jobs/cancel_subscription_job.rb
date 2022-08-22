@@ -1,9 +1,9 @@
 class CancelSubscriptionJob < ApplicationJob
   queue_as :default
 
-  def perform(subsciption:)
+  def perform(subscription:)
     CancelSubscription.call(
-      subscription: subsciption
+      subscription: subscription
     )
   end
 end
