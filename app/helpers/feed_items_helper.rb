@@ -1,17 +1,17 @@
 module FeedItemsHelper
 
-  def should_be_local?
+  def feed_item_remote_params
     if mobile_app_request?
       if untethered_ios_request?
-        false
+        { remote: true }
       else
-        ios_request?
+        { local: ios_request? }
       end
     else
-      false
+      { remote: true }
     end
   end
-  
+
   private
 
   def new_feed_item
