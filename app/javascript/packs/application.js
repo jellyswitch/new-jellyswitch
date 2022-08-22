@@ -15,23 +15,23 @@
 // const images = require.context('../images', true)
 // const imagePath = (name) => images(name, true)
 
-import Rails from '@rails/ujs';
-Rails.start();
-window.Rails = Rails;
+import Rails from '@rails/ujs'
+import * as ActiveStorage from "@rails/activestorage"
+import Turbolinks from "turbolinks"
+import "channels"
 
-require("@rails/activestorage").start()
 require("trix")
 require("@rails/actiontext")
-
-var Turbolinks = require("turbolinks");
-Turbolinks.start()
-
 require("chartkick")
 require("chart.js")
 
-import ahoy from "ahoy.js";
+import ahoy from "ahoy.js"
 window.ahoy = ahoy
-
 import 'bootstrap'
-
 import './pagy.js.erb'
+
+
+Rails.start()
+window.Rails = Rails;
+ActiveStorage.start()
+Turbolinks.start()
