@@ -1,2 +1,3 @@
-class ApplicationComponent < ActionView::Component::Base
+class ApplicationComponent < ViewComponent::Base
+  include ActiveModel::Conversion
 end

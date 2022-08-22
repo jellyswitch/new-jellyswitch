@@ -182,7 +182,7 @@ module ApplicationHelper
   end
 
   def link_to_modal(id)
-    render Bootstrap::LinkToModal, id: id do
+    render Bootstrap::LinkToModal.new(id: id) do
       yield
     end
   end
