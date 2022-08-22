@@ -213,13 +213,13 @@
       <div class="modal-body">
         <div class="list-group list-group-flush">
           <% if policy(:payment).enabled? %>
-            <%= render(Buttons::NewInvoice, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <%= render(Buttons::NewInvoice.new(user: @user, classes: "list-group-item list-group-item-action")) do %>
               <i class="fas fa-dollar-sign"></i>
               &nbsp;
               Create new invoice
             <% end %>
 
-            <%= render(Buttons::NewDayPass, user: @user, classes: "list-group-item list-group-item-action") do %>
+            <%= render(Buttons::NewDayPass.new(user: @user, classes: "list-group-item list-group-item-action")) do %>
               <i class="fas fa-ticket-alt"></i>
               &nbsp;
               Add a day pass
@@ -232,7 +232,7 @@
                 Cancel membership
               <% end %>
             <% else %>
-              <%= render(Buttons::NewMembership, user: @user, classes: "list-group-item list-group-item-action") do %>
+              <%= render(Buttons::NewMembership.new(user: @user, classes: "list-group-item list-group-item-action")) do %>
                 <i class="fas fa-users"></i>
                 &nbsp;
                 Add a membership

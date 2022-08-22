@@ -7,18 +7,18 @@
     
       <% if current_location.building_access_instructions.present? %>
         <%= list_item do %>
-          <%= render(AccessInstructions::CheckinInstructions, operator: current_tenant, location: current_location) %>
+          <%= render(AccessInstructions::CheckinInstructions.new(operator: current_tenant, location: current_location)) %>
         <% end %>
       <% end %>
 
       <% if policy(:door).enabled? %>
         <%= list_item do %>
-          <%= render(AccessInstructions::DoorButtons, 
+          <%= render(AccessInstructions::DoorButtons.new( 
             operator: current_tenant, 
             location: current_location, 
             mobile_app_request: mobile_app_request?,
             has_access: active_working_hours?(current_location) || has_building_access?(current_user), 
-            doors: @doors) %>
+            doors: @doors)) %>
         <% end %>
       <% end %>
 
@@ -141,7 +141,7 @@
         <% end %>
         
         <% current_tenant.posts.order("created_at DESC").limit(2).each do |post| %>
-          <%= render Posts::PostLink, post: post %>
+          <%= render Posts::PostLink.new(post: post) %>
         <% end %>
 
         <%= list_item do %>

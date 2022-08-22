@@ -7,7 +7,7 @@
   <li class="breadcrumb-item active" aria-current="page">Confirm</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">Confirm reservation</h4>
 
@@ -39,23 +39,23 @@
       <% if policy(:credit).enabled? && !current_user.admin? %>
         <dt class="col-6">Hourly Credit Cost</dt>
         <dd class="col">
-          <%= render CreditAmount, amount: @room.credit_cost %>
+          <%= render CreditAmount.new(amount: @room.credit_cost) %>
         </dd>
         
         <dt class="col-6">Your credit balance</dt>
         <dd class="col">
-          <%= render CreditAmount, amount: current_user.credit_balance %>
+          <%= render CreditAmount.new(amount: current_user.credit_balance) %>
         </dd>
 
         <dt class="col-6">Total credit cost</dt>
         <dd class="col">
-          <%= render CreditAmount, amount: reservation_cost(@room, @duration) %>
+          <%= render CreditAmount.new(amount: reservation_cost(@room, @duration)) %>
         </dd>
 
 
         <dt class="col-6">Your remaining balance</dt>
         <dd class="col">
-          <%= render CreditAmount, amount: ending_balance(current_user, reservation_cost(@room, @duration)) %>
+          <%= render CreditAmount.new(amount: ending_balance(current_user, reservation_cost(@room, @duration))) %>
         </dd>
       <% end %>
     </dl>

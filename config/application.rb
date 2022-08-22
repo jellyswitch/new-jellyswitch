@@ -7,7 +7,7 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require "action_view/component/base"
+require "view_component/engine"
 
 module Jellyswitch
   class Application < Rails::Application
