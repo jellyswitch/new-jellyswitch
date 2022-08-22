@@ -1,4 +1,17 @@
 module FeedItemsHelper
+
+  def should_be_local?
+    if mobile_app_request?
+      if untethered_ios_request?
+        false
+      else
+        ios_request?
+      end
+    else
+      false
+    end
+  end
+  
   private
 
   def new_feed_item
