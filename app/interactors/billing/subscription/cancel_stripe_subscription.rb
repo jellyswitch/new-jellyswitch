@@ -8,7 +8,8 @@ class Billing::Subscription::CancelStripeSubscription
     subscription.active = false
 
     if !subscription.save
-      context.fail!(message: "Unable to cancel subscription.")
+      subscription.active = true
+      context.fail!(message: "Unable to cancel subscription")
     end
 
     begin
