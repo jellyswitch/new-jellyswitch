@@ -86,9 +86,13 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
 
-    result = CancelSubscription.call(
-      subscription: @subscription
-    )
+    if @subsciption.has_end_date?
+      CancelSubscriptionJob.set(wait_until: @subscription.end_time).perform_later(subscription: @subscription)
+    else
+      result = CancelSubscription.call(
+        subscription: @subscription
+      )
+    end
 
     if result.success?
       flash[:success] = "Membership cancelled."
