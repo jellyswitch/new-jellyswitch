@@ -3,7 +3,7 @@ class Checkins::Checkout
   include Interactor::Organizer
 
   organize(
-    SaveCheckout,
-    CreateStripeInvoice
+    Checkins::SaveCheckout,
+    Checkins::CreateStripeInvoice
   )
 end
