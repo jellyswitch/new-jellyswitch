@@ -19,12 +19,9 @@ import Rails from '@rails/ujs'
 import * as ActiveStorage from "@rails/activestorage"
 import Turbolinks from "turbolinks"
 import "channels"
-
-require("trix")
-require("@rails/actiontext")
-require("chartkick")
-require("chart.js")
-
+import "trix"
+import "@rails/actiontext"
+import "chartkick/chart.js"
 import ahoy from "ahoy.js"
 window.ahoy = ahoy
 import 'bootstrap'

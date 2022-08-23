@@ -14,7 +14,7 @@ class ActiveSupport::TestCase
     Searchkick.index_suffix = worker
 
     # reindex models
-    [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
+    # [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
 
     # and disable callbacks
     Searchkick.disable_callbacks
@@ -40,7 +40,7 @@ class ActionDispatch::IntegrationTest
 end
 
 # reindex models
-[Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
+# [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
 
 # and disable callbacks
 Searchkick.disable_callbacks
