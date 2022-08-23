@@ -39,7 +39,7 @@ jobs:
           bundler-cache: true
       # Install Elasticsearch
       - name: Install Elasticsearch
-        uses: ankane/setup-elasticsearch@v1
+        uses: ankane/setup-opensearch@v1
       # Add or replace database setup steps here
       - name: Set up database schema
         run: bin/rails db:schema:load
