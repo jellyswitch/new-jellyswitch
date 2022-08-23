@@ -281,7 +281,7 @@ GEM
     rack (2.2.4)
     rack-mini-profiler (2.3.4)
       rack (>= 1.2.0)
-    rack-protection (2.0.3)
+    rack-protection (2.2.2)
       rack
     rack-proxy (0.7.0)
       rack
@@ -328,7 +328,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.10.0)
       ffi (~> 1.0)
-    redis (4.0.2)
+    redis (4.5.1)
     remotipart (1.4.2)
     request_store (1.5.1)
       rack (>= 1.4)
@@ -381,10 +381,11 @@ GEM
       childprocess (>= 0.5, < 4.0)
       rubyzip (>= 1.2.2)
     semantic_range (3.0.0)
-    sidekiq (5.2.1)
+    sidekiq (5.2.10)
       connection_pool (~> 2.2, >= 2.2.2)
+      rack (~> 2.0)
       rack-protection (>= 1.5.0)
-      redis (>= 3.3.5, < 5)
+      redis (~> 4.5, < 4.6.0)
     simple_calendar (2.4.3)
       rails (>= 3.0)
     sprockets (4.1.1)
@@ -498,7 +499,7 @@ DEPENDENCIES
   sassc-rails (~> 2.1)
   searchkick
   selenium-webdriver
-  sidekiq
+  sidekiq (~> 5.2.10)
   simple_calendar
   stripe (~> 5.0.0)
   turbolinks (= 5.2.1)
