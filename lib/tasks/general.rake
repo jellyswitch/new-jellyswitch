@@ -55,3 +55,7 @@ task test_apns: :environment do
     apn.push(notification)
   end
 end
+
+task reindex_models: :environment do
+  [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
+end

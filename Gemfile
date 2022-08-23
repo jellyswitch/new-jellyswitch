@@ -29,6 +29,7 @@ gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
 gem 'newrelic_rpm'
 gem 'octicons_helper'
+gem 'opensearch-ruby'
 gem 'pagy', '~> 4.10.1'
 gem 'pg'
 gem 'premailer-rails'
@@ -63,10 +64,6 @@ group :development do
   gem 'web-console', '>= 4.1.0'
 end
 
-group :production do
-  gem 'elasticsearch'
-end
-
 group :test do
   gem 'capybara', '>= 3.2.6'
   gem 'ffi'
@@ -78,7 +75,6 @@ group :development, :test do
   gem 'bundler-audit'
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'factory_bot_rails', '~> 5.0.1'
-  gem 'opensearch-ruby'
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rails-controller-testing'
