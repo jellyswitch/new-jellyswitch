@@ -37,10 +37,10 @@ jobs:
         uses: ruby/setup-ruby@8f312efe1262fb463d906e9bf040319394c18d3e # v1.92
         with:
           bundler-cache: true
-      - name: Compile assets
-        run: |
-          yarn build
-          yarn build:css
+      - name: Install yarn and build deps
+        uses: borales/actions-yarn@v2.3.0
+        with:
+          cmd: install
       # Install Elasticsearch
       - name: Install Elasticsearch
         uses: ankane/setup-opensearch@v1
