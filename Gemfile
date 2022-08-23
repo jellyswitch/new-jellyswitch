@@ -12,6 +12,7 @@ gem 'bootstrap', '~> 4.3.1'
 gem 'chartkick', '>= 3.4.0'
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 gem 'draper'
+gem 'elasticsearch'
 gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
 gem 'fcm'
 gem 'friendly_id'
@@ -23,6 +24,7 @@ gem 'image_processing', '>= 1.12.2'
 gem 'interactor', "~> 3.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails', '>= 4.4.0'
+gem 'json', '>= 2.3.0'
 gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
@@ -50,7 +52,6 @@ gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
 gem 'webpacker', '~> 5.x'
 gem 'working_hours'
-gem 'json', '>= 2.3.0'
 
 group :development do
   gem 'annotate'

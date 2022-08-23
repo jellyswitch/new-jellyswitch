@@ -171,13 +171,13 @@ GEM
       activemodel-serializers-xml (>= 1.0)
       activesupport (>= 5.0)
       request_store (>= 1.0)
-    elasticsearch (7.2.0)
-      elasticsearch-api (= 7.2.0)
-      elasticsearch-transport (= 7.2.0)
-    elasticsearch-api (7.2.0)
-      multi_json
-    elasticsearch-transport (7.2.0)
+    elastic-transport (8.1.0.pre1)
       faraday
+      multi_json
+    elasticsearch (8.3.0)
+      elastic-transport (~> 8)
+      elasticsearch-api (= 8.3.0)
+    elasticsearch-api (8.3.0)
       multi_json
     errbase (0.2.0)
     erubi (1.11.0)
@@ -187,7 +187,7 @@ GEM
     factory_bot_rails (5.0.1)
       factory_bot (~> 5.0.0)
       railties (>= 4.2.0)
-    faraday (0.15.4)
+    faraday (0.17.5)
       multipart-post (>= 1.2, < 3)
     fcm (0.0.6)
       httparty (~> 0.10, >= 0.10.0)
@@ -199,7 +199,7 @@ GEM
       activesupport (>= 5.0)
     groupdate (5.2.3)
       activesupport (>= 5)
-    hashie (3.6.0)
+    hashie (5.0.0)
     highline (2.0.1)
     houston (2.4.0)
       commander (~> 4.4)
@@ -250,7 +250,7 @@ GEM
     msgpack (1.2.4)
     multi_json (1.15.0)
     multi_xml (0.6.0)
-    multipart-post (2.1.1)
+    multipart-post (2.2.3)
     net-http-persistent (3.0.0)
       connection_pool (~> 2.2)
     newrelic_rpm (6.8.0.360)
@@ -382,9 +382,8 @@ GEM
       sprockets (> 3.0)
       sprockets-rails
       tilt
-    searchkick (4.0.2)
-      activemodel (>= 5)
-      elasticsearch (>= 6)
+    searchkick (5.0.4)
+      activemodel (>= 5.2)
       hashie
     selenium-webdriver (3.142.7)
       childprocess (>= 0.5, < 4.0)
@@ -463,6 +462,7 @@ DEPENDENCIES
   chartkick (>= 3.4.0)
   dotenv-rails
   draper
+  elasticsearch
   factory_bot_rails (~> 5.0.1)
   faker!
   fcm
