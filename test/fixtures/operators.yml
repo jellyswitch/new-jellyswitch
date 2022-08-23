@@ -90,7 +90,7 @@ cowork_tahoe:
   checkin_notifications: true
   refund_notifications: true
   post_notifications: true
-  credits_enabled: false
+  credits_enabled: true
   childcare_enabled: false
   bulletin_board_enabled: true
   android_server_key: some_server_key
