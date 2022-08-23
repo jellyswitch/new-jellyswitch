@@ -254,7 +254,7 @@ GEM
     opensearch-transport (2.0.1)
       faraday (>= 1.0, < 3)
       multi_json
-    pagy (2.0.1)
+    pagy (4.10.2)
     pg (1.4.3)
     popper_js (1.14.5)
     premailer (1.11.1)
@@ -477,7 +477,7 @@ DEPENDENCIES
   newrelic_rpm
   octicons_helper
   opensearch-ruby
-  pagy (= 2.0.1)
+  pagy (~> 4.10.1)
   pg
   premailer-rails
   pry-byebug
