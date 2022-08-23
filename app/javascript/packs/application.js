@@ -18,7 +18,7 @@
 import Rails from '@rails/ujs'
 import * as ActiveStorage from "@rails/activestorage"
 import Turbolinks from "turbolinks"
-import "channels"
+// import "channels"
 import "trix"
 import "@rails/actiontext"
 import "chartkick/chart.js"
@@ -57,3 +57,6 @@ Turbolinks.start()
   })
 })()
 
+
+// require("trix")
+// require("@rails/actiontext")
