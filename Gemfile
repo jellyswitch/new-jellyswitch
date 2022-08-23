@@ -29,7 +29,6 @@ gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
 gem 'newrelic_rpm'
 gem 'octicons_helper'
-gem 'opensearch-ruby'
 gem 'pagy', '~> 4.10.1'
 gem 'pg'
 gem 'premailer-rails'
@@ -58,10 +57,15 @@ group :development do
   gem 'better_errors', '>= 2.8.0'
   gem 'binding_of_caller'
   gem 'listen', '>= 3.0.5', '< 3.2'
+  gem 'opensearch-ruby'
   gem 'rack-mini-profiler', '~> 2.0'
   gem 'rails-erd'
   gem 'user-auth', git: "https://github.com/jellyswitch/user-auth", :branch => 'master'
   gem 'web-console', '>= 4.1.0'
+end
+
+group :production do
+  gem 'elasticsearch'
 end
 
 group :test do
