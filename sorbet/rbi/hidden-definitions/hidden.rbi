@@ -70998,7 +70998,7 @@ module Pagy::Frontend
 
   def pagy_bootstrap_nav(pagy); end
 
-  def pagy_bootstrap_nav_js(pagy, id=T.unsafe(nil)); end
+  def pagy_bootstrap_nav(pagy, id=T.unsafe(nil)); end
 
   def pagy_get_params(params); end
 

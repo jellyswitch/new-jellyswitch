@@ -25,7 +25,6 @@ import "chartkick/chart.js"
 import ahoy from "ahoy.js"
 window.ahoy = ahoy
 import 'bootstrap'
-import './pagy.js.erb'
 
 Rails.start()
 window.Rails = Rails;
@@ -56,7 +55,3 @@ Turbolinks.start()
     })
   })
 })()
-
-
-// require("trix")
-// require("@rails/actiontext")
