@@ -517,6 +517,7 @@ DEPENDENCIES
   chartkick
   dotenv-rails
   draper
+  elasticsearch
   factory_bot_rails (~> 5.0.1)
   faker!
   fcm
