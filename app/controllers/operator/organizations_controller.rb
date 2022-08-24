@@ -35,7 +35,7 @@ class Operator::OrganizationsController < Operator::BaseController
       render :new, status: 422
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -49,7 +49,7 @@ class Operator::OrganizationsController < Operator::BaseController
   def update
     authorize @organization
 
-    @organization.update_attributes(organization_params)
+    @organization.update(organization_params)
 
     if @organization.save
       flash[:notice] = "The organization #{@organization.name} has been updated."
@@ -59,7 +59,7 @@ class Operator::OrganizationsController < Operator::BaseController
       render :edit, status: 422
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

@@ -1,6 +1,6 @@
 <% title "Welcome" %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center mt-4">Welcome!</h4>
     <p class="lead text-center mb-3 mt-3">Please select an option below.</p>
@@ -9,7 +9,7 @@
   <% if current_location.hourly_enabled? %>
     <%= list_item do %>
       <% if active_working_hours?(current_location) %>
-        <%= render(MemberOnboarding::Checkin, location: current_location, has_billing: current_user.has_billing?) %>
+        <%= render(MemberOnboarding::Checkin.new(location: current_location, has_billing: current_user.has_billing?)) %>
       <% else %>
         <div class="row mb-2 mr-1 ml-1">
           <div class="col mt-3">
@@ -29,24 +29,24 @@
 
   <% if current_tenant.day_passes_enabled? && @day_pass_types.count > 0 %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::DayPass, day_pass_types: @day_pass_types, new_day_pass_path: new_day_pass_path, location: current_location) %>
+      <%= render(MemberOnboarding::DayPass.new(day_pass_types: @day_pass_types, new_day_pass_path: new_day_pass_path, location: current_location)) %>
     <% end %>
   <% end %>
 
   <% if current_tenant.memberships_enabled? %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::Memberships, plans: @plans, location: current_location) %>
+      <%= render(MemberOnboarding::Memberships.new(plans: @plans, location: current_location)) %>
     <% end %>
   <% end %>
 
   <% if policy(:room).enabled? && current_location.rentable_rooms_enabled? %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::Rooms, rooms: @rooms) %>
+      <%= render(MemberOnboarding::Rooms.new(rooms: @rooms)) %>
     <% end %>
   <% end %>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <%= render "shared/contact_card" %>
   <% end %>

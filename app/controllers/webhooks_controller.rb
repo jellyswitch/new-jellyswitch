@@ -15,7 +15,7 @@ class WebhooksController < ApplicationController
         if result.success?
           ok
         else
-          report_to_rollbar(result.message, __method__)
+          report_error(result.message, __method__)
           error(result.message)
         end
       end
@@ -35,7 +35,7 @@ class WebhooksController < ApplicationController
       error("Unrecognized webhook type: #{@event.type}")
     end
   rescue Exception => e
-    report_to_rollbar(e, __method__)
+    report_error(e, __method__)
     error(e.message)
   end
 
@@ -52,23 +52,23 @@ class WebhooksController < ApplicationController
   def update_status(stripe_invoice)
     result = UpdateInvoiceStatus.call(stripe_invoice: stripe_invoice)
     if result.success?
-      Rollbar.info("Successfully UpdateInvoiceStatus#call", stripe_invoice: stripe_invoice)
+      Honeybadger.notify("Successfully UpdateInvoiceStatus#call", stripe_invoice: stripe_invoice)
       ok
     else
-      report_to_rollbar(result.message, __method__)
+      report_error(result.message, __method__)
       error(result.message)
     end
   end
 
-  def report_to_rollbar(msg, meth=nil)
+  def report_error(msg, meth=nil)
     return unless @event.livemode
 
     case msg
     when /customer id cus/
       msg, cus_id = msg.split(" cus_")
-      Rollbar.error(msg, customer_id: "cus_#{cus_id}", method: meth)
+      Honeybadger.notify(msg, customer_id: "cus_#{cus_id}", method: meth)
     else
-      Rollbar.error(msg, method: meth)
+      Honeybadger.notify(msg, method: meth)
     end
   end
 end

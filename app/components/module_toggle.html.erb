@@ -1,5 +1,5 @@
 <div class="border-top">
-  <%= render(OnOffSwitch, predicate: predicate, path: path, label: label) do %>
+  <%= render(OnOffSwitch.new(predicate: predicate, path: path, label: label)) do %>
     <%= label %>
   <% end %>
   <div class="row">

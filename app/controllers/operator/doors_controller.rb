@@ -31,7 +31,7 @@ class Operator::DoorsController < Operator::BaseController
       render :new, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -46,7 +46,7 @@ class Operator::DoorsController < Operator::BaseController
     find_door
     authorize @door
 
-    @door.update_attributes(door_params)
+    @door.update(door_params)
     if @door.save
       flash[:notice] = "Door updated."
       turbolinks_redirect(doors_path(@door))
@@ -55,7 +55,7 @@ class Operator::DoorsController < Operator::BaseController
       render :edit, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

@@ -146,7 +146,7 @@ class Operator::UsersController < Operator::BaseController
       end
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -155,7 +155,7 @@ class Operator::UsersController < Operator::BaseController
     find_user
     authorize @user
 
-    @user.update_attributes(user_params)
+    @user.update(user_params)
 
     if @user.save
       flash[:success] = "Your profile has been updated."
@@ -164,7 +164,7 @@ class Operator::UsersController < Operator::BaseController
       render :edit, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -178,7 +178,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_password_params)
+    @user.update(user_password_params)
 
     if @user.save
       flash[:success] = "Your password has been changed."
@@ -187,7 +187,7 @@ class Operator::UsersController < Operator::BaseController
       render :change_password, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -196,7 +196,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_organization_params)
+    @user.update(user_organization_params)
 
     if @user.save
       flash[:success] = "Updated organization."
@@ -205,7 +205,7 @@ class Operator::UsersController < Operator::BaseController
       render :show, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

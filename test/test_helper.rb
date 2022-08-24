@@ -9,6 +9,16 @@ class ActiveSupport::TestCase
   
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
+
+  parallelize_setup do |worker|
+    Searchkick.index_suffix = worker
+
+    # reindex models
+    # [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
+
+    # and disable callbacks
+    Searchkick.disable_callbacks
+  end
 end
 
 class ActionDispatch::IntegrationTest
@@ -28,3 +38,9 @@ class ActionDispatch::IntegrationTest
     post login_path( params: { session: { email: user.email, password: 'password' } } )
   end
 end
+
+# reindex models
+# [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
+
+# and disable callbacks
+Searchkick.disable_callbacks

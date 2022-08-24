@@ -5,13 +5,13 @@
   <li class="breadcrumb-item"><%= @room.name %></li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <%= render @room %>
   <% end %>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center mt-4">Reservations</h4>
     <%- if @reservations.count < 1 %>
@@ -23,6 +23,6 @@
         <%- end %>
       </ul>
     <%- end %>
-    <%== pagy_bootstrap_responsive_nav(@pagy) %>
+    <%== pagy_bootstrap_nav(@pagy) %>
   <% end %>
 <% end %>

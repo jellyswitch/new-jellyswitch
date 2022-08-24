@@ -63,7 +63,7 @@ class Operator::BaseController < ApplicationController
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
       if current_tenant.nil? || current_location.nil?
-        Rollbar.warning("ActsAsScopable.current_scope_resources failed to preload properly", current_tenant: current_tenant&.id, current_location: current_location&.id)
+        Honeybadger.notify("ActsAsScopable.current_scope_resources failed to preload properly", current_tenant: current_tenant&.id, current_location: current_location&.id)
       end
     end
 

@@ -6,7 +6,7 @@ class Onboarding::UploadLogo
 
   def call
     operator = location.operator
-    operator.update_attributes(
+    operator.update(
       logo_image: logo
     )
     

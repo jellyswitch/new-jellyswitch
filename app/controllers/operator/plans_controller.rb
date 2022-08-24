@@ -66,7 +66,7 @@ class Operator::PlansController < Operator::BaseController
     find_plan
     authorize @plan
 
-    @plan.update_attributes({available: false})
+    @plan.update(available: false)
     if @plan.save
       flash[:notice] = "Plan archived."
       turbolinks_redirect(plans_path)
@@ -75,7 +75,7 @@ class Operator::PlansController < Operator::BaseController
       turbolinks_redirect(referrer_or_root)
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -91,7 +91,7 @@ class Operator::PlansController < Operator::BaseController
     end
     turbolinks_redirect(plans_path, action: "advance")
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

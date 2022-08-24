@@ -38,7 +38,7 @@ class LandingController < ApplicationController
       end
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(landing_url(subdomain: current_user.operator.subdomain), action: "replace")
   end

@@ -49,7 +49,7 @@ class Operator::RoomsController < Operator::BaseController
       render :new, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -64,7 +64,7 @@ class Operator::RoomsController < Operator::BaseController
     find_room
     authorize @room
 
-    @room.update_attributes(room_params)
+    @room.update(room_params)
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
@@ -73,7 +73,7 @@ class Operator::RoomsController < Operator::BaseController
       render :edit, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

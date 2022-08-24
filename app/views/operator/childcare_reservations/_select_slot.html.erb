@@ -1,6 +1,6 @@
 <% title "New Reservation" %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">New Childcare Reservation</h4>
 
@@ -9,7 +9,7 @@
 
       <div class="form-group">
         <%= f.label :childcare_slot_id, "Select a slot" %>
-        <%= render Childcare::SlotSelectTag, f: f, slots: @slots, date: @date %>
+        <%= render Childcare::SlotSelectTag.new(f: f, slots: @slots, date: @date) %>
       </div>
 
       <div class="form-group">

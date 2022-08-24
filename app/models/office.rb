@@ -79,11 +79,11 @@ class Office < ApplicationRecord
   end
 
   def square_photo
-    photo.variant(combine_options: {auto_orient: true, resize: "300x300"})
+    photo.variant(auto_orient: true, resize: "300x300")
   end
 
   def card_photo
-    photo.variant(combine_options: {auto_orient: true, resize: "x200"})
+    photo.variant(auto_orient: true, resize: "x200")
   end
 
   def thumbnail

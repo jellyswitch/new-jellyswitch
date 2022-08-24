@@ -14,7 +14,7 @@
   <% if policy(:credit).enabled? %>
     <div class="row">
       <div class="col">
-        Includes <strong><%= render CreditAmount, amount: plan.credits %></strong>
+        Includes <strong><%= render CreditAmount.new(amount: plan.credits) %></strong>
       </div>
     </div>
   <% end %>

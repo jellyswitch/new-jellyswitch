@@ -15,7 +15,7 @@ class Operator::OperatorsController < Operator::BaseController
   def update
     find_operator
 
-    @operator.update_attributes(operator_params)
+    @operator.update(operator_params)
 
     if @operator.save
       flash[:success] = "Operator has been updated."
@@ -24,7 +24,7 @@ class Operator::OperatorsController < Operator::BaseController
       render :edit, status: 422
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -48,7 +48,7 @@ class Operator::OperatorsController < Operator::BaseController
     end
     redirect_to operator_path(@operator, subdomain: @operator.subdomain)
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
