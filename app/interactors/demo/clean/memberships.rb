@@ -22,7 +22,7 @@ class Demo::Clean::Memberships
   private
 
   def cancel(subscription)
-    result = CancelSubscription.call(subscription: subscription)
+    result = Billing::Subscription::CancelStripeSubscription.call(subscription: subscription)
     if result.success?
       subscription.delete
     else
