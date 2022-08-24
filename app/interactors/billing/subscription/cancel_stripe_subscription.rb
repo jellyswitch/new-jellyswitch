@@ -1,4 +1,3 @@
-# typed: true
 class Billing::Subscription::CancelStripeSubscription
   include Interactor
 
@@ -8,18 +7,18 @@ class Billing::Subscription::CancelStripeSubscription
     subscription.active = false
 
     if !subscription.save
-      context.fail!(message: "Unable to cancel subscription")
+      context.fail!(message: "Unable to cancel subscription.")
     end
 
     begin
       if subscription.stripe_subscription.status == "canceled"
-        Rollbar.error("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
+        Honeybadger.notify("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
       else
         subscription.cancel_stripe!
       end
     rescue Exception => e
       undo_deactivate(subscription)
-      Rollbar.error("Interactor Failure: #{e.message}")
+      Honeybadger.notify("Interactor Failure: #{e.message}")
       context.fail!(message: e.message)
     end
   end
