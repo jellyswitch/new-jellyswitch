@@ -7693,8 +7693,8 @@
 # wrong constant name update
 # wrong constant name update!
 # wrong constant name update_attribute
-# wrong constant name update_attributes
-# wrong constant name update_attributes!
+# wrong constant name update
+# wrong constant name update!
 # wrong constant name update_column
 # wrong constant name update_columns
 # wrong constant name _delete_record
@@ -23962,7 +23962,7 @@
 # wrong constant name merge
 # wrong constant name merge!
 # wrong constant name replace
-# wrong constant name update_attributes!
+# wrong constant name update!
 # wrong constant name <static-init>
 # wrong constant name defaults
 # wrong constant name getters
@@ -50875,7 +50875,7 @@
 # wrong constant name to_hash
 # wrong constant name to_json
 # wrong constant name to_s
-# wrong constant name update_attributes
+# wrong constant name update
 # wrong constant name values
 # wrong constant name <static-init>
 # wrong constant name _deprecated_serialize_params

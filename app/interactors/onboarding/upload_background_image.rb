@@ -5,7 +5,7 @@ class Onboarding::UploadBackgroundImage
   delegate :location, :background, to: :context
 
   def call
-    location.update_attributes(background_image: background)
+    location.update(background_image: background)
 
     unless location.save
       context.fail!(message: errors_for(location))

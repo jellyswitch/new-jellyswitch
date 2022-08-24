@@ -64,7 +64,7 @@ class Operator::RoomsController < Operator::BaseController
     find_room
     authorize @room
 
-    @room.update_attributes(room_params)
+    @room.update(room_params)
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."

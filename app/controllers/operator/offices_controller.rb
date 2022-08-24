@@ -39,7 +39,7 @@ class Operator::OfficesController < Operator::BaseController
   def update
     authorize @office
 
-    @office.update_attributes(office_params)
+    @office.update(office_params)
 
     if @office.save
       flash[:notice] = "Office #{@office.name} has been updated."

@@ -69,7 +69,7 @@ class UsersController < ApplicationController
     find_user
     authorize @user
 
-    @user.update_attributes(user_params)
+    @user.update(user_params)
 
     if @user.save
       flash[:success] = "Your profile has been updated."
@@ -88,7 +88,7 @@ class UsersController < ApplicationController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_password_params)
+    @user.update(user_password_params)
 
     if @user.save
       flash[:success] = "Your password has been changed."
@@ -102,7 +102,7 @@ class UsersController < ApplicationController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_organization_params)
+    @user.update(user_organization_params)
 
     if @user.save
       flash[:success] = "Updated organization."
@@ -142,7 +142,7 @@ class UsersController < ApplicationController
 
   def approve
     find_user(:user_id)
-    @user.update_attributes(user_approval_params)
+    @user.update(user_approval_params)
     if @user.save
       flash[:success] = "User approved."
     else
@@ -153,7 +153,7 @@ class UsersController < ApplicationController
 
   def unapprove
     find_user(:user_id)
-    @user.update_attributes(user_approval_params)
+    @user.update(user_approval_params)
     if @user.save
       flash[:success] = "User unapproved."
     else

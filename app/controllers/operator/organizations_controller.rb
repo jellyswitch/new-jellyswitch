@@ -49,7 +49,7 @@ class Operator::OrganizationsController < Operator::BaseController
   def update
     authorize @organization
 
-    @organization.update_attributes(organization_params)
+    @organization.update(organization_params)
 
     if @organization.save
       flash[:notice] = "The organization #{@organization.name} has been updated."

@@ -16846,9 +16846,9 @@ module ActiveRecord::Persistence
 
   def update_attribute(name, value); end
 
-  def update_attributes(attributes); end
+  def update(attributes); end
 
-  def update_attributes!(attributes); end
+  def update!(attributes); end
 
   def update_column(name, value); end
 
@@ -51929,7 +51929,7 @@ class Hashie::Dash
 
   def replace(other_hash); end
 
-  def update_attributes!(attributes); end
+  def update!(attributes); end
 end
 
 class Hashie::Dash
@@ -104750,7 +104750,7 @@ class Stripe::StripeObject
 
   def to_s(*_args); end
 
-  def update_attributes(values, opts=T.unsafe(nil), dirty: T.unsafe(nil)); end
+  def update(values, opts=T.unsafe(nil), dirty: T.unsafe(nil)); end
 
   def values(); end
 end
