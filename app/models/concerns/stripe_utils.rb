@@ -123,7 +123,7 @@ module StripeUtils
 
     stripe_invoice.pay(options)
   rescue Stripe::InvalidRequestError => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     false
   end
 
@@ -132,7 +132,7 @@ module StripeUtils
 
     stripe_invoice.pay(options)
   rescue Stripe::InvalidRequestError => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     false
   end
 
@@ -141,7 +141,7 @@ module StripeUtils
     stripe_customer.source = token
     stripe_customer.save
   rescue Stripe::InvalidRequestError => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     false
   end
 
@@ -157,7 +157,7 @@ module StripeUtils
 
     "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
   rescue Stripe::InvalidRequestError => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     raise(e)
   end
 end

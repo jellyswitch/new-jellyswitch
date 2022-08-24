@@ -187,6 +187,7 @@ GEM
       activesupport (>= 5)
     hashie (5.0.0)
     highline (2.0.1)
+    honeybadger (4.12.2)
     houston (2.4.0)
       commander (~> 4.4)
       json
@@ -338,7 +339,6 @@ GEM
     roadie-rails (2.3.0)
       railties (>= 5.1, < 7.1)
       roadie (>= 3.1, < 5.0)
-    rollbar (3.3.0)
     rspec-core (3.8.0)
       rspec-support (~> 3.8.0)
     rspec-expectations (3.8.2)
@@ -462,6 +462,7 @@ DEPENDENCIES
   ffi
   friendly_id
   groupdate (~> 5.2, >= 5.2.3)
+  honeybadger
   houston
   httparty
   icalendar
@@ -493,7 +494,6 @@ DEPENDENCIES
   remotipart (~> 1.2)
   request_store
   roadie-rails (~> 2.0)
-  rollbar
   rspec-rails (~> 3.8)
   rspec_junit_formatter
   sassc-rails (~> 2.1)

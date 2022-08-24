@@ -10,7 +10,7 @@ class WeeklyUpdateJob < ApplicationJob
 
         result = WeeklyUpdates::Create.call(operator: operator, week_start: @week_start, week_end: @week_end)
         if !result.success?
-          Rollbar.error("Error creating weekly update: #{result.message}")
+          Honeybadger.notify("Error creating weekly update: #{result.message}")
         end
       end
     end

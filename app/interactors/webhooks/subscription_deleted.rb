@@ -11,13 +11,13 @@ class Webhooks::SubscriptionDeleted
 
       if !result.success?
         msg = "SubscriptionDeletedFactory: #{result.message}"
-        Rollbar.error(msg) if event.livemode
+        Honeybadger.notify(msg) if event.livemode
         context.fail!(message: msg)
       end
     else
       # subscription cannot be found
       msg = "customer.subscription.deleted: No such subscription #{event.data.object.id}"
-      Rollbar.error(msg) if event.livemode
+      Honeybadger.notify(msg) if event.livemode
       context.fail!(message: msg)
     end
   end
