@@ -30,4 +30,8 @@ class FeedItems::Save
     context.notifiable = @feed_item
     context.feed_item = @feed_item
   end
+
+  def rollback
+    context.feed_item.destroy
+  end
 end

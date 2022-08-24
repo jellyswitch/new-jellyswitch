@@ -1,0 +1,10 @@
+cowork_tahoe_subscription:
+  plan: cowork_tahoe_plan
+  active: true
+  stripe_subscription_id: sub_1La6d0EV6H9PcOfBMglTSlmH
+  subscribable_type: User
+  subscribable: cowork_tahoe_member
+  pending: false
+  billable_type: User
+  billable: cowork_tahoe_member
+  start_date: <%= Time.now %>
