@@ -1,6 +1,6 @@
 <% title "Sign Up" %>
 
-<%= render(Layout::Freola::ColorfulBackgroundCard, title: "Sign Up", body: "Enter your email address to get started!") do %>
+<%= render(Layout::Freola::ColorfulBackgroundCard.new(title: "Sign Up", body: "Enter your email address to get started!")) do %>
   <%= form_with(url: create_user_onboarding_index_path, method: :post, remote: true) do |f| %>
     <div class="input-group">
       <%= f.text_field :email, placeholder: "Enter your email address", class: "form-control" %>

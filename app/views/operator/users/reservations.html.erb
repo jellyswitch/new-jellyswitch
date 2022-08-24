@@ -5,7 +5,7 @@
   <li class="breadcrumb-item">My Reservations</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">My Reservations</h4>
   <% end %>
@@ -30,7 +30,7 @@
     <% end %>
   <% else %>
     <% @reservations.each do |res_hash| %>
-      <%= render Reservations::DayList, reservation_hash: res_hash %>
+      <%= render Reservations::DayList.new(reservation_hash: res_hash) %>
     <% end %>
   <% end %>
 <% end %>

@@ -8,7 +8,7 @@
       <p>To open the door, please download our mobile app below and sign in:</p>
     </div>
   </div>
-  <%= render(AppLinks, operator: operator) %>
+  <%= render(AppLinks.new(operator: operator)) %>
 <% else %>
   <% if has_access %>
     <%= render "operator/doors/keys", doors: doors, untethered_ios: untethered_ios_request? %>

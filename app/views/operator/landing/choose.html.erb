@@ -1,6 +1,6 @@
 <% title "Welcome" %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center mt-4">Welcome!</h4>
     <p class="lead text-center mb-3 mt-3">Please select an option below.</p>
@@ -46,7 +46,7 @@
   <% end %>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <%= render "shared/contact_card" %>
   <% end %>

@@ -6,7 +6,7 @@
   <li class="breadcrumb-item active" aria-current="page"><%= @child_profile.name %></li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">
       Child Profile
@@ -48,7 +48,7 @@
     <% end %>
     <% @child_profile.childcare_reservations.each do |res| %>
       <%= list_item do %>
-        <%= render Childcare::Reservation, childcare_reservation: res %>
+        <%= render Childcare::Reservation.new(childcare_reservation: res) %>
       <% end %>
     <% end %>
   <% else %>

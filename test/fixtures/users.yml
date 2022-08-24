@@ -37,13 +37,42 @@
 #
 #  index_users_on_operator_id  (operator_id)
 #
-admin:
+cowork_tahoe_admin:
   name: Dave Paola
   email: dave@jellyswitch.com
   password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
   admin: true
   remember_digest: nil
   slug: dave-paola
+  bio: When you play a game of thrones you win or you die.
+  linkedin: ""
+  twitter: ""
+  website: ""
+  organization_id: nil
+  approved: true
+  stripe_customer_id: nil
+  operator: cowork_tahoe
+  superadmin: false
+  out_of_band: false
+  ios_token: some_token
+  reset_digest: nil
+  reset_sent_at: nil
+  card_added: false
+  always_allow_building_access: false
+  bill_to_organization: false
+  archived: false
+  phone: nil
+  credit_balance: 0
+  childcare_reservation_balance: 0
+  android_token: nil
+
+cowork_tahoe_member:
+  name: Tim C
+  email: tim@jellyswitch.com
+  password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
+  admin: false
+  remember_digest: nil
+  slug: tim-c
   bio: When you play a game of thrones you win or you die.
   linkedin: ""
   twitter: ""

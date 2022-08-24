@@ -5,7 +5,7 @@
   <li class="breadcrumb-item active" aria-current="page">Credits</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">Credits</h4>
 
@@ -13,7 +13,7 @@
       <div class="col">
         Current balance:
         &nbsp;
-        <%= render CreditAmount, amount: @user.credit_balance %>
+        <%= render CreditAmount.new(amount: @user.credit_balance) %>
       </div>
     </div>
   <% end %>

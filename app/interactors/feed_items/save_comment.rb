@@ -10,7 +10,7 @@ class FeedItems::SaveComment
     @feed_item_comment.user_id = @user.id
     
     if !@feed_item_comment.save
-      Rollbar.error("Couldn't save comment on feed item #{@feed_item.id}: #{@feed_item_comment.errors.inspect}")
+      Honeybadger.notify("Couldn't save comment on feed item #{@feed_item.id}: #{@feed_item_comment.errors.inspect}")
       context.fail!(message: "Couldn't save feed item comment.")
     end
 
@@ -18,7 +18,7 @@ class FeedItems::SaveComment
 
     if !@feed_item.save
       msg= "Unable to updated feed item #{@feed_item.id} upon comment #{@feed_item_comment.id}"
-      Rollbar.error(msg)
+      Honeybadger.notify(msg)
       context.fail!(message: msg)
     end
 

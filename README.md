@@ -4,8 +4,8 @@ Bristlecone is the project name for the backend and mobile-first web frontend fo
 
 ## Development
 
-- Rails 5.2.2
-- Ruby 2.4.4
+- Rails 6.1.6.1
+- Ruby 2.7
 - Postgres 10.5
 
 1. `bundle install`
@@ -115,3 +115,13 @@ Can also try PUT to `/_all/_settings` this: `{
 }`
 
 (From [https://github.com/ankane/searchkick/issues/1040](https://github.com/ankane/searchkick/issues/1040)
+
+## Problems
+
+If you encounter ActiveStorge::FileNotFound, it is likely due to missing push notification certificate files. Run this:
+
+```
+Operator.all.map {|o| o.push_notification_certificate.purge }
+```
+
+in the rails console.
