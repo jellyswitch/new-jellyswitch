@@ -14,7 +14,7 @@ class Operator::SetLocationController < Operator::BaseController
     
     turbolinks_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = 'There was a problem finding that location.'
     turbolinks_redirect(root_path)
   end

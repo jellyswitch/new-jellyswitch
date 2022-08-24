@@ -18,7 +18,7 @@ class Operator::PasswordResetsController < Operator::BaseController
       turbolinks_redirect(new_password_reset_path, action: "replace")
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -43,7 +43,7 @@ class Operator::PasswordResetsController < Operator::BaseController
       render 'edit'                                     # Case (2)
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

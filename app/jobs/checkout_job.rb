@@ -11,7 +11,7 @@ class CheckoutJob < ApplicationJob
 
             if !result.success?
               puts result.message
-              Rollbar.error("Error auto-checking out: #{result.message}")
+              Honeybadger.notify("Error auto-checking out: #{result.message}")
             end
           end
         end

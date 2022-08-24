@@ -43,7 +43,7 @@ class Notifiable::Default < SimpleDelegator
             puts "Cannot push iOS message to #{user.email} since iOS token is: #{user.ios_token}"
           end
         rescue => e
-          Rollbar.error(e, user_id: user.email, operator_id: operator.id, notification: message)
+          Honeybadger.notify(e, user_id: user.email, operator_id: operator.id, notification: message)
         end
 
       end

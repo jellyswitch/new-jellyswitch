@@ -35,7 +35,7 @@ class Operator::OrganizationsController < Operator::BaseController
       render :new, status: 422
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -59,7 +59,7 @@ class Operator::OrganizationsController < Operator::BaseController
       render :edit, status: 422
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

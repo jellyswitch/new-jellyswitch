@@ -99,7 +99,7 @@ class Operator::FeedItemsController < Operator::BaseController
       turbolinks_redirect(feed_items_path, action: "restore")
     end
   rescue => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end
@@ -116,7 +116,7 @@ class Operator::FeedItemsController < Operator::BaseController
       turbolinks_redirect(referrer_or_root)
     end
   rescue Exception => e
-    Rollbar.error(e)
+    Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbolinks_redirect(referrer_or_root)
   end

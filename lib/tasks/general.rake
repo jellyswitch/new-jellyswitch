@@ -19,11 +19,11 @@ task weekly_updates: :environment do
   case (day = Time.current.wday)
   when 1
     WeeklyUpdateJob.perform_later
-    Rollbar.info("rake weekly_updates performed", performed: true)
+    Honeybadger.notify("rake weekly_updates performed", performed: true)
   when 2..7
-    Rollbar.info("rake weekly_updates", performed: false, wday: day)
+    Honeybadger.notify("rake weekly_updates", performed: false, wday: day)
   else
-    Rollbar.error("rake weekly_updates wday invalid", performed: false, wday: day)
+    Honeybadger.notify("rake weekly_updates wday invalid", performed: false, wday: day)
   end
 end
 

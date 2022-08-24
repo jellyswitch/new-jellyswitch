@@ -8,6 +8,6 @@ class OpenDoorJob < ApplicationJob
     response = HTTParty.post(url(door), headers: headers(door))
     DoorPunch.create!(user: user, door: door, json: response)
   rescue StandardError => e
-    Rollbar.error(e.message)
+    Honeybadger.notify(e.message)
   end
 end
