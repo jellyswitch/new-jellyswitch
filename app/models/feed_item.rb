@@ -115,7 +115,7 @@ class FeedItem < ApplicationRecord
 
   def feed_photos
     photos.map do |photo|
-      photo.variant(combine_options: { auto_orient: true })
+      photo.variant(auto_orient: true)
     end
   end
 
