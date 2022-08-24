@@ -1,0 +1,33 @@
+cowork_tahoe_part_time_plan:
+ interval: monthly
+ amount_in_cents: 17500
+ name: Part Time Membership
+ visible: true
+ available: true
+ slug: part-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ stripe_plan_id: cowork-tahoe-part-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ operator: cowork_tahoe
+ plan_type: individual
+ always_allow_building_access: true
+ has_day_limit: true
+ day_limit: 10
+ credits: 0
+ commitment_interval: nil
+ childcare_reservations: 0
+
+cowork_tahoe_full_time_plan:
+ interval: monthly
+ amount_in_cents: 20500
+ name: Full Time Membership
+ visible: true
+ available: true
+ slug: full-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ stripe_plan_id: cowork-tahoe-full-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ operator: cowork_tahoe
+ plan_type: individual
+ always_allow_building_access: true
+ has_day_limit: true
+ day_limit: 10
+ credits: 0
+ commitment_interval: nil
+ childcare_reservations: 0
