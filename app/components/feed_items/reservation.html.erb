@@ -32,7 +32,7 @@
       Credits Used
     </dt>
     <dd class="col">
-      <%= render CreditAmount, amount: feed_item.reservation.credit_cost %>
+      <%= render CreditAmount.new(amount: feed_item.reservation.credit_cost) %>
     </dd>
   <% end %>
 </dl>

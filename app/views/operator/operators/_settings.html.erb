@@ -3,11 +3,11 @@
 
   <h5>Configuration</h5>
   <dl>
-    <%= render(OnOffSwitch, predicate: operator.approval_required?, path: operator_operator_approval_required_path(operator)) do %>
+    <%= render(OnOffSwitch.new(predicate: operator.approval_required?, path: operator_operator_approval_required_path(operator))) do %>
       Approval required for new members
     <% end %>
 
-    <%= render(OnOffSwitch, predicate: operator.checkin_required?, path: operator_operator_checkin_required_path(operator)) do %>
+    <%= render(OnOffSwitch.new(predicate: operator.checkin_required?, path: operator_operator_checkin_required_path(operator))) do %>
       Require check-in (even for day passers and members)
     <% end %>
 

@@ -68,7 +68,7 @@
 <p>Other options:</p>
 
 <% if policy(:credit).enabled? %>
-  <%= render Accordion, title: "Credit System" do %>
+  <%= render Accordion.new(title: "Credit System") do %>
     <div class="form-group">
       <%= f.label :credits, "How many credits per billing cycle does this plan include?" %>
       <%= f.text_field :credits, placeholder: "Number of credits per billing cycle", class: "form-control" %>
@@ -77,7 +77,7 @@
 <% end %>
 
 <% if policy(:childcare).enabled? %>
-  <%= render Accordion, title: "Childcare Reservations" do %>
+  <%= render Accordion.new(title: "Childcare Reservations") do %>
     <div class="form-group">
       <%= f.label :childcare_reservations, "How many childcare reservations per billing cycle does this plan include?" %>
       <%= f.text_field :childcare_reservations, placeholder: "Number of childcare reservations per billing cycle", class: "form-control" %>
@@ -85,7 +85,7 @@
   <% end %>
 <% end %>
 
-<%= render Accordion, title: "Monthly Limits" do %>
+<%= render Accordion.new(title: "Monthly Limits") do %>
   <div class="form-check">
     <%= f.check_box :has_day_limit, class: "form-check-input" %>
     <%= f.label :has_day_limit, "Limit number of days per month to:", class: "form-check-label" %>
@@ -96,7 +96,7 @@
   </div>
 <% end %>
 
-<%= render Accordion, title: "Commitment Length" do %>
+<%= render Accordion.new(title: "Commitment Length") do %>
   <div class="form-group">
     <%= f.label :commitment_interval, "For example, 6 for 6 months, 12 for 12 weeks, etc" %>
     <%= f.number_field :commitment_interval, class: "form-control" %>

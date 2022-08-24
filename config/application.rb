@@ -7,15 +7,13 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
 
-require "action_view/component/base"
+require "view_component/engine"
 
 module Jellyswitch
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 5.2
-
-    # config.load_defaults 6.0
-    config.autoloader = :classic
+    config.load_defaults 6.1
+    # config.autoloader = :classic
 
     # Autoload paths
     config.eager_load_paths << Rails.root.join('lib')

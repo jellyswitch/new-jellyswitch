@@ -22,7 +22,7 @@
               <h5 class="mb-0"><%= room[:room].name %></h5>
               <span class="text-secondary"><%= room[:room].location.name %></span>
               <h6 class="text-danger mt-2">
-                <%= render(HourLabel, hours: room[:hours]) %>
+                <%= render(HourLabel.new(hours: room[:hours])) %>
               </h6>
             </div>
           </div>
@@ -35,7 +35,7 @@
               <div class="col pt-2">
                 <%= user[:user].name %>
                 <span class="text-secondary">
-                  <%= render(HourLabel, hours: user[:hours]) %>
+                  <%= render(HourLabel.new(hours: user[:hours])) %>
                 </span>
               </div>
             </div>

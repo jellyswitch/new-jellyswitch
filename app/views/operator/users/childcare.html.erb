@@ -5,14 +5,14 @@
   <li class="breadcrumb-item active" aria-current="page">Childcare</li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <h4 class="display-4 text-center">Childcare</h4>
 
     <dl class="row">
       <dt class="col-5">Current balance</dt>
       <dd class="col">
-        <%= render ChildcareBalance, amount: @user.childcare_reservation_balance %>
+        <%= render ChildcareBalance.new(amount: @user.childcare_reservation_balance) %>
       </dd>
     </dl>
 
@@ -52,7 +52,7 @@
 
     <% @user.childcare_reservations.each do |reservation| %>
       <%= list_item do %>
-        <%= render Childcare::Reservation, childcare_reservation: reservation %>
+        <%= render Childcare::Reservation.new(childcare_reservation: reservation) %>
         <% if policy(reservation).show? %>
           <%= link_to "View reservation", childcare_reservation_path(reservation), class: "btn btn-block btn-primary" %>
         <% end %>

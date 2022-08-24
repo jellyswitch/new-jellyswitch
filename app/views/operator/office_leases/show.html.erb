@@ -6,7 +6,7 @@
   <li class="breadcrumb-item active" aria-current="page">Lease for <%= @office_lease.office.name %></li>
 <% end %>
 
-<%= render Layout::FullWidth do %>
+<%= render Layout::FullWidth.new do %>
 
   <%= list_item do %>
     <h4 class="display-4 text-center">Lease for <%= @office_lease.office.name %></h4>

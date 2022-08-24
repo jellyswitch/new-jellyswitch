@@ -30,19 +30,19 @@ module LayoutHelper
   end
 
   def list_item
-    render(ListItem) do
+    render(ListItem.new) do
       yield
     end
   end
 
   def breadcrumb
-    render Bootstrap::Breadcrumb do
+    render Bootstrap::Breadcrumb.new do
       yield
     end
   end
 
   def breadcrumb_item(label:, path: nil, active: false)
-    render Bootstrap::BreadcrumbItem, label: label, path: path, active: active
+    render Bootstrap::BreadcrumbItem.new(label: label, path: path, active: active)
   end
 
   def title(page_title)

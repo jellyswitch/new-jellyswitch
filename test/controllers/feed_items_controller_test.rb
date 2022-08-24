@@ -2,7 +2,7 @@ require 'test_helper'
 
 class FeedItemsControllerTest < ActionDispatch::IntegrationTest
   setup do
-    @user = users(:admin)
+    @user = users(:cowork_tahoe_admin)
     log_in @user
   end
 

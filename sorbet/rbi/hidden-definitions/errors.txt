@@ -34016,7 +34016,7 @@
 # wrong constant name <static-init>
 # wrong constant name pagy_bootstrap_compact_nav
 # wrong constant name pagy_bootstrap_nav
-# wrong constant name pagy_bootstrap_responsive_nav
+# wrong constant name pagy_bootstrap_nav
 # wrong constant name pagy_get_params
 # wrong constant name pagy_id
 # wrong constant name pagy_info
