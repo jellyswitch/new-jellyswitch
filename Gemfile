@@ -68,7 +68,7 @@ group :test do
   gem 'capybara', '>= 3.2.6'
   gem 'ffi'
   gem 'selenium-webdriver'
-  gem 'webdrivers', '~> 3.0'
+  gem 'webdrivers', '~> 5.0'
 end
 
 group :development, :test do
