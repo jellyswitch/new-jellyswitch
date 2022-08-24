@@ -28,12 +28,11 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should update plan" do
     patch subscription_path(@subscription), params: { subscription: { plan: @full_time_plan.id } }, env: default_env
-    assert_response :success
+    assert_response :redirect
   end
 
   test "cancel subscription failure should keep subscription acive and not post a feed item" do
     delete subscription_path(@subscription), params: { subscription: { plan: "foobar"} }, env: default_env
-    puts feed_items.all.count
     assert_response :redirect
   end
 end
