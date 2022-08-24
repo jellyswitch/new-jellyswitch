@@ -155,7 +155,7 @@ class Operator::UsersController < Operator::BaseController
     find_user
     authorize @user
 
-    @user.update_attributes(user_params)
+    @user.update(user_params)
 
     if @user.save
       flash[:success] = "Your profile has been updated."
@@ -178,7 +178,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_password_params)
+    @user.update(user_password_params)
 
     if @user.save
       flash[:success] = "Your password has been changed."
@@ -196,7 +196,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @user.update_attributes(user_organization_params)
+    @user.update(user_organization_params)
 
     if @user.save
       flash[:success] = "Updated organization."

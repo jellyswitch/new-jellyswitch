@@ -46,7 +46,7 @@ class Operator::DoorsController < Operator::BaseController
     find_door
     authorize @door
 
-    @door.update_attributes(door_params)
+    @door.update(door_params)
     if @door.save
       flash[:notice] = "Door updated."
       turbolinks_redirect(doors_path(@door))

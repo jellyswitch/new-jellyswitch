@@ -51,7 +51,7 @@ class OperatorsController < ApplicationController
     find_operator
     authorize @operator
 
-    @operator.update_attributes(operator_params)
+    @operator.update(operator_params)
 
     if @operator.save
       flash[:success] = "Operator has been updated."

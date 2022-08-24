@@ -66,7 +66,7 @@ class Operator::PlansController < Operator::BaseController
     find_plan
     authorize @plan
 
-    @plan.update_attributes({available: false})
+    @plan.update(available: false)
     if @plan.save
       flash[:notice] = "Plan archived."
       turbolinks_redirect(plans_path)
