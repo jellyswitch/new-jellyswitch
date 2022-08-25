@@ -5,6 +5,6 @@
   <% end %>
 <% else %>
   <% if feed_item.type != "new-user"%>
-    <%= render(FeedItemComponen.new(feed_item: feed_item, comments: comments)) %>
+    <%= render(FeedItemComponent.new(feed_item: feed_item, comments: comments)) %>
   <% end %>
 <% end %>
