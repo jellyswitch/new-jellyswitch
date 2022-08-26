@@ -25,6 +25,7 @@ import "chartkick/chart.js"
 import ahoy from "ahoy.js"
 window.ahoy = ahoy
 import 'bootstrap'
+import "controllers"
 
 Rails.start()
 window.Rails = Rails;
