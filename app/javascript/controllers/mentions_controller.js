@@ -4,6 +4,9 @@ import Trix from "trix"
 
 export default class extends Controller {
     static targets = [ "field" ]
+    static values = {
+        url: String
+    }
 
     connect() {
         this.editor = this.fieldTarget.editor
@@ -36,7 +39,7 @@ export default class extends Controller {
         let mention = e.detail.item.original
         let attachment = new Trix.Attachment({
             sgid: mention.attachable_sgid,
-            content: "@" + mention.name
+            content: mention.content
         })
         this.editor.insertAttachment(attachment)
         this.editor.insertString(" ")

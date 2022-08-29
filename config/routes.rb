@@ -366,5 +366,5 @@ Rails.application.routes.draw do
   end
   resources :weekly_updates, controller: "operator/weekly_updates"
 
-  resources :mentions, only: [:index]
+  resources :mentions, controller: "operator/mentions", only: [:index]
 end
