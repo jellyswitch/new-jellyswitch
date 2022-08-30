@@ -1,4 +1,4 @@
-cowork_tahoe:
+cowork_tahoe_location:
   name: Cowork Tahoe
   operator: cowork_tahoe
   billing_state: production
