@@ -40,6 +40,7 @@
 #
 
 class User < ApplicationRecord
+  pay_customer default_payment_processor: :stripe
   searchkick
   # Relationships
   has_many :announcements

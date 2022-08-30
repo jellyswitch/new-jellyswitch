@@ -20,6 +20,7 @@
 #
 
 class Organization < ApplicationRecord
+  pay_customer default_payment_processor: :stripe
   searchkick
   # Slugs
   extend FriendlyId
