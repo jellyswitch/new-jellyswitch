@@ -56,6 +56,7 @@
 
 class Operator < ApplicationRecord
   extend FriendlyId
+  pay_merchant
   friendly_id :name, use: :slugged, slug_column: :subdomain
 
   has_many :announcements
