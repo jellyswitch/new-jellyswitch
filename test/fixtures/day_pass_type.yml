@@ -1,0 +1,8 @@
+cowork_tahoe_day_pass_type:
+  name: Standard Day Pass
+  operator: cowork_tahoe
+  amount_in_cents: 20000
+  available: true
+  visible: true
+  always_allow_building_access: false
+  code: ""
