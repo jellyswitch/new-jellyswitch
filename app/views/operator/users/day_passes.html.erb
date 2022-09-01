@@ -9,7 +9,7 @@
   <h4 class="display-4 text-center">My Day Passes</h4>
   <% if policy(DayPass.new).new? %>
     <p>
-      <%= link_to "Buy a day pass", new_day_pass_path, class: "btn btn-block btn-primary" %>
+      <%= link_to "Buy a day pass", day_passes_path, class: "btn btn-block btn-primary" %>
     </p>
   <% end %>
 
