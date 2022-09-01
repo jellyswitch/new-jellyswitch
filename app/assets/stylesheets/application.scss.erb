@@ -55,7 +55,7 @@ $theme-colors: (
 
 /* Fix zoom issue on iOS */
 
-@media screen and (-webkit-min-device-pixel-ratio:0) {
+@media screen and (-webkit-min-device-pixel-ratio: 0) {
   select,
   textarea,
   input {
@@ -94,6 +94,7 @@ input[type="submit"]:disabled {
   text-align: center;
   width: 100%;
 }
+
 .attachment {
   display: inline-block;
   position: relative;
@@ -105,8 +106,8 @@ input[type="submit"]:disabled {
 // Tribute styles
 .tribute-container {
   border-radius: 4px;
-  border: 1px solid rgba(0,0,0,0.1);
-  box-shadow: 0 0 4px rgba(0,0,0,0.1), 0 5px 20px rgba(0,0,0,0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.1), 0 5px 20px rgba(0, 0, 0, 0.05);
 
   ul {
     list-style-type: none;
@@ -133,6 +134,9 @@ input[type="submit"]:disabled {
 
 .attachment--content {
   color: blue;
-  cursor: pointer !important;
   text-decoration: underline;
+}
+
+.mention br {
+  display: none;
 }

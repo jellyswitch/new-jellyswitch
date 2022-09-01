@@ -1,9 +1,9 @@
-import { Controller } from "stimulus"
+import {Controller} from "stimulus"
 import Tribute from "tributejs"
 import Trix from "trix"
 
 export default class extends Controller {
-    static targets = [ "field" ]
+    static targets = ["field"]
     static values = {
         url: String
     }
@@ -43,7 +43,6 @@ export default class extends Controller {
         })
         this.editor.insertAttachment(attachment)
         this.editor.insertString(" ")
-        console.log(mention)
     }
 
     _pasteHtml(html, startPos, endPos) {
