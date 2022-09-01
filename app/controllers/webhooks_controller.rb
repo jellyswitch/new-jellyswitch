@@ -12,7 +12,7 @@ class WebhooksController < ApplicationController
         update_status(@event.data.object)
       else
         result = CreateInvoice.call(stripe_invoice: @event.data.object)
-        if result.success?
+        if result.success? || result.error_message == 'nonexistent-customer'
           ok
         else
           report_error(result.message, __method__)
