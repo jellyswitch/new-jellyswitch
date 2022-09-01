@@ -52,7 +52,6 @@ class WebhooksController < ApplicationController
   def update_status(stripe_invoice)
     result = UpdateInvoiceStatus.call(stripe_invoice: stripe_invoice)
     if result.success?
-      Honeybadger.notify("Successfully UpdateInvoiceStatus#call", stripe_invoice: stripe_invoice)
       ok
     else
       report_error(result.message, __method__)
