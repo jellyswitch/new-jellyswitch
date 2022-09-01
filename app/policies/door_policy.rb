@@ -25,10 +25,7 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def open?
-    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
-  rescue => e
-    Honeybadger.notify("DoorPolicy #{__method__} error: #{e}")
-    true
+    user.present? && admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
   end
 
   def keys?
