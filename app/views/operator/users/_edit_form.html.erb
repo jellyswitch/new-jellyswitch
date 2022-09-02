@@ -10,7 +10,10 @@
     <%= f.label :email %><small class="text-muted"> (required)</small>
     <%= f.email_field :email, class: "form-control" %>
   </div>
-
+  <div class="form-group">
+    <%= f.label :phone %>
+    <%= f.text_field :phone, class: "form-control" %>
+  </div>
   <div class="form-group">
     <%= f.label :password %><small class="text-muted"> (required)</small>
     <%= f.password_field :password, class: "form-control" %>
