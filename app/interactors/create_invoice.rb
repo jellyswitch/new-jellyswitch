@@ -16,6 +16,7 @@ class CreateInvoice
     billable = User.find_by(stripe_customer_id: customer) || Organization.find_by(stripe_customer_id: customer)
 
     if billable.nil?
+      context.error_message = 'nonexistent-customer'
       context.fail!(message: "Cannot find billable with stripe customer id #{customer}")
     end
 

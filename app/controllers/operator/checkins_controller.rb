@@ -12,6 +12,10 @@ class Operator::CheckinsController < Operator::BaseController
     @checkin = Checkin.new
     authorize @checkin
     include_stripe
+
+    if current_location.blank?
+      redirect_to root_path
+    end
   end
 
   def create
