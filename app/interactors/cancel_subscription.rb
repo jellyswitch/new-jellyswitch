@@ -5,6 +5,6 @@ class CancelSubscription
   organize(
     FeedItems::Create,
     Billing::Credits::Reset,
-    Billing::Subscription::CancelStripeSubscription
+    Billing::Subscription::SetStripeSubscriptionForCancellation
   )
 end
