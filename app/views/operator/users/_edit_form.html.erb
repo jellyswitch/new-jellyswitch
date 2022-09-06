@@ -1,5 +1,7 @@
-<%= form_for(@user, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
-  <%= render "shared/error_messages" , model: @user %>
+<%= javascript_pack_tag 'phone_number_formatter', 'data-turbolinks-track': 'reload', defer: true %>
+
+<%= form_for(@user, html: { multipart: true }, remote: true, data: { type: :html }) do |f| %>
+  <%= render "shared/error_messages", model: @user %>
 
   <h2>Basic Information</h2>
   <div class="form-group">
@@ -12,7 +14,7 @@
   </div>
   <div class="form-group">
     <%= f.label :phone %><small class="text-muted"> (required)</small>
-    <%= f.text_field :phone, class: "form-control" %>
+    <%= f.telephone_field :phone, id: "phone-number", class: "form-control" %>
   </div>
   <div class="form-group">
     <%= f.label :password %><small class="text-muted"> (required)</small>
