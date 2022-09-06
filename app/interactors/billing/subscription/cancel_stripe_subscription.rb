@@ -4,7 +4,8 @@ class Billing::Subscription::CancelStripeSubscription
   def call
     subscription = context.subscription
 
-    subscription.active = false
+    # TODO: move this to webhook
+    # subscription.active = false
 
     if !subscription.save
       context.fail!(message: "Unable to cancel subscription.")
@@ -15,6 +16,7 @@ class Billing::Subscription::CancelStripeSubscription
         Honeybadger.notify("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
       else
         subscription.cancel_stripe!
+        subscription.update!(cancelling_at_end_of_billing_period: true)
       end
     rescue Exception => e
       undo_deactivate(subscription)

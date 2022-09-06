@@ -113,6 +113,14 @@ class Subscription < ApplicationRecord
     has_stripe_subscription? && stripe_subscription.canceled_at.present?
   end
 
+  def has_period_end?
+    has_stripe_subscription? && stripe_subscription.current_period_end.present?
+  end
+
+  def current_period_end
+    Time.at(stripe_subscription.current_period_end)
+  end
+
   def canceled_at
     Time.at(stripe_subscription.canceled_at)
   end
