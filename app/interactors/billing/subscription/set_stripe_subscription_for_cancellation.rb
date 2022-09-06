@@ -7,12 +7,12 @@ class Billing::Subscription::SetStripeSubscriptionForCancellation
     subscription.cancelling_at_end_of_billing_period = true
 
     if !subscription.save
-      context.fail!(message: "Unable to cancel subscription.")
+      context.fail!(message: "Unable to set subscription for cancellation.")
     end
 
     begin
       if subscription.stripe_subscription.status == "canceled"
-        Honeybadger.notify("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
+        Honeybadger.notify("Warning: SetStripeSubscriptionForCancellation called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
       else
         subscription.set_stripe_to_cancel!
       end
