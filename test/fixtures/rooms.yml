@@ -1,0 +1,14 @@
+ cowork_tahoe_room:
+  name: tims conference room
+  description: Awesome space for productive people
+  whiteboard: true
+  av: false
+  capacity: 200
+  slug: tims-conference-room
+  visible: true
+  operator: cowork_tahoe
+  location: cowork_tahoe_location
+  square_footage: 1200
+  rentable: false
+  hourly_rate_in_cents: 10000
+  credit_cost: 0
