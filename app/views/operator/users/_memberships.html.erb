@@ -46,6 +46,20 @@
         <% end %>
       </dd>
 
+      <dt class="col-sm-3">Set to Cancel at Billing Period End?</dt>
+      <dd class="col-sm">
+        <% if subscription.cancelling_at_end_of_billing_period? %>
+          <span class="badge badge-warning">
+            Yes,
+            <% if subscription.has_period_end? %>
+              <%= short_date(subscription.current_period_end) %>
+            <% end %>
+          </span>
+        <% else %>
+          <span class="badge badge-success">No</span>
+        <% end %>
+      </dd>
+
       <dt class="col-sm-3">Billed To</dt>
       <dd class="col-sm">
         <% if subscription.billable_type == "User" %>
