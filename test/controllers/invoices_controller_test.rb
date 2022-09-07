@@ -1,14 +1,25 @@
 require "test_helper"
 
 class InvoicesControllerTest < ActionDispatch::IntegrationTest
-
   setup do
     @user = users(:cowork_tahoe_admin)
     log_in @user
     @invoice = invoices(:member_invoice)
+    StripeMock.start
+
+    stripe_invoice = Stripe::Invoice.create(
+      customer: @user.stripe_customer_id,
+      currency: 'usd',
+      amount: @invoice.amount_due,
+      description: 'test invoice'
+    )
+    
+    @invoice.update(stripe_invoice_id: stripe_invoice.id)
+
+    Invoice.any_instance.stubs(:payment_method).returns("Credit Card")
   end
 
-  test "should get invoice index" do
+  test "should get invoice index" do    
     get invoices_path, env: default_env
     assert_response :success
   end
