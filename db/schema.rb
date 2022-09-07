@@ -2,8 +2,8 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `bin/rails
-# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/bin/rails
+# db:schema:load`. When creating a new database, `bin/bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
@@ -547,6 +547,7 @@ ActiveRecord::Schema.define(version: 2022_09_07_205637) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.date "start_date", null: false
+    t.boolean "cancelling_at_end_of_billing_period", default: false, null: false
     t.boolean "cancelling_at_end_of_billing_period", default: false, null: false
     t.index ["billable_type", "billable_id"], name: "index_subscriptions_on_billable_type_and_billable_id"
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"

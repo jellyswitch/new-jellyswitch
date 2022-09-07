@@ -51,6 +51,10 @@ class Subscription < ApplicationRecord
     stripe_subscription.delete
   end
 
+  def set_stripe_to_cancel!
+    stripe_subscription.save(cancel_at_period_end: true)
+  end
+
   def has_stripe_subscription?
     stripe_subscription_id.present? && stripe_subscription.id.present?
   rescue StandardError => e
@@ -112,6 +116,14 @@ class Subscription < ApplicationRecord
 
   def has_canceled_at?
     has_stripe_subscription? && stripe_subscription.canceled_at.present?
+  end
+
+  def has_period_end?
+    has_stripe_subscription? && stripe_subscription.current_period_end.present?
+  end
+
+  def current_period_end
+    Time.at(stripe_subscription.current_period_end)
   end
 
   def canceled_at
