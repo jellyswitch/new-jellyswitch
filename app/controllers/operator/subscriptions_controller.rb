@@ -88,7 +88,8 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     result = CancelSubscription.call(
       subscription: @subscription,
-      blob: { text: "#{current_user.name} canceled their membership", type: "post" },
+      creditable: @subscription.subscribable,
+      blob: { text: "#{@subscription.subscribable.name} canceled their membership", type: "post" },
       user: current_tenant.users.admins.first,
       operator: current_tenant,
       notifiable: current_tenant.users.admins

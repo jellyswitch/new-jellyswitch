@@ -10,15 +10,13 @@ class FeedItems::SaveComment
     @feed_item_comment.user_id = @user.id
     
     if !@feed_item_comment.save
-      Honeybadger.notify("Couldn't save comment on feed item #{@feed_item.id}: #{@feed_item_comment.errors.inspect}")
       context.fail!(message: "Couldn't save feed item comment.")
     end
 
     @feed_item.updated_at = @feed_item_comment.created_at
 
     if !@feed_item.save
-      msg= "Unable to updated feed item #{@feed_item.id} upon comment #{@feed_item_comment.id}"
-      Honeybadger.notify(msg)
+      msg = "Unable to updated feed item #{@feed_item.id} upon comment #{@feed_item_comment.id}"
       context.fail!(message: msg)
     end
 
