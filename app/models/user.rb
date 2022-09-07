@@ -24,6 +24,7 @@
 #  remember_digest               :string
 #  reset_digest                  :string
 #  reset_sent_at                 :datetime
+#  role                          :string           default("member"), not null
 #  slug                          :string
 #  superadmin                    :boolean          default(FALSE), not null
 #  twitter                       :string
@@ -111,6 +112,48 @@ class User < ApplicationRecord
             :should_charge_for_reservation?,
             :can_see_all_rooms?,
             to: :user_permissions
+
+  # Roles
+  MEMBER            = 'member'.freeze
+  COMMUNITY_MANAGER = 'community-manager'.freeze
+  GENERAL_MANAGER   = 'general-manager'.freeze
+  ADMIN             = 'admin'.freeze
+  SUPERADMIN        = 'superadmin'.freeze
+
+  def self.role_options_for_select
+    roles.reject{|r| r == 'superadmin' }.map { |r| [r.titleize, r] }
+  end
+
+  def self.roles
+    [
+      MEMBER,
+      COMMUNITY_MANAGER,
+      GENERAL_MANAGER,
+      ADMIN,
+      SUPERADMIN
+    ].freeze
+  end
+
+  def member?
+    role == MEMBER
+  end
+
+  def community_manager?
+    role == COMMUNITY_MANAGER
+  end
+
+  def general_manager?
+    role == GENERAL_MANAGER
+  end
+
+  def admin?
+    role == ADMIN
+  end
+
+  def superadmin?
+    role == SUPERADMIN
+  end
+
   
   def search_data
     {

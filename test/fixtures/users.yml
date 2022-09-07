@@ -23,6 +23,7 @@
 #  remember_digest               :string
 #  reset_digest                  :string
 #  reset_sent_at                 :datetime
+#  role                          :string           default("member"), not null
 #  slug                          :string
 #  superadmin                    :boolean          default(FALSE), not null
 #  twitter                       :string
