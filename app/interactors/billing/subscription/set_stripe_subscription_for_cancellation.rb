@@ -24,7 +24,7 @@ class Billing::Subscription::SetStripeSubscriptionForCancellation
   end
 
   def undo_deactivate(subscription)
-    subscription.active = true
+    subscription.cancelling_at_end_of_billing_period = false
     if !subscription.save
       context.fail!(message: "Unable to cancel subscription. Your account may not be in good standing -- please contact support.")
     end
