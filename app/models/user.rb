@@ -134,23 +134,23 @@ class User < ApplicationRecord
     ].freeze
   end
 
-  def member?
+  def has_role_member?
     role == MEMBER
   end
 
-  def community_manager?
+  def has_role_community_manager?
     role == COMMUNITY_MANAGER
   end
 
-  def general_manager?
+  def has_role_general_manager?
     role == GENERAL_MANAGER
   end
 
-  def admin?
+  def has_role_admin?
     role == ADMIN
   end
 
-  def superadmin?
+  def has_role_superadmin?
     role == SUPERADMIN
   end
 
