@@ -13,7 +13,12 @@ class Operator::BaseController < ApplicationController
 
   def set_tenant_based_on_subdomain
     subdomain = request.subdomains.first.downcase
-    set_current_tenant(Operator.where(subdomain: subdomain).first)
+    return unless subdomain.present?
+
+    operator = Operator.find_by(subdomain: subdomain)
+    return unless operator.present?
+
+    set_current_tenant(operator)
   end
 
   def background_image

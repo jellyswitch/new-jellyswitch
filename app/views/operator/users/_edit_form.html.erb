@@ -1,5 +1,5 @@
-<%= form_for(@user, html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
-  <%= render "shared/error_messages" , model: @user %>
+<%= form_for(@user, html: { multipart: true }, remote: true, data: { type: :html }) do |f| %>
+  <%= render "shared/error_messages", model: @user %>
 
   <h2>Basic Information</h2>
   <div class="form-group">
@@ -10,7 +10,10 @@
     <%= f.label :email %><small class="text-muted"> (required)</small>
     <%= f.email_field :email, class: "form-control" %>
   </div>
-
+  <div class="form-group">
+    <%= f.label :phone %>
+    <%= f.telephone_field :phone, id: "phone-number", class: "form-control" %>
+  </div>
   <div class="form-group">
     <%= f.label :password %><small class="text-muted"> (required)</small>
     <%= f.password_field :password, class: "form-control" %>
