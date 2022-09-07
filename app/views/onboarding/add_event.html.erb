@@ -1,11 +1,11 @@
 <% title "Onboarding" %>
 
-<%= render(Layout::Freola::FlatIcon, 
+<%= render(Layout::Freola::FlatIcon.new( 
   title: "Your first event!", 
   body: "Most new members come from hosted events!", 
   footer_text: nil, 
   footer_link: nil,
-  icon: :group) do %>
+  icon: :group)) do %>
   <%= form_with(url: create_event_onboarding_index_path, method: :post, remote: true) do |f| %>
     <div class="form-group">
       <label>Event Name</label>
