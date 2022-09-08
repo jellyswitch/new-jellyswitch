@@ -10,7 +10,7 @@ Rails.application.config.assets.version = '1.0'
 # Precompile additional assets.
 # application.js, application.css, and all non-JS/CSS in the app/assets
 # folder are already added.
-Rails.application.config.assets.precompile += %w(simplegrid.css bootstrap-grid.css application.css trix.css)
+Rails.application.config.assets.precompile += %w(simplegrid.css bootstrap-grid.css application.css trix.css application.js)
 
 Dir.glob("#{Rails.root}/assets/**/**/").each do |path|
   Rails.application.config.assets.paths << path
