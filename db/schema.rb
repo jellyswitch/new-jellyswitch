@@ -2,8 +2,8 @@
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
 #
-# This file is the source Rails uses to define your schema when running `bin/bin/rails
-# db:schema:load`. When creating a new database, `bin/bin/rails db:schema:load` tends to
+# This file is the source Rails uses to define your schema when running `bin/rails
+# db:schema:load`. When creating a new database, `bin/rails db:schema:load` tends to
 # be faster and is potentially less error prone than running all of your
 # migrations from scratch. Old migrations may fail to apply correctly if those
 # migrations use external dependencies or application code.
@@ -582,7 +582,7 @@ ActiveRecord::Schema.define(version: 2022_09_07_205637) do
     t.integer "credit_balance", default: 0, null: false
     t.integer "childcare_reservation_balance", default: 0, null: false
     t.string "android_token"
-    t.string "role", default: "member", null: false
+    t.string "role", default: "unassigned", null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
