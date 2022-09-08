@@ -13,14 +13,14 @@ class CheckinPolicy < ApplicationPolicy
   end
 
   def show?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def index?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def destroy?
-    owner? || admin?
+    (owner? || admin? || community_manager? || general_manager?)
   end
 end

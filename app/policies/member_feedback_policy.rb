@@ -9,10 +9,10 @@ class MemberFeedbackPolicy < ApplicationPolicy
   end
 
   def index?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def show?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 end

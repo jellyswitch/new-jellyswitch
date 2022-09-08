@@ -9,11 +9,11 @@ class EventPolicy < ApplicationPolicy
   end
 
   def new?
-    enabled? && admin?
+    (enabled? && admin? || community_manager? || general_manager?)
   end
 
   def create?
-    enabled? && admin?
+    (enabled? && admin? || community_manager? || general_manager?)
   end
 
   def show?
@@ -21,15 +21,15 @@ class EventPolicy < ApplicationPolicy
   end
 
   def edit?
-    enabled? && admin?
+    (enabled? && admin? || community_manager? || general_manager?)
   end
 
   def update?
-    enabled? && admin?
+    (enabled? && admin? || community_manager? || general_manager?)
   end
 
   def destroy?
-    enabled? && admin?
+    (enabled? && admin? || community_manager? || general_manager?)
   end
 
   def rsvp?
