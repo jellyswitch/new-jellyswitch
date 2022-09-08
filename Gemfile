@@ -20,7 +20,7 @@ gem 'honeybadger'
 gem 'houston'
 gem 'httparty'
 gem 'icalendar'
-gem 'image_processing', '>= 1.12.2'
+gem 'image_processing', '~> 1.2'
 gem 'interactor', "~> 3.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails', '>= 4.4.0'
@@ -54,7 +54,6 @@ gem 'sprockets-rails'
 gem 'stimulus-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
-gem 'webpacker', '~> 5.x'
 gem 'working_hours'
 
 group :development do
