@@ -33,7 +33,7 @@ class ApplicationController < ActionController::Base
     response.headers["Turbolinks-Location"] = path
     respond_to do |format|
       format.js do
-        render "shared/turbolinks_redirect.js.erb"
+        render "shared/turbolinks_redirect"
       end
       format.html do
         redirect_to path
