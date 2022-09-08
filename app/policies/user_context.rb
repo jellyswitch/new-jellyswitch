@@ -9,7 +9,7 @@ class UserContext
   end
 
   def admin?
-    @user.admin?
+    @user.has_role_admin?
   end
 
   def present?
@@ -17,6 +17,6 @@ class UserContext
   end
 
   def superadmin?
-    @user.superadmin?
+    @user.has_role_superadmin?
   end
 end
