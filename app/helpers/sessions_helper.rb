@@ -88,6 +88,14 @@ module SessionsHelper
     logged_in? && current_user.superadmin?
   end
 
+  def community_manager?
+    logged_in? && current_user.community_manager?
+  end
+
+  def general_manager?
+    logged_in? && current_user.general_manager?
+  end
+
   def pending?
     current_user.present? && current_user.pending?
   end
