@@ -2,11 +2,11 @@ module Permissions
   # Included as a module in the User class
 
   def allowed_in?(location)
-    member?(location) ||
+    member?(location) || 
     has_active_day_pass? || 
     checked_in?(location) || 
-    has_active_lease? ||
-    admin? ||
+    has_active_lease? || 
+    admin? || 
     has_reservation? || 
     has_rsvp?
   end
@@ -47,7 +47,6 @@ module Permissions
 
   def member?(location, day = Time.current)
     has_active_subscription_at_location?(location)
-    has_role_member?
   end
 
   def has_active_subscription_at_location?(location)
@@ -57,19 +56,19 @@ module Permissions
   end
 
   def admin?
-    has_role_admin?
+    role == ADMIN
   end
 
   def superadmin?
-    has_role_superadmin?
+    role == SUPERADMIN
   end
 
   def community_manager?
-    has_role_community_manager?
+    community_manager?
   end
 
   def general_manager?
-    has_role_general_manager?
+    general_manager?
   end
 
   def pending?

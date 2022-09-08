@@ -24,7 +24,7 @@
 #  remember_digest               :string
 #  reset_digest                  :string
 #  reset_sent_at                 :datetime
-#  role                          :string           default("member"), not null
+#  role                          :string           default("unassigned"), not null
 #  slug                          :string
 #  superadmin                    :boolean          default(FALSE), not null
 #  twitter                       :string
@@ -111,11 +111,6 @@ class User < ApplicationRecord
             :allowed_in?,
             :should_charge_for_reservation?,
             :can_see_all_rooms?,
-            :has_role_admin?,
-            :has_role_superadmin?,
-            :has_role_community_manager?,
-            :has_role_general_manager?,
-            :has_role_member?,
             to: :user_permissions
 
   # Roles
@@ -217,7 +212,7 @@ class User < ApplicationRecord
     operator_id = params[:operator_id]
 
     user = User.find_by(email: email)
-    if user.present? && user.has_role_superadmin?
+    if user.present? && user.superadmin?
       return user
     else
       return User.find_by(email: email, operator_id: operator_id)
