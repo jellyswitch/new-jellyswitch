@@ -11,7 +11,7 @@ class AuthenticationTest < ApplicationSystemTestCase
   test 'logging out' do
     user = users(:cowork_tahoe_admin)
     log_in(user)
-    # debugger
+    find('.navbar-toggler').click if ENV['CI'].present?
     click_on 'My Account'
 
     click_on 'Log out'
