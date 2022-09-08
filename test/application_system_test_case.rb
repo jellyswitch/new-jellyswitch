@@ -7,15 +7,13 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     Capybara.app_host = "http://tml.lvh.me"
   end
 
-  def login(user)
+  def log_in(user)
     user.update(password: 'password')
-
     visit login_path
 
     fill_in 'Email', with: user.email
     fill_in 'Password', with: 'password'
 
     find('#sign-in').click
-
   end
 end
