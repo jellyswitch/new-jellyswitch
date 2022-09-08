@@ -36,7 +36,7 @@ gem 'pg'
 gem 'premailer-rails'
 gem 'puma', '~> 5.0'
 gem 'pundit'
-gem 'rails', '~> 6.1.6', '>= 6.1.6.1'
+gem 'rails', '~> 7.0.3', '>= 7.0.3.1'
 gem 'rails_autolink'
 gem 'redis'
 gem 'remotipart', '~> 1.2'
@@ -48,6 +48,10 @@ gem 'sidekiq', '~> 5.2.10'
 gem 'simple_calendar'
 gem 'stripe', '~> 5.0.0'
 gem 'turbolinks', '5.2.1'
+# gem 'turbo-rails'
+gem 'importmap-rails'
+gem 'sprockets-rails'
+gem 'stimulus-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
 gem 'webpacker', '~> 5.x'
@@ -73,7 +77,7 @@ end
 
 group :development, :test do
   gem 'bundler-audit'
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'factory_bot_rails', '~> 5.0.1'
   gem 'pry-byebug'
   gem 'pry-rails'
