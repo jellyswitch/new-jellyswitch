@@ -7,11 +7,19 @@ module PolicyHelpers
   end
 
   def admin?
-    is_user? && (user.admin? || superadmin?)
+    is_user? && (user.has_role_admin? || user.has_role_superadmin?)
+  end
+
+  def general_manager?
+    is_user? && user.has_role_community_manager?
+  end
+
+  def community_manager?
+    is_user? && user.has_role_community_manager?
   end
 
   def superadmin?
-    is_user? && user.superadmin?
+    is_user? && user.has_role_superadmin?
   end
 
   def checked_in?

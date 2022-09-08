@@ -81,11 +81,11 @@ module SessionsHelper
   end
 
   def admin?
-    logged_in? && current_user.admin?
+    logged_in? && current_user.has_role_admin?
   end
 
   def superadmin?
-    logged_in? && current_user.superadmin?
+    logged_in? && current_user.has_role_superadmin?
   end
 
   def pending?
