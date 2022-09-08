@@ -56,11 +56,11 @@ module Permissions
   end
 
   def admin?
-    role == ADMIN
+    role == 'admin'
   end
 
   def superadmin?
-    role == SUPERADMIN
+    role == 'superadmin'
   end
 
   def community_manager?
