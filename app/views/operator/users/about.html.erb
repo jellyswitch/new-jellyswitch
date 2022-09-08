@@ -48,6 +48,12 @@
           <% end %>
         </dd>
       </dl>
+      <dl class="row mt-3">
+        <dt class="col-sm-3">Role</dt>
+        <dd class="col-sm">
+          <%= @user.role.titleize %>
+        </dd>
+      </dl>
 
       <% if superadmin? %>
         <dl class="row mt-3">
