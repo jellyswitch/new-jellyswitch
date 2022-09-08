@@ -69,10 +69,10 @@ group :development do
 end
 
 group :test do
-  gem 'capybara', '>= 3.2.6'
+  gem 'capybara'
   gem 'ffi'
   gem 'selenium-webdriver'
-  gem 'webdrivers', '~> 3.0'
+  gem 'webdrivers'
 end
 
 group :development, :test do
