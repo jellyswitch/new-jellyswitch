@@ -2,7 +2,7 @@ module Permissions
   # Included as a module in the User class
 
   def allowed_in?(location)
-    member?(location) || 
+    member?(location) ||
     has_active_day_pass? || 
     checked_in?(location) || 
     has_active_lease? || 
@@ -56,19 +56,19 @@ module Permissions
   end
 
   def admin?
-    role == 'admin'
+    role == User::ADMIN
   end
 
   def superadmin?
-    role == 'superadmin'
+    role == User::SUPERADMIN
   end
 
   def community_manager?
-    community_manager?
+    role == User::COMMUNITY_MANAGER
   end
 
   def general_manager?
-    general_manager?
+    role == User::GENERAL_MANAGER
   end
 
   def pending?

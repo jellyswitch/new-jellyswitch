@@ -92,8 +92,10 @@ class User < ApplicationRecord
   delegate  :member_at_operator?,
             :member?,
             :has_active_subscription_at_location?,
-            :admin?, 
-            :superadmin?, 
+            :admin?,
+            :superadmin?,
+            :community_manager?,
+            :general_manager?,
             :pending?, 
             :has_active_subscription?,
             :has_building_access_membership?, 
@@ -132,14 +134,6 @@ class User < ApplicationRecord
       ADMIN,
       SUPERADMIN
     ].freeze
-  end
-
-  def community_manager?
-    role == COMMUNITY_MANAGER
-  end
-
-  def general_manager?
-    role == GENERAL_MANAGER
   end
   
   def search_data
