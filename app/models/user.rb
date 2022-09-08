@@ -114,7 +114,7 @@ class User < ApplicationRecord
             to: :user_permissions
 
   # Roles
-  MEMBER            = 'member'.freeze
+  UNASSIGNED        = 'unassigned'.freeze
   COMMUNITY_MANAGER = 'community-manager'.freeze
   GENERAL_MANAGER   = 'general-manager'.freeze
   ADMIN             = 'admin'.freeze
@@ -126,7 +126,7 @@ class User < ApplicationRecord
 
   def self.roles
     [
-      MEMBER,
+      UNASSIGNED,
       COMMUNITY_MANAGER,
       GENERAL_MANAGER,
       ADMIN,
@@ -134,26 +134,13 @@ class User < ApplicationRecord
     ].freeze
   end
 
-  def has_role_member?
-    role == MEMBER
-  end
-
-  def has_role_community_manager?
+  def community_manager?
     role == COMMUNITY_MANAGER
   end
 
-  def has_role_general_manager?
+  def general_manager?
     role == GENERAL_MANAGER
   end
-
-  def has_role_admin?
-    role == ADMIN
-  end
-
-  def has_role_superadmin?
-    role == SUPERADMIN
-  end
-
   
   def search_data
     {
