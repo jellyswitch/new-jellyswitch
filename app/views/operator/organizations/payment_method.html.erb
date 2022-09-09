@@ -7,6 +7,6 @@
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <%= render(PaymentMethodComponent, billable: @organization) %>
+    <%= render(PaymentMethodComponent.new( billable: @organization ) ) %>
   <% end %>
 <% end %>
