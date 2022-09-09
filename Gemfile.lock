@@ -256,6 +256,8 @@ GEM
     msgpack (1.2.4)
     multi_json (1.15.0)
     multi_xml (0.6.0)
+    net-http (0.2.2)
+      uri
     net-imap (0.2.3)
       digest
       net-protocol
@@ -451,6 +453,7 @@ GEM
       concurrent-ruby (~> 1.0)
     uglifier (4.1.16)
       execjs (>= 0.3.0, < 3)
+    uri (0.11.0)
     view_component (2.69.0)
       activesupport (>= 5.0.0, < 8.0)
       concurrent-ruby (~> 1.0)
@@ -514,6 +517,7 @@ DEPENDENCIES
   mail_hatch
   momentjs-rails (>= 2.9.0)
   money
+  net-http
   newrelic_rpm
   octicons_helper
   opensearch-ruby

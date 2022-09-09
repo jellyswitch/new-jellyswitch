@@ -56,6 +56,7 @@ gem 'stimulus-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
 gem 'working_hours'
+gem 'net-http'
 
 group :development do
   gem 'annotate'
