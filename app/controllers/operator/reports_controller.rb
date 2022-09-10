@@ -4,6 +4,7 @@ class Operator::ReportsController < Operator::BaseController
   before_action :generate_report, except: [:monetization]
 
   def index
+    authorize :report, :index?
   end
 
   def member_csv
@@ -29,6 +30,7 @@ class Operator::ReportsController < Operator::BaseController
   end
 
   def revenue
+    authorize :report, :revenue?
   end
 
   def checkins

@@ -17,15 +17,15 @@ class SubscriptionPolicy < ApplicationPolicy
   end
 
   def edit?
-    admin? || (owner? && user.member?(location) && approved? && billing_enabled?)
+    admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?)
   end
 
   def update?
-    admin? || (owner? && user.member?(location) && approved? && billing_enabled?)
+    admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?)
   end
 
   def destroy?
-    admin? || (owner? && user.member?(location) && approved? && billing_enabled?)
+    admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?)
   end
 
   private

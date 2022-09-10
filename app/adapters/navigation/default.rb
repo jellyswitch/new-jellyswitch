@@ -137,6 +137,115 @@ class Navigation::Default < SimpleDelegator
     items
   end
 
+  def general_manager_nav_items
+    items = []
+
+    items << {title: "Home", path: feed_items_path}
+
+    if policy(:door).enabled?
+      items << {title: "Building Access", path: doors_path}
+    end
+
+    if policy(:announcement).enabled?
+      items << {title: "Announcements", path: announcements_path}
+    end
+
+    if policy(:post).enabled?
+      items << {title: "Bulletin Board", path: posts_path}
+    end
+
+    if policy(:event).enabled?
+      items << {title: "Events", path: events_path}
+    end
+
+    items << {title: "Members & Groups", path: members_groups_path}
+
+    if policy(:office).enabled?
+      items << {title: "Offices & Leases", path: offices_path}
+    end
+
+    if policy(:room).enabled?
+      items << {title: "Rooms & Reservations", path: rooms_path}
+    end
+
+    if policy(:lead).enabled?
+      items << {title: "Leads", path: leads_path}
+    end
+
+    if policy(:payment).enabled?
+      [
+        {title: "Plans & Day Passes", path: plans_day_passes_path},
+        {title: "Invoices & Expenses", path: accounting_index_path}
+      ].each do |item|
+        items << item
+      end
+    end
+
+    [
+      {title: "Data", path: reports_path},
+      {title: "My Account", path: user_path(user)},
+      {title: "Member Dashboard", path: home_path}
+    ].each do |item|
+      items << item
+    end
+
+    items
+  end
+
+  def community_manager_nav_items
+    items = []
+
+    items << {title: "Home", path: feed_items_path}
+
+    if policy(:door).enabled?
+      items << {title: "Building Access", path: doors_path}
+    end
+
+    if policy(:announcement).enabled?
+      items << {title: "Announcements", path: announcements_path}
+    end
+
+    if policy(:post).enabled?
+      items << {title: "Bulletin Board", path: posts_path}
+    end
+
+    if policy(:event).enabled?
+      items << {title: "Events", path: events_path}
+    end
+
+    items << {title: "Members & Groups", path: members_groups_path}
+
+    if policy(:office).enabled?
+      items << {title: "Offices & Leases", path: offices_path}
+    end
+
+    if policy(:room).enabled?
+      items << {title: "Rooms & Reservations", path: rooms_path}
+    end
+
+    if policy(:lead).enabled?
+      items << {title: "Leads", path: leads_path}
+    end
+
+    if policy(:payment).enabled?
+      [
+        {title: "Plans & Day Passes", path: plans_day_passes_path},
+        {title: "Invoices & Expenses", path: accounting_index_path}
+      ].each do |item|
+        items << item
+      end
+    end
+
+    [
+      {title: "My Account", path: user_path(user)},
+      {title: "Member Dashboard", path: home_path}
+    ].each do |item|
+      items << item
+    end
+
+    items
+  end
+
   def admin_tab_paths
     [
       {title: "Home", path: feed_items_path},

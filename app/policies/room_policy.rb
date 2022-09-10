@@ -8,25 +8,24 @@ class RoomPolicy < ApplicationPolicy
     enabled? && if record.rentable?
       is_user?
     else
-      admin? || 
-      (user.allowed_in?(location) && approved?)
+      admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?)
     end
   end
 
   def new?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def create?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def edit?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def update?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def enabled?

@@ -1,4 +1,4 @@
-<%- if admin? %>
+<%- if admin? || community_manager? || general_manager? %>
   <a class="list-group-item list-group-item-action" href="<%= user_path(user) %>">
 <%- else %>
   <li class="list-group-item">
@@ -36,7 +36,7 @@
       <i class="fas fa-chevron-right"></i>
     </div>
   </div>
-<% if admin? %>
+<% if admin? || community_manager? || general_manager? %>
   </a>
 <% else %>
   </li>

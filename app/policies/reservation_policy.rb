@@ -9,23 +9,23 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def show?
-    admin? || owner?
+    admin? || owner? || community_manager? || general_manager?
   end
 
   def destroy?
-    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
+    admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
   end
 
   def cancel?
-    admin? || (owner? && future?)
+    admin? || community_manager? || general_manager? || (owner? && future?)
   end
 
   def long_duration?
-    admin?
+    admin? || community_manager? || general_manager?
   end
 
   def today?
-    admin?
+    admin? || community_manager? || general_manager?
   end
 
   private

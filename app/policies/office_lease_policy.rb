@@ -1,23 +1,23 @@
 # typed: true
 class OfficeLeasePolicy < ApplicationPolicy
   def index?
-    enabled? && admin?
+    enabled? && (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def show?
-    enabled? && (admin? || owner?)
+    enabled? && (admin? || owner? || superadmin? || community_manager || general_manager?)
   end
 
   def new?
-    enabled? && admin?
+    enabled? && (admin? || owner? || superadmin? || community_manager || general_manager?)
   end
 
   def create?
-    enabled? && admin?
+    enabled? && (admin? || owner? || superadmin? || community_manager || general_manager?)
   end
 
   def destroy?
-    enabled? && admin?
+    enabled? && (admin? || owner? || superadmin? || community_manager || general_manager?)
   end
 
   def enabled?

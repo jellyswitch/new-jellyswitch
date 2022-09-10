@@ -81,7 +81,7 @@ module SessionsHelper
   end
 
   def admin?
-    logged_in? && current_user.admin?
+    logged_in? && current_user.admin? || superadmin?
   end
 
   def superadmin?

@@ -1,15 +1,15 @@
 # typed: true
 class WeeklyUpdatePolicy < ApplicationPolicy
   def index?
-    admin?
+    admin? || community_manager? || general_manager?
   end
 
   def create?
-    admin?
+    admin? || community_manager? || general_manager?
   end
 
   def show?
-    admin?
+    admin? || community_manager? || general_manager?
   end
 
   def new?

@@ -1,8 +1,12 @@
 class NavigationFactory
-  def self.for(logged_in, admin, current_tenant, current_location, current_user)
+  def self.for(logged_in, current_tenant, current_location, current_user)
     if logged_in
-      if admin
+      if current_user.admin? || current_user.superadmin?
         Navigation::Admin
+      elsif current_user.community_manager?
+        Navigation::CommunityManager
+      elsif current_user.general_manager?
+        Navigation::GeneralManager
       else
         Navigation::Member
       end

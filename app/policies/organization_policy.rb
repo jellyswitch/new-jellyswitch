@@ -1,35 +1,35 @@
 # typed: true
 class OrganizationPolicy < ApplicationPolicy
   def index?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def show?
-    admin? || user.organization_owner?
+    (admin? || user.organization_owner? || superadmin? || community_manager? || general_manager?)
   end
 
   def new?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def create?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def edit?
-    admin? || user.organization_owner?
+    (admin? || user.organization_owner? || superadmin? || community_manager? || general_manager?)
   end
 
   def update?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def destroy?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def credit_card?
-    (admin? || user.organization_owner?) && record.card_added?
+    (admin? || user.organization_owner? || superadmin? || community_manager? || general_manager?) && record.card_added?
   end
 
   def out_of_band?

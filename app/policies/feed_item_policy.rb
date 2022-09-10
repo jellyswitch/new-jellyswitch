@@ -1,7 +1,7 @@
 # typed: true
 class FeedItemPolicy < ApplicationPolicy
   def index?
-    admin? || community_manager? || general_manager?
+    (admin? || community_manager? || general_manager?)
   end
 
   def questions?
