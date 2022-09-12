@@ -19,7 +19,6 @@ class InvoicePolicy < ApplicationPolicy
   end
 
   def charge?
-    byebug
     (admin? || general_manager? || superadmin?) && card_added? && billing_enabled?
   end
 
