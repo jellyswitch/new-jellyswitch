@@ -20,6 +20,13 @@ class ActiveSupport::TestCase
     # and disable callbacks
     Searchkick.disable_callbacks
   end
+
+  def setup_initial_user_fixtures
+    @admin = UserContext.new(users(:cowork_tahoe_admin), operators(:cowork_tahoe), locations(:cowork_tahoe))
+    @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe))
+    @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe))
+    @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe))
+  end
 end
 
 class ActionDispatch::IntegrationTest

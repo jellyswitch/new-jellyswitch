@@ -3,10 +3,7 @@ require "test_helper"
 class AnnouncementPolicyTest < PolicyAssertions::Test
 
   setup do
-    @admin = users(:cowork_tahoe_admin)
-    @member = users(:cowork_tahoe_member)
-    @community_manager = users(:cowork_tahoe_community_manager)
-    @general_manager = users(:cowork_tahoe_general_manager)
+    setup_initial_user_fixtures
     @operator = operators(:cowork_tahoe)
   end
 

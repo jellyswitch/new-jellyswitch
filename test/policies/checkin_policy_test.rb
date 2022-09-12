@@ -4,10 +4,7 @@ class CheckinPolicyTest < PolicyAssertions::Test
   include PolicyHelpers
 
   setup do
-    @admin = users(:cowork_tahoe_admin)
-    @member = users(:cowork_tahoe_member)
-    @community_manager = users(:cowork_tahoe_community_manager)
-    @general_manager = users(:cowork_tahoe_general_manager)
+    setup_initial_user_fixtures
   end
 
   def test_new
