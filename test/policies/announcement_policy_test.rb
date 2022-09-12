@@ -8,9 +8,9 @@ class AnnouncementPolicyTest < PolicyAssertions::Test
   end
 
   def test_index
-    assert_not_permitted @member, Announcements
-    assert_permit @admin, Announcements
-    assert_permit @community_manager, Announcements
-    assert_permit @general_manager, Announcements
+    assert_not_permitted @member, Announcement
+    assert_permit @admin, Announcement
+    assert_permit @community_manager, Announcement
+    assert_permit @general_manager, Announcement
   end
 end
