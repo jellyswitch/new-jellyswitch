@@ -237,6 +237,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     [
+      {title: "Data", path: reports_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|

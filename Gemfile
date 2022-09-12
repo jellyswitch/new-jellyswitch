@@ -67,6 +67,7 @@ end
 group :test do
   gem 'capybara', '>= 3.2.6'
   gem 'ffi'
+  gem 'policy-assertions'
   gem 'selenium-webdriver'
   gem 'webdrivers', '~> 3.0'
 end

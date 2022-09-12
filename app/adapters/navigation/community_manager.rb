@@ -8,6 +8,6 @@ class Navigation::CommunityManager < Navigation::Default
   end
 
   def tab_paths
-    community_manager_tab_paths
+    admin_tab_paths
   end
 end

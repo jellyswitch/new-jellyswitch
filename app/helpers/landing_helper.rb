@@ -2,7 +2,7 @@
 module LandingHelper
   def landing_redirect
     if logged_in? && current_location.present?
-      if admin?
+      if admin? || community_manager? || general_manager?
         if current_tenant.onboarded? || current_tenant.skip_onboarding?
           redirect_to feed_items_path
         else

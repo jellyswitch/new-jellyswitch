@@ -57,7 +57,7 @@ class Operator::CheckinsController < Operator::BaseController
   end
 
   def destroy
-    @checkin = Checkin.find(params[:id])
+    find_checkin
     authorize @checkin
 
     result = Checkins::Checkout.call(checkin: @checkin, datetime_out: Time.current)
@@ -72,6 +72,10 @@ class Operator::CheckinsController < Operator::BaseController
   end
 
   private
+
+  def find_checkin
+    @checkin = Checkin.find(params[:id])
+  end
 
   def find_checkins
     @checkins = current_tenant.checkins

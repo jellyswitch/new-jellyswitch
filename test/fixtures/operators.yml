@@ -71,7 +71,7 @@ cowork_tahoe:
   stripe_publishable_key: foobar
   stripe_refresh_token: foobar
   stripe_access_token: foobar
-  billing_state: production # TODO
+  billing_state: production
   ios_url: https://itunes.apple.com/us/app/cowork-tahoe-the-lab/id1457603889?mt=8
   android_url: https://play.google.com/store/apps/details?id=com.jellyswitch.coworktahoe&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1
   checkin_required: false

@@ -8,6 +8,6 @@ class Navigation::GeneralManager < Navigation::Default
   end
 
   def tab_paths
-    general_manager_tab_paths
+    admin_tab_paths
   end
 end
