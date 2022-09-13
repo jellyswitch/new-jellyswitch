@@ -9,15 +9,15 @@ class OperatorPolicy < ApplicationPolicy
   end
 
   def show?
-    superadmin? || operator?
+    (superadmin? || operator?)
   end
 
   def edit?
-    superadmin? || operator?
+    (superadmin? || operator?)
   end
 
   def update?
-    superadmin? || operator?
+    (superadmin? || operator?)
   end
 
   def create?

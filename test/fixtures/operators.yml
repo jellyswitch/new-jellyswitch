@@ -94,4 +94,4 @@ cowork_tahoe:
   childcare_enabled: false
   bulletin_board_enabled: true
   android_server_key: some_server_key
-  crm_enabled: false
+  crm_enabled: true

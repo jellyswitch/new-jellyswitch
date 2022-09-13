@@ -4,7 +4,6 @@ class AppConfigsPolicyTest < PolicyAssertions::Test
 
   setup do
     setup_initial_user_fixtures
-    @superadmin = users(:cowork_tahoe_superadmin)
   end
 
   def test_index

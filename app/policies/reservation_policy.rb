@@ -1,31 +1,31 @@
 # typed: true
 class ReservationPolicy < ApplicationPolicy
   def new?
-    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
+    (admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
   end
 
   def create?
-    admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
+    (admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
   end
 
   def show?
-    admin? || owner? || community_manager? || general_manager?
+    (admin? || owner? || community_manager? || general_manager?)
   end
 
   def destroy?
-    admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
+    (admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
   end
 
   def cancel?
-    admin? || community_manager? || general_manager? || (owner? && future?)
+    (admin? || community_manager? || general_manager? || (owner? && future?))
   end
 
   def long_duration?
-    admin? || community_manager? || general_manager?
+    (admin? || community_manager? || general_manager?)
   end
 
   def today?
-    admin? || community_manager? || general_manager?
+    (admin? || community_manager? || general_manager?)
   end
 
   private

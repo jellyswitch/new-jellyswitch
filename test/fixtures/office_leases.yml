@@ -1,0 +1,12 @@
+office_23b_lease:
+  operator: cowork_tahoe
+  organization: sierra_nevada_organization
+  office: office_23b
+  start_date: Sat, 01 Sep 2018
+  end_date: Wed, 14 Sep 2022
+  created_at: Fri, 19 Apr 2019 10:18:49.267605000 PDT -07:00
+  updated_at: Wed, 26 Feb 2020 09:24:43.627505000 PST -08:00
+  subscription: cowork_tahoe_subscription
+  initial_invoice_date: Wed, 01 May 2019
+  always_allow_building_access: true
+  location: cowork_tahoe

@@ -1,0 +1,48 @@
+require "test_helper"
+
+class OfficeLeasePolicyTest < PolicyAssertions::Test
+
+  setup do
+    setup_initial_user_fixtures
+  end
+
+  def test_index
+    assert_not_permitted @member, office_leases(:office_23b_lease)
+    assert_permit @admin, office_leases(:office_23b_lease)
+    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_permit @general_manager, office_leases(:office_23b_lease)
+    assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+
+  def test_show
+    assert_not_permitted @member, office_leases(:office_23b_lease)
+    assert_permit @admin, office_leases(:office_23b_lease)
+    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_permit @general_manager, office_leases(:office_23b_lease)
+    assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+
+  def test_new
+    assert_not_permitted @member, office_leases(:office_23b_lease)
+    assert_permit @admin, office_leases(:office_23b_lease)
+    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_permit @general_manager, office_leases(:office_23b_lease)
+    assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+
+  def test_create
+    assert_not_permitted @member, office_leases(:office_23b_lease)
+    assert_permit @admin, office_leases(:office_23b_lease)
+    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_permit @general_manager, office_leases(:office_23b_lease)
+    assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+
+  def test_destroy
+    assert_not_permitted @member, office_leases(:office_23b_lease)
+    assert_permit @admin, office_leases(:office_23b_lease)
+    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_permit @general_manager, office_leases(:office_23b_lease)
+    assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+end

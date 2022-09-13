@@ -50,7 +50,7 @@ cowork_tahoe_superadmin:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe
@@ -59,7 +59,7 @@ cowork_tahoe_superadmin:
   ios_token: some_token
   reset_digest: nil
   reset_sent_at: nil
-  card_added: false
+  card_added: true
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
@@ -80,7 +80,7 @@ cowork_tahoe_admin:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe
@@ -89,7 +89,7 @@ cowork_tahoe_admin:
   ios_token: some_token
   reset_digest: nil
   reset_sent_at: nil
-  card_added: false
+  card_added: true
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
@@ -110,7 +110,7 @@ cowork_tahoe_member:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe
@@ -140,7 +140,7 @@ cowork_tahoe_community_manager:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe
@@ -170,7 +170,7 @@ cowork_tahoe_general_manager:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe

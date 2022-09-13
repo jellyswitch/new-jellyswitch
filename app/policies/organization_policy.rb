@@ -33,30 +33,30 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def out_of_band?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def billing?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def payment_method?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def members?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def leases?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def invoices?
-    admin? || user.organization_owner?
+    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
   def ltv?
-    admin?
+    (admin? || community_manager? || superadmin? || general_manager?)
   end
 end

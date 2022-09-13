@@ -28,6 +28,6 @@ class LeadPolicy < ApplicationPolicy
   end
 
   def can_see?
-    (enabled? && admin? || community_manager? || general_manager?)
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 end

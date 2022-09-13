@@ -1,0 +1,10 @@
+room_reservation:
+  user: cowork_tahoe_member
+  datetime_in: Thu, 08 Sep 2022 10:00:00.000000000 PDT -07:00
+  hours: 30
+  room: small_meeting_room
+  created_at: Thu, 08 Sep 2022 10:19:41.194456000 PDT -07:00
+  updated_at: Thu, 08 Sep 2022 10:19:41.194456000 PDT -07:00
+  cancelled: false
+  minutes: 30
+  credit_cost: 0

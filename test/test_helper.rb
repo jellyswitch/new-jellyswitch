@@ -2,7 +2,8 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require "minitest/mock"
-require 'policy_assertions'
+require "policy_assertions"
+require "mocha/minitest"
 
 class ActiveSupport::TestCase
   # Run tests in parallel with specified workers
@@ -26,6 +27,7 @@ class ActiveSupport::TestCase
     @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe))
     @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe))
     @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe))
+    @superadmin = UserContext.new(users(:cowork_tahoe_superadmin), operators(:cowork_tahoe), locations(:cowork_tahoe))
   end
 end
 
