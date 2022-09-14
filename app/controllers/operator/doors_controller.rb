@@ -75,11 +75,11 @@ class Operator::DoorsController < Operator::BaseController
     respond_to do |format|
       format.html {
         if !untethered_ios_request?
-          response.headers["Turbolinks-Location"] = home_url
+          response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         else
           # unusual condition?
-          response.headers["Turbolinks-Location"] = home_url
+          response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         end
       }

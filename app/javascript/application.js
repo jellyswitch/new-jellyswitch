@@ -2,10 +2,10 @@
 
 import Rails from '@rails/ujs'
 import * as ActiveStorage from "@rails/activestorage"
-import Turbolinks from "turbolinks"
 
 import "trix"
 import "@rails/actiontext"
+import "@hotwired/turbo-rails"
 import "chartkick"
 import "Chart.bundle"
 import ahoy from "ahoy.js"
@@ -15,7 +15,6 @@ import 'bootstrap'
 Rails.start()
 window.Rails = Rails;
 ActiveStorage.start()
-Turbolinks.start()
 
 //https://stackoverflow.com/questions/46831525/how-to-keep-submit-buttons-disabled-on-remote-forms-until-the-next-page-has-load/46844912#46844912
 // This is to keep rails-ujs from re-enabling the checkout buttons on a turbolinks redirect
@@ -36,8 +35,9 @@ Turbolinks.start()
     })
 
     // Prevent button from being cached in disabled state
-    $doc.one('turbolinks:before-cache', function () {
+    $doc.one('turbo:before-cache', function () {
       $button.each(function () { Rails.enableElement(this) })
     })
   })
 })()
+

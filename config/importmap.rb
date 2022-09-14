@@ -31,3 +31,4 @@ pin "process", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/bro
 pin "util", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/util.js"
 pin "trix"
 pin "@rails/actiontext", to: "actiontext.js"
+pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true

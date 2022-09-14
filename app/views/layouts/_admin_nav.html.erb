@@ -1,5 +1,5 @@
 <nav class="navbar navbar-light bg-light">
-  <a class="navbar-brand" href="<%= feed_items_path %>" data-turbolinks-action="restore">
+  <a class="navbar-brand" href="<%= feed_items_path %>" data-turbo-action="restore">
     <%- if current_tenant.logo_image.attached? %>
       <%= image_tag current_tenant.logo_image, width: 30, height: 30 %>
     <%- end %>
