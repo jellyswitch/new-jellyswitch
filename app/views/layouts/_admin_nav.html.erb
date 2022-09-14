@@ -11,7 +11,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <% paths.each do |path| %>
-        <%= link_to path[:title], path[:path], class: "nav-link", data: { "turbolinks-action" => "restore"} %>
+        <%= link_to path[:title], path[:path], class: "nav-link", data: { "turbo-action" => "restore"} %>
       <% end %>
     </ul>
 

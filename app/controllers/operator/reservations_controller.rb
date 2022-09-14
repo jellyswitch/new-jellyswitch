@@ -21,7 +21,7 @@ class Operator::ReservationsController < Operator::BaseController
     else
       @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
     end
-    turbolinks_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
+    turbo_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
   end
 
   def choose_time

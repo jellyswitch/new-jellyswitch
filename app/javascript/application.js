@@ -17,7 +17,7 @@ window.Rails = Rails;
 ActiveStorage.start()
 
 //https://stackoverflow.com/questions/46831525/how-to-keep-submit-buttons-disabled-on-remote-forms-until-the-next-page-has-load/46844912#46844912
-// This is to keep rails-ujs from re-enabling the checkout buttons on a turbolinks redirect
+// This is to keep rails-ujs from re-enabling the checkout buttons on a turbo redirect
 
 ;(function () {
   var $doc = $(document)

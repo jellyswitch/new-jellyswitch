@@ -16,7 +16,6 @@ pin "rails-erb-loader", to: "https://ga.jspm.io/npm:rails-erb-loader@5.5.2/index
 pin "tempusdominus-bootstrap-4", to: "https://ga.jspm.io/npm:tempusdominus-bootstrap-4@5.1.2/build/js/tempusdominus-bootstrap-4.js"
 pin "tempusdominus-core", to: "https://ga.jspm.io/npm:tempusdominus-core@5.0.3/build/js/tempusdominus-core.js"
 pin "trix", to: "https://ga.jspm.io/npm:trix@1.2.0/dist/trix.js"
-pin "turbolinks", to: "https://ga.jspm.io/npm:turbolinks@5.2.0/dist/turbolinks.js"
 pin "big.js", to: "https://ga.jspm.io/npm:big.js@5.2.2/big.js"
 pin "buffer", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/buffer.js"
 pin "child_process", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/child_process.js"
