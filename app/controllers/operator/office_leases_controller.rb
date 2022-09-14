@@ -35,13 +35,13 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Office lease created."
-      turbolinks_redirect(office_lease_path(result.office_lease))
+      turbo_redirect(office_lease_path(result.office_lease))
     else
       flash[:error] = result.message
       find_organizations
       find_offices
       find_plans
-      turbolinks_redirect(new_office_lease_path, action: "replace")
+      turbo_redirect(new_office_lease_path, action: "replace")
     end
   end
 
@@ -59,7 +59,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    turbolinks_redirect(office_lease_path(@office_lease), action: "replace")
+    turbo_redirect(office_lease_path(@office_lease), action: "replace")
   end
 
   private

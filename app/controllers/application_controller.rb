@@ -25,7 +25,7 @@ class ApplicationController < ActionController::Base
     request.referrer || root_path
   end
 
-  def turbolinks_redirect(path, action: "replace")
+  def turbo_redirect(path, action: "replace")
     @redirect_path = path
 
     @action = action

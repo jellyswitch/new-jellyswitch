@@ -37,10 +37,10 @@ class Operator::LandingController < Operator::BaseController
       if result.success?
         # redirect to home
         flash[:success] = "Welcome!"
-        turbolinks_redirect(home_path, action: "restore")
+        turbo_redirect(home_path, action: "restore")
       else
         flash[:error] = result.message
-        turbolinks_redirect(activate_path, action: "restore")
+        turbo_redirect(activate_path, action: "restore")
       end
     else
       include_stripe
@@ -66,14 +66,14 @@ class Operator::LandingController < Operator::BaseController
       if result2.success?
         # redirect to home
         flash[:success] = "Welcome!"
-        turbolinks_redirect(home_path, action: "restore")
+        turbo_redirect(home_path, action: "restore")
       else
         flash[:error] = result2.message
-        turbolinks_redirect(activate_path, action: "restore")
+        turbo_redirect(activate_path, action: "restore")
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(activate_path, action: "restore")
+      turbo_redirect(activate_path, action: "restore")
     end
   end
 

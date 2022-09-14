@@ -70,7 +70,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   def new_users_get_free_day_pass
@@ -82,7 +82,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   def visible
@@ -94,7 +94,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   private

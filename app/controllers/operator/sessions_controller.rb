@@ -23,19 +23,19 @@ class Operator::SessionsController < Operator::BaseController
       remember(result.user)
       if untethered_ios_request?
         # Redirect to door access path instead of landing path
-        turbolinks_redirect(mobile_door_access_path, action: "restore")
+        turbo_redirect(mobile_door_access_path, action: "restore")
       else
-        turbolinks_redirect(landing_path, action: "restore")
+        turbo_redirect(landing_path, action: "restore")
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(login_path, action: "replace")
+      turbo_redirect(login_path, action: "replace")
     end
 
   end
 
   def destroy
     log_out
-    turbolinks_redirect(root_path, action: "restore")
+    turbo_redirect(root_path, action: "restore")
   end
 end

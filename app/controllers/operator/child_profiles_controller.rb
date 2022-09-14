@@ -17,10 +17,10 @@ class Operator::ChildProfilesController < Operator::BaseController
 
     if @child_profile.save
       flash[:success] = "Profile added."
-      turbolinks_redirect(child_profile_path(@child_profile), action: "replace")
+      turbo_redirect(child_profile_path(@child_profile), action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(new_child_profile_path, action: "replace")
+      turbo_redirect(new_child_profile_path, action: "replace")
     end
   end
 
@@ -35,10 +35,10 @@ class Operator::ChildProfilesController < Operator::BaseController
 
     if @child_profile.update(child_profile_params)
       flash[:success] = "Profile updated."
-      turbolinks_redirect(child_profile_path(@child_profile), action: "replace")
+      turbo_redirect(child_profile_path(@child_profile), action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(child_profile_path(@child_profile), action: "replace")
+      turbo_redirect(child_profile_path(@child_profile), action: "replace")
     end
   end
 

@@ -10,19 +10,19 @@ class SessionsController < ApplicationController
 
     if users.count < 1
       flash[:error] = "No such user found."
-      turbolinks_redirect(new_session_path)
+      turbo_redirect(new_session_path)
     elsif users.count == 1
       if users.first.superadmin?
         # redirect to password form
         session[:email] = users.first.email
-        turbolinks_redirect(password_form_path)
+        turbo_redirect(password_form_path)
       else
-        turbolinks_redirect( landing_url(subdomain: users.first.operator.subdomain) )
+        turbo_redirect( landing_url(subdomain: users.first.operator.subdomain) )
       end
     else
       # redirect to choose_operator
       session[:email] = params[:session][:email].downcase
-      turbolinks_redirect(choose_operator_path)
+      turbo_redirect(choose_operator_path)
     end
   end
 
@@ -38,7 +38,7 @@ class SessionsController < ApplicationController
     @user = User.find_by(email: email, superadmin: true)
     if @user.blank?
       flash[:error] = "No such user."
-      turbolinks_redirect(new_session_path)
+      turbo_redirect(new_session_path)
     end
   end
 
@@ -51,12 +51,12 @@ class SessionsController < ApplicationController
       redirect_to operators_path
     else
       flash[:error] = "Invalid email/password combination."
-      turbolinks_redirect(password_form_path)
+      turbo_redirect(password_form_path)
     end
   end
 
   def destroy
     log_out
-    turbolinks_redirect(root_path, action: "restore")
+    turbo_redirect(root_path, action: "restore")
   end
 end

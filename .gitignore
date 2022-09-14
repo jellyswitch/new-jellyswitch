@@ -50,3 +50,4 @@ yarn-debug.log*
 .production-env
 
 /config/credentials/development.key
+.byebug_history
