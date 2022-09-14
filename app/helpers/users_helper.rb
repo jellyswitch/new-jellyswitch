@@ -14,7 +14,7 @@ module UsersHelper
   end
 
   def find_approved_users
-    @users = User.for_space(current_tenant).approved.visible.order("name")
+    @pagy, @users = pagy(User.for_space(current_tenant).approved.visible.order("name"))
   end
 
   def find_unapproved_users
@@ -22,7 +22,7 @@ module UsersHelper
   end
 
   def find_archived_users
-    @users = User.for_space(current_tenant).archived.order("name")
+    @pagy, @users = pagy(User.for_space(current_tenant).archived.order("name"))
   end
 
   def approval_redirect_path

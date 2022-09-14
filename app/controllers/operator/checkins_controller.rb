@@ -74,6 +74,6 @@ class Operator::CheckinsController < Operator::BaseController
   private
 
   def find_checkins
-    @checkins = current_tenant.checkins
+    @pagy, @checkins = pagy(current_tenant.checkins)
   end
 end
