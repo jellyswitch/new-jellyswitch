@@ -1,4 +1,4 @@
-<%= javascript_pack_tag "stripe_handler.js" %>
+<%= javascript_include_tag "stripe_handler.js" %>
 
 <%= form_with(url: update_billing_and_create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), remote: true, html: {id: "stripe-form" }) do |f| %>
   <div class="form-group row">
