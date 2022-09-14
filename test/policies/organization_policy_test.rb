@@ -79,6 +79,7 @@ class OrganizationPolicyTest < PolicyAssertions::Test
     assert_permit @superadmin, Organization
   end
 
+  # to-do test currently fails because of card_added? returns false
   # def test_credit_card
   #   assert_not_permitted @member, organizations(:sierra_nevada_organization)
   #   assert_permit @admin, organizations(:sierra_nevada_organization)

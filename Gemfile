@@ -67,7 +67,6 @@ end
 group :test do
   gem 'capybara', '>= 3.2.6'
   gem 'ffi'
-  gem 'policy-assertions'
   gem 'selenium-webdriver'
   gem 'webdrivers', '~> 3.0'
 end
@@ -77,6 +76,7 @@ group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'factory_bot_rails', '~> 5.0.1'
   gem 'mocha', '~> 1.14'
+  gem 'policy-assertions'
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rails-controller-testing'

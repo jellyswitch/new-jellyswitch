@@ -1,11 +1,11 @@
 # typed: true
 class ReservationPolicy < ApplicationPolicy
   def new?
-    (admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
+    (admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
   end
 
   def create?
-    (admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
+    (admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
   end
 
   def show?
