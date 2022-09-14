@@ -22,9 +22,9 @@
 #  index_subscriptions_on_subscribable_type_and_subscribable_id  (subscribable_type,subscribable_id)
 #
 cowork_tahoe_subscription:
-  plan: cowork_tahoe_plan
+  plan: cowork_tahoe_full_time_plan
   active: true
-  stripe_subscription_id: sub_1La6d0EV6H9PcOfBMglTSlmH
+  stripe_subscription_id: nil
   subscribable_type: User
   subscribable: cowork_tahoe_member
   pending: false

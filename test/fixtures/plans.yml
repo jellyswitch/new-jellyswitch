@@ -53,8 +53,8 @@ cowork_tahoe_full_time_plan:
  operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
- has_day_limit: true
- day_limit: 10
+ has_day_limit: false
+ day_limit: 0
  credits: 0
  commitment_interval: nil
  childcare_reservations: 0
