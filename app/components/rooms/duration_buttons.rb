@@ -9,6 +9,10 @@ class Rooms::DurationButtons < ApplicationComponent
     @user = user
   end
 
+  def allow_shorter_reservation_duration?
+    room.allow_shorter_reservation_duration?
+  end
+
   private
 
   attr_reader :room, :datetime_in, :day, :hour, :user
