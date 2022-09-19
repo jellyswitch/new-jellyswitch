@@ -15,7 +15,7 @@ class OrganizationPolicyTest < PolicyAssertions::Test
     customer = Stripe::Customer.create({
                                          email: @organization.email
                                        }, {
-                                         api_key: @organization.operator.stripe_secret_key,
+                                         api_key: @organization.operator.stripe_secret_key.to_s,
                                          stripe_account: @organization.operator.stripe_user_id
                                        })
 
