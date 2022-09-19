@@ -9,7 +9,14 @@
   
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit "Add card and confirm reservation", id: 'stripe-submit', class: "form-control btn btn-primary col", data: { acc: 'add-payment', disable_with: "Reserving..." } %>
+    <button class="form-control btn btn-primary col" id="stripe-submit" data-acc="add-payment">
+      <span class="show-when-enabled">
+        Add card and confirm reservation
+      </span>
+      <span class="show-when-disabled">
+        Reserving...
+      </span>
+    </button>
     <div class="col-1"></div>
   </div>
 <% end %>
