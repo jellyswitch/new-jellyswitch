@@ -84,6 +84,10 @@ class Room < ApplicationRecord
 
   # Instance Methods
 
+  def lowest_duration
+    allow_shorter_reservation_duration ? 30 : 240
+  end
+
   def square_photo
     photo.variant(resize: "300x300")
   end
