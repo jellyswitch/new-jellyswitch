@@ -1,4 +1,4 @@
-<%= javascript_pack_tag "stripe_handler.js" %>
+<%= javascript_include_tag "stripe_handler.js" %>
 
 <%= form_for(day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
   <div class="form-group row">
@@ -40,6 +40,13 @@
   <% end %>
 
   <div class="form-group row">
-    <%= f.submit label, id: 'stripe-submit', class: "form-control btn btn-primary col ml-3 mr-3", data: { acc: 'add-payment', disable_with: "Processing..." } %>
+    <button class="form-control btn btn-primary col ml-3 mr-3" id="stripe-submit" data-acc="add-payment">
+      <span class="show-when-enabled">
+        <%= label %>
+      </span>
+      <span class="show-when-disabled">
+        Processing...
+      </span>
+    </button>
   </div>
 <% end %>

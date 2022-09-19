@@ -12,6 +12,22 @@ module FeedItemsHelper
     end
   end
 
+  def feed_item_turbo_value
+    if mobile_app_request?
+      if untethered_ios_request?
+        "true"
+      else
+        if ios_request?
+          "false"
+        else
+          "false"
+        end
+      end
+    else
+      "true"
+    end
+  end
+
   private
 
   def new_feed_item

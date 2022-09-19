@@ -5,7 +5,7 @@
     <div class="input-group">
       <%= f.text_field :email, placeholder: "Enter your email address", class: "form-control" %>
       <div class="input-group-append">
-        <%= f.submit "Begin onboarding", class: "btn btn-primary", data: {disable_with: "Starting..."} %>
+        <%= f.submit "Begin onboarding", class: "btn btn-primary", data: {turbo: "false", disable_with: "Starting..."} %>
       </div>
     </div>
   <% end %>

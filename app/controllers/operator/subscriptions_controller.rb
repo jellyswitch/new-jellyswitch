@@ -41,15 +41,15 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_tenant.name}!"
-      turbolinks_redirect(root_path)
+      turbo_redirect(root_path)
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def edit
@@ -71,14 +71,14 @@ class Operator::SubscriptionsController < Operator::BaseController
     if result.success?
       if admin?
         flash[:success] = "Membership updated."
-        turbolinks_redirect(user_path(@subscription.subscribable))
+        turbo_redirect(user_path(@subscription.subscribable))
       else
         flash[:success] = "Your membership has been updated"
-        turbolinks_redirect(home_path)
+        turbo_redirect(home_path)
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   end
 
@@ -86,9 +86,9 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
 
-    result = CancelSubscription.call(
+    result = SetSubscriptionForCancellation.call(
       subscription: @subscription,
-      blob: { text: "#{current_user.name} canceled their membership", type: "post" },
+      blob: { text: "#{@subscription.subscribable.name} canceled their membership", type: "post" },
       user: current_tenant.users.admins.first,
       operator: current_tenant,
       notifiable: current_tenant.users.admins
@@ -96,15 +96,15 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership cancelled."
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private

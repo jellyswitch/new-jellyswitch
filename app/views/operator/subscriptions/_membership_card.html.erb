@@ -20,6 +20,22 @@
   </dd>
 </dl>
 
+<dl class="row mt-3">
+  <dt class="col-6">Set to Cancel at Billing Period End?</dt>
+  <dd class="col">
+  <% if subscription.cancelling_at_end_of_billing_period? %>
+      <span class="badge badge-warning">
+        Yes,
+        <% if subscription.has_period_end? %>
+          <%= short_date(subscription.current_period_end) %>
+        <% end %>
+      </span>
+    <% else %>
+      <span class="badge badge-success">No</span>
+    <% end %>
+  </dd>
+</dl>
+
 
 <dl class="row mt-3">
   <dt class="col-6">Price</dt>

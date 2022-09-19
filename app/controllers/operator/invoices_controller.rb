@@ -51,7 +51,7 @@ class Operator::InvoicesController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(referrer_or_root, action: "replace")
+    turbo_redirect(referrer_or_root, action: "replace")
   end
 
   def new
@@ -63,14 +63,14 @@ class Operator::InvoicesController < Operator::BaseController
       @billable = current_tenant.organizations.find(params[:organization_id])
     else
       flash[:error] = "Create a new invoice from a member or group's profile."
-      turbolinks_redirect(invoices_path, action: "replace")
+      turbo_redirect(invoices_path, action: "replace")
     end
 
     @invoice = @billable.invoices.new
 
     unless @billable
       flash[:error] = "Create a new invoice from a customer's profile page."
-      turbolinks_redirect(invoices_path, action: "replace")
+      turbo_redirect(invoices_path, action: "replace")
     end
   end
 
@@ -83,7 +83,7 @@ class Operator::InvoicesController < Operator::BaseController
       @billable = current_tenant.organizations.find(params[:billable_id])
     else
       flash[:error] = "No such member or group."
-      turbolinks_redirect(root_path)
+      turbo_redirect(root_path)
     end
 
     if @billable
@@ -95,7 +95,7 @@ class Operator::InvoicesController < Operator::BaseController
 
       if result.success?
         flash[:success] = "Invoice created."
-        turbolinks_redirect(billable_path(@billable))
+        turbo_redirect(billable_path(@billable))
       else
         flash[:error] = result.message
         @invoice = @billable.invoices.new
@@ -103,7 +103,7 @@ class Operator::InvoicesController < Operator::BaseController
       end
     else
       flash[:error] = "No such member or group."
-      turbolinks_redirect(root_path)
+      turbo_redirect(root_path)
     end
   end
 

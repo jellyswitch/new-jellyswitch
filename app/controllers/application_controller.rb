@@ -11,7 +11,7 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
 
   def user_not_authorized
-    flash[:alert] = "Whoops! That's not allowed. If this isn't what you were expecting, please contact #{current_location.contact_name} by calling #{current_location.contact_phone}."
+    flash[:alert] = "Whoops! That's not allowed. If this isn't what you were expecting, please contact our staff."
     redirect_to referrer_or_root
   end
 
@@ -25,15 +25,15 @@ class ApplicationController < ActionController::Base
     request.referrer || root_path
   end
 
-  def turbolinks_redirect(path, action: "replace")
+  def turbo_redirect(path, action: "replace")
     @redirect_path = path
 
     @action = action
     flash.keep
-    response.headers["Turbolinks-Location"] = path
+    response.headers["Turbo-Location"] = path
     respond_to do |format|
       format.js do
-        render "shared/turbolinks_redirect.js.erb"
+        render "shared/turbo_redirect"
       end
       format.html do
         redirect_to path

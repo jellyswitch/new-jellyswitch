@@ -30,13 +30,13 @@ class Operator::PlansController < Operator::BaseController
     if result.success?
       flash[:notice] = "Plan saved."
       if params[:add_plan_and_add_another].present?
-        turbolinks_redirect(new_plan_path, action: "replace")
+        turbo_redirect(new_plan_path, action: "replace")
       else
-        turbolinks_redirect(plan_path(@plan))
+        turbo_redirect(plan_path(@plan))
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_plan_path)
+      turbo_redirect(new_plan_path)
     end
   end
 
@@ -56,7 +56,7 @@ class Operator::PlansController < Operator::BaseController
 
     if @plan.update(plan_update_params)
       flash[:notice] = "Plan updated."
-      turbolinks_redirect(plan_path(@plan))
+      turbo_redirect(plan_path(@plan))
     else
       render :edit, status: 422
     end
@@ -69,15 +69,15 @@ class Operator::PlansController < Operator::BaseController
     @plan.update(available: false)
     if @plan.save
       flash[:notice] = "Plan archived."
-      turbolinks_redirect(plans_path)
+      turbo_redirect(plans_path)
     else
       flash[:error] = "Unable to archive plan: #{@plan.name}"
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def unarchive
@@ -89,11 +89,11 @@ class Operator::PlansController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    turbolinks_redirect(plans_path, action: "advance")
+    turbo_redirect(plans_path, action: "advance")
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def toggle_visibility
@@ -105,7 +105,7 @@ class Operator::PlansController < Operator::BaseController
     if !result.success?
       flash[:error] = result.message
     end
-    turbolinks_redirect(plan_path(@plan), action: "replace")
+    turbo_redirect(plan_path(@plan), action: "replace")
   end
 
   def toggle_availability
@@ -117,7 +117,7 @@ class Operator::PlansController < Operator::BaseController
     if !result.success?
       flash[:error] = result.message
     end
-    turbolinks_redirect(plan_path(@plan), action: "replace")
+    turbo_redirect(plan_path(@plan), action: "replace")
   end
 
   def toggle_building_access
@@ -129,7 +129,7 @@ class Operator::PlansController < Operator::BaseController
     if !result.success?
       flash[:error] = result.message
     end
-    turbolinks_redirect(plan_path(@plan), action: "replace")
+    turbo_redirect(plan_path(@plan), action: "replace")
   end
 
   private

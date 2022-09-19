@@ -12,6 +12,10 @@ class Operator::CheckinsController < Operator::BaseController
     @checkin = Checkin.new
     authorize @checkin
     include_stripe
+
+    if current_location.blank?
+      redirect_to root_path
+    end
   end
 
   def create
@@ -35,10 +39,10 @@ class Operator::CheckinsController < Operator::BaseController
     end
 
     if result.success?
-      turbolinks_redirect(home_path, action: "replace")
+      turbo_redirect(home_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root, action: "replace")
+      turbo_redirect(referrer_or_root, action: "replace")
     end
   end
 
@@ -60,16 +64,16 @@ class Operator::CheckinsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "You've checked out."
-      turbolinks_redirect(home_path, action: "replace")
+      turbo_redirect(home_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root, action: "replace")
+      turbo_redirect(referrer_or_root, action: "replace")
     end
   end
 
   private
 
   def find_checkins
-    @checkins = current_tenant.checkins
+    @pagy, @checkins = pagy(current_tenant.checkins)
   end
 end

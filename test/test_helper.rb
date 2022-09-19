@@ -2,6 +2,7 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require "minitest/mock"
+require_relative './clearance_helper'
 
 class ActiveSupport::TestCase
   # Run tests in parallel with specified workers
@@ -23,6 +24,7 @@ end
 
 class ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
+  include ClearanceHelper
 
   def default_env
     @default_env ||= { 'HTTP_USER_AGENT' => 'Something safari something else' }
@@ -30,12 +32,6 @@ class ActionDispatch::IntegrationTest
 
   def ios_env
     @default_env ||= { 'HTTP_USER_AGENT' => 'something Jellyswitch something else deviceToken: abcdef12345' }
-  end
-
-  def log_in(user)
-    user.update(password: 'password')
-    ActsAsTenant.default_tenant = user.operator
-    post login_path( params: { session: { email: user.email, password: 'password' } } )
   end
 end
 

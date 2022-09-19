@@ -13,7 +13,7 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     @subscription = new_subscription
     @user = User.find(subscription_params[:subscribable_id])
 
-    turbolinks_redirect(
+    turbo_redirect(
       choose_start_date_operator_admin_subscriptions_path(plan_id: subscription_params[:plan_id], subscribable_id: subscription_params[:subscribable_id]),
        action: "replace")
   end
@@ -58,15 +58,15 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership created."
-      turbolinks_redirect(user_path(@subscription.subscribable))
+      turbo_redirect(user_path(@subscription.subscribable))
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def destroy
@@ -79,15 +79,15 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership cancelled."
-      turbolinks_redirect(user_path(@subscription.subscribable))
+      turbo_redirect(user_path(@subscription.subscribable))
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private

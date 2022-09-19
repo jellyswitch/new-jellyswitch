@@ -13,7 +13,12 @@ class Operator::BaseController < ApplicationController
 
   def set_tenant_based_on_subdomain
     subdomain = request.subdomains.first.downcase
-    set_current_tenant(Operator.where(subdomain: subdomain).first)
+    return unless subdomain.present?
+
+    operator = Operator.find_by(subdomain: subdomain)
+    return unless operator.present?
+
+    set_current_tenant(operator)
   end
 
   def background_image
@@ -62,9 +67,6 @@ class Operator::BaseController < ApplicationController
   def set_resource_scopes
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]
-      if current_tenant.nil? || current_location.nil?
-        Honeybadger.notify("ActsAsScopable.current_scope_resources failed to preload properly", current_tenant: current_tenant&.id, current_location: current_location&.id)
-      end
     end
 
     if current_tenant.blank?

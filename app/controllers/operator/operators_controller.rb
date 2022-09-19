@@ -26,7 +26,7 @@ class Operator::OperatorsController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def stripe_connect_setup
@@ -50,7 +50,7 @@ class Operator::OperatorsController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def approval_required
@@ -61,7 +61,7 @@ class Operator::OperatorsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
+    turbo_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
   end
 
   def checkin_required
@@ -72,7 +72,7 @@ class Operator::OperatorsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
+    turbo_redirect(operator_path(@operator, subdomain: @operator.subdomain), action: "replace")
   end
 
   private

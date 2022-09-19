@@ -21,7 +21,7 @@ class Operator::ReservationsController < Operator::BaseController
     else
       @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
     end
-    turbolinks_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
+    turbo_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
   end
 
   def choose_time
@@ -79,16 +79,16 @@ class Operator::ReservationsController < Operator::BaseController
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       if current_user.approved?
-        turbolinks_redirect(reservation_path(@reservation), action: "restore")
+        turbo_redirect(reservation_path(@reservation), action: "restore")
       else
-        turbolinks_redirect(wait_path, action: "restore")
+        turbo_redirect(wait_path, action: "restore")
       end
     else
       flash[:error] = result.message
       if current_user.approved?
-        turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
+        turbo_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
       else
-        turbolinks_redirect(wait_path, action: "restore")
+        turbo_redirect(wait_path, action: "restore")
       end
     end
 
@@ -113,10 +113,10 @@ class Operator::ReservationsController < Operator::BaseController
     
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
-      turbolinks_redirect(reservation_path(@reservation), action: "restore")
+      turbo_redirect(reservation_path(@reservation), action: "restore")
     else
       flash[:error] = result.message
-      turbolinks_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
+      turbo_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
     end
   end
 
@@ -128,15 +128,15 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reservation cancelled."
-      turbolinks_redirect(root_path)
+      turbo_redirect(root_path)
     else
       flash[:error] = result.message
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def today

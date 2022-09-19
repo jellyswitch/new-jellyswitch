@@ -12,12 +12,11 @@ require "view_component/engine"
 module Jellyswitch
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
-    # config.autoloader = :classic
+    config.load_defaults 7.0
 
     # Autoload paths
-    config.eager_load_paths << Rails.root.join('lib')
-    config.autoload_paths << Rails.root.join('lib')
+    config.eager_load_paths << "#{config.root}/lib"
+    config.autoload_paths << "#{config.root}/lib"
 
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration can go into files in config/initializers

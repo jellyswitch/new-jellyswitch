@@ -44,7 +44,7 @@
 
 <script type="text/javascript">
   
-  document.addEventListener("turbolinks:load", () => {
+  document.addEventListener("turbo:load", () => {
     var callback = function(e) {
       $("#ends_at").datetimepicker('minDate', $("#starts_at").datetimepicker('viewDate'));
     };
