@@ -38,7 +38,7 @@
 
       <% if invoice.paid?  %>
         <div class="clearfix mb-1"></div>
-        <% if current_user.admin? || current_user.superadmin? || current_user.general_manager? %>
+        <% if policy(:invoice).create? %>
           <%= button_to "Refund", invoice_refunds_path(invoice), remote: true, data: {disable_with: "Refunding..."}, class: "btn btn-block btn-secondary" %>
         <% end %>
       <% end %>
