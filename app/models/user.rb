@@ -81,11 +81,11 @@ class User < ApplicationRecord
   scope :unapproved, -> { where(approved: false) }
   scope :archived, -> { where(archived: true) }
   scope :visible, -> { where(archived: false) }
-  scope :members, -> { where(role: 'unassigned') }
-  scope :admins, -> { where(role: 'admin') }
-  scope :non_superadmins, -> { where.not(role: 'superadmin') }
+  scope :members, -> { where(role: User::UNASSIGNED) }
+  scope :admins, -> { where(role: User::ADMIN) }
+  scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
-  scope :superadmins, -> { where(role: 'superadmin') }
+  scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
   # Permissions
@@ -123,7 +123,7 @@ class User < ApplicationRecord
   SUPERADMIN        = 'superadmin'.freeze
 
   def self.role_options_for_select
-    roles.reject{|r| r == 'superadmin' }.map { |r| [r.titleize, r] }
+    roles.reject{|r| r == User::SUPERADMIN }.map { |r| [r.titleize, r] }
   end
 
   def self.roles
