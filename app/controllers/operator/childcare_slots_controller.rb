@@ -15,10 +15,10 @@ class Operator::ChildcareSlotsController < Operator::BaseController
     @childcare_slot = current_location.childcare_slots.new(childcare_slot_params)
 
     if @childcare_slot.save
-      turbolinks_redirect(childcare_slots_path, action: "replace")
+      turbo_redirect(childcare_slots_path, action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(new_childcare_slot_path, action: "replace")
+      turbo_redirect(new_childcare_slot_path, action: "replace")
     end
   end
 
@@ -38,10 +38,10 @@ class Operator::ChildcareSlotsController < Operator::BaseController
 
     if @childcare_slot.update(childcare_slot_params)
       flash[:success] = "Availability updated."
-      turbolinks_redirect(childcare_slot_path(@childcare_slot), action: "replace")
+      turbo_redirect(childcare_slot_path(@childcare_slot), action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(edit_childcare_slot_path(@childcare_slot), action: "replace")
+      turbo_redirect(edit_childcare_slot_path(@childcare_slot), action: "replace")
     end
   end
 
@@ -50,10 +50,10 @@ class Operator::ChildcareSlotsController < Operator::BaseController
     authorize @childcare_slot
 
     if @childcare_slot.update(deleted: true)
-      turbolinks_redirect(childcare_slots_path, action: "replace")
+      turbo_redirect(childcare_slots_path, action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(childcare_slot_path(@childcare_slot), action: "replace")
+      turbo_redirect(childcare_slot_path(@childcare_slot), action: "replace")
     end
   end
 

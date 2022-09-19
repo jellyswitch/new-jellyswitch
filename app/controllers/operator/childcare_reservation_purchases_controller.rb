@@ -18,10 +18,10 @@ class Operator::ChildcareReservationPurchasesController < Operator::BaseControll
 
     if result.success?
       flash[:success] = "Your account balance has been credited with #{@amount} childcare reservations."
-      turbolinks_redirect(home_path, action: "replace")
+      turbo_redirect(home_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_childcare_reservation_purchase_path, action: "replace")
+      turbo_redirect(new_childcare_reservation_purchase_path, action: "replace")
     end
   end
 

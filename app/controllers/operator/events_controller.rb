@@ -33,7 +33,7 @@ class Operator::EventsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Event created."
-      turbolinks_redirect(event_path(result.event), action: "replace")
+      turbo_redirect(event_path(result.event), action: "replace")
     else
       flash[:error] = result.message
       @event = Event.new(event_params)
@@ -58,7 +58,7 @@ class Operator::EventsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Event updated."
-      turbolinks_redirect(event_path(result.event), action: "replace")
+      turbo_redirect(event_path(result.event), action: "replace")
     else
       flash[:error] = result.message
       render :edit
@@ -73,10 +73,10 @@ class Operator::EventsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Event cancelled."
-      turbolinks_redirect(events_path, action: "replace")
+      turbo_redirect(events_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(event_path(@event), action: "replace")
+      turbo_redirect(event_path(@event), action: "replace")
     end
   end
 

@@ -15,7 +15,7 @@
         <div class="modal-content">
           <div class="modal-body">
             <%= render "operator/subscriptions/admin_form", user: user %>
-            <%= javascript_pack_tag "stripe_handler.js" %>
+            <%= javascript_include_tag "stripe_handler.js" %>
 
             <%= render "operator/users/payment_disclaimer", user: user %>
 
@@ -101,7 +101,7 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <div class="modal-body">
-                  <%= javascript_pack_tag "stripe_handler.js" %>
+                  <%= javascript_include_tag "stripe_handler.js" %>
 
                   <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
                     <%= render "shared/error_messages", model: subscription %>

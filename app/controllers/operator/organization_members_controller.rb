@@ -11,7 +11,7 @@ class Operator::OrganizationMembersController < Operator::BaseController
       flash[:error] = "Could not add members."
     end
 
-    turbolinks_redirect(organization_path(organization))
+    turbo_redirect(organization_path(organization))
   end
 
   private

@@ -16,11 +16,11 @@ class Operator::FeedItemCommentsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(feed_item_path(@feed_item))
+    turbo_redirect(feed_item_path(@feed_item))
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private

@@ -13,7 +13,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     
     if result.success?
       flash[:success] = "Thank you for your feedback!"
-      turbolinks_redirect(home_path, action: "restore")
+      turbo_redirect(home_path, action: "restore")
     else
       flash[:error] = result.message
       background_image
@@ -22,7 +22,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def index

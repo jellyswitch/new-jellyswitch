@@ -18,10 +18,10 @@ class Operator::CreditPurchasesController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Your account has been credited with #{@amount} credits."
-      turbolinks_redirect(home_path, action: "replace")
+      turbo_redirect(home_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_credit_purchase_path, action: "replace")
+      turbo_redirect(new_credit_purchase_path, action: "replace")
     end
   end
 

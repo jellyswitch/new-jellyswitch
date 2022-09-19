@@ -12,11 +12,11 @@ class Operator::SetLocationController < Operator::BaseController
     unset_location
     set_location(location)
     
-    turbolinks_redirect(root_path)
+    turbo_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e
     Honeybadger.notify(e)
     flash[:error] = 'There was a problem finding that location.'
-    turbolinks_redirect(root_path)
+    turbo_redirect(root_path)
   end
 
   private
