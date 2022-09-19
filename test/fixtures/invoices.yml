@@ -8,6 +8,7 @@ member_invoice:
   operator: cowork_tahoe
   due_date: Tue, 05 Mar 2019 11:21:56.445141000 PST -08:00
   billable_type: User
+  billable: cowork_tahoe_member
 
 paid_invoice:
   id: 101
@@ -19,4 +20,3 @@ paid_invoice:
   operator: operators(:cowork_tahoe)
   billable_type: "User"
   billable: users(:cowork_tahoe_member)
-  billable: cowork_tahoe_member
