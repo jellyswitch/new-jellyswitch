@@ -19,7 +19,14 @@
     <%= form_with(url: credit_purchases_path, method: :post) do |f| %>
       <%= f.hidden_field :amount, value: @amount %>
     
-      <%= f.submit "Confirm Purchase", class: "btn btn-block btn-primary", data: {disable_with: "Purchasing..."} %>
+      <button class="btn btn-primary" id="submit">
+        <span class="show-when-enabled">
+          Confirm Purchase
+        </span>
+        <span class="show-when-disabled">
+          Purchasing...
+        </span>
+      </button>
     <% end %>
   <% end %>
 <% end %>
