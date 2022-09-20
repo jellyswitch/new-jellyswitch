@@ -13,7 +13,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     
     if result.success?
       flash[:success] = "Thank you for your feedback!"
-      turbo_redirect(home_path, action: "restore")
+      turbo_redirect(home_path, action: restore_if_possible)
     else
       flash[:error] = result.message
       background_image

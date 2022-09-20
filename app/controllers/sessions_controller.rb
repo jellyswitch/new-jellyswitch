@@ -57,6 +57,6 @@ class SessionsController < ApplicationController
 
   def destroy
     log_out
-    turbo_redirect(root_path, action: "restore")
+    turbo_redirect(root_path, action: restore_if_possible)
   end
 end
