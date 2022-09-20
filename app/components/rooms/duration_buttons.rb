@@ -19,7 +19,7 @@ class Rooms::DurationButtons < ApplicationComponent
     duration_options = [30, 60, 90, 120, 180, 240, 480]
 
     all_durations.each do |duration|
-      if room.available_at?(datetime_in + duration.minutes)
+      if room.available_at?(datetime_in + (duration.minutes - 1))
         available_durations << duration
       else
         break

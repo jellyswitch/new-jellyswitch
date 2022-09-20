@@ -1,6 +1,3 @@
-<% if room.available_at?(datetime_in) && allow_shorter_reservation_duration? %>
-  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 30) %>
-<% end %>
 <% find_available_durations.each do |duration| %>
   <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: (duration)) %>
 <% end %>
