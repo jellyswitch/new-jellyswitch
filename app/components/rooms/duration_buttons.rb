@@ -16,6 +16,7 @@ class Rooms::DurationButtons < ApplicationComponent
   def find_available_durations
     available_durations = []
     all_durations = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480]
+    duration_options = [30, 60, 90, 120, 180, 240, 480]
 
     all_durations.each do |duration|
       if room.available_at?(datetime_in + duration.minutes)
@@ -25,9 +26,9 @@ class Rooms::DurationButtons < ApplicationComponent
       end
     end
 
-    if allow_shorter_reservation_duration?
-      available_durations
-    else
+    available_durations = available_durations.keep_if { |duration| duration_options.include?(duration) }
+
+    if !allow_shorter_reservation_duration?
       available_durations = available_durations.keep_if { |duration| duration >= 240 }
     end
 
