@@ -79,16 +79,16 @@ class Operator::ReservationsController < Operator::BaseController
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       if current_user.approved?
-        turbo_redirect(reservation_path(@reservation), action: "restore")
+        turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
       else
-        turbo_redirect(wait_path, action: "restore")
+        turbo_redirect(wait_path, action: restore_if_possible)
       end
     else
       flash[:error] = result.message
       if current_user.approved?
         turbo_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")
       else
-        turbo_redirect(wait_path, action: "restore")
+        turbo_redirect(wait_path, action: restore_if_possible)
       end
     end
 
@@ -113,7 +113,7 @@ class Operator::ReservationsController < Operator::BaseController
     
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
-      turbo_redirect(reservation_path(@reservation), action: "restore")
+      turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     else
       flash[:error] = result.message
       turbo_redirect(confirm_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), action: "replace")

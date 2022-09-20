@@ -110,6 +110,14 @@ module ApplicationHelper
     end
   end
 
+  def restore_if_possible
+    if ios_request? || android_request?
+      "restore"
+    else
+      "replace"
+    end
+  end
+
   def format_working_hours(location, separator="through")
     start = Time.strptime(location.working_day_start, "%R").strftime("%l:%M %P")
     ending = Time.strptime(location.working_day_end, "%R").strftime("%l:%M %P")
