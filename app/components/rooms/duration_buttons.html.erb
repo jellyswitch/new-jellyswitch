@@ -1,29 +1,6 @@
-<% if allow_shorter_reservation_duration? %>
-  <% if room.available_at?(datetime_in) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 30) %>
-  <% end %>
-
-  <% if room.available_at?(datetime_in + 30.minutes) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 60) %>
-  <% end %>
-
-  <% if room.available_at?(datetime_in + 60.minutes) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 90) %>
-  <% end %>
-
-  <% if room.available_at?(datetime_in + 90.minutes) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 120) %>
-  <% end %>
-
-  <% if room.available_at?(datetime_in + 120.minutes) && room.available_at?(datetime_in + 150.minutes) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 180) %>
-  <% end %>
+<% if room.available_at?(datetime_in) && allow_shorter_reservation_duration? %>
+  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 30) %>
 <% end %>
-
-<% if room.available_at?(datetime_in + 150.minutes) && room.available_at?(datetime_in + 180.minutes) %>
-  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 240) %>
-<% end %>
-
-<% if room.available_at?(datetime_in + 180.minutes) && room.available_at?(datetime_in + 210.minutes) %>
-  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 480) %>
+<% find_available_durations.each do |duration| %>
+  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: (duration)) %>
 <% end %>

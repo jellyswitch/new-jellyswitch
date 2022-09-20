@@ -13,6 +13,27 @@ class Rooms::DurationButtons < ApplicationComponent
     room.allow_shorter_reservation_duration?
   end
 
+  def find_available_durations
+    available_durations = []
+    all_durations = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480]
+
+    all_durations.each do |duration|
+      if room.available_at?(datetime_in + duration.minutes)
+        available_durations << duration
+      else
+        break
+      end
+    end
+
+    if allow_shorter_reservation_duration?
+      available_durations
+    else
+      available_durations = available_durations.keep_if { |duration| duration >= 240 }
+    end
+
+    available_durations
+  end
+
   private
 
   attr_reader :room, :datetime_in, :day, :hour, :user
