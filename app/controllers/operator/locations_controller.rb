@@ -21,7 +21,7 @@ class Operator::LocationsController < Operator::BaseController
 
     if @location.save
       flash[:success] = "Location created."
-      turbolinks_redirect location_path(@location)
+      turbo_redirect location_path(@location)
     else
       flash[:error] = "Could not save location."
       render :new
@@ -42,7 +42,7 @@ class Operator::LocationsController < Operator::BaseController
 
     if @location.update(location_params)
       flash[:success] = "Location updated."
-      turbolinks_redirect location_path(@location)
+      turbo_redirect location_path(@location)
     else
       flash[:error] = "Could not update location."
       render :new
@@ -54,7 +54,7 @@ class Operator::LocationsController < Operator::BaseController
 
     if @location.destroy
       flash[:success] = "Location removed."
-      turbolinks_redirect location_path(@location)
+      turbo_redirect location_path(@location)
     else
       flash[:error] = "Could not remove location."
       render :new
@@ -70,7 +70,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   def new_users_get_free_day_pass
@@ -82,7 +82,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   def visible
@@ -94,7 +94,7 @@ class Operator::LocationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(location_path(@location), action: "replace")
+    turbo_redirect(location_path(@location), action: "replace")
   end
 
   private

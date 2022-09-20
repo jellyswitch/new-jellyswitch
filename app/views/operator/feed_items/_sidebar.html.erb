@@ -3,25 +3,25 @@
 
 <div class="d-flex justify-content-center mb-2">
   <div class="btn-group mt-2" role="group" aria-label="Filter">
-    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbolinks-action" => "replace"} %>
+    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbo-action" => "replace"} %>
 
-    <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}", data: {"turbolinks-action" => "replace"} do %>
+    <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-clipboard"></i>
     <% end %>
     
-    <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}", data: {"turbolinks-action" => "replace"} do %>
+    <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-question"></i>
     <% end %>
 
-    <%= link_to activity_feed_items_path, class: "btn btn-light #{@activity_active}", data: {"turbolinks-action" => "replace"} do %>
+    <%= link_to activity_feed_items_path, class: "btn btn-light #{@activity_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-users"></i>
     <% end %>
 
-    <%= link_to financial_feed_items_path, class: "btn btn-light #{@financial_active}", data: {"turbolinks-action" => "replace"} do %>
+    <%= link_to financial_feed_items_path, class: "btn btn-light #{@financial_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-dollar-sign"></i>
     <% end %>
 
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#newModal">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#newModal" id="new-management-note">
       <i class="fas fa-plus"></i>
     </button>
   </div>

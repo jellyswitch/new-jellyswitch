@@ -11,6 +11,6 @@ class Operator::OrganizationBillingController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(organization_path(organization))
+    turbo_redirect(organization_path(organization))
   end
 end

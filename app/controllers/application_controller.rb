@@ -25,15 +25,15 @@ class ApplicationController < ActionController::Base
     request.referrer || root_path
   end
 
-  def turbolinks_redirect(path, action: "replace")
+  def turbo_redirect(path, action: "replace")
     @redirect_path = path
 
     @action = action
     flash.keep
-    response.headers["Turbolinks-Location"] = path
+    response.headers["Turbo-Location"] = path
     respond_to do |format|
       format.js do
-        render "shared/turbolinks_redirect.js.erb"
+        render "shared/turbo_redirect"
       end
       format.html do
         redirect_to path

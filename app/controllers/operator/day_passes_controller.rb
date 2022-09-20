@@ -39,15 +39,15 @@ class Operator::DayPassesController < Operator::BaseController
         flash[:success] = "Thanks! Your day pass will be available on #{short_date(@day_pass.day)}."
       end
       flash.keep
-      turbolinks_redirect(home_path)
+      turbo_redirect(home_path)
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_day_pass_path)
+      turbo_redirect(new_day_pass_path)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def show
@@ -81,17 +81,17 @@ class Operator::DayPassesController < Operator::BaseController
         )
         if result2.success?
           flash[:success] = "Day Pass redeemed!"
-          turbolinks_redirect(home_path, action: "replace")
+          turbo_redirect(home_path, action: "replace")
         else
           flash[:error] = result.message
-          turbolinks_redirect(code_day_passes_path, action: "replace")
+          turbo_redirect(code_day_passes_path, action: "replace")
         end
       else
-        turbolinks_redirect(redeem_paid_day_passes_path(code: params[:code], day_pass_type_id: result.day_pass_type_id ))
+        turbo_redirect(redeem_paid_day_passes_path(code: params[:code], day_pass_type_id: result.day_pass_type_id ))
       end
     else
       flash[:error] = result.message
-      turbolinks_redirect(code_day_passes_path, action: "replace")
+      turbo_redirect(code_day_passes_path, action: "replace")
     end
   end
 
@@ -107,7 +107,7 @@ class Operator::DayPassesController < Operator::BaseController
       include_stripe
     else
       flash[:error] = "No such code."
-      turbolinks_redirect(code_day_passes_path, action: "replace")
+      turbo_redirect(code_day_passes_path, action: "replace")
     end
   end
 

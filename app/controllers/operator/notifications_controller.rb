@@ -45,6 +45,6 @@ class Operator::NotificationsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(notifications_path, action: "replace")
+    turbo_redirect(notifications_path, action: "replace")
   end
 end
