@@ -436,6 +436,11 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
+  def destroy
+    find_user(:user_id)
+    raise "got here"
+  end
+
   private
 
   def user_password_params

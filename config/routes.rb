@@ -363,6 +363,7 @@ Rails.application.routes.draw do
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"
     patch "update_payment_method", to: "operator/users#update_payment_method"
+    delete :destroy, to: "operator/users#destroy"
   end
   resources :weekly_updates, controller: "operator/weekly_updates"
 end
