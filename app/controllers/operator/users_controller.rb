@@ -1,6 +1,7 @@
 # typed: false
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
+  include SessionsHelper
   before_action :background_image
   
   def index
@@ -438,7 +439,21 @@ class Operator::UsersController < Operator::BaseController
 
   def destroy
     find_user(:user_id)
-    raise "got here"
+
+    result = CancelSubscription.call(
+      subscription: @user.subscriptions.active.first,
+      creditable: @user
+    )
+
+    if result.success?
+      flash[:success] = "User account deleted"
+      @user.update(email: deleted_user_email, name: deleted_user_name)
+      log_out
+      turbo_redirect(signup_path)
+    else
+      flash[:error] = result.message
+      turbo_redirect(referrer_or_root)
+    end
   end
 
   private

@@ -13,6 +13,14 @@ module UsersHelper
     @user = User.friendly.find(params[key])
   end
 
+  def deleted_user_email
+    "DeletedUser#{SecureRandom.uuid.slice(1, 7)}@jellyswitch.com"
+  end
+
+  def deleted_user_name
+    "DeletedUser#{SecureRandom.uuid.slice(1, 7)}"
+  end
+
   def find_approved_users
     @pagy, @users = pagy(User.for_space(current_tenant).approved.visible.order("name"))
   end

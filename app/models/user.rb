@@ -44,20 +44,20 @@ class User < ApplicationRecord
   # Relationships
   has_many :announcements
   has_many :checkins
-  has_many :child_profiles
-  has_many :childcare_reservations, through: :child_profiles
-  has_many :day_passes
+  has_many :child_profiles, dependent: :destroy
+  has_many :childcare_reservations, through: :child_profiles, dependent: :destroy
+  has_many :day_passes, dependent: :destroy
   has_many :door_punches
   has_many :events
   has_many :feed_items
   has_many :feed_item_comments
   has_many :invoices, as: :billable
-  has_many :leads
-  has_many :lead_notes
+  has_many :leads, dependent: :destroy
+  has_many :lead_notes, dependent: :destroy
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator
-  has_many :operator_surveys
+  has_many :operator_surveys, dependent: :destroy
   has_many :reservations
   has_many :subscriptions, as: :subscribable
   has_many :refunds
