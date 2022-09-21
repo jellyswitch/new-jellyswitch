@@ -18,7 +18,8 @@
     </dl>
 
     <% @room.future_availability_for_day(@day.beginning_of_day).each do |option| %>
-      <% if option[:reservation].present? || !@room.available_at?(option[:hour] + (@room.lowest_duration.minutes - 1)) %>
+      <!-- TODO first check || is room available for lowest duration option ? -->
+      <% if option[:reservation].present? || !@room.available_at?(option[:hour] + (@room.lowest_available_reservation_duration.minutes - 1)) %>
         <%= link_to "#{pretty_time(option[:hour])} (#{if option[:reservation].present? then option[:reservation].user.name else "unavailable" end })", "#", class: "btn btn-block btn-danger disabled" %>
       <% else %>
         <%= link_to pretty_time(option[:hour]), choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(option[:hour])), class: "btn btn-block btn-primary" %>

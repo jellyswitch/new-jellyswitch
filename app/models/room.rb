@@ -84,7 +84,7 @@ class Room < ApplicationRecord
 
   # Instance Methods
 
-  def lowest_duration
+  def lowest_available_reservation_duration
     allow_shorter_reservation_duration ? 30 : 240
   end
 
