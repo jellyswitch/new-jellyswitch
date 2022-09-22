@@ -23,8 +23,6 @@ class ScrubUser
       result = ScrubUserData.call(
         user: user
       )
-
-      user.day_passes.destroy_all
     end
 
     if !user.save

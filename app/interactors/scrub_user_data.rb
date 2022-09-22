@@ -16,6 +16,9 @@ class ScrubUserData
     user.website = ""
     user.phone = ""
     user.stripe_customer_id = ""
+    user.card_added = false
+    user.archived = true
+    user.organization_id = nil
     user.profile_photo.detach
 
     if !user.save
