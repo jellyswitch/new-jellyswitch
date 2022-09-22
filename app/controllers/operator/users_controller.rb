@@ -446,20 +446,12 @@ class Operator::UsersController < Operator::BaseController
       return
     end
 
-    @user.reservations.future.each do |reservation|
-      result = CancelReservation.call(
-        reservation: reservation
-      )
-    end
-
-    result = CancelSubscription.call(
-      subscription: @user.subscriptions.active.first,
-      creditable: @user
+    result = ScrubUser.call(
+      user: @user
     )
 
     if result.success?
       flash[:success] = "User account deleted"
-      @user.update(email: deleted_user_email, name: deleted_user_name)
       log_out
       turbo_redirect(signup_path)
     else
