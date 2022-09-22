@@ -18,7 +18,7 @@
     <% end %>
     <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
     <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "btn btn-block btn-warning" %>
-    <%= link_to "Delete My Account", user_path(user_id: current_user.id), data: { confirm: "Are you sure you want to delete your account?" }, method: :delete, class: "btn btn-block btn-danger" %>
+    <%= link_to "Delete My Account", user_path(user_id: current_user.id), data: { confirm: "Are you sure you want to delete your account?\nAny active memberships and any future reservations will be immediately cancelled.\nThis action cannot be reversed!\nIf you wish to rejoin at a later date, you will need to create a new account." }, method: :delete, class: "btn btn-block btn-danger" %>
   <% end %>
 
   <%= list_item do %>

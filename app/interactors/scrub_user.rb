@@ -3,8 +3,9 @@ class ScrubUser
   include Interactor
   include UsersHelper
 
+  delegate :current_tenant, :user, to: :context
+
   def call
-    user = context.user
     user_name = user.name
 
     ActiveRecord::Base.transaction do 
@@ -23,7 +24,7 @@ class ScrubUser
 
       result = FeedItems::Create.call(
         blob: { text: "#{user_name} deleted their account.", type: "post" },
-        user: user,
+        user: current_tenant.users.admins.first,
         operator: user.operator,
         photos: []
       )

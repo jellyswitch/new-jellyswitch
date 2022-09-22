@@ -447,7 +447,8 @@ class Operator::UsersController < Operator::BaseController
     end
 
     result = ScrubUser.call(
-      user: @user
+      user: @user,
+      current_tenant: current_tenant
     )
 
     if result.success?
