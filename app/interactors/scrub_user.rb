@@ -5,6 +5,7 @@ class ScrubUser
 
   def call
     user = context.user
+    user_name = user.name
 
     ActiveRecord::Base.transaction do 
       user.reservations.future.each do |reservation|
@@ -19,6 +20,13 @@ class ScrubUser
           creditable: subscription.subscribable
         )
       end
+
+      result = FeedItems::Create.call(
+        blob: { text: "#{user_name} deleted their account.", type: "post" },
+        user: user,
+        operator: user.operator,
+        photos: []
+      )
 
       result = ScrubUserData.call(
         user: user
