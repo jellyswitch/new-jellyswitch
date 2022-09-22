@@ -20,7 +20,10 @@ class ScrubUser
         )
       end
 
-      user.update(email: deleted_user_email, name: deleted_user_name)
+      result = ScrubUserData.call(
+        user: user
+      )
+
       user.day_passes.destroy_all
     end
 
