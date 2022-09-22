@@ -446,6 +446,12 @@ class Operator::UsersController < Operator::BaseController
       return
     end
 
+    @user.reservations.future.each do |reservation|
+      result = CancelReservation.call(
+        reservation: reservation
+      )
+    end
+
     result = CancelSubscription.call(
       subscription: @user.subscriptions.active.first,
       creditable: @user
