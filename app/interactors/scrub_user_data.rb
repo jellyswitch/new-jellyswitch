@@ -15,6 +15,8 @@ class ScrubUserData
     user.twitter = ""
     user.website = ""
     user.phone = ""
+    user.stripe_customer_id = ""
+    user.profile_photo.detach
 
     if !user.save
       context.fail!(message: "Unable to scrub user.")
