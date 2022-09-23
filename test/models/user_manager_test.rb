@@ -44,12 +44,8 @@ class UserManagerTest < ActiveSupport::TestCase
     assert @user.subscriptions.active.count < 1
   end
 
-  test 'it fails if the user is a group owner' do
-    
-  end
-
   test 'it creates a feed item for admins' do
-
+    
   end
 
   test 'it archives the user' do

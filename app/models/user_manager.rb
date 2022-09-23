@@ -6,6 +6,8 @@ class UserManager
   end
 
   def ready
+    raise GroupOwnerException if user.organization_owner?
+    
     ActiveRecord::Base.transaction do
       user.update(
         name: name,
