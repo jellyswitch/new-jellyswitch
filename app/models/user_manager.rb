@@ -9,6 +9,8 @@ class UserManager
     raise GroupOwnerException if user.organization_owner?
     
     ActiveRecord::Base.transaction do
+      create_feed_item
+
       user.update(
         name: name,
         email: email,
@@ -39,6 +41,15 @@ class UserManager
     if failed_results.count.positive?
       raise "Error cancelling subscriptions: #{ failed_results.map(&:message).to_sentence }"
     end
+  end
+
+  def create_feed_item
+    FeedItems::Create.call(
+      blob: { text: "#{user.name} deleted their account.", type: "post" },
+      user: user,
+      operator: user.operator,
+      photos: nil
+    )
   end
 
   def name

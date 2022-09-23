@@ -45,14 +45,17 @@ class UserManagerTest < ActiveSupport::TestCase
   end
 
   test 'it creates a feed item for admins' do
-    
+    feed_item_count = FeedItem.count
+    UserManager.new(user: @user).ready
+    assert feed_item_count < FeedItem.count
   end
 
   test 'it archives the user' do
+    assert @user.archived == false
 
-  end
+    UserManager.new(user: @user).ready
+    @user.reload
 
-  test 'it rolls back in case of a stripe API exception' do
-
+    assert @user.archived
   end
 end
