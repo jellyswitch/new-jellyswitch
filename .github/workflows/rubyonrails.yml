@@ -29,6 +29,11 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      STRIPE_CLIENT_ID: "ca_foobar"
+      STRIPE_ACCOUNT_ID: "acct_foobar"
+      STRIPE_SECRET_KEY: "sk_test_foobar"
+      STRIPE_PUBLISHABLE_KEY: "pk_test_foobar"
+      STRIPE_LOG: "info"
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
