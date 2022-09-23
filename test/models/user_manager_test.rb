@@ -1,10 +1,12 @@
 require 'test_helper'
 
 class UserManagerTest < ActiveSupport::TestCase
-  test 'it scrubs personally identifiable info from the user record' do
+  setup do
     @user = users(:cowork_tahoe_member)
     @old_user = @user.dup
+  end
 
+  test 'it scrubs personally identifiable info from the user record' do
     UserManager.new(user: @user).ready
     @user.reload
 
@@ -18,7 +20,11 @@ class UserManagerTest < ActiveSupport::TestCase
   end
 
   test 'it removes all future reservations' do
-    
+    assert @user.reservations.future.count > 0
+    UserManager.new(user: @user).ready
+    @user.reload
+
+    assert @user.reservations.future.count < 1
   end
 
   test 'it removes all active memberships' do

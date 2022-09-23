@@ -6,7 +6,7 @@ class UserManager
   end
 
   def ready
-    @user.update(
+    user.update(
       name: name,
       email: email,
       bio: nil,
@@ -19,6 +19,10 @@ class UserManager
       card_added: false,
       organization_id: nil,
     )
+
+    user.reservations.future.map do |reservation|
+      reservation.update(cancelled: true)
+    end
   end
 
   def name

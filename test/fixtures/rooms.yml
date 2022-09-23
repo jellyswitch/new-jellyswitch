@@ -1,0 +1,15 @@
+small_meeting_room:
+  name: Meeting Room 3B
+  description: Small Meeting Room with a Table & 4 Chairs
+  whiteboard: false
+  av: false
+  capacity: 4
+  slug: meeting-room-3b
+  created_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
+  updated_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
+  visible: true
+  operator: cowork_tahoe
+  location: cowork_tahoe
+  square_footage: 60
+  rentable: true
+  hourly_rate_in_cents: 0
