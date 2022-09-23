@@ -441,7 +441,7 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.organization_owner?
       flash[:error] = "You must leave the following group prior to account deletion: #{@user.organization.name}"
-      turbo_redirect(referrer_or_root)
+      turbolinks_redirect(referrer_or_root)
       return
     end
 
