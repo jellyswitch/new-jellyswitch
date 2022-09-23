@@ -449,10 +449,10 @@ class Operator::UsersController < Operator::BaseController
       UserManager.new(user: @user).ready
       flash[:success] = "User account deleted"
       log_out
-      turbolinks_redirect(signup_path)
+      turbo_redirect(signup_path)
     rescue Exception => e
       flash[:error] = "Something went wrong: #{e.message}"
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   end
 
