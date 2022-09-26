@@ -19,7 +19,7 @@
     <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
     <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "btn btn-block btn-warning" %>
     <!-- Button trigger modal -->
-    <%= link_to "Delete My Account", "#", data: { confirm: confirm_delete_message }, method: :delete, remote: true, data: { toggle: "modal", target: "#exampleModal"}, class: "btn btn-block btn-danger" %>
+    <%= link_to "Delete My Account", "#", data: { toggle: "modal", target: "#exampleModal"}, class: "btn btn-block btn-danger" %>
 
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
