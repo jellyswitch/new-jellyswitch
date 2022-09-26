@@ -18,7 +18,6 @@
     </dl>
 
     <% @room.future_availability_for_day(@day.beginning_of_day).each do |option| %>
-      <!-- TODO first check || is room available for lowest duration option ? -->
       <% if option[:reservation].present? || !@room.available_for_lowest_duration?(datetime_in: option[:hour]) %>
         <%= link_to "#{pretty_time(option[:hour])} (#{if option[:reservation].present? then option[:reservation].user.name else "unavailable" end })", "#", class: "btn btn-block btn-danger disabled" %>
       <% else %>
