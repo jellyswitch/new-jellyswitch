@@ -84,10 +84,6 @@ class Room < ApplicationRecord
 
   # Instance Methods
 
-  def lowest_available_reservation_duration
-    allow_shorter_reservation_duration ? 30 : 240
-  end
-
   def available_for_lowest_duration?(datetime_in:)
     find_available_durations(datetime_in: datetime_in).present?
   end
