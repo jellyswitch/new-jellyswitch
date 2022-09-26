@@ -23,7 +23,10 @@ class UserManager
         archived: true,
         card_added: false,
         organization_id: nil,
+        slug: "deleted-user-#{unique_id}",
       )
+
+      user.profile_photo.detach
 
       user.reservations.future.map do |reservation|
         reservation.update(cancelled: true)
