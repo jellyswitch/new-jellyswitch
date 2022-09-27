@@ -1,4 +1,4 @@
-<%= form_with(model: @user, html: { multipart: true }, remote: true, data: { type: :html }) do |f| %>
+<%= form_with(model: @user, html: { multipart: true }, local: true, data: { type: :html }) do |f| %>
   <%= render "shared/error_messages", model: @user %>
 
   <h2>Basic Information</h2>
