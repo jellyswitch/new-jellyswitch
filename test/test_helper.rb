@@ -21,6 +21,10 @@ class ActiveSupport::TestCase
     Searchkick.disable_callbacks
   end
 
+  def setup_initial_user_fixtures
+    @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe))
+  end
+
   def setup_stripe
     @stripe_helper = StripeMock.create_test_helper
     
