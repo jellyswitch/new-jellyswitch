@@ -4,7 +4,7 @@ class AnnouncementsTest < ApplicationSystemTestCase
   test "posting announcement note" do
     log_in(users(:cowork_tahoe_admin))
     visit new_announcement_path
-    fill_in "Type a new announcement...", with: "Test announcement"
+    fill_in "text", with: "Test announcement"
     click_on "Post announcement"
 
     assert_text "Test announcement"
