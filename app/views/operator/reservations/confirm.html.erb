@@ -49,13 +49,13 @@
 
         <dt class="col-6">Total credit cost</dt>
         <dd class="col">
-          <%= render CreditAmount.new(amount: reservation_cost(@room, @duration)) %>
+          <%= render CreditAmount.new(amount: reservation_cost(@room, @duration).round) %>
         </dd>
 
 
         <dt class="col-6">Your remaining balance</dt>
         <dd class="col">
-          <%= render CreditAmount.new(amount: ending_balance(current_user, reservation_cost(@room, @duration))) %>
+          <%= render CreditAmount.new(amount: ending_balance(current_user, reservation_cost(@room, @duration)).to_i) %>
         </dd>
       <% end %>
     </dl>

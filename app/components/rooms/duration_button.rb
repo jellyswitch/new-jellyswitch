@@ -15,11 +15,11 @@ class Rooms::DurationButton < ApplicationComponent
   attr_reader :room, :day, :hour, :user, :duration
 
   def positive_label
-    "#{label} (costs #{number_to_human(reservation_cost(room, duration))} credits)"
+    "#{label} (costs #{number_to_human(reservation_cost(room, duration).round)} credits)"
   end
 
   def negative_label
-    "#{label} (#{number_to_human(-balance)} more credits needed)"
+    "#{label} (#{number_to_human(-balance.round)} more credits needed)"
   end
 
   def label
