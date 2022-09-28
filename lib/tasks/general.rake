@@ -57,6 +57,8 @@ end
 
 task migrate_blobs: :environment do
   FeedItem.notes.map do |feed_item|
-    feed_item.update(text: feed_item.blob["text"]) if feed_item.blob["text"].present?
+    if feed_item.blob["text"].present?
+      MigrateBlobJob.perform_later(feed_item: feed_item)
+    end
   end
 end

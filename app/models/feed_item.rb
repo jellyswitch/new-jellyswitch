@@ -51,7 +51,7 @@ class FeedItem < ApplicationRecord
 
   def search_data
     {
-      text: text,
+      text: text.to_plain_text,
       type: type,
       amount: amount,
       user_name: user.present? ? user.name : "Anonymous",
@@ -99,10 +99,6 @@ class FeedItem < ApplicationRecord
     type == "weekly-update"
   end
 
-  def text
-    blob["text"]
-  end
-
   def type
     blob["type"]
   end
@@ -128,7 +124,7 @@ class FeedItem < ApplicationRecord
   end
 
   def is_expense_feed?
-    (self.text && self.text.downcase.include_any?(["spent", "expense", "expenditure"])) ? true : false
+    (self.text && self.text.to_plain_text.downcase.include_any?(["spent", "expense", "expenditure"])) ? true : false
   end
 
   def parse_amount
