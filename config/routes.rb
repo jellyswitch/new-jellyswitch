@@ -11,12 +11,9 @@ Rails.application.routes.draw do
   delete "masquerade", to: "masquerade#destroy", as: :end_masquerading
 
   ## Regular endpoints ##
-  constraints subdomain: "stats" do
+  constraints subdomain: "app" do
     require 'sidekiq/web'
     mount Sidekiq::Web => '/sidekiq'
-  end
-
-  constraints subdomain: "app" do
     # Root
     get '/', to: "landing#index"
 
