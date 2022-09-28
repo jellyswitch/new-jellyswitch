@@ -12,7 +12,7 @@ class Operator::RsvpsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(event_path(@event), action: "replace")
+    turbo_redirect(event_path(@event), action: "replace")
   end
 
   def not_going
@@ -25,7 +25,7 @@ class Operator::RsvpsController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(event_path(@event), action: "replace")
+    turbo_redirect(event_path(@event), action: "replace")
   end
 
   def register
@@ -39,7 +39,7 @@ class Operator::RsvpsController < Operator::BaseController
     if result.success?
       log_in(result.user)
       set_location(@event.location)
-      turbolinks_redirect(event_path(@event), action: "replace")
+      turbo_redirect(event_path(@event), action: "replace")
     else
       flash[:error] = result.message
     end
@@ -56,7 +56,7 @@ class Operator::RsvpsController < Operator::BaseController
     if result.success?
       log_in(result.user)
       set_location(@event.location)
-      turbolinks_redirect(event_path(@event), action: "replace")
+      turbo_redirect(event_path(@event), action: "replace")
     else
       flash[:error] = result.message
     end

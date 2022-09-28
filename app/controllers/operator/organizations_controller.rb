@@ -28,7 +28,7 @@ class Operator::OrganizationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Organization #{@organization.name} has been created."
-      turbolinks_redirect(organization_path(@organization))
+      turbo_redirect(organization_path(@organization))
     else
       flash[:error] = result.message
       background_image
@@ -37,7 +37,7 @@ class Operator::OrganizationsController < Operator::BaseController
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def edit
@@ -53,7 +53,7 @@ class Operator::OrganizationsController < Operator::BaseController
 
     if @organization.save
       flash[:notice] = "The organization #{@organization.name} has been updated."
-      turbolinks_redirect(organization_path(@organization))
+      turbo_redirect(organization_path(@organization))
     else
       background_image
       render :edit, status: 422
@@ -61,7 +61,7 @@ class Operator::OrganizationsController < Operator::BaseController
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def credit_card
@@ -74,7 +74,7 @@ class Operator::OrganizationsController < Operator::BaseController
       flash[:error] = "Could not update payment method."
     end
 
-    turbolinks_redirect(organization_path(@organization), action: "replace")
+    turbo_redirect(organization_path(@organization), action: "replace")
   end
 
   def out_of_band
@@ -87,7 +87,7 @@ class Operator::OrganizationsController < Operator::BaseController
       flash[:error] = "Could not update payment method."
     end
 
-    turbolinks_redirect(organization_path(@organization), action: "replace")
+    turbo_redirect(organization_path(@organization), action: "replace")
   end
 
   def billing

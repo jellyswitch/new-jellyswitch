@@ -27,15 +27,15 @@ class Operator::Admin::DayPassesController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Day pass added."
-      turbolinks_redirect(user_path(@day_pass.user), action: "replace")
+      turbo_redirect(user_path(@day_pass.user), action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(user_path(user))
+      turbo_redirect(user_path(user))
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private

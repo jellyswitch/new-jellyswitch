@@ -19,10 +19,10 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
     result = WeeklyUpdates::Create.call(operator: current_tenant, week_start: @week_start, week_end: @week_end)
 
     if result.success?
-      turbolinks_redirect(weekly_update_path(result.weekly_update), action: "replace")
+      turbo_redirect(weekly_update_path(result.weekly_update), action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(weekly_updates_path, action: "replace")
+      turbo_redirect(weekly_updates_path, action: "replace")
     end
   end
 

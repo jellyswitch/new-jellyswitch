@@ -20,12 +20,15 @@ rspec.xml
 
 # Ignore uploaded files in development
 /storage/*
+!/storage/.keep
+/tmp/storage/*
+!/tmp/storage/
+!/tmp/storage/.keep
 
 /node_modules
 /yarn-error.log
 
 /public/assets
-.byebug_history
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
@@ -47,3 +50,4 @@ yarn-debug.log*
 .production-env
 
 /config/credentials/development.key
+.byebug_history

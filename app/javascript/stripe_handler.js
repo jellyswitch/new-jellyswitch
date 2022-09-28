@@ -62,4 +62,4 @@ function doStripe() {
   };
 };
 
-document.addEventListener('turbolinks:load', doStripe);
+document.addEventListener('turbo:load', doStripe);

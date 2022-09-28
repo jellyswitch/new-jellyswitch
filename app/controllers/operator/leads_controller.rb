@@ -24,6 +24,6 @@ class Operator::LeadsController < Operator::BaseController
     if !@lead.update(lead_params)
       flash[:error]= "Something went wrong."
     end
-    turbolinks_redirect(lead_path(@lead), action: "replace")
+    turbo_redirect(lead_path(@lead), action: "replace")
   end
 end
