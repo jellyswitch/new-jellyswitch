@@ -9,7 +9,7 @@ class JellyswitchMail < MailHatch
       brand_color: "#ff9900", 
       debug: true,
       dry_run: dry_run,
-      sendgrid_api_key: "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",
+      sendgrid_api_key: ENV['SENDGRID_API_KEY'],
       ios_store_url: operator.ios_url,
       google_play_store_url: operator.android_url,
       title: operator.name,
