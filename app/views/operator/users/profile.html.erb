@@ -35,7 +35,7 @@
 
         <div class="row mt-3">
           <div class="col">
-            <%= link_to user_set_password_and_send_email_path(@user), class: "btn btn-block btn-info", data: { confirm: "This will reset #{@user.name}'s password. Are you sure?'", disable_with: "Sending..."} do %>
+            <%= link_to user_set_password_and_send_email_path(@user), class: "btn btn-block btn-info", data: { turbo: false, confirm: "This will reset #{@user.name}'s password. Are you sure?'", disable_with: "Sending..."} do %>
               <i class="fas fa-redo-alt"></i>
               &nbsp;
               Send onboarding email

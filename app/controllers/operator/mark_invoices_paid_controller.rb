@@ -13,6 +13,6 @@ class Operator::MarkInvoicesPaidController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(invoices_path)
+    turbo_redirect(invoices_path)
   end
 end

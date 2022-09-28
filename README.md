@@ -44,9 +44,9 @@ The following rake tasks are run daily (find them in `lib/tasks`):
 - 3pm UTC: `rake weekly_updates` - Create weekly updates, publish them to the feeds, and issue push notifications
 - 9am UTC: `rake clean_demo` - Reset the demo instance and reproduce all demo data within it
 
-## iOS, Android, and Turbolinks
+## iOS, Android, and Turbo
 
-Jellyswitch mobile applications are created using the [Turbolinks](https://github.com/turbolinks/turbolinks) libraries on [iOS](https://github.com/turbolinks/turbolinks-ios) and [Android](https://github.com/turbolinks/turbolinks-android) and provisioned manually into the app stores.
+Jellyswitch mobile applications are created using the [Turbo](https://github.com/hotwired/turbo) libraries on [iOS](https://github.com/hotwired/turbo-ios) and [Android](https://github.com/hotwired/turbo-android) and provisioned manually into the app stores.
 
 Once you have push notification certificates for each application, you can upload them to the associated `Operator` by visiting the `app` subdomain of your Jellyswitch instance, finding the appropriate `Operator` and simply uploading the certificate. Without this certificate, push notifications will not send successfully. On iOS, use `fastlane pem` to provision a certificate for each mobile app and upload the `.pem` file. On Android, Jellyswitch uses Firebase Cloud Messaging. Provision an appropriate app on Firebase and copy & paste the server key.
 

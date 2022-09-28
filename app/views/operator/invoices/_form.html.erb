@@ -33,6 +33,14 @@
     <small class="col">To use a different payment method, please update the member's payment method on their profile.</small>
   </div>
 
-  <%= f.submit "Invoice Customer", class: "btn btn-block btn-primary", data: {disable_with: "Invoicing..."} %>
+  <button class="btn btn-block btn-primary">
+    <span class="show-when-enabled">
+      Invoice Customer
+    </span>
+    <span class="show-when-disabled">
+      Invoicing...
+    </span>
+  </button>
+
 
 <% end %>

@@ -10,6 +10,6 @@
       <%= f.password_field :password, placeholder: "Password", class: "form-control" %>
     </div>
 
-    <%= f.submit "Sign In and RSVP", class: "form-control btn btn-primary", data: { "turbolinks-action" => "restore" } %>
+    <%= f.submit "Sign In and RSVP", class: "form-control btn btn-primary", data: { "turbo-action" => restore_if_possible } %>
   <% end %>
 </div

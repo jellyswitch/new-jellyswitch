@@ -20,7 +20,7 @@ gem 'honeybadger'
 gem 'houston'
 gem 'httparty'
 gem 'icalendar'
-gem 'image_processing', '>= 1.12.2'
+gem 'image_processing', '~> 1.2'
 gem 'interactor', "~> 3.0"
 gem 'jbuilder', '~> 2.5'
 gem 'jquery-rails', '>= 4.4.0'
@@ -36,7 +36,7 @@ gem 'pg'
 gem 'premailer-rails'
 gem 'puma', '~> 5.0'
 gem 'pundit'
-gem 'rails', '~> 6.1.6', '>= 6.1.6.1'
+gem 'rails', '7.0.3.1'
 gem 'rails_autolink'
 gem 'redis'
 gem 'remotipart', '~> 1.2'
@@ -47,11 +47,15 @@ gem 'searchkick'
 gem 'sidekiq', '~> 5.2.10'
 gem 'simple_calendar'
 gem 'stripe', '~> 5.0.0'
-gem 'turbolinks', '5.2.1'
+gem 'turbo-rails'
+gem 'importmap-rails'
+gem 'rack-cors'
+gem 'sprockets-rails'
+gem 'stimulus-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
-gem 'webpacker', '~> 5.x'
 gem 'working_hours'
+gem 'net-http'
 
 group :development do
   gem 'annotate'
@@ -65,19 +69,20 @@ group :development do
 end
 
 group :test do
-  gem 'capybara', '>= 3.2.6'
+  gem 'capybara'
   gem 'ffi'
   gem 'selenium-webdriver'
-  gem 'webdrivers', '~> 3.0'
+  gem 'webdrivers'
 end
 
 group :development, :test do
   gem 'bundler-audit'
-  gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
+  gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'factory_bot_rails', '~> 5.0.1'
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rails-controller-testing'
   gem 'rspec-rails', '~> 3.8'
   gem 'rspec_junit_formatter'
+  gem 'stripe-ruby-mock', '~> 3.0.1', :require => 'stripe_mock'
 end

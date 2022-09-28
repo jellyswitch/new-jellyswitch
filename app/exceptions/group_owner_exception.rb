@@ -1,0 +1,1 @@
+class GroupOwnerException < StandardError; end;

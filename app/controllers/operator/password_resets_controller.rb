@@ -12,15 +12,15 @@ class Operator::PasswordResetsController < Operator::BaseController
       @user.create_reset_digest
       @user.send_password_reset_email
       flash[:success] = "Email sent with password reset instructions"
-      turbolinks_redirect(root_path, action: "replace")
+      turbo_redirect(root_path, action: "replace")
     else
       flash[:error] = "Email address not found."
-      turbolinks_redirect(new_password_reset_path, action: "replace")
+      turbo_redirect(new_password_reset_path, action: "replace")
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def edit
@@ -38,14 +38,14 @@ class Operator::PasswordResetsController < Operator::BaseController
     elsif @user.update(user_params)          # Case (4)
       log_in @user
       flash[:success] = "Password has been reset."
-      turbolinks_redirect(root_path, action: "replace")
+      turbo_redirect(root_path, action: "replace")
     else
       render 'edit'                                     # Case (2)
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private
@@ -57,7 +57,7 @@ class Operator::PasswordResetsController < Operator::BaseController
   def check_expiration
     if @user.password_reset_expired?
       flash[:error] = "Password reset has expired."
-      turbolinks_redirect(new_password_reset_url, action: "replace")
+      turbo_redirect(new_password_reset_url, action: "replace")
     end
   end
 
