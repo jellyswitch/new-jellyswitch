@@ -89,22 +89,30 @@ class Room < ApplicationRecord
   end
 
   def find_available_durations(datetime_in:)
+    # O(n^2)
     available_durations = []
     all_durations = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480]
     duration_options = [30, 60, 90, 120, 180, 240, 480]
 
-    all_durations.each do |duration|
-      if available_at?(datetime_in + (duration.minutes - 1))
-        available_durations << duration
+    # O(n^3)
+    all_durations.each do |duration| # O(n)
+      if available_at?(datetime_in + (duration.minutes - 1)) # O(n)
+        if duration_options.include?(duration) # O(n)
+          if !allow_shorter_reservation_duration? # 4 and 8 hour
+            if duration >= 240
+              available_durations << duration
+            else
+              next
+            end
+          else
+            available_durations << duration
+          end
+        else
+          next
+        end
       else
         break
       end
-    end
-
-    available_durations = available_durations.keep_if { |duration| duration_options.include?(duration) }
-
-    if !allow_shorter_reservation_duration?
-      available_durations = available_durations.keep_if { |duration| duration >= 240 }
     end
 
     available_durations
@@ -119,11 +127,13 @@ class Room < ApplicationRecord
   end
 
   def availability_for_day(day_start)
+    # Build a hash of half-hour slots for display
+    # Time complexity: O(n) (always 48)
     result = []
 
     48.times do |i|
       time = day_start + (i*30).minutes
-      reservation = reservations.for_time(time)
+      reservation = reservations.for_time(time) # 1 DB query
       result.push({
         hour: time,
         reservation: reservation
@@ -134,6 +144,8 @@ class Room < ApplicationRecord
   end
 
   def future_availability_for_day(day_start)
+    # Same as availability_for_day but select out past slots
+    # O(n^2)
     availability_for_day(day_start).select do |option|
       option[:hour] >= Time.current.beginning_of_half_hour
     end
