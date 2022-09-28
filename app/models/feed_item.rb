@@ -99,6 +99,10 @@ class FeedItem < ApplicationRecord
     type == "weekly-update"
   end
 
+  def text
+    blob["text"]
+  end
+
   def type
     blob["type"]
   end
