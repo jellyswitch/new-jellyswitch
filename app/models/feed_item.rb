@@ -25,6 +25,8 @@ class FeedItem < ApplicationRecord
   belongs_to :user
   has_many :feed_item_comments
 
+  has_rich_text :text
+
   validate :photo_files_accepted
 
   acts_as_tenant :operator

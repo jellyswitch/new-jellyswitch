@@ -22,7 +22,7 @@ gem 'httparty'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
 gem 'interactor', "~> 3.0"
-gem 'jbuilder', '~> 2.5'
+gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '>= 4.4.0'
 gem 'json', '>= 2.3.0'
 gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
