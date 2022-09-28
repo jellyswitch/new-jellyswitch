@@ -85,28 +85,29 @@ class Room < ApplicationRecord
   # Instance Methods
 
   def available_for_lowest_duration?(datetime_in:)
-    find_available_durations(datetime_in: datetime_in).present?
+    find_lowest_available_duration(datetime_in: datetime_in).present?
   end
 
-  def find_available_durations(datetime_in:)
+  def lowest_duration_option
+    allow_shorter_reservation_duration ? 30 : 240
+  end
+
+  def find_lowest_available_duration(datetime_in:)
     available_durations = []
-    all_durations = [30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480]
-    duration_options = [30, 60, 90, 120, 180, 240, 480]
+    all_durations = [30, 60, 90, 120, 150, 180, 210, 240]
 
     all_durations.each do |duration|
       if available_at?(datetime_in + (duration.minutes - 1))
-        available_durations << duration
+        if duration == lowest_duration_option
+          available_durations << duration
+          break
+        else
+          next
+        end
       else
         break
       end
     end
-
-    available_durations = available_durations.keep_if { |duration| duration_options.include?(duration) }
-
-    if !allow_shorter_reservation_duration?
-      available_durations = available_durations.keep_if { |duration| duration >= 240 }
-    end
-
     available_durations
   end
 
