@@ -436,6 +436,26 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
+  def destroy
+    find_user(:user_id)
+
+    if @user.organization_owner?
+      flash[:error] = "You must leave the following group prior to account deletion: #{@user.organization.name}"
+      turbo_redirect(referrer_or_root)
+      return
+    end
+
+    begin
+      UserManager.new(user: @user).ready
+      flash[:success] = "User account deleted"
+      log_out
+      turbo_redirect(signup_path)
+    rescue Exception => e
+      flash[:error] = "Something went wrong: #{e.message}"
+      turbo_redirect(referrer_or_root)
+    end
+  end
+
   private
 
   def user_password_params

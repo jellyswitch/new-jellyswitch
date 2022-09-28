@@ -1,5 +1,5 @@
 cowork_tahoe_subscription:
-  plan: cowork_tahoe_plan
+  plan: cowork_tahoe_part_time_plan
   active: true
   stripe_subscription_id: sub_1La6d0EV6H9PcOfBMglTSlmH
   subscribable_type: User
