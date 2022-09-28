@@ -24,7 +24,14 @@
     <%= form.rich_text_area :description %>
   </div>
 
-  <%= form.submit "Update", class: "form-control btn btn-primary", data: {disable_with: "Updating..."} %>
+  <button class="form-control btn btn-primary" id="submit">
+    <span class="show-when-enabled">
+      Update
+    </span>
+    <span class="show-when-disabled">
+      Updating
+    </span>
+  </button>
 <% end %>
 
 

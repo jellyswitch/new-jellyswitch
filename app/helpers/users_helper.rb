@@ -14,7 +14,7 @@ module UsersHelper
   end
 
   def find_approved_users
-    @users = User.for_space(current_tenant).approved.visible.order("name")
+    @pagy, @users = pagy(User.for_space(current_tenant).approved.visible.order("name"))
   end
 
   def find_unapproved_users
@@ -22,7 +22,7 @@ module UsersHelper
   end
 
   def find_archived_users
-    @users = User.for_space(current_tenant).archived.order("name")
+    @pagy, @users = pagy(User.for_space(current_tenant).archived.order("name"))
   end
 
   def approval_redirect_path
@@ -32,5 +32,9 @@ module UsersHelper
     else
       user_path(@user)
     end
+  end
+
+  def confirm_delete_message
+    "Are you sure you want to delete your account?\nAny active memberships and any future reservations will be immediately cancelled.\nThis action cannot be reversed!\nIf you wish to rejoin at a later date, you will need to create a new account."
   end
 end

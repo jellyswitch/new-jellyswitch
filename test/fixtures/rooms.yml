@@ -1,14 +1,15 @@
- cowork_tahoe_room:
-  name: tims conference room
-  description: Awesome space for productive people
-  whiteboard: true
+small_meeting_room:
+  name: Meeting Room 3B
+  description: Small Meeting Room with a Table & 4 Chairs
+  whiteboard: false
   av: false
-  capacity: 200
-  slug: tims-conference-room
+  capacity: 4
+  slug: meeting-room-3b
+  created_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
+  updated_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
   visible: true
   operator: cowork_tahoe
-  location: cowork_tahoe_location
-  square_footage: 1200
-  rentable: false
-  hourly_rate_in_cents: 10000
-  credit_cost: 0
+  location: cowork_tahoe
+  square_footage: 60
+  rentable: true
+  hourly_rate_in_cents: 0

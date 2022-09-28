@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-2"></div>
   <div class="col d-flex justify-content-around">
-    <%= link_to feed_item_path(feed_item), method: :delete, remote: true, data: {"turbolinks-action" => "restore"} do %>
+    <%= link_to feed_item_path(feed_item), method: :delete, remote: true, data: {"turbo-action" => restore_if_possible} do %>
       <i class="far fa-trash-alt" style="opacity: 0.6;"></i>
     <% end %>
   

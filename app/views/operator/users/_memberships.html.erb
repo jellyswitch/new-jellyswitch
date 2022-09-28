@@ -15,7 +15,7 @@
         <div class="modal-content">
           <div class="modal-body">
             <%= render "operator/subscriptions/admin_form", user: user %>
-            <%= javascript_pack_tag "stripe_handler.js" %>
+            <%= javascript_include_tag "stripe_handler.js" %>
 
             <%= render "operator/users/payment_disclaimer", user: user %>
 
@@ -43,6 +43,20 @@
           <%= short_date(subscription.end_date) %>
         <% else %>
           <i>None</i>
+        <% end %>
+      </dd>
+
+      <dt class="col-sm-3">Set to Cancel at Billing Period End?</dt>
+      <dd class="col-sm">
+        <% if subscription.cancelling_at_end_of_billing_period? %>
+          <span class="badge badge-warning">
+            Yes,
+            <% if subscription.has_period_end? %>
+              <%= short_date(subscription.current_period_end) %>
+            <% end %>
+          </span>
+        <% else %>
+          <span class="badge badge-success">No</span>
         <% end %>
       </dd>
 
@@ -87,7 +101,7 @@
             <div class="modal-dialog modal-dialog-centered" role="document">
               <div class="modal-content">
                 <div class="modal-body">
-                  <%= javascript_pack_tag "stripe_handler.js" %>
+                  <%= javascript_include_tag "stripe_handler.js" %>
 
                   <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
                     <%= render "shared/error_messages", model: subscription %>

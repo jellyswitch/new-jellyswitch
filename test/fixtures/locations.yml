@@ -16,8 +16,8 @@ cowork_tahoe_location:
   stripe_refresh_token: foobar
   wifi_name: Mountain Lab
   wifi_password: LabRats337
-  working_day_start: 06:00
-  working_day_end: 20:00
+  working_day_start: '06:00'
+  working_day_end: '20:00'
   stripe_user_id: nil
   time_zone: Pacific Time (US & Canada)
   visible: true

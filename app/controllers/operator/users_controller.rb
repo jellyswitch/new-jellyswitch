@@ -111,9 +111,9 @@ class Operator::UsersController < Operator::BaseController
       if admin? # admin is creating the user
         flash[:success] = "Member #{result.user.name} added."
         if params[:add_member_and_create_another].present?
-          turbolinks_redirect(add_member_users_path, action: "replace")
+          turbo_redirect(add_member_users_path, action: "replace")
         else
-          turbolinks_redirect(user_path(result.user), action: "replace")
+          turbo_redirect(user_path(result.user), action: "replace")
         end
       else
         log_in(result.user)
@@ -132,7 +132,7 @@ class Operator::UsersController < Operator::BaseController
             flash[:error] = day_pass_result.message
           end
         end
-        turbolinks_redirect(home_path, action: "replace")
+        turbo_redirect(home_path, action: "replace")
       end
     else
       @user = result.user
@@ -148,7 +148,7 @@ class Operator::UsersController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def update
@@ -159,14 +159,14 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.save
       flash[:success] = "Your profile has been updated."
-      turbolinks_redirect(user_path(@user))
+      turbo_redirect(user_path(@user))
     else
       render :edit, status: 422
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def change_password
@@ -182,14 +182,14 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.save
       flash[:success] = "Your password has been changed."
-      turbolinks_redirect(user_path(@user))
+      turbo_redirect(user_path(@user))
     else
       render :change_password, status: 422
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def update_organization
@@ -200,14 +200,14 @@ class Operator::UsersController < Operator::BaseController
 
     if @user.save
       flash[:success] = "Updated organization."
-      turbolinks_redirect(user_path(@user))
+      turbo_redirect(user_path(@user))
     else
       render :show, status: 422
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def remove_from_organization
@@ -220,7 +220,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = "Unable to remove from group."
     end
 
-    turbolinks_redirect(user_path(@user), action: "replace")
+    turbo_redirect(user_path(@user), action: "replace")
   end
 
   def set_password_and_send_email
@@ -234,7 +234,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = result.message
     end
-    turbolinks_redirect(user_path(@user), action: "replace")
+    turbo_redirect(user_path(@user), action: "replace")
   end
 
   def memberships
@@ -275,7 +275,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't approve user."
     end
-    turbolinks_redirect(approval_redirect_path)
+    turbo_redirect(approval_redirect_path)
   end
 
   def unapprove
@@ -285,7 +285,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't unapprove user."
     end
-    turbolinks_redirect(approval_redirect_path)
+    turbo_redirect(approval_redirect_path)
   end
 
   def archive
@@ -301,7 +301,7 @@ class Operator::UsersController < Operator::BaseController
         flash[:error] = "Couldn't archive user."
       end
     end
-    turbolinks_redirect(user_path(@user))
+    turbo_redirect(user_path(@user))
   end
 
   def unarchive
@@ -312,7 +312,7 @@ class Operator::UsersController < Operator::BaseController
     else
       flash[:error] = "Couldn't unarchive user."
     end
-    turbolinks_redirect(user_path(@user))
+    turbo_redirect(user_path(@user))
   end
 
   def edit_billing
@@ -326,10 +326,10 @@ class Operator::UsersController < Operator::BaseController
     result = Billing::Payment::UpdateUserPayment.call(user: current_user, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
-      turbolinks_redirect(user_path(current_user))
+      turbo_redirect(user_path(current_user))
     else
       flash[:error] = result.message
-      turbolinks_redirect(user_billing_path(current_user))
+      turbo_redirect(user_billing_path(current_user))
     end
   end
 
@@ -348,7 +348,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_path(@user))
+    turbo_redirect(user_path(@user))
   end
 
   def credit_card
@@ -361,7 +361,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_path(@user), action: "replace")
+    turbo_redirect(user_path(@user), action: "replace")
   end
 
   def credits
@@ -389,7 +389,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_credits_path(@user), action: "replace")
+    turbo_redirect(user_credits_path(@user), action: "replace")
   end
 
   def add_childcare_reservations
@@ -407,7 +407,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_childcare_path(@user), action: "replace")
+    turbo_redirect(user_childcare_path(@user), action: "replace")
   end
 
   def out_of_band
@@ -420,7 +420,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_path(@user), action: "replace")
+    turbo_redirect(user_path(@user), action: "replace")
   end
 
   def bill_to_organization
@@ -433,7 +433,27 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(user_path(@user), action: "replace")
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
+  def destroy
+    find_user(:user_id)
+
+    if @user.organization_owner?
+      flash[:error] = "You must leave the following group prior to account deletion: #{@user.organization.name}"
+      turbo_redirect(referrer_or_root)
+      return
+    end
+
+    begin
+      UserManager.new(user: @user).ready
+      flash[:success] = "User account deleted"
+      log_out
+      turbo_redirect(signup_path)
+    rescue Exception => e
+      flash[:error] = "Something went wrong: #{e.message}"
+      turbo_redirect(referrer_or_root)
+    end
   end
 
   private

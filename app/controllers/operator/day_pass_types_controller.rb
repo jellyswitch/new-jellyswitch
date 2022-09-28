@@ -29,9 +29,9 @@ class Operator::DayPassTypesController < Operator::BaseController
     @day_pass_type = result.day_pass_type
     if result.success?
       if params[:add_day_pass_type_and_add_another].present?
-        turbolinks_redirect(new_day_pass_type_path, action: "replace")
+        turbo_redirect(new_day_pass_type_path, action: "replace")
       else
-        turbolinks_redirect(day_pass_type_path(@day_pass_type))
+        turbo_redirect(day_pass_type_path(@day_pass_type))
       end
     else
       flash[:error] = result.message
@@ -40,7 +40,7 @@ class Operator::DayPassTypesController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def update
@@ -48,21 +48,21 @@ class Operator::DayPassTypesController < Operator::BaseController
 
     if @day_pass_type.update(day_pass_type_update_params)
       flash[:success] = "Day pass type was successfully updated."
-      turbolinks_redirect(day_pass_type_path(@day_pass_type))
+      turbo_redirect(day_pass_type_path(@day_pass_type))
     else
       render :edit, status: 422
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def destroy
     authorize @day_pass_type
     @day_pass_type.update(available: false)
     flash[:success] = "Day pass type was successfully archived."
-    turbolinks_redirect(day_pass_types_url)
+    turbo_redirect(day_pass_types_url)
   end
 
   def visible
@@ -95,6 +95,6 @@ class Operator::DayPassTypesController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(day_pass_type_path(@day_pass_type), action: "replace")
+    turbo_redirect(day_pass_type_path(@day_pass_type), action: "replace")
   end
 end

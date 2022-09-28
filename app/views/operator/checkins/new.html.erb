@@ -11,6 +11,6 @@
     <%= render "shared/closed", location: location %>
   <% end %>
   <p class="text-muted">
-    <%= link_to "Go Back", choose_path, data: {"turbolinks-action" => "restore"} %>
+    <%= link_to "Go Back", choose_path, data: {"turbo-action" => restore_if_possible} %>
   </p>
 <% end %>

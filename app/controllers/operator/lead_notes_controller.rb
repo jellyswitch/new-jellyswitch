@@ -7,6 +7,6 @@ class Operator::LeadNotesController < Operator::BaseController
     if !@lead_note.save
       flash[:error] = "Something went wrong."
     end
-    turbolinks_redirect(lead_path(@lead), action: "replace")
+    turbo_redirect(lead_path(@lead), action: "replace")
   end
 end

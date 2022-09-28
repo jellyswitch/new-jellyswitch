@@ -100,7 +100,7 @@ module Jellyswitch
     end
 
     def all_members
-      users.members.non_superadmins
+      users.members.non_superadmins.order("name")
     end
 
     def all_member_count

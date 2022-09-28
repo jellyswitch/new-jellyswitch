@@ -9,10 +9,10 @@ class Operator::PostRepliesController < Operator::BaseController
     )
 
     if result.success?
-      turbolinks_redirect(post_path(result.post_reply.post))
+      turbo_redirect(post_path(result.post_reply.post))
     else
       flash[:error] = result.message
-      turbolinks_redirect(post_path(result.post_reply.post), action: "replace")
+      turbo_redirect(post_path(result.post_reply.post), action: "replace")
     end
   end
 end

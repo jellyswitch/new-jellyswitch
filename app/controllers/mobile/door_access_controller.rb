@@ -10,7 +10,7 @@ class Mobile::DoorAccessController < Operator::BaseController
   private
 
   def not_logged_in_yet
-    turbolinks_redirect(login_path, action: :replace)
+    turbo_redirect(login_path, action: :replace)
   end
 
   def find_doors
