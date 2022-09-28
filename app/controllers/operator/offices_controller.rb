@@ -25,7 +25,7 @@ class Operator::OfficesController < Operator::BaseController
 
     if @office.save
       flash[:notice] = "Office #{@office.name} created."
-      turbolinks_redirect(office_path(@office))
+      turbo_redirect(office_path(@office))
     else
       flash[:error] = "Could not save office"
       render :new, status: 422
@@ -43,7 +43,7 @@ class Operator::OfficesController < Operator::BaseController
 
     if @office.save
       flash[:notice] = "Office #{@office.name} has been updated."
-      turbolinks_redirect(office_path(@office))
+      turbo_redirect(office_path(@office))
     else
       flash[:error] = "Could not update office"
       render :edit, status: 422

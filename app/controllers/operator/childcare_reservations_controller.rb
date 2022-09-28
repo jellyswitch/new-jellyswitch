@@ -10,7 +10,7 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     authorize :childcare_reservation
     if current_user.child_profiles.count < 1
       flash[:info] = "Please create a child profile first."
-      turbolinks_redirect(new_child_profile_path, action: "replace")
+      turbo_redirect(new_child_profile_path, action: "replace")
     end
   end
 
@@ -19,7 +19,7 @@ class Operator::ChildcareReservationsController < Operator::BaseController
     @slots = current_location.childcare_slots.visible.where(week_day: @date.wday).order(:week_day, :name)
     if @slots.count < 1
       flash[:error] = "No childcare available on #{short_date(@date)}"
-      turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+      turbo_redirect(new_childcare_reservation_path, action: "replace")
     end
   end
 
@@ -30,7 +30,7 @@ class Operator::ChildcareReservationsController < Operator::BaseController
 
     if childcare_slot.remaining_capacity_on_day(date) < 1
       flash[:error] = "There are no more spots left on that day."
-      turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+      turbo_redirect(new_childcare_reservation_path, action: "replace")
     else
       result = Childcare::CreateReservation.call(
         date: date,
@@ -40,10 +40,10 @@ class Operator::ChildcareReservationsController < Operator::BaseController
       )
 
       if result.success?
-        turbolinks_redirect(childcare_reservation_path(result.childcare_reservation), action: "replace")
+        turbo_redirect(childcare_reservation_path(result.childcare_reservation), action: "replace")
       else
         flash[:error] = result.message
-        turbolinks_redirect(new_childcare_reservation_path, action: "replace")
+        turbo_redirect(new_childcare_reservation_path, action: "replace")
       end
     end
   end
@@ -59,10 +59,10 @@ class Operator::ChildcareReservationsController < Operator::BaseController
 
     if @childcare_reservation.update(cancelled: true)
       flash[:success] = "Reservation cancelled."
-      turbolinks_redirect(childcare_index_path, action: "replace")
+      turbo_redirect(childcare_index_path, action: "replace")
     else
       flash[:error] = "Something went wrong."
-      turbolinks_redirect(childcare_reservation_path(@childcare_reservation), action: "replace")
+      turbo_redirect(childcare_reservation_path(@childcare_reservation), action: "replace")
     end
   end
 

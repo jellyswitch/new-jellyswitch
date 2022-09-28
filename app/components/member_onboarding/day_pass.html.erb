@@ -18,7 +18,7 @@
     </div>
 
     <div class="row mt-3">
-      <%= link_to "Buy a day pass", day_passes_path, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass' } %>
+      <%= link_to "Buy a day pass", day_passes_path, class: "btn btn-primary col m-2", data: { acc: 'buy-day-pass', turbo_action: restore_if_possible } %>
     </div>
   </div>
   

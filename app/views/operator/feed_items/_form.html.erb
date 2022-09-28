@@ -1,4 +1,4 @@
-<%= form_for(feed_item, html: {multipart: true}, **feed_item_remote_params , data: { type: :html, turbolinks: "false" }) do |f| %>
+<%= form_for(feed_item, html: {multipart: true}, **feed_item_remote_params , data: { type: :html, turbo: feed_item_turbo_value }) do |f| %>
   <%= render "shared/error_messages" , model: feed_item %>
   <div class="form-group row m-0 p-0 mt-0">
     <%= f.text_area :text, placeholder: "Type a new management note...", class: "form-control form-control-lg col", rows: "6", id: "text" %>
@@ -20,9 +20,16 @@
   </div>
   <div class="form-group row m-0 p-0">
     <button class="form-control btn btn-primary col" id="submit" data-disable-with="Posting...">
-      <i class="fas fa-edit"></i>
-      &nbsp;
-      Post management note
+      <span class="show-when-enabled">
+        <i class="fas fa-edit"></i>
+        &nbsp;
+        Post management note
+      </span>
+      <span class="show-when-disabled">
+        <i class="fas fa-edit"></i>
+        &nbsp;
+        Posting...
+      </span>
     </button>
   </div>
 <%- end %>

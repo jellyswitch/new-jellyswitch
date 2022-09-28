@@ -41,9 +41,9 @@ class Operator::RoomsController < Operator::BaseController
     if @room.save
       flash[:success] = "Room added."
       if params[:add_room_and_add_another].present?
-        turbolinks_redirect(new_room_path, action: "replace")
+        turbo_redirect(new_room_path, action: "replace")
       else
-        turbolinks_redirect(room_path(@room))
+        turbo_redirect(room_path(@room))
       end
     else
       render :new, status: 422
@@ -51,7 +51,7 @@ class Operator::RoomsController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def edit
@@ -68,14 +68,14 @@ class Operator::RoomsController < Operator::BaseController
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
-      turbolinks_redirect(room_path(@room))
+      turbo_redirect(room_path(@room))
     else
       render :edit, status: 422
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   private

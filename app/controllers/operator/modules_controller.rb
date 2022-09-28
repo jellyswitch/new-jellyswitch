@@ -36,7 +36,7 @@ class Operator::ModulesController < Operator::BaseController
   def offices
     if current_tenant.has_active_office_leases?
       flash[:error] = "Terminate active office leases before disabling."
-      turbolinks_redirect(modules_path, action: "replace")
+      turbo_redirect(modules_path, action: "replace")
     else
       setting(:offices_enabled)
     end
@@ -56,7 +56,7 @@ class Operator::ModulesController < Operator::BaseController
     if !location.update(credit_cost_in_cents: amount_in_cents)
       flash[:error] = "Something went wrong."
     end
-    turbolinks_redirect(modules_path, action: "replace")
+    turbo_redirect(modules_path, action: "replace")
   end
 
   def childcare_reservations_settings
@@ -68,7 +68,7 @@ class Operator::ModulesController < Operator::BaseController
     if !location.update(childcare_reservation_cost_in_cents: amount_in_cents)
       flash[:error] = "Something went wrong."
     end
-    turbolinks_redirect(modules_path, action: "replace")
+    turbo_redirect(modules_path, action: "replace")
   end
 
   private
@@ -80,6 +80,6 @@ class Operator::ModulesController < Operator::BaseController
       flash[:error] = result.message
     end
 
-    turbolinks_redirect(modules_path, action: "replace")
+    turbo_redirect(modules_path, action: "replace")
   end
 end

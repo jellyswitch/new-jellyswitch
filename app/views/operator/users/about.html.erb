@@ -26,11 +26,11 @@
       </div>
       <dl class="row mt-3">
         <dt class="col-sm-3">Email address</dt>
-        <dd class="col-sm" data-turbolinks="false"><%= mail_to @user.email %></dd>
+        <dd class="col-sm" data-turbo="false"><%= mail_to @user.email %></dd>
       </dl>
       <dl class="row mt-3">
         <dt class="col-sm-3">Phone number</dt>
-        <dd class="col-sm" data-turbolinks="false">
+        <dd class="col-sm" data-turbo="false">
           <% if @user.phone.present? %>
             <%= number_to_phone(@user.phone) %>
           <% else %>
