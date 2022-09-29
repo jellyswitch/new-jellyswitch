@@ -8,10 +8,9 @@ class AuthenticationTest < ApplicationSystemTestCase
     assert_text "What's Happening?"
   end
 
-  test 'logging out' do
-    user = users(:cowork_tahoe_admin)
+  test 'logging out as a member' do
+    user = users(:cowork_tahoe_member)
     log_in(user)
-    find('.navbar-toggler').click
     click_on 'My Account'
 
     click_on 'Log out'
