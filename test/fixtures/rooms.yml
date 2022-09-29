@@ -13,4 +13,4 @@ small_meeting_room:
   square_footage: 60
   rentable: true
   hourly_rate_in_cents: 0
-  credit_cost: 0
+  credit_cost: 5

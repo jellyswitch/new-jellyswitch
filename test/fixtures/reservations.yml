@@ -7,7 +7,7 @@ room_reservation:
   updated_at: Thu, 08 Sep 2022 10:19:41.194456000 PDT -07:00
   cancelled: false
   minutes: 30
-  credit_cost: 0
+  credit_cost: 2
 
 future_room_reservation:
   user: cowork_tahoe_member
@@ -18,4 +18,4 @@ future_room_reservation:
   updated_at: Thu, 08 Sep 2022 10:19:41.194456000 PDT -07:00
   cancelled: false
   minutes: 30
-  credit_cost: 0
+  credit_cost: 2

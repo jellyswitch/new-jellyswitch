@@ -154,7 +154,7 @@ cowork_tahoe_community_manager:
   bill_to_organization: false
   archived: false
   phone: nil
-  credit_balance: 0
+  credit_balance: 10
   childcare_reservation_balance: 0
   android_token: nil
   role: community-manager
