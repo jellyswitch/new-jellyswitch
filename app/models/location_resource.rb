@@ -1,4 +1,4 @@
- strong
+# typed: strong
 # == Schema Information
 #
 # Table name: location_resources

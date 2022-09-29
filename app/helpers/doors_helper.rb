@@ -1,4 +1,4 @@
- strong
+# typed: strong
 module DoorsHelper
   def url(door)
     "https://api.getkisi.com/locks/#{door.kisi_id}/unlock"
