@@ -1,4 +1,4 @@
-# typed: false
+
 class Billing::Leasing::CreateOfficeLease
   include Interactor::Organizer
 

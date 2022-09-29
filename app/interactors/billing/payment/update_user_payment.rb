@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Payment::UpdateUserPayment
   include Interactor
 

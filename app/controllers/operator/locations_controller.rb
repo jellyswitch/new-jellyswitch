@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::LocationsController < Operator::BaseController
   before_action :find_location, only: [:show, :edit, :update, :destroy]
   before_action :background_image

@@ -1,4 +1,4 @@
-# typed: false
+
 module Notifiable
   class Checkin < Notifiable::Default
     def create_feed_item

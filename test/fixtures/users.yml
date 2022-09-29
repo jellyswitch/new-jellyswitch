@@ -79,14 +79,14 @@ cowork_tahoe_member:
   website: ""
   organization_id: nil
   approved: true
-  stripe_customer_id: nil
+  stripe_customer_id: cus_MIxudSkB0PDeE5
   operator: cowork_tahoe
   superadmin: false
   out_of_band: false
   ios_token: some_token
   reset_digest: nil
   reset_sent_at: nil
-  card_added: false
+  card_added: true
   always_allow_building_access: false
   bill_to_organization: false
   archived: false

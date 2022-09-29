@@ -1,4 +1,4 @@
-# typed: true
+
 
 class Reservable::InBand < Reservable::DefaultReservation
   def invoice_args

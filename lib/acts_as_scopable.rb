@@ -1,4 +1,4 @@
-# typed: false
+
 module ActsAsScopable
   def self.current_scope_resources=(resources)
     RequestStore.store[:scope_resources] = resources

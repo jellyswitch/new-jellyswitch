@@ -1,4 +1,4 @@
-# typed: false
+
 # == Schema Information
 #
 # Table name: offices

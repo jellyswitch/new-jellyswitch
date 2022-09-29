@@ -1,4 +1,4 @@
-# typed: true
+
 class MemberFeedbackPolicy < ApplicationPolicy
   def new?
     is_user?

@@ -1,4 +1,4 @@
-# typed: true
+
 class UpdateOrganizationBilling
   include Interactor
 

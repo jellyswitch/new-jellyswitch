@@ -1,4 +1,4 @@
-# typed: strong
+
 # == Schema Information
 #
 # Table name: refunds

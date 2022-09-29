@@ -1,4 +1,4 @@
-# typed: true
+
 class PlanPolicy < ApplicationPolicy
   def index?
     admin? && billing_enabled?

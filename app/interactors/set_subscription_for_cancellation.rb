@@ -1,4 +1,4 @@
-# typed: true
+
 class SetSubscriptionForCancellation
   include Interactor::Organizer
 

@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Subscription::ActivateSubscription
   include Interactor
 

@@ -1,4 +1,4 @@
-# typed: false
+
 class CreateOperatorFeedItems < ActiveRecord::Migration[5.2]
   def change
     create_table :feed_items do |t|

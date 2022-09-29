@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::DayPasses::CreateStripeInvoice
   include Interactor
 

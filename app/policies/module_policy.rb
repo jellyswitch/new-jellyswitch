@@ -1,4 +1,4 @@
-# typed: true
+
 class ModulePolicy < ApplicationPolicy
   def index?
     admin?
