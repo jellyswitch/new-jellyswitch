@@ -72,8 +72,9 @@ class User < ApplicationRecord
   # Auth stuff
   attr_accessor :remember_token, :reset_token
   before_save { self.email = email.downcase }
-  validates :password, length: { minimum: 6 }, on: :create
-  validates :email, uniqueness: { scope: :operator_id }
+  validates :password, length: { minimum: 6 }, on: :create, presence: true
+  validates :email, uniqueness: { scope: :operator_id }, presence: true
+  validates :name, presence: true
   has_secure_password
 
   # Scopes
