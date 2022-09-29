@@ -85,7 +85,8 @@ class Operator::FeedItemsController < Operator::BaseController
     authorize FeedItem.new
     
     result = FeedItems::Create.call(
-      blob: { text: feed_item_params[:text], type: "post" },
+      blob: { type: "post" },
+      text: feed_item_params[:text],
       user: current_user,
       operator: current_tenant,
       photos: feed_item_params[:photos],
@@ -93,10 +94,10 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Posted!"
-      turbo_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = result.message
-      turbo_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     end
   rescue => e
     Honeybadger.notify(e)
@@ -110,7 +111,7 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if @feed_item.destroy
       flash[:success] = "Deleted."
-      turbo_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = "Unable to delete that item."
       turbo_redirect(referrer_or_root)

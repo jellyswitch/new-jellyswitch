@@ -41,6 +41,7 @@
 #
 
 class User < ApplicationRecord
+  include ActionText::Attachable
   searchkick
   # Relationships
   has_many :announcements
@@ -178,6 +179,10 @@ class User < ApplicationRecord
     else
       "None"
     end
+  end
+
+  def to_trix_content_attachment_partial_path
+    to_partial_path
   end
 
 

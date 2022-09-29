@@ -33,4 +33,8 @@ module UsersHelper
       user_path(@user)
     end
   end
+
+  def confirm_delete_message
+    "Are you sure you want to delete your account?\nAny active memberships and any future reservations will be immediately cancelled.\nThis action cannot be reversed!\nIf you wish to rejoin at a later date, you will need to create a new account."
+  end
 end

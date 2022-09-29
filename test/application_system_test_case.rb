@@ -5,6 +5,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   setup do
     Capybara.app_host = "http://tml.lvh.me"
+    Capybara.server_port = 9000
   end
 
   def log_in(user)
