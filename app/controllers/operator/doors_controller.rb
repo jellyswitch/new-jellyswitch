@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::DoorsController < Operator::BaseController
   def index
     find_doors

@@ -1,4 +1,4 @@
-# typed: false
+
 class CreateOrganization
   include Interactor::Organizer
 

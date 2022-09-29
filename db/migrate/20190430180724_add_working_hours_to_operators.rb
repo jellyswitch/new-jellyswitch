@@ -1,4 +1,4 @@
-# typed: false
+
 class AddWorkingHoursToOperators < ActiveRecord::Migration[5.2]
   def change
     add_column :operators, :working_hours_enabled, :boolean, null: false, default: false

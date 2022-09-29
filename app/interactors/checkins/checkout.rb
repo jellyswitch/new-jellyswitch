@@ -1,4 +1,4 @@
-# typed: false
+
 class Checkins::Checkout
   include Interactor::Organizer
 

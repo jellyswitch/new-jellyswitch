@@ -1,4 +1,4 @@
-# typed: false
+
 class MigrateUserToSubscribable < ActiveRecord::Migration[5.2]
   def change
     subscriptions = Subscription.all

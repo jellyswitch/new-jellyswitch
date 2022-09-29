@@ -1,4 +1,4 @@
-# typed: false
+
 # == Schema Information
 #
 # Table name: day_pass_types

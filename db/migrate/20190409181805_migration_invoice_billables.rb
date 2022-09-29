@@ -1,4 +1,4 @@
-# typed: false
+
 class MigrationInvoiceBillables < ActiveRecord::Migration[5.2]
   def change
     invoices = Invoice.all

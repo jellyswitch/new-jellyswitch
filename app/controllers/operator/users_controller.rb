@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
   before_action :background_image

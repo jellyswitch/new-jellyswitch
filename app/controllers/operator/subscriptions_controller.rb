@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::SubscriptionsController < Operator::BaseController
   include SubscriptionsHelper
   before_action :background_image

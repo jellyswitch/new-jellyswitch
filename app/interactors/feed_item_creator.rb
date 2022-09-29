@@ -1,4 +1,4 @@
-# typed: false
+
 module FeedItemCreator
   # for pub/sub
   def self.create_feed_item(operator, user, blob, options = {})
