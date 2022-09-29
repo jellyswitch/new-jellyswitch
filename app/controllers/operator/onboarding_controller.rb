@@ -24,9 +24,9 @@ class Operator::OnboardingController < Operator::BaseController
 
     if result.success?
       if params[:add_plan_and_add_another].present?
-        turbolinks_redirect(new_membership_plan_operator_onboarding_index_path, action: "replace")
+        turbo_redirect(new_membership_plan_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(feed_items_path, action: "replace")
+        turbo_redirect(feed_items_path, action: "replace")
       end
     else
       render :new_membership_plan
@@ -44,9 +44,9 @@ class Operator::OnboardingController < Operator::BaseController
 
     if result.success?
       if params[:add_day_pass_type_and_add_another].present?
-        turbolinks_redirect(new_day_pass_type_operator_onboarding_index_path, action: "replace")
+        turbo_redirect(new_day_pass_type_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(feed_items_path, action: "replace")
+        turbo_redirect(feed_items_path, action: "replace")
       end
     else
       flash[:error] = result.message
@@ -64,9 +64,9 @@ class Operator::OnboardingController < Operator::BaseController
     if @room.save
       flash[:success] = "Room added."
       if params[:add_room_and_add_another].present?
-        turbolinks_redirect(new_room_operator_onboarding_index_path, action: "replace")
+        turbo_redirect(new_room_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(feed_items_path, action: "replace")
+        turbo_redirect(feed_items_path, action: "replace")
       end
     else
       render :new_room, status: 422
@@ -86,9 +86,9 @@ class Operator::OnboardingController < Operator::BaseController
     if result.success?
       flash[:success] = "Member #{result.user.name} added."
       if params[:add_member_and_create_another].present?
-        turbolinks_redirect(new_member_operator_onboarding_index_path, action: "replace")
+        turbo_redirect(new_member_operator_onboarding_index_path, action: "replace")
       else
-        turbolinks_redirect(feed_items_path, action: "replace")
+        turbo_redirect(feed_items_path, action: "replace")
       end
     else
       flash[:error] = result.message
@@ -103,7 +103,7 @@ class Operator::OnboardingController < Operator::BaseController
       @customers = result.customers
     else
       flash[:error] = result.message
-      turbolinks_redirect(add_members_operator_onboarding_index_path, action: "replace")
+      turbo_redirect(add_members_operator_onboarding_index_path, action: "replace")
     end
   end
 
@@ -123,12 +123,12 @@ class Operator::OnboardingController < Operator::BaseController
       flash[:error] = errors_for(user)
     end
 
-    turbolinks_redirect(new_stripe_members_operator_onboarding_index_path, action: "replace")
+    turbo_redirect(new_stripe_members_operator_onboarding_index_path, action: "replace")
   end
 
   def new_kisi
     if current_tenant.kisi_api_key.present?
-      turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
+      turbo_redirect(new_door_operator_onboarding_index_path, action: "replace")
     end
   end
 
@@ -139,7 +139,7 @@ class Operator::OnboardingController < Operator::BaseController
       render :new_kisi
     else
       current_tenant.update(kisi_api_key: api_key)
-      turbolinks_redirect(new_door_operator_onboarding_index_path)
+      turbo_redirect(new_door_operator_onboarding_index_path)
     end
   end
 
@@ -165,7 +165,7 @@ class Operator::OnboardingController < Operator::BaseController
     else
       flash[:error] = "There was a problem adding your door."
     end
-    turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
+    turbo_redirect(new_door_operator_onboarding_index_path, action: "replace")
   end
 
   def destroy_door
@@ -179,12 +179,12 @@ class Operator::OnboardingController < Operator::BaseController
     else
       flash[:error] = "No such door."
     end
-    turbolinks_redirect(new_door_operator_onboarding_index_path, action: "replace")
+    turbo_redirect(new_door_operator_onboarding_index_path, action: "replace")
   end
 
   def skip
     current_tenant.update(skip_onboarding: true)
-    turbolinks_redirect(feed_items_path)
+    turbo_redirect(feed_items_path)
   end
 
   private

@@ -14,7 +14,7 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def index
     if !current_tenant.onboarded? && !current_tenant.skip_onboarding?
-      turbolinks_redirect(new_operator_onboarding_path, action: "replace")
+      turbo_redirect(new_operator_onboarding_path, action: "replace")
     else
       find_feed_items
       @all_active = "active"
@@ -85,7 +85,8 @@ class Operator::FeedItemsController < Operator::BaseController
     authorize FeedItem.new
     
     result = FeedItems::Create.call(
-      blob: { text: feed_item_params[:text], type: "post" },
+      blob: { type: "post" },
+      text: feed_item_params[:text],
       user: current_user,
       operator: current_tenant,
       photos: feed_item_params[:photos],
@@ -93,15 +94,15 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Posted!"
-      turbolinks_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = result.message
-      turbolinks_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     end
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def destroy
@@ -110,15 +111,15 @@ class Operator::FeedItemsController < Operator::BaseController
 
     if @feed_item.destroy
       flash[:success] = "Deleted."
-      turbolinks_redirect(feed_items_path, action: "restore")
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = "Unable to delete that item."
-      turbolinks_redirect(referrer_or_root)
+      turbo_redirect(referrer_or_root)
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def set_expense_status

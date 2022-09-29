@@ -25,7 +25,7 @@ class Operator::DoorsController < Operator::BaseController
 
     if @door.save
       flash[:notice] = "Door created."
-      turbolinks_redirect(door_path(@door))
+      turbo_redirect(door_path(@door))
     else
       background_image
       render :new, status: 422
@@ -33,7 +33,7 @@ class Operator::DoorsController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def edit
@@ -49,7 +49,7 @@ class Operator::DoorsController < Operator::BaseController
     @door.update(door_params)
     if @door.save
       flash[:notice] = "Door updated."
-      turbolinks_redirect(doors_path(@door))
+      turbo_redirect(doors_path(@door))
     else
       background_image
       render :edit, status: 422
@@ -57,7 +57,7 @@ class Operator::DoorsController < Operator::BaseController
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbolinks_redirect(referrer_or_root)
+    turbo_redirect(referrer_or_root)
   end
 
   def keys
@@ -75,11 +75,11 @@ class Operator::DoorsController < Operator::BaseController
     respond_to do |format|
       format.html {
         if !untethered_ios_request?
-          response.headers["Turbolinks-Location"] = home_url
+          response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         else
           # unusual condition?
-          response.headers["Turbolinks-Location"] = home_url
+          response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         end
       }

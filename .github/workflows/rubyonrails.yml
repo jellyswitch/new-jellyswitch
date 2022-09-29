@@ -29,6 +29,12 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      STRIPE_CLIENT_ID: "ca_foobar"
+      STRIPE_ACCOUNT_ID: "acct_foobar"
+      STRIPE_SECRET_KEY: "sk_test_foobar"
+      STRIPE_PUBLISHABLE_KEY: "pk_test_foobar"
+      STRIPE_LOG: "info"
+      ASSET_HOST: http://app.lvh.me:9000
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -49,8 +55,8 @@ jobs:
       # Add or replace test runners here
       - name: Run tests
         run: bin/rails test
-      # - name: Run system tests
-      #   run: bin/rails test:system
+      - name: Run system tests
+        run: bin/rails test:system
 
   lint:
     runs-on: ubuntu-latest

@@ -1,0 +1,9 @@
+cowork_tahoe_day_pass:
+  day: Thu, 18 May 2023
+  user: cowork_tahoe_member
+  stripe_charge_id: nil
+  operator: cowork_tahoe
+  day_pass_type: cowork_tahoe_day_pass_type
+  invoice_id: 33209
+  billable_type: User
+  billable: cowork_tahoe_member

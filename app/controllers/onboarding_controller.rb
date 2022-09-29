@@ -9,10 +9,10 @@ class  OnboardingController < ApplicationController
 
     if result.success?
       log_in(result.user)
-      turbolinks_redirect(new_user_info_onboarding_index_path, action: "replace")
+      turbo_redirect(new_user_info_onboarding_index_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_user_onboarding_index_path, action: "replace")
+      turbo_redirect(new_user_onboarding_index_path, action: "replace")
     end
   end
 
@@ -32,10 +32,10 @@ class  OnboardingController < ApplicationController
 
     if result.success?
       set_location(result.location)
-      turbolinks_redirect(choose_events_onboarding_index_path, action: "replace")
+      turbo_redirect(choose_events_onboarding_index_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(new_user_info_onboarding_index_path, action: "replace")
+      turbo_redirect(new_user_info_onboarding_index_path, action: "replace")
     end
   end
 
@@ -58,10 +58,10 @@ class  OnboardingController < ApplicationController
 
     if result.success?
       result.event.image.attach(io: image = File.open(Rails.root.join("app/assets/images/coffee.jpg")), filename: "coffee.jpg")
-      turbolinks_redirect(daily_tasks_onboarding_index_path, action: "replace")
+      turbo_redirect(daily_tasks_onboarding_index_path, action: "replace")
     else
       flash[:error] = result.message
-      turbolinks_redirect(add_event_onboarding_index_path, action: "replace")
+      turbo_redirect(add_event_onboarding_index_path, action: "replace")
     end
   end
 
@@ -82,7 +82,7 @@ class  OnboardingController < ApplicationController
       end
     end
 
-    turbolinks_redirect(favorite_parts_onboarding_index_path, action: "replace")
+    turbo_redirect(favorite_parts_onboarding_index_path, action: "replace")
   end
 
   def favorite_parts
@@ -101,7 +101,7 @@ class  OnboardingController < ApplicationController
       operator: current_user.operator
     )
 
-    turbolinks_redirect(finalize_onboarding_index_path, action: "replace")
+    turbo_redirect(finalize_onboarding_index_path, action: "replace")
   end
 
   def finalize
