@@ -12,11 +12,11 @@ member_invoice:
 
 paid_invoice:
   id: 101
-  stripe_invoice_id: "in_1LWqY4EV6H9PcOfBykUGCa76"
+  stripe_invoice_id: in_1LWqY4EV6H9PcOfBykUGCa76
   amount_due: 17500
   amount_paid: 17500
-  status: "paid"
-  number: "DC87C968-0001"
-  operator: operators(:cowork_tahoe)
-  billable_type: "User"
-  billable: users(:cowork_tahoe_member)
+  status: paid
+  number: DC87C968-0001
+  operator: cowork_tahoe
+  billable_type: User
+  billable: cowork_tahoe_member
