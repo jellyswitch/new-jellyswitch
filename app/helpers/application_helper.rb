@@ -132,7 +132,9 @@ module ApplicationHelper
 
   def has_building_access?(user)
     user.superadmin? || 
-    user.admin? || 
+    user.admin? ||
+    user.community_manager? ||
+    user.general_manager? ||
     user.always_allow_building_access? || 
     user.has_building_access_day_pass? || 
     user.has_building_access_membership? || 

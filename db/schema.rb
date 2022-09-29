@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_09_16_002705) do
+ActiveRecord::Schema[7.0].define(version: 2022_09_27_181427) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -514,7 +514,6 @@ ActiveRecord::Schema[7.0].define(version: 2022_09_16_002705) do
     t.boolean "rentable", default: false, null: false
     t.integer "hourly_rate_in_cents", default: 0, null: false
     t.integer "credit_cost", default: 0, null: false
-    t.boolean "allow_shorter_reservation_duration", default: true, null: false
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
