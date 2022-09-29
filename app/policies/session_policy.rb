@@ -1,4 +1,4 @@
-# typed: true
+
 class SessionPolicy < ApplicationPolicy
   def new?
     !(record.present? && record.class == User) # record is a user

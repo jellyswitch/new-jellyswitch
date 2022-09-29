@@ -1,4 +1,4 @@
-# typed: true
+
 class ChildProfilePolicy < ApplicationPolicy
   def index?
     true

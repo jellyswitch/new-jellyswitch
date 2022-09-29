@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::DayPassesController < Operator::BaseController
   include DayPassesHelper
   before_action :background_image

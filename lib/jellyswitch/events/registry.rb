@@ -1,4 +1,4 @@
-# typed: true
+
 module Jellyswitch
   module Events
     class Registry

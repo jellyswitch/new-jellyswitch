@@ -1,4 +1,4 @@
-# typed: true
+
 module DayPassable
   class CheckInable::DefaultCheckin < SimpleDelegator
     attr_accessor :checkin

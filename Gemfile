@@ -78,7 +78,6 @@ end
 group :development, :test do
   gem 'bundler-audit'
   gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'factory_bot_rails', '~> 5.0.1'
   gem 'mocha'
   gem 'pry-byebug'
   gem 'pry-rails'

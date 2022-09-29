@@ -1,4 +1,4 @@
-# typed: true
+
 class EventPolicy < ApplicationPolicy
   def index?
     enabled?

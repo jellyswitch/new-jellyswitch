@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::SessionsController < Operator::BaseController
   before_action :background_image
 

@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Invoices::MarkInvoiceAsPaid
   include Interactor
 

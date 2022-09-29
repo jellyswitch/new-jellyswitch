@@ -1,4 +1,4 @@
-# typed: false
+
 class UsersController < ApplicationController
   def index
     find_approved_users

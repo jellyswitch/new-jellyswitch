@@ -1,4 +1,4 @@
-# typed: true
+
 class CheckInableFactory
   def self.for(checkin)
     if checkin.billable.out_of_band?

@@ -1,4 +1,4 @@
-# typed: false
+
 class WeeklyUpdateJob < ApplicationJob
   queue_as :default
 

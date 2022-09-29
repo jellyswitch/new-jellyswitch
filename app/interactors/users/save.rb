@@ -1,4 +1,4 @@
-# typed: true
+
 class Users::Save
   include Interactor
   include FeedItemCreator

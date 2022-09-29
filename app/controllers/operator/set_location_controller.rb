@@ -1,4 +1,4 @@
-# typed: true
+
 class Operator::SetLocationController < Operator::BaseController
   before_action :background_image
   include SessionsHelper

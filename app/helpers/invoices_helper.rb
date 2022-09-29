@@ -1,4 +1,4 @@
-# typed: false
+
 module InvoicesHelper
   def path_for_billable(invoice)
     case invoice.billable_type

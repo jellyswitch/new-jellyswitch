@@ -1,4 +1,4 @@
-# typed: true
+
 module StripeSubscription
   class InBand < DefaultSubscription
     def subscription_args

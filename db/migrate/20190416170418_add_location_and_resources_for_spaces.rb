@@ -1,4 +1,4 @@
-# typed: false
+
 class AddLocationAndResourcesForSpaces < ActiveRecord::Migration[5.2]
   LOCATION_RESOURCES = %w(rooms offices office_leases doors)
 

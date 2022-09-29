@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Plans::SavePlan
   include Interactor
 

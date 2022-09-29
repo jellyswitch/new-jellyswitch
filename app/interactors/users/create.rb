@@ -1,4 +1,4 @@
-# typed: true
+
 class Users::Create
   include Interactor::Organizer
 

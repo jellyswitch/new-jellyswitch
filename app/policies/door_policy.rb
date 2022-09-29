@@ -1,4 +1,4 @@
-# typed: true
+
 class DoorPolicy < ApplicationPolicy
   def index?
     enabled? && admin?
