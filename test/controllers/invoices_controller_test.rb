@@ -4,18 +4,19 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:cowork_tahoe_admin)
     log_in @user
-    @invoice = invoices(:paid_invoice)
+    @invoices = [invoices(:paid_invoice), invoices(:member_invoice)]
     StripeMock.start
 
-    stripe_invoice = Stripe::Invoice.create(
-      customer: @user.stripe_customer_id,
-      currency: 'usd',
-      amount: @invoice.amount_due,
-      description: 'test invoice'
-    )
-    
-    @invoice.update(stripe_invoice_id: stripe_invoice.id)
-
+    @invoices.map do |invoice|
+      stripe_invoice = Stripe::Invoice.create(
+        customer: @user.stripe_customer_id,
+        currency: 'usd',
+        amount: invoice.amount_due,
+        description: 'test invoice'
+      )
+      
+      invoice.update(stripe_invoice_id: stripe_invoice.id)
+    end
     Invoice.any_instance.stubs(:payment_method).returns("Credit Card")
   end
 

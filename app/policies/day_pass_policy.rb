@@ -13,7 +13,6 @@ class DayPassPolicy < ApplicationPolicy
   end
 
   def show?
-    byebug
     (owner? || admin? || community_manager? || general_manager?) && billing_enabled?
   end
 

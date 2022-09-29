@@ -9,4 +9,4 @@ office_23b_lease:
   subscription: cowork_tahoe_subscription
   initial_invoice_date: Wed, 01 May 2019
   always_allow_building_access: true
-  location: cowork_tahoe
+  location: cowork_tahoe_location
