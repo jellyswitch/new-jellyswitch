@@ -1,4 +1,4 @@
-# typed: strict
+ strict
 Rails.application.routes.draw do
 
   namespace :mobile do

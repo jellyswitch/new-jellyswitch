@@ -1,3 +1,3 @@
-# typed: strong
+ strong
 module Operators
 end

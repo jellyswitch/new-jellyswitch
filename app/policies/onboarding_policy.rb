@@ -1,4 +1,4 @@
-# typed: ignore
+ ignore
 class OnboardingPolicy < Struct.new(:user, :onboarding)
   include PolicyHelpers
 

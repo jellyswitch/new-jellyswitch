@@ -1,4 +1,4 @@
-# typed: strong
+ strong
 # == Schema Information
 #
 # Table name: operator_surveys

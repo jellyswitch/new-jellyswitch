@@ -1,4 +1,4 @@
-# typed: strict
+ strict
 class ReservationDecorator < ApplicationDecorator
   delegate_all
   decorates_association :room

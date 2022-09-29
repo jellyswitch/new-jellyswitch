@@ -1,4 +1,4 @@
-# typed: strong
+ strong
 class ApplicationRecord < ActiveRecord::Base
   include ActsAsScopable::ModelExtensions
 

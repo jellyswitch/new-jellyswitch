@@ -1,4 +1,4 @@
-# typed: ignore
+ ignore
 class DashboardPolicy < Struct.new(:user, :dashboard)
   include PolicyHelpers
 
