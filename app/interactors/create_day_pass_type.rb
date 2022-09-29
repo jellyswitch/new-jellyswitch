@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateDayPassType
   include Interactor
 

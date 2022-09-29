@@ -1,4 +1,4 @@
-# typed: true
+
 class DayPassable::OutOfBand < DayPassable::DefaultDayPass
   def invoice_args
     super.merge!(

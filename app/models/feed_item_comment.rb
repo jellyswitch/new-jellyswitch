@@ -1,4 +1,4 @@
-# typed: true
+
 # == Schema Information
 #
 # Table name: feed_item_comments

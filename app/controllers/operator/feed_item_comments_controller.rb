@@ -1,4 +1,4 @@
-# typed: true
+
 class Operator::FeedItemCommentsController < Operator::BaseController
   def create
     find_feed_item

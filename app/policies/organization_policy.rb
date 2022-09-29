@@ -1,4 +1,4 @@
-# typed: true
+
 class OrganizationPolicy < ApplicationPolicy
   def index?
     admin?

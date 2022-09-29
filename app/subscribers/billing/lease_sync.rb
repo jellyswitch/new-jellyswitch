@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::LeaseSync
   def self.call(office_lease_id:, operator_id:)
     office_lease = OfficeLease.find(office_lease_id)

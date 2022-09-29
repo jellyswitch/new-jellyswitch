@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Invoices::Refunds::Save
   include Interactor
   include FeedItemCreator

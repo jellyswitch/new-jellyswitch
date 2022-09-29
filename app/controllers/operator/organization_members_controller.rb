@@ -1,4 +1,4 @@
-# typed: true
+
 class Operator::OrganizationMembersController < Operator::BaseController
   def create
     organization = Organization.friendly.find(params[:organization_id])
