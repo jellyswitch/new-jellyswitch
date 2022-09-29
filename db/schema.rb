@@ -583,7 +583,6 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "credit_balance", default: 0, null: false
     t.integer "childcare_reservation_balance", default: 0, null: false
     t.string "android_token"
-    t.string "role", default: "unassigned", null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
@@ -606,10 +605,6 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
   add_foreign_key "office_leases", "organizations", on_delete: :nullify
   add_foreign_key "office_leases", "subscriptions", on_delete: :nullify
   add_foreign_key "offices", "locations", on_delete: :nullify
-  add_foreign_key "pay_charges", "pay_customers", column: "customer_id"
-  add_foreign_key "pay_charges", "pay_subscriptions", column: "subscription_id"
-  add_foreign_key "pay_payment_methods", "pay_customers", column: "customer_id"
-  add_foreign_key "pay_subscriptions", "pay_customers", column: "customer_id"
   add_foreign_key "refunds", "invoices", on_delete: :nullify
   add_foreign_key "rooms", "locations"
 end
