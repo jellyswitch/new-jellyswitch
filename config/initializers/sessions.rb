@@ -1,4 +1,4 @@
-# typed: false
+
 Rails.application.config.session_store(
   :cookie_store,
   key: '_magic_session',

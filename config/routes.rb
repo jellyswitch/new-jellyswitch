@@ -1,4 +1,4 @@
-# typed: strict
+
 Rails.application.routes.draw do
 
   namespace :mobile do
@@ -11,12 +11,9 @@ Rails.application.routes.draw do
   delete "masquerade", to: "masquerade#destroy", as: :end_masquerading
 
   ## Regular endpoints ##
-  constraints subdomain: "stats" do
+  constraints subdomain: "app" do
     require 'sidekiq/web'
     mount Sidekiq::Web => '/sidekiq'
-  end
-
-  constraints subdomain: "app" do
     # Root
     get '/', to: "landing#index"
 
@@ -365,4 +362,6 @@ Rails.application.routes.draw do
     patch "update_payment_method", to: "operator/users#update_payment_method"
   end
   resources :weekly_updates, controller: "operator/weekly_updates"
+
+  resources :mentions, controller: "operator/mentions", only: [:index]
 end

@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::RoomsController < Operator::BaseController
   include RoomsHelper
   include SessionsHelper

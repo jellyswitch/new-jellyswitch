@@ -1,4 +1,4 @@
-# typed: false
+
 module Notifiable
   class ChildcareReservation < Notifiable::Default
     def create_feed_item

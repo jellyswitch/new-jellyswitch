@@ -1,4 +1,4 @@
-# typed: true
+
 class BillableFactory
    def self.for(invoiceable)
     case invoiceable.class.name

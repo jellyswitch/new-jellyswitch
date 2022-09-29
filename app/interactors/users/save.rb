@@ -1,7 +1,8 @@
-# typed: true
+
 class Users::Save
   include Interactor
   include FeedItemCreator
+  include ErrorsHelper
 
   def call
     @user = User.new(context.params)
@@ -14,7 +15,7 @@ class Users::Save
     @user.operator = context.operator
 
     if !@user.save
-      context.fail!(message: "Unable to sign up. Please see below for errors.")
+      context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
     end
 
     context.notifiable = @user

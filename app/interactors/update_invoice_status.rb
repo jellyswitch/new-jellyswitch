@@ -1,4 +1,4 @@
-# typed: false
+
 class UpdateInvoiceStatus
   include Interactor
 

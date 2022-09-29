@@ -1,4 +1,4 @@
-# typed: true
+
 module Jellyswitch
   class Report
     include ApplicationHelper

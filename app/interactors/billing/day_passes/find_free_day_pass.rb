@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::DayPasses::FindFreeDayPass
   include Interactor
 

@@ -1,4 +1,4 @@
-# typed: true
+
 class OperatorsController < ApplicationController
   def index
     find_operators

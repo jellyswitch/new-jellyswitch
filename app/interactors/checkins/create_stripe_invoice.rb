@@ -1,4 +1,4 @@
-# typed: true
+
 class Checkins::CreateStripeInvoice
   include Interactor
 

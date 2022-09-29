@@ -1,4 +1,4 @@
-# typed: true
+
 class DayPassInteractorFactory
   def self.for(token, operator)
     if token.present?

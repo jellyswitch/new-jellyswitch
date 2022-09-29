@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateInvoice
   include Interactor
 

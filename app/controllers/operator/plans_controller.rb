@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::PlansController < Operator::BaseController
   include PlansHelper
   before_action :background_image

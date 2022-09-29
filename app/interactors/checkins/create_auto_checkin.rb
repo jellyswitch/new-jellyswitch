@@ -1,4 +1,4 @@
-# typed: true
+
 class Checkins::CreateAutoCheckin
   include Interactor
 

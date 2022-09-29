@@ -1,4 +1,4 @@
-# typed: true
+
 class DoorPunchPolicy < ApplicationPolicy
   def show?
     admin?

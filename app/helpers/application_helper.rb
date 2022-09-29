@@ -1,4 +1,4 @@
-# typed: false
+
 module ApplicationHelper
   include ChildcareHelper
   include CreditHelper

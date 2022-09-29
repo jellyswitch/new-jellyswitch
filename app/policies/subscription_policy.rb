@@ -1,4 +1,4 @@
-# typed: true
+
 class SubscriptionPolicy < ApplicationPolicy
   def index?
     is_user? && billing_enabled?

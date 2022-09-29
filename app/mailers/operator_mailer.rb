@@ -1,4 +1,4 @@
-# typed: true
+
 class OperatorMailer < ApplicationMailer
   default from: 'Dave at Jellyswitch <dave@jellyswitch.com>'
   def new_demo_instance(user, operator)

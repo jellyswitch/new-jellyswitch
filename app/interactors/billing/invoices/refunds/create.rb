@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Invoices::Refunds::Create
   include Interactor::Organizer
 

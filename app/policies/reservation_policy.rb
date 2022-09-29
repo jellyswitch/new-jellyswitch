@@ -1,4 +1,4 @@
-# typed: true
+
 class ReservationPolicy < ApplicationPolicy
   def new?
     admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)

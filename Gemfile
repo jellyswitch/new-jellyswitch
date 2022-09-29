@@ -22,7 +22,7 @@ gem 'httparty'
 gem 'icalendar'
 gem 'image_processing', '~> 1.2'
 gem 'interactor', "~> 3.0"
-gem 'jbuilder', '~> 2.5'
+gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '>= 4.4.0'
 gem 'json', '>= 2.3.0'
 gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
@@ -61,7 +61,7 @@ group :development do
   gem 'annotate'
   gem 'better_errors', '>= 2.8.0'
   gem 'binding_of_caller'
-  gem 'listen', '>= 3.0.5', '< 3.2'
+  gem 'listen', '>= 3.0.5', '< 3.8'
   gem 'rack-mini-profiler', '~> 2.0'
   gem 'rails-erd'
   gem 'user-auth', git: "https://github.com/jellyswitch/user-auth", :branch => 'master'
@@ -78,11 +78,9 @@ end
 group :development, :test do
   gem 'bundler-audit'
   gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'factory_bot_rails', '~> 5.0.1'
+  gem 'mocha'
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rails-controller-testing'
-  gem 'rspec-rails', '~> 3.8'
-  gem 'rspec_junit_formatter'
   gem 'stripe-ruby-mock', '~> 3.0.1', :require => 'stripe_mock'
 end

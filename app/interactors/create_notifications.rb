@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateNotifications
   include Interactor
 
