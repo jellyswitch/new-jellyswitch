@@ -6,8 +6,10 @@ require "policy_assertions"
 require "minitest/unit"
 require "mocha/minitest"
 require_relative './clearance_helper'
+require_relative './stripe_helper'
 
 class ActiveSupport::TestCase
+  include StripeHelper
   # Run tests in parallel with specified workers
   parallelize(workers: :number_of_processors)
   
@@ -78,6 +80,7 @@ end
 class ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
   include ClearanceHelper
+  include StripeHelper
 
   def default_env
     @default_env ||= { 'HTTP_USER_AGENT' => 'Something safari something else' }
