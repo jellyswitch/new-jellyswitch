@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::OrganizationsController < Operator::BaseController
   before_action :find_organization, except: [:index, :new, :create, :credit_card,
     :out_of_band, :billing, :payment_method, :members, :leases, :invoices, :ltv]

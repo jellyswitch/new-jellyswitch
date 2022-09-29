@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::EventsController < Operator::BaseController
   include EventHelper
   before_action :background_image

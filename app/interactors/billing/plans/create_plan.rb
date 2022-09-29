@@ -1,4 +1,4 @@
-# typed: false
+
 class Billing::Plans::CreatePlan
   include Interactor::Organizer
 

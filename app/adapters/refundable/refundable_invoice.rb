@@ -1,4 +1,4 @@
-# typed: false
+
 module Refundable
   class RefundableInvoice < SimpleDelegator
     def cancel

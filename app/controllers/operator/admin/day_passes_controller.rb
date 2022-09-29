@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::Admin::DayPassesController < Operator::BaseController
   include DayPassesHelper
 

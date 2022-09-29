@@ -1,4 +1,4 @@
-# typed: true
+
 class LandingController < ApplicationController
   def index
     if logged_in?

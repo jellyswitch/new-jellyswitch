@@ -1,4 +1,4 @@
-# typed: false
+
 # == Schema Information
 #
 # Table name: users
@@ -40,6 +40,7 @@
 #
 
 class User < ApplicationRecord
+  include ActionText::Attachable
   searchkick
   # Relationships
   has_many :announcements
@@ -71,8 +72,9 @@ class User < ApplicationRecord
   # Auth stuff
   attr_accessor :remember_token, :reset_token
   before_save { self.email = email.downcase }
-  validates :password, length: { minimum: 6 }, on: :create
-  validates :email, uniqueness: { scope: :operator_id }
+  validates :password, length: { minimum: 6 }, on: :create, presence: true
+  validates :email, uniqueness: { scope: :operator_id }, presence: true
+  validates :name, presence: true
   has_secure_password
 
   # Scopes
@@ -154,6 +156,10 @@ class User < ApplicationRecord
     else
       "None"
     end
+  end
+
+  def to_trix_content_attachment_partial_path
+    to_partial_path
   end
 
 

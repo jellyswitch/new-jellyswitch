@@ -1,4 +1,4 @@
-# typed: true
+
 class MemberFeedback::Create
   include Interactor::Organizer
 

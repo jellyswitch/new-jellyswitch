@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateOperatorSurveys < ActiveRecord::Migration[5.2]
   def change
     create_table :operator_surveys do |t|

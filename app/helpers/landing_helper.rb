@@ -1,4 +1,4 @@
-# typed: false
+
 module LandingHelper
   def landing_redirect
     if logged_in? && current_location.present?

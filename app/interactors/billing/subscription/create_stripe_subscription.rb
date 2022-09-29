@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Subscription::CreateStripeSubscription
   include Interactor
   delegate :subscription, :operator, :start_day, to: :context

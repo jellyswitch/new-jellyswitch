@@ -1,4 +1,4 @@
-# typed: false
+
 module Notifiable
   class WeeklyUpdate < Notifiable::Default
     private

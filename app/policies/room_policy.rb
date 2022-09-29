@@ -1,4 +1,4 @@
-# typed: true
+
 class RoomPolicy < ApplicationPolicy
   def index?
     enabled? && is_user?

@@ -1,4 +1,4 @@
-# typed: false
+
 class CheckoutJob < ApplicationJob
   queue_as :default
 

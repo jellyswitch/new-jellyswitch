@@ -1,4 +1,4 @@
-# typed: true
+
 class InvoicePolicy < ApplicationPolicy
   include PolicyHelpers
 

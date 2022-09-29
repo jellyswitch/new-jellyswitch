@@ -1,4 +1,4 @@
-# typed: true
+
 class UserMailer < ApplicationMailer
   helper ApplicationHelper
   helper LayoutHelper

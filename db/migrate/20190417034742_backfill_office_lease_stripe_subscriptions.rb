@@ -1,4 +1,4 @@
-# typed: true
+
 class BackfillOfficeLeaseStripeSubscriptions < ActiveRecord::Migration[5.2]
   def up
     unsuccessful_leases = []

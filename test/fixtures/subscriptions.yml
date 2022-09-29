@@ -7,4 +7,4 @@ cowork_tahoe_subscription:
   pending: false
   billable_type: User
   billable: cowork_tahoe_member
-  start_date: <%= Time.now %>
+  start_date: <%= Date.today.strftime('%a, %e %b %Y ') %>

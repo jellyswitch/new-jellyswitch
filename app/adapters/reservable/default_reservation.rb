@@ -1,4 +1,4 @@
-# typed: true
+
 module Reservable
   class DefaultReservation < SimpleDelegator
     attr_accessor :reservation

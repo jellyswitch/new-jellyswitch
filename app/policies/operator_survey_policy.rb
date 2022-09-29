@@ -1,4 +1,4 @@
-# typed: true
+
 class OperatorSurveyPolicy < ApplicationPolicy
   def new?
     admin?

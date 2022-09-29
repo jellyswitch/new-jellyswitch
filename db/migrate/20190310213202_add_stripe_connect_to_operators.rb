@@ -1,4 +1,4 @@
-# typed: false
+
 class AddStripeConnectToOperators < ActiveRecord::Migration[5.2]
   def change
     add_column :operators, :stripe_user_id, :string

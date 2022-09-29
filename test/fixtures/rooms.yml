@@ -9,7 +9,8 @@ small_meeting_room:
   updated_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
   visible: true
   operator: cowork_tahoe
-  location: cowork_tahoe
+  location: cowork_tahoe_location
   square_footage: 60
   rentable: true
   hourly_rate_in_cents: 0
+  credit_cost: 5
