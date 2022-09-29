@@ -1,4 +1,4 @@
-# typed: true
+
 class DayPassTypePolicy < ApplicationPolicy
   def index?
     (admin? || community_manager? || general_manager?) && billing_enabled?

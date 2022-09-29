@@ -1,4 +1,4 @@
-# typed: false
+
 class MigrateBlobJob < ApplicationJob
   queue_as :default
 

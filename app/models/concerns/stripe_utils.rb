@@ -1,4 +1,4 @@
-# typed: false
+
 module StripeUtils
   STRIPE_CLASS_MAP = {
     customer: 'Customer',

@@ -1,4 +1,4 @@
-# typed: false
+
 class Billing::Subscription::ActivatePendingSubscription
   include Interactor::Organizer
 

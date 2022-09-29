@@ -1,4 +1,4 @@
-# typed: true
+
 class BackfillInvoices
   include Interactor
 

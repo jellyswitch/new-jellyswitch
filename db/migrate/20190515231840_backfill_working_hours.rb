@@ -1,4 +1,4 @@
-# typed: false
+
 class BackfillWorkingHours < ActiveRecord::Migration[5.2]
   def change
     Location.where(working_hours_enabled: false).each do |location|

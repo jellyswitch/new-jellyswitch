@@ -1,4 +1,4 @@
-# typed: true
+
 module StripeSubscription
   class OutOfBand < DefaultSubscription
     def subscription_args

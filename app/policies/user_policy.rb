@@ -1,4 +1,4 @@
-# typed: true
+
 class UserPolicy < ApplicationPolicy
   def index?
     (admin? || community_manager? || general_manager?)

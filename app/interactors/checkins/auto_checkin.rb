@@ -1,4 +1,4 @@
-# typed: false
+
 class Checkins::AutoCheckin
   include Interactor::Organizer
 

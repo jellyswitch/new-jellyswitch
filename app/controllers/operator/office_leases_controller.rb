@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::OfficeLeasesController < Operator::BaseController
   before_action :find_office_lease, only: [:show]
   before_action :background_image, except: [:create, :update]

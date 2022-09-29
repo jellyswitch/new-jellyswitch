@@ -1,4 +1,4 @@
-# typed: true
+
 class CancelSubscription
   include Interactor::Organizer
 

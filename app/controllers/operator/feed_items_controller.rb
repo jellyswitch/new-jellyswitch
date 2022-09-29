@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::FeedItemsController < Operator::BaseController
   include EventHelper
   include UsersHelper

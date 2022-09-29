@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateStripeCustomer
   include Interactor
 

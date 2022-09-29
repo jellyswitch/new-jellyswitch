@@ -1,4 +1,4 @@
-# typed: true
+
 class CreateCheckins < ActiveRecord::Migration[5.2]
   def change
     create_table :checkins do |t|

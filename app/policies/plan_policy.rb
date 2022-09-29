@@ -1,4 +1,4 @@
-# typed: true
+
 class PlanPolicy < ApplicationPolicy
   def index?
     (admin? || community_manager? || general_manager?) && billing_enabled?

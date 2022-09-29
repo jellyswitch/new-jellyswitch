@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::RefundsController < Operator::BaseController
 
   def create

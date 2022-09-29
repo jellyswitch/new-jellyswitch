@@ -1,4 +1,4 @@
-# typed: false
+
 class BackfillCardAddedOnMembers < ActiveRecord::Migration[5.2]
   def change
     users = User.all

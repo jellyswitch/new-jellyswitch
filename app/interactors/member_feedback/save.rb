@@ -1,4 +1,4 @@
-# typed: true
+
 class MemberFeedback::Save
   include Interactor
   include FeedItemCreator

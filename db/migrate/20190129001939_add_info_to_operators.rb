@@ -1,4 +1,4 @@
-# typed: false
+
 class AddInfoToOperators < ActiveRecord::Migration[5.2]
   def change
     add_column :operators, :snippet, :string, null: false, default: "Generic snippet about the space"

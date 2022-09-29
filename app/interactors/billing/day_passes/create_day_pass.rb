@@ -1,4 +1,4 @@
-# typed: false
+
 class Billing::DayPasses::CreateDayPass
   include Interactor::Organizer
 

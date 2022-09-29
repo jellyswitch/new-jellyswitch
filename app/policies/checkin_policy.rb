@@ -1,4 +1,4 @@
-# typed: true
+
 class CheckinPolicy < ApplicationPolicy
   def new?
     true

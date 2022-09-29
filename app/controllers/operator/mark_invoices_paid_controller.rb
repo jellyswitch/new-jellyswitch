@@ -1,4 +1,4 @@
-# typed: false
+
 class Operator::MarkInvoicesPaidController < Operator::BaseController
   def update
     invoice = Invoice.find(params[:invoice_id])

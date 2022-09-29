@@ -1,4 +1,4 @@
-# typed: false
+
 module PolicyHelpers
   protected
 

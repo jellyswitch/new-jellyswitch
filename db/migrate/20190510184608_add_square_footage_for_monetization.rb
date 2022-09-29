@@ -1,4 +1,4 @@
-# typed: false
+
 class AddSquareFootageForMonetization < ActiveRecord::Migration[5.2]
   def change
     add_column :offices, :square_footage, :integer, null: false, default: 0

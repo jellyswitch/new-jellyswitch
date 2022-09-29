@@ -1,4 +1,4 @@
-# typed: true
+
 class OfficeLeasePolicy < ApplicationPolicy
   def index?
     enabled? && (admin? || superadmin? || community_manager? || general_manager?)

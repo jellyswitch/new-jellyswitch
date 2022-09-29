@@ -1,4 +1,4 @@
-# typed: true
+
 class Operator::DayPassTypesController < Operator::BaseController
   include DayPassTypesHelper
   before_action :find_day_pass_type, only: [:show, :edit, :update, :destroy]

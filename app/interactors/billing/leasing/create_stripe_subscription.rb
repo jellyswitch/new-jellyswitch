@@ -1,4 +1,4 @@
-# typed: true
+
 class Billing::Leasing::CreateStripeSubscription
   include Interactor
 

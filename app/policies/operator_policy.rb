@@ -1,4 +1,4 @@
-# typed: true
+
 class OperatorPolicy < ApplicationPolicy
   def index?
     superadmin?

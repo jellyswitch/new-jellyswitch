@@ -1,4 +1,4 @@
-# typed: true
+
 class StripeSubscriptionFactory
   def self.for(subscription, lease)
     if subscription.billable.out_of_band?

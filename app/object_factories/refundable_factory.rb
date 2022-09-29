@@ -1,4 +1,4 @@
-# typed: false
+
 class RefundableFactory
   def self.for(invoice)
     if invoice.voidable?
