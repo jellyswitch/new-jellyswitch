@@ -4,7 +4,7 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:cowork_tahoe_admin)
     log_in @user
-    @invoice = invoices(:member_invoice)
+    @invoice = invoices(:paid_invoice)
     StripeMock.start
 
     stripe_invoice = Stripe::Invoice.create(

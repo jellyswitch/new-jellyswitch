@@ -24,7 +24,7 @@ class ActiveSupport::TestCase
   end
 
   def setup_initial_user_fixtures
-    @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe))
+    @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
   end
 
   def setup_stripe

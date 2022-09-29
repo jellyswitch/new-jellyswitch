@@ -5,7 +5,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:cowork_tahoe_admin)
     log_in @user
-    @room = rooms(:cowork_tahoe_room)
+    @room = rooms(:small_meeting_room)
   end
 
   test "should get rooms index" do
