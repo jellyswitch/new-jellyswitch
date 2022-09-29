@@ -89,7 +89,7 @@ cowork_tahoe_admin:
   ios_token: some_token
   reset_digest: nil
   reset_sent_at: nil
-  card_added: true
+  card_added: false
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
