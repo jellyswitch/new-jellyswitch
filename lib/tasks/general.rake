@@ -54,3 +54,11 @@ end
 task reindex_models: :environment do
   [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
 end
+
+task migrate_blobs: :environment do
+  FeedItem.notes.map do |feed_item|
+    if feed_item.blob["text"].present?
+      MigrateBlobJob.perform_later(feed_item: feed_item)
+    end
+  end
+end

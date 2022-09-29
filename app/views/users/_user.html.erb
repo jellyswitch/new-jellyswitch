@@ -1,0 +1,8 @@
+<%= link_to user, class: "mention" do %>
+  <% if user.has_profile_photo? %>
+    <%= image_tag user.small_square_profile_photo, width: 23, height: 23, class: "img-fluid rounded-circle border border-success" %>
+  <% else %>
+    <%= image_tag "jellyswitch-square.png", width: 23, height: 23, class: "img-fluid rounded-circle border border-success" %>
+  <% end %>
+  <%= user.name %>
+<% end %>
