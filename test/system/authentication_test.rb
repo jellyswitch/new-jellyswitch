@@ -1,6 +1,10 @@
 require 'application_system_test_case'
 
 class AuthenticationTest < ApplicationSystemTestCase
+  setup do
+    StripeMock.start
+  end
+
   test 'logging in as an admin' do
     user = users(:cowork_tahoe_admin)
 
@@ -9,8 +13,9 @@ class AuthenticationTest < ApplicationSystemTestCase
   end
 
   test 'logging out as a member' do
-    user = users(:cowork_tahoe_member)
-    log_in(user)
+    @user = users(:cowork_tahoe_member)
+    setup_stripe
+    log_in(@user)
     click_on 'My Account'
 
     click_on 'Log out'

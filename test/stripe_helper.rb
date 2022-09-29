@@ -1,30 +1,4 @@
-ENV["RAILS_ENV"] ||= "test"
-require_relative "../config/environment"
-require "rails/test_help"
-require "minitest/mock"
-require "minitest/unit"
-require "mocha/minitest"
-require_relative './clearance_helper'
-require_relative './stripe_helper'
-
-class ActiveSupport::TestCase
-  include StripeHelper
-  # Run tests in parallel with specified workers
-  parallelize(workers: :number_of_processors)
-  
-  # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-  fixtures :all
-
-  parallelize_setup do |worker|
-    Searchkick.index_suffix = worker
-
-    # reindex models
-    # [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
-
-    # and disable callbacks
-    Searchkick.disable_callbacks
-  end
-
+module StripeHelper
   def setup_initial_user_fixtures
     @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
   end
@@ -71,23 +45,3 @@ class ActiveSupport::TestCase
     subscription.update(stripe_subscription_id: stripe_subscription.id)
   end
 end
-
-class ActionDispatch::IntegrationTest
-  include ActiveJob::TestHelper
-  include ClearanceHelper
-  include StripeHelper
-
-  def default_env
-    @default_env ||= { 'HTTP_USER_AGENT' => 'Something safari something else' }
-  end
-
-  def ios_env
-    @default_env ||= { 'HTTP_USER_AGENT' => 'something Jellyswitch something else deviceToken: abcdef12345' }
-  end
-end
-
-# reindex models
-# [Announcement, Room, Door, Location, Organization, FeedItem, User].map {|klass| klass.reindex }
-
-# and disable callbacks
-Searchkick.disable_callbacks
