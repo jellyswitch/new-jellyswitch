@@ -83,7 +83,5 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'pry-rails'
   gem 'rails-controller-testing'
-  gem 'rspec-rails', '~> 3.8'
-  gem 'rspec_junit_formatter'
   gem 'stripe-ruby-mock', '~> 3.0.1', :require => 'stripe_mock'
 end

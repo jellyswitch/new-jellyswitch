@@ -30,7 +30,7 @@ module Jellyswitch
 
     config.action_mailer.default_url_options = { host: ENV['HOST'] }
     config.action_view.form_with_generates_remote_forms = true
-    config.action_mailer.preview_path = "#{Rails.root}/spec/mailers"
+    config.action_mailer.preview_path = "#{Rails.root}/test/mailers"
 
     config.action_controller.asset_host = ENV['ASSET_HOST']
     config.beginning_of_week = :sunday
