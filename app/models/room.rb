@@ -84,22 +84,6 @@ class Room < ApplicationRecord
 
   # Instance Methods
 
-  def available_for_four_hour_duration?(datetime_in:)
-    all_durations = [30, 60, 90, 120, 150, 180, 210, 240]
-
-    all_durations.each do |duration|
-      if available_at?(datetime_in + (duration.minutes - 1))
-        if duration == 240
-          return true
-        else
-          next
-        end
-      else
-        return false
-      end
-    end
-  end
-
   def square_photo
     photo.variant(resize: "300x300")
   end
