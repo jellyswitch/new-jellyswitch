@@ -31,6 +31,7 @@ class Reservation < ApplicationRecord
   scope :today, -> () { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
   scope :future, -> () { where("datetime_in >= ?", Time.current) }
   scope :past, -> () { where("datetime_in < ?", Time.current) }
+  scope :between, -> (time_start, time_end) { where('datetime_in > ? and datetime_in < ?', time_start, time_end) }
 
   delegate :operator, to: :room
   
