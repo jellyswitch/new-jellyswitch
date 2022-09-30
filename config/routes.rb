@@ -90,6 +90,8 @@ Rails.application.routes.draw do
   get "/plans_day_passes", to: "operator/landing#plans_day_passes", as: :plans_day_passes
   get "/customization", to: "operator/landing#customization", as: :customization
   get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
+  post "/pause_membership/:id", to: "operator/pause_memberships#create", as: "pause_membership"
+  delete "/pause_membership/:id", to: "operator/pause_memberships#destroy", as: "reactivate_membership"
 
   # Admin namespace (for operator resources)
   namespace :operator do
