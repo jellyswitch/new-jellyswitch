@@ -125,7 +125,7 @@ class User < ApplicationRecord
   SUPERADMIN        = 'superadmin'.freeze
 
   def self.role_options_for_select
-    roles.reject{|r| r == User::SUPERADMIN }.map { |r| [r.titleize, r] }
+    roles.map { |r| [r.titleize, r] }
   end
 
   def self.roles
