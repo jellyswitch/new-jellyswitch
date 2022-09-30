@@ -1,6 +1,7 @@
 module RoomsHelper
   def room_params
     p = params.require(:room).permit(
+      :allow_shorter_reservation_duration,
       :name, 
       :description, 
       :whiteboard, 

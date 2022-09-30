@@ -19,7 +19,9 @@
 
     <% @room.future_availability_for_day(@day.beginning_of_day).each do |option| %>
       <% if option[:reservation].present? %>
-        <%= link_to "#{pretty_time(option[:hour])} (#{option[:reservation].user.name})", "#", class: "btn btn-block btn-danger disabled" %>
+        <%= link_to "#{pretty_time(option[:hour])} (#{option[:reservation].user.name })", "#", class: "btn btn-block btn-danger disabled" %>
+      <% elsif !@room.allow_shorter_reservation_duration && Reservation.for_room(@room).and(Reservation.between(option[:hour], option[:hour] + 4.hours)).present? %>
+        <%= link_to "#{pretty_time(option[:hour])} (unavailable)", "#", class: "btn btn-block btn-danger disabled" %>
       <% else %>
         <%= link_to pretty_time(option[:hour]), choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(option[:hour])), class: "btn btn-block btn-primary" %>
       <% end %>
