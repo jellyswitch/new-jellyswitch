@@ -81,11 +81,19 @@ module SessionsHelper
   end
 
   def admin?
-    logged_in? && current_user.admin?
+    logged_in? && current_user.admin? || superadmin?
   end
 
   def superadmin?
     logged_in? && current_user.superadmin?
+  end
+
+  def community_manager?
+    logged_in? && current_user.community_manager?
+  end
+
+  def general_manager?
+    logged_in? && current_user.general_manager?
   end
 
   def pending?

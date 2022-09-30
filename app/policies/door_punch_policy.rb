@@ -1,6 +1,6 @@
 
 class DoorPunchPolicy < ApplicationPolicy
   def show?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 end

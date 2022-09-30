@@ -3,6 +3,6 @@ class OnboardingPolicy < Struct.new(:user, :onboarding)
   include PolicyHelpers
 
   def show?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 end

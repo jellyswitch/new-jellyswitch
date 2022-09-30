@@ -1,7 +1,7 @@
 
 class LocationPolicy < ApplicationPolicy
   def index?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def new?

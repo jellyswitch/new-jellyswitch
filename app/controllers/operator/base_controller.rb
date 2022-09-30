@@ -56,8 +56,7 @@ class Operator::BaseController < ApplicationController
   def set_navigation
     @navigation = NavigationFactory.for(
       logged_in?, 
-      admin?, 
-      current_tenant, 
+      current_tenant,
       current_location,
       current_user)
   end

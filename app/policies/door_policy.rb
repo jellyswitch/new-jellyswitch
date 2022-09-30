@@ -1,35 +1,35 @@
 
 class DoorPolicy < ApplicationPolicy
   def index?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def show?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def new?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def create?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def update?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def edit?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def open?
-    user.present? && admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?)
+    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
   end
 
   def keys?
-    user.present? || (admin? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
+    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
   end
   
   def enabled?

@@ -1,34 +1,34 @@
 
 class FeedItemPolicy < ApplicationPolicy
   def index?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def questions?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def activity?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def notes?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def financial?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def create?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def show?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 
   def destroy?
-    admin?
+    (admin? || community_manager? || general_manager?)
   end
 end

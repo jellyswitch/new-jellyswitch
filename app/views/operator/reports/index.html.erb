@@ -38,11 +38,12 @@
     <dd class="col"><%= link_to "View Data", membership_breakdown_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>
 
+<% if policy(:report).revenue? %>
   <dl class="row">
     <dt class="col-lg-6">Revenue</dt>
     <dd class="col"><%= link_to "View Data", revenue_reports_path, class: "btn btn-primary btn-block" %></dd>
   </dl>
-
+<% end %>
   <dl class="row">
     <dt class="col-lg-6">Check-ins</dt>
     <dd class="col"><%= link_to "View Data", checkins_reports_path, class: "btn btn-primary btn-block" %></dd>

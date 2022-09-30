@@ -1,14 +1,14 @@
 class AnnouncementPolicy < ApplicationPolicy
   def index?
-    enabled? && user.present? && (billing_disabled? || admin? || (user.member_at_operator?(operator) && approved?))
+    enabled? && user.present? && (billing_disabled? || admin? || (user.member_at_operator?(operator) || community_manager? || general_manager?)) && approved?
   end
 
   def new?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def create?
-    enabled? && admin?
+    enabled? && (admin? || community_manager? || general_manager?)
   end
 
   def enabled?
@@ -18,6 +18,6 @@ class AnnouncementPolicy < ApplicationPolicy
   private
 
   def can_see_announcements?
-    admin? || (user.allowed_in?(location) && user.approved?)
+    admin? || (user.allowed_in?(location) && user.approved?) || community_manager? || general_manager?
   end
 end

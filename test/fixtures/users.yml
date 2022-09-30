@@ -23,6 +23,7 @@
 #  remember_digest               :string
 #  reset_digest                  :string
 #  reset_sent_at                 :datetime
+#  role                          :string           default("unassigned"), not null
 #  slug                          :string
 #  superadmin                    :boolean          default(FALSE), not null
 #  twitter                       :string
@@ -37,6 +38,37 @@
 #
 #  index_users_on_operator_id  (operator_id)
 #
+
+cowork_tahoe_superadmin:
+  name: Superadmin
+  email: superadmin@jellyswitch.com
+  password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
+  admin: true
+  remember_digest: nil
+  slug: super-admin
+  bio: I am the super admin
+  linkedin: ""
+  twitter: ""
+  website: ""
+  organization: sierra_nevada_organization
+  approved: true
+  stripe_customer_id: nil
+  operator: cowork_tahoe
+  superadmin: false
+  out_of_band: false
+  ios_token: some_token
+  reset_digest: nil
+  reset_sent_at: nil
+  card_added: true
+  always_allow_building_access: false
+  bill_to_organization: false
+  archived: false
+  phone: nil
+  credit_balance: 0
+  childcare_reservation_balance: 0
+  android_token: nil
+  role: superadmin
+
 cowork_tahoe_admin:
   name: Dave Paola
   email: dave@jellyswitch.com
@@ -48,7 +80,7 @@ cowork_tahoe_admin:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: nil
   operator: cowork_tahoe
@@ -65,6 +97,7 @@ cowork_tahoe_admin:
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
+  role: admin
 
 cowork_tahoe_member:
   name: Tim C
@@ -77,7 +110,37 @@ cowork_tahoe_member:
   linkedin: ""
   twitter: ""
   website: ""
-  organization_id: nil
+  organization: sierra_nevada_organization
+  approved: true
+  stripe_customer_id: nil
+  operator: cowork_tahoe
+  superadmin: false
+  out_of_band: false
+  ios_token: some_token
+  reset_digest: nil
+  reset_sent_at: nil
+  card_added: true
+  always_allow_building_access: false
+  bill_to_organization: false
+  archived: false
+  phone: nil
+  credit_balance: 0
+  childcare_reservation_balance: 0
+  android_token: nil
+  role: unassigned
+
+cowork_tahoe_community_manager:
+  name: Community Manager
+  email: cm@jellyswitch.com
+  password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
+  admin: false
+  remember_digest: nil
+  slug: community-manager
+  bio: The community manager
+  linkedin: ""
+  twitter: ""
+  website: ""
+  organization: sierra_nevada_organization
   approved: true
   stripe_customer_id: cus_MIxudSkB0PDeE5
   operator: cowork_tahoe
@@ -94,3 +157,34 @@ cowork_tahoe_member:
   credit_balance: 10
   childcare_reservation_balance: 0
   android_token: nil
+  role: community-manager
+
+cowork_tahoe_general_manager:
+  name: General Manager
+  email: gm@jellyswitch.com
+  password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
+  admin: false
+  remember_digest: nil
+  slug: general-manager
+  bio: The general manager
+  linkedin: ""
+  twitter: ""
+  website: ""
+  organization: sierra_nevada_organization
+  approved: true
+  stripe_customer_id: nil
+  operator: cowork_tahoe
+  superadmin: false
+  out_of_band: false
+  ios_token: some_token
+  reset_digest: nil
+  reset_sent_at: nil
+  card_added: false
+  always_allow_building_access: false
+  bill_to_organization: false
+  archived: false
+  phone: nil
+  credit_balance: 0
+  childcare_reservation_balance: 0
+  android_token: nil
+  role: general-manager

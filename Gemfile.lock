@@ -287,6 +287,9 @@ GEM
       multi_json
     pagy (4.10.2)
     pg (1.4.3)
+    policy-assertions (0.2.0)
+      activesupport (>= 3.0.0)
+      pundit (>= 1.0.0)
     popper_js (1.14.5)
     premailer (1.11.1)
       addressable
@@ -494,7 +497,7 @@ DEPENDENCIES
   json (>= 2.3.0)
   listen (>= 3.0.5, < 3.8)
   mail_hatch
-  mocha
+  mocha (~> 1.14)
   momentjs-rails (>= 2.9.0)
   money
   net-http
@@ -503,6 +506,7 @@ DEPENDENCIES
   opensearch-ruby
   pagy (~> 4.10.1)
   pg
+  policy-assertions
   premailer-rails
   pry-byebug
   pry-rails

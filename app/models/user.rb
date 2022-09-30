@@ -24,6 +24,7 @@
 #  remember_digest               :string
 #  reset_digest                  :string
 #  reset_sent_at                 :datetime
+#  role                          :string           default("unassigned"), not null
 #  slug                          :string
 #  superadmin                    :boolean          default(FALSE), not null
 #  twitter                       :string
@@ -82,19 +83,21 @@ class User < ApplicationRecord
   scope :unapproved, -> { where(approved: false) }
   scope :archived, -> { where(archived: true) }
   scope :visible, -> { where(archived: false) }
-  scope :members, -> { where(admin: false) }
-  scope :admins, -> { where(admin: true) }
-  scope :non_superadmins, -> { where(superadmin: false) }
+  scope :members, -> { where(role: User::UNASSIGNED) }
+  scope :admins, -> { where(role: User::ADMIN) }
+  scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
-  scope :superadmins, -> { where(superadmin: true) }
+  scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
   # Permissions
   delegate  :member_at_operator?,
             :member?,
             :has_active_subscription_at_location?,
-            :admin?, 
-            :superadmin?, 
+            :admin?,
+            :superadmin?,
+            :community_manager?,
+            :general_manager?,
             :pending?, 
             :has_active_subscription?,
             :has_building_access_membership?, 
@@ -113,6 +116,27 @@ class User < ApplicationRecord
             :should_charge_for_reservation?,
             :can_see_all_rooms?,
             to: :user_permissions
+
+  # Roles
+  UNASSIGNED        = 'unassigned'.freeze
+  COMMUNITY_MANAGER = 'community-manager'.freeze
+  GENERAL_MANAGER   = 'general-manager'.freeze
+  ADMIN             = 'admin'.freeze
+  SUPERADMIN        = 'superadmin'.freeze
+
+  def self.role_options_for_select
+    roles.reject{|r| r == User::SUPERADMIN }.map { |r| [r.titleize, r] }
+  end
+
+  def self.roles
+    [
+      UNASSIGNED,
+      COMMUNITY_MANAGER,
+      GENERAL_MANAGER,
+      ADMIN,
+      SUPERADMIN
+    ].freeze
+  end
   
   def search_data
     {

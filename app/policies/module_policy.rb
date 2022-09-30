@@ -1,47 +1,47 @@
 
 class ModulePolicy < ApplicationPolicy
   def index?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def announcements?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def bulletin_board?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
   
   def events?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def door_integration?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def rooms?
-    admin?
+   (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def offices?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def credits?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def crm?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
 
   def childcare?
-    admin?
+    (admin? || superadmin? || community_manager? || general_manager?)
   end
   
   def reservation_credits_settings?
-    admin? && credits?
+    (admin? || superadmin? || community_manager? || general_manager?) && credits?
   end
 
   def childcare_reservations_settings?

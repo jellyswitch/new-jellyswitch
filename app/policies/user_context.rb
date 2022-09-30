@@ -12,6 +12,14 @@ class UserContext
     @user.admin?
   end
 
+  def community_manager?
+    @user.community_manager?
+  end
+
+  def general_manager?
+    @user.general_manager?
+  end
+
   def present?
     @user.present?
   end

@@ -3,18 +3,19 @@
 #
 # Table name: subscriptions
 #
-#  id                     :bigint(8)        not null, primary key
-#  active                 :boolean          default(TRUE), not null
-#  billable_type          :string
-#  pending                :boolean          default(FALSE), not null
-#  start_date             :date             not null
-#  subscribable_type      :string
-#  created_at             :datetime         not null
-#  updated_at             :datetime         not null
-#  billable_id            :bigint(8)
-#  plan_id                :integer          not null
-#  stripe_subscription_id :string
-#  subscribable_id        :bigint(8)
+#  id                                  :bigint(8)        not null, primary key
+#  active                              :boolean          default(TRUE), not null
+#  billable_type                       :string
+#  cancelling_at_end_of_billing_period :boolean          default(FALSE), not null
+#  pending                             :boolean          default(FALSE), not null
+#  start_date                          :date             not null
+#  subscribable_type                   :string
+#  created_at                          :datetime         not null
+#  updated_at                          :datetime         not null
+#  billable_id                         :bigint(8)
+#  plan_id                             :integer          not null
+#  stripe_subscription_id              :string
+#  subscribable_id                     :bigint(8)
 #
 # Indexes
 #

@@ -38,13 +38,15 @@
 
       <% if invoice.paid?  %>
         <div class="clearfix mb-1"></div>
-        <%= button_to invoice_refunds_path(invoice), remote: true, class: "btn btn-block btn-secondary" do %>
-          <span class="show-when-enabled">
-            Refund
-          </span>
-          <span class="show-when-disabled">
-            Refunding...
-          </span>
+        <% if policy(:invoice).create? %>
+          <%= button_to invoice_refunds_path(invoice), remote: true, class: "btn btn-block btn-secondary" do %>
+            <span class="show-when-enabled">
+              Refund
+            </span>
+            <span class="show-when-disabled">
+              Refunding...
+            </span>
+          <% end %>
         <% end %>
       <% end %>
 

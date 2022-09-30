@@ -1,3 +1,15 @@
+member_invoice:
+  stripe_invoice_id: in_foobar
+  amount_due: 50000
+  amount_paid: 0
+  date: Sun, 03 Feb 2019 11:21:56.445141000 PST -08:00
+  status: due
+  number: 3762
+  operator: cowork_tahoe
+  due_date: Tue, 05 Mar 2019 11:21:56.445141000 PST -08:00
+  billable_type: User
+  billable: cowork_tahoe_member
+
 paid_invoice:
   id: 101
   stripe_invoice_id: in_1LWqY4EV6H9PcOfBykUGCa76

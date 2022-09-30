@@ -11,7 +11,6 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 2022_09_27_181427) do
-
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,8 +19,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.text "body"
     t.string "record_type", null: false
     t.bigint "record_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["record_type", "record_id", "name"], name: "index_action_text_rich_texts_uniqueness", unique: true
   end
 
@@ -30,7 +29,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "record_type", null: false
     t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
@@ -42,7 +41,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.text "metadata"
     t.bigint "byte_size", null: false
     t.string "checksum", null: false
-    t.datetime "created_at", null: false
+    t.datetime "created_at", precision: nil, null: false
     t.string "service_name", default: "amazon", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
@@ -58,7 +57,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.bigint "user_id"
     t.string "name"
     t.jsonb "properties"
-    t.datetime "time"
+    t.datetime "time", precision: nil
     t.index ["name", "time"], name: "index_ahoy_events_on_name_and_time"
     t.index ["properties"], name: "index_ahoy_events_on_properties", opclass: :jsonb_path_ops, using: :gin
     t.index ["user_id"], name: "index_ahoy_events_on_user_id"
@@ -90,7 +89,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "app_version"
     t.string "os_version"
     t.string "platform"
-    t.datetime "started_at"
+    t.datetime "started_at", precision: nil
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
   end
@@ -99,18 +98,18 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "user_id"
     t.text "body"
     t.integer "operator_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "checkins", force: :cascade do |t|
     t.integer "location_id", null: false
     t.integer "user_id", null: false
-    t.datetime "datetime_in", null: false
-    t.datetime "datetime_out"
+    t.datetime "datetime_in", precision: nil, null: false
+    t.datetime "datetime_out", precision: nil
     t.integer "invoice_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
@@ -118,10 +117,10 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
 
   create_table "child_profiles", force: :cascade do |t|
     t.string "name"
-    t.datetime "birthday"
+    t.datetime "birthday", precision: nil
     t.integer "user_id"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "childcare_reservations", force: :cascade do |t|
@@ -129,8 +128,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "child_profile_id", null: false
     t.date "date", null: false
     t.boolean "cancelled", default: false, null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "childcare_slots", force: :cascade do |t|
@@ -138,8 +137,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "week_day", null: false
     t.boolean "deleted", default: false, null: false
     t.integer "location_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.integer "capacity", default: 0, null: false
   end
 
@@ -149,8 +148,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "amount_in_cents", default: 0, null: false
     t.boolean "available", default: true, null: false
     t.boolean "visible", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "always_allow_building_access", default: false, null: false
     t.string "code"
   end
@@ -158,8 +157,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
   create_table "day_passes", force: :cascade do |t|
     t.date "day", null: false
     t.integer "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "stripe_charge_id"
     t.integer "operator_id", default: 1, null: false
     t.integer "day_pass_type_id"
@@ -173,8 +172,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
   create_table "door_punches", force: :cascade do |t|
     t.integer "door_id"
     t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "operator_id", default: 1, null: false
     t.jsonb "json"
     t.index ["operator_id"], name: "index_door_punches_on_operator_id"
@@ -184,8 +183,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "name", null: false
     t.string "slug", null: false
     t.boolean "available", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "operator_id", default: 1, null: false
     t.integer "kisi_id"
     t.bigint "location_id"
@@ -199,27 +198,27 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.text "description"
     t.integer "user_id", null: false
     t.integer "location_id", null: false
-    t.datetime "starts_at", null: false
+    t.datetime "starts_at", precision: nil, null: false
     t.string "location_string"
-    t.datetime "ends_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "ends_at", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "feed_item_comments", force: :cascade do |t|
     t.integer "feed_item_id", null: false
     t.integer "user_id", null: false
     t.text "comment"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "feed_items", force: :cascade do |t|
     t.integer "operator_id", null: false
     t.integer "user_id"
     t.jsonb "blob", default: "{}", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "expense", default: false, null: false
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
   end
@@ -229,7 +228,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "sluggable_id", null: false
     t.string "sluggable_type", limit: 50
     t.string "scope"
-    t.datetime "created_at"
+    t.datetime "created_at", precision: nil
     t.index ["slug", "sluggable_type", "scope"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type_and_scope", unique: true
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_id"
@@ -240,13 +239,13 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "stripe_invoice_id"
     t.integer "amount_due"
     t.integer "amount_paid"
-    t.datetime "date"
+    t.datetime "date", precision: nil
     t.string "status"
     t.string "number"
     t.integer "operator_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.datetime "due_date"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.datetime "due_date", precision: nil
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
@@ -255,8 +254,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
   create_table "lead_notes", force: :cascade do |t|
     t.integer "lead_id", null: false
     t.integer "user_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "leads", force: :cascade do |t|
@@ -264,8 +263,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "ahoy_visit_id"
     t.string "status"
     t.integer "operator_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.string "source"
   end
 
@@ -293,8 +292,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "working_day_start", default: "09:00", null: false
     t.string "working_day_end", default: "18:00", null: false
     t.string "stripe_user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "time_zone", default: "Pacific Time (US & Canada)", null: false
     t.boolean "visible", default: true, null: false
     t.integer "flex_square_footage", default: 0, null: false
@@ -330,8 +329,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "rating"
     t.integer "operator_id", null: false
     t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "office_leases", force: :cascade do |t|
@@ -340,8 +339,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.bigint "office_id"
     t.date "start_date", null: false
     t.date "end_date", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "subscription_id"
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
@@ -360,8 +359,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "capacity", default: 1, null: false
     t.boolean "visible", default: true, null: false
     t.text "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "location_id"
     t.integer "square_footage", default: 0, null: false
     t.index ["location_id"], name: "index_offices_on_location_id"
@@ -377,15 +376,15 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "operator_name"
     t.string "operator_email"
     t.string "location"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "operators", force: :cascade do |t|
     t.string "name", null: false
     t.string "subdomain", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "snippet", default: "Generic snippet about the space", null: false
     t.string "wifi_name", default: "not set", null: false
     t.string "wifi_password", default: "not set", null: false
@@ -434,8 +433,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "owner_id"
     t.string "website"
     t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "operator_id", default: 1, null: false
     t.string "stripe_customer_id"
     t.boolean "out_of_band", default: true, null: false
@@ -449,8 +448,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.boolean "visible", default: true, null: false
     t.boolean "available", default: true, null: false
     t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "stripe_plan_id"
     t.integer "operator_id", default: 1, null: false
     t.string "plan_type"
@@ -466,34 +465,34 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
   create_table "post_replies", force: :cascade do |t|
     t.integer "post_id", null: false
     t.integer "user_id", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "posts", force: :cascade do |t|
     t.integer "location_id", null: false
     t.integer "user_id", null: false
     t.string "title", null: false
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "refunds", force: :cascade do |t|
     t.bigint "invoice_id"
     t.string "stripe_refund_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "amount", default: 0, null: false
     t.index ["invoice_id"], name: "index_refunds_on_invoice_id"
   end
 
   create_table "reservations", force: :cascade do |t|
     t.integer "user_id", null: false
-    t.datetime "datetime_in", null: false
+    t.datetime "datetime_in", precision: nil, null: false
     t.integer "hours", default: 1, null: false
     t.integer "room_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "cancelled", default: false, null: false
     t.integer "minutes", default: 0, null: false
     t.integer "credit_cost", default: 0, null: false
@@ -506,8 +505,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.boolean "av", default: false, null: false
     t.integer "capacity", default: 1, null: false
     t.string "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.boolean "visible", default: true, null: false
     t.integer "operator_id", default: 1, null: false
     t.bigint "location_id"
@@ -524,23 +523,23 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "user_id", null: false
     t.integer "event_id", null: false
     t.boolean "going", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.bigint "ahoy_visit_id"
   end
 
   create_table "subdomains", force: :cascade do |t|
     t.string "subdomain", null: false
     t.boolean "in_use", default: false, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
   end
 
   create_table "subscriptions", force: :cascade do |t|
     t.integer "plan_id", null: false
     t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.string "stripe_subscription_id"
     t.string "subscribable_type"
     t.bigint "subscribable_id"
@@ -564,8 +563,8 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.string "linkedin"
     t.string "twitter"
     t.string "website"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.integer "organization_id"
     t.boolean "approved", default: false, null: false
     t.string "stripe_customer_id"
@@ -574,7 +573,7 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.boolean "out_of_band", default: false, null: false
     t.string "ios_token"
     t.string "reset_digest"
-    t.datetime "reset_sent_at"
+    t.datetime "reset_sent_at", precision: nil
     t.boolean "card_added", default: false, null: false
     t.boolean "always_allow_building_access", default: false, null: false
     t.boolean "bill_to_organization", default: false, null: false
@@ -583,16 +582,17 @@ ActiveRecord::Schema.define(version: 2022_09_27_181427) do
     t.integer "credit_balance", default: 0, null: false
     t.integer "childcare_reservation_balance", default: 0, null: false
     t.string "android_token"
+    t.string "role", default: "unassigned", null: false
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
   create_table "weekly_updates", force: :cascade do |t|
     t.integer "operator_id"
     t.jsonb "blob"
-    t.datetime "week_start"
-    t.datetime "week_end"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "week_start", precision: nil
+    t.datetime "week_end", precision: nil
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
     t.jsonb "previous_blob"
   end
 

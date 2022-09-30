@@ -9,11 +9,11 @@ class DayPassPolicy < ApplicationPolicy
   end
 
   def create?
-    (is_user? && billing_enabled?) || admin?
+    (is_user? && billing_enabled?) || admin? || community_manager? || general_manager?
   end
 
   def show?
-    (owner? || admin?) && billing_enabled?
+    (owner? || admin? || community_manager? || general_manager?) && billing_enabled?
   end
 
   def code?

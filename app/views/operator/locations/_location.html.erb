@@ -8,7 +8,7 @@
         <div class="col">
           <h5 class="">
             <%= location.name %>
-          </h4>
+          </h5>
         </div>
       </div>
 
@@ -18,7 +18,7 @@
         </div>
       </div>
 
-      <% if admin? %>
+      <% if policy(:location).show? %>
         <div class="row">
           <div class="col">
             <%= link_to "Manage #{location.name}", location, class: "btn btn-info btn-block" %>

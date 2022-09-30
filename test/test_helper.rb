@@ -2,11 +2,14 @@ ENV["RAILS_ENV"] ||= "test"
 require_relative "../config/environment"
 require "rails/test_help"
 require "minitest/mock"
+require "policy_assertions"
 require "minitest/unit"
 require "mocha/minitest"
 require_relative './clearance_helper'
+require_relative './stripe_helper'
 
 class ActiveSupport::TestCase
+  include StripeHelper
   # Run tests in parallel with specified workers
   parallelize(workers: :number_of_processors)
   
@@ -24,7 +27,11 @@ class ActiveSupport::TestCase
   end
 
   def setup_initial_user_fixtures
+    @admin = UserContext.new(users(:cowork_tahoe_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @superadmin = UserContext.new(users(:cowork_tahoe_superadmin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
   end
 
   def setup_stripe
@@ -73,6 +80,7 @@ end
 class ActionDispatch::IntegrationTest
   include ActiveJob::TestHelper
   include ClearanceHelper
+  include StripeHelper
 
   def default_env
     @default_env ||= { 'HTTP_USER_AGENT' => 'Something safari something else' }

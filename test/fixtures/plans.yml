@@ -1,3 +1,30 @@
+# == Schema Information
+#
+# Table name: plans
+#
+#  id                           :bigint(8)        not null, primary key
+#  always_allow_building_access :boolean          default(TRUE), not null
+#  amount_in_cents              :integer          not null
+#  available                    :boolean          default(TRUE), not null
+#  childcare_reservations       :integer          default(0), not null
+#  commitment_interval          :integer
+#  credits                      :integer          default(0), not null
+#  day_limit                    :integer          default(0), not null
+#  has_day_limit                :boolean          default(FALSE), not null
+#  interval                     :string           not null
+#  name                         :string           not null
+#  plan_type                    :string
+#  slug                         :string
+#  visible                      :boolean          default(TRUE), not null
+#  created_at                   :datetime         not null
+#  updated_at                   :datetime         not null
+#  operator_id                  :integer          default(1), not null
+#  stripe_plan_id               :string
+#
+# Indexes
+#
+#  index_plans_on_operator_id  (operator_id)
+#
 cowork_tahoe_part_time_plan:
  interval: monthly
  amount_in_cents: 17500
@@ -26,8 +53,8 @@ cowork_tahoe_full_time_plan:
  operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
- has_day_limit: true
- day_limit: 10
+ has_day_limit: false
+ day_limit: 0
  credits: 0
  commitment_interval: nil
  childcare_reservations: 0
