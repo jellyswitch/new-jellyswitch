@@ -85,6 +85,9 @@ class User < ApplicationRecord
   scope :visible, -> { where(archived: false) }
   scope :members, -> { where(role: User::UNASSIGNED) }
   scope :admins, -> { where(role: User::ADMIN) }
+  scope :community_managers, -> { where(role: User::COMMUNITY_MANAGER) }
+  scope :general_managers, -> { where(role: User::GENERAL_MANAGER) }
+  scope :taggable, -> { admins.or(general_managers.or(community_managers) ) }
   scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
