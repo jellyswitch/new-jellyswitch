@@ -8,11 +8,11 @@
   <dt class="col-6">Status</dt>
   <dd class="col">
     <% if subscription.active? %>
-        <% if subscription.paused? %>
-          <span class="badge badge-warning">Paused</span>
-        <% else %>
-          <span class="badge badge-success">Active</span>
-        <% end %>
+      <% if subscription.paused? %>
+        <span class="badge badge-warning">Paused</span>
+      <% else %>
+        <span class="badge badge-success">Active</span>
+      <% end %>
     <% else %>
       <span class="badge badge-warning">
         Canceled
@@ -20,14 +20,14 @@
           <%= short_date(subscription.canceled_at) %>
         <% end %>
       </span>
-    <% end %>  
+    <% end %>
   </dd>
 </dl>
 
 <dl class="row mt-3">
   <dt class="col-6">Set to Cancel at Billing Period End?</dt>
   <dd class="col">
-  <% if subscription.cancelling_at_end_of_billing_period? %>
+    <% if subscription.cancelling_at_end_of_billing_period? %>
       <span class="badge badge-warning">
         Yes,
         <% if subscription.has_period_end? %>
@@ -97,18 +97,13 @@
       <div class="col">
         <span class="text-danger">
           <strong>Stripe sync error</strong>
-          <br />
-          <p>This membership is not in sync with Stripe. Please email <%= mail_to "hello@jellyswitch.com", "hello@jellyswitch.com" %> to resolve.
+          <br/>
+          <p>This membership is not in sync with Stripe. Please email <%= mail_to "hello@jellyswitch.com", "hello@jellyswitch.com" %>
+            to resolve.
         </span>
       </div>
     </div>
   <% else %>
-    <div class="row mt-3">
-      <div class="col">
-        <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
-      </div>
-    </div>
-
     <% if subscription.paused? %>
       <div class="row mt-3">
         <div class="col">
@@ -116,11 +111,16 @@
         </div>
       </div>
     <% else %>
-        <div class="row mt-3">
-          <div class="col">
-            <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal"}, class: "btn btn-block btn-danger" %>
-          </div>
+      <div class="row mt-3">
+        <div class="col">
+          <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
         </div>
+      </div>
+      <div class="row mt-3">
+        <div class="col">
+          <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
+        </div>
+      </div>
     <% end %>
 
     <!-- Cancel membership Modal -->
@@ -134,13 +134,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <!-- TODO: Display plans in modal
-            <%# current_tenant.locations.plans do |plan| %>
-              <%# plan.name %>
-              <%# plan.pretty_amount %>
-              <br />
-            <%# end %>
-            -->
+            <%= render "/operator/subscriptions/form", subscription: subscription, label: "Switch my membership", cc: false %>
           </div>
           <div class="modal-footer">
             <%= link_to "Pause Membership", pause_membership_path(subscription), method: :post, class: "btn btn-warning" %>
@@ -150,5 +144,5 @@
         </div>
       </div>
     </div>
-  <% end %>  
+  <% end %>
 <% end %>
