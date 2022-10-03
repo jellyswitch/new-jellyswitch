@@ -4,8 +4,15 @@ class Operator::PauseMembershipsController < Operator::BaseController
   def create
     find_subscription
 
+    if params["resumes_at"].present?
+      resumes_at = params["resumes_at"].to_i
+    else
+      resumes_at = nil
+    end
+
     result = PauseMembership.call(
-      subscription: @subscription
+      subscription: @subscription,
+      resumes_at: resumes_at
     )
 
     if result.success?
