@@ -125,7 +125,7 @@
 
     <!-- Cancel membership Modal -->
     <div class="modal fade" aria-labelledby="cancelMembershipModalLabel" role="dialog" aria-hidden="true" id="cancelMembershipModal" tabindex="-1">
-      <div class="modal-dialog modal-lg">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
             <h5 class="modal-title">Cancel, Downgrade, or Pause Membership</h5>
@@ -137,12 +137,16 @@
             <%= render "/operator/subscriptions/form", subscription: subscription, label: "Switch my membership", cc: false %>
           </div>
           <div class="modal-footer">
-            <%#= link_to "Pause Membership (30 days)", pause_membership_path(subscription, resumes_at: (Time.current + 30.days)), method: :post, class: "btn btn-warning" %>
-            <%#= link_to "Pause Membership (60 days)", pause_membership_path(subscription, resumes_at: (Time.current + 60.days)), method: :post, class: "btn btn-warning" %>
-            <%#= link_to "Pause Membership (90 days)", pause_membership_path(subscription, resumes_at: (Time.current + 90.days)), method: :post, class: "btn btn-warning" %>
-            <%= link_to "Pause Membership (indefinitely)", pause_membership_path(subscription), method: :post, class: "btn btn-warning" %>
-            <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-danger" %>
-            <%= link_to "Close", "#", data: { dismiss: "modal" }, class: "btn btn-secondary" %>
+            <div class="row mt-3">
+              <div class="col">
+                <%= link_to "Pause Membership (30 days)", pause_membership_path(subscription, resumes_at: 30), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (60 days)", pause_membership_path(subscription, resumes_at: 60), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (90 days)", pause_membership_path(subscription, resumes_at: 90), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (indefinitely)", pause_membership_path(subscription), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
+                <%= link_to "Close", "#", data: { dismiss: "modal" }, class: "btn btn-sm btn-secondary" %>
+              </div>
+            </div>
           </div>
         </div>
       </div>
