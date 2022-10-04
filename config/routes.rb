@@ -359,6 +359,7 @@ Rails.application.routes.draw do
     get :unapprove, to: "operator/users#unapprove"
     get :unarchive, to: "operator/users#unarchive"
     get :usage, to: "operator/users#usage"
+    get :change_account, to: "operator/users#change_account"
     patch "update_password", to: "operator/users#update_password"
     patch "update_organization", to: "operator/users#update_organization"
     patch "update_payment_method", to: "operator/users#update_payment_method"

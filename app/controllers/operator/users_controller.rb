@@ -456,6 +456,13 @@ class Operator::UsersController < Operator::BaseController
     end
   end
 
+  def change_account
+    find_user(:user_id)
+    if current_user.subscriptions.active.first
+      @subscription = Subscription.find(current_user.subscriptions.active.first.id)
+    end
+  end
+
   private
 
   def user_password_params

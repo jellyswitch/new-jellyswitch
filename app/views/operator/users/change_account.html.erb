@@ -1,0 +1,58 @@
+<div class="row container mx-auto mt-3 mb-3">
+  <div class="card d-flex justify-content-center align-items-center col-sm bg-light p-3">
+    <div class="card-body">
+      <h1 class="text-center">Change Your Account</h1>
+      <hr/>
+      <% if @subscription %>
+        <h3 class="text-center">Downgrade your membership</h3>
+        <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
+        </div>
+        <hr/>
+        <h3 class="text-center">Pause or Cancel Membership, or Delete your Account</h3>
+        <div class="d-grid text-center gap-2">
+          <%= link_to "Pause Membership (30 days)", pause_membership_path(@subscription, resumes_at: 30), method: :post, class: "btn btn-sm btn-warning" %>
+          <%= link_to "Pause Membership (60 days)", pause_membership_path(@subscription, resumes_at: 60), method: :post, class: "btn btn-sm btn-warning" %>
+          <%= link_to "Pause Membership (90 days)", pause_membership_path(@subscription, resumes_at: 90), method: :post, class: "btn btn-sm btn-warning" %>
+          <%= link_to "Pause Membership (indefinitely)", pause_membership_path(@subscription), method: :post, class: "btn btn-sm btn-warning" %>
+          <%= link_to "Cancel Membership", subscription_path(@subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
+        </div>
+      <% end %>
+      <% if !@subscription %>
+        <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
+      <% end %>
+      <%= link_to "#", data: { toggle: "modal", target: "#accountDeletionModal" }, class: "btn btn-sm btn-danger" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-radioactive" viewBox="0 0 16 16">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z"/>
+            <path d="M9.653 5.496A2.986 2.986 0 0 0 8 5c-.61 0-1.179.183-1.653.496L4.694 2.992A5.972 5.972 0 0 1 8 2c1.222 0 2.358.365 3.306.992L9.653 5.496Zm1.342 2.324a2.986 2.986 0 0 1-.884 2.312 3.01 3.01 0 0 1-.769.552l1.342 2.683c.57-.286 1.09-.66 1.538-1.103a5.986 5.986 0 0 0 1.767-4.624l-2.994.18Zm-5.679 5.548 1.342-2.684A3 3 0 0 1 5.005 7.82l-2.994-.18a6 6 0 0 0 3.306 5.728ZM10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/>
+          </svg>
+          Delete My Account
+        <% end %>
+      </div>
+</div>
+
+
+<div class="modal fade" id="accountDeletionModal" tabindex="-1" role="dialog" aria-labelledby="accountdeletionModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="accountdeletionModalLabel">Please Read:</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <%= confirm_delete_message %>
+      </div>
+      <div class="d-flex justify-content-center align-items-center modal-footer">
+        <%= link_to user_path(@user), method: :delete, remote: true, class: "btn btn-sm btn-danger" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-radioactive" viewBox="0 0 16 16">
+            <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z"/>
+            <path d="M9.653 5.496A2.986 2.986 0 0 0 8 5c-.61 0-1.179.183-1.653.496L4.694 2.992A5.972 5.972 0 0 1 8 2c1.222 0 2.358.365 3.306.992L9.653 5.496Zm1.342 2.324a2.986 2.986 0 0 1-.884 2.312 3.01 3.01 0 0 1-.769.552l1.342 2.683c.57-.286 1.09-.66 1.538-1.103a5.986 5.986 0 0 0 1.767-4.624l-2.994.18Zm-5.679 5.548 1.342-2.684A3 3 0 0 1 5.005 7.82l-2.994-.18a6 6 0 0 0 3.306 5.728ZM10 8a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"/>
+          </svg>
+          Delete My Account
+        <% end %>
+        <%= link_to "Close", "#", data: { dismiss: "modal" }, class: "btn btn-sm btn-secondary" %>
+      </div>
+    </div>
+  </div>
+</div>
