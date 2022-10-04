@@ -74,7 +74,7 @@ class Operator::SubscriptionsController < Operator::BaseController
         turbo_redirect(user_path(@subscription.subscribable))
       else
         flash[:success] = "Your membership has been updated"
-        turbo_redirect(home_path)
+        turbo_redirect(user_memberships_path(current_user))
       end
     else
       flash[:error] = result.message

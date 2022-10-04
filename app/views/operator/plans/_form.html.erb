@@ -1,4 +1,4 @@
-  <%= form_with(model: plan, url: url, method: :post, remote: true) do |f| %>
+  <%= form_with(model: plan, url: url, method: :post, local: true) do |f| %>
     <%= render "shared/error_messages" , model: plan %>
 
     <%= render "operator/plans/form_fields", plan: plan, f: f %>
