@@ -145,9 +145,9 @@
           <div class="modal-footer">
             <div class="row mt-3">
               <div class="col">
-                <%= link_to "Pause Membership (30 days)", pause_membership_path(subscription, resumes_at: (Time.current.to_i + 30.days)), method: :post, class: "btn btn-sm btn-warning" %>
-                <%= link_to "Pause Membership (60 days)", pause_membership_path(subscription, resumes_at: (Time.current.to_i + 60.days)), method: :post, class: "btn btn-sm btn-warning" %>
-                <%= link_to "Pause Membership (90 days)", pause_membership_path(subscription, resumes_at: (Time.current.to_i + 90.days)), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (30 days)", pause_membership_path(subscription, resumes_at: 30), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (60 days)", pause_membership_path(subscription, resumes_at: 60), method: :post, class: "btn btn-sm btn-warning" %>
+                <%= link_to "Pause Membership (90 days)", pause_membership_path(subscription, resumes_at: 90), method: :post, class: "btn btn-sm btn-warning" %>
                 <%= link_to "Pause Membership (indefinitely)", pause_membership_path(subscription), method: :post, class: "btn btn-sm btn-warning" %>
                 <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
                 <%= link_to "Close", "#", data: { dismiss: "modal" }, class: "btn btn-sm btn-secondary" %>
