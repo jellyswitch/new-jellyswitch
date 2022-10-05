@@ -15,9 +15,19 @@ class Operator::PauseMembershipsController < Operator::BaseController
       resumes_at: resumes_at
     )
 
+    def days(resumes_at)
+      begin_date = Time.now
+      end_date = Time.at(resumes_at)
+      (end_date - begin_date) / (60 * 60 * 24)
+    end
+
     if result.success?
-      flash[:success] = "You have paused your subscription '#{@subscription.plan.name}'"
-      turbo_redirect subscription_path(@subscription)
+      if resumes_at == nil
+        flash[:success] = "You have paused your subscription '#{@subscription.plan.name}'"
+      else
+        flash[:success] = "You have paused your subscription '#{@subscription.plan.name}' for #{days(resumes_at).round} days"
+      end
+      turbo_redirect home_path
     else
       flash[:error] = "Something went wrong pausing your subscription '#{@subscription.plan.name}'"
       turbo_redirect subscription_path(@subscription)
