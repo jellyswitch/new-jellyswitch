@@ -103,7 +103,7 @@ class Operator::LandingController < Operator::BaseController
   end
 
   def plans_day_passes
-    authorize :dashboard, :show?
+    authorize :plan, :index?
   end
 
   def customization

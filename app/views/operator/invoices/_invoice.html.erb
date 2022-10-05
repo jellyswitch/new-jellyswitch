@@ -75,7 +75,6 @@
 
         <% if policy(invoice).charge? %>
           <div class="clearfix mb-1"></div>
-          <%= link_to "Pay with card on file", invoice_charge_path(invoice), class: "btn btn-block btn-success", remote: true %>
           <%= button_to invoice_charge_path(invoice), method: :get, class: "btn btn-block btn-success", remote: true do %>
             <span class="show-when-enabled">
               Pay with card on file

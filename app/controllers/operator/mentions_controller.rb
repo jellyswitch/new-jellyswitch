@@ -1,6 +1,6 @@
 class Operator::MentionsController < Operator::BaseController
   def index
-    @users = current_tenant.users.admins
+    @users = current_tenant.users.taggable
     authorize @users
 
     respond_to do |format|
