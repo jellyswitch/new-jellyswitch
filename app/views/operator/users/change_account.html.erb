@@ -12,7 +12,11 @@
         <hr/>
         <h3 class="text-center">Pause or Cancel Membership, or Delete your Account</h3>
         <div class="d-grid text-center m-2">
-          <%= render "operator/users/pause_membership_form", subscription: @subscription %>
+          <% if @subscription.paused? %>
+            <%= link_to "Reactivate membership", reactivate_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
+          <% else %>
+            <%= render "operator/users/pause_membership_form", subscription: @subscription %>
+          <% end %>
           <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
       <% end %>
       <%= link_to "#", data: { toggle: "modal", target: "#accountDeletionModal" }, class: "btn btn-sm btn-danger" do %>
