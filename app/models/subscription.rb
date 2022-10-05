@@ -102,6 +102,8 @@ class Subscription < ApplicationRecord
 
   def has_end_date?
     has_stripe_subscription? && stripe_subscription.cancel_at.present?
+  rescue StandardError => e
+    false
   end
 
   def end_date
