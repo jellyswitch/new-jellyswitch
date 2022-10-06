@@ -29,7 +29,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
       end
       turbo_redirect home_path
     else
-      flash[:error] = "Something went wrong pausing your subscription '#{@subscription.plan.name}'"
+      flash[:error] = result.message
       turbo_redirect subscription_path(@subscription)
     end
   end
@@ -45,7 +45,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
       flash[:success] = "Your subscription has been reactivated '#{@subscription.plan.name}'"
       turbo_redirect subscription_path(@subscription)
     else
-      flash[:error] = "Something went wrong unpausing your subscription '#{@subscription.plan.name}'"
+      flash[:error] = result.message
       turbo_redirect subscription_path(@subscription)
     end
   end

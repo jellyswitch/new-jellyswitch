@@ -31,6 +31,14 @@ class WebhooksController < ApplicationController
       else
         error(result.message)
       end
+    when "customer.subscription.updated"
+      result = Webhooks::SubscriptionUpdated.call(event: @event)
+
+      if result.success?
+        ok
+      else
+        error(result.message)
+      end
     else
       error("Unrecognized webhook type: #{@event.type}")
     end
