@@ -15,10 +15,9 @@ class Webhooks::SubscriptionUpdated
       return
     end
 
-      if !result.success?
-        msg = "UnpauseMembership: #{result.message}"
-        context.fail!(message: msg)
-      end
+    if !result.success?
+      msg = "UnpauseMembership: #{result.message}"
+      context.fail!(message: msg)
     else
       # subscription cannot be found
       msg = "customer.subscription.updated: No such subscription #{event.data.object.id}"
