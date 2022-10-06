@@ -256,6 +256,7 @@ Rails.application.routes.draw do
     end
   end
   resources :office_leases, controller: "operator/office_leases"
+  delete "destroy_office_lease_now/:id", to: "operator/office_leases#destroy_office_lease_now", as: "destroy_office_lease_now"
   resources :organizations, controller: "operator/organizations" do
     post :add_member, to: "operator/organization_members#create"
     get :billing, to: "operator/organizations#billing"
@@ -321,6 +322,7 @@ Rails.application.routes.draw do
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
   resources :subscriptions, controller: "operator/subscriptions"
+  delete '/destroy_subscription_now/:id', to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
     collection do
       get "add_member", to: "operator/users#add_member"

@@ -28,6 +28,10 @@ class SubscriptionPolicy < ApplicationPolicy
     (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
   end
 
+  def destroy_subscription_now?
+    (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
+  end
+
   private
 
   def owner?
