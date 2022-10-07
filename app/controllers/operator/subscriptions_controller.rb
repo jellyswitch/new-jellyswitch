@@ -96,6 +96,31 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       ActionText::RichText.last.update(body: "#{@subscription.subscribable.name} canceled their membership" )
+      flash[:success] = "Membership scheduled for cancellation."
+      turbo_redirect(referrer_or_root)
+    else
+      flash[:error] = result.message
+      turbo_redirect(referrer_or_root)
+    end
+  rescue => e
+    Honeybadger.notify(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbo_redirect(referrer_or_root)
+  end
+
+  def destroy_subscription_now
+    find_subscription
+    authorize @subscription
+
+    result = Billing::Subscription::CancelStripeSubscription.call(
+      subscription: @subscription,
+      blob: { text: "#{@subscription.subscribable.name} canceled their membership", type: "post" },
+      user: current_tenant.users.admins.first,
+      operator: current_tenant,
+      notifiable: current_tenant.users.admins
+    )
+
+    if result.success?
       flash[:success] = "Membership cancelled."
       turbo_redirect(referrer_or_root)
     else

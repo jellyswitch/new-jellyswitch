@@ -67,7 +67,8 @@
     <% end %>
 
     <% if @office_lease.subscription_active? %>
-      <%= link_to "Terminate Lease", office_lease_path(@office_lease), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+      <%= link_to "Terminate Lease (end of billing cycle)", office_lease_path(@office_lease), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+      <%= link_to "Terminate Lease (now)", destroy_office_lease_now_path(@office_lease), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
     <% end %>
 
   <% end %>
