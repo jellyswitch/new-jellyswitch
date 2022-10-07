@@ -4,6 +4,6 @@ class Billing::Leasing::TerminateOfficeLease
 
   organize(
     Billing::Leasing::UpdateEndDate,
-    Billing::Subscription::SetStripeSubscriptionForCancellation
+    Billing::Subscription::CancelStripeSubscription
   )
 end
