@@ -111,8 +111,9 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
 
-    result = Billing::Subscription::CancelStripeSubscription.call(
+    result = CancelSubscription.call(
       subscription: @subscription,
+      creditable: @subscription.subscribable,
       blob: { text: "#{@subscription.subscribable.name} canceled their membership", type: "post" },
       user: current_tenant.users.admins.first,
       operator: current_tenant,
