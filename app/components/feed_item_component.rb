@@ -49,6 +49,8 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::ChildcareReservation
     when "reservation"
       FeedItems::Reservation
+    when "post"
+      FeedItems::Post
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end
