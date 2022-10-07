@@ -322,7 +322,7 @@ Rails.application.routes.draw do
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
   resources :subscriptions, controller: "operator/subscriptions"
-  delete '/destroy_subscription_now/:id', to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
+  delete 'destroy_subscription_now/:id', to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
     collection do
       get "add_member", to: "operator/users#add_member"
