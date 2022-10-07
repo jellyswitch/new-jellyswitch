@@ -112,6 +112,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
 
+
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: @subscription,
       blob: { type: "post" },
