@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
+class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
   setup do
     @user = users(:cowork_tahoe_member)
     @office_lease_plan = office_leases(:office_23b_lease)
