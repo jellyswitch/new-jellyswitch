@@ -1,20 +1,20 @@
 class PauseMembership
   include Interactor
 
-  def call
-    subscription = context.subscription
-    resumes_at = context.resumes_at
+  delegate :subscription, :resumes_at, to: :context
 
+  def call
     ActiveRecord::Base.transaction do
-      subscription.paused = true
-      if !subscription.save
+      if !subscription.update(paused: true)
         context.fail!(message: "Subscription couldn't save: #{subscription}")
       end
 
       if !Stripe::Subscription.update(
         subscription.stripe_subscription_id,
-        { pause_collection:
-          { behavior: 'void',
+        {
+          pause_collection:
+          {
+            behavior: 'void',
             resumes_at: resumes_at
           }
         },
