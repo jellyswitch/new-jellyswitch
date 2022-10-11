@@ -6,13 +6,29 @@ class Webhooks::SubscriptionUpdated
   def call
     subscription = Subscription.find_by(stripe_subscription_id: event.data.object.id)
       
-    if subscription.present? && subscription.plan.individual? && subscription.paused?
-      result = UnpauseMembership.call(
-        subscription: subscription
-      )
+    if subscription.present? && subscription.plan.individual?
+      if subscription.paused?
+        if event.data.object.pause_collection.blank?
+          result = UnpauseMembership.call(
+            subscription: subscription
+          )
+          if result.success?
+            ok
+          else
+            error(result.message)
+          end
+        else
+          # some other update, not an unpause
+          ok
+        end
+      else
+        # subscription is active and we're updating it
+        ok
+      end
     else
-      # do nothing
-      return
+      # this is not a membership (maybe an office lease) and/or this is missing from our DB
+      # so we do nothing
+      ok
     end
 
     if !result.success?
