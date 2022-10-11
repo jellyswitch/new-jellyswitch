@@ -23,7 +23,7 @@ class Operator::AnnouncementsController < Operator::BaseController
     
     if result.success?
       flash[:success] = "Announcement posted."
-      turbo_redirect(announcements_path, action: restore_if_possible)
+      turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = result.message
       turbo_redirect(new_announcement_path, action: restore_if_possible)

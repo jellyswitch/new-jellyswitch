@@ -7,6 +7,7 @@ class CreateNotifications
   def call
     NotifiableFactory.for(notifiable).notify
   end
+  
   def rollback
     context.notifiable.destroy
   end
