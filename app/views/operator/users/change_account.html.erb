@@ -6,18 +6,22 @@
       <% if !@subscription %>
         <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
       <% end %>
-      <% if @subscription %>
-        <h3 class="text-center">Downgrade your membership</h3>
-        <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
-        <hr/>
-        <h3 class="text-center">Pause or Cancel Membership, or Delete your Account</h3>
+      <% if @subscription.present? %>
+        <% unless @subscription.cancelling_at_end_of_billing_period? || @subscription.paused? %>
+          <h3 class="text-center">Downgrade your membership</h3>
+          <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
+          <hr/>
+          <h3 class="text-center">Pause or Cancel Membership, or Delete your Account</h3>
+        <% end %>
         <div class="d-grid text-center m-2">
           <% if @subscription.paused? %>
             <%= link_to "Reactivate Membership", reactivate_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
           <% else %>
             <%= render "operator/users/pause_membership_form", subscription: @subscription %>
+            <% if !@subscription.cancelling_at_end_of_billing_period? %>
+              <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
+            <% end %>
           <% end %>
-          <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
       <% end %>
       <%= link_to "#", data: { toggle: "modal", target: "#accountDeletionModal" }, class: "btn btn-sm btn-danger" do %>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-radioactive" viewBox="0 0 16 16">

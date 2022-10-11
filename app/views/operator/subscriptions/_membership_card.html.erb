@@ -111,16 +111,18 @@
         </div>
       </div>
     <% else %>
-      <div class="row mt-3">
-        <div class="col">
-          <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+      <% if !subscription.cancelling_at_end_of_billing_period? %>
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+          </div>
         </div>
-      </div>
-      <div class="row mt-3">
-        <div class="col">
-          <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
+          </div>
         </div>
-      </div>
+      <% end %>
     <% end %>
 
     <!-- Cancel membership Modal -->
