@@ -27,6 +27,6 @@ class AnnouncementPolicy < ApplicationPolicy
   end
 
   def member?
-    (user.present && user.allowed_in?(operator) && approved?)
+    (user.present? && user.allowed_in?(operator) && approved?)
   end
 end
