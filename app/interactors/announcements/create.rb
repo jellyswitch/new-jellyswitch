@@ -4,6 +4,6 @@ class Announcements::Create
   organize(
     Announcements::Save,
     Announcements::SendEmail,
-    CreateNotifications
+    CreateNotificationsAsync
   )
 end

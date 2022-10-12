@@ -20,6 +20,10 @@ class OfficeLeasePolicy < ApplicationPolicy
     enabled? && (admin? || owner? || superadmin? || community_manager? || general_manager?)
   end
 
+  def destroy_office_lease_now?
+    enabled? && (admin? || owner? || superadmin? || community_manager? || general_manager?)
+  end
+
   def enabled?
     operator.offices_enabled?
   end

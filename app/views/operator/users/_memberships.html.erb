@@ -135,7 +135,8 @@
     
       <div class="row mt-3">
         <div class="col">
-          <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+          <%= link_to "Cancel membership (end of billing cycle)", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
+          <%= link_to "Cancel membership (now)", destroy_subscription_now_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
         </div>
       </div>
     <% end %>
