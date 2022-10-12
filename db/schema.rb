@@ -548,7 +548,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_03_150039) do
     t.bigint "billable_id"
     t.date "start_date", null: false
     t.boolean "cancelling_at_end_of_billing_period", default: false, null: false
-    t.boolean "paused"
+    t.boolean "paused", default: false, null: false
     t.index ["billable_type", "billable_id"], name: "index_subscriptions_on_billable_type_and_billable_id"
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
