@@ -42,7 +42,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
     )
 
     if result.success?
-      flash[:success] = "Your subscription has been reactivated '#{@subscription.plan.name}'"
+      flash[:success] = "Your subscription has been unpaused '#{@subscription.plan.name}'"
       turbo_redirect subscription_path(@subscription)
     else
       flash[:error] = result.message

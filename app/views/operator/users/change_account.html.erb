@@ -15,7 +15,7 @@
         <% end %>
         <div class="d-grid text-center m-2">
           <% if @subscription.paused? %>
-            <%= link_to "Reactivate Membership", reactivate_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
+            <%= link_to "Unpause Membership", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
           <% else %>
             <% if !@subscription.cancelling_at_end_of_billing_period? %>
               <%= render "operator/users/pause_membership_form", subscription: @subscription %>

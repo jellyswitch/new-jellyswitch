@@ -17,7 +17,7 @@ class PauseMembershipsTest < ApplicationSystemTestCase
     assert_text "Pause Membership"
   end
   
-  test "if paused, user can see option to reactivate membership from change my account screen" do
+  test "if paused, user can see option to unpause membership from change my account screen" do
     @user = users(:cowork_tahoe_member)
     setup_stripe
     log_in(@user)
@@ -36,7 +36,7 @@ class PauseMembershipsTest < ApplicationSystemTestCase
     assert_text "Change My Account"
     
     click_on 'Change My Account'
-    assert_text "Reactivate Membership"
+    assert_text "Unpause Membership"
   end
 
   test "user can see option to pause membership from cancel membership modal" do
@@ -58,7 +58,7 @@ class PauseMembershipsTest < ApplicationSystemTestCase
     assert_text "My Account"
   end
 
-  # test "if paused, user can see option to reactivate membership from cancel membership modal" do
+  # test "if paused, user can see option to unpause membership from cancel membership modal" do
   #   @user = users(:cowork_tahoe_member)
   #   setup_stripe
   #   log_in(@user)
@@ -83,6 +83,6 @@ class PauseMembershipsTest < ApplicationSystemTestCase
   #   assert_text "Cancel membership"
 
   #   click_on "Cancel membership"
-  #   assert_text "Reactivate Membership"
+  #   assert_text "Unpause Membership"
   # end
 end

@@ -91,7 +91,7 @@ Rails.application.routes.draw do
   get "/customization", to: "operator/landing#customization", as: :customization
   get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
   post "/pause_membership/:id", to: "operator/pause_memberships#create", as: "pause_membership"
-  delete "/pause_membership/:id", to: "operator/pause_memberships#destroy", as: "reactivate_membership"
+  delete "/pause_membership/:id", to: "operator/pause_memberships#destroy", as: "unpause_membership"
 
   # Admin namespace (for operator resources)
   namespace :operator do
