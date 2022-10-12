@@ -6,6 +6,7 @@
 #  active                              :boolean          default(TRUE), not null
 #  billable_type                       :string
 #  cancelling_at_end_of_billing_period :boolean          default(FALSE), not null
+#  paused                              :boolean          default(FALSE), not null
 #  pending                             :boolean          default(FALSE), not null
 #  start_date                          :date             not null
 #  subscribable_type                   :string
