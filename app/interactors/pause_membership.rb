@@ -5,7 +5,7 @@ class PauseMembership
 
   def call
     ActiveRecord::Base.transaction do
-      if !subscription.update(paused: true)
+      if !subscription.update(paused: "true")
         context.fail!(message: "Subscription couldn't save: #{subscription}")
       end
 
