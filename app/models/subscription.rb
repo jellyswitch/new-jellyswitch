@@ -7,7 +7,7 @@
 #  active                              :boolean          default(TRUE), not null
 #  billable_type                       :string
 #  cancelling_at_end_of_billing_period :boolean          default(FALSE), not null
-#  paused                              :boolean          default(FALSE), not null
+#  paused                              :integer          default("false"), not null
 #  pending                             :boolean          default(FALSE), not null
 #  start_date                          :date             not null
 #  subscribable_type                   :string
@@ -33,6 +33,9 @@ class Subscription < ApplicationRecord
   belongs_to :billable, polymorphic: true
   belongs_to :subscribable, polymorphic: true
   has_many :office_leases
+
+  # Enumerables
+  enum :paused, [ :false, :true, :scheduled ], default: :false
 
   # Scopes
   scope :active, -> { where(active: true) }
@@ -131,5 +134,13 @@ class Subscription < ApplicationRecord
 
   def canceled_at
     Time.at(stripe_subscription.canceled_at)
+  end
+
+  def paused?
+    paused == "true"
+  end
+
+  def pause_scheduled?
+    paused == "scheduled"
   end
 end
