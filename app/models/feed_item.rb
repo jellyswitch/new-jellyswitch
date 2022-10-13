@@ -84,6 +84,10 @@ class FeedItem < ApplicationRecord
       end
     when "checkin"
       "checked in"
+    when "membership_cancellation"
+      "posted a mgmt note"
+    when "account_deletion"
+      "posted a mgmt note"
     when "new-user"
       "signed up"
     when "weekly-update"

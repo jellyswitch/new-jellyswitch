@@ -3,6 +3,7 @@ class Operator::FeedItemsController < Operator::BaseController
   include EventHelper
   include UsersHelper
   include FeedItemsHelper
+  include ActionView::Helpers::SanitizeHelper
 
   before_action :background_image
   before_action :find_todays_events
@@ -85,7 +86,7 @@ class Operator::FeedItemsController < Operator::BaseController
     authorize FeedItem.new
     
     result = FeedItems::Create.call(
-      blob: { type: "post" },
+      blob: { text: strip_tags(feed_item_params[:text]), type: "post" },
       text: feed_item_params[:text],
       user: current_user,
       operator: current_tenant,
