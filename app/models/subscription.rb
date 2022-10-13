@@ -9,6 +9,7 @@
 #  cancelling_at_end_of_billing_period :boolean          default(FALSE), not null
 #  paused                              :integer          default("false"), not null
 #  pending                             :boolean          default(FALSE), not null
+#  resumes_at                          :datetime
 #  start_date                          :date             not null
 #  subscribable_type                   :string
 #  created_at                          :datetime         not null

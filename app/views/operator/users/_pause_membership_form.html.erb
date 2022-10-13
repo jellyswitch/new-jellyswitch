@@ -1,4 +1,4 @@
-<%= form_with(url: pause_membership_path(subscription), html: {id: "stripe-form" }) do |f| %>
+<%= form_with(url: set_membership_to_pause_path(subscription), html: {id: "stripe-form" }) do |f| %>
   <div>
     <%= select_tag(:resumes_at, options_for_select([["Pause Membership (30 Days)", 30], ["Pause Membership (60 Days)", 60], ["Pause Membership (90 Days)", 90], ["Pause Membership (Indefinitely)"]], selected: params[:resumes_at]), class: "custom-select") %>
   </div>

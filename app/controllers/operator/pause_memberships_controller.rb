@@ -1,31 +1,58 @@
 class Operator::PauseMembershipsController < Operator::BaseController
   include SubscriptionsHelper
 
-  def create
+  # def create
+  #   find_subscription
+
+  #   if pause_durations.has_key?(params["resumes_at"])
+  #     resumes_at = pause_durations[params["resumes_at"]].to_i
+  #   else
+  #     resumes_at = nil
+  #   end
+
+  #   result = PauseMembership.call(
+  #     subscription: @subscription,
+  #     resumes_at: resumes_at
+  #   )
+
+  #   def days(resumes_at)
+  #     begin_date = Time.now
+  #     end_date = Time.at(resumes_at)
+  #     (end_date - begin_date) / (60 * 60 * 24)
+  #   end
+
+  #   if result.success?
+  #     if resumes_at == nil
+  #       flash[:success] = "You have paused your subscription '#{@subscription.plan.name}'"
+  #     else
+  #       flash[:success] = "You have paused your subscription '#{@subscription.plan.name}' for #{days(resumes_at).round} days"
+  #     end
+  #     turbo_redirect home_path
+  #   else
+  #     flash[:error] = result.message
+  #     turbo_redirect subscription_path(@subscription)
+  #   end
+  # end
+
+  def update
     find_subscription
 
     if pause_durations.has_key?(params["resumes_at"])
-      resumes_at = pause_durations[params["resumes_at"]].to_i
+      resumes_at = ((@subscription.current_period_end - 1.day) + params["resumes_at"].to_i.days)
     else
       resumes_at = nil
     end
 
-    result = PauseMembership.call(
+    result = SetMembershipToPause.call(
       subscription: @subscription,
       resumes_at: resumes_at
     )
 
-    def days(resumes_at)
-      begin_date = Time.now
-      end_date = Time.at(resumes_at)
-      (end_date - begin_date) / (60 * 60 * 24)
-    end
-
     if result.success?
       if resumes_at == nil
-        flash[:success] = "You have paused your subscription '#{@subscription.plan.name}'"
+        flash[:success] = "You have scheduled your membership '#{@subscription.plan.name}' to pause indefinitely, starting at end of your current period"
       else
-        flash[:success] = "You have paused your subscription '#{@subscription.plan.name}' for #{days(resumes_at).round} days"
+        flash[:success] = "You have scheduled your membership '#{@subscription.plan.name}' to pause for #{params["resumes_at"]} days, starting at the end of your current period"
       end
       turbo_redirect home_path
     else
