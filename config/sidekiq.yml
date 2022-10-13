@@ -1,0 +1,6 @@
+# https://crontab-generator.com to validate cron schedules
+
+:schedule:
+  pause_subscriptions:
+    cron: '0 * * * *' # Every hour
+    class: PauseSubscriptionsWorker
