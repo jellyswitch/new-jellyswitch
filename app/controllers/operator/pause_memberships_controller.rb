@@ -4,7 +4,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
   def update
     find_subscription
 
-    if pause_durations.has_key?(params["resumes_at"])
+    if pause_durations.include?(params["resumes_at"])
       resumes_at = ((@subscription.current_period_end - 1.day) + params["resumes_at"].to_i.days)
     else
       resumes_at = nil
@@ -47,11 +47,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
   private
 
   def pause_durations
-    {
-      "30" => (Time.current.to_i + 30.days),
-      "60" => (Time.current.to_i + 60.days),
-      "90" => (Time.current.to_i + 90.days)
-    }
+    ["30", "60", "90"]
   end
 
 end
