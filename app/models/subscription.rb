@@ -45,9 +45,9 @@ class Subscription < ApplicationRecord
     joins(:plan).where(plans: {id: Plan.for_location(location).map(&:id) })
   end
   scope :for_week, -> (week_start, week_end) { where('created_at > ? and created_at <= ?', week_start, week_end) }
-  scope :not_paused, -> { where(paused: 0) }
-  scope :paused, -> { where(paused: 1) }
-  scope :pause_scheduled, -> { where(paused: 2) }
+  scope :not_paused, -> { where(paused: "false") }
+  scope :paused, -> { where(paused: "true") }
+  scope :pause_scheduled, -> { where(paused: "scheduled") }
 
   accepts_nested_attributes_for :plan
 
