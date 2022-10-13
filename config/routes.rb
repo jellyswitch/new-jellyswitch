@@ -90,7 +90,6 @@ Rails.application.routes.draw do
   get "/plans_day_passes", to: "operator/landing#plans_day_passes", as: :plans_day_passes
   get "/customization", to: "operator/landing#customization", as: :customization
   get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
-  # post "/pause_membership/:id", to: "operator/pause_memberships#create", as: "pause_membership"
   post "/pause_membership/:id", to: "operator/pause_memberships#update", as: "set_membership_to_pause"
   delete "/pause_membership/:id", to: "operator/pause_memberships#destroy", as: "unpause_membership"
 
