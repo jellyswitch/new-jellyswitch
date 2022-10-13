@@ -1,7 +1,7 @@
 class PauseMembership
   include Interactor
 
-  delegate :subscription, :resumes_at, to: :context
+  delegate :subscription, to: :context
 
   def call
     ActiveRecord::Base.transaction do
@@ -15,7 +15,7 @@ class PauseMembership
           pause_collection:
           {
             behavior: 'void',
-            resumes_at: resumes_at
+            resumes_at: subscription.resumes_at.to_i
           }
         },
         {

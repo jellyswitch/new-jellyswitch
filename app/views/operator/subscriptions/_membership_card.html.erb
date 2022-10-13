@@ -10,6 +10,8 @@
     <% if subscription.active? %>
       <% if subscription.paused? %>
         <span class="badge badge-warning">Paused</span>
+      <% elsif subscription.pause_scheduled? %>
+        <span class="badge badge-warning">Pause Scheduled</span>
       <% else %>
         <span class="badge badge-success">Active</span>
       <% end %>
@@ -108,6 +110,12 @@
       <div class="row mt-3">
         <div class="col">
           <%= link_to "Unpause Membership", unpause_membership_path(subscription), method: :delete, class: "btn btn-block btn-success" %>
+        </div>
+      </div>
+    <% elsif subscription.pause_scheduled? %>
+      <div class="row mt-3">
+        <div class="col">
+          <%= link_to "Unschedule Membership to Pause", unpause_membership_path(subscription), method: :delete, class: "btn btn-block btn-success" %>
         </div>
       </div>
     <% else %>

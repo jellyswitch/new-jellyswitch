@@ -7,7 +7,7 @@
         <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
       <% end %>
       <% if @subscription.present? %>
-        <% if !@subscription.cancelling_at_end_of_billing_period? && !@subscription.paused? %>
+        <% if !@subscription.cancelling_at_end_of_billing_period? && !@subscription.paused? && !@subscription.pause_scheduled? %>
           <h3 class="text-center">Downgrade your membership</h3>
           <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
           <hr/>
@@ -16,6 +16,8 @@
         <div class="d-grid text-center m-2">
           <% if @subscription.paused? %>
             <%= link_to "Unpause Membership", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
+          <% elsif @subscription.pause_scheduled? %>
+            <%= link_to "Unschedule Membership to Pause", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
           <% else %>
             <% if !@subscription.cancelling_at_end_of_billing_period? %>
               <%= render "operator/users/pause_membership_form", subscription: @subscription %>

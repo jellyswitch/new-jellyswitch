@@ -5,7 +5,10 @@ class UnpauseMembership
 
   def call
     ActiveRecord::Base.transaction do
-      if !subscription.update(paused: false)
+      if !subscription.update(
+        paused: "false",
+        resumes_at: nil
+      )
         context.fail!(message: "Subscription couldn't save #{subscription}")
       end
 
