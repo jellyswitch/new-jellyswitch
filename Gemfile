@@ -45,6 +45,7 @@ gem 'roadie-rails', '~> 3.0'
 gem 'sassc-rails', '~> 2.1'
 gem 'searchkick'
 gem 'sidekiq', '~> 5.2.10'
+gem 'sidekiq-scheduler', "~> 4.0.1"
 gem 'simple_calendar'
 gem 'stripe', '~> 5.0.0'
 gem 'turbo-rails'
