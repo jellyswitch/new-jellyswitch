@@ -7,10 +7,9 @@ class PauseMemberships
     subscriptions.map do |subscription|
       current_period_end = subscription.current_period_end
 
-      if current_period_end.today? || current_period_end.tomorrow?
+      if PauseDecider.new(current_period_end: current_period_end).should_pause?
         PauseMembership.call(subscription: subscription)
       end
     end
   end
-
 end
