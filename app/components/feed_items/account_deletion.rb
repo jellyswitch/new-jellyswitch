@@ -1,9 +1,8 @@
-class FeedItems::Post < ApplicationComponent
+class FeedItems::AccountDeletion < ApplicationComponent
   include ApplicationHelper
 
   def initialize(feed_item:)
     @feed_item = feed_item
-    @rich_text = ActionText::RichText.where(record_id: feed_item.id)
   end
 
   private

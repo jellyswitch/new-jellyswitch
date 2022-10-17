@@ -48,8 +48,8 @@ class UserManager
 
   def create_feed_item
     FeedItems::Create.call(
-      blob: { text: "#{user.name} deleted their account.", type: "post" },
-      user: user,
+      blob: { text: "#{user.name} deleted their account.", type: "account_deletion" },
+      user: user.operator.users.admins.first,
       operator: user.operator,
       photos: nil
     )

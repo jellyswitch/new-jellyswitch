@@ -34,6 +34,10 @@ class FeedItemComponent < ApplicationComponent
       feed_item.operator.post_notifications?
     when "weekly-update"
       true
+    when "membership_cancellation"
+      true
+    when "account_deletion"
+      true
     else
       false
     end
@@ -49,8 +53,10 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::ChildcareReservation
     when "reservation"
       FeedItems::Reservation
-    when "post"
-      FeedItems::Post
+    when "membership_cancellation"
+      FeedItems::MembershipCancellation
+    when "account_deletion"
+      FeedItems::AccountDeletion
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end

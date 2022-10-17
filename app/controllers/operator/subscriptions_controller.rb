@@ -88,14 +88,13 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     result = SetSubscriptionForCancellation.call(
       subscription: @subscription,
-      blob: { type: "post" },
+      blob: { text: "#{@subscription.subscribable.name} cancelled their membership.", type: "membership_cancellation" },
       user: current_tenant.users.admins.first,
       operator: current_tenant,
       notifiable: current_tenant.users.admins
     )
 
     if result.success?
-      ActionText::RichText.last.update(body: "#{@subscription.subscribable.name} canceled their membership" )
       flash[:success] = "Membership scheduled for cancellation."
       turbo_redirect(referrer_or_root)
     else
@@ -115,7 +114,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: @subscription,
-      blob: { type: "post" },
+      blob: { text: "#{@subscription.subscribable.name} cancelled their membership.", type: "membership_cancellation" },
       user: current_tenant.users.admins.first,
       operator: current_tenant,
       notifiable: current_tenant.users.admins,
@@ -123,7 +122,6 @@ class Operator::SubscriptionsController < Operator::BaseController
     )
 
     if result.success?
-      ActionText::RichText.last.update(body: "#{current_user.name} canceled #{@subscription.subscribable.name}'s membership" )
       flash[:success] = "Membership cancelled."
       turbo_redirect(referrer_or_root)
     else
