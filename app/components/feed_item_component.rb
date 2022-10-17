@@ -38,6 +38,10 @@ class FeedItemComponent < ApplicationComponent
       true
     when "account_deletion"
       true
+    when "membership_paused"
+      true
+    when "membership_unpaused"
+      true
     else
       false
     end
@@ -57,6 +61,10 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::MembershipCancellation
     when "account_deletion"
       FeedItems::AccountDeletion
+    when "membership_paused"
+      FeedItems::MembershipPaused
+    when "membership_unpaused"
+      FeedItems::MembershipUnpaused
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end

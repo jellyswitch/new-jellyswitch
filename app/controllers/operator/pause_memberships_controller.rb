@@ -10,9 +10,13 @@ class Operator::PauseMembershipsController < Operator::BaseController
       resumes_at = nil
     end
 
-    result = PauseMembership.call(
+    result = CreatePause.call(
       subscription: @subscription,
-      resumes_at: resumes_at
+      resumes_at: resumes_at,
+      notifiable: current_tenant.users.admins,
+      operator: current_tenant,
+      user: current_tenant.users.admins.first,
+      blob: { text: "#{@subscription.subscribable.name} paused their membership.", type: "membership_paused" }
     )
 
     def days(resumes_at)
@@ -37,8 +41,12 @@ class Operator::PauseMembershipsController < Operator::BaseController
   def destroy
     find_subscription
 
-    result = UnpauseMembership.call(
-      subscription: @subscription
+    result = DestroyPause.call(
+      subscription: @subscription,
+      notifiable: current_tenant.users.admins,
+      operator: current_tenant,
+      user: current_tenant.users.admins.first,
+      blob: { text: "#{@subscription.subscribable.name} un-paused their membership.", type: "membership_unpaused" }
     )
 
     if result.success?
