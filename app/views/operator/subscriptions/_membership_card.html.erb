@@ -129,24 +129,24 @@
     <div class="modal fade" aria-labelledby="cancelMembershipModalLabel" role="dialog" aria-hidden="true" id="cancelMembershipModal" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Cancel, Downgrade, or Pause Membership</h5>
+          <div class="modal-body">
             <button type="button" class="close" data-dismiss="modal" aria-label="Close">
               <span aria-hidden="true">&times;</span>
             </button>
-          </div>
-          <div class="modal-body">
+            <h3 class="text-center mt-1">Downgrade Membership</h3>
             <%= render "/operator/subscriptions/form", subscription: subscription, label: "Switch my membership", cc: false %>
-          </div>
-          <div class="modal-footer d-flex flex-column justify-content-center align-items-center">
+            <hr />
             <div class="row mt-3">
               <div class="col">
+                <h3 class="text-center mt-1">Pause Membership</h3>
                 <%= render "operator/users/pause_membership_form", subscription: subscription %>
+                <hr />
               </div>
             </div>
-            <div class="m-2">
-              <%= link_to "Close", "#", data: { dismiss: "modal" }, class: "btn btn-sm btn-secondary" %>
+            <div class="text-center">
+              <h3 class="text-center mt-1">Cancel Membership</h3>
               <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
+              <hr />
             </div>
           </div>
         </div>

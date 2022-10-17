@@ -3,26 +3,31 @@
     <div class="card-body">
       <h1 class="text-center">Change Your Account</h1>
       <hr/>
-      <% if !@subscription %>
+      <% if !@subscription.present? %>
         <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
-      <% end %>
-      <% if @subscription.present? %>
+      <% else %>
+
         <% if !@subscription.cancelling_at_end_of_billing_period? && !@subscription.paused? %>
           <h3 class="text-center">Downgrade your membership</h3>
           <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
           <hr/>
-          <h3 class="text-center">Pause or Cancel Membership, or Delete your Account</h3>
+          <h3 class="text-center">Pause Membership</h3>
         <% end %>
+
         <div class="d-grid text-center m-2">
           <% if @subscription.paused? %>
             <%= link_to "Unpause Membership", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
           <% else %>
             <% if !@subscription.cancelling_at_end_of_billing_period? %>
               <%= render "operator/users/pause_membership_form", subscription: @subscription %>
+              <hr />
+              <h3 class="text-center mt-3">Cancel Membership</h3>
               <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
+              <hr />
             <% end %>
           <% end %>
       <% end %>
+      <h3 class="text-center mt-3">Account Deletion</h3>
       <%= link_to "#", data: { toggle: "modal", target: "#accountDeletionModal" }, class: "btn btn-sm btn-danger" do %>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-radioactive" viewBox="0 0 16 16">
           <path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1ZM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Z"/>
@@ -30,6 +35,7 @@
         </svg>
         Delete My Account
       <% end %>
+      <hr />
       </div>
     </div>
   </div>
