@@ -8,11 +8,7 @@
   <dt class="col-6">Status</dt>
   <dd class="col">
     <% if subscription.active? %>
-      <% if subscription.paused? %>
-        <span class="badge badge-warning">Paused</span>
-      <% else %>
-        <span class="badge badge-success">Active</span>
-      <% end %>
+      <span class="badge badge-success">Active</span>
     <% else %>
       <span class="badge badge-warning">
         Canceled
@@ -104,25 +100,17 @@
       </div>
     </div>
   <% else %>
-    <% if subscription.paused? %>
+    <% if !subscription.cancelling_at_end_of_billing_period? %>
       <div class="row mt-3">
         <div class="col">
-          <%= link_to "Unpause Membership", unpause_membership_path(subscription), method: :delete, class: "btn btn-block btn-success" %>
+          <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
         </div>
       </div>
-    <% else %>
-      <% if !subscription.cancelling_at_end_of_billing_period? %>
-        <div class="row mt-3">
-          <div class="col">
-            <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
-          </div>
+      <div class="row mt-3">
+        <div class="col">
+          <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
         </div>
-        <div class="row mt-3">
-          <div class="col">
-            <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
-          </div>
-        </div>
-      <% end %>
+      </div>
     <% end %>
 
     <!-- Cancel membership Modal -->
@@ -136,13 +124,6 @@
             <h3 class="text-center mt-1">Downgrade Membership</h3>
             <%= render "/operator/subscriptions/form", subscription: subscription, label: "Switch my membership", cc: false %>
             <hr />
-            <div class="row mt-3">
-              <div class="col">
-                <h3 class="text-center mt-1">Pause Membership</h3>
-                <%= render "operator/users/pause_membership_form", subscription: subscription %>
-                <hr />
-              </div>
-            </div>
             <div class="text-center">
               <h3 class="text-center mt-1">Cancel Membership</h3>
               <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>

@@ -7,24 +7,17 @@
         <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
       <% else %>
 
-        <% if !@subscription.cancelling_at_end_of_billing_period? && !@subscription.paused? %>
+        <% if !@subscription.cancelling_at_end_of_billing_period? %>
           <h3 class="text-center">Downgrade your membership</h3>
           <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
           <hr/>
-          <h3 class="text-center">Pause Membership</h3>
         <% end %>
 
         <div class="d-grid text-center m-2">
-          <% if @subscription.paused? %>
-            <%= link_to "Unpause Membership", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
-          <% else %>
-            <% if !@subscription.cancelling_at_end_of_billing_period? %>
-              <%= render "operator/users/pause_membership_form", subscription: @subscription %>
-              <hr />
-              <h3 class="text-center mt-3">Cancel Membership</h3>
-              <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
-              <hr />
-            <% end %>
+          <% if !@subscription.cancelling_at_end_of_billing_period? %>
+            <h3 class="text-center mt-3">Cancel Membership</h3>
+            <%= link_to "Cancel Membership", subscription_path(@subscription), method: :delete, remote: true, class: "btn btn-sm btn-warning m-2" %>
+            <hr />
           <% end %>
       <% end %>
       <h3 class="text-center mt-3">Account Deletion</h3>

@@ -35,11 +35,7 @@
       <dt class="col-sm-3">Status</dt>
       <dd class="col-sm">
         <% if subscription.active? %>
-          <% if subscription.paused? %>
-            <span class="badge badge-warning">Paused</span>
-          <% else %>
-            <span class="badge badge-success">Active</span>
-          <% end %>
+          <span class="badge badge-success">Active</span>
         <% else %>
           <span class="badge badge-warning">
             Canceled
@@ -160,23 +156,6 @@
         </div>
       </div>
       <hr />
-
-    <% if subscription.paused? %>
-      <div class="row mt-3">
-        <div class="col">
-          <h3 class="text-center mt-1">Unpause Membership</h3>
-          <%= link_to "Unpause Membership", unpause_membership_path(subscription), method: :delete, class: "btn btn-block btn-success" %>
-        </div>
-      </div>
-    <% else %>
-      <div class="row mt-3">
-        <div class="col">
-          <h3 class="text-center mt-1">Pause Membership</h3>
-          <%= render "operator/users/pause_membership_form", subscription: subscription %>
-        </div>
-      </div>
-    <% end %>
-    <hr />
 
       <h3 class="text-center mt-3">Cancel Membership</h3>
       <div class="row mt-3">
