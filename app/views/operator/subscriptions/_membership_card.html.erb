@@ -8,7 +8,11 @@
   <dt class="col-6">Status</dt>
   <dd class="col">
     <% if subscription.active? %>
-      <span class="badge badge-success">Active</span>
+      <%# if subscription.paused? %>
+        <!-- <span class="badge badge-warning">Paused</span> -->
+      <%# else %>
+        <span class="badge badge-success">Active</span>
+      <%# end %>
     <% else %>
       <span class="badge badge-warning">
         Canceled
@@ -16,14 +20,14 @@
           <%= short_date(subscription.canceled_at) %>
         <% end %>
       </span>
-    <% end %>  
+    <% end %>
   </dd>
 </dl>
 
 <dl class="row mt-3">
   <dt class="col-6">Set to Cancel at Billing Period End?</dt>
   <dd class="col">
-  <% if subscription.cancelling_at_end_of_billing_period? %>
+    <% if subscription.cancelling_at_end_of_billing_period? %>
       <span class="badge badge-warning">
         Yes,
         <% if subscription.has_period_end? %>
@@ -93,21 +97,64 @@
       <div class="col">
         <span class="text-danger">
           <strong>Stripe sync error</strong>
-          <br />
-          <p>This membership is not in sync with Stripe. Please email <%= mail_to "hello@jellyswitch.com", "hello@jellyswitch.com" %> to resolve.
+          <br/>
+          <p>This membership is not in sync with Stripe. Please email <%= mail_to "hello@jellyswitch.com", "hello@jellyswitch.com" %>
+            to resolve.
         </span>
       </div>
     </div>
   <% else %>
-    <div class="row mt-3">
-      <div class="col">
-        <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+    <%# if subscription.paused? %>
+      <!--
+      <div class="row mt-3">
+        <div class="col">
+          <%#= link_to "Unpause Membership", unpause_membership_path(subscription), method: :delete, class: "btn btn-block btn-success" %>
+        </div>
+      </div>
+      -->
+    <%# else %>
+      <% if !subscription.cancelling_at_end_of_billing_period? %>
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to "Change membership", edit_subscription_path(subscription), class: "btn btn-block btn-primary" %>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
+          </div>
+        </div>
+      <% end %>
+    <%# end %>
+
+    <!-- Cancel membership Modal -->
+    <div class="modal fade" aria-labelledby="cancelMembershipModalLabel" role="dialog" aria-hidden="true" id="cancelMembershipModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-body">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h3 class="text-center mt-1">Downgrade Membership</h3>
+            <%= render "/operator/subscriptions/form", subscription: subscription, label: "Switch my membership", cc: false %>
+            <hr />
+            <!--
+            <div class="row mt-3">
+              <div class="col">
+                <h3 class="text-center mt-1">Pause Membership</h3>
+                <%#= render "operator/users/pause_membership_form", subscription: subscription %>
+                <hr />
+              </div>
+            </div>
+            -->
+            <div class="text-center">
+              <h3 class="text-center mt-1">Cancel Membership</h3>
+              <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, method: :delete, remote: true, class: "btn btn-sm btn-danger" %>
+              <hr />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="row mt-3">
-      <div class="col">
-        <%= link_to "Cancel membership", subscription_path(subscription), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
-      </div>
-    </div>
-  <% end %>  
+  <% end %>
 <% end %>

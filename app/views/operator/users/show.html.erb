@@ -17,29 +17,8 @@
       <%= link_to "View my group", organization_path(current_user.owned_organization), class: "btn btn-block btn-primary" %>
     <% end %>
     <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
+    <%= link_to "Change My Account", user_change_account_path(current_user), class: "btn btn-block btn-warning" %>
     <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "btn btn-block btn-warning" %>
-    <%= link_to "Delete My Account", "#", data: { toggle: "modal", target: "#accountdeletionModal"}, class: "btn btn-block btn-danger" %>
-
-    <!-- Account Deletion Modal -->
-    <div class="modal fade" id="accountdeletionModal" tabindex="-1" role="dialog" aria-labelledby="accountdeletionModalLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="accountdeletionModalLabel">Please Read:</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <%= confirm_delete_message %>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            <%= link_to "Delete My Account", user_path(user_id: current_user.id), method: :delete, remote: true, class: "btn btn-block btn-danger" %>
-          </div>
-        </div>
-      </div>
-    </div>
   <% end %>
 
   <%= list_item do %>
