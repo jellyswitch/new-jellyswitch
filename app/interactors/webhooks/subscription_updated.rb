@@ -12,32 +12,18 @@ class Webhooks::SubscriptionUpdated
           result = UnpauseMembership.call(
             subscription: subscription
           )
-          if result.success?
-            ok
-          else
-            error(result.message)
+          if !result.success?
+            context.fail!(message: result.message)
           end
         else
           # some other update, not an unpause
-          ok
         end
       else
         # subscription is active and we're updating it
-        ok
       end
     else
       # this is not a membership (maybe an office lease) and/or this is missing from our DB
       # so we do nothing
-      ok
-    end
-
-    if !result.success?
-      msg = "UnpauseMembership: #{result.message}"
-      context.fail!(message: msg)
-    else
-      # subscription cannot be found
-      msg = "customer.subscription.updated: No such subscription #{event.data.object.id}"
-      context.fail!(message: msg)
     end
   end
 end
