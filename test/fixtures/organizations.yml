@@ -26,3 +26,4 @@ sierra_nevada_organization:
     operator: cowork_tahoe
     stripe_customer_id: nil
     out_of_band: false
+    billing_contact: cowork_tahoe_admin
