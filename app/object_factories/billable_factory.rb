@@ -10,7 +10,6 @@ class BillableFactory
       Billable::DayPass
     else
       raise "Cannot determine billable for #{invoiceable.class.name}"
-
     end.new(invoiceable)
   end
 end
