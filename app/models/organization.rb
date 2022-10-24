@@ -10,6 +10,7 @@
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
+#  billing_contact_id :integer
 #  operator_id        :integer          default(1), not null
 #  owner_id           :integer
 #  stripe_customer_id :string
@@ -30,6 +31,7 @@ class Organization < ApplicationRecord
   has_many :office_leases
   has_many :invoices, as: :billable
   belongs_to :owner, class_name: "User", optional: true
+  belongs_to :billing_contact, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
 

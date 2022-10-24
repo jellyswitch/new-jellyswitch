@@ -126,7 +126,7 @@ class Operator::OrganizationsController < Operator::BaseController
   private
 
   def organization_params
-    params.require(:organization).permit(:name, :website, :owner_id)
+    params.require(:organization).permit(:name, :website, :owner_id, :billing_contact_id)
   end
 
   def find_organization(key=:id)
