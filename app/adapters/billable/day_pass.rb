@@ -8,7 +8,7 @@ class Billable::DayPass < SimpleDelegator
 
   def billable
     if day_pass.user.bill_to_organization? && day_pass.user.member_of_organization? && day_pass.user.organization.present?
-      day_pass.user.organization
+      OrganizationBillDecider.new(day_pass.user.organization).billable
     else
       day_pass.user
     end

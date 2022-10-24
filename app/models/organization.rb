@@ -121,4 +121,8 @@ class Organization < ApplicationRecord
       end
     end
   end
+
+  def has_billing_contact?
+    billing_contact.present?
+  end
 end
