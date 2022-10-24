@@ -12,7 +12,11 @@ class Billable::Subscription < SimpleDelegator
       user
     when "Organization"
       # This is probably an office lease
-      @subscription.subscribable
+      if @subscription.subscribable.billing_contact.present?
+        @subscription.subscribable.billing_contact
+      else
+        @subscription.subscribable
+      end
     end
   end
 
@@ -21,7 +25,11 @@ class Billable::Subscription < SimpleDelegator
   def user
     if subscription.subscribable.member_of_organization?
       if subscription.subscribable.bill_to_organization?
-        subscription.subscribable.organization
+        if subscription.subscribable.organization.billing_contact.present?
+          subscription.subscribable.organization.billing_contact
+        else
+          subscription.subscribable.organization
+        end
       else
         subscription.subscribable
       end
