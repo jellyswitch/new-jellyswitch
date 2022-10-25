@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_25_183121) do
+ActiveRecord::Schema[7.0].define(version: 2022_10_25_221642) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -425,6 +425,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_25_183121) do
     t.boolean "bulletin_board_enabled", default: false, null: false
     t.string "android_server_key"
     t.boolean "crm_enabled", default: false, null: false
+    t.string "bundle_id"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

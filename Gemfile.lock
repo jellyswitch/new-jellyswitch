@@ -102,6 +102,9 @@ GEM
     annotate (3.2.0)
       activerecord (>= 3.2, < 8.0)
       rake (>= 10.4, < 14.0)
+    apnotic (1.7.0)
+      connection_pool (~> 2)
+      net-http2 (>= 0.18.3, < 2)
     autoprefixer-rails (9.7.1)
       execjs
     aws-eventstream (1.2.0)
@@ -150,8 +153,6 @@ GEM
     childprocess (4.1.0)
     choice (0.2.0)
     coderay (1.1.3)
-    commander (4.4.7)
-      highline (~> 2.0.0)
     concurrent-ruby (1.1.10)
     connection_pool (2.2.5)
     crass (1.0.6)
@@ -193,12 +194,9 @@ GEM
     groupdate (6.1.0)
       activesupport (>= 5.2)
     hashie (5.0.0)
-    highline (2.0.1)
     honeybadger (4.12.2)
-    houston (2.4.0)
-      commander (~> 4.4)
-      json
     htmlentities (4.3.4)
+    http-2 (0.11.0)
     httparty (0.20.0)
       mime-types (~> 3.0)
       multi_xml (>= 0.5.2)
@@ -253,6 +251,8 @@ GEM
     multi_xml (0.6.0)
     net-http (0.2.2)
       uri
+    net-http2 (0.18.4)
+      http-2 (~> 0.11)
     net-imap (0.2.3)
       digest
       net-protocol
@@ -469,6 +469,7 @@ DEPENDENCIES
   acts_as_tenant (= 0.5.0)
   ahoy_matey
   annotate
+  apnotic
   aws-sdk-s3 (~> 1.48)
   bcrypt
   better_errors (>= 2.8.0)
@@ -486,7 +487,6 @@ DEPENDENCIES
   friendly_id
   groupdate
   honeybadger
-  houston
   httparty
   icalendar
   image_processing (~> 1.2)

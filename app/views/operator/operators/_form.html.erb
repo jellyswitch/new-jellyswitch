@@ -72,6 +72,15 @@
     <%- end %>
   </div>
 
+  <div class="form-group">
+    <%= f.label :bundle_id, "iOS App Bundle ID" %>
+    <%- if editable_app_links %>
+      <%= f.text_field :bundle_id, placeholder: "iOS App Bundle ID", class: "form-control" %>
+    <%- else %>
+      <%= f.text_field :bundle_id, placeholder: "iOS App Bundle ID", class: "form-control", readonly: true %>
+    <%- end %>
+  </div>
+
     <div class="form-group">
     <%= f.label :android_url, "Google Play Store URL" %>
     <%- if editable_app_links %>
