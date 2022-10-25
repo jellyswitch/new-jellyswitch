@@ -7,7 +7,7 @@ class BillableFactory
       when "User"
         Billable::Default
       when "Organization"
-        Billable::Subscription::Organization
+        Billable::Subscription::OfficeLease
       end
     when "Checkin"
       Billable::Default
