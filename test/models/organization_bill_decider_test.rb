@@ -6,7 +6,8 @@ class OrganizationBillDeciderTest < ActiveSupport::TestCase
   end
 
   test "if no billing contact is present, returns the organization" do
-    organization = organizations(:sierra_nevada_organization).update(billing_contact: nil)
+    organization = organizations(:sierra_nevada_organization)
+    organization.update(billing_contact: nil)
 
     assert_equal OrganizationBillDecider.new(organization: organization).billable, organization
   end
