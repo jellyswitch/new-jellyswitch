@@ -32,3 +32,16 @@ cowork_tahoe_subscription:
   billable_type: User
   billable: cowork_tahoe_member
   start_date: <%= Time.now %>
+
+cowork_tahoe_office_lease:
+  plan: cowork_tahoe_office_lease
+  active: true
+  stripe_subscription_id: nil
+  subscribable_type: Organization
+  subscribable: sierra_nevada_organization
+  pending: false
+  billable_type: Organization
+  billable: sierra_nevada_organization
+  start_date: <%= Time.now %>
+
+

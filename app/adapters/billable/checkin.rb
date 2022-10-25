@@ -8,7 +8,7 @@ class Billable::Checkin < SimpleDelegator
 
   def billable
     if checkin.user.bill_to_organization? && checkin.user.member_of_organization? && checkin.user.organization.present?
-      OrganizationBillDecider.new(checkin.user.organization).billable
+      OrganizationBillDecider.new(organization: checkin.user.organization).billable
     else
       checkin.user
     end

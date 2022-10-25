@@ -12,5 +12,4 @@ class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
       
     assert_redirected_to office_lease_path(@office_lease_plan)
   end
-
 end
