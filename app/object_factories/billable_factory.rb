@@ -5,11 +5,11 @@ class BillableFactory
     when "Subscription"
       Billable::Subscription
     when "Checkin"
-      Billable::Checkin
+      Billable::Default
     when "DayPass"
-      Billable::DayPass
+      Billable::Default
     else
       raise "Cannot determine billable for #{invoiceable.class.name}"
-    end.new(invoiceable)
+    end.new(billable: invoiceable)
   end
 end

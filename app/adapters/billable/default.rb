@@ -1,4 +1,12 @@
 class Billable::Default
+  def initialize(billable:)
+    @billable = billable
+  end
+
+  def billable
+    find_billable(billable: @billable)
+  end
+
   protected
 
   def find_billable(billable:)

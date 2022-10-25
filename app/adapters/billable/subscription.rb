@@ -1,16 +1,14 @@
 
 class Billable::Subscription < Billable::Default
-  def initialize(subscription)
-    @subscription = subscription
-  end
+  private
 
-  def billable
-    case @subscription.subscribable_type
+  def find_billable(billable:)
+    case billable.subscribable_type
     when "User"
-      find_billable(billable: @subscription)
+      super(billable: billable)
     when "Organization"
-      # This is probably an office lease
-      OrganizationBillDecider.new(organization: @subscription.subscribable).billable
+      # This is an office lease
+      OrganizationBillDecider.new(organization: billable.subscribable).billable
     end
   end
 end
