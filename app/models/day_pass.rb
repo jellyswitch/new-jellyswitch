@@ -57,4 +57,8 @@ class DayPass < ApplicationRecord
       "Unknown"
     end
   end
+
+  def subscribable
+    user
+  end
 end

@@ -3,13 +3,18 @@ class BillableFactory
    def self.for(invoiceable)
     case invoiceable.class.name
     when "Subscription"
-      Billable::Subscription
+      case invoiceable.subscribable_type
+      when "User"
+        Billable::Default
+      when "Organization"
+        Billable::Subscription::OfficeLease
+      end
     when "Checkin"
-      Billable::Checkin
+      Billable::Default
     when "DayPass"
-      Billable::DayPass
+      Billable::Default
     else
       raise "Cannot determine billable for #{invoiceable.class.name}"
-    end.new(invoiceable)
+    end.new(billable: invoiceable)
   end
 end

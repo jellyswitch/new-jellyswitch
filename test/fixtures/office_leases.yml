@@ -39,7 +39,7 @@ office_23b_lease:
   end_date: Wed, 14 Sep 2022
   created_at: Fri, 19 Apr 2019 10:18:49.267605000 PDT -07:00
   updated_at: Wed, 26 Feb 2020 09:24:43.627505000 PST -08:00
-  subscription: cowork_tahoe_subscription
+  subscription: cowork_tahoe_office_lease
   initial_invoice_date: Wed, 01 May 2019
   always_allow_building_access: true
   location: cowork_tahoe_location

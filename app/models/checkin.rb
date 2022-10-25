@@ -74,4 +74,8 @@ class Checkin < ApplicationRecord
     time = Time.strptime(time_input, "%k:%M %Z")
     time.change(day: datetime_in.day)
   end
+
+  def subscribable
+    user
+  end
 end

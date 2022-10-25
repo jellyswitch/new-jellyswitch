@@ -75,3 +75,21 @@ cowork_tahoe_archived_plan:
  credits: 0
  commitment_interval: nil
  childcare_reservations: 0
+
+cowork_tahoe_office_lease_plan:
+ interval: monthly
+ amount_in_cents: 20500
+ name: Office Lease
+ visible: false
+ available: false
+ slug: full-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ stripe_plan_id: cowork-tahoe-full-time-membership-9c65da82-a919-4c3c-8501-f842e7df486c
+ operator: cowork_tahoe
+ plan_type: lease
+ always_allow_building_access: true
+ has_day_limit: false
+ day_limit: 0
+ credits: 0
+ commitment_interval: nil
+ childcare_reservations: 0
+

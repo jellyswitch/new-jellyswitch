@@ -30,6 +30,7 @@ class Organization < ApplicationRecord
   has_many :office_leases
   has_many :invoices, as: :billable
   belongs_to :owner, class_name: "User", optional: true
+  belongs_to :billing_contact, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
 
@@ -118,5 +119,9 @@ class Organization < ApplicationRecord
         "None"
       end
     end
+  end
+
+  def has_billing_contact?
+    billing_contact.present?
   end
 end
