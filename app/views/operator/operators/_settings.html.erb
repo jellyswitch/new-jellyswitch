@@ -73,7 +73,17 @@
       <%- end %>
     </dd>
 
-      <dt>Android App Store Link</dt>
+    <dt>iOS Bundle ID</dt>
+    <dd>
+      <%- if operator.bundle_id.present? %>
+        <pre><%= operator.bundle_id %></pre>
+      <%- else %>
+        <i>Not Entered</i>
+      <%- end %>
+    </dd>
+
+
+    <dt>Android App Store Link</dt>
     <dd>
       <%- if operator.android_url.present? %>
         <%= link_to "View in Google Play", operator.android_url, target: "_blank" %>
