@@ -63,9 +63,13 @@ class Operator::SubscriptionsController < Operator::BaseController
     authorize @subscription
     @new_subscription = new_subscription
 
-    result = SwitchMembership.call(
+    result = UpdateMembership.call(
       old_subscription: @subscription,
-      new_subscription: @new_subscription
+      new_subscription: @new_subscription,
+      blob: { text: "#{@subscription.subscribable.name} switched their membership.", type: "membership_updated" },
+      user: current_tenant.users.admins.first,
+      operator: current_tenant,
+      notifiable: current_tenant.users.admins
     )
 
     if result.success?

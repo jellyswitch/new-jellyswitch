@@ -86,6 +86,8 @@ class FeedItem < ApplicationRecord
       "checked in"
     when "membership_cancellation"
       "posted a mgmt note"
+    when "membership_updated"
+      "posted a mgmt note"
     when "account_deletion"
       "posted a mgmt note"
     when "new-user"
