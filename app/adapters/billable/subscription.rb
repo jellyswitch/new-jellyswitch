@@ -9,7 +9,15 @@ class Billable::Subscription < SimpleDelegator
   def billable
     case @subscription.subscribable_type
     when "User"
-      user
+      if subscription.subscribable.member_of_organization?
+        if subscription.subscribable.bill_to_organization? && subscription.subscribable.organization.present?
+          OrganizationBillDecider.new(organization: subscription.subscribable.organization).billable
+        else
+          subscription.subscribable
+        end
+      else
+        subscription.subscribable
+      end
     when "Organization"
       # This is probably an office lease
       OrganizationBillDecider.new(organization: @subscription.subscribable).billable
@@ -18,15 +26,5 @@ class Billable::Subscription < SimpleDelegator
 
   private
 
-  def user
-    if subscription.subscribable.member_of_organization?
-      if subscription.subscribable.bill_to_organization?
-        OrganizationBillDecider.new(organization: subscription.subscribable.organization).billable
-      else
-        subscription.subscribable
-      end
-    else
-      subscription.subscribable
-    end
-  end
+
 end
