@@ -3,7 +3,12 @@ class BillableFactory
    def self.for(invoiceable)
     case invoiceable.class.name
     when "Subscription"
-      Billable::Subscription
+      case invoiceable.subscribable_type
+      when "User"
+        Billable::Default
+      when "Organization"
+        Billable::Subscription::Organization
+      end
     when "Checkin"
       Billable::Default
     when "DayPass"
