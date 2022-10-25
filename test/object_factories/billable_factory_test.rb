@@ -47,4 +47,22 @@ class BillableFactoryTest < ActiveSupport::TestCase
 
     assert BillableFactory.for(day_passes(:cowork_tahoe_day_pass)).billable == users(:cowork_tahoe_admin)
   end
+
+  # Checkins
+
+  test 'for checkins, it returns an individual when they are not a member of an organization' do
+    users(:cowork_tahoe_member).update(organization_id: nil)
+
+    assert BillableFactory.for(checkins(:cowork_tahoe_member_checkin)).billable == users(:cowork_tahoe_member)    
+  end
+
+  test 'for checkins, it returns an individual correctly even when that member is part of an organization but not set to bill it' do
+    assert BillableFactory.for(checkins(:cowork_tahoe_member_checkin)).billable == users(:cowork_tahoe_member)
+  end
+
+  test 'for checkins, it returns an organization billing contact correctly' do
+    users(:cowork_tahoe_member).update(bill_to_organization: true)
+
+    assert BillableFactory.for(checkins(:cowork_tahoe_member_checkin)).billable == users(:cowork_tahoe_admin)
+  end
 end

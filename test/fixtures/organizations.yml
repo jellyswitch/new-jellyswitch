@@ -9,7 +9,6 @@
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
-#  billing_contact_id :integer
 #  operator_id        :integer          default(1), not null
 #  owner_id           :integer
 #  stripe_customer_id :string
@@ -19,11 +18,11 @@
 #  index_organizations_on_operator_id  (operator_id)
 #
 sierra_nevada_organization:
-    name: Sierra Nevada Alliance
-    owner: cowork_tahoe_admin
-    website: www.timsgroup.net
-    slug: sierra-nevada-alliance
-    operator: cowork_tahoe
-    stripe_customer_id: nil
-    out_of_band: false
-    billing_contact: cowork_tahoe_admin
+  name: Sierra Nevada Alliance
+  owner: cowork_tahoe_admin
+  website: www.timsgroup.net
+  slug: sierra-nevada-alliance
+  operator: cowork_tahoe
+  stripe_customer_id: nil
+  out_of_band: false
+  billing_contact: cowork_tahoe_admin
