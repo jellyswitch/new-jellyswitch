@@ -31,7 +31,7 @@ class Notifiable::Default < SimpleDelegator
 
         begin
           if user.ios_token.present?
-            response = IosNotification.new(user: user, message: message)
+            response = IosNotification.new(user: user, message: message).send!
             if response.ok?
               puts "Pushed iOS message: #{message} to #{user.name}'s device: #{user.ios_token}"
             else
