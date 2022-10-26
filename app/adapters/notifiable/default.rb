@@ -44,7 +44,6 @@ class Notifiable::Default < SimpleDelegator
           Honeybadger.notify(e, user_id: user.email, operator_id: operator.id, notification: message)
         end
       end
-      connection.close
     else
       puts "Operator #{operator.name} has no push notification certificate."
     end
