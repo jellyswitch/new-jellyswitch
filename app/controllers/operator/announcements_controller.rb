@@ -20,9 +20,15 @@ class Operator::AnnouncementsController < Operator::BaseController
       user: current_user,
       operator: current_tenant
     )
-    
+
+
     if result.success?
       flash[:success] = "Announcement posted."
+      FeedItems::Save.call(
+        user: current_user,
+        operator: current_tenant,
+        blob: { type: "announcement", announcement_id: result.announcement.id }
+      )
       turbo_redirect(feed_items_path, action: restore_if_possible)
     else
       flash[:error] = result.message
