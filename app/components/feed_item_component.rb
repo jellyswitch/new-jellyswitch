@@ -42,6 +42,8 @@ class FeedItemComponent < ApplicationComponent
       true
     when "membership_unpaused"
       true
+    when "membership_updated"
+      true
     else
       false
     end
@@ -65,6 +67,8 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::MembershipPaused
     when "membership_unpaused"
       FeedItems::MembershipUnpaused
+    when "membership_updated"
+      FeedItems::MembershipUpdated
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end

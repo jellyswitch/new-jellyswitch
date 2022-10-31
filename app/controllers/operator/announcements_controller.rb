@@ -18,9 +18,11 @@ class Operator::AnnouncementsController < Operator::BaseController
     result = Announcements::Create.call(
       body: announcement_params[:body],
       user: current_user,
-      operator: current_tenant
+      operator: current_tenant,
+      blob: { type: "announcement" },
     )
-    
+
+
     if result.success?
       flash[:success] = "Announcement posted."
       turbo_redirect(feed_items_path, action: restore_if_possible)

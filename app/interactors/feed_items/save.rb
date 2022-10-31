@@ -1,7 +1,7 @@
 class FeedItems::Save
   include Interactor
 
-  delegate :text, :blob, :operator, :user, :photos, :created_at, to: :context
+  delegate :text, :blob, :operator, :user, :photos, :created_at, :announcement, to: :context
 
   def call
     @feed_item = FeedItem.new
@@ -9,6 +9,10 @@ class FeedItems::Save
     @feed_item.text = text
     @feed_item.operator = operator
     @feed_item.user = user
+
+    if @feed_item.type == "announcement"
+      @feed_item.blob["announcement_id"] = announcement.id
+    end
 
     if created_at.present?
       @feed_item.created_at = created_at
@@ -30,6 +34,7 @@ class FeedItems::Save
 
     context.notifiable = @feed_item
     context.feed_item = @feed_item
+    context.announcement = announcement
   end
 
   def rollback

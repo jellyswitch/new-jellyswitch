@@ -3,6 +3,7 @@ class Announcements::Create
 
   organize(
     Announcements::Save,
+    FeedItems::Save,
     Announcements::SendEmail,
     CreateNotificationsAsync
   )
