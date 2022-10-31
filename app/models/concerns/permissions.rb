@@ -19,7 +19,7 @@ module Permissions
 
   def should_charge_for_reservation?(location)
     if operator.production? || operator.subdomain == "southlakecoworking"
-      !(member?(location) || has_active_day_pass? || has_active_lease? || admin?)
+      !(member?(location) || has_active_day_pass? || has_active_lease? || admin? || superadmin? || general_manager?)
     else
       false
     end
