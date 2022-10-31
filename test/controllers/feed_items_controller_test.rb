@@ -20,4 +20,69 @@ class FeedItemsControllerTest < ActionDispatch::IntegrationTest
     post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: ios_env
     assert_redirected_to controller: "operator/feed_items", action: "index"
   end
+
+  test "should create membership updated feed item and redirect back to index (web)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "membership_updated", text: "user updated their membership" } }, env: default_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create membership updated feed item and redirect back to index (ios)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "membership_updated", text: "user updated their membership" } }, env: ios_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create membership cancelled feed item and redirect back to index (web)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "membership_cancelled", text: "user cancelled their membership" } }, env: default_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create membership cancelled feed item and redirect back to index (ios)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "membership_cancelled", text: "user cancelled their membership" } }, env: ios_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create announcement feed item and redirect back to index (web)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "announcement", text: "this is an announcement" } }, env: default_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create announcement feed item and redirect back to index (ios)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "announcement", text: "this is an announcement" } }, env: ios_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create account deleted feed item and redirect back to index (web)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "account_deletion", text: "user deleted their account" } }, env: default_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
+  test "should create account deleted feed item and redirect back to index (ios)" do
+    assert_difference("FeedItem.count") do
+      post feed_items_url, params: { feed_item: { type: "account_deletion", text: "user deleted their account" } }, env: ios_env
+    end
+
+    assert_redirected_to controller: "operator/feed_items", action: "index"
+  end
+
 end
