@@ -16,3 +16,11 @@
     <% end %>
   <% end %>
 <% end %>
+
+<%= list_item do %>
+  <% location.plans.uncategorized.individual.visible.available.order(amount_in_cents: :asc).each do |plan| %>
+    <div class="my-3">
+      <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
+    </div>
+  <% end %>
+<% end %>
