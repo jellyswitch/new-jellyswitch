@@ -5,11 +5,7 @@
     <%= f.label :name, "What is this plan category called?" %>
     <%= f.text_field :name, placeholder: "Coworking Memberships", class: "form-control", disabled: !plan_category.new_record? %>
   </div>
-
-  <div class="form-group">
-    <%= f.hidden_field :operator_id, value: current_tenant.id %>
-  </div>
-  
+    
   <br />
 
   <%= f.submit "Add Plan Category", class: "form-control btn btn-primary" %>

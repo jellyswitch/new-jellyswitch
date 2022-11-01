@@ -47,6 +47,6 @@ class Operator::PlanCategoriesController < Operator::BaseController
   end
 
   def plan_category_params
-    params.require(:plan_category).permit(:name, :operator_id, plan_ids: [])
+    params.require(:plan_category).permit(:name, plan_ids: []).merge( { operator_id: current_tenant.id } )
   end
 end
