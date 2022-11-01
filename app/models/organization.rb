@@ -10,6 +10,7 @@
 #  website            :string
 #  created_at         :datetime         not null
 #  updated_at         :datetime         not null
+#  billing_contact_id :integer
 #  operator_id        :integer          default(1), not null
 #  owner_id           :integer
 #  stripe_customer_id :string

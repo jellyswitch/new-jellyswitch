@@ -277,6 +277,7 @@ Rails.application.routes.draw do
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
   end
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
+  resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"
     get :toggle_availability, to: "operator/plans#toggle_availability"

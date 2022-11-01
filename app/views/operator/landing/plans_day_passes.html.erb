@@ -14,6 +14,16 @@
 
     <%= list_item do %>
 
+      <h4 class="display-4 text-center">Plan Categories</h4>
+
+      <p>
+        <%= current_tenant.name %> has <%= current_tenant.plan_categories.count %> <%= quantize(current_tenant.plan_categories, "plan categories") %>.
+      </p>
+
+      <%= link_to "Manage Plan Categories", plan_categories_path, class: "btn btn-block btn-primary" %>
+    <% end %>
+
+    <%= list_item do %>
       <h4 class="display-4 text-center">Day Pass Types</h4>
 
       <p>

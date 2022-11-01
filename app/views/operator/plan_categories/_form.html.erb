@@ -1,0 +1,12 @@
+<%= form_with(model: plan_category, url: url, method: :post, local: true) do |f| %>
+  <%= render "shared/error_messages" , model: plan_category %>
+
+  <div class="form-group">
+    <%= f.label :name, "What is this plan category called?" %>
+    <%= f.text_field :name, placeholder: "Coworking Memberships", class: "form-control", disabled: !plan_category.new_record? %>
+  </div>
+  
+  <br />
+
+  <%= f.submit "Add Plan Category", class: "form-control btn btn-primary" %>
+<% end %>

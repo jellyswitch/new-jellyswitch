@@ -1,0 +1,16 @@
+<%= list_item do %>
+  <div class="row">
+    <div class="col">
+      <h5><%= plan_category.name %></h5>
+    </div>
+  </div>
+  
+  <ul class="list-group list-group-flush">
+    <% plan_category.plans.map do |plan| %>
+      <li class="list-group-item">
+        <%= plan.name %>
+      </li>
+    <% end %>
+  </ul>
+
+<% end %>

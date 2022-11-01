@@ -36,6 +36,7 @@ class Plan < ApplicationRecord
   # Relationships
   has_many :subscriptions
   belongs_to :operator
+  belongs_to :plan_category, optional: true
   has_and_belongs_to_many :locations
 
   # Slugs

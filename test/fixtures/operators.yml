@@ -46,6 +46,7 @@
 #  wifi_password                 :string           default("not set"), not null
 #  created_at                    :datetime         not null
 #  updated_at                    :datetime         not null
+#  bundle_id                     :string
 #  stripe_user_id                :string
 #
 # Indexes
