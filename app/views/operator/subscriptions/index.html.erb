@@ -13,8 +13,6 @@
       <%= render(MemberOnboarding::Membership.new(plan: current_location.plans.individual.visible.available.first)) %>
     <% end %>
   <% else %>
-    <%= list_item do %>
-      <%= render "operator/subscriptions/plan_categories", location: current_location %>
-    <% end %>
+    <%= render "operator/subscriptions/plan_categories", location: current_location %>
   <% end %>
 <% end %>
