@@ -12,4 +12,8 @@ module PlansHelper
     p[:amount_in_cents] = dollars.cents
     p
   end
+
+  def plans_for_categorization
+    Plan.available.individual.uncategorized.order(name: :desc).all
+  end
 end

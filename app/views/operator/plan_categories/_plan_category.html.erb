@@ -13,4 +13,18 @@
     <% end %>
   </ul>
 
+  <%= form_with(model: plan_category, local: true) do |f| %>
+    <div class="form-group">
+      <select name="plan_category[plan_ids][]" id="plan_category_plan_ids" class="form-control" multiple size="<%= plans_for_categorization.count %>">
+        <% plans_for_categorization.each do |plan| %>
+            <option value="<%= plan.id %>">
+                <%= plan.pretty_name %>
+            </option>
+        <% end %>
+    </select>
+    </div>
+
+    <%= f.submit "Update plans in #{ plan_category.name }", class: "btn btn-primary" %>
+  <% end %>
+
 <% end %>
