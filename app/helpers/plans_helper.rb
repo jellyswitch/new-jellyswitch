@@ -14,6 +14,6 @@ module PlansHelper
   end
 
   def plans_for_categorization
-    Plan.available.individual.uncategorized.order(name: :desc).all
+    Plan.available.individual.order(name: :desc).all
   end
 end
