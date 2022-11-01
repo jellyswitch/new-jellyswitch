@@ -437,7 +437,7 @@ class Operator::UsersController < Operator::BaseController
   end
 
   def destroy
-    find_user(:user_id)
+    find_user
 
     if @user.organization_owner?
       flash[:error] = "You must leave the following group prior to account deletion: #{@user.organization.name}"
