@@ -4,7 +4,7 @@
       <h5><%= plan_category.name %></h5>
     </div>
   </div>
-  
+
   <ul class="list-group list-group-flush">
     <% plan_category.plans.map do |plan| %>
       <li class="list-group-item">
@@ -13,12 +13,11 @@
     <% end %>
   </ul>
 
-  <%= form_with(model: plan_category, local: true) do |f| %>
+  <%= form_with(model: plan_category, local: true, method: :put) do |f| %>
     <div class="form-group">
-      <%= f.select :plan_ids, options_from_collection_for_select(plans_for_categorization, :id, :pretty_name, plan_category.plans.map(&:plan_category_id)), {}, { multiple: true, class: "form-control"} %>
+      <%= f.select :plan_ids, options_from_collection_for_select(plans_for_categorization, :id, :pretty_name, plan_category.plans.map(&:id)), {}, { multiple: true, class: "form-control" } %>
     </div>
 
     <%= f.submit "Update plans in #{ plan_category.name }", class: "btn btn-primary" %>
   <% end %>
-
 <% end %>
