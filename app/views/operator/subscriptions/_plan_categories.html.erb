@@ -1,0 +1,40 @@
+<div class="accordion" id="planCategoriesAccordion">
+  <div class="card">
+    <% location.operator.plan_categories.order(name: :desc).all.select {|plan_category| plan_category.plans.individual.visible.available.count.positive? }.map do |plan_category| %>    
+
+      <div class="card-header" id="header-<%= dom_id(plan_category) %>">
+        <h2 class="mb-0">
+          <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-<%= dom_id(plan_category) %>" aria-expanded="true" aria-controls="collapseOne">
+            <%= plan_category.name %> Plans (<%= plan_category.plans.individual.visible.available.count %>)
+          </button>
+        </h2>
+      </div>
+
+      <div id="collapse-<%= dom_id(plan_category) %>" class="collapse" aria-labelledby="headingOne" data-parent="#planCategoriesAccordion">
+        <div class="card-body">
+          <% location.plans.for_category(plan_category).individual.visible.available.order("amount_in_cents ASC").each do |plan| %>
+            <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
+          <% end %>
+
+        </div>
+      </div>
+
+    <% end %>
+
+    <div class="card-header" id="header-uncategorized">
+      <h2 class="mb-0">
+        <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-uncategorized" aria-expanded="true" aria-controls="collapseOne">
+          General Plans
+        </button>
+      </h2>
+    </div>
+
+    <div id="collapse-uncategorized" class="collapse" aria-labelledby="headingOne" data-parent="#planCategoriesAccordion">
+      <div class="card-body">
+        <% location.plans.uncategorized.individual.visible.available.order("amount_in_cents ASC").each do |plan| %>
+          <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

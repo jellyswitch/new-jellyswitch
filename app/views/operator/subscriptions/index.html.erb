@@ -13,10 +13,8 @@
       <%= render(MemberOnboarding::Membership.new(plan: current_location.plans.individual.visible.available.first)) %>
     <% end %>
   <% else %>
-    <% current_location.plans.individual.visible.available.order("amount_in_cents ASC").each do |plan| %>
-      <%= list_item do %>
-        <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
-      <% end %>
+    <%= list_item do %>
+      <%= render "operator/subscriptions/plan_categories", location: current_location %>
     <% end %>
   <% end %>
 <% end %>

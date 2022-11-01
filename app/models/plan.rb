@@ -58,6 +58,7 @@ class Plan < ApplicationRecord
   scope :free, -> { where('amount_in_cents <= 0') }
   scope :cheapest, -> { order('amount_in_cents ASC').first }
   scope :uncategorized, -> { where(plan_category_id: nil) }
+  scope :for_category, ->(plan_category) { where(plan_category_id: plan_category.id) }
 
   PLAN_TYPES = %w(individual lease).freeze
 
