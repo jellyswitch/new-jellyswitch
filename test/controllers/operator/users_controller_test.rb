@@ -32,6 +32,17 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     delete user_path(@user.id), env: default_env
     @user.reload
     assert @old_user.name != @user.name
+    assert @old_user.bio != @user.bio
     assert_redirected_to signup_path
+  end
+
+  test "should NOT scrub user data and redirect to signup page if user is still in organization" do
+    @user = users(:cowork_tahoe_admin) # org owner
+    @old_user = @user.dup
+    delete user_path(@user.id), env: default_env
+    @user.reload
+    assert @old_user.name == @user.name
+    assert @old_user.bio == @user.bio
+    assert_redirected_to root_path
   end
 end
