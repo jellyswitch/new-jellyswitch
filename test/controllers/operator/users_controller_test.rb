@@ -26,7 +26,7 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "New Name", @user.reload.name
   end
 
-  test "should scrub user data" do
+  test "should scrub user data and redirect to signup page if user is not part of an organization" do
     @user.update(organization_id: nil)
     @user.reload.organization_id
     delete user_path(@user.id), env: default_env
