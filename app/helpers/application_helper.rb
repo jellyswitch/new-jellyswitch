@@ -55,11 +55,6 @@ module ApplicationHelper
     end
   end
 
-  def google_map(center)
-    key = ENV['GOOGLE_MAPS_API_KEY']
-    "https://maps.googleapis.com/maps/api/staticmap?key=#{key}&markers=size:small%7Ccolor:red%7C#{center}&size=500x500&zoom=17"
-  end
-
   def favicon(operator)
     if operator.logo_image.attached?
       url_for(operator.logo_image)
