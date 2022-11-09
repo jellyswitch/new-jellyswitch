@@ -5,6 +5,16 @@ class Operator::SubscriptionsController < Operator::BaseController
 
   def index
     authorize Subscription.new
+    if params[:plan_category_id].present?
+      @plan_category = current_tenant.plan_categories.find(params[:plan_category_id])
+      if @plan_category.present?
+        @plans = @plan_category.plans.visible.available.for_location(current_location).order(:amount_in_cents)
+      else
+        default_plans
+      end
+    else
+      default_plans
+    end
   end
 
   def new
@@ -153,5 +163,9 @@ class Operator::SubscriptionsController < Operator::BaseController
 
   def find_plan(key=:plan_id)
     @plan = current_location.plans.find(params[key])
+  end
+
+  def default_plans
+    @plans = current_location.plans.individual.visible.available.order(:amount_in_cents)
   end
 end

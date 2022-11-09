@@ -1,0 +1,31 @@
+<%- title "Memberships" %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">
+      <i class="fas fa-users"></i>
+      &nbsp;
+      Plan Categories
+    </h4>
+  <% end %>
+  <% if @plan_categories.count.positive? %>
+    <% @plan_categories.map do |plan_category| %>
+      <%= list_item do %>
+        <div class="row">
+          <div class="col">
+            <h5><%= plan_category.name.capitalize %></h5>
+            <%= plan_category.plans.visible.available.for_location(current_location).count %> Plans available
+          </div>
+        </div>
+
+        <div class="row mt-3">
+          <div class="col">
+            <%= link_to "View all #{plan_category.name} plans", subscriptions_path(plan_category_id: plan_category.id), class: "btn btn-block btn-primary" %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  <% else %>
+    This should never be visible
+  <% end %>
+<% end %>
