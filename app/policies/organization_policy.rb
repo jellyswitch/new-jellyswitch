@@ -40,10 +40,6 @@ class OrganizationPolicy < ApplicationPolicy
     (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end
 
-  def payment_method?
-    (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
-  end
-
   def members?
     (admin? || community_manager? || superadmin? || general_manager? || user.organization_owner?)
   end

@@ -104,14 +104,6 @@ class OrganizationPolicyTest < PolicyAssertions::Test
     assert_permit @superadmin, Organization
   end
 
-  def test_payment_method
-    assert_not_permitted @member, Organization
-    assert_permit @admin, Organization
-    assert_permit @community_manager, Organization
-    assert_permit @general_manager, Organization
-    assert_permit @superadmin, Organization
-  end
-
   def test_members
     assert_not_permitted @member, Organization
     assert_permit @admin, Organization
