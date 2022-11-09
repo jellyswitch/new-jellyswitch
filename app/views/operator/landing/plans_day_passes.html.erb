@@ -20,7 +20,7 @@
         <%= current_tenant.name %> has <%= current_tenant.plan_categories.count %> <%= quantize(current_tenant.plan_categories, "plan categories") %>.
       </p>
 
-      <%= link_to "Manage Plan Categories", plan_categories_path, class: "btn btn-block btn-primary" %>
+      <%= link_to "Manage Plan Categories", operator_admin_plan_categories_path, class: "btn btn-block btn-primary" %>
     <% end %>
 
     <%= list_item do %>

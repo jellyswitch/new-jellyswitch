@@ -5,14 +5,16 @@
     <h4 class="display-4 text-center">
       <i class="fas fa-users"></i>
       &nbsp;
-      Memberships
+      <% if @plan_category.present? %>
+        <%= @plan_category.name.titleize %> Plans
+      <% else %>
+        Plans
+      <% end %>
     </h4>
   <% end %>
-  <% if current_location.plans.individual.visible.available.count == 1 %>
+  <% @plans.map do |plan| %>
     <%= list_item do %>
-      <%= render(MemberOnboarding::Membership.new(plan: current_location.plans.individual.visible.available.first)) %>
+      <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
     <% end %>
-  <% else %>
-    <%= render "operator/subscriptions/plan_categories", location: current_location %>
   <% end %>
 <% end %>

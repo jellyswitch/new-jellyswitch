@@ -5,7 +5,7 @@
     </div>
   </div>
 
-  <%= form_with(model: plan_category, local: true, method: :put) do |f| %>
+  <%= form_with(model: plan_category, local: true, method: :put, url: operator_admin_plan_category_path(plan_category)) do |f| %>
     <div class="form-group">
       <%= f.select :plan_ids, options_from_collection_for_select(plans_for_categorization, :id, :pretty_name, plan_category.plans.map(&:id)), {}, { multiple: true, class: "form-control" , size: plans_for_categorization.count} %>
     </div>
