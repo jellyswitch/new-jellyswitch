@@ -166,6 +166,6 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   def default_plans
-    @plans = current_location.plans.individual.visible.available.order(:amount_in_cents)
+    @plans = current_location.plans.uncategorized.individual.visible.available.order(:amount_in_cents)
   end
 end

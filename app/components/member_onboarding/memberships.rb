@@ -11,7 +11,7 @@ class MemberOnboarding::Memberships < ApplicationComponent
 
   def has_categories?
     location.operator.plan_categories.select do |plan_category|
-      plan_category.plans.for_location(location).count.positive?
+      plan_category.plans.individual.available.visible.for_location(location).count.positive?
     end.count.positive?
   end
 end
