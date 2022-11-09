@@ -96,7 +96,11 @@ Rails.application.routes.draw do
   # Admin namespace (for operator resources)
   namespace :operator do
     namespace :admin do
-      resources :plan_categories
+      resources :plan_categories do
+        collection do
+          get :remove_plan
+        end
+      end
       resources :subscriptions do
         collection do
           post :confirm

@@ -14,6 +14,6 @@ module PlansHelper
   end
 
   def plans_for_categorization
-    Plan.available.individual.visible.order(name: :desc).all
+    current_tenant.plans.uncategorized.available.individual.visible.order(name: :desc).all
   end
 end
