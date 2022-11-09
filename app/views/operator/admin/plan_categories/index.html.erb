@@ -20,7 +20,16 @@
         <i>There are no plan categories.</i>
       <% end %>
     <% else %>
-        <%= render @plan_categories %>
+      <%= list_item do %>
+        <ul class="list-group">
+          <% @plan_categories.map do |plan_category| %>
+            <%= link_to operator_admin_plan_category_path(plan_category), class: "list-group-item list-group-item-link" do %>
+              <%= plan_category.name %>
+              (<%= plan_category.plans.count %> plans)
+            <% end %>
+          <% end %>
+        </ul>
+      <% end %>
     <% end %>
 
   <% end %>

@@ -13,7 +13,7 @@
           <li class="list-group-item">
             <div class="row">
               <div class="col">
-                <%= link_to remove_plan_operator_admin_plan_categories_path(plan_id: plan.id), class: "btn btn-danger btn-sm" do %>
+                <%= link_to operator_admin_plan_category_remove_plan_path(plan_category, plan_id: plan.id), class: "btn btn-danger btn-sm" do %>
                   <i class="fas fa-trash"></i>
                 <% end %>
                 <%= plan.name %>

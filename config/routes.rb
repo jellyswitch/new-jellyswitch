@@ -97,9 +97,7 @@ Rails.application.routes.draw do
   namespace :operator do
     namespace :admin do
       resources :plan_categories do
-        collection do
-          get :remove_plan
-        end
+        get :remove_plan
       end
       resources :subscriptions do
         collection do

@@ -12,12 +12,16 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
     @plan_category = PlanCategory.new
   end
 
+  def show
+    find_plan_category
+  end
+
   def create
     @plan_category = PlanCategory.new(plan_category_params)
     
     if @plan_category.save
       flash[:notice] = "Plan Category created."
-      turbo_redirect(operator_admin_plan_categories_path)
+      turbo_redirect(operator_admin_plan_category_path(@plan_category))
     else
       flash[:error] = "Something went wrong."
       turbo_redirect(new_operator_admin_plan_category_path)
@@ -32,7 +36,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
     
     if @plan_category.update(new_params)
       flash[:notice] = "Plan Category updated."
-      turbo_redirect(operator_admin_plan_categories_path)
+      turbo_redirect(operator_admin_plan_category_path(@plan_category))
     else
       flash[:error] = "Something went wrong."
       turbo_redirect(new_operator_admin_plan_category_path)
@@ -52,11 +56,12 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
   end
 
   def remove_plan
+    find_plan_category(:plan_category_id)
     @plan = current_tenant.plans.find(params[:plan_id])
 
     if @plan.update(plan_category_id: nil)
       flash[:notice] = "Plan removed from category."
-      turbo_redirect(operator_admin_plan_categories_path)
+      turbo_redirect(operator_admin_plan_category_path(@plan_category))
     else
       flash[:error] = "Something went wrong."
       turbo_redirect(new_operator_admin_plan_category_path)
