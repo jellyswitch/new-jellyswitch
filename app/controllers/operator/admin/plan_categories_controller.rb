@@ -2,22 +2,25 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
   include PlansHelper
   before_action :background_image
 
-  # TODO: policies
 
   def index
     find_plan_categories
+    authorize @plan_categories
   end
 
   def new
     @plan_category = PlanCategory.new
+    authorize @plan_category
   end
 
   def show
     find_plan_category
+    authorize @plan_category
   end
 
   def create
     @plan_category = PlanCategory.new(plan_category_params)
+    authorize @plan_category
     
     if @plan_category.save
       flash[:notice] = "Plan Category created."
@@ -30,6 +33,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
 
   def update
     find_plan_category
+    authorize @plan_category
 
     new_params = plan_category_params
     new_params[:plan_ids] = new_params[:plan_ids].concat(@plan_category.plans.map(&:id))
@@ -45,6 +49,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
 
   def destroy
     find_plan_category
+    authorize @plan_category
 
     if @plan_category.destroy
       flash[:notice] = "Plan category removed."
@@ -58,6 +63,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
   def remove_plan
     find_plan_category(:plan_category_id)
     @plan = current_tenant.plans.find(params[:plan_id])
+    authorize @plan_category
 
     if @plan.update(plan_category_id: nil)
       flash[:notice] = "Plan removed from category."
