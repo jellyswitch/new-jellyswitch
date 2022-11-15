@@ -4,10 +4,7 @@
       <h1 class="text-center">Change Your Account</h1>
       <hr/>
       <% if !@subscription.present? %>
-        <% if current_location.operator.plan_categories.select do |plan_category|
-                plan_category.plans.individual.available.visible.for_location(current_location).count.positive?
-              end.count.positive?
-        %>
+        <% if current_location.has_categories? %>
           <%= link_to "Become a member", plan_categories_path, class: "btn btn-sm btn-primary", data: { acc: 'new-member' } %>
         <% else %>
           <%= link_to "Become a member", subscriptions_path, class: "btn btn-sm btn-primary", data: { acc: 'new-member' } %>
