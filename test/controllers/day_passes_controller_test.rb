@@ -2,24 +2,26 @@ require "test_helper"
 require 'stripe_mock'
 
 class DayPassesControllerTest < ActionDispatch::IntegrationTest
-
-  def stripe_helper
-    StripeMock.create_test_helper
-  end
-
   setup do
-    @member = users(:cowork_tahoe_member)
-    log_in @member
+    StripeMock.start
+    @user = users(:cowork_tahoe_member)
+    log_in @user
     @day_pass = day_passes(:cowork_tahoe_day_pass)
     @day_pass_type = day_pass_type(:cowork_tahoe_day_pass_type)
-    StripeMock.start
+    setup_stripe
   end
 
   test "should create a new day pass" do
-    post day_passes_path, params: { day_pass: { day: Date.today.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type, user: @member } }, env: default_env
-    follow_redirect!(env: default_env)
-    byebug
-    assert_redirected_to home_path
+    mock = Minitest::Mock.new
+
+    mock.expect(:success?, true)
+    mock.expect(:day_pass, @user.day_passes.last)
+    mock.expect(:invoice, invoices(:paid_invoice))
+
+    CreateInvoice.stub :call, mock do
+      post day_passes_path, params: { day_pass: { day: Date.today.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
+      assert_redirected_to home_path
+    end
   end
 
   test "should get new day pass path" do
