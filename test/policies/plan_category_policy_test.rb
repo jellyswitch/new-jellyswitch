@@ -48,10 +48,10 @@ class PlanCategoryPolicyTest < PolicyAssertions::Test
     assert_permit @general_manager, PlanCategory
   end
 
-  # def test_remove_plan
-  #   assert_not_permitted @member, plans(:cowork_tahoe_full_time_plan)
-  #   assert_permit @admin, plans(:cowork_tahoe_full_time_plan)
-  #   assert_permit @community_manager, plans(:cowork_tahoe_full_time_plan)
-  #   assert_permit @general_manager, plans(:cowork_tahoe_full_time_plan)
-  # end
+  def test_remove_plan
+    assert_not_permitted @member, PlanCategory
+    assert_permit @admin, PlanCategory
+    assert_permit @community_manager, PlanCategory
+    assert_permit @general_manager, PlanCategory
+  end
 end
