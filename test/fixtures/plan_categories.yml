@@ -9,10 +9,5 @@
 #  operator_id :integer
 #
 
-one:
-  name: MyString
-  operator_id: 1
-
-two:
-  name: MyString
-  operator_id: 1
+private_desk_pod:
+  name: Private Desk Pod
