@@ -18,6 +18,7 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
   test "should create a new day pass" do
     post day_passes_path, params: { day_pass: { day: Date.today.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type, user: @member } }, env: default_env
     follow_redirect!(env: default_env)
+    byebug
     assert_redirected_to home_path
   end
 
