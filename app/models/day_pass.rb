@@ -47,7 +47,7 @@ class DayPass < ApplicationRecord
   end
 
   def today?
-    day.day == Time.current.day
+    day == Time.zone.today
   end
 
   def day_pass_type_name
