@@ -1,34 +1,30 @@
 class PlanCategoryPolicy < ApplicationPolicy
 
-  def index
-    can_see?
+  def index?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def new?
-    can_see?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def show?
-    can_see?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def create?
-    can_see?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def update?
-    can_see?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def destroy?
-    can_see?
+    ( admin? || community_manager? || general_manager? )
   end
 
   def remove_plan?
-    can_see?
-  end
-
-  def can_see?
     ( admin? || community_manager? || general_manager? )
   end
 end
