@@ -4,7 +4,14 @@
       <h1 class="text-center">Change Your Account</h1>
       <hr/>
       <% if !@subscription.present? %>
-        <%= link_to "Become a Member", subscriptions_path, class: "btn btn-sm btn-primary" %>
+        <% if current_location.operator.plan_categories.select do |plan_category|
+                plan_category.plans.individual.available.visible.for_location(current_location).count.positive?
+              end.count.positive?
+        %>
+          <%= link_to "Become a member", plan_categories_path, class: "btn btn-sm btn-primary", data: { acc: 'new-member' } %>
+        <% else %>
+          <%= link_to "Become a member", subscriptions_path, class: "btn btn-sm btn-primary", data: { acc: 'new-member' } %>
+        <% end %>
       <% else %>
 
         <% if !@subscription.cancelling_at_end_of_billing_period? # && !@subscription.paused? %>
