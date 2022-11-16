@@ -9,5 +9,6 @@
 #  operator_id :integer
 #
 class PlanCategory < ApplicationRecord
+  belongs_to :operator, optional: true
   has_many :plans
 end
