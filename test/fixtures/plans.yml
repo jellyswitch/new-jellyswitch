@@ -60,7 +60,6 @@ cowork_tahoe_full_time_plan:
  commitment_interval: nil
  childcare_reservations: 0
  plan_category: private_desk_pod
- locations: cowork_tahoe_location
 
 cowork_tahoe_archived_plan:
  interval: monthly
