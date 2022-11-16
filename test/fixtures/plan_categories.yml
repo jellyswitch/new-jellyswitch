@@ -11,3 +11,4 @@
 
 private_desk_pod:
   name: Private Desk Pod
+  operator: cowork_tahoe
