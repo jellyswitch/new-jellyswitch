@@ -69,9 +69,15 @@ class UserManagerTest < ActiveSupport::TestCase
     assert user.should_charge_for_reservation?(@location) == true
   end
 
-  test 'User#should_charge_for_reservation?(location) returns true if user is unassigned (role)' do
+  test 'User#should_charge_for_reservation?(location) returns true if user is unassigned (role) and a member' do
     user = users(:cowork_tahoe_member)
     
+    assert user.should_charge_for_reservation?(@location) == false
+  end
+
+  test 'User#should_charge_for_reservation?(location) returns true if user is unassigned (role) and not a member' do
+    user = users(:cowork_tahoe_non_member)
+      
     assert user.should_charge_for_reservation?(@location) == true
   end
 end
