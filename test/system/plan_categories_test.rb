@@ -10,7 +10,7 @@ class PlanCategoriesTest < ApplicationSystemTestCase
   test "'Become a Member' (from choose route) takes a non_member to plan categories index, if there are plan_categories" do
     log_in(@user)
 
-    click_on "Become a member"
+    click_on "Become a member", wait: 5
 
     assert_text "Plan Categories"
   end
@@ -21,7 +21,6 @@ class PlanCategoriesTest < ApplicationSystemTestCase
     @plan_with_category.reload
 
     click_on "Become a member"
-
     assert_text "Plans"
   end
 end

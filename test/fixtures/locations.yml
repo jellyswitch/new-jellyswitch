@@ -87,3 +87,4 @@ cowork_tahoe_location:
   open_saturday: false
   credit_cost_in_cents: 0
   childcare_reservation_cost_in_cents: 0
+  plans: cowork_tahoe_full_time_plan
