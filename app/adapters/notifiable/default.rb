@@ -1,14 +1,9 @@
 class Notifiable::Default < SimpleDelegator
   # Invoked by the factory
   def notify
-    log
     validate!
     create_feed_item
     send_notification if should_send_notification?
-  end
-
-  def log
-    puts "Pushing message to #{recipients.count} recipients: #{message}"
   end
 
   def validate!
@@ -27,43 +22,25 @@ class Notifiable::Default < SimpleDelegator
   def ios
     if operator.push_notification_certificate.attached?
       recipients.each do |user|
-        puts "Pushing iOS notification to #{user.name}: #{message}"
-
         begin
           if user.ios_token.present?
-            response = IosNotification.new(user: user, message: message).send!
-            if response.ok?
-              puts "Pushed iOS message: #{message} to #{user.name}'s device: #{user.ios_token}"
-            else
-              puts "Cannot push iOS message: #{ response.body }"
-            end
-          else
-            puts "Cannot push iOS message to #{user.email} since iOS token is: #{user.ios_token}"
+            IosNotification.new(user: user, message: message).send!
           end
         rescue => e
           Honeybadger.notify(e, user_id: user.email, operator_id: operator.id, notification: message)
         end
       end
-    else
-      puts "Operator #{operator.name} has no push notification certificate."
     end
   end
 
   def android
     if operator.android_server_key.present?
       recipients.each do |user|
-        puts "Pushing android notification to #{user.name}: #{message}"
         if user.android_token.present?
           fcm = FCM.new(operator.android_server_key)
           fcm.send([user.android_token], {"notification": {"title": message, "body": message}})
-          
-          puts "Pushed message: #{message} to #{user.name}'s android device: #{user.android_token}"
-        else
-          puts "Cannot push Android message to #{user.email} since android token is: #{user.android_token}"
         end
       end
-    else
-      puts "Operator #{operator.name} has no firebase server key."
     end
   end
   
