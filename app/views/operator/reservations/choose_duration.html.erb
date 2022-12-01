@@ -20,7 +20,7 @@
       <dt class="col-6">Time</dt>
       <dd class="col"><%= pretty_time(@hour) %></dd>
 
-      <% if policy(:credit).enabled? && !current_user.admin? %>
+      <% if policy(:credit).enabled? && !@staff %>
         <dt class="col-6">Hourly Credit Cost</dt>
         <dd class="col"><%= @room.credit_cost %></dd>
 

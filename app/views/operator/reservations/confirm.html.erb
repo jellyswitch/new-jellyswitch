@@ -36,7 +36,7 @@
         </dd>
       <% end %>
 
-      <% if policy(:credit).enabled? && !current_user.admin? %>
+      <% if policy(:credit).enabled? && !@staff %>
         <dt class="col-6">Hourly Credit Cost</dt>
         <dd class="col">
           <%= render CreditAmount.new(amount: @room.credit_cost) %>

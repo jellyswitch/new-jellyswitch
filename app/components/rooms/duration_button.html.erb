@@ -1,5 +1,5 @@
 <% if credits_enabled? %>
-  <% if user.admin? %>
+  <% if user.admin? || user.general_manager? || user.community_manager? %>
     <%= link_to label, confirm_reservations_path(room_id: room.id, day: day, hour: pretty_time(hour), duration: duration), class: "btn btn-block btn-primary" %>
   <% else %>
     <% if has_enough_credits? %>

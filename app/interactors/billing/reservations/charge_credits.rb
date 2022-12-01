@@ -6,7 +6,7 @@ class Billing::Reservations::ChargeCredits
 
   def call
     if user.operator.credits_enabled?
-      if !user.admin?
+      if !staff?
         @existing_balance = user.credit_balance
 
         @charge_amount = reservation_cost(reservation_params[:room], reservation_params[:minutes])
@@ -28,10 +28,14 @@ class Billing::Reservations::ChargeCredits
 
   def rollback
     if user.operator.credits_enabled?
-      if !user.admin?
+      if !staff?
         user.update(credit_balance: @existing_balance)
         reservation.update(credit_cost: 0)
       end
     end
+  end
+
+  def staff?
+    user.admin? || user.general_manager? || user.community_manager?
   end
 end
