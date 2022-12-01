@@ -1,7 +1,7 @@
 
 class Operator::OrganizationsController < Operator::BaseController
   before_action :find_organization, except: [:index, :new, :create, :credit_card,
-    :out_of_band, :billing, :members, :leases, :invoices, :ltv]
+    :out_of_band, :billing, :payment_method, :members, :leases, :invoices, :ltv]
 
   def index
     find_organizations
@@ -94,6 +94,11 @@ class Operator::OrganizationsController < Operator::BaseController
     find_organization(:organization_id)
     authorize @organization
     include_stripe
+  end
+
+  def payment_method
+    find_organization(:organization_id)
+    authorize @organization
   end
 
   def members
