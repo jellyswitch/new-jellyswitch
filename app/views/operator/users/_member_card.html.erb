@@ -10,7 +10,7 @@
       </div>
       <div class="ml-2">
         <p class="mb-1">
-          <%- if admin? %>
+          <%- if policy(member).index? %>
             <%= link_to member.name, user_path(member) %>
           <%- else %>
             <%= member.name %>
