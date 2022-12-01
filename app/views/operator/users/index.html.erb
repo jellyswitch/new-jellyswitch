@@ -11,7 +11,7 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         <h4 class="display-4 text-center">Member Directory</h4>
-        <% if admin? %>
+        <% if policy(@users).index? %>
           <div class="row mb-3 mt-3">
             <div class="col">
               <%= link_to add_member_users_path, class: "btn btn-block btn-primary" do %>
