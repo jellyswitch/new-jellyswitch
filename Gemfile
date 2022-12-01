@@ -62,7 +62,7 @@ group :development do
   gem 'better_errors', '>= 2.8.0'
   gem 'binding_of_caller'
   gem 'listen', '>= 3.0.5', '< 3.8'
-  gem 'rack-mini-profiler', '~> 2.0'
+  gem 'rack-mini-profiler', '~> 3.0'
   gem 'rails-erd'
   gem 'user-auth', git: "https://github.com/jellyswitch/user-auth", :branch => 'master'
   gem 'web-console', '>= 4.1.0'
