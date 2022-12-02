@@ -39,6 +39,7 @@ class Operator::ReservationsController < Operator::BaseController
     @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
+    @staff = staff
 
     parse_time
   end
@@ -49,6 +50,7 @@ class Operator::ReservationsController < Operator::BaseController
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
+    @staff = staff
 
     parse_time
     if current_user.should_charge_for_reservation?(current_location) || !current_user.has_billing?
@@ -148,6 +150,10 @@ class Operator::ReservationsController < Operator::BaseController
 
   def find_reservation(key=:id)
     @reservation = Reservation.find(params[key]).decorate
+  end
+
+  def staff
+    current_user.admin? || current_user.general_manager? || current_user.community_manager?
   end
 
   def reservation_params
