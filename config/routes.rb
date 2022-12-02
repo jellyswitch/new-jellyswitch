@@ -269,6 +269,7 @@ Rails.application.routes.draw do
     get :ltv, to: "operator/organizations#ltv"
     get :members, to: "operator/organizations#members"
     get :out_of_band, to: "operator/organizations#out_of_band"
+    get :payment_method, to: "operator/organizations#payment_method"
   end
   resources :operators, as: :operator_operators, controller: "operator/operators" do
     get :approval_required, to: "operator/operators#approval_required"
