@@ -7,6 +7,8 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     @part_time_plan = plans(:cowork_tahoe_part_time_plan)
     @full_time_plan = plans(:cowork_tahoe_full_time_plan)
     log_in @user
+    StripeMock.start
+    setup_stripe
   end
 
   test "should subscribe to operator" do
@@ -30,16 +32,16 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
 
   test "should get edit subscription page" do
     get edit_subscription_path(@subscription), env: default_env
-    assert_response :found
+    assert_response :ok
   end
 
   test "should update plan" do
-    patch subscription_path(@subscription), params: { subscription: { plan: @full_time_plan.id } }, env: default_env
+    patch subscription_path(@subscription), params: { subscription: { plan_id: @full_time_plan.id } }, env: default_env
     assert_response :redirect
   end
 
   test "cancel subscription failure should keep subscription acive and not post a feed item" do
-    delete subscription_path(@subscription), params: { subscription: { plan: "foobar"} }, env: default_env
+    delete subscription_path(@subscription), params: { subscription: { plan: "foobar" } }, env: default_env
     assert_response :redirect
   end
 end

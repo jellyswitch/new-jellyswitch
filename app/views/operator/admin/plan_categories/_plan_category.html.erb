@@ -1,0 +1,45 @@
+<%= list_item do %>
+  <div class="row">
+    <div class="col">
+      <h5><%= plan_category.name %></h5>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <i><%= plan_category.plans.count %> plans</i>
+      <ul class="list-group list-group-flush">
+        <% plan_category.plans.map do |plan| %>
+          <li class="list-group-item">
+            <div class="row">
+              <div class="col">
+                <%= link_to operator_admin_plan_category_remove_plan_path(plan_category, plan_id: plan.id), class: "btn btn-danger btn-sm" do %>
+                  <i class="fas fa-trash"></i>
+                <% end %>
+                <%= plan.name %>
+              </div>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+  <div class="row my-5">
+    <div class="col">
+      <h5>Manage Category</h5>
+      <%= form_with(model: plan_category, local: true, method: :put, url: operator_admin_plan_category_path(plan_category), html: { class: "mb-3" } ) do |f| %>
+        <div class="form-group">
+          <%= f.select :plan_ids, options_from_collection_for_select(plans_for_categorization, :id, :pretty_name, plan_category.plans.map(&:id)), {}, { multiple: true, class: "form-control form-control-lg" , size: plans_for_categorization.count} %>
+        </div>
+
+        <%= f.submit "Add these plans", class: "btn btn-primary btn-block" %>
+      <% end %>
+      <% if plan_category.plans.count.positive? %>
+        <%= link_to "Remove plans before removing category", "#", class: "btn btn-danger btn-block disabled", disabled: true %>
+      <% else %>
+        <%= link_to "Remove this plan category", operator_admin_plan_category_path(plan_category), method: :delete, data: { turbo: false, confirm: "Are you sure?" }, class: "btn btn-danger btn-block" %>
+      <% end %>
+    </div>
+  </div>
+
+<% end %>

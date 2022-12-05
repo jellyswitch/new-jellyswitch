@@ -11,12 +11,12 @@
     <div class="input-group-prepend">
       <span class="input-group-text">$</span>
     </div>
-    <%= f.text_field :amount_in_cents , class: "form-control" %>
+    <%= f.text_field :amount_in_cents, class: "form-control" %>
   </div>
 
   <div class="form-group">
     <%= f.label :interval, "How frequent should members be charged?" %>
-    <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control" %>
+    <%= f.select :interval, Plan.options_for_interval, { selected: "monthly" }, class: "form-control" %>
   </div>
 <% else %>
   <%= f.label :amount_in_cents, "How much does this plan cost?" %>
@@ -32,7 +32,7 @@
 
   <div class="form-group">
     <%= f.label :interval, "How frequent should members be charged?" %>
-    <%= f.select :interval, Plan.options_for_interval, {selected: "monthly"}, class: "form-control", disabled: true %>
+    <%= f.select :interval, Plan.options_for_interval, { selected: "monthly" }, class: "form-control", disabled: true %>
   </div>
 <% end %>
 
@@ -42,7 +42,7 @@
     <%= f.check_box :available, class: "form-check-input" %>
     <%= f.label :available, "Available", class: "form-check-label" %>
   </div>
-  
+
   <div class="form-check mt-3">
     <%= f.check_box :visible, class: "form-check-input" %>
     <%= f.label :visible, "Visible to new members", class: "form-check-label" %>
@@ -56,7 +56,7 @@
 
 <div class="form-group mt-3">
   <%= f.label "Which locations is this plan available at?" %>
-  <%= f.select :location_ids, options_from_collection_for_select(current_tenant.locations.all, :id, :name, plan.locations.map(&:id)), {}, { multiple: true, class: "form-control"} %>
+  <%= f.select :location_ids, options_from_collection_for_select(current_tenant.locations.all, :id, :name, plan.locations.map(&:id)), {}, { multiple: true, class: "form-control" } %>
 </div>
 
 <div class="form-group">
@@ -64,7 +64,7 @@
   <%= f.rich_text_area :description %>
 </div>
 
-<hr />
+<hr/>
 <p>Other options:</p>
 
 <% if policy(:credit).enabled? %>
@@ -103,3 +103,9 @@
   </div>
 <% end %>
 
+<div class="form-group">
+  <div class="mt-2">
+    <%= f.label :plan_category, "Select a plan category" %>
+  </div>
+  <%= f.select :plan_category_id, PlanCategory.where(operator_id: current_location.operator.id).collect { |plan_category| [plan_category.name, plan_category.id] }, { include_blank: "No Category" }, class: "form-control" %>
+</div>

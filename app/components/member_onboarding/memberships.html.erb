@@ -9,7 +9,11 @@
       <%= location.name %> has <%= location.plans.individual.visible.count %> plans available.
     </div>
     <div class="row mt-3">
-      <%= link_to "Become a member", subscriptions_path, class: "btn btn-primary col m-2", data: { acc: 'new-member' } %>
+      <% if location.has_categories? %>
+        <%= link_to "Become a member", plan_categories_path, class: "btn btn-primary col m-2", data: { acc: 'new-member' } %>
+      <% else %>
+        <%= link_to "Become a member", subscriptions_path, class: "btn btn-primary col m-2", data: { acc: 'new-member' } %>
+      <% end %>
     </div>
   </div>
   

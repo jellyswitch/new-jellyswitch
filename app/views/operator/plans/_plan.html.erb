@@ -4,6 +4,20 @@
       <h5><%= plan.name %></h5>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col">
+      <% if plan.plan_category.present? %>
+        <span class="badge badge-primary">
+          <%= plan.plan_category.name %>
+        </span>
+      <% else %>
+        <span class="badge badge-warning">
+          Uncategorized
+        </span>
+      <% end %>
+    </div>
+  </div>
   
   <div class="row">
     <div class="col">

@@ -1,0 +1,36 @@
+
+<%- title 'Plan Categories' %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Plan Categories</li>
+<% end %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+
+
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Plan Categories</h4>
+      <%= link_to "Add a new plan category", new_operator_admin_plan_category_path, class: "btn btn-primary btn-block mb-3" %>
+    <% end %>    
+
+    <% if @plan_categories.count < 1 %>
+      <%= list_item do %>
+        <i>There are no plan categories.</i>
+      <% end %>
+    <% else %>
+      <%= list_item do %>
+        <ul class="list-group">
+          <% @plan_categories.map do |plan_category| %>
+            <%= link_to operator_admin_plan_category_path(plan_category), class: "list-group-item list-group-item-link" do %>
+              <%= plan_category.name %>
+              (<%= plan_category.plans.count %> plans)
+            <% end %>
+          <% end %>
+        </ul>
+      <% end %>
+    <% end %>
+
+  <% end %>
+<% end %>

@@ -1,0 +1,26 @@
+<% location.operator.plan_categories.order(name: :desc).all.select {|plan_category| plan_category.plans.individual.visible.available.count.positive? }.map do |plan_category| %>      
+  <%= list_item do %>
+    <div class="row my-3">
+      <div class="col text-center">
+        <h5>
+          <%= plan_category.name %> Plans (<%= plan_category.plans.individual.visible.available.count %>)
+        </h5>
+      </div>
+    </div>
+  <% end %>
+  <%= list_item do %>
+    <% location.plans.for_category(plan_category).individual.visible.available.order(amount_in_cents: :asc).each do |plan| %>
+      <div class="my-3">
+        <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<%= list_item do %>
+  <% location.plans.uncategorized.individual.visible.available.order(amount_in_cents: :asc).each do |plan| %>
+    <div class="my-3">
+      <%= render(MemberOnboarding::Membership.new(plan: plan)) %>
+    </div>
+  <% end %>
+<% end %>

@@ -88,6 +88,12 @@ class Location < ApplicationRecord
     background_image.attached?
   end
 
+  def has_categories?
+    operator.plan_categories.select do |plan_category|
+      plan_category.plans.individual.available.visible.for_location(self).count.positive?
+    end.count.positive?
+  end
+
   def square_photo
     background_image.variant(resize: "100x100>")
   end

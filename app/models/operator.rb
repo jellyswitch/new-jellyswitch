@@ -47,6 +47,7 @@
 #  wifi_password                 :string           default("not set"), not null
 #  created_at                    :datetime         not null
 #  updated_at                    :datetime         not null
+#  bundle_id                     :string
 #  stripe_user_id                :string
 #
 # Indexes
@@ -69,6 +70,7 @@ class Operator < ApplicationRecord
   has_many :member_feedbacks
   has_many :operator_surveys
   has_many :organizations
+  has_many :plan_categories
   has_many :plans
   has_many :rooms
   has_many :users

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2022_10_25_221642) do
+ActiveRecord::Schema[7.0].define(version: 2022_11_01_162320) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -443,6 +443,13 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_25_221642) do
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
+  create_table "plan_categories", force: :cascade do |t|
+    t.string "name"
+    t.integer "operator_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "plans", force: :cascade do |t|
     t.string "interval", null: false
     t.integer "amount_in_cents", null: false
@@ -461,6 +468,7 @@ ActiveRecord::Schema[7.0].define(version: 2022_10_25_221642) do
     t.integer "credits", default: 0, null: false
     t.integer "commitment_interval"
     t.integer "childcare_reservations", default: 0, null: false
+    t.integer "plan_category_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 

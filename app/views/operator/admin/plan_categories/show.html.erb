@@ -1,0 +1,20 @@
+
+<%- title 'Plan Categories' %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Plan Categories", operator_admin_plan_categories_path %></li>
+  <li class="breadcrumb-item active" aria-current="page"><%= @plan_category.name %></li>
+<% end %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+
+
+    <%= list_item do %>
+      <h4 class="display-4 text-center"><%= @plan_category.name %></h4>
+    <% end %>    
+    <%= render @plan_category %>
+
+  <% end %>
+<% end %>
