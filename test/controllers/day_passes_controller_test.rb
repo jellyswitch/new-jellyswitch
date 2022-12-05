@@ -2,23 +2,45 @@ require "test_helper"
 require 'stripe_mock'
 
 class DayPassesControllerTest < ActionDispatch::IntegrationTest
-
-  def stripe_helper
-    StripeMock.create_test_helper
-  end
-
   setup do
-    @member = users(:cowork_tahoe_member)
-    log_in @member
+    StripeMock.start
+    @user = users(:cowork_tahoe_member)
+    log_in @user
     @day_pass = day_passes(:cowork_tahoe_day_pass)
     @day_pass_type = day_pass_type(:cowork_tahoe_day_pass_type)
-    StripeMock.start
+    setup_stripe
   end
 
-  test "should create a new day pass" do
-    post day_passes_path, params: { day_pass: { day: Date.today.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type, user: @member } }, env: default_env
-    follow_redirect!(env: default_env)
-    assert_redirected_to home_path
+  test "should create a new day pass for today" do
+    @date = Date.today
+    mock = Minitest::Mock.new
+
+    mock.expect(:success?, true)
+    mock.expect(:day_pass, @user.day_passes.last)
+    mock.expect(:invoice, invoices(:paid_invoice))
+
+    CreateInvoice.stub :call, mock do
+      post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
+      assert_equal "Welcome to #{@user.operator.name}!", flash[:success]
+      assert_redirected_to home_path
+    end
+  end
+
+  test "should create a new day pass for the future" do
+    @date = Date.today + 2.days
+    @date_formatted = @date.strftime("%m/%d/%Y")
+    mock = Minitest::Mock.new
+
+    mock.expect(:success?, true)
+    mock.expect(:day_pass, @user.day_passes.last)
+    mock.expect(:invoice, invoices(:paid_invoice))
+
+    CreateInvoice.stub :call, mock do
+      post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
+
+      assert_equal "Thanks! Your day pass will be available on #{ @date_formatted }.", flash[:success]
+      assert_redirected_to home_path
+    end
   end
 
   test "should get new day pass path" do

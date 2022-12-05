@@ -40,7 +40,7 @@
 #
 require 'test_helper'
 
-class UserManagerTest < ActiveSupport::TestCase
+class UserTest < ActiveSupport::TestCase
   setup do
     @location = locations(:cowork_tahoe_location)
   end
