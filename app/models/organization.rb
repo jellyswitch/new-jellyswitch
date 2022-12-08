@@ -137,8 +137,20 @@ class Organization < ApplicationRecord
   end
 
   def active_subscriptions_count
-    users.map do |user|
-      user.bill_to_organization? && user.has_active_subscription?
-    end.count
+    active_user_subscriptions.count
+  end
+
+  def active_user_subscriptions
+    result = []
+    users.each do |user|
+      if user.bill_to_organization? && user.has_active_subscription?
+        user.subscriptions.active.each do |subscription|
+          result << subscription
+        end
+      else
+        next
+      end
+    end
+    result
   end
 end

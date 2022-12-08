@@ -18,9 +18,23 @@
   <div class="form-group">
     <%= f.label :billing_contact %>
     <% if @organization.can_change_billing_contact? %>
+
       <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), class: "form-control" %>
+
     <% else %>
+
       <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), {}, { disabled: true } %>
+
+      <strong>Before you can change the billing contact, the following must first be cancelled:</strong>
+
+      <% @organization.active_user_subscriptions.each do |subscription| %>
+        <li class="list-group-item disabled"><%= subscription %></li>
+      <% end %>
+
+      <% @organization.active_leases.each do |office_lease| %>
+        <li class="list-group-item disabled"><%= office_lease %></li>
+      <% end %>
+
     <% end %>
   </div>
 
