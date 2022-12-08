@@ -127,7 +127,7 @@ class Organization < ApplicationRecord
   end
 
   def can_change_billing_contact?
-    !has_users_with_active_subscriptions?
+    !has_users_with_active_subscriptions? && !has_active_lease?
   end
 
   def has_users_with_active_subscriptions?
