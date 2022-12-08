@@ -127,6 +127,12 @@ class Organization < ApplicationRecord
   end
 
   def can_change_billing_contact?
-    false
+    !has_users_with_active_subscriptions?
+  end
+
+  def has_users_with_active_subscriptions?
+    users.map do |user|
+      user.bill_to_organization? && user.has_active_subscription?
+    end.count.positive?
   end
 end
