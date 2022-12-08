@@ -35,6 +35,13 @@
           </dd>
         </dl>
 
+        <dl class="row">
+          <dt class="col-sm-3">Active Subscriptions Count</dt>
+          <dd class="col-sm">
+            <%= @organization.active_subscriptions_count %>
+          </dd>
+        </dl>
+
         <% if superadmin? %>
           <dl class="row">
             <dt class="col-sm-3">Stripe Customer ID</dt>

@@ -135,4 +135,10 @@ class Organization < ApplicationRecord
       user.bill_to_organization? && user.has_active_subscription?
     end.count.positive?
   end
+
+  def active_subscriptions_count
+    users.map do |user|
+      user.bill_to_organization? && user.has_active_subscription?
+    end.count
+  end
 end
