@@ -125,4 +125,8 @@ class Organization < ApplicationRecord
   def has_billing_contact?
     billing_contact.present?
   end
+
+  def can_change_billing_contact?
+    false
+  end
 end
