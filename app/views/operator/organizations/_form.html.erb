@@ -28,11 +28,11 @@
       <strong>Before you can change the billing contact, the following must first be cancelled:</strong>
 
       <% @organization.active_user_subscriptions.each do |subscription| %>
-        <li class="list-group-item disabled"><%= subscription %></li>
+        <li class="list-group-item"><%=link_to "Subscription #{subscription.id} - #{subscription.subscribable.name} - #{subscription.plan.name}", user_membership_path(user_id: subscription.subscribable) %></li>
       <% end %>
 
       <% @organization.active_leases.each do |office_lease| %>
-        <li class="list-group-item disabled"><%= office_lease %></li>
+        <li class="list-group-item"><%= link_to "Office Lease ##{office_lease.id} - #{office_lease.office.name}", office_lease_path(office_lease) %></li>
       <% end %>
 
     <% end %>
