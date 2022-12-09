@@ -135,15 +135,11 @@ class Organization < ApplicationRecord
   end
 
   def users_with_active_subscriptions
-    result = []
-    users.map do |user|
+    users.select do |user|
       if user.bill_to_organization? && user.has_active_subscription?
-        result << user
-      else
-        next
+        user
       end
     end
-    result
   end
 
   def active_subscriptions
