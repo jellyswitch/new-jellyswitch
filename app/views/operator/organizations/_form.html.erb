@@ -28,7 +28,7 @@
       <div class="form-group mt-3">
         <strong>If you wish to designate a billing contact, the following must first be cancelled:</strong>
 
-        <% @organization.active_user_subscriptions.each do |subscription| %>
+        <% @organization.active_subscriptions.each do |subscription| %>
           <li><%=link_to "Subscription #{subscription.id} - #{subscription.subscribable.name} - #{subscription.plan.name}", user_membership_path(user_id: subscription.subscribable) %></li>
         <% end %>
 
