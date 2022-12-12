@@ -43,5 +43,22 @@ module StripeHelper
     stripe_subscription = operators(:cowork_tahoe).stripe_request('Subscription', :create, params)
 
     subscription.update(stripe_subscription_id: stripe_subscription.id)
+
+    #create office leases
+    # office_lease_subscription = subscriptions(:cowork_tahoe_office_lease)
+
+
+    # params = {
+    #   customer: office_lease_subscription.billable.stripe_customer_id,
+    #   items: [{ plan: office_lease_subscription.plan.stripe_plan_id }],
+    #   prorate: false,
+    #   billing_cycle_anchor: nil,
+    #   billing: 'send_invoice',
+    #   days_until_due: 30
+    # }
+
+    # stripe_subscription = operators(:cowork_tahoe).stripe_request('Subscription', :create, params)
+
+    # office_lease_subscription.update(stripe_subscription_id: stripe_subscription.id)
   end
 end
