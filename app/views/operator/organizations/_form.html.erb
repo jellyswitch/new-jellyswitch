@@ -22,10 +22,16 @@
       <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), {}, { class: "form-control" } %>
 
     <% else %>
+      <div class="form-group">
+        <div class="row-12">
+          <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="Tooltip on bottom">
+            <i class="fas fa-exclamation-triangle"></i>
+            <%= f.select :billing_contact_id, ["disabled"], {}, { disabled: true, class: "form-control fas fa-exclamation-triangle" } %>
+          </span>
+        </div>
+      </div>
 
-      <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), {}, { disabled: true, class: "form-control" } %>
-
-      <div class="form-group mt-3">
+      <div class="form-group mt-3 col-6">
         <strong>If you wish to designate a billing contact, the following must first be cancelled:</strong>
 
         <% @organization.active_subscriptions.each do |subscription| %>
@@ -35,10 +41,16 @@
         <% @organization.active_leases.each do |office_lease| %>
           <li><%= link_to "Office Lease ##{office_lease.id} - #{office_lease.office.name}", office_lease_path(office_lease) %></li>
         <% end %>
-      </div>
 
     <% end %>
   </div>
 
   <%= f.submit label, class: "form-control btn btn-primary" %>
 <% end %>
+
+<script>
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+  })
+</script>
