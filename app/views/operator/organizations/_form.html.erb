@@ -27,11 +27,11 @@
           snippet = "If you wish to designate a billing contact,\nthe following must first be cancelled:\n"
 
           @organization.active_subscriptions.each do |subscription|
-            snippet.concat("Subscription #{subscription.id} - #{subscription.subscribable.name} - #{subscription.plan.name}\n")
+            snippet.concat("#{subscription.subscribable.name}'s #{subscription.plan.name} Membership\n")
           end
 
           @organization.active_leases.each do |office_lease|
-            snippet.concat("Office Lease ##{office_lease.id} - #{office_lease.office.name}\n")
+            snippet.concat("#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}\n")
           end
       %>
 
@@ -48,11 +48,11 @@
         <strong>If you wish to designate a billing contact, the following must first be cancelled:</strong>
 
         <% @organization.active_subscriptions.each do |subscription| %>
-          <li><%=link_to "Subscription #{subscription.id} - #{subscription.subscribable.name} - #{subscription.plan.name}", user_membership_path(user_id: subscription.subscribable) %></li>
+          <li><%=link_to "#{subscription.subscribable.name}'s #{subscription.plan.name} Membership", user_membership_path(user_id: subscription.subscribable) %></li>
         <% end %>
 
         <% @organization.active_leases.each do |office_lease| %>
-          <li><%= link_to "Office Lease ##{office_lease.id} - #{office_lease.office.name}", office_lease_path(office_lease) %></li>
+          <li><%= link_to "#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}", office_lease_path(office_lease) %></li>
         <% end %>
 
     <% end %>
