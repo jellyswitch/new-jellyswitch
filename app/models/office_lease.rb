@@ -72,4 +72,8 @@ class OfficeLease < ApplicationRecord
   def set_end_date!
     subscription.set_end_date!(end_date.to_time)
   end
+
+  def pretty_date
+    end_date.strftime("%m/%d/%Y")
+  end
 end

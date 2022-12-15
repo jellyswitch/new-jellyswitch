@@ -43,6 +43,7 @@ require 'test_helper'
 class UserTest < ActiveSupport::TestCase
   setup do
     @location = locations(:cowork_tahoe_location)
+    office_leases(:office_23b_lease).delete
   end
 
   test 'User#should_charge_for_reservation?(location) returns false if user is an admin (role)' do

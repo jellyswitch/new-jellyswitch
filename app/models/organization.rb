@@ -125,4 +125,30 @@ class Organization < ApplicationRecord
   def has_billing_contact?
     billing_contact.present?
   end
+
+  def can_change_billing_contact?
+    !has_active_subscriptions? && !has_active_lease?
+  end
+
+  def has_active_subscriptions?
+    active_subscriptions.count.positive?
+  end
+
+  def users_with_active_subscriptions
+    users.select do |user|
+      if user.bill_to_organization? && user.has_active_subscription?
+        user
+      end
+    end
+  end
+
+  def active_subscriptions
+    result = []
+    users_with_active_subscriptions.each do |user|
+      user.subscriptions.active.each do |subscription|
+        result << subscription
+      end
+    end
+    result
+  end
 end

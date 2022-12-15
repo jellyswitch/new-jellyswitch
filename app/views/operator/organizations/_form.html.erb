@@ -12,11 +12,37 @@
   </div>
   <div class="form-group">
     <%= f.label :owner %>
-    <%= f.select :owner_id, User.lease_options_for_select(current_tenant), class: "form-control" %>
+    <%= f.select :owner_id, User.lease_options_for_select(current_tenant), {}, { class: "form-control" } %>
   </div>
-    <div class="form-group">
+
+  <div class="form-group">
     <%= f.label :billing_contact %>
-    <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), class: "form-control" %>
+    <% if @organization.can_change_billing_contact? %>
+
+      <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), {}, { class: "form-control" } %>
+
+    <% else %>
+      <div class="form-group">
+        <div class="row-12">
+          <span>
+            <i class="fas fa-exclamation-triangle"></i>
+            <%= f.select :billing_contact_id, ["disabled"], {}, { disabled: true, class: "form-control fas fa-exclamation-triangle" } %>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group mt-3 col-6">
+        <strong>If you wish to designate a billing contact, the following must first be cancelled:</strong>
+
+        <% @organization.active_subscriptions.each do |subscription| %>
+          <li><%=link_to "#{subscription.subscribable.name}'s #{subscription.plan.name} Membership", user_membership_path(user_id: subscription.subscribable) %></li>
+        <% end %>
+
+        <% @organization.active_leases.each do |office_lease| %>
+          <li><%= link_to "#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}", office_lease_path(office_lease) %></li>
+        <% end %>
+
+    <% end %>
   </div>
 
   <%= f.submit label, class: "form-control btn btn-primary" %>
