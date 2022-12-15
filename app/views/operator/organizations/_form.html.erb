@@ -22,22 +22,9 @@
       <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant), {}, { class: "form-control" } %>
 
     <% else %>
-
-      <%
-          snippet = "If you wish to designate a billing contact,\nthe following must first be cancelled:\n"
-
-          @organization.active_subscriptions.each do |subscription|
-            snippet.concat("#{subscription.subscribable.name}'s #{subscription.plan.name} Membership\n")
-          end
-
-          @organization.active_leases.each do |office_lease|
-            snippet.concat("#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}\n")
-          end
-      %>
-
       <div class="form-group">
         <div class="row-12">
-          <span data-bs-toggle="tooltip" data-bs-placement="bottom" title="<%= snippet %>">
+          <span>
             <i class="fas fa-exclamation-triangle"></i>
             <%= f.select :billing_contact_id, ["disabled"], {}, { disabled: true, class: "form-control fas fa-exclamation-triangle" } %>
           </span>
