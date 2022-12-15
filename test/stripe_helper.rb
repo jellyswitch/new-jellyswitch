@@ -7,7 +7,7 @@ module StripeHelper
     @stripe_helper = StripeMock.create_test_helper
     
     # create plans in stripe
-    [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan].map do |plan_sym|
+    [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan, :cowork_tahoe_office_lease_plan].map do |plan_sym|
       plan = plans(plan_sym)
 
       product = Stripe::Product.create({ name: plan.plan_name, type: 'service' })
@@ -30,7 +30,6 @@ module StripeHelper
     # create subscriptions in stripe
     subscription = subscriptions(:cowork_tahoe_subscription)
 
-    
     params = {
       customer: subscription.billable.stripe_customer_id,
       items: [{ plan: subscription.plan.stripe_plan_id }],
@@ -44,21 +43,14 @@ module StripeHelper
 
     subscription.update(stripe_subscription_id: stripe_subscription.id)
 
-    #create office leases
-    # office_lease_subscription = subscriptions(:cowork_tahoe_office_lease)
+    # create office leases
+    office_lease_subscription = subscriptions(:cowork_tahoe_office_lease)
+    lease = office_leases(:office_23b_lease)
 
+    params = StripeSubscriptionFactory.for(office_lease_subscription, lease).subscription_args
 
-    # params = {
-    #   customer: office_lease_subscription.billable.stripe_customer_id,
-    #   items: [{ plan: office_lease_subscription.plan.stripe_plan_id }],
-    #   prorate: false,
-    #   billing_cycle_anchor: nil,
-    #   billing: 'send_invoice',
-    #   days_until_due: 30
-    # }
+    stripe_subscription = operators(:cowork_tahoe).stripe_request('Subscription', :create, params)
 
-    # stripe_subscription = operators(:cowork_tahoe).stripe_request('Subscription', :create, params)
-
-    # office_lease_subscription.update(stripe_subscription_id: stripe_subscription.id)
+    office_lease_subscription.update(stripe_subscription_id: stripe_subscription.id)
   end
 end
