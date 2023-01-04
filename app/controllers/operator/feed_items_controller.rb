@@ -136,4 +136,8 @@ class Operator::FeedItemsController < Operator::BaseController
     @comments = params[:comments] == "true"
     render :set_expense_status
   end
+
+  def stickied
+    @feed_items = FeedItem.where(sticky: true)
+  end
 end
