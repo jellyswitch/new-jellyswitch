@@ -18,6 +18,17 @@
       <%= render "operator/feed_items/comment_count", feed_item: feed_item %>
     </div>
   </div>
+
+  <% if feed_item.sticky? %>
+    <%= link_to unset_sticky_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
+      <i class="fas fa-sticky-note"></i>
+    <% end %>
+  <% else %>
+    <%= link_to set_sticky_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
+      <i class="fas fa-sticky-note" style="opacity: 0.6;"></i>
+    <% end %>
+  <% end %>
+
   <div class="col-3 d-flex justify-content-center">
     <% if feed_item.requires_approval? %>
       <%= render "operator/feed_items/feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
