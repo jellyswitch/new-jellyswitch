@@ -91,4 +91,14 @@ module FeedItemsHelper
     @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
     @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
   end
+
+  def not_stickied
+    @feed_item.unset_stickied
+    @feed_item.save
+  end
+
+  def turn_into_stickied
+    @feed_item.set_stickied
+    @feed_item.save
+  end
 end
