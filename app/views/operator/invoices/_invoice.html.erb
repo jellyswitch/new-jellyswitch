@@ -64,7 +64,7 @@
 
       <% if invoice.open? %>
         <div class="clearfix mb-1"></div>
-        <%= link_to invoice_mark_paid_path(invoice), class: "btn btn-block btn-success", remote: true do %>
+        <%= button_to invoice_mark_paid_path(invoice), method: :get, class: "btn btn-block btn-success", remote: true do %>
           <span class="show-when-enabled">
             Mark as paid
           </span>
