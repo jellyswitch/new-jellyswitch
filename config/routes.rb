@@ -185,6 +185,8 @@ Rails.application.routes.draw do
     member do
       post "set_expense_status"
       post "unset_expense_status"
+      post "set_sticky_status"
+      post "unset_sticky_status"
     end
     resources :comments, controller: "operator/feed_item_comments", only: [:create]
   end
