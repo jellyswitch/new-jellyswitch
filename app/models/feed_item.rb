@@ -151,6 +151,16 @@ class FeedItem < ApplicationRecord
     self.expense = false
   end
 
+  def set_stickied
+    self.sticky = true
+  end
+
+  def unset_stickied
+    self.sticky = false
+  end
+
+
+
   # Lazy relationships
 
   def announcement
