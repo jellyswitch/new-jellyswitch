@@ -137,7 +137,20 @@ class Operator::FeedItemsController < Operator::BaseController
     render :set_expense_status
   end
 
+  def set_sticky_status
+    find_feed_item
+    turn_into_stickied
+    render :set_stickied_status
+  end
+
+  def unset_sticky_status
+    find_feed_item
+    not_stickied
+    render :set_stickied_status
+  end
+
   def stickied
     @feed_items = FeedItem.where(sticky: true)
+    @stickied_active = "active"
   end
 end
