@@ -180,6 +180,7 @@ Rails.application.routes.draw do
       get :activity
       get :notes
       get :financial
+      get :stickied
     end
     member do
       post "set_expense_status"
