@@ -76,6 +76,7 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
   validates :name, presence: true
+  validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
   has_secure_password
 
   # Scopes

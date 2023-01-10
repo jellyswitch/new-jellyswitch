@@ -10,7 +10,7 @@ class Billing::Payment::UpdateUserPayment
     else
       if token
         if user.operator.create_or_update_customer_payment(user, token)
-          user.update(card_added: true)
+          user.update(card_added: true, out_of_band: false)
         else
           context.fail!(message: "Cannot update payment method.")
         end
