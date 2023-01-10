@@ -81,4 +81,33 @@ class UserTest < ActiveSupport::TestCase
       
     assert user.should_charge_for_reservation?(@location) == true
   end
+
+  test ':out_of_band and :card_updated attributes cannot both be true' do
+    user = users(:cowork_tahoe_non_member)
+
+    user.update(out_of_band: true, card_added: true)
+
+    assert user.valid? == false
+  end
+
+  test ':out_of_band can be true, if :card_added is false' do
+    user = users(:cowork_tahoe_non_member)
+
+    user.update(card_added: false, out_of_band: true)
+    assert user.valid? == true
+  end
+
+  test ':card_added can be true, if out_of_band is false' do
+    user = users(:cowork_tahoe_non_member)
+
+    user.update(card_added: true, out_of_band: false)
+    assert user.valid? == true
+  end
+
+  test ':card_added and out_of_band can both be false' do
+    user = users(:cowork_tahoe_non_member)
+
+    user.update(card_added: false, out_of_band: false)
+    assert user.valid? == true
+  end
 end
