@@ -40,13 +40,13 @@
   <% end %>
 
   <div class="form-group row">
-    <button class="form-control btn btn-primary col ml-3 mr-3" id="stripe-submit" data-acc="add-payment">
+    <%= f.button class: 'form-control btn btn-primary col ml-3 mr-3', id: 'stripe-submit', data: { acc: 'add-payment', disable_with: "Processing..." } do %>
       <span class="show-when-enabled">
         <%= label %>
       </span>
       <span class="show-when-disabled">
         Processing...
       </span>
-    </button>
+    <% end %>
   </div>
 <% end %>
