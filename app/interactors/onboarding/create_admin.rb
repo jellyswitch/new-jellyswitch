@@ -6,6 +6,7 @@ class Onboarding::CreateAdmin
 
   def call
     user = User.new(
+      name: email,
       email: email,
       password: "foobar",
       admin: true, 
@@ -16,7 +17,7 @@ class Onboarding::CreateAdmin
       user.profile_photo.attach(io: image = File.open(Rails.root.join("app/assets/images/avatars/1.jpg")), filename: "1.jpg")
       context.user = user
     else
-      context.fail!(message: errors_for(user))
+      context.fail!(message: "CreateAdmin: #{ errors_for(user) }")
     end
   end
 

@@ -14,7 +14,7 @@ class Onboarding::CreateOperator
     if operator.save
       context.operator = operator
     else
-      context.fail!(message: errors_for(operator))
+      context.fail!(message: "CreateOperator: #{ errors_for(operator) }")
     end
   end
 
