@@ -4,7 +4,7 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 ruby '2.7.4'
 
 gem 'activejob-traffic_control'
-gem 'acts_as_tenant', '0.5.0'
+gem 'acts_as_tenant', '0.6.1'
 gem 'ahoy_matey'
 gem 'apnotic'
 gem 'aws-sdk-s3', '~> 1.48', require: false
