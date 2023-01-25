@@ -132,4 +132,8 @@ class Subscription < ApplicationRecord
   def canceled_at
     Time.at(stripe_subscription.canceled_at)
   end
+
+  def ended_at
+    Time.at(stripe_subscription.ended_at)
+  end
 end

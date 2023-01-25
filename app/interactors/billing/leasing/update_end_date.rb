@@ -6,7 +6,7 @@ class Billing::Leasing::UpdateEndDate
 
   def call
     context.old_end_date = office_lease.end_date
-    office_lease.update(end_date: office_lease.subscription.current_period_end)
+    office_lease.update(end_date: office_lease.subscription.ended_at)
   end
 
   def rollback
