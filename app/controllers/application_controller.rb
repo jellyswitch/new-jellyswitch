@@ -36,7 +36,7 @@ class ApplicationController < ActionController::Base
         render "shared/turbo_redirect"
       end
       format.html do
-        redirect_to path
+        redirect_to path, allow_other_host: true
       end
     end
   end
