@@ -287,7 +287,7 @@ GEM
       faraday (>= 1.0, < 3)
       multi_json
     os (1.1.4)
-    pagy (4.10.2)
+    pagy (6.0.2)
     pg (1.4.5)
     policy-assertions (0.2.0)
       activesupport (>= 3.0.0)
@@ -512,7 +512,7 @@ DEPENDENCIES
   newrelic_rpm
   octicons_helper
   opensearch-ruby
-  pagy (~> 4.10.1)
+  pagy (~> 6.0.2)
   pg
   policy-assertions
   premailer-rails
