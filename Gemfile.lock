@@ -318,10 +318,10 @@ GEM
     pundit (2.2.0)
       activesupport (>= 3.0.0)
     racc (1.7.3)
-    rack (2.2.6.2)
+    rack (2.2.8)
     rack-cors (1.1.1)
       rack (>= 2.0.0)
-    rack-mini-profiler (2.3.4)
+    rack-mini-profiler (3.1.1)
       rack (>= 1.2.0)
     rack-protection (3.0.4)
       rack
@@ -524,7 +524,7 @@ DEPENDENCIES
   puma (~> 6.3)
   pundit
   rack-cors
-  rack-mini-profiler (~> 2.0)
+  rack-mini-profiler (~> 3.1)
   rails (= 7.0.7)
   rails-controller-testing
   rails-erd
