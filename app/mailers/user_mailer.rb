@@ -7,7 +7,7 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
 
-    mail to: user.email, subject: "#{@operator.name} password reset", from: "noreply@jellyswitch.com"
+    mail to: user.email, subject: "#{@operator.name} password reset", from: "noreply@jellyswitch.com", reply_to: @operator.contact_email
     recipients = User.superadmins.all.map {|u| u.email }
   end
 
@@ -17,7 +17,7 @@ class UserMailer < ApplicationMailer
     @event = event
 
     @host = ENV['ASSET_HOST']
-    mail to: @user.email, subject: "You're all set for #{@event.title}!", from: "noreply@jellyswitch.com"
+    mail to: @user.email, subject: "You're all set for #{@event.title}!", from: "noreply@jellyswitch.com", reply_to: @user.operator.contact_email
   end
 
   def event_cancellation(user, event_name, operator)
@@ -26,6 +26,6 @@ class UserMailer < ApplicationMailer
     @operator = operator
     
     @host = ENV['ASSET_HOST']
-    mail to: @user.email, subject: "Cancelled: #{@event_name}", from: "noreply@jellyswitch.com"
+    mail to: @user.email, subject: "Cancelled: #{@event_name}", from: "noreply@jellyswitch.com", reply_to: @operator.contact_email
   end
 end
