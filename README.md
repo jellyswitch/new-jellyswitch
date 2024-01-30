@@ -23,6 +23,11 @@ Jellyswitch uses the [acts_as_tenant](https://github.com/ErwinM/acts_as_tenant) 
 
 In production, this means you must have either a DNS record for every tenant or, if your providear supports it, a wildcard entry. The same is true of SSL certificates. At Jellyswitch, we use AWS Route53 for DNS and have purchased a wildcard SSL certificate that makes this fast and simple at a minimum cost. In development, you may either add manual entries to your `/etc/hosts` file that point to `127.0.0.1` or a DNS service such as `dnsmasq`. The convention is to use `jellyswitch.org` as the local development domain.
 
+For instance, set up `/etc/hosts` like below to access the app at `http://tenant.jellyswitch.org:5001/`:
+```
+127.0.0.1     tenant.jellyswitch.org
+```
+
 This design choice also means that most controllers and views live inside `app/controllers/operator` and `app/views/operator`, respectively. Controllers and views outside of that directory are likely administrative.
 
 Inside `config/routes.rb`, you will find that most routes are directed to the `operator` namespace as described. However, there are administrative routes that live solely under the `app` subdomain.
@@ -117,6 +122,8 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
 9. Postgres DB: `createdb jellyswitch_development`
 10. Run migrations: `heroku local:run rake db:migrate`
 11. Run the server: `heroku local`
+
+Refer to the [Multi Tenancy section](#multi-tenancy) for instructions on setting up subdomains.
 
 ## Environment Variables
 
