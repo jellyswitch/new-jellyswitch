@@ -7,7 +7,7 @@ Jellyswitch is a next-generation, mobile-first coworking platform that enables a
 
 ## Summary
 
-Jellyswitch is a multi-tenant Ruby on Rails app that uses Bootstrap for both the grid system on the frontend as well as many of the standard UI components. All javascript dependencies are managed via `webpacker`. (Almost) all billing and payments related functionality is built with Stripe Connect. We advise using Postgres as the database, due to some of the JSON and JSONB columns here and there. 
+Jellyswitch is a multi-tenant Ruby on Rails app that uses Bootstrap for both the grid system on the frontend as well as many of the standard UI components. All javascript dependencies are managed via `importmaps`. (Almost) all billing and payments related functionality is built with Stripe Connect. We advise using Postgres as the database, due to some of the JSON and JSONB columns here and there. 
 
 The codebase makes heavy use of the [Interactor Pattern](https://github.com/collectiveidea/interactor-rails) for most business logic (found in `app/interactors`) to keep models and controllers suitably thin. Authorization is built with [Pundit](https://github.com/varvet/pundit) and policies can be found in `app/policies`. For complex conditionals we make use of the factory pattern (found in `app/object_factories`) and the polymorphic classes themselves are found in `app/adapters`. This makes complex conditionals (nearly) nonexistent in the codebase. Jellyswitch also makes effective use of [View Components](https://github.com/github/view_component/), rendering objects with logic and state rather than partials. Find them in `app/components`.
 
