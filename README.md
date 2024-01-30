@@ -115,13 +115,11 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
   - `brew install stripe/stripe-mock/stripe-mock`
   - **NOTE** stripe-mock cannot be used to test for specific errors, so be sure to turn it off in development if testing for those.
   - `brew services start stripe-mock`
-6. Install `yarn`:
-  - `brew install yarn`
-7. Populate your `.env` file with environment variables
-8. Run: `rails active_storage:install`
-9. Postgres DB: `createdb jellyswitch_development`
-10. Run migrations: `heroku local:run rake db:migrate`
-11. Run the server: `heroku local`
+6. Populate your `.env` file with environment variables
+7. Run: `rails active_storage:install`
+8. Postgres DB: `createdb jellyswitch_development`
+9. Run migrations: `heroku local:run rake db:migrate`
+10. Run the server: `heroku local`
 
 Refer to the [Multi Tenancy section](#multi-tenancy) for instructions on setting up subdomains.
 
