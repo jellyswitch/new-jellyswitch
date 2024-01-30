@@ -108,7 +108,7 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
   - `brew install redis`
   - `brew services start redis`
 4. Install Opensearch:
-  - `brew cask install homebrew/cask-versions/java8`
+  - `brew cask install homebrew/cask-versions/java8` (if not available, use Zulu Community 8: `brew install --cask zulu8`)
   - `brew install opensearch`
   - `brew services start opensearch`
 5. Install [stripe-mock](https://github.com/stripe/stripe-mock) (to speed up testing)
