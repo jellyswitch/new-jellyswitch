@@ -21,16 +21,17 @@ class MailHatch
     @sendgrid_api_key = sendgrid_api_key
   end
 
-  def async_notification(to:, from:, text:, subject:)
-    async(:notification, {to: to, from: from, text: text, subject: subject})
+  def async_notification(to:, reply_to:, text:, subject:)
+    async(:notification, {to: to, reply_to: reply_to, text: text, subject: subject})
   end
 
-  def notification(to:, from:, text:, subject:)
+  def notification(to:, reply_to:, text:, subject:)
     body = {
       api_key: api_key,
       sendgrid_api_key: sendgrid_api_key,
       to: to,
-      from: from,
+      from: "noreply@jellyswitch.com",
+      reply_to: reply_to,
       text: text,
       template: "notification", 
       theme: "minimal",
