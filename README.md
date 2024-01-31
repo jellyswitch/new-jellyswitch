@@ -23,8 +23,9 @@ Jellyswitch uses the [acts_as_tenant](https://github.com/ErwinM/acts_as_tenant) 
 
 In production, this means you must have either a DNS record for every tenant or, if your providear supports it, a wildcard entry. The same is true of SSL certificates. At Jellyswitch, we use AWS Route53 for DNS and have purchased a wildcard SSL certificate that makes this fast and simple at a minimum cost. In development, you may either add manual entries to your `/etc/hosts` file that point to `127.0.0.1` or a DNS service such as `dnsmasq`. The convention is to use `jellyswitch.org` as the local development domain.
 
-For instance, set up `/etc/hosts` like below to access the app at `http://tenant.jellyswitch.org:5001/`:
+For instance, set up `/etc/hosts` like below to access the app at `http://tenant.jellyswitch.org:5001/`. The `app` subdomain also needs to be specified to serve assets.
 ```
+127.0.0.1     app.jellyswitch.org
 127.0.0.1     tenant.jellyswitch.org
 ```
 
