@@ -3,6 +3,6 @@ class Posts::Create
 
   organize(
     Posts::Save,
-    CreateNotifications
+    CreateNotificationsAsync
   )
 end
