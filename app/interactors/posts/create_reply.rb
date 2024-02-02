@@ -3,6 +3,6 @@ class Posts::CreateReply
 
   organize(
     Posts::SaveReply,
-    CreateNotifications
+    CreateNotificationsAsync
   )
 end
