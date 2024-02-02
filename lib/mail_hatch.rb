@@ -54,7 +54,7 @@ class MailHatch
   private
 
   def async(method_name, args)
-    MailHatchJob.perform_later(self, method_name, args)
+    MailHatch::MailHatchJob.perform_later(self, method_name, args)
   end
 
   def post(body)
@@ -71,7 +71,7 @@ class MailHatch
     else
       resp = HTTParty.post(url, headers: headers, body: body.to_json)
 
-      raise MailHatchError.new(resp["message"]) if resp["status"] != 200
+      raise MailHatch::MailHatchError.new(resp["message"]) if resp["status"] != 200
 
       resp
     end

@@ -1,2 +1,2 @@
-class MailHatchError < StandardError
+class MailHatch::MailHatchError < StandardError
 end

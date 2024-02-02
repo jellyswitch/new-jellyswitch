@@ -1,3 +1,3 @@
-require "mail_hatch"
+require "mail_hatch/mail_hatch_serializer"
 
-Rails.application.config.active_job.custom_serializers << MailHatchSerializer
+Rails.application.config.active_job.custom_serializers << MailHatch::MailHatchSerializer

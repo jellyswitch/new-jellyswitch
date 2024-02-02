@@ -1,4 +1,4 @@
-class MailHatchSerializer < ActiveJob::Serializers::ObjectSerializer
+class MailHatch::MailHatchSerializer < ActiveJob::Serializers::ObjectSerializer
   def serialize?(argument)
     argument.is_a? MailHatch
   end
