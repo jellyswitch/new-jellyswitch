@@ -20,16 +20,16 @@ class JellyswitchMail < MailHatch
   def announcement(announcement, recipient)
     async_notification(
       to: "#{recipient.name} <#{recipient.email}>",
-      from: "#{announcement.user.name} <#{operator.contact_email}>",
+      reply_to: "#{announcement.user.name} <#{operator.contact_email}>",
       text: announcement.body,
       subject: "Announcement from #{operator.name}"
     )
   end
 
   def childcare_confirmation(childcare_reservation, user)
-    from_addr = user.operator.contact_email
-    if from_addr.blank?
-      from_addr = "noreply@jellyswitch.com"
+    reply_addr = user.operator.contact_email
+    if reply_addr.blank?
+      reply_addr = "noreply@jellyswitch.com"
     end
 
     text = """
@@ -49,16 +49,16 @@ class JellyswitchMail < MailHatch
 
     async_notification(
       to: "#{user.name} <#{user.email}>",
-      from: from_addr,
+      reply_to: reply_addr,
       subject: "Childcare confirmation",
       text: simple_format(text)
     )
   end
 
   def onboarding(user, password)
-    from_addr = user.operator.contact_email
-    if from_addr.blank?
-      from_addr = "noreply@jellyswitch.com"
+    reply_addr = user.operator.contact_email
+    if reply_addr.blank?
+      reply_addr = "noreply@jellyswitch.com"
     end
 
     text = """
@@ -88,7 +88,7 @@ class JellyswitchMail < MailHatch
 
     async_notification(
       to: "#{user.name} <#{user.email}>",
-      from: from_addr,
+      reply_to: reply_addr,
       subject: "Welcome to #{user.operator.name}!",
       text: simple_format(text)
     )

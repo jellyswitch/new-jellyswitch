@@ -239,7 +239,6 @@ GEM
       nokogiri (>= 1.5.9)
     mail (2.7.1)
       mini_mime (>= 0.1.1)
-    mail_hatch (0.0.2)
     marcel (1.0.2)
     matrix (0.4.2)
     memoist (0.16.2)
@@ -504,7 +503,6 @@ DEPENDENCIES
   jquery-rails (>= 4.4.0)
   json (>= 2.3.0)
   listen (>= 3.0.5, < 3.8)
-  mail_hatch
   mocha (~> 1.14)
   momentjs-rails (>= 2.9.0)
   money

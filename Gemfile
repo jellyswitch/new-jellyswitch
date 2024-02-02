@@ -26,7 +26,6 @@ gem 'interactor', "~> 3.0"
 gem 'jbuilder', '~> 2.11'
 gem 'jquery-rails', '>= 4.4.0'
 gem 'json', '>= 2.3.0'
-gem 'mail_hatch' #, path: "/Users/dave/projects/jellyswitch/mail_hatch"
 gem 'momentjs-rails', '>= 2.9.0'
 gem 'money'
 gem 'net-http'
