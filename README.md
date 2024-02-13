@@ -94,7 +94,7 @@ Announcements allow staff members to push notifications directly to a user's pho
 
 These instructions assume a MacOS operating system. Almost all configuration lives in the `.env` file see "Environment Variables" in next section.
 
-Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
+Ensure you have ruby 3.0.6 installed (we use [rvm](https://rvm.io).)
 
 
 1. `bundle install`

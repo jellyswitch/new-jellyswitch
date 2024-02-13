@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.4'
+ruby '3.0.6'
 
 gem 'activejob-traffic_control'
 gem 'acts_as_tenant', '0.5.0'
@@ -10,6 +10,7 @@ gem 'apnotic'
 gem 'aws-sdk-s3', '~> 1.48', require: false
 gem 'bcrypt'
 gem 'bootstrap', '~> 4.3.1'
+gem 'cgi'
 gem 'chartkick', '>= 3.4.0'
 gem 'dotenv-rails', require: 'dotenv/rails-now'
 gem 'draper'
@@ -71,7 +72,6 @@ group :test do
   gem 'capybara'
   gem 'ffi'
   gem 'selenium-webdriver'
-  gem 'webdrivers'
 end
 
 group :development, :test do
