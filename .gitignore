@@ -24,9 +24,6 @@
 !/tmp/storage/
 !/tmp/storage/.keep
 
-/node_modules
-/yarn-error.log
-
 /public/assets
 
 # Ignore master key for decrypting credentials and more.
@@ -40,10 +37,6 @@
 *.code-workspace
 /public/packs
 /public/packs-test
-/node_modules
-/yarn-error.log
-yarn-debug.log*
-.yarn-integrity
 
 /config/credentials/production.key
 .production-env

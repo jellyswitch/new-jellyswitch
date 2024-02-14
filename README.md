@@ -7,7 +7,7 @@ Jellyswitch is a next-generation, mobile-first coworking platform that enables a
 
 ## Summary
 
-Jellyswitch is a multi-tenant Ruby on Rails app that uses Bootstrap for both the grid system on the frontend as well as many of the standard UI components. All javascript dependencies are managed via `webpacker`. (Almost) all billing and payments related functionality is built with Stripe Connect. We advise using Postgres as the database, due to some of the JSON and JSONB columns here and there. 
+Jellyswitch is a multi-tenant Ruby on Rails app that uses Bootstrap for both the grid system on the frontend as well as many of the standard UI components. All javascript dependencies are managed via `importmaps`. (Almost) all billing and payments related functionality is built with Stripe Connect. We advise using Postgres as the database, due to some of the JSON and JSONB columns here and there. 
 
 The codebase makes heavy use of the [Interactor Pattern](https://github.com/collectiveidea/interactor-rails) for most business logic (found in `app/interactors`) to keep models and controllers suitably thin. Authorization is built with [Pundit](https://github.com/varvet/pundit) and policies can be found in `app/policies`. For complex conditionals we make use of the factory pattern (found in `app/object_factories`) and the polymorphic classes themselves are found in `app/adapters`. This makes complex conditionals (nearly) nonexistent in the codebase. Jellyswitch also makes effective use of [View Components](https://github.com/github/view_component/), rendering objects with logic and state rather than partials. Find them in `app/components`.
 
@@ -22,6 +22,12 @@ We would like to thank the people outlined in `AUTHORS.md` for their contributio
 Jellyswitch uses the [acts_as_tenant](https://github.com/ErwinM/acts_as_tenant) gem to dispatch requests to the appropriate tenant based on the subdomain. A tenant in Jellyswitch is an `Operator` (see `app/models/operator.rb`).
 
 In production, this means you must have either a DNS record for every tenant or, if your providear supports it, a wildcard entry. The same is true of SSL certificates. At Jellyswitch, we use AWS Route53 for DNS and have purchased a wildcard SSL certificate that makes this fast and simple at a minimum cost. In development, you may either add manual entries to your `/etc/hosts` file that point to `127.0.0.1` or a DNS service such as `dnsmasq`. The convention is to use `jellyswitch.org` as the local development domain.
+
+For instance, set up `/etc/hosts` like below to access the app at `http://tenant.jellyswitch.org:3000/`. The `app` subdomain also needs to be specified to serve assets.
+```
+127.0.0.1     app.jellyswitch.org
+127.0.0.1     tenant.jellyswitch.org
+```
 
 This design choice also means that most controllers and views live inside `app/controllers/operator` and `app/views/operator`, respectively. Controllers and views outside of that directory are likely administrative.
 
@@ -103,20 +109,20 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
   - `brew install redis`
   - `brew services start redis`
 4. Install Opensearch:
-  - `brew cask install homebrew/cask-versions/java8`
+  - `brew cask install homebrew/cask-versions/java8` (if not available, use Zulu Community 8: `brew install --cask zulu8`)
   - `brew install opensearch`
   - `brew services start opensearch`
 5. Install [stripe-mock](https://github.com/stripe/stripe-mock) (to speed up testing)
   - `brew install stripe/stripe-mock/stripe-mock`
   - **NOTE** stripe-mock cannot be used to test for specific errors, so be sure to turn it off in development if testing for those.
   - `brew services start stripe-mock`
-6. Install `yarn`:
-  - `brew install yarn`
-7. Populate your `.env` file with environment variables
-8. Run: `rails active_storage:install`
-9. Postgres DB: `createdb jellyswitch_development`
-10. Run migrations: `heroku local:run rake db:migrate`
-11. Run the server: `heroku local`
+6. Populate your `.env` file with environment variables
+7. Run: `rails active_storage:install`
+8. Postgres DB: `createdb jellyswitch_development`
+9. Run migrations: `heroku local:run rake db:migrate`
+10. Run the server: `heroku local -p 3000`
+
+Refer to the [Multi Tenancy section](#multi-tenancy) for instructions on setting up subdomains.
 
 ## Environment Variables
 
