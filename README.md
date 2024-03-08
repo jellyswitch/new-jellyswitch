@@ -120,7 +120,7 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
 7. Run: `rails active_storage:install`
 8. Postgres DB: `createdb jellyswitch_development`
 9. Run migrations: `heroku local:run rake db:migrate`
-10. Run the server: `heroku local -p 3000`
+10. Run the server: `bin/dev`
 
 Refer to the [Multi Tenancy section](#multi-tenancy) for instructions on setting up subdomains.
 
