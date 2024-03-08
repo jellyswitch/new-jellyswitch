@@ -31,6 +31,8 @@ module LandingHelper
   end
 
   def home_redirect
+    redirect_to root_path and return unless logged_in?
+  
     if current_location.present? && (current_user.allowed_in?(current_location) || (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking"))
       if !approved? && !admin?
         redirect_to wait_path
@@ -42,19 +44,14 @@ module LandingHelper
         end
       end
     else
-      if logged_in?
-        if pending?
-          redirect_to activate_path
-        else
-          if hit_membership_limit?
-            redirect_to upgrade_path
-          else
-            redirect_to choose_path
-          end
-        end
+      if pending?
+        redirect_to activate_path
       else
-        # they're logged out
-        redirect_to root_path
+        if hit_membership_limit?
+          redirect_to upgrade_path
+        else
+          redirect_to choose_path
+        end
       end
     end
   end
