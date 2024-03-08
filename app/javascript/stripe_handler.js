@@ -33,13 +33,13 @@ function doStripe() {
     if (window.has_token === false) {
       console.log("has_token is false")
       console.log(window.has_token);
+      event.detail.formSubmission.stop();
 
       stripe.createToken(card).then(function(result) {
         if (result.error) {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;
           document.getElementById('stripe-submit').disabled = false;
-          event.detail.formSubmission.stop();
         } else {
           stripeTokenHandler(result.token);
         }
