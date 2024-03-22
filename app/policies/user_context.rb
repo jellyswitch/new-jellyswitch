@@ -27,4 +27,16 @@ class UserContext
   def superadmin?
     @user.superadmin?
   end
+
+  def approved?
+    @user.approved?
+  end
+
+  def requires_check_in?
+    operator.checkin_required? && !user.checked_in?(location)
+  end
+
+  def pending?
+    user.pending?
+  end
 end
