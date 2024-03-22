@@ -3,6 +3,8 @@ require 'test_helper'
 class RedirectorTest < ActiveSupport::TestCase
   include Rails.application.routes.url_helpers
 
+  # Landing Redirect
+
   test 'it returns nil if location is absent' do
     operator = operators(:cowork_tahoe)
     user = users(:cowork_tahoe_member)
@@ -80,4 +82,7 @@ class RedirectorTest < ActiveSupport::TestCase
     
     assert redirect_path == choose_path
   end
+
+  # Home Redirect
+  # Todo
 end
