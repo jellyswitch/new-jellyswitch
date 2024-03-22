@@ -6,6 +6,6 @@ class Billing::DayPasses::UpdatePaymentAndCreateDayPass
     Billing::DayPasses::SaveDayPass,
     Billing::Payment::UpdateUserPayment,
     Billing::DayPasses::CreateStripeInvoice,
-    CreateNotifications
+    CreateNotificationsAsync
   )
 end
