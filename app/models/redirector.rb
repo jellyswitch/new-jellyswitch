@@ -23,9 +23,9 @@ class Redirector
         new_operator_onboarding_path
       end
     else
-      if current_user.allowed_in?(location)
-        if approved?
-          if current_user_requires_check_in?
+      if user.allowed_in?(location)
+        if user_context.approved?
+          if user_context.requires_check_in?
             required_checkins_path
           else
             home_path
@@ -34,7 +34,7 @@ class Redirector
           wait_path
         end
       else
-        if pending?
+        if user_context.pending?
           activate_path
         else
           choose_path
@@ -44,7 +44,7 @@ class Redirector
   end
 
   def home
-
+    # Todo
   end
 
   private
