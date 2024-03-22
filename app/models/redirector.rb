@@ -1,39 +1,43 @@
 class Redirector
   include Rails.application.routes.url_helpers
 
-  attr_reader :location, :user, :operator
+  attr_reader :location, :user, :operator, :user_context
 
   def initialize(user:, operator:, location:)
     @user = user
     @operator = operator
     @location = location
+
+    @user_context = UserContext.new(user, operator, location)
   end
 
   def landing
-    return current_location.present?
-
-    if admin? || community_manager? || general_manager?
-      if current_tenant.onboarded? || current_tenant.skip_onboarding?
-        redirect_to feed_items_path
+    if !location.present?
+      return
+    end
+    
+    if user_context.admin? || user_context.community_manager? || user_context.general_manager?
+      if operator.onboarded? || operator.skip_onboarding?
+        feed_items_path
       else
-        redirect_to new_operator_onboarding_path
+        new_operator_onboarding_path
       end
     else
-      if current_user.allowed_in?(current_location)
+      if current_user.allowed_in?(location)
         if approved?
           if current_user_requires_check_in?
-            redirect_to required_checkins_path
+            required_checkins_path
           else
-            redirect_to home_path
+            home_path
           end
         else
-          redirect_to wait_path
+          wait_path
         end
       else
         if pending?
-          redirect_to activate_path
+          activate_path
         else
-          redirect_to choose_path
+          choose_path
         end
       end
     end
