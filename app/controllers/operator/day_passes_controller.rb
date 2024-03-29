@@ -42,7 +42,7 @@ class Operator::DayPassesController < Operator::BaseController
       turbo_redirect(home_path)
     else
       flash[:error] = result.message
-      turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_params[:day_pass_type]))
+      turbo_redirect(new_day_pass_path)
     end
   rescue => e
     Honeybadger.notify(e)
