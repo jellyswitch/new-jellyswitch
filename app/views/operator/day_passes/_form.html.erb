@@ -1,6 +1,6 @@
 <%= javascript_include_tag "stripe_handler.js" %>
 
-<%= form_for(day_pass, html: { class: "form", id: "stripe-form", data: { controller: "turbo-form" } }) do |f| %>
+<%= form_for(day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
   <div class="form-group row">
     <div class="col-1"></div>
     <%= f.date_select :day, { default: Time.zone.today, order: [:month, :day, :year]}, class: "form-control form-control-sm col ml-1 mr-1" %>
@@ -40,7 +40,7 @@
   <% end %>
 
   <div class="form-group row">
-    <%= f.button class: 'form-control btn btn-primary col ml-3 mr-3', id: 'stripe-submit', data: { turbo_form_target: "submitButton", acc: 'add-payment', disable_with: "Processing..." } do %>
+    <%= f.button class: 'form-control btn btn-primary col ml-3 mr-3', id: 'stripe-submit', data: { acc: 'add-payment', disable_with: "Processing..." } do %>
       <span class="show-when-enabled">
         <%= label %>
       </span>

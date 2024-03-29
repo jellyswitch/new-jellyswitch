@@ -6,6 +6,6 @@ class Billing::DayPasses::CreateDayPassAndCheckin
     Billing::DayPasses::SaveDayPass,
     Billing::DayPasses::CreateStripeInvoice,
     Checkins::AutoCheckin,
-    CreateNotificationsAsync
+    CreateNotifications
   )
 end

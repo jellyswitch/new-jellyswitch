@@ -22,8 +22,8 @@ function doStripe() {
   window.has_token = false;
   var $stripeForm = document.getElementById('stripe-form');
 
-  $stripeForm.addEventListener('turbo:submit-start', function(event) {
-    console.log("turbo:submit-start");
+  $stripeForm.addEventListener('ajax:before', function(event) {
+    console.log("ajax:before");
     var payByCheck = document.getElementById('out_of_band');
 
     if (payByCheck && payByCheck.checked) {
@@ -33,7 +33,7 @@ function doStripe() {
     if (window.has_token === false) {
       console.log("has_token is false")
       console.log(window.has_token);
-      event.detail.formSubmission.stop();
+      event.preventDefault();
 
       stripe.createToken(card).then(function(result) {
         if (result.error) {
