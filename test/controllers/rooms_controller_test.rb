@@ -14,7 +14,7 @@ class RoomsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "new room path should redirect unauthorized users" do
-    @user.update(role: "unassigned")
+    @user.update(role: "unassigned", admin: false)
     get new_room_path, env: default_env
     assert_response 302
   end

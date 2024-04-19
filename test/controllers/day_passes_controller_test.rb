@@ -12,7 +12,7 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create a new day pass for today" do
-    @date = Date.today
+    @date = Time.zone.today
     mock = Minitest::Mock.new
 
     mock.expect(:success?, true)
@@ -27,7 +27,7 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should create a new day pass for the future" do
-    @date = Date.today + 2.days
+    @date = Time.zone.today + 2.days
     @date_formatted = @date.strftime("%m/%d/%Y")
     mock = Minitest::Mock.new
 
