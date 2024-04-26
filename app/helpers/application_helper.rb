@@ -126,14 +126,18 @@ module ApplicationHelper
   end
 
   def has_building_access?(user)
-    user.superadmin? || 
-    user.admin? ||
-    user.community_manager? ||
-    user.general_manager? ||
-    user.always_allow_building_access? || 
-    user.has_building_access_day_pass? || 
-    user.has_building_access_membership? || 
-    user.has_building_access_lease?
+    if (!user)
+      return false
+    else
+      user.superadmin? ||
+      user.admin? ||
+      user.community_manager? ||
+      user.general_manager? ||
+      user.always_allow_building_access? ||
+      user.has_building_access_day_pass? ||
+      user.has_building_access_membership? ||
+      user.has_building_access_lease?
+    end
   end
 
   def boolean_to_yesno(value)
