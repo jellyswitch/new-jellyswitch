@@ -134,6 +134,6 @@ class Operator::OrganizationsController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = Organization.all
+    @organizations = Organization.all.order(:name)
   end
 end
