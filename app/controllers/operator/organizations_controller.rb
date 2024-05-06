@@ -23,7 +23,6 @@ class Operator::OrganizationsController < Operator::BaseController
     @organization = Organization.new(organization_params)
     authorize @organization
 
-    debugger
     result = CreateOrganization.call(organization: @organization, operator: current_tenant)
 
     if result.success?
