@@ -105,6 +105,7 @@ class Operator < ApplicationRecord
            :charge_invoice,
            :retrieve_stripe_customers,
            :list_stripe_subscriptions,
+           :update_customer_email,
            :stripe_request,
            to: :stripe_operator
 
