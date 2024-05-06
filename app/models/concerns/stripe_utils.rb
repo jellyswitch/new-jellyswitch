@@ -144,9 +144,10 @@ module StripeUtils
     false
   end
 
-  def update_customer_email(user, new_email)
-    stripe_customer = retrieve_stripe_customer(user)
-    stripe_customer.email = new_email
+  def update_organization_customer_details(organization, new_email)
+    stripe_customer = retrieve_stripe_customer(organization)
+    stripe_customer.email = new_email if new_email
+    stripe_customer.name = organization.name
     stripe_customer.save
   rescue Stripe::InvalidRequestError => e
     Honeybadger.notify(e)

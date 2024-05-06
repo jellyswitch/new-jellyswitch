@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: operators
@@ -105,7 +104,7 @@ class Operator < ApplicationRecord
            :charge_invoice,
            :retrieve_stripe_customers,
            :list_stripe_subscriptions,
-           :update_customer_email,
+           :update_organization_customer_details,
            :stripe_request,
            to: :stripe_operator
 
@@ -177,8 +176,8 @@ class Operator < ApplicationRecord
   def onboarded?
     plans.count > 0 &&
     day_pass_types.count > 0 &&
-    ((rooms_enabled? && rooms.count > 0) || true ) &&
-    (((door_integration_enabled? && doors.count > 0) || true) || locations.all? {|l| l.building_access_instructions.present? }) &&
+    ((rooms_enabled? && rooms.count > 0) || true) &&
+    (((door_integration_enabled? && doors.count > 0) || true) || locations.all? { |l| l.building_access_instructions.present? }) &&
     users.members.count > 0
   end
 

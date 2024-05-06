@@ -1,15 +1,15 @@
 require "test_helper"
 
-class Billing::Organization::UpdateBillingOwnerTest < ActiveSupport::TestCase
+class Billing::Organization::UpdateBillingDetailsTest < ActiveSupport::TestCase
   test "it updates the billing owner's email and calls update_customer_email" do
     organization = organizations(:sierra_nevada_organization)
     new_billing_owner = users(:cowork_tahoe_community_manager)
     operator = operators(:cowork_tahoe)
 
     # Assert that update_customer_email is called with the correct arguments
-    operator.expects(:update_customer_email).with(organization, new_billing_owner.email)
+    operator.expects(:update_organization_customer_details).with(organization, new_billing_owner.email)
 
-    result = Billing::Organization::UpdateBillingOwner.call(
+    result = Billing::Organization::UpdateBillingDetails.call(
       organization: organization,
       new_billing_owner: new_billing_owner,
       operator: operator,
@@ -24,8 +24,8 @@ class Billing::Organization::UpdateBillingOwnerTest < ActiveSupport::TestCase
     operator = operators(:cowork_tahoe)
 
     # Stub the update_customer_email method to raise an error
-    operator.stub(:update_customer_email, ->(_, _) { raise StandardError.new("Some error") }) do
-      result = Billing::Organization::UpdateBillingOwner.call(
+    operator.stub(:update_organization_customer_details, ->(_, _) { raise StandardError.new("Some error") }) do
+      result = Billing::Organization::UpdateBillingDetails.call(
         organization: organization,
         new_billing_owner: new_billing_owner,
         operator: operator,
