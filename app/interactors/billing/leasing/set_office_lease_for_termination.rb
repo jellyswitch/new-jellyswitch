@@ -2,7 +2,7 @@ class Billing::Leasing::SetOfficeLeaseForTermination
   include Interactor::Organizer
 
   organize(
-    Billing::Leasing::UpdateEndDate,
-    Billing::Subscription::SetStripeSubscriptionForCancellation
+    Billing::Subscription::SetStripeSubscriptionForCancellation,
+    Billing::Leasing::UpdateEndDateToPeriodEnd
   )
 end

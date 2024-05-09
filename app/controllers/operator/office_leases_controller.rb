@@ -1,4 +1,3 @@
-
 class Operator::OfficeLeasesController < Operator::BaseController
   before_action :find_office_lease, only: [:show]
   before_action :background_image, except: [:create, :update]
@@ -30,7 +29,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
     result = Billing::Leasing::CreateOfficeLease.call(
       office_lease: @office_lease,
       operator: current_tenant,
-      plan: @office_lease.subscription.plan
+      plan: @office_lease.subscription.plan,
     )
 
     if result.success?
@@ -49,26 +48,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
     find_office_lease
     authorize @office_lease
 
-    result = Billing::Leasing::TerminateOfficeLease.call(
-      office_lease: @office_lease,
-      subscription: @office_lease.subscription
-    )
-
-    if result.success?
-      flash[:success] = "This lease has been terminated. Any outstanding invoices may still need to be addressed."
-    else
-      flash[:error] = result.message
-    end
-    turbo_redirect(office_lease_path(@office_lease), action: "replace")
-  end
-
-  def destroy
-    find_office_lease
-    authorize @office_lease
-
     result = Billing::Leasing::SetOfficeLeaseForTermination.call(
       office_lease: @office_lease,
-      subscription: @office_lease.subscription
+      subscription: @office_lease.subscription,
     )
 
     if result.success?
@@ -85,7 +67,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     result = Billing::Leasing::TerminateOfficeLease.call(
       office_lease: @office_lease,
-      subscription: @office_lease.subscription
+      subscription: @office_lease.subscription,
     )
 
     if result.success?
@@ -98,7 +80,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   private
 
-  def find_office_lease(key=:id)
+  def find_office_lease(key = :id)
     @office_lease = OfficeLease.find(params[key])
   end
 
@@ -117,9 +99,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
           :visible,
           :available,
           :interval,
-          :amount_in_cents
-          ]
-        ]
+          :amount_in_cents,
+        ],
+      ],
     )
   end
 

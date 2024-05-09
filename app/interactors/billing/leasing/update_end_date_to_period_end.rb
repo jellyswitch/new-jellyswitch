@@ -1,0 +1,14 @@
+class Billing::Leasing::UpdateEndDateToPeriodEnd
+  include Interactor
+
+  delegate :office_lease, to: :context
+
+  def call
+    context.old_end_date = office_lease.end_date
+    office_lease.update(end_date: office_lease.subscription.current_period_end)
+  end
+
+  def rollback
+    office_lease.update(end_date: context.old_end_date)
+  end
+end

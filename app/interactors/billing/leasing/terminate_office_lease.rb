@@ -1,9 +1,8 @@
-
 class Billing::Leasing::TerminateOfficeLease
   include Interactor::Organizer
 
   organize(
-    Billing::Leasing::UpdateEndDate,
-    Billing::Subscription::CancelStripeSubscription
+    Billing::Subscription::CancelStripeSubscription,
+    Billing::Leasing::UpdateEndDate
   )
 end
