@@ -10,7 +10,6 @@ class Billing::DayPasses::SaveDayPassTest < ActiveSupport::TestCase
       day_pass_type: @day_pass_type.id,
       operator_id: @operator.id,
       day: Date.today,
-    # Add other required params here
     }
   end
 
