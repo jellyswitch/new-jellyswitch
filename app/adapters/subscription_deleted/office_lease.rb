@@ -8,7 +8,7 @@ class SubscriptionDeleted::OfficeLease < SimpleDelegator
   def perform
     Billing::Leasing::TerminateOfficeLease.call(
       office_lease: subscription.office_leases.first,
-      subscription: subscription
+      subscription: subscription,
     )
   end
 end

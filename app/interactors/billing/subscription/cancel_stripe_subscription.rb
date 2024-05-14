@@ -11,9 +11,7 @@ class Billing::Subscription::CancelStripeSubscription
     end
 
     begin
-      if subscription.stripe_subscription.status == "canceled"
-        Honeybadger.notify("Warning: CancelSubscription called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
-      else
+      unless subscription.stripe_subscription.status == "canceled"
         subscription.cancel_stripe!
       end
     rescue Exception => e

@@ -3,11 +3,12 @@ module Permissions
 
   def allowed_in?(location)
     member?(location) ||
-    has_active_day_pass? || 
-    checked_in?(location) || 
-    has_active_lease? || 
-    admin? || 
-    has_reservation? || 
+    has_active_day_pass? ||
+    checked_in?(location) ||
+    has_active_lease? ||
+    admin? ||
+    superadmin? ||
+    has_reservation? ||
     has_rsvp?
   end
 
@@ -56,7 +57,7 @@ module Permissions
   end
 
   def admin?
-    role == User::ADMIN
+    role == User::ADMIN || admin == true
   end
 
   def superadmin?

@@ -3,6 +3,6 @@ class FeedItems::Create
 
   organize(
     FeedItems::Save,
-    CreateNotifications
+    CreateNotificationsAsync
   )
 end

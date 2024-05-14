@@ -1,7 +1,6 @@
-
 class Operator::OrganizationsController < Operator::BaseController
   before_action :find_organization, except: [:index, :new, :create, :credit_card,
-    :out_of_band, :billing, :payment_method, :members, :leases, :invoices, :ltv]
+                                             :out_of_band, :billing, :payment_method, :members, :leases, :invoices, :ltv]
 
   def index
     find_organizations
@@ -49,12 +48,15 @@ class Operator::OrganizationsController < Operator::BaseController
   def update
     authorize @organization
 
-    @organization.update(organization_params)
+    new_billing_owner = User.find_by(id: organization_params[:billing_contact_id])
 
-    if @organization.save
-      flash[:notice] = "The organization #{@organization.name} has been updated."
+    result = UpdateOrganization.call(organization: @organization, params: organization_params, operator: current_tenant, new_billing_owner: new_billing_owner)
+
+    if result.success?
+      flash[:notice] = "The organization #{@organization.reload.name} has been updated."
       turbo_redirect(organization_path(@organization))
     else
+      flash[:error] = result.message
       background_image
       render :edit, status: 422
     end
@@ -129,11 +131,11 @@ class Operator::OrganizationsController < Operator::BaseController
     params.require(:organization).permit(:name, :website, :owner_id, :billing_contact_id)
   end
 
-  def find_organization(key=:id)
+  def find_organization(key = :id)
     @organization = Organization.friendly.find(params[key])
   end
 
   def find_organizations
-    @organizations = Organization.all
+    @organizations = Organization.all.order(:name)
   end
 end

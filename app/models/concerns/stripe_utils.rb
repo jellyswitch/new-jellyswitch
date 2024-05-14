@@ -1,12 +1,11 @@
-
 module StripeUtils
   STRIPE_CLASS_MAP = {
-    customer: 'Customer',
-    plan: 'Plan',
-    subscription: 'Subscription',
-    invoice: 'Invoice',
-    invoice_item: 'InvoiceItem',
-    refund: 'Refund',
+    customer: "Customer",
+    plan: "Plan",
+    subscription: "Subscription",
+    invoice: "Invoice",
+    invoice_item: "InvoiceItem",
+    refund: "Refund",
   }
 
   STRIPE_CLASS_MAP.each do |key, value|
@@ -17,15 +16,15 @@ module StripeUtils
     return retrieve_stripe_customer(customer) if customer.stripe_customer_id
 
     case customer.class.name
-    when 'User'
-      customer_args = { 
-        email: customer.email,
-        description: customer.name
-      }
-    when 'Organization'
+    when "User"
       customer_args = {
         email: customer.email,
-        description: customer.name
+        description: customer.name,
+      }
+    when "Organization"
+      customer_args = {
+        email: customer.email,
+        description: customer.name,
       }
     end
 
@@ -70,8 +69,8 @@ module StripeUtils
       interval: plan.stripe_interval,
       interval_count: plan.stripe_interval_count,
       product: { name: plan.plan_name },
-      currency: 'usd',
-      id: plan.plan_slug
+      currency: "usd",
+      id: plan.plan_slug,
     }
 
     stripe_request(stripe_plan, :create, plan_args)
@@ -90,7 +89,7 @@ module StripeUtils
   def create_stripe_invoice_item(user, plan)
     invoice_item_args = {
       customer: user.stripe_customer_id,
-      currency: 'usd',
+      currency: "usd",
       amount: plan.amount_in_cents,
       description: plan.name,
     }
@@ -118,7 +117,7 @@ module StripeUtils
     stripe_invoice = retrieve_stripe_invoice(invoice)
 
     options = {
-      source: stripe_customer.sources.data.first.id
+      source: stripe_customer.sources.data.first.id,
     }
 
     stripe_invoice.pay(options)
@@ -145,12 +144,20 @@ module StripeUtils
     false
   end
 
-  
+  def update_organization_customer_details(organization, new_email)
+    stripe_customer = retrieve_stripe_customer(organization)
+    stripe_customer.email = new_email if new_email
+    stripe_customer.name = organization.name
+    stripe_customer.save
+  rescue Stripe::InvalidRequestError => e
+    Honeybadger.notify(e)
+    false
+  end
 
   def stripe_request(klass, action, request_args)
     operator_stripe_credentials = {
       api_key: stripe_secret_key,
-      stripe_account: stripe_user_id
+      stripe_account: stripe_user_id,
     }
 
     stripe_args = [request_args, operator_stripe_credentials]

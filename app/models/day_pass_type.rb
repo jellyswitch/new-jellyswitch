@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: day_pass_types
@@ -28,15 +27,19 @@ class DayPassType < ApplicationRecord
   scope :invisible, -> { where(visible: false) }
   scope :free, -> { where(amount_in_cents: 0) }
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
-  scope :for_code, -> (code) { where(code: code) }
-  scope :cheapest, -> { order('amount_in_cents ASC').first }
+  scope :for_code, ->(code) { where(code: code) }
+  scope :cheapest, -> { order("amount_in_cents ASC").first }
 
   def self.options_for_select(operator)
     where(operator_id: operator.id).available.visible
   end
 
-  def self.all_options_for_select(operator)
-    where(operator_id: operator.id).available
+  def self.all_options_for_select(operator, user)
+    if user.has_billing? || user.out_of_band?
+      where(operator_id: operator.id).available
+    else
+      where(operator_id: operator.id).available.free
+    end
   end
 
   def free?
