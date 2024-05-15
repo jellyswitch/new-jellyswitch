@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: users
@@ -62,6 +61,7 @@ class User < ApplicationRecord
   has_many :operator_surveys
   has_many :reservations
   has_many :subscriptions, as: :subscribable
+  has_many :subscriptions_billable, as: :billable, class_name: "Subscription"
   has_many :refunds
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
