@@ -2,7 +2,7 @@
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
   before_action :background_image
-  
+
   def index
     find_approved_users
     @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
@@ -136,9 +136,7 @@ class Operator::UsersController < Operator::BaseController
       end
     else
       @user = result.user
-      if result.message
-        flash[:error] = result.message
-      end
+
       if admin? # Admin is creating a user
         render :add_member, status: 422
       else
