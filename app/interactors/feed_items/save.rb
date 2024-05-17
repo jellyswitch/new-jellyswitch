@@ -32,7 +32,12 @@ class FeedItems::Save
       context.fail!(message: "Unable to post management note.")
     end
 
-    context.notifiable = @feed_item
+    if @feed_item.type == "announcement" && announcement.present?
+      context.notifiable = announcement
+    else
+      context.notifiable = @feed_item
+    end
+
     context.feed_item = @feed_item
     context.announcement = announcement
   end
