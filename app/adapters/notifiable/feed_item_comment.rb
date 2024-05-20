@@ -8,7 +8,11 @@ module Notifiable
     end
 
     def message
-      "#{user.name} replied to a recent management note"
+      if feed_item.type === "announcement"
+        "#{user.name} replied to an announcement post"
+      else
+        "#{user.name} replied to a recent management note"
+      end
     end
 
     def recipients
