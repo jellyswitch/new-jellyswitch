@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: rooms
@@ -42,8 +41,8 @@ class Room < ApplicationRecord
   # Scopes
   scope :visible, ->() { where(visible: true) }
   scope :invisible, ->() { where(visible: false) }
-  scope :rentable, ->()  { where(rentable: true) }
-  scope :cheapest, ->() { order('hourly_rate_in_cents DESC') }
+  scope :rentable, ->() { where(rentable: true) }
+  scope :cheapest, ->() { order("hourly_rate_in_cents DESC") }
 
   # Slugs
   extend FriendlyId
@@ -55,7 +54,7 @@ class Room < ApplicationRecord
   def search_data
     {
       name: name,
-      text: description
+      text: description,
     }
   end
 
@@ -81,7 +80,6 @@ class Room < ApplicationRecord
     end
   end
 
-
   # Instance Methods
 
   def square_photo
@@ -96,11 +94,11 @@ class Room < ApplicationRecord
     result = []
 
     48.times do |i|
-      time = day_start + (i*30).minutes
+      time = day_start + (i * 30).minutes
       reservation = reservations.for_time(time)
       result.push({
         hour: time,
-        reservation: reservation
+        reservation: reservation,
       })
     end
 
@@ -141,6 +139,6 @@ class Room < ApplicationRecord
   end
 
   def paid_room?
-    hourly_rate_in_cents > 0
+    rentable? && hourly_rate_in_cents > 0
   end
 end
