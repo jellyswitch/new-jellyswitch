@@ -139,4 +139,8 @@ class Room < ApplicationRecord
     cal.publish
     cal
   end
+
+  def paid_room?
+    hourly_rate_in_cents > 0
+  end
 end
