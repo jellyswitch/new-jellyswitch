@@ -18,9 +18,9 @@ module Permissions
     end
   end
 
-  def should_charge_for_reservation?(location)
+  def should_charge_for_reservation?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
-      !(member?(location) || has_active_day_pass? || has_active_lease? || admin? || superadmin? || general_manager?)
+      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin? || superadmin? || general_manager?)
     else
       false
     end
@@ -43,7 +43,7 @@ module Permissions
   end
 
   def member_at_operator?(operator, day = Time.current)
-    has_active_subscription? || has_active_day_pass?(day=day) || has_active_lease?
+    has_active_subscription? || has_active_day_pass?(day = day) || has_active_lease?
   end
 
   def member?(location, day = Time.current)

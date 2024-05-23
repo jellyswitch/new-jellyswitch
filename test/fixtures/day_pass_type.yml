@@ -6,3 +6,12 @@ cowork_tahoe_day_pass_type:
   visible: true
   always_allow_building_access: false
   code: ""
+
+free_day_pass_type:
+  name: Free Day Pass
+  operator: cowork_tahoe
+  amount_in_cents: 0
+  available: true
+  visible: true
+  always_allow_building_access: false
+  code: ""

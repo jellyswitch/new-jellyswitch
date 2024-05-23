@@ -4,6 +4,8 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
   organize(
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
-    Billing::Reservations::SaveStripeInvoice
+    Billing::Reservations::SaveStripeInvoice,
+    Billing::Reservations::GrantFreeDayPass,
+    CreateNotificationsAsync
   )
 end
