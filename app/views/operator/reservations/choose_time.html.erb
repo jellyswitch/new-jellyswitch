@@ -1,7 +1,10 @@
 <% title "Choose a time" %>
 
 <%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id) %></li>
+  <% if current_user.admin? %>
+    <li class="breadcrumb-item"><%= link_to "Choose a member", choose_member_reservations_path(room_id: @room.id) %></li>
+  <% end %>
+  <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id, user_id: @user.id) %></li>
   <li class="breadcrumb-item active" aria-current="page">Choose a time</li>
 <% end %>
 
@@ -13,6 +16,9 @@
       <dt class="col-6">Room</dt>
       <dd class="col"><%= @room.name %></dd>
 
+      <dt class="col-6">User</dt>
+      <dd class="col"><%= link_to @user.name, user_path(@user) %></dd>
+
       <dt class="col-6">Day</dt>
       <dd class="col"><%= short_date(@day) %></dd>
     </dl>
@@ -23,7 +29,7 @@
       <% elsif !@room.allow_shorter_reservation_duration && Reservation.for_room(@room).and(Reservation.between(option[:hour], option[:hour] + 4.hours)).present? %>
         <%= link_to "#{pretty_time(option[:hour])} (unavailable)", "#", class: "btn btn-block btn-danger disabled" %>
       <% else %>
-        <%= link_to pretty_time(option[:hour]), choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(option[:hour])), class: "btn btn-block btn-primary" %>
+        <%= link_to pretty_time(option[:hour]), choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(option[:hour]), user_id: @user.id), class: "btn btn-block btn-primary" %>
       <% end %>
     <% end %>
   <% end %>

@@ -1,0 +1,28 @@
+<% title "Choose a Member" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item active" aria-current="page">Choose a Member</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Choose a Member</h4>
+
+    <dl class="row">
+      <dt class="col-6">Room</dt>
+      <dd class="col"><%= @room.name %></dd>
+    </dl>
+
+    <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
+      <div class="form-group">
+        <%= f.label :user, "Select Member" %>
+        <%= f.select :user_id, User.lease_options_for_select(current_tenant), { selected: current_user.id }, { class: "form-control" } %>
+      </div>
+        <%= f.hidden_field :room_id, value: @room.id %>
+        <%= f.hidden_field :day, value: params[:day] %>
+        <%= f.hidden_field :hour, value: params[:hour] %>
+
+      <%= f.submit "Next", class: "btn btn-primary" %>
+    <% end %>
+  <% end %>
+<% end %>
