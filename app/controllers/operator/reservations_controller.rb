@@ -1,6 +1,8 @@
 
 class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
+  before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
+
   include ReservationHelper
   include CreditHelper
 
@@ -11,6 +13,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def choose_member
+    authorize :reservation
     @room = current_tenant.rooms.find(params[:room_id])
     @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
   end
@@ -18,12 +21,10 @@ class Operator::ReservationsController < Operator::BaseController
   def choose_day
     # requires room, user
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
   end
 
   def choose_time_post
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
     if params[:day].present?
       @day = Date.parse(params[:day])
     else
@@ -35,7 +36,6 @@ class Operator::ReservationsController < Operator::BaseController
   def choose_time
     # requires room, user, day
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
     if params[:day].present?
       @day = Date.parse(params[:day])
     else
@@ -46,7 +46,6 @@ class Operator::ReservationsController < Operator::BaseController
   def choose_duration
     # require room, user, day, time
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @staff = staff
@@ -57,7 +56,6 @@ class Operator::ReservationsController < Operator::BaseController
   def confirm
     # requires room, user, day, time, duration
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
@@ -110,7 +108,6 @@ class Operator::ReservationsController < Operator::BaseController
 
   def create_reservation
     @room = current_tenant.rooms.find(params[:room_id])
-    @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
@@ -162,6 +159,14 @@ class Operator::ReservationsController < Operator::BaseController
 
   def find_reservation(key=:id)
     @reservation = Reservation.find(params[key]).decorate
+  end
+
+  def set_reserved_user
+    if staff
+      @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
+    else
+      @user = current_user
+    end
   end
 
   def staff
