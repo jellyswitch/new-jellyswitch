@@ -1,7 +1,8 @@
-
 class NotifiableFactory
-  def self.for(notifiable)
-    case notifiable.class.name
+  def self.for(notifiable, notifiable_type = nil)
+    type = notifiable_type || notifiable.class.name
+
+    case type
     when 'Announcement'
       Notifiable::Announcement
     when 'Checkin'
@@ -28,6 +29,10 @@ class NotifiableFactory
       Notifiable::User
     when 'WeeklyUpdate'
       Notifiable::WeeklyUpdate
+    when 'PaidRoomReservation'
+      Notifiable::PaidRoomReservation
+    else
+      raise "Unknown notifiable type: #{type}"
     end.new(notifiable)
   end
 end

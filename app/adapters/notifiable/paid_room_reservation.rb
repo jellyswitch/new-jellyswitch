@@ -1,5 +1,5 @@
 module Notifiable
-  class Reservation < Notifiable::Default
+  class PaidRoomReservation < Notifiable::Default
     private
 
     def create_feed_item
@@ -8,11 +8,11 @@ module Notifiable
     end
 
     def should_send_notification?
-      operator.reservation_notifications?
+      room.paid_room?
     end
 
     def message
-      "#{user.name} has reserved #{room.name}"
+      "#{user.name} has booked a paid meeting room"
     end
 
     def recipients

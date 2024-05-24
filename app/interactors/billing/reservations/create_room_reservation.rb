@@ -6,6 +6,7 @@ class Billing::Reservations::CreateRoomReservation
     Billing::Reservations::ChargeCredits,
     Billing::Reservations::SaveStripeInvoice,
     Billing::Reservations::GrantFreeDayPass,
-    CreateNotificationsAsync
+    CreateNotificationsAsync,
+    SendAdminNotificationForPaidRoom
   )
 end
