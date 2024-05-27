@@ -14,12 +14,10 @@
         <h4 class="display-4 text-center">Archived Members</h4>
       <% end %>
       <% if @users.count < 1 %>
-        <%= list_item do %>
-          <p class="text-center text-muted">Your member archive is empty.</p>
-        <% end %>
+          <p class="text-center text-muted mt-2">Your member archive is empty.</p>
       <% else %>
-        <% @users.each do |user| %>
-          <%= render "list_item", user: user %>
+        <% @users.each_with_index do |user, index| %>
+          <%= render "list_item", user: user, index: index %>
         <% end %>
       <% end %>
     <% end %>

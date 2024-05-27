@@ -12,6 +12,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def search?
+    (admin? || community_manager? || general_manager?)
+  end
+
   def show?
     (owner_or_admin? || community_manager? || general_manager?)
   end

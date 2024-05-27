@@ -1,7 +1,7 @@
 <%- if policy(:user).show? %>
-  <a class="list-group-item list-group-item-action" href="<%= user_path(user) %>">
+  <a class="list-group-item list-group-item-action" href="<%= user_path(user) %>" <% if index == 0 %>style="border-top: 0;"<% end %>>
 <%- else %>
-  <li class="list-group-item">
+  <li class="list-group-item" <% if index == 0 %>style="border-top: 0;"<% end %>>
 <%- end %>
 
   <div class="row mb-2 mt-2">

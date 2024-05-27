@@ -4,10 +4,19 @@ class Operator::UsersController < Operator::BaseController
   before_action :background_image
 
   def index
-    find_approved_users
+    @pagy, @users = find_approved_users
     @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
     @archived_users = User.for_space(current_tenant).archived.order("name")
     authorize @users
+  end
+
+  def search
+    @query = params[:query]
+    @pagy, @users = find_approved_users(@query)
+    @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
+    @archived_users = User.for_space(current_tenant).archived.order("name")
+    authorize @users
+    render :index
   end
 
   def unapproved

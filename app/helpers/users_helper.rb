@@ -13,8 +13,12 @@ module UsersHelper
     @user = User.friendly.find(params[key])
   end
 
-  def find_approved_users
-    @pagy, @users = pagy(User.for_space(current_tenant).approved.visible.order("name"))
+  def find_approved_users(query = nil)
+    if query.present?
+      pagy(User.search(query, fields: [:name, :email]))
+    else
+      pagy(User.for_space(current_tenant).approved.visible.order("name"))
+    end
   end
 
   def find_unapproved_users
