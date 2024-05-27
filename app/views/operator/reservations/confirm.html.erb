@@ -1,9 +1,12 @@
 <% title "Confirm reservation" %>
 
 <%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id) %></li>
-  <li class="breadcrumb-item"><%= link_to "Choose a time", choose_time_reservations_path(room_id: @room.id, day: @day) %></li>
-  <li class="breadcrumb-item"><%= link_to "How long?", choose_duration_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour)) %></li>
+  <% if current_user.admin? %>
+    <li class="breadcrumb-item"><%= link_to "Choose a member", choose_member_reservations_path(room_id: @room.id) %></li>
+  <% end %>
+  <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id, user_id: @user.id) %></li>
+  <li class="breadcrumb-item"><%= link_to "Choose a time", choose_time_reservations_path(room_id: @room.id, user_id: @user.id, day: @day) %></li>
+  <li class="breadcrumb-item"><%= link_to "How long?", choose_duration_reservations_path(room_id: @room.id, user_id: @user.id, day: @day, hour: pretty_time(@hour)) %></li>
   <li class="breadcrumb-item active" aria-current="page">Confirm</li>
 <% end %>
 
@@ -15,6 +18,9 @@
       <dt class="col-6">Room</dt>
       <dd class="col"><%= @room.name %></dd>
 
+      <dt class="col-6">User</dt>
+      <dd class="col"><%= link_to @user.name, user_path(@user) %></dd>
+
       <dt class="col-6">Day</dt>
       <dd class="col"><%= short_date(@day) %></dd>
 
@@ -24,7 +30,7 @@
       <dt class="col-6">Length</dt>
       <dd class="col"><%= @duration %> <%= quantize(@duration, "minute") %></dd>
 
-      <% if current_user.should_charge_for_reservation?(current_location) %>
+      <% if @user.should_charge_for_reservation?(current_location, @day) %>
         <dt class="col-6">Hourly Price</dt>
         <dd class="col">
           <%= number_to_currency(@room.hourly_rate_in_cents / 100.0) %>
@@ -41,7 +47,7 @@
         <dd class="col">
           <%= render CreditAmount.new(amount: @room.credit_cost) %>
         </dd>
-        
+
         <dt class="col-6">Your credit balance</dt>
         <dd class="col">
           <%= render CreditAmount.new(amount: current_user.credit_balance) %>
@@ -60,14 +66,14 @@
       <% end %>
     </dl>
 
-    <% if current_user.should_charge_for_reservation?(current_location) %>
+    <% if current_user.should_charge_for_reservation?(current_location, @day) %>
       <% if current_user.has_billing? %>
-        <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", remote: true, data: {turbo: "false", disable_with: "Reserving..."} %>
+        <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), class: "btn btn-block btn-primary", remote: true, data: {turbo: "false", disable_with: "Reserving..."} %>
       <% else %>
         <%= render "billing" %>
       <% end %>
     <% else %>
-      <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration), class: "btn btn-block btn-primary", remote: true, data: {turbo: "false", disable_with: "Reserving..."} %>
+      <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), class: "btn btn-block btn-primary", remote: true, data: {turbo: "false", disable_with: "Reserving..."} %>
     <% end %>
   <% end %>
 <% end %>

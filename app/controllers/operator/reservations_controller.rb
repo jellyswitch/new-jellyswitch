@@ -1,6 +1,8 @@
 
 class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
+  before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
+
   include ReservationHelper
   include CreditHelper
 
@@ -10,7 +12,14 @@ class Operator::ReservationsController < Operator::BaseController
     background_image
   end
 
+  def choose_member
+    authorize :reservation
+    @room = current_tenant.rooms.find(params[:room_id])
+    @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
+  end
+
   def choose_day
+    # requires room, user
     @room = current_tenant.rooms.find(params[:room_id])
   end
 
@@ -21,11 +30,11 @@ class Operator::ReservationsController < Operator::BaseController
     else
       @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
     end
-    turbo_redirect choose_time_reservations_path(room_id: @room.id, day: @day)
+    turbo_redirect choose_time_reservations_path(room_id: @room.id, user_id: @user.id, day: @day)
   end
 
   def choose_time
-    # requires room, day
+    # requires room, user, day
     @room = current_tenant.rooms.find(params[:room_id])
     if params[:day].present?
       @day = Date.parse(params[:day])
@@ -35,7 +44,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def choose_duration
-    # require room, day, time
+    # require room, user, day, time
     @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
@@ -45,15 +54,16 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def confirm
-    # requires room, day, time, duration
+    # requires room, user, day, time, duration
     @room = current_tenant.rooms.find(params[:room_id])
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
+
     @staff = staff
 
     parse_time
-    if current_user.should_charge_for_reservation?(current_location) || !current_user.has_billing?
+    if @user.should_charge_for_reservation?(current_location, @day) || !@user.has_billing?
       include_stripe
     end
   end
@@ -101,18 +111,17 @@ class Operator::ReservationsController < Operator::BaseController
     @day = Date.parse(params[:day])
     @hour = Time.strptime(params[:hour], "%l:%M%P")
     @duration = params[:duration].to_i
-
     parse_time
-    
+
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
       datetime_in: @datetime_in,
       hours: @duration,
       minutes: @duration.to_i,
       room: @room
-    }, user: current_user)
-    
+    }, user: @user)
+
     @reservation = result.reservation
-    
+
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
@@ -150,6 +159,14 @@ class Operator::ReservationsController < Operator::BaseController
 
   def find_reservation(key=:id)
     @reservation = Reservation.find(params[key]).decorate
+  end
+
+  def set_reserved_user
+    if staff
+      @user = User.for_space(current_tenant).find_by(id: params[:user_id]) || current_user
+    else
+      @user = current_user
+    end
   end
 
   def staff

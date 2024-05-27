@@ -54,4 +54,11 @@ class ReservationPolicyTest < PolicyAssertions::Test
     assert_permit @community_manager, Reservation
     assert_permit @general_manager, Reservation
   end
+
+  def test_choose_member
+    assert_not_permitted @member, Reservation
+    assert_permit @admin, Reservation
+    assert_permit @community_manager, Reservation
+    assert_permit @general_manager, Reservation
+  end
 end

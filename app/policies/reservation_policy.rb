@@ -28,6 +28,10 @@ class ReservationPolicy < ApplicationPolicy
     (admin? || community_manager? || general_manager?)
   end
 
+  def choose_member?
+    (admin? || community_manager? || general_manager?)
+  end
+
   private
 
   def future?
