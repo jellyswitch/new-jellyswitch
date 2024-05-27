@@ -15,7 +15,9 @@ module UsersHelper
 
   def find_approved_users(query = nil)
     if query.present?
-      pagy(User.search(query, fields: [:name, :email]))
+      user_ids = User.search(query, fields: [:name, :email]).map(&:id)
+      filtered_users = User.where(id: user_ids)
+      pagy(filtered_users.for_space(current_tenant).approved.visible.order("name"))
     else
       pagy(User.for_space(current_tenant).approved.visible.order("name"))
     end
