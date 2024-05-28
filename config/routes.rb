@@ -335,6 +335,7 @@ Rails.application.routes.draw do
       get "add_member", to: "operator/users#add_member"
       get :archived, to: "operator/users#archived"
       get :unapproved, to: "operator/users#unapproved"
+      get :search, to: "operator/users#search"
     end
     get :about, to: "operator/users#about"
     post :add_childcare_reservations, to: "operator/users#add_childcare_reservations"

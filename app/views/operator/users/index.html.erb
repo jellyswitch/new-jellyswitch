@@ -30,17 +30,34 @@
         View approval queue (<%= @unapproved_users.count %> members)
       <% end %>
 
-      <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px; border-bottom: 0px;" do %>
+      <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px;" do %>
         <i class="fas fa-archive"></i>
         &nbsp;
         View archived members (<%= @archived_users.count %> members)
       <% end %>
 
-      <% @users.each do |user| %>
-        <%= render "list_item", user: user %>
+      <%= form_with(url: search_users_path, method: :get, local: true) do |f| %>
+        <div class="form-group mx-3 mb-2 mt-4">
+          <div class="input-group">
+            <%= f.text_field :query, placeholder: "Search by name or email...", class: "form-control form-control col-lg", value: @query %>
+            <div class="input-group-append">
+              <%= button_tag(type: "submit", class: "btn btn-primary search-btn") do %>
+                <i class="fas fa-search"></i>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <%- end %>
+
+      <% if @users.count < 1 %>
+        <p class="text-center text-muted mt-2">No users found.</p>
+      <% else %>
+        <% @users.each_with_index do |user, index| %>
+          <%= render "list_item", user: user, index: index %>
+        <% end %>
+        <%== pagy_bootstrap_nav(@pagy) %>
       <% end %>
     <% end %>
-    <%== pagy_bootstrap_nav(@pagy) %>
   </div>
   <div class="col-lg-3"></div>
 </div>

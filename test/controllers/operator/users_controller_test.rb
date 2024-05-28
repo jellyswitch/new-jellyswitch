@@ -45,4 +45,13 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert @old_user.bio == @user.bio
     assert_redirected_to root_path
   end
+
+  test "should get search results and render index template" do
+    @user.update(role: :admin)
+    User.reindex
+
+    get search_users_path(params: { query: @user.name }), env: default_env
+    assert_response :success
+    assert_template :index
+  end
 end
