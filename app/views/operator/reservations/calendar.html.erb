@@ -1,0 +1,49 @@
+<%= javascript_include_tag "reservation_calendar.js" %>
+<%= stylesheet_link_tag "reservation_calendar", media: "all" %>
+
+<div id="reservation-calendar-container">
+  <div class="p-5">
+    <h2 class="mb-4">Reservation Date</h2>
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="mx-auto" id="reservation-fullcalendar"></div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-view-event" class="modal modal-top fade calendar-modal">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-body">
+            <h4 class="modal-title"><span class="event-icon"></span><span class="event-title"></span></h4>
+            <div class="event-body"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  <div id="modal-view-event-add" class="modal modal-top fade calendar-modal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="add-reservation" method="post">
+          <div class="modal-body">
+          <h4>Reservation Details</h4>
+            <div class="form-group">
+              <label>Date</label>
+              <p class="date-value"></p>
+              <input type='text' class="reservation-date-input form-control" name="date" hidden>
+            </div>
+        </div>
+          <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

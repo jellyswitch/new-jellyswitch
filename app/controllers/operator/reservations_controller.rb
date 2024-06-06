@@ -155,6 +155,9 @@ class Operator::ReservationsController < Operator::BaseController
     @rooms = find_todays_reservations(current_tenant)
   end
 
+  def calendar
+  end
+
   private
 
   def find_reservation(key=:id)
