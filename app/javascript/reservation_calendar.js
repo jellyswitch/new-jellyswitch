@@ -31,6 +31,46 @@ const handleDayClick = (date, event) => {
 
     setDatepickerDate(date._d);
     showEventModal();
+
+    fetchAvailableTimeSlots(formattedDate);
+};
+
+const fetchAvailableTimeSlots = (date) => {
+    $.ajax({
+        url: '/reservations/available_time_slots',
+        method: 'GET',
+        data: { day: date },
+        success: (response) => {
+            renderTimeSlots(response);
+        },
+        error: (xhr, status, error) => {
+            console.error('Error fetching time slots:', error);
+        }
+    });
+};
+
+const renderTimeSlots = (timeSlots) => {
+    const timeSlotsContainer = $('#time-slots-container');
+    timeSlotsContainer.empty();
+
+    if (timeSlots.length === 0) {
+        timeSlotsContainer.append('<p>No available time slots.</p>');
+        return;
+    }
+
+    timeSlots.forEach(slot => {
+        const timeSlotElement = $(`<div class="time-slot">${slot}</div>`);
+        timeSlotElement.on('click', () => handleTimeSlotClick(timeSlotElement, slot));
+        timeSlotsContainer.append(timeSlotElement);
+    });
+};
+
+const handleTimeSlotClick = (element, time) => {
+    $('.time-slot').removeClass('selected-time');
+
+    element.addClass('selected-time');
+
+    $('input[name="time"]').val(time);
 };
 
 const highlightSelectedDate = (date) => {

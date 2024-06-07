@@ -1372,6 +1372,10 @@ h2 {
     margin-bottom: 5px;
 }
 
+.modal-dialog {
+    max-width: 700px !important;
+}
+
 .modal-body {
     background: #F3F5F9;
     border-radius: 10px;
@@ -1448,4 +1452,28 @@ h2 {
 .download-btn .fa {
     font-size: 40px;
     margin-right: 10px;
+}
+
+/* Time Slots */
+#time-slots-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.time-slot {
+    border: 1px solid black;
+    width: 64px;
+    text-align: center;
+    padding: 6px 0;
+    border-radius: 4px;
+    outline: none !important;
+    cursor: pointer;
+
+    &:hover,
+    &.selected-time {
+        background: #2f2f2f;
+        transition: all 0.3s ease;
+        color: white;
+    }
 }

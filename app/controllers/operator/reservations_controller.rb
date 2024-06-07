@@ -155,7 +155,19 @@ class Operator::ReservationsController < Operator::BaseController
     @rooms = find_todays_reservations(current_tenant)
   end
 
+  # New 'Reservation Now' flow
+
   def calendar
+  end
+
+  def available_time_slots
+    if params[:day].present?
+      @day = Date.parse(params[:day])
+      @available_time_slots = calculate_available_time_slots(@day)
+      render json: @available_time_slots.map { |slot| slot.strftime("%H:%M") }
+    else
+      render json: { error: "Invalid date" }, status: :unprocessable_entity
+    end
   end
 
   private
