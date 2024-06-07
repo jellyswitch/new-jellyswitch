@@ -2,6 +2,11 @@ $(document).ready(function () {
     initializeCalendar();
     initializeDatepicker();
     handleFormSubmission();
+
+    $('#duration-slots-container .duration-slot').on('click', function () {
+        const duration = $(this).data('duration');
+        handleDurationClick($(this), duration);
+    });
 });
 
 const initializeCalendar = () => {
@@ -67,10 +72,9 @@ const renderTimeSlots = (timeSlots) => {
 
 const handleTimeSlotClick = (element, time) => {
     $('.time-slot').removeClass('selected-time');
-
     element.addClass('selected-time');
-
     $('input[name="time"]').val(time);
+    $('#duration-slots-container').removeClass('d-none');
 };
 
 const highlightSelectedDate = (date) => {
@@ -111,5 +115,11 @@ const handleFormSubmission = () => {
 
         alert("The form has been submitted!");
     });
+};
+
+const handleDurationClick = (element, duration) => {
+    $('.duration-slot').removeClass('selected-time');
+    element.addClass('selected-time');
+    $('input[name="duration"]').val(duration);
 };
 

@@ -1455,13 +1455,16 @@ h2 {
 }
 
 /* Time Slots */
-#time-slots-container {
+#time-slots-container,
+#duration-slots-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
+    user-select: none;
 }
 
-.time-slot {
+.time-slot,
+.duration-slot {
     border: 1px solid black;
     width: 64px;
     text-align: center;
@@ -1476,4 +1479,9 @@ h2 {
         transition: all 0.3s ease;
         color: white;
     }
+}
+
+.duration-slot {
+    width: fit-content;
+    padding: 6px 10px;
 }
