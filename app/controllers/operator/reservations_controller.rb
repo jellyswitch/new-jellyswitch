@@ -170,6 +170,20 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def available_rooms
+    if params[:date].present? && params[:time].present? && params[:duration].present?
+      date = params[:date]
+      time = params[:time]
+      duration = params[:duration]
+
+      available_rooms = current_tenant.rooms - Room.unavailable(date, time, duration)
+
+      render json: available_rooms, only: [:id, :name, :photo, :capacity, :hourly_rate_in_cents]
+    else
+      render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def find_reservation(key=:id)

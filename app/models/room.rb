@@ -80,6 +80,15 @@ class Room < ApplicationRecord
     end
   end
 
+  def self.unavailable(date, time, duration)
+    start_time = Time.zone.parse("#{date} #{time}")
+    end_time = (start_time + duration.to_i.minutes)
+
+    Room.left_joins(:reservations)
+        .where('(reservations.datetime_in + make_interval(mins := reservations.minutes)) > ? AND reservations.datetime_in < ?', start_time, end_time)
+        .distinct
+  end
+
   # Instance Methods
 
   def square_photo

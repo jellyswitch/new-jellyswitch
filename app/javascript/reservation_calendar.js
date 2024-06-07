@@ -3,10 +3,7 @@ $(document).ready(function () {
     initializeDatepicker();
     handleFormSubmission();
 
-    $('#duration-slots-container .duration-slot').on('click', function () {
-        const duration = $(this).data('duration');
-        handleDurationClick($(this), duration);
-    });
+    handleDurationChange();
 });
 
 const initializeCalendar = () => {
@@ -37,6 +34,8 @@ const handleDayClick = (date, event) => {
     setDatepickerDate(date._d);
     showEventModal();
 
+    clearSelections();
+
     fetchAvailableTimeSlots(formattedDate);
 };
 
@@ -52,6 +51,27 @@ const fetchAvailableTimeSlots = (date) => {
             console.error('Error fetching time slots:', error);
         }
     });
+};
+
+const fetchAvailableRooms = () => {
+    const date = $('input[name="date"]').val();
+    const time = $('input[name="time"]').val();
+    const duration = $('input[name="duration"]').val();
+
+    if (!date || !time || !duration) return;
+
+    $.ajax({
+        url: '/reservations/available_rooms',
+        method: 'GET',
+        data: { date: date, time: time, duration: duration },
+        success: (response) => {
+            renderAvailableRooms(response);
+        },
+        error: (xhr, status, error) => {
+            console.error('Error fetching available rooms:', error);
+        }
+    });
+
 };
 
 const renderTimeSlots = (timeSlots) => {
@@ -74,7 +94,9 @@ const handleTimeSlotClick = (element, time) => {
     $('.time-slot').removeClass('selected-time');
     element.addClass('selected-time');
     $('input[name="time"]').val(time);
-    $('#duration-slots-container').removeClass('d-none');
+    $('.duration-group').removeClass('d-none');
+
+    fetchAvailableRooms();
 };
 
 const highlightSelectedDate = (date) => {
@@ -100,6 +122,7 @@ const initializeDatepicker = () => {
     $('.reservation-date-input').datepicker({
         timepicker: false,
         language: 'en',
+        dateFormat: 'yyyy-mm-dd'
     });
 };
 
@@ -117,9 +140,40 @@ const handleFormSubmission = () => {
     });
 };
 
-const handleDurationClick = (element, duration) => {
-    $('.duration-slot').removeClass('selected-time');
-    element.addClass('selected-time');
-    $('input[name="duration"]').val(duration);
+const handleDurationChange = () => {
+    $('#duration-slots-container .duration-slot').on('click', function () {
+        const duration = $(this).data('duration');
+        $('.duration-slot').removeClass('selected-time');
+        $(this).addClass('selected-time');
+        $('input[name="duration"]').val(duration);
+        $(".available-room-group").removeClass('d-none');
+
+        fetchAvailableRooms();
+    });
 };
 
+const renderAvailableRooms = (rooms) => {
+    const roomsSelect = $('#rooms-select');
+    roomsSelect.empty();
+
+    if (rooms.length === 0) {
+        roomsSelect.append('<option>No available rooms</option>');
+        return;
+    }
+
+    rooms.forEach(room => {
+        const optionElement = $(`<option value="${room.id}">${room.name}</option>`);
+        roomsSelect.append(optionElement);
+    });
+};
+
+const clearSelections = () => {
+    $('.time-slot').removeClass('selected-time');
+    $('input[name="time"]').val('');
+
+    $('.duration-group').addClass('d-none');
+    $('.available-room-group').addClass('d-none');
+
+    $('.duration-slot').removeClass('selected-time');
+    $('input[name="duration"]').val('');
+};

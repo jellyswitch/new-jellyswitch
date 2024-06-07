@@ -320,6 +320,7 @@ Rails.application.routes.draw do
 
       get :calendar, to: "operator/reservations#calendar"
       get :available_time_slots, to: "operator/reservations#available_time_slots"
+      get :available_rooms, to: "operator/reservations#available_rooms"
     end
   end
   resources :rooms, controller: "operator/rooms", except: [:destroy] do
