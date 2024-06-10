@@ -1485,3 +1485,35 @@ h2 {
     width: fit-content;
     padding: 6px 10px;
 }
+
+// Room Details
+.room-details {
+    margin-top: 1rem;
+    padding: 0 4px;
+
+    label {
+        font-size: 16px;
+    }
+
+    .details-label {
+        margin-bottom: 8px;
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+.price-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding: 0 4px;
+
+    .price-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: black;
+    }
+
+}

@@ -43,17 +43,37 @@
               <input type='text' class="form-control" name="duration" hidden>
             </div>
 
-            <div class="form-group available-room-group d-none">
+            <div class="form-group available-room-group d-none mb-0">
               <label>Available Room</label>
               <div id="rooms-container">
                 <select id="rooms-select" class="form-control" name="room_id">
-                  <option value="" disabled selected>Select a room</option>
                 </select>
+
+                <div class="room-details d-none">
+                  <label>Room Details</label>
+
+                  <div class="details-label hourly-price">Hourly Price:
+                    <span class="details-value"></span>
+                  </div>
+
+                  <div class="details-label room-capacity">Capacity:
+                    <span class="details-value"></span>
+                  </div>
+
+                  <div class="details-label room-amenities">Amenities:
+                    <span class="details-value"></span>
+                  </div>
+                </div>
+
+                <div class="price-container d-none">
+                  <label class="mb-0">Total Price:</label>
+                  <div class="price-value"></div>
+                </div>
               </div>
             </div>
         </div>
           <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="submit" class="btn btn-primary" disabled>Next</button>
           <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
         </div>
         </form>

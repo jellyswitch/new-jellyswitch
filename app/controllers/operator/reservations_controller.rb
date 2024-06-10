@@ -3,6 +3,7 @@ class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
 
+  include ActionView::Helpers::NumberHelper
   include ReservationHelper
   include CreditHelper
 
@@ -181,6 +182,54 @@ class Operator::ReservationsController < Operator::BaseController
       render json: available_rooms, only: [:id, :name, :photo, :capacity, :hourly_rate_in_cents]
     else
       render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
+    end
+  end
+
+  def room_price_and_details
+    if params[:room_id].present? && params[:duration].present? && params[:date].present?
+      room = Room.find(params[:room_id])
+      duration = params[:duration].to_i
+      date = Time.zone.parse(params[:date])
+
+      should_charge = current_user.should_charge_for_reservation?(current_location, date)
+
+      hourly_price = number_to_currency(room.hourly_rate_in_cents / 100.0)
+      reservation_price = number_to_currency((room.hourly_rate_in_cents / 100.0) * (duration / 60.0))
+
+      render json: {
+        id: room.id,
+        name: room.name,
+        hourly_price: hourly_price,
+        capacity: room.capacity,
+        av: room.av,
+        whiteboard: room.whiteboard,
+        reservation_price: reservation_price,
+        should_charge: should_charge
+      }
+    else
+      render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
+    end
+  end
+
+  def create
+    @room = current_tenant.rooms.find(params[:room_id])
+    @day = Date.parse(params[:date])
+    @hour = Time.strptime(params[:time], "%H:%M")
+    @duration = params[:duration].to_i
+    parse_time
+
+    result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
+      datetime_in: @datetime_in,
+      hours: @duration / 60,
+      minutes: @duration.to_i,
+      room: @room
+    }, user: current_user)
+
+    @reservation = result.reservation
+
+    if result.success?
+      flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     end
   end
 
