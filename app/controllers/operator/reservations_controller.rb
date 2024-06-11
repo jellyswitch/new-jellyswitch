@@ -241,6 +241,9 @@ class Operator::ReservationsController < Operator::BaseController
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
+    else
+      flash[:error] = result.message
+      turbo_redirect(calendar_reservations_path, action: "replace")
     end
   end
 
