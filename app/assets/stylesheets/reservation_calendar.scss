@@ -1455,11 +1455,19 @@ h2 {
 }
 
 /* Time Slots */
+.day-light-radio-container {
+    label.form-check-label {
+        font-weight: normal;
+        font-size: 15px;
+        margin-bottom: 0;
+    }
+}
+
 #time-slots-container,
 #duration-slots-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 11px;
     user-select: none;
 }
 

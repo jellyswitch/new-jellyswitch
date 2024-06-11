@@ -4,6 +4,7 @@ $(document).ready(function () {
     handleDurationChange();
     handleRoomSelectionChange();
     handleFormSubmission();
+    handleDayNightSelection();
 });
 
 // Initialization Functions
@@ -58,6 +59,7 @@ const handleFormSubmission = () => {
         const roomId = $('select[name="room_id"]').val();
         const date = $('input[name="date"]').val();
         const time = $('input[name="time"]').val();
+        const dayOrNight = $('input[name="day-light-options"]:checked').val();
         const duration = $('input[name="duration"]').val();
 
         if (!roomId || !date || !time || !duration) {
@@ -65,16 +67,11 @@ const handleFormSubmission = () => {
             return;
         }
 
-        createReservation({ room_id: roomId, date, time, duration });
+        createReservation({ room_id: roomId, date, time, duration, day_or_night: dayOrNight });
     });
 };
 
 const handleDayClick = (date, event) => {
-    const currentDate = moment();
-    if (date.isBefore(currentDate, 'day')) {
-        return;
-    }
-
     const formattedDate = date.format('YYYY-MM-DD');
     highlightSelectedDate(formattedDate);
     const displayDate = date.format('MMMM D, YYYY');
@@ -82,7 +79,9 @@ const handleDayClick = (date, event) => {
     setDatepickerDate(date._d);
     showEventModal();
     clearSelections();
-    fetchAvailableTimeSlots(formattedDate);
+
+    const dayOrNight = $('input[name="day-light-options"]:checked').val();
+    fetchAvailableTimeSlots(formattedDate, dayOrNight);
 };
 
 const handleTimeSlotClick = (element, time) => {
@@ -91,6 +90,16 @@ const handleTimeSlotClick = (element, time) => {
     $('input[name="time"]').val(time);
     $('.duration-group').removeClass('d-none');
     fetchAvailableRooms();
+};
+
+const handleDayNightSelection = () => {
+    $('input[name="day-light-options"]').on('change', function () {
+        const selectedOption = $(this).val();
+        const date = $('input[name="date"]').val();
+        if (date) {
+            fetchAvailableTimeSlots(date, selectedOption);
+        }
+    });
 };
 
 // AJAX Functions
@@ -108,11 +117,11 @@ const fetchRoomDetails = (roomId, date, duration) => {
     });
 };
 
-const fetchAvailableTimeSlots = (date) => {
+const fetchAvailableTimeSlots = (date, dayOrNight) => {
     $.ajax({
         url: '/reservations/available_time_slots',
         method: 'GET',
-        data: { day: date },
+        data: { day: date, day_or_night: dayOrNight },
         success: (response) => {
             renderTimeSlots(response);
         },
@@ -126,13 +135,14 @@ const fetchAvailableRooms = () => {
     const date = $('input[name="date"]').val();
     const time = $('input[name="time"]').val();
     const duration = $('input[name="duration"]').val();
+    const dayOrNight = $('input[name="day-light-options"]:checked').val();
 
     if (!date || !time || !duration) return;
 
     $.ajax({
         url: '/reservations/available_rooms',
         method: 'GET',
-        data: { date: date, time: time, duration: duration },
+        data: { date: date, time: time, duration: duration, day_or_night: dayOrNight },
         success: (response) => {
             $(".available-room-group").removeClass('d-none');
             $(".room-details").addClass('d-none');
@@ -145,12 +155,12 @@ const fetchAvailableRooms = () => {
     });
 };
 
-const createReservation = ({ room_id, date, time, duration }) => {
+const createReservation = ({ room_id, date, time, duration, day_or_night }) => {
     $.ajax({
         url: '/reservations',
         method: 'POST',
         data: {
-            room_id, date, time, duration
+            room_id, date, time, duration, day_or_night
         },
         error: (xhr, status, error) => {
             console.error('Error creating reservation:', error);
@@ -188,6 +198,8 @@ const clearSelections = () => {
 
     $('.duration-slot').removeClass('selected-time');
     $('input[name="duration"]').val('');
+
+    $('#day-radio').prop('checked', true);
 
     $("#add-reservation button[type='submit']").attr("disabled", true);
 };

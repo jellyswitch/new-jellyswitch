@@ -162,19 +162,24 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def available_time_slots
-    if params[:day].present?
+    if params[:day].present? && params[:day_or_night].present?
       @day = Date.parse(params[:day])
-      @available_time_slots = calculate_available_time_slots(@day)
-      render json: @available_time_slots.map { |slot| slot.strftime("%H:%M") }
+      @day_or_night = params[:day_or_night]
+      @available_time_slots = calculate_available_time_slots(@day, @day_or_night)
+      render json: @available_time_slots.map { |slot| slot.strftime("%I:%M") }
     else
-      render json: { error: "Invalid date" }, status: :unprocessable_entity
+      render json: { error: "Invalid date or day/night selection" }, status: :unprocessable_entity
     end
   end
 
   def available_rooms
     if params[:date].present? && params[:time].present? && params[:duration].present?
       date = params[:date]
+
+      day_or_night = params[:day_or_night]
       time = params[:time]
+      time += " pm" if day_or_night == 'night'
+
       duration = params[:duration]
 
       available_rooms = current_tenant.rooms - Room.unavailable(date, time, duration)
@@ -212,10 +217,16 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def create
-    @room = current_tenant.rooms.find(params[:room_id])
-    @day = Date.parse(params[:date])
-    @hour = Time.strptime(params[:time], "%H:%M")
-    @duration = params[:duration].to_i
+    reservation_params = create_reservation_params
+
+    @room = current_tenant.rooms.find(reservation_params[:room_id])
+    @day = Date.parse(reservation_params[:date])
+
+    @day_or_night = reservation_params[:day_or_night]
+    @hour = Time.strptime(reservation_params[:time], "%I:%M")
+    @hour += 12.hours if @day_or_night == 'night'
+
+    @duration = reservation_params[:duration].to_i
     parse_time
 
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
@@ -249,6 +260,10 @@ class Operator::ReservationsController < Operator::BaseController
 
   def staff
     current_user.admin? || current_user.general_manager? || current_user.community_manager?
+  end
+
+  def create_reservation_params
+    params.permit(:room_id, :date, :time, :duration, :day_or_night)
   end
 
   def reservation_params
