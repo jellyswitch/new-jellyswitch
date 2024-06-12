@@ -14,8 +14,26 @@
 }
 
 /* Reservation Calendar */
+.full-calendar-container {
+    padding: 3rem;
+
+    .fc-scroller.fc-day-grid-container {
+        height: unset !important;
+    }
+}
+
 #reservation-fullcalendar {
     width: 50%;
+}
+
+@media (max-width: 768px) {
+    .full-calendar-container {
+        padding: 2rem 0;
+    }
+
+    #reservation-fullcalendar {
+        width: 100% !important;
+    }
 }
 
 @media (max-width: 1490px) {
@@ -24,11 +42,6 @@
     }
 }
 
-@media (max-width: 768px) {
-    #reservation-fullcalendar {
-        width: 100%;
-    }
-}
 
 /* Calendar Direction */
 .fc {
@@ -68,6 +81,27 @@ body .fc {
     font-size: 1em;
     white-space: nowrap;
     cursor: pointer;
+
+    background: white;
+    color: black;
+    border: 1px solid #dee2e6;
+    padding: 8px 14px !important;
+
+    &:disabled {
+        background: white;
+        color: black;
+        border: 1px solid #dee2e6;
+    }
+
+    &:not(:disabled) {
+
+        &:hover,
+        &:active {
+            background-color: #dcdcdc !important;
+            border: 1px solid #dee2e6 !important;
+            color: black !important;
+        }
+    }
 }
 
 .fc button::-moz-focus-inner {
@@ -1349,20 +1383,24 @@ h2 {
     font-size: 15px !important;
     text-transform: capitalize;
     font-weight: 700;
-    letter-spacing: 2.5px;
+    letter-spacing: 1.5px;
     font-family: 'Nunito', sans-serif;
     box-shadow: none !important;
     border: 0;
-    padding: 10px 20px !important;
+    padding: 10px 14px !important;
+}
+
+.cancel-btn {
+    background: transparent !important;
+    color: #343a40 !important;
+
+    &:hover {
+        color: black !important;
+    }
 }
 
 .btn:focus {
     box-shadow: none;
-}
-
-.btn.btn-primary {
-    background: #002147;
-    color: #ffffff;
 }
 
 .form-group label {
@@ -1495,6 +1533,20 @@ h2 {
 }
 
 // Room Details
+.rooms-select-container {
+    position: relative;
+
+    #rooms-select {
+        -webkit-appearance: none;
+        appearance: none;
+        background-image: image-url('chervon-down.png');
+        background-size: 24px;
+        background-repeat: no-repeat;
+        background-position: 100% center;
+    }
+}
+
+
 .room-details {
     margin-top: 1rem;
     padding: 0 4px;

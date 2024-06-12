@@ -2,7 +2,7 @@
 <%= stylesheet_link_tag "reservation_calendar", media: "all" %>
 
 <div id="reservation-calendar-container">
-  <div class="p-5">
+  <div class="full-calendar-container">
     <h2 class="mb-4">Reservation Date</h2>
     <div class="card">
       <div class="card-body p-0">
@@ -58,8 +58,10 @@
             <div class="form-group available-room-group d-none mb-0">
               <label>Available Room</label>
               <div id="rooms-container">
-                <select id="rooms-select" class="form-control" name="room_id">
-                </select>
+                <div class="rooms-select-container">
+                  <select id="rooms-select" class="form-control" name="room_id">
+                  </select>
+                </div>
 
                 <div class="room-details d-none">
                   <label>Room Details</label>
@@ -85,8 +87,8 @@
             </div>
         </div>
           <div class="modal-footer">
-          <button type="submit" class="btn btn-primary" disabled>Confirm</button>
-          <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-dark cancel-btn" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-dark" disabled>Confirm</button>
         </div>
         </form>
       </div>
