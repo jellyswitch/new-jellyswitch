@@ -4,7 +4,7 @@
   <%= list_item do %>
     <h4 class="display-4 text-center mt-4">Welcome!</h4>
     <p class="lead text-center mb-3 mt-3">Please select an option below.</p>
-  <% end %>    
+  <% end %>
 
   <% if current_location.hourly_enabled? %>
     <%= list_item do %>
@@ -40,6 +40,10 @@
   <% end %>
 
   <% if policy(:room).enabled? && current_location.rentable_rooms_enabled? %>
+    <%= list_item do %>
+      <%= render(MemberOnboarding::AvailableNow.new(available_rooms_now: @available_rooms_now)) %>
+    <% end %>
+
     <%= list_item do %>
       <%= render(MemberOnboarding::Rooms.new(rooms: @rooms)) %>
     <% end %>

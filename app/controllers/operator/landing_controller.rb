@@ -1,4 +1,3 @@
-
 class Operator::LandingController < Operator::BaseController
   before_action :background_image
   include LandingHelper
@@ -91,6 +90,8 @@ class Operator::LandingController < Operator::BaseController
     @plans = current_tenant.plans.for_individuals.order("amount_in_cents DESC")
     @plan = current_tenant.plans.available.visible.individual.cheapest
     @rooms = current_location.rooms.visible.rentable
+
+    @available_rooms_now = @rooms.available
   end
 
   def upgrade
@@ -123,6 +124,6 @@ class Operator::LandingController < Operator::BaseController
 
   def find_doors
     @doors = Door.all
-    @doors = @doors.reject{|door| door.private? } unless admin?
+    @doors = @doors.reject { |door| door.private? } unless admin?
   end
 end

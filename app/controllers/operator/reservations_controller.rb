@@ -182,7 +182,11 @@ class Operator::ReservationsController < Operator::BaseController
 
       duration = params[:duration]
 
-      available_rooms = current_tenant.rooms - Room.unavailable(date, time, duration)
+      available_rooms = current_location.rooms.available(date: date, time: time, duration: duration)
+
+      if !current_user.can_see_all_rooms?(current_location)
+        available_rooms = available_rooms.rentable
+      end
 
       render json: available_rooms, only: [:id, :name, :photo, :capacity, :hourly_rate_in_cents]
     else
