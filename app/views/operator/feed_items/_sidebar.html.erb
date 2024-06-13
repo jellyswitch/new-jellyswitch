@@ -8,7 +8,7 @@
     <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-clipboard"></i>
     <% end %>
-    
+
     <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-question"></i>
     <% end %>
@@ -29,7 +29,7 @@
 
 <%= list_wrapper do %>
   <li class="list-group-item m-0 pt-3 pb-2" style="border-bottom: 0px;">
-    <h5>What's Happening?</h5>  
+    <h5>What's Happening?</h5>
   </li>
 
   <% if policy(:room).enabled? %>
@@ -61,7 +61,7 @@
         </div>
       </div>
     <% end %>
-  
+
   <% end %>
 
   <% if policy(:childcare).enabled? %>
@@ -160,6 +160,12 @@
         <div class="list-group list-group-flush">
 
           <% if policy(:room).enabled? %>
+            <%= link_to calendar_reservations_path(reserve_now: true), class: "list-group-item list-group-item-action" do %>
+              <i class="fas fa-calendar-alt"></i>
+              &nbsp;
+              Reserve now
+            <% end %>
+
             <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
               <i class="fas fa-briefcase"></i>
               &nbsp;

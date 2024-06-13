@@ -162,6 +162,7 @@ class Operator::ReservationsController < Operator::BaseController
       @nearest_time_slot = calculate_nearest_time_slot(@current_date)
       @day_or_night = @nearest_time_slot.hour < 12 ? "day" : "night" if @nearest_time_slot
     end
+    background_image
   end
 
   def available_time_slots
