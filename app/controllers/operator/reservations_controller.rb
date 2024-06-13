@@ -1,4 +1,3 @@
-
 class Operator::ReservationsController < Operator::BaseController
   before_action :background_image
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
@@ -80,13 +79,13 @@ class Operator::ReservationsController < Operator::BaseController
     token = params[:stripeToken]
 
     result = Billing::Reservations::UpdateBillingAndCreateRoomReservation.call(reservation_params: {
-      datetime_in: @datetime_in,
-      hours: @duration,
-      minutes: @duration.to_i,
-      room: @room
-    }, user: current_user,
-    token: token,
-    out_of_band: false)
+                                                                                 datetime_in: @datetime_in,
+                                                                                 hours: @duration,
+                                                                                 minutes: @duration.to_i,
+                                                                                 room: @room,
+                                                                               }, user: current_user,
+                                                                               token: token,
+                                                                               out_of_band: false)
     @reservation = result.reservation
 
     if result.success?
@@ -104,7 +103,6 @@ class Operator::ReservationsController < Operator::BaseController
         turbo_redirect(wait_path, action: restore_if_possible)
       end
     end
-
   end
 
   def create_reservation
@@ -115,11 +113,11 @@ class Operator::ReservationsController < Operator::BaseController
     parse_time
 
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
-      datetime_in: @datetime_in,
-      hours: @duration,
-      minutes: @duration.to_i,
-      room: @room
-    }, user: @user)
+                                                                 datetime_in: @datetime_in,
+                                                                 hours: @duration,
+                                                                 minutes: @duration.to_i,
+                                                                 room: @room,
+                                                               }, user: @user)
 
     @reservation = result.reservation
 
@@ -159,6 +157,11 @@ class Operator::ReservationsController < Operator::BaseController
   # New 'Reservation Now' flow
 
   def calendar
+    if params[:reserve_now]
+      @current_date = Time.zone.today
+      @nearest_time_slot = calculate_nearest_time_slot(@current_date)
+      @day_or_night = @nearest_time_slot.hour < 12 ? "day" : "night" if @nearest_time_slot
+    end
   end
 
   def available_time_slots
@@ -178,7 +181,7 @@ class Operator::ReservationsController < Operator::BaseController
 
       day_or_night = params[:day_or_night]
       time = params[:time]
-      time += " pm" if day_or_night == 'night'
+      time += " pm" if day_or_night == "night"
 
       duration = params[:duration]
 
@@ -213,7 +216,7 @@ class Operator::ReservationsController < Operator::BaseController
         av: room.av,
         whiteboard: room.whiteboard,
         reservation_price: reservation_price,
-        should_charge: should_charge
+        should_charge: should_charge,
       }
     else
       render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
@@ -228,17 +231,17 @@ class Operator::ReservationsController < Operator::BaseController
 
     @day_or_night = reservation_params[:day_or_night]
     @hour = Time.strptime(reservation_params[:time], "%I:%M")
-    @hour += 12.hours if @day_or_night == 'night'
+    @hour += 12.hours if @day_or_night == "night"
 
     @duration = reservation_params[:duration].to_i
     parse_time
 
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
-      datetime_in: @datetime_in,
-      hours: @duration / 60,
-      minutes: @duration.to_i,
-      room: @room
-    }, user: current_user)
+                                                                 datetime_in: @datetime_in,
+                                                                 hours: @duration / 60,
+                                                                 minutes: @duration.to_i,
+                                                                 room: @room,
+                                                               }, user: current_user)
 
     @reservation = result.reservation
 
@@ -253,7 +256,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   private
 
-  def find_reservation(key=:id)
+  def find_reservation(key = :id)
     @reservation = Reservation.find(params[key]).decorate
   end
 
@@ -277,7 +280,7 @@ class Operator::ReservationsController < Operator::BaseController
     params.require(:reservation).permit(:room_id, :datetime_in, :hours)
   end
 
-  def flatten_date_array hash
+  def flatten_date_array(hash)
     %w(1 2 3).map { |e| hash["date(#{e}i)"].to_i }
   end
 

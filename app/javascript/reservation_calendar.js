@@ -3,12 +3,13 @@ $(document).ready(function () {
     class ReservationCalendar {
         constructor() {
             this.initializeCalendar();
-            this.initializeDatepicker();
             this.handleDurationChange();
             this.handleRoomSelectionChange();
             this.handleFormSubmission();
             this.handleDayNightSelection();
             this.handleModalClose();
+
+            this.handleReserveNowFlow();
         }
 
         initializeCalendar() {
@@ -24,12 +25,14 @@ $(document).ready(function () {
             });
         }
 
-        initializeDatepicker() {
-            $('.reservation-date-input').datepicker({
-                timepicker: false,
-                language: 'en',
-                dateFormat: 'yyyy-mm-dd'
-            });
+        handleReserveNowFlow() {
+            const currentDate = $('input[name="date"]').val();
+            const availableTimeSlot = $("input[name='time']").val();
+            const dayOrNight = $('input[name="day-light-options"]:checked').val();
+
+            if (currentDate && dayOrNight) {
+                this.prefillReservationForm(currentDate, availableTimeSlot, dayOrNight);
+            }
         }
 
         handleDurationChange() {
@@ -78,9 +81,8 @@ $(document).ready(function () {
             this.highlightSelectedDate(formattedDate);
             const displayDate = date.format('MMMM D, YYYY');
             this.updateDateDisplay(displayDate);
-            this.setDatepickerDate(date._d);
+            this.setInputDate(formattedDate);
             this.showEventModal();
-            this.clearSelections();
 
             const dayOrNight = $('input[name="day-light-options"]:checked').val();
             this.fetchAvailableTimeSlots(formattedDate, dayOrNight);
@@ -106,7 +108,7 @@ $(document).ready(function () {
 
         handleModalClose() {
             $('#modal-view-event-add').on('hidden.bs.modal', () => {
-                $('#day-radio').prop('checked', true); // Reset to "day" option
+                this.clearSelections();
             });
         }
 
@@ -125,13 +127,14 @@ $(document).ready(function () {
             });
         }
 
-        fetchAvailableTimeSlots(date, dayOrNight) {
+        fetchAvailableTimeSlots(date, dayOrNight, callback = null) {
             $.ajax({
                 url: '/reservations/available_time_slots',
                 method: 'GET',
                 data: { day: date, day_or_night: dayOrNight },
                 success: (response) => {
                     this.renderTimeSlots(response);
+                    callback && callback();
                 },
                 error: (xhr, status, error) => {
                     console.error('Error fetching time slots:', error);
@@ -178,6 +181,18 @@ $(document).ready(function () {
         }
 
         // Utility Functions
+        prefillReservationForm(date, time, dayOrNight) {
+            const dayClickDate = moment(date).startOf('day');
+
+            this.handleDayClick(dayClickDate);
+
+            $(`input[name="day-light-options"][value="${dayOrNight}"]`).prop('checked', true);
+
+            this.fetchAvailableTimeSlots(date, dayOrNight, () => {
+                time && $(`.time-slot:contains("${time}")`).click();
+            });
+        }
+
         highlightSelectedDate(date) {
             $('.selected-date').removeClass('selected-date');
             $(`td.fc-day[data-date="${date}"]`).addClass('selected-date');
@@ -188,9 +203,8 @@ $(document).ready(function () {
             $('.date-value').text(date);
         }
 
-        setDatepickerDate(date) {
-            const datepickerElement = $('.reservation-date-input').datepicker().data('datepicker');
-            datepickerElement.selectDate(date);
+        setInputDate(date) {
+            $('.reservation-date-input').val(date);
         }
 
         showEventModal() {
