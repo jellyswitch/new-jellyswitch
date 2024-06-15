@@ -126,7 +126,7 @@ Rails.application.routes.draw do
   resources :childcare, controller: "operator/childcare"
   resources :child_profiles, controller: "operator/child_profiles"
   resources :childcare_reservations, controller: "operator/childcare_reservations" do
-    collection do 
+    collection do
       get :select_slot, to: "operator/childcare_reservations#select_slot"
     end
   end
@@ -200,7 +200,7 @@ Rails.application.routes.draw do
   end
   resources :leads, controller: "operator/leads"
   resources :lead_notes, controller: "operator/lead_notes"
-  resources :locations, controller: "operator/locations" do 
+  resources :locations, controller: "operator/locations" do
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
     get :visible, to: "operator/locations#visible"
@@ -286,7 +286,7 @@ Rails.application.routes.draw do
     get :toggle_availability, to: "operator/plans#toggle_availability"
     get :toggle_building_access, to: "operator/plans#toggle_building_access"
     post :unarchive, to: "operator/plans#unarchive"
-    collection do 
+    collection do
       get :archived, to: "operator/plans#archived"
     end
   end
@@ -306,7 +306,7 @@ Rails.application.routes.draw do
       get :checkins
     end
   end
-  resources :reservations, controller: "operator/reservations", except: [:index, :new, :create] do
+  resources :reservations, controller: "operator/reservations", except: [:index, :new] do
     collection do
       get :choose_day, to: "operator/reservations#choose_day"
       get :choose_time, to: "operator/reservations#choose_time"
@@ -317,6 +317,11 @@ Rails.application.routes.draw do
       get :create_reservation, to: "operator/reservations#create_reservation"
       post :update_billing_and_create_reservation, to: "operator/reservations#update_billing_and_create_reservation"
       get :today, to: "operator/reservations#today"
+
+      get :calendar, to: "operator/reservations#calendar"
+      get :available_time_slots, to: "operator/reservations#available_time_slots"
+      get :available_rooms, to: "operator/reservations#available_rooms"
+      get :room_price_and_details, to: "operator/reservations#room_price_and_details"
     end
   end
   resources :rooms, controller: "operator/rooms", except: [:destroy] do

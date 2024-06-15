@@ -1,0 +1,97 @@
+<%= javascript_include_tag "reservation_calendar.js" %>
+<%= stylesheet_link_tag "reservation_calendar", media: "all" %>
+
+<div id="reservation-calendar-container">
+  <div class="full-calendar-container">
+    <h2 class="mb-4">Reservation Date</h2>
+    <div class="card">
+      <div class="card-body p-0">
+        <div class="mx-auto" id="reservation-fullcalendar"></div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-view-event-add" class="modal modal-top fade calendar-modal">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <form id="add-reservation" method="post">
+          <div class="modal-body">
+          <h4>Reservation Details</h4>
+            <div class="form-group">
+              <label>Date</label>
+              <p class="date-value"></p>
+              <input type='date' class="reservation-date-input form-control" name="date" value="<%= @current_date %>" hidden>
+            </div>
+            <div class="form-group">
+              <div class="row justify-content-between align-items-center mx-0 mb-1">
+                <label>Start Time</label>
+                <div class="day-light-radio-container">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="day-light-options" id="day-radio" value="day" <%= 'checked' if @day_or_night == 'day' || @day_or_night.blank? %> >
+                    <label class="form-check-label" for="day-radio">Day (AM)</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="day-light-options" id="night-radio" value="night" <%= 'checked' if @day_or_night == 'night' %> >
+                    <label class="form-check-label" for="night-radio">Night (PM)</label>
+                  </div>
+                </div>
+              </div>
+              <div id="time-slots-container"></div>
+              <input type='text' class="form-control" name="time" hidden value="<%= @nearest_time_slot&.strftime("%I:%M") %>">
+            </div>
+
+             <div class="form-group duration-group d-none">
+              <label>Meeting Duration</label>
+              <div id="duration-slots-container">
+                <div class="duration-slot" data-duration="30">30 minutes</div>
+                <div class="duration-slot" data-duration="60">1 hour</div>
+                <div class="duration-slot" data-duration="90">1.5 hours</div>
+                <div class="duration-slot" data-duration="120">2 hours</div>
+                <div class="duration-slot" data-duration="180">3 hours</div>
+                <div class="duration-slot" data-duration="240">4 hours</div>
+                <div class="duration-slot" data-duration="480">8 hours</div>
+              </div>
+              <input type='text' class="form-control" name="duration" hidden>
+            </div>
+
+            <div class="form-group available-room-group d-none mb-0">
+              <label>Available Room</label>
+              <div id="rooms-container">
+                <div class="rooms-select-container">
+                  <select id="rooms-select" class="form-control" name="room_id">
+                  </select>
+                </div>
+
+                <div class="room-details d-none">
+                  <label>Room Details</label>
+
+                  <div class="details-label hourly-price">Hourly Price:
+                    <span class="details-value"></span>
+                  </div>
+
+                  <div class="details-label room-capacity">Capacity:
+                    <span class="details-value"></span>
+                  </div>
+
+                  <div class="details-label room-amenities">Amenities:
+                    <span class="details-value"></span>
+                  </div>
+                </div>
+
+                <div class="price-container d-none">
+                  <label class="mb-0">Total Price:</label>
+                  <div class="price-value"></div>
+                </div>
+              </div>
+            </div>
+        </div>
+          <div class="modal-footer">
+          <button type="button" class="btn btn-dark cancel-btn" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-dark" disabled>Confirm</button>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<h5 class="card-title">
+    Select Reservation Date
+</h5>
+<p class="card-text">
+    Choose a date from the calendar below to reserve a meeting room at <%= current_location.name %>. Once you have selected a date, you can proceed with your reservation.
+</p>
+<p class="card-text">
+  <%= link_to "Reserve Now", calendar_reservations_path(reserve_now: true), class: "btn btn-block btn-success", data: { turbo: false } %>
+  <%= link_to "Reserve Later", calendar_reservations_path, class: "btn btn-block btn-primary", data: { turbo: false } %>
+</p>
+</p>

@@ -55,6 +55,7 @@ gem 'turbo-rails'
 gem 'uglifier', '>= 1.3.0'
 gem 'view_component'
 gem 'working_hours'
+gem 'timecop'
 
 group :development do
   gem 'annotate'

@@ -129,6 +129,10 @@
 
       <% if policy(:room).enabled? && current_location.rooms.visible.count > 0 %>
         <%= list_item do %>
+          <%= render "shared/reserve_now_card" %>
+        <% end %>
+
+        <%= list_item do %>
           <%= render "shared/reservations_card" %>
         <% end %>
       <% end %>
