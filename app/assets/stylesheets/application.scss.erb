@@ -1,45 +1,47 @@
 /*
- * This is a manifest file that'll be compiled into application.css, which will include all the files
- * listed below.
- *
- * Any CSS (and SCSS, if configured) file within this directory, lib/assets/stylesheets, or any plugin's
- * vendor/assets/stylesheets directory can be referenced here using a relative path.
- *
- * You're free to add application-wide styles to this file and they'll appear at the bottom of the
- * compiled file so the styles you add here take precedence over styles defined in any other CSS
- * files in this directory. Styles in this file should be added after the last require_* statement.
- * It is generally better to create a new file per style scope.
- *
- */
+* This is a manifest file that'll be compiled into application.css, which will
+include all the files
+* listed below.
+*
+* Any CSS (and SCSS, if configured) file within this directory,
+lib/assets/stylesheets, or any plugin's
+* vendor/assets/stylesheets directory can be referenced here using a relative
+path.
+*
+* You're free to add application-wide styles to this file and they'll appear at
+the bottom of the
+* compiled file so the styles you add here take precedence over styles defined
+in any other CSS
+* files in this directory. Styles in this file should be added after the last
+require_* statement.
+* It is generally better to create a new file per style scope.
+*
+*/
 
- /* import the necessary Bootstrap files */
+/* import the necessary Bootstrap files */
 @import "bootstrap/functions";
 @import "bootstrap/variables";
 @import "bootstrap/mixins";
 @import "organization";
 @import "trix";
 @import "simple_calendar";
-@import "reservation_calendar";
 
 .simple-calendar .past {
   background: #DDD;
 }
 
-<% ["primary", "secondary", "success", "danger", "info", "warning", "light", "dark"].each do |color| %>
+<% ["primary",
+"secondary",
+"success",
+"danger",
+"info",
+"warning",
+"light",
+"dark"].each do |color| %><% if Rails.application.config.x.customization.send(color.to_sym).present? %>$<%=color %>-color: #<%=Rails.application.config.x.customization.send(color.to_sym) %>;
 
-  <% if Rails.application.config.x.customization.send(color.to_sym).present? %>
+<% else %>$<%=color %>-color: map-get($theme-colors, '<%= color %>');
 
-    $<%= color %>-color: #<%= Rails.application.config.x.customization.send(color.to_sym) %>;
-
-  <% else %>
-
-    $<%= color %>-color: map-get($theme-colors, '<%= color %>');
-
-  <% end %>
-
-<% end %>
-
-$theme-colors: (
+<% end %><% end %>$theme-colors: (
   "primary": $primary-color,
   "secondary": $secondary-color,
   "success": $success-color,
@@ -50,13 +52,13 @@ $theme-colors: (
   "dark": $dark-color
 );
 
-
 /* finally, import Bootstrap */
 @import "bootstrap";
 
 /* Fix zoom issue on iOS */
 
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
+
   select,
   textarea,
   input {
@@ -70,6 +72,7 @@ $theme-colors: (
   .display-4 {
     font-size: 2rem;
   }
+
   .lead {
     font-size: 1rem;
   }
@@ -81,7 +84,9 @@ span.trix-button-group--history-tools {
   display: none;
 }
 
-.trix-button--icon-strike, .trix-button--icon-decrease-nesting-level, .trix-button--icon-increase-nesting-level {
+.trix-button--icon-strike,
+.trix-button--icon-decrease-nesting-level,
+.trix-button--icon-increase-nesting-level {
   display: none;
 }
 
@@ -143,11 +148,29 @@ input[type="submit"]:disabled {
 }
 
 button {
-  .show-when-enabled { display: initial; }
-  .show-when-disabled { display: none; }
+  .show-when-enabled {
+    display: initial;
+  }
+
+  .show-when-disabled {
+    display: none;
+  }
 
   &[disabled] {
-    .show-when-enabled { display: none; }
-    .show-when-disabled { display: initial; }
+    .show-when-enabled {
+      display: none;
+    }
+
+    .show-when-disabled {
+      display: initial;
+    }
   }
+}
+
+.modal-body {
+  background: #F3F5F9;
+  border-radius: 10px;
+  position: relative;
+  flex: 1 1 auto;
+  padding: 1rem;
 }
