@@ -43,10 +43,6 @@
     <%= list_item do %>
       <%= render(MemberOnboarding::AvailableNow.new(available_rooms_now: @available_rooms_now)) %>
     <% end %>
-
-    <%= list_item do %>
-      <%= render(MemberOnboarding::Rooms.new(rooms: @rooms)) %>
-    <% end %>
   <% end %>
 <% end %>
 

@@ -43,7 +43,7 @@ class Navigation::Default < SimpleDelegator
     if policy(:office).enabled?
       items << {title: "Offices & Leases", path: offices_path}
     end
-    
+
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
     end
@@ -99,10 +99,10 @@ class Navigation::Default < SimpleDelegator
     if policy(:event).enabled?
       items << {title: "Events", path: events_path}
     end
-    
+
     if user.allowed_in?(location) && user.approved?
       if policy(:room).enabled? && location.rooms.visible.count > 0
-        items << {title: "Reserve a room", path: rooms_path}
+        items << {title: "Reserve a room", path: calendar_reservations_path}
       end
 
       if policy(:door).enabled? && location.doors.count > 0
@@ -113,7 +113,7 @@ class Navigation::Default < SimpleDelegator
     if policy(:childcare).enabled?
       items << {title: "Childcare", path: childcare_index_path}
     end
-    
+
     items << {title: "My Account", path: user_path(user)}
 
     if operator.locations.count > 1
@@ -264,7 +264,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     if policy(:room).enabled? && location.rooms.visible.count > 0
-      items << {title: "Reserve a room", path: rooms_path}
+      items << {title: "Reserve a room", path: calendar_reservations_path}
     end
 
     items << {title: "My Account", path: user_path(user)}

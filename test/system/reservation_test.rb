@@ -36,31 +36,32 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text("#{@day} at #{@hour} for #{@duration}")
   end
 
-  test 'member reserve a room' do
-    @day = Time.zone.today.strftime("%m/%d/%Y")
-    @hour = Time.current.beginning_of_half_hour.strftime("%l:%M%P").strip
-    setup_stripe
+  # Remove this flow as it is not used in the application
+  # test 'member reserve a room' do
+  #   @day = Time.zone.today.strftime("%m/%d/%Y")
+  #   @hour = Time.current.beginning_of_half_hour.strftime("%l:%M%P").strip
+  #   setup_stripe
 
-    log_in(@user)
-    within 'nav' do
-      click_on 'Reserve a room'
-    end
+  #   log_in(@user)
+  #   within 'nav' do
+  #     click_on 'Reserve a room'
+  #   end
 
-    within ".room-card[data-id='#{@room.id}']" do
-      click_on 'Reserve Now'
-    end
+  #   within ".room-card[data-id='#{@room.id}']" do
+  #     click_on 'Reserve Now'
+  #   end
 
-    assert_choose_duration_step()
+  #   assert_choose_duration_step()
 
-    click_on '2 hours'
-    @duration = '120 minutes'
+  #   click_on '2 hours'
+  #   @duration = '120 minutes'
 
-    assert_confirmation_step()
+  #   assert_confirmation_step()
 
-    click_on 'Confirm Reservation'
+  #   click_on 'Confirm Reservation'
 
-    assert_complete_reservation_information()
-  end
+  #   assert_complete_reservation_information()
+  # end
 
   test 'admin reserve a room for a member' do
     @admin = users(:cowork_tahoe_admin)

@@ -131,10 +131,6 @@
         <%= list_item do %>
           <%= render "shared/reserve_now_card" %>
         <% end %>
-
-        <%= list_item do %>
-          <%= render "shared/reservations_card" %>
-        <% end %>
       <% end %>
 
       <% if policy(:post).enabled? && current_tenant.posts.count > 0 %>
