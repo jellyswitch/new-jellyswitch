@@ -102,18 +102,18 @@ class User < ApplicationRecord
             :superadmin?,
             :community_manager?,
             :general_manager?,
-            :pending?, 
+            :pending?,
             :has_active_subscription?,
-            :has_building_access_membership?, 
-            :has_active_day_pass?, 
-            :has_building_access_day_pass?, 
-            :has_active_lease?, 
-            :has_building_access_lease?, 
-            :organization_owner?, 
-            :visible?, 
+            :has_building_access_membership?,
+            :has_active_day_pass?,
+            :has_building_access_day_pass?,
+            :has_active_lease?,
+            :has_building_access_lease?,
+            :organization_owner?,
+            :visible?,
             :member_of_organization?,
-            :authenticated?, 
-            :has_profile_photo?, 
+            :authenticated?,
+            :has_profile_photo?,
             :checked_in?,
             :has_reservation?,
             :allowed_in?,
@@ -141,7 +141,7 @@ class User < ApplicationRecord
       SUPERADMIN
     ].freeze
   end
-  
+
   def search_data
     {
       name: name,
@@ -177,7 +177,7 @@ class User < ApplicationRecord
   def owned_organization
     operator.organizations.find_by(owner_id: self.id)
   end
-  
+
   def organization_name
     if organization.present?
       organization.name
@@ -190,7 +190,10 @@ class User < ApplicationRecord
     to_partial_path
   end
 
-
+  def upcoming_or_ongoing_reservation
+    reservations.ongoing.order(:datetime_in).first ||
+    reservations.future.order(:datetime_in).first
+  end
 
   # Auth Stuff
   def self.digest(string)

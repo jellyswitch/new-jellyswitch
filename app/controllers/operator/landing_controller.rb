@@ -11,6 +11,7 @@ class Operator::LandingController < Operator::BaseController
     find_doors
     @member_feedback = MemberFeedback.new
     find_upcoming_events
+    @reservation = current_user.upcoming_or_ongoing_reservation
     response.headers["Turbo-Location"] = home_url
     flash.keep
     home_redirect
