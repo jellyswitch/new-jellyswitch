@@ -5,8 +5,8 @@ class LandingTest < ApplicationSystemTestCase
 
   setup do
     @user = users(:cowork_tahoe_member)
-    @ongoing_reservation = reservations(:ongoing_room_reservation)
-
+    @ongoing_reservation = reservations(:room_reservation)
+    @ongoing_reservation.update(datetime_in: Time.zone.now)
   end
 
   test "should display the user's ongoing reservation on the page" do

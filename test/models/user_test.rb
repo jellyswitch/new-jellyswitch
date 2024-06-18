@@ -113,7 +113,8 @@ class UserTest < ActiveSupport::TestCase
 
   test 'upcoming_or_ongoing_reservation should return the ongoing reservation if exist' do
     user = users(:cowork_tahoe_member)
-    ongoing_reservation = reservations(:ongoing_room_reservation)
+    ongoing_reservation = reservations(:room_reservation)
+    ongoing_reservation.update(datetime_in: Time.zone.now)
 
     assert_equal user.upcoming_or_ongoing_reservation, ongoing_reservation
   end

@@ -34,14 +34,3 @@ future_room_reservation:
   cancelled: false
   minutes: 30
   credit_cost: 2
-
-ongoing_room_reservation:
-  user: cowork_tahoe_member
-  datetime_in: <%= Time.zone.now %>
-  hours: 2
-  room: small_meeting_room
-  created_at: <%= Time.zone.now %>
-  updated_at: <%= Time.zone.now %>
-  cancelled: false
-  minutes: 120
-  credit_cost: 2

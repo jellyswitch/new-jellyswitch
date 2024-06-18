@@ -2,7 +2,9 @@ require "test_helper"
 
 class ReservationTest < ActiveSupport::TestCase
   def setup
-    @ongoing_reservation = reservations(:ongoing_room_reservation)
+    @ongoing_reservation = reservations(:room_reservation)
+    @ongoing_reservation.update(datetime_in: Time.zone.now)
+
     @future_reservation = reservations(:future_room_reservation)
   end
 
