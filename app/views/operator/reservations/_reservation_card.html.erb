@@ -40,11 +40,11 @@
   <%- end %>
 
   <%- if policy(reservation).cancel? %>
-    <%- if reservation.room.paid_room? %>
+    <%- unless policy(reservation).destroy? %>
       <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
     <%- end %>
 
-    <button type="button" data-toggle="modal" data-target="#cancel-reservation-modal" class="btn btn-block btn-danger" <%= 'disabled' if reservation.room.paid_room? %>>Cancel this reservation</button>
+    <button type="button" data-toggle="modal" data-target="#cancel-reservation-modal" class="btn btn-block btn-danger" <%= 'disabled' unless policy(reservation).destroy? %>>Cancel this reservation</button>
   <%- end %>
 </li>
 
