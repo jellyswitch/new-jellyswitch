@@ -1,4 +1,4 @@
-<li class="list-group-item row">
+<li class="list-group-item row border-bottom-0">
   <p class="lead font-weight-bold">
     Room:
     <span class="font-weight-normal" >
@@ -40,6 +40,34 @@
   <%- end %>
 
   <%- if policy(reservation).cancel? %>
-    <p><%= link_to "Cancel this reservation", reservation_path(reservation), method: :delete, remote: true, class: "btn btn-block btn-danger" %></p>
+    <%- if reservation.room.paid_room? %>
+      <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
+    <%- end %>
+
+    <button type="button" data-toggle="modal" data-target="#cancel-reservation-modal" class="btn btn-block btn-danger" <%= 'disabled' if reservation.room.paid_room? %>>Cancel this reservation</button>
   <%- end %>
 </li>
+
+<div class="modal fade" id="cancel-reservation-modal" tabindex="-1" role="dialog" aria-labelledby="cancelReservationTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cancelReservationTitle">Cancel Reservation</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>
+          Are you sure you want to cancel your reservation for
+          <strong><%= reservation.room.name%>?</strong>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <%= link_to "Confirm", reservation_path(reservation), method: :delete, remote: true, class: "btn btn-dark" %>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>

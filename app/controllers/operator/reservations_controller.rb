@@ -134,7 +134,7 @@ class Operator::ReservationsController < Operator::BaseController
     find_reservation
     authorize @reservation
 
-    result = CancelReservation.call(reservation: @reservation)
+    result = CancelReservation.call(reservation: @reservation, current_user: current_user)
 
     if result.success?
       flash[:notice] = "Reservation cancelled."

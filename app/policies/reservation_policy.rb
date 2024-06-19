@@ -1,4 +1,3 @@
-
 class ReservationPolicy < ApplicationPolicy
   def new?
     (admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
@@ -13,11 +12,11 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    (admin? || community_manager? || general_manager? || ((user.allowed_in?(location) && approved?) || billing_disabled?))
+    (admin_or_manager? || owner?) && upcoming_reservation?
   end
 
   def cancel?
-    (admin? || community_manager? || general_manager? || (owner? && future?))
+    (admin_or_manager? || owner?) && upcoming_reservation?
   end
 
   def long_duration?
@@ -34,7 +33,11 @@ class ReservationPolicy < ApplicationPolicy
 
   private
 
-  def future?
-    record.datetime_in > Time.zone.now
+  def admin_or_manager?
+    admin? || community_manager? || general_manager?
+  end
+
+  def upcoming_reservation?
+    record.future? || record.ongoing?
   end
 end
