@@ -1,6 +1,4 @@
-
 Rails.application.routes.draw do
-
   namespace :mobile do
     get "/door_access", to: "door_access#index"
   end
@@ -12,10 +10,10 @@ Rails.application.routes.draw do
 
   ## Regular endpoints ##
   constraints subdomain: Rails.application.config.app_subdomain do
-    require 'sidekiq/web'
-    mount Sidekiq::Web => '/sidekiq'
+    require "sidekiq/web"
+    mount Sidekiq::Web => "/sidekiq"
     # Root
-    get '/', to: "landing#index"
+    get "/", to: "landing#index"
 
     # Typeform
     get :welcome, to: "landing#welcome"
@@ -323,6 +321,12 @@ Rails.application.routes.draw do
       get :available_rooms, to: "operator/reservations#available_rooms"
       get :room_price_and_details, to: "operator/reservations#room_price_and_details"
     end
+
+    member do
+      get :available_extension_durations, to: "operator/reservations#available_extension_durations"
+      get :calculate_additional_hour_price, to: "operator/reservations#calculate_additional_hour_price"
+      put :extend_reservation, to: "operator/reservations#extend_reservation"
+    end
   end
   resources :rooms, controller: "operator/rooms", except: [:destroy] do
     get "day/:day/:month/:year", to: "operator/rooms#day", as: :day_availability
@@ -334,7 +338,7 @@ Rails.application.routes.draw do
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
   resources :subscriptions, controller: "operator/subscriptions"
-  delete 'destroy_subscription_now/:id', to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
+  delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
     collection do
       get "add_member", to: "operator/users#add_member"

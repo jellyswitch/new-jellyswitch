@@ -78,4 +78,8 @@ class Reservation < ApplicationRecord
   def charge_description
     "#{room.location.operator.name} room reservation for #{pretty_datetime}"
   end
+
+  def is_charged?
+    !user.admin_or_manager? && Invoice.where("created_at >= ? AND amount_due > 0", self.created_at).where(billable_type: "User", billable_id: user.id).select { |invoice| invoice.description == self.charge_description }.any?
+  end
 end

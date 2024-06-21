@@ -43,33 +43,6 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text(@duration)
   end
 
-  # Remove this flow as it is not used in the application
-  # test 'member reserve a room' do
-  #   @day = Time.zone.today.strftime("%m/%d/%Y")
-  #   @hour = Time.current.beginning_of_half_hour.strftime("%l:%M%P").strip
-  #   setup_stripe
-
-  #   log_in(@user)
-  #   within 'nav' do
-  #     click_on 'Reserve a room'
-  #   end
-
-  #   within ".room-card[data-id='#{@room.id}']" do
-  #     click_on 'Reserve Now'
-  #   end
-
-  #   assert_choose_duration_step()
-
-  #   click_on '2 hours'
-  #   @duration = '120 minutes'
-
-  #   assert_confirmation_step()
-
-  #   click_on 'Confirm Reservation'
-
-  #   assert_complete_reservation_information()
-  # end
-
   test "admin reserve a room for a member" do
     @admin = users(:cowork_tahoe_admin)
     @day = Time.zone.today.strftime("%m/%d/%Y")
@@ -128,5 +101,65 @@ class ReservationTest < ApplicationSystemTestCase
 
     assert_text("Note: If you want to cancel this paid reservation room, please contact our workspace admin for assistance.")
     assert_selector "button[data-target='#cancel-reservation-modal'][disabled]", visible: true
+  end
+
+  test "charging user for extra hours in the reservation when they book the reservation at first without membership" do
+    # Setup
+    @user = users(:cowork_tahoe_member)
+    log_in @user
+    @room.update(hourly_rate_in_cents: 5000)
+
+    invoice = invoices(:paid_invoice)
+    invoice.update(billable: @user, amount_due: 5000, created_at: @reservation.created_at + 1.hour)
+    stripe_invoice = Stripe::Invoice.create(
+      customer: @user.stripe_customer_id,
+      currency: "usd",
+      amount: 2500,
+      number: invoice.number,
+      description: "test invoice",
+    )
+
+    Invoice.where.not(id: invoice.id).destroy_all # Remove other invoices
+    Invoice.any_instance.stubs(:description).returns(@reservation.charge_description)
+    Stripe::Invoice.any_instance.stubs(:number).returns(invoice.number)
+
+    sleep 1
+    # Test
+    visit reservation_path(@reservation)
+
+    assert_text "30 minutes"
+
+    click_on "Extend booking time"
+    select "1 hour", from: "extension-duration"
+
+    assert_text "$50.00"
+    click_on "Pay & Confirm"
+
+    assert_equal find(".alert-info").text, "Reservation extended successfully."
+    assert_text "90 minutes"
+  end
+
+  test "not charging user for extra hours in the reservation when they do not have to pay at the beginning" do
+    # Setup
+    @user = users(:cowork_tahoe_member)
+    log_in @user
+    @room.update(hourly_rate_in_cents: 5000)
+
+    Invoice.destroy_all # Remove all invoices
+
+    sleep 1
+    # Test
+    visit reservation_path(@reservation)
+
+    assert_text "30 minutes"
+
+    click_on "Extend booking time"
+    select "2 hours", from: "extension-duration"
+
+    assert_text "Free"
+    click_on "Pay & Confirm"
+
+    assert_equal find(".alert-info").text, "Reservation extended successfully."
+    assert_text "150 minutes"
   end
 end

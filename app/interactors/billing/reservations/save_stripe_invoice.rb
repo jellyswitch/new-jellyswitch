@@ -1,18 +1,26 @@
 class Billing::Reservations::SaveStripeInvoice
   include Interactor
 
-  delegate :user, :reservation, to: :context
+  delegate :user, :reservation, :is_extend, :additional_duration, to: :context
 
   def call
     location = reservation.room.location
     operator = location.operator
     reservation_day = reservation.datetime_in.to_date
 
-    if user.should_charge_for_reservation?(location, reservation_day)
+    should_charge = user.should_charge_for_reservation?(location, reservation_day)
+    charge_amount = reservation.charge_amount
+
+    if is_extend
+      should_charge = reservation.is_charged?
+      charge_amount = ((reservation.room.hourly_rate_in_cents / 60.0) * additional_duration).to_i
+    end
+
+    if should_charge
       @invoice_item = Stripe::InvoiceItem.create({
         customer: reservation.user.stripe_customer_id,
         currency: "usd",
-        amount: reservation.charge_amount,
+        amount: charge_amount,
         description: reservation.charge_description,
       }, {
         api_key: operator.stripe_secret_key,

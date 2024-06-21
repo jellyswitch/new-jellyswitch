@@ -1,3 +1,5 @@
+<%= javascript_include_tag "reservation_details.js" %>
+
 <li class="list-group-item row border-bottom-0">
   <p class="lead font-weight-bold">
     Room:
@@ -9,7 +11,7 @@
   <p class="lead font-weight-bold">
     Time:
     <span class="font-weight-normal">
-     <%= reservation.pretty_datetime %>
+     <%= pretty_datetime(reservation.datetime_in) %> - <%= pretty_datetime(reservation.datetime_out) %>
     </span>
   </p>
 
@@ -39,17 +41,23 @@
     </p>
   <%- end %>
 
-  <%- if policy(reservation).cancel? %>
-    <%- unless policy(reservation).destroy? %>
-      <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
-    <%- end %>
+  <%- unless policy(reservation).destroy? %>
+    <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
+  <%- end %>
 
+  <div class="text-center mt-3">
+    <button id="extend-button" type="button" class="btn btn-block btn-primary mb-2" data-toggle="modal" data-target="#extend-reservation-modal" data-reservation-id="<%= reservation.id %>">
+      Extend booking time
+    </button>
+  </div>
+
+  <%- if policy(reservation).cancel? %>
     <button type="button" data-toggle="modal" data-target="#cancel-reservation-modal" class="btn btn-block btn-danger" <%= 'disabled' unless policy(reservation).destroy? %>>Cancel this reservation</button>
   <%- end %>
 </li>
 
 <div class="modal fade" id="cancel-reservation-modal" tabindex="-1" role="dialog" aria-labelledby="cancelReservationTitle" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="cancelReservationTitle">Cancel Reservation</h5>
@@ -67,6 +75,48 @@
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <%= link_to "Confirm", reservation_path(reservation), method: :delete, remote: true, class: "btn btn-dark" %>
       </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="extend-reservation-modal" tabindex="-1" role="dialog" aria-labelledby="extendReservationModalLabel" aria-hidden="true">
+  <div class="modal-dialog mt" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h6 class="modal-title" id="extendReservationModalLabel">Extend Reservation</h6>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="extension-duration" class="font-weight-bold">Select Additional Duration:</label>
+        <select name="extension-duration" id="extension-duration" class="form-control">
+          <option value="30" class="duration-slot">30 minutes</option>
+          <option value="60" class="duration-slot">1 hour</option>
+          <option value="90" class="duration-slot">1 hour and 30 minutes</option>
+          <option value="120" class="duration-slot">2 hours</option>
+          <option value="180" class="duration-slot">3 hours</option>
+          <option value="240" class="duration-slot">4 hours</option>
+          <option value="480" class="duration-slot">8 hours</option>
+        </select>
+        <small class="form-text text-muted">Unavailable options will be disabled.</small>
+
+
+        <div class="mt-3">
+          <label class="font-weight-bold">Reservation Details Preview</label>
+          <p class="mb-1 d-flex justify-content-between" style="font-weight: 500">End Time:
+            <span id="new-reservation-end-time" class="font-weight-normal"></span>
+          </p>
+
+          <p class="mb-1 d-flex justify-content-between" style="font-weight: 500">Additional Price:
+            <span id="additional-price" class="font-weight-normal"></span>
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="confirm-extension">Pay & Confirm</button>
       </div>
     </div>
   </div>

@@ -68,6 +68,27 @@ class Room < ApplicationRecord
     reservations.for_time(timestamp.beginning_of_half_hour).blank?
   end
 
+  def available?(start_time:, duration:)
+    end_time = start_time.in_time_zone + duration.minutes
+
+    reservations.where("datetime_in < ? AND (datetime_in + minutes * interval \'1 minute\')  > ?", end_time, start_time).blank?
+  end
+
+  def calculate_available_durations(start_time:)
+    possible_durations = [30, 60, 90, 120, 180, 240, 480]
+    available_durations = []
+
+    possible_durations.each do |duration|
+      if available?(start_time: start_time, duration: duration)
+        available_durations << duration
+      else
+        break
+      end
+    end
+
+    available_durations
+  end
+
   def has_photo?
     photo.attached?
   end

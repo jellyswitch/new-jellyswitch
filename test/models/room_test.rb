@@ -43,4 +43,49 @@ class RoomTest < ActiveSupport::TestCase
 
     assert_includes Room.available, free_room
   end
+
+  test "available? returns true when room is available for the given time, and duration" do
+    user = users(:cowork_tahoe_member)
+
+    available_room = rooms(:small_meeting_room)
+    available_room.reservations.destroy_all # Ensure room is available
+
+    assert available_room.available?(start_time: Time.zone.now, duration: 120)
+  end
+
+  test "available? returns false when room is occupied for the given time, and duration" do
+    user = users(:cowork_tahoe_member)
+
+    available_room = rooms(:small_meeting_room)
+
+    reserved_time = Time.zone.now.change(hour: 15)
+    reservation = reservations(:room_reservation).update(datetime_in: reserved_time, minutes: 30)
+
+    new_reserved_time = Time.zone.now.change(hour: 14)
+    assert_not available_room.available?(start_time: new_reserved_time, duration: 120)
+  end
+
+  test "available? returns false when room is occupied exactly at the end time" do
+    available_room = rooms(:small_meeting_room)
+
+    reserved_time = Time.zone.now.change(hour: 15)
+    reservation = reservations(:room_reservation).update(datetime_in: reserved_time, minutes: 60)
+
+    end_time = reserved_time + 60.minutes
+    assert_not available_room.available?(start_time: end_time - 30.minutes, duration: 30)
+  end
+
+  test "calculate_available_durations returns an array of available durations for the given start time" do
+    user = users(:cowork_tahoe_member)
+
+    available_room = rooms(:small_meeting_room)
+
+    reserved_time = Time.zone.now.change(hour: 15)
+    reservation = reservations(:room_reservation).update(datetime_in: reserved_time, minutes: 60)
+
+    new_reserved_time = Time.zone.now.change(hour: 14)
+    available_durations = available_room.calculate_available_durations(start_time: new_reserved_time)
+
+    assert_equal available_durations, [30, 60]
+  end
 end
