@@ -43,9 +43,11 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     click_on 'Confirm'
 
-    assert_text('Reservation Confirmation')
+    assert_text('Reservation Details')
+    assert_link(@room.name, href: room_path(@room))
+    assert_link(@user.name, href: user_path(@user))
 
-    assert_text("#{@user.name} in #{@room.name}")
-    assert_text("#{@day.strftime("%m/%d/%Y")} at #{@time}pm for #{@duration_minutes} minutes")
+    assert_text("#{@day.strftime("%m/%d/%Y")} at #{@time}pm")
+    assert_text("#{@duration_minutes} minutes")
   end
 end

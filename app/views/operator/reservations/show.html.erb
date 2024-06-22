@@ -1,10 +1,12 @@
 <%- title "Reservation Confirmation" %>
 
-<%= render Layout::FullWidth.new do %>
-  <%= list_item do %>
-    <h4 class="display-4 text-center">Reservation Confirmation</h4>
-    <ul class="list-group list-group-flush">
-      <%= render "reservation_card", reservation: @reservation %>
-    </ul>
+<div class="mt-5 mx-2">
+  <%= render Layout::FullWidth.new do %>
+    <%= list_item do %>
+      <h5 class="text-center">Reservation Details</h5>
+      <ul class="list-group list-group-flush">
+        <%= render "reservation_card", reservation: @reservation %>
+      </ul>
+    <% end %>
   <% end %>
-<% end %>
+<div>

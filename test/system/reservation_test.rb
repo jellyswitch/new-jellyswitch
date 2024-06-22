@@ -30,10 +30,13 @@ class ReservationTest < ApplicationSystemTestCase
   end
 
   def assert_complete_reservation_information()
-    assert_text('Reservation Confirmation')
+    assert_text('Reservation Details')
 
-    assert_text("#{@user.name} in #{@room.name}")
-    assert_text("#{@day} at #{@hour} for #{@duration}")
+    assert_link(@room.name, href: room_path(@room))
+    assert_link(@user.name, href: user_path(@user))
+
+    assert_text("#{@day} at #{@hour}")
+    assert_text(@duration)
   end
 
   # Remove this flow as it is not used in the application
