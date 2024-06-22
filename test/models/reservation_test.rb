@@ -25,4 +25,12 @@ class ReservationTest < ActiveSupport::TestCase
 
     assert_equal @ongoing_reservation.datetime_out, expected_datetime_out
   end
+
+  test "should return true for ongoing reservation" do
+    assert @ongoing_reservation.ongoing?
+  end
+
+  test "should return true for future reservation" do
+    assert @future_reservation.future?
+  end
 end

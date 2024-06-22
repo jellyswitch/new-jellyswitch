@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: reservations
@@ -24,14 +23,14 @@ class Reservation < ApplicationRecord
 
   default_scope { where(cancelled: false) }
   scope :not_cancelled, ->() { where(cancelled: false) }
-  scope :this_month, -> () { where("datetime_in > ?", Time.current.beginning_of_month) }
-  scope :for_room, -> (room) { where(room_id: room.id) }
-  scope :for_week, -> (week_start, week_end) { where('datetime_in > ? and datetime_in <= ?', week_start, week_end) }
-  scope :for_day, -> (day) { where(datetime_in: day.beginning_of_day..day.end_of_day) }
-  scope :today, -> () { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
-  scope :future, -> () { where("datetime_in >= ?", Time.current) }
-  scope :past, -> () { where("datetime_in < ?", Time.current) }
-  scope :between, -> (time_start, time_end) { where('datetime_in > ? and datetime_in < ?', time_start, time_end) }
+  scope :this_month, ->() { where("datetime_in > ?", Time.current.beginning_of_month) }
+  scope :for_room, ->(room) { where(room_id: room.id) }
+  scope :for_week, ->(week_start, week_end) { where("datetime_in > ? and datetime_in <= ?", week_start, week_end) }
+  scope :for_day, ->(day) { where(datetime_in: day.beginning_of_day..day.end_of_day) }
+  scope :today, ->() { where(datetime_in: Time.current.beginning_of_day..Time.current.end_of_day) }
+  scope :future, ->() { where("datetime_in >= ?", Time.current) }
+  scope :past, ->() { where("datetime_in < ?", Time.current) }
+  scope :between, ->(time_start, time_end) { where("datetime_in > ? and datetime_in < ?", time_start, time_end) }
   scope :ongoing, -> { where('datetime_in < ? AND datetime_in + minutes * interval \'1 minute\' > ?', Time.current, Time.current) }
 
   delegate :operator, to: :room
@@ -62,6 +61,14 @@ class Reservation < ApplicationRecord
 
   def datetime_out
     datetime_in + minutes.minutes
+  end
+
+  def ongoing?
+    Time.zone.now.between?(datetime_in, datetime_out)
+  end
+
+  def future?
+    datetime_in > Time.zone.now
   end
 
   def charge_amount

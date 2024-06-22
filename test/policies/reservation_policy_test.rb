@@ -1,7 +1,6 @@
 require "test_helper"
 
 class ReservationPolicyTest < PolicyAssertions::Test
-
   setup do
     setup_initial_user_fixtures
   end
@@ -28,10 +27,13 @@ class ReservationPolicyTest < PolicyAssertions::Test
   end
 
   def test_destroy
-    assert_permit @member, Reservation
-    assert_permit @admin, Reservation
-    assert_permit @community_manager, Reservation
-    assert_permit @general_manager, Reservation
+    assert_permit @member, reservations(:future_room_reservation)
+    assert_permit @admin, reservations(:future_room_reservation)
+    assert_permit @community_manager, reservations(:future_room_reservation)
+    assert_permit @general_manager, reservations(:future_room_reservation)
+
+    assert_not_permitted @member, reservations(:room_reservation) # Past reservation
+    assert_not_permitted @cowork_tahoe_non_member, reservations(:future_room_reservation) # Not owner
   end
 
   def test_cancel
@@ -39,6 +41,9 @@ class ReservationPolicyTest < PolicyAssertions::Test
     assert_permit @admin, reservations(:future_room_reservation)
     assert_permit @community_manager, reservations(:future_room_reservation)
     assert_permit @general_manager, reservations(:future_room_reservation)
+
+    assert_not_permitted @member, reservations(:room_reservation) # Past reservation
+    assert_not_permitted @cowork_tahoe_non_member, reservations(:future_room_reservation) # Not owner
   end
 
   def test_long_duration

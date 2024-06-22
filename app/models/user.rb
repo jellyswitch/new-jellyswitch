@@ -88,45 +88,46 @@ class User < ApplicationRecord
   scope :admins, -> { where(role: User::ADMIN) }
   scope :community_managers, -> { where(role: User::COMMUNITY_MANAGER) }
   scope :general_managers, -> { where(role: User::GENERAL_MANAGER) }
-  scope :taggable, -> { admins.or(general_managers.or(community_managers) ) }
+  scope :taggable, -> { admins.or(general_managers.or(community_managers)) }
   scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
   # Permissions
-  delegate  :member_at_operator?,
-            :member?,
-            :has_active_subscription_at_location?,
-            :admin?,
-            :superadmin?,
-            :community_manager?,
-            :general_manager?,
-            :pending?,
-            :has_active_subscription?,
-            :has_building_access_membership?,
-            :has_active_day_pass?,
-            :has_building_access_day_pass?,
-            :has_active_lease?,
-            :has_building_access_lease?,
-            :organization_owner?,
-            :visible?,
-            :member_of_organization?,
-            :authenticated?,
-            :has_profile_photo?,
-            :checked_in?,
-            :has_reservation?,
-            :allowed_in?,
-            :should_charge_for_reservation?,
-            :can_see_all_rooms?,
-            to: :user_permissions
+  delegate :member_at_operator?,
+           :member?,
+           :has_active_subscription_at_location?,
+           :admin?,
+           :superadmin?,
+           :community_manager?,
+           :general_manager?,
+           :admin_or_manager?,
+           :pending?,
+           :has_active_subscription?,
+           :has_building_access_membership?,
+           :has_active_day_pass?,
+           :has_building_access_day_pass?,
+           :has_active_lease?,
+           :has_building_access_lease?,
+           :organization_owner?,
+           :visible?,
+           :member_of_organization?,
+           :authenticated?,
+           :has_profile_photo?,
+           :checked_in?,
+           :has_reservation?,
+           :allowed_in?,
+           :should_charge_for_reservation?,
+           :can_see_all_rooms?,
+           to: :user_permissions
 
   # Roles
-  UNASSIGNED        = 'unassigned'.freeze
-  COMMUNITY_MANAGER = 'community-manager'.freeze
-  GENERAL_MANAGER   = 'general-manager'.freeze
-  ADMIN             = 'admin'.freeze
-  SUPERADMIN        = 'superadmin'.freeze
+  UNASSIGNED = "unassigned".freeze
+  COMMUNITY_MANAGER = "community-manager".freeze
+  GENERAL_MANAGER = "general-manager".freeze
+  ADMIN = "admin".freeze
+  SUPERADMIN = "superadmin".freeze
 
   def self.role_options_for_select
     roles.map { |r| [r.titleize, r] }
@@ -138,7 +139,7 @@ class User < ApplicationRecord
       COMMUNITY_MANAGER,
       GENERAL_MANAGER,
       ADMIN,
-      SUPERADMIN
+      SUPERADMIN,
     ].freeze
   end
 
@@ -150,7 +151,7 @@ class User < ApplicationRecord
       bio: bio,
       slug: slug,
       twitter: twitter,
-      organization: organization.present? ? organization.name : nil
+      organization: organization.present? ? organization.name : nil,
     }
   end
 
@@ -307,7 +308,7 @@ class User < ApplicationRecord
         "Via cash or check"
       else
         if card_added?
-            "Credit card on file"
+          "Credit card on file"
         else
           "None"
         end
@@ -318,6 +319,7 @@ class User < ApplicationRecord
   def user_permissions
     @user_permissions ||= UserPermissions.new(self)
   end
+
   class UserPermissions < SimpleDelegator
     include Permissions
   end

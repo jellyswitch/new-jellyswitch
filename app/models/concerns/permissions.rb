@@ -72,6 +72,10 @@ module Permissions
     role == User::GENERAL_MANAGER
   end
 
+  def admin_or_manager?
+    admin? || superadmin? || community_manager? || general_manager?
+  end
+
   def pending?
     subscriptions.pending.count > 0
   end

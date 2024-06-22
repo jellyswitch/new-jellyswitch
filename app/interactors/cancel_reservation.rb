@@ -1,9 +1,9 @@
-
 class CancelReservation
   include Interactor
 
   def call
     reservation = context.reservation
+    current_user = context.current_user
 
     reservation.cancelled = true
 
