@@ -32,9 +32,10 @@ class Reservation < ApplicationRecord
   scope :future, -> () { where("datetime_in >= ?", Time.current) }
   scope :past, -> () { where("datetime_in < ?", Time.current) }
   scope :between, -> (time_start, time_end) { where('datetime_in > ? and datetime_in < ?', time_start, time_end) }
+  scope :ongoing, -> { where('datetime_in < ? AND datetime_in + minutes * interval \'1 minute\' > ?', Time.current, Time.current) }
 
   delegate :operator, to: :room
-  
+
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
@@ -57,6 +58,10 @@ class Reservation < ApplicationRecord
 
   def hours
     minutes.to_f / 60.0
+  end
+
+  def datetime_out
+    datetime_in + minutes.minutes
   end
 
   def charge_amount

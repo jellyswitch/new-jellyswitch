@@ -4,7 +4,7 @@
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
-    
+
       <% if current_location.building_access_instructions.present? %>
         <%= list_item do %>
           <%= render(AccessInstructions::CheckinInstructions.new(operator: current_tenant, location: current_location)) %>
@@ -13,11 +13,11 @@
 
       <% if policy(:door).enabled? %>
         <%= list_item do %>
-          <%= render(AccessInstructions::DoorButtons.new( 
-            operator: current_tenant, 
-            location: current_location, 
+          <%= render(AccessInstructions::DoorButtons.new(
+            operator: current_tenant,
+            location: current_location,
             mobile_app_request: mobile_app_request?,
-            has_access: active_working_hours?(current_location) || has_building_access?(current_user), 
+            has_access: active_working_hours?(current_location) || has_building_access?(current_user),
             doors: @doors)) %>
         <% end %>
       <% end %>
@@ -127,6 +127,22 @@
         <% end %>
       <% end %>
 
+      <% if policy(:room).enabled? && current_user.upcoming_or_ongoing_reservation.present? %>
+        <%= list_item do %>
+          <div class="row">
+            <div class="col">
+              <%= render "operator/reservations/time_bucket_header", date: @reservation.datetime_in %>
+            </div>
+          </div>
+
+          <div class="row mt-2">
+            <div class="col">
+              <%= render "operator/reservations/upcoming_item", reservation: @reservation %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+
       <% if policy(:room).enabled? && current_location.rooms.visible.count > 0 %>
         <%= list_item do %>
           <%= render "shared/reserve_now_card" %>
@@ -139,7 +155,7 @@
             Bulletin Board
           </h5>
         <% end %>
-        
+
         <% current_tenant.posts.order("created_at DESC").limit(2).each do |post| %>
           <%= render Posts::PostLink.new(post: post) %>
         <% end %>

@@ -1,12 +1,12 @@
 <div class="row">
-  <div class="col-4">
+  <div class="col-3">
     <% if event.image.attached? %>
       <%= image_tag event.thumbnail, class: "rounded img-fluid" %>
     <% else %>
       <%= image_tag "profile-125x125.jpg", class: "rounded img-fluid" %>
     <% end %>
   </div>
-  <div class="col-8">
+  <div class="col-9">
     <div class="row">
       <h6 class="text-danger col">
         <%= render "operator/events/timestamp", event: event %>
