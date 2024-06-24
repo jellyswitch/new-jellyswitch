@@ -1,9 +1,9 @@
 <div class="row">
   <div class="col-3 d-flex" style="height: 125px;">
     <% if reservation.room.has_photo? %>
-      <%= image_tag reservation.room.card_photo, class: "rounded w-auto flex-grow-1", style: "height: 100%;" %>
+      <%= image_tag reservation.room.card_photo, class: "rounded w-full flex-grow-1", style: "height: 100%;" %>
     <% else %>
-      <%= image_tag "profile-125x125.jpg", class: "rounded w-auto" %>
+      <%= image_tag "profile-125x125.jpg", class: "rounded w-full" %>
     <% end %>
   </div>
   <div class="col-9 d-flex flex-column justify-content-between">
