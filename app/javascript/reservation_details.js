@@ -45,18 +45,4 @@ $(document).ready(function () {
             }
         });
     });
-
-    $("#confirm-extension").off("click").on("click", function () {
-        const reservationId = $("#extend-button").data("reservation-id");
-        const selectedDuration = parseInt($("#extension-duration").val());
-
-        $.ajax({
-            url: `/reservations/${reservationId}/extend_reservation`,
-            method: "PUT",
-            data: { duration: selectedDuration },
-            error: function (xhr, status, error) {
-                console.error("Error extending reservation:", error);
-            }
-        });
-    });
 });

@@ -133,7 +133,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text "30 minutes"
 
     click_on "Extend booking time"
-    select "1 hour", from: "extension-duration"
+    select "1 hour", from: "duration"
 
     assert_text "$50.00"
     click_on "Pay & Confirm"
@@ -157,7 +157,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text "30 minutes"
 
     click_on "Extend booking time"
-    select "2 hours", from: "extension-duration"
+    select "2 hours", from: "duration"
 
     assert_text "Free"
     click_on "Pay & Confirm"

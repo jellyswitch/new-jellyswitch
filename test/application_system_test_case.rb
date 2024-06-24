@@ -1,4 +1,4 @@
-require 'test_helper'
+require "test_helper"
 
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
@@ -11,6 +11,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def log_in(user)
     user.update(password: "password")
     visit login_path
+    sleep 1
 
     fill_in "Email", with: user.email
     fill_in "Password", with: "password"
