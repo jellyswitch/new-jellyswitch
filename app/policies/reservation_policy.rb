@@ -12,7 +12,7 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    (admin_or_manager? || (owner? && !record.room.paid_room?)) && upcoming_reservation?
+    (admin_or_manager? || (owner? && !record.is_charged?)) && upcoming_reservation?
   end
 
   def cancel?

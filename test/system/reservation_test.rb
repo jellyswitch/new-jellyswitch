@@ -79,6 +79,7 @@ class ReservationTest < ApplicationSystemTestCase
   test "normal user cancel a free room reservation successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
+    Reservation.any_instance.stubs(:is_charged?).returns(false)
 
     sleep 1
     visit reservation_path(@reservation)
@@ -93,6 +94,8 @@ class ReservationTest < ApplicationSystemTestCase
   test "normal user can not cancel a paid room reservation successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
+
+    Reservation.any_instance.stubs(:is_charged?).returns(true)
 
     @room.update(hourly_rate_in_cents: 1000)
 
