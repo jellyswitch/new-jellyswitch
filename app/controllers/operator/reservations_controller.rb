@@ -255,6 +255,47 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def available_extension_durations
+    reservation = Reservation.find(params[:id])
+    room = reservation.room
+
+    available_durations = room.calculate_available_durations(start_time: reservation.datetime_out)
+
+    render json: available_durations
+  end
+
+  def calculate_additional_hour_price
+    reservation = Reservation.find(params[:id])
+    room = reservation.room
+
+    additional_duration = params[:duration].to_i
+    additional_price = number_to_currency((room.hourly_rate_in_cents / 100.0) * (additional_duration / 60.0))
+
+    reservation.assign_attributes({ minutes: reservation.minutes + additional_duration })
+
+    render json: {
+      additional_price: additional_price,
+      new_end_time: reservation.datetime_out.strftime("%m/%d/%Y at %l:%M%P"),
+      should_charge: reservation.is_charged?,
+    }
+  end
+
+  def extend_reservation
+    reservation = Reservation.find(params[:id])
+
+    additional_duration = params[:duration].to_i
+
+    result = Billing::Reservations::ExtendReservation.call(reservation: reservation, additional_duration: additional_duration, user: reservation.user)
+
+    if result.success?
+      flash[:notice] = "Reservation extended successfully."
+      turbo_redirect(reservation_path(reservation), action: restore_if_possible)
+    else
+      flash[:error] = result.message
+      turbo_redirect(reservation_path(reservation), action: "replace")
+    end
+  end
+
   private
 
   def find_reservation(key = :id)

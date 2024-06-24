@@ -9,7 +9,10 @@ class Billing::Reservations::ChargeCredits
       if !staff?
         @existing_balance = user.credit_balance
 
-        @charge_amount = reservation_cost(reservation_params[:room], reservation_params[:minutes])
+        room = reservation.room || reservation_params[:room]
+        minutes = reservation.minutes || reservation_params[:minutes]
+
+        @charge_amount = reservation_cost(room, minutes)
 
         if user.credit_balance < @charge_amount
           context.fail!(message: "Insufficient credit balance.")

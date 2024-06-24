@@ -275,7 +275,8 @@ $(document).ready(function () {
         }
 
         displayRoomDetails(room) {
-            const hourlyPriceText = (!room.should_charge || room.hourly_price == "$0.00") ? "Free" : room.hourly_price;
+            const should_charge = room.should_charge && room.hourly_price != "$0.00"
+            const hourlyPriceText = should_charge ? room.hourly_price : "Free";
             const reservationPriceText = room.reservation_price;
 
             $('.room-details .hourly-price .details-value').text(hourlyPriceText);
@@ -292,7 +293,7 @@ $(document).ready(function () {
                 $('.room-details .room-amenities').hide();
             }
 
-            if (room.should_charge) {
+            if (should_charge) {
                 $('.price-container .price-value').text(reservationPriceText);
                 $('.price-container').removeClass('d-none');
             } else {
