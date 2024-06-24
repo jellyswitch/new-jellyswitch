@@ -31,6 +31,14 @@ class ReservationPolicy < ApplicationPolicy
     (admin? || community_manager? || general_manager?)
   end
 
+  def extend_reservation?
+    record.datetime_out >= Time.current && (admin_or_manager? || owner?)
+  end
+
+  def manage?
+    extend_reservation? || destroy?
+  end
+
   private
 
   def admin_or_manager?
