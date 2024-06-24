@@ -1,4 +1,4 @@
-require 'application_system_test_case'
+require "application_system_test_case"
 
 class ReservationByCalendarTest < ApplicationSystemTestCase
   setup do
@@ -22,28 +22,29 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     setup_stripe
 
-    click_on 'Reserve Later'
+    click_on "Reserve Later"
 
-    assert_text 'Reservation Date'
+    assert_text "Reservation Date"
 
     find(".fc-day-top[data-date='#{@day.strftime("%Y-%m-%d")}']").click
 
-    assert_text 'Reservation Details'
+    assert_text "Reservation Details"
     assert_text @day.strftime("%B %d, %Y")
 
     find(".form-check-label", text: "Night (PM)").click
     find(".time-slot", text: @time).click
 
-    assert_text 'Meeting Duration'
+    assert_text "Meeting Duration"
     find(".duration-slot", text: @duration).click
 
-    assert_text 'Available Room'
+    assert_text "Available Room"
 
-    select @room.name, from: 'room_id'
+    select @room.name, from: "room_id"
 
-    click_on 'Confirm'
+    click_on "Confirm"
+    wait_for_ajax
 
-    assert_text('Reservation Details')
+    assert_text("Reservation Details")
     assert_link(@room.name, href: room_path(@room))
     assert_link(@user.name, href: user_path(@user))
 

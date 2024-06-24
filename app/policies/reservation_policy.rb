@@ -12,7 +12,7 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    (admin_or_manager? || (owner? && !record.room.paid_room?)) && upcoming_reservation?
+    (admin_or_manager? || (owner? && !record.is_charged?)) && upcoming_reservation?
   end
 
   def cancel?
@@ -29,6 +29,14 @@ class ReservationPolicy < ApplicationPolicy
 
   def choose_member?
     (admin? || community_manager? || general_manager?)
+  end
+
+  def extend_reservation?
+    record.datetime_out >= Time.current && (admin_or_manager? || owner?)
+  end
+
+  def manage?
+    extend_reservation? || destroy?
   end
 
   private
