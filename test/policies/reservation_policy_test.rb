@@ -48,6 +48,20 @@ class ReservationPolicyTest < PolicyAssertions::Test
     assert_not_permitted @cowork_tahoe_non_member, reservations(:future_room_reservation) # Not owner
   end
 
+  def test_end_early
+    ongoing_reservation = reservations(:room_reservation_today)
+    ongoing_reservation.update(datetime_in: Time.current)
+
+    assert_permit @member, ongoing_reservation
+    assert_permit @admin, ongoing_reservation
+    assert_permit @community_manager, ongoing_reservation
+    assert_permit @general_manager, ongoing_reservation
+
+    assert_not_permitted @member, reservations(:future_room_reservation) # Future reservation
+    assert_not_permitted @member, reservations(:room_reservation) # Past reservation
+    assert_not_permitted @cowork_tahoe_non_member, reservations(:future_room_reservation) # Not owner
+  end
+
   def test_long_duration
     assert_not_permitted @member, Reservation
     assert_permit @admin, Reservation

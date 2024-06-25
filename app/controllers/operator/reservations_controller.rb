@@ -308,6 +308,19 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def end_early
+    find_reservation
+    authorize @reservation, :end_early?
+
+    if @reservation.end_early!
+      flash[:notice] = "Reservation ended early successfully."
+      turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
+    else
+      flash[:error] = "An error occurred while ending the reservation early."
+      turbo_redirect(reservation_path(@reservation), action: "replace")
+    end
+  end
+
   private
 
   def find_reservation(key = :id)

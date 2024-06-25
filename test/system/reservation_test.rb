@@ -76,7 +76,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_complete_reservation_information()
   end
 
-  test "normal user cancel a free room reservation successfully" do
+  test "normal user cancel a future free room reservation successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
     Reservation.any_instance.stubs(:is_charged?).returns(false)
@@ -84,6 +84,7 @@ class ReservationTest < ApplicationSystemTestCase
     sleep 1
     visit reservation_path(@reservation)
 
+    assert_no_text "End reservation early"
     click_on "Cancel this reservation"
     assert_text("Are you sure you want to cancel your reservation for #{@room.name}?")
     click_on "Confirm"
@@ -91,7 +92,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text("Reservation cancelled.")
   end
 
-  test "normal user can not cancel a paid room reservation successfully" do
+  test "normal user can not cancel a future paid room reservation successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
 
@@ -103,7 +104,31 @@ class ReservationTest < ApplicationSystemTestCase
     visit reservation_path(@reservation)
 
     assert_text("Note: If you want to cancel this paid reservation room, please contact our workspace admin for assistance.")
+    assert_no_text "End reservation early"
     assert_selector "button[data-target='#cancel-reservation-modal'][disabled]", visible: true
+  end
+
+  test "user end a on going reservation early successfully" do
+    @user = users(:cowork_tahoe_member)
+    log_in @user
+    Reservation.any_instance.stubs(:is_charged?).returns(true)
+    @reservation.update(datetime_in: Time.current, minutes: 60)
+    @room.update(hourly_rate_in_cents: 1000)
+
+    Timecop.freeze(Time.current + 45.minutes) do
+      sleep 1
+      visit reservation_path(@reservation)
+      assert_text "Duration: 60 minutes"
+
+      assert_no_text "Cancel this reservation"
+      click_on "End reservation early"
+
+      assert_text "Are you sure you want to end this reservation early? This action cannot be undone."
+      click_on "Confirm"
+
+      assert_text "Reservation ended early successfully."
+      assert_text "Duration: 45 minutes"
+    end
   end
 
   test "charging user for extra hours in the reservation when they book the reservation at first without membership" do
