@@ -40,6 +40,13 @@
     </p>
   <%- end %>
 
+  <%- if reservation.ended_early? %>
+    <p class="font-weight-bold">
+      Status:
+      <span class="badge badge-warning">Ended Early</span>
+    </p>
+  <%- end %>
+
   <%- if !policy(reservation).destroy? && reservation.future? %>
     <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
   <%- end %>
@@ -53,8 +60,8 @@
   <%- end %>
 
   <%- if reservation.ongoing? %>
-    <button id="end-early-button" type="button" class="btn btn-block btn-danger" data-toggle="modal" data-target="#end-early-modal" <%= 'disabled' unless policy(reservation).end_early? %> data-reservation-id="<%= reservation.id %>">
-      End reservation early
+    <button id="end-early-button" type="button" class="btn btn-block btn-danger" data-toggle="modal" data-target="#end-early-modal" <%= 'disabled' unless policy(reservation).end_now? %> data-reservation-id="<%= reservation.id %>">
+      End reservation now
     </button>
   <%- end %>
 
@@ -136,7 +143,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="endEarlyModalLabel">End Reservation Early</h5>
+        <h5 class="modal-title" id="endEarlyModalLabel">End Reservation</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -146,7 +153,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <%= link_to "Confirm", end_early_reservation_path(reservation), method: :put, class: "btn btn-primary", data: { turbo: false } %>
+        <%= link_to "Confirm", end_now_reservation_path(reservation), method: :put, class: "btn btn-primary", data: { turbo: false } %>
       </div>
     </div>
   </div>

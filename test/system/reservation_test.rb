@@ -84,7 +84,7 @@ class ReservationTest < ApplicationSystemTestCase
     sleep 1
     visit reservation_path(@reservation)
 
-    assert_no_text "End reservation early"
+    assert_no_text "End reservation now"
     click_on "Cancel this reservation"
     assert_text("Are you sure you want to cancel your reservation for #{@room.name}?")
     click_on "Confirm"
@@ -104,7 +104,7 @@ class ReservationTest < ApplicationSystemTestCase
     visit reservation_path(@reservation)
 
     assert_text("Note: If you want to cancel this paid reservation room, please contact our workspace admin for assistance.")
-    assert_no_text "End reservation early"
+    assert_no_text "End reservation now"
     assert_selector "button[data-target='#cancel-reservation-modal'][disabled]", visible: true
   end
 
@@ -121,13 +121,14 @@ class ReservationTest < ApplicationSystemTestCase
       assert_text "Duration: 60 minutes"
 
       assert_no_text "Cancel this reservation"
-      click_on "End reservation early"
+      click_on "End reservation now"
 
       assert_text "Are you sure you want to end this reservation early? This action cannot be undone."
       click_on "Confirm"
 
       assert_text "Reservation ended early successfully."
       assert_text "Duration: 45 minutes"
+      assert_text "Ended Early"
     end
   end
 

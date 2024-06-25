@@ -39,7 +39,7 @@ class ReservationPolicy < ApplicationPolicy
     extend_reservation? || destroy?
   end
 
-  def end_early?
+  def end_now?
     (admin_or_manager? || owner?) && record.ongoing?
   end
 

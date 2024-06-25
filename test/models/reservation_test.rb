@@ -34,23 +34,25 @@ class ReservationTest < ActiveSupport::TestCase
     assert @future_reservation.future?
   end
 
-  test "end_early! updates the minutes to the actual duration" do
+  test "end_now! updates the minutes to the actual duration" do
     new_duration = 12 # minutes
 
     Timecop.freeze(@ongoing_reservation.datetime_in + new_duration.minutes) do
-      @ongoing_reservation.end_early!
+      @ongoing_reservation.end_now!
       assert_equal @ongoing_reservation.reload.minutes, new_duration
+      assert @ongoing_reservation.ended_early?
     end
   end
 
-  test "end_early! does not change minutes if called after the original end time" do
+  test "end_now! does not change minutes if called after the original end time" do
     original_duration = @ongoing_reservation.minutes
     new_duration = original_duration + 5.minutes # minutes
 
     Timecop.freeze(@ongoing_reservation.datetime_in + new_duration.minutes) do
-      @ongoing_reservation.end_early!
+      @ongoing_reservation.end_now!
       assert_not_equal @ongoing_reservation.reload.minutes, new_duration
       assert_equal @ongoing_reservation.minutes, original_duration
+      assert @ongoing_reservation.ended_early?
     end
   end
 end

@@ -308,11 +308,11 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
-  def end_early
+  def end_now
     find_reservation
-    authorize @reservation, :end_early?
+    authorize @reservation, :end_now?
 
-    if @reservation.end_early!
+    if @reservation.end_now!
       flash[:notice] = "Reservation ended early successfully."
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     else
