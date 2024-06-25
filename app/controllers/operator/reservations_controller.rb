@@ -170,6 +170,7 @@ class Operator::ReservationsController < Operator::BaseController
       @day = Date.parse(params[:day])
       @day_or_night = params[:day_or_night]
       @available_time_slots = calculate_available_time_slots(@day, @day_or_night)
+
       render json: @available_time_slots.map { |slot| slot.strftime("%I:%M") }
     else
       render json: { error: "Invalid date or day/night selection" }, status: :unprocessable_entity
@@ -232,7 +233,13 @@ class Operator::ReservationsController < Operator::BaseController
 
     @day_or_night = reservation_params[:day_or_night]
     @hour = Time.strptime(reservation_params[:time], "%I:%M")
-    @hour += 12.hours if @day_or_night == "night"
+
+    # Adjust for AM/PM
+    if @day_or_night == "night" && @hour.hour != 12
+      @hour += 12.hours
+    elsif @day_or_night == "day" && @hour.hour == 12
+      @hour -= 12.hours
+    end
 
     @duration = reservation_params[:duration].to_i
     parse_time
