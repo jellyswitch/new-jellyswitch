@@ -47,6 +47,13 @@
     </p>
   <%- end %>
 
+  <%- if !reservation.paid.nil? %>
+    <p class="font-weight-bold">
+      Payment Required:
+      <span class="ml-1 badge badge-success"><%= reservation.paid? ? 'Yes' : 'No' %></span>
+    </p>
+  <%- end %>
+
   <%- if !policy(reservation).destroy? && reservation.future? %>
     <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
   <%- end %>

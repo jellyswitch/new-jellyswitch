@@ -1,4 +1,3 @@
-
 class Billing::Reservations::SaveRoomReservation
   include Interactor
   include FeedItemCreator
@@ -6,8 +5,10 @@ class Billing::Reservations::SaveRoomReservation
   def call
     reservation = Reservation.new(context.reservation_params)
 
+    should_charge = context.user.should_charge_for_reservation?(reservation.room.location, reservation.datetime_in.to_date)
+    reservation.paid = should_charge
+
     reservation.user = context.user
-    reservation.datetime_in = reservation.datetime_in
 
     context.reservation = reservation
     context.notifiable = reservation

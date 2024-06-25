@@ -280,15 +280,10 @@ class Operator::ReservationsController < Operator::BaseController
 
     reservation.assign_attributes({ minutes: reservation.minutes + additional_duration })
 
-    cache_key = "should_charge_reservation_#{params[:id]}-#{current_user.id}"
-    should_charge = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
-      reservation.is_charged?
-    end
-
     render json: {
       additional_price: additional_price,
       new_end_time: reservation.datetime_out.strftime("%m/%d/%Y at %l:%M%P"),
-      should_charge: should_charge,
+      should_charge: reservation.paid?,
     }
   end
 

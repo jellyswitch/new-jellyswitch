@@ -79,13 +79,15 @@ class ReservationTest < ApplicationSystemTestCase
   test "normal user cancel a future free room reservation successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
-    Reservation.any_instance.stubs(:is_charged?).returns(false)
+    @reservation.update(paid: false)
 
     sleep 1
     visit reservation_path(@reservation)
 
     assert_no_text "End reservation now"
     click_on "Cancel this reservation"
+
+    assert_text("Payment Required: No")
     assert_text("Are you sure you want to cancel your reservation for #{@room.name}?")
     click_on "Confirm"
 
@@ -96,13 +98,14 @@ class ReservationTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_member)
     log_in @user
 
-    Reservation.any_instance.stubs(:is_charged?).returns(true)
+    @reservation.update(paid: true)
 
     @room.update(hourly_rate_in_cents: 1000)
 
     sleep 1
     visit reservation_path(@reservation)
 
+    assert_text("Payment Required: Yes")
     assert_text("Note: If you want to cancel this paid reservation room, please contact our workspace admin for assistance.")
     assert_no_text "End reservation now"
     assert_selector "button[data-target='#cancel-reservation-modal'][disabled]", visible: true
@@ -111,7 +114,6 @@ class ReservationTest < ApplicationSystemTestCase
   test "user end a on going reservation early successfully" do
     @user = users(:cowork_tahoe_member)
     log_in @user
-    Reservation.any_instance.stubs(:is_charged?).returns(true)
     @reservation.update(datetime_in: Time.current, minutes: 60)
     @room.update(hourly_rate_in_cents: 1000)
 
@@ -137,20 +139,9 @@ class ReservationTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_member)
     log_in @user
     @room.update(hourly_rate_in_cents: 5000)
+    @reservation.update(paid: true)
 
-    invoice = invoices(:paid_invoice)
-    invoice.update(billable: @user, amount_due: 5000, created_at: @reservation.created_at + 1.hour)
-    stripe_invoice = Stripe::Invoice.create(
-      customer: @user.stripe_customer_id,
-      currency: "usd",
-      amount: 2500,
-      number: invoice.number,
-      description: "test invoice",
-    )
-
-    Invoice.where.not(id: invoice.id).destroy_all # Remove other invoices
-    Invoice.any_instance.stubs(:description).returns(@reservation.charge_description)
-    Stripe::Invoice.any_instance.stubs(:number).returns(invoice.number)
+    Stripe::Invoice.any_instance.stubs(:number).returns("123456")
 
     sleep 1
     # Test
@@ -173,8 +164,7 @@ class ReservationTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_member)
     log_in @user
     @room.update(hourly_rate_in_cents: 5000)
-
-    Invoice.destroy_all # Remove all invoices
+    @reservation.update(paid: false)
 
     sleep 1
     # Test
