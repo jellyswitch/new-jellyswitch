@@ -27,7 +27,8 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
     assert_equal 60, result.reservation.minutes
   end
 
-  test "sets paid to true if user should be charged" do
+  test "sets paid to true if user should be charged and room price is more than 0" do
+    @room.update(hourly_rate_in_cents: 100)
     @user.stubs(:should_charge_for_reservation?).returns(true)
 
     result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
@@ -37,6 +38,16 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "sets paid to false if user should not be charged" do
+    @user.stubs(:should_charge_for_reservation?).returns(false)
+
+    result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
+
+    assert result.success?
+    refute result.reservation.paid?
+  end
+
+  test "sets paid to false if the room is free" do
+    @room.update(hourly_rate_in_cents: 0)
     @user.stubs(:should_charge_for_reservation?).returns(false)
 
     result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
