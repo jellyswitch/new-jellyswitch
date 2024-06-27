@@ -2,7 +2,13 @@ class RemindUpcomingReservationJob < ApplicationJob
   queue_as :default
 
   def perform(reservation_id)
-    upcoming_reservation = Reservation.find reservation_id
+    upcoming_reservation = Reservation.find_by(id: reservation_id)
+
+    if upcoming_reservation.nil? || upcoming_reservation.cancelled?
+      Rails.logger.info("Upcoming reservation not found or cancelled: #{reservation_id}")
+      return
+    end
+
     prior_reservation = find_prior_reservation(upcoming_reservation)
 
     if prior_reservation

@@ -34,4 +34,20 @@ class RemindUpcomingReservationJobTest < ActiveJob::TestCase
 
     RemindUpcomingReservationJob.perform_now(@upcoming_reservation.id)
   end
+
+  test "does not send reminder when the upcoming reservation is cancelled" do
+    @upcoming_reservation.update!(cancelled: true)
+
+    SendNotificationsJob.expects(:perform_now).never
+
+    RemindUpcomingReservationJob.perform_now(@upcoming_reservation.id)
+  end
+
+  test "does not send reminder when the reservation is not found" do
+    not_existed_id = -1
+
+    SendNotificationsJob.expects(:perform_now).never
+
+    RemindUpcomingReservationJob.perform_now(not_existed_id)
+  end
 end
