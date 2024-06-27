@@ -19,6 +19,6 @@ class Billing::Reservations::SaveRoomReservation
   end
 
   def rollback
-    context.reservation.destroy
+    context.reservation.destroy if context.reservation&.persisted?
   end
 end

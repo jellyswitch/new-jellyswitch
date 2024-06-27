@@ -38,7 +38,7 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
   end
 
   test "schedules reminder job 10 minutes before future reservation time" do
-    reminder_time = @future_reservation.datetime_in - 10.minutes
+    reminder_time = @future_reservation.datetime_in - Reservation::REMINDER_OFFSET_MINUTES
 
     job_mock = Minitest::Mock.new
 

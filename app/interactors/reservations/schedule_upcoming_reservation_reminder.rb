@@ -3,7 +3,7 @@ class Reservations::ScheduleUpcomingReservationReminder
 
   def call
     reservation = context.reservation
-    reminder_time = reservation.datetime_in - 10.minutes
+    reminder_time = reservation.datetime_in - Reservation::REMINDER_OFFSET_MINUTES
 
     if reminder_time > Time.current
       RemindUpcomingReservationJob.set(wait_until: reminder_time).perform_later(reservation.id)
