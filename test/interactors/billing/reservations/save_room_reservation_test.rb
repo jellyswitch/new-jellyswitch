@@ -66,5 +66,6 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
 
     assert context.failure?
     assert_equal "Unable to create reservation, please try again.", context.message
+    refute context.reservation&.persisted?
   end
 end

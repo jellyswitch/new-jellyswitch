@@ -3,34 +3,36 @@ class NotifiableFactory
     type = notifiable_type || notifiable.class.name
 
     case type
-    when 'Announcement'
+    when "Announcement"
       Notifiable::Announcement
-    when 'Checkin'
+    when "Checkin"
       Notifiable::Checkin
-    when 'ChildcareReservation'
+    when "ChildcareReservation"
       Notifiable::ChildcareReservation
-    when 'DayPass'
+    when "DayPass"
       Notifiable::DayPass
-    when 'FeedItem'
+    when "FeedItem"
       Notifiable::FeedItem
-    when 'FeedItemComment'
+    when "FeedItemComment"
       Notifiable::FeedItemComment
-    when 'MemberFeedback'
+    when "MemberFeedback"
       Notifiable::MemberFeedback
-    when 'Post'
+    when "Post"
       Notifiable::Post
-    when 'PostReply'
+    when "PostReply"
       Notifiable::PostReply
-    when 'Reservation'
+    when "Reservation"
       Notifiable::Reservation
-    when 'Subscription'
+    when "Subscription"
       Notifiable::Subscription
-    when 'User'
+    when "User"
       Notifiable::User
-    when 'WeeklyUpdate'
+    when "WeeklyUpdate"
       Notifiable::WeeklyUpdate
-    when 'PaidRoomReservation'
+    when "PaidRoomReservation"
       Notifiable::PaidRoomReservation
+    when "UpcomingReservationReminder"
+      Notifiable::UpcomingReservationReminder
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)
