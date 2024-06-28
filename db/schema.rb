@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_06_25_081809) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_25_090300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -510,6 +510,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_06_25_081809) do
     t.integer "minutes", default: 0, null: false
     t.integer "credit_cost", default: 0, null: false
     t.boolean "ended_early", default: false
+    t.boolean "paid"
   end
 
   create_table "rooms", force: :cascade do |t|

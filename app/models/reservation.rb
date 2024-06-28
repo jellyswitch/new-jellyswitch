@@ -13,6 +13,7 @@
 #  room_id     :integer          not null
 #  user_id     :integer          not null
 #  ended_early :boolean          default(FALSE)
+#  paid        :boolean          default(null)
 
 class Reservation < ApplicationRecord
   # Relationships

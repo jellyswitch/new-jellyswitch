@@ -27,7 +27,7 @@ class ReservationPolicyTest < PolicyAssertions::Test
   end
 
   def test_destroy
-    Reservation.any_instance.stubs(:is_charged?).returns(false)
+    Reservation.any_instance.stubs(:paid?).returns(false)
 
     assert_permit @member, reservations(:future_room_reservation)
     assert_permit @admin, reservations(:future_room_reservation)
