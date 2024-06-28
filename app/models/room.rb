@@ -71,7 +71,7 @@ class Room < ApplicationRecord
   def available?(start_time:, duration:)
     end_time = start_time.in_time_zone + duration.minutes
 
-    reservations.where("datetime_in < ? AND (datetime_in + minutes * interval \'1 minute\')  > ?", end_time, start_time).blank?
+    !reservations.overlapping(start_time, end_time).exists?
   end
 
   def calculate_available_durations(start_time:)

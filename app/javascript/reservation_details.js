@@ -8,6 +8,8 @@ $(document).ready(function () {
             success: function (data) {
                 const select = $("#extension-duration");
                 const options = select.find("option");
+                const extendButton = $("#extend-button");
+                const confirmExtensionButton = $("#confirm-extension");
 
                 select.trigger("change.extend-duration");
 
@@ -21,6 +23,9 @@ $(document).ready(function () {
                         option.prop("disabled", false);
                     }
                 });
+
+                confirmExtensionButton.prop("disabled", data.length === 0);
+                if (data.length === 0) $("#extension-helper-text").removeClass("d-none");
             },
             error: function (xhr, status, error) {
                 console.error("Error fetching available durations:", error);
