@@ -17,4 +17,8 @@ class Billing::Reservations::SaveRoomReservation
       context.fail!(message: "Unable to create reservation, please try again.")
     end
   end
+
+  def rollback
+    context.reservation.destroy if context.reservation&.persisted?
+  end
 end

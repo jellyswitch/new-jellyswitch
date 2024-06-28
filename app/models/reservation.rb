@@ -36,6 +36,8 @@ class Reservation < ApplicationRecord
 
   delegate :operator, to: :room
 
+  REMINDER_OFFSET_MINUTES = 10.minutes.freeze
+
   def pretty_datetime
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
