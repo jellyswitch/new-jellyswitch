@@ -1,4 +1,4 @@
-class RemindUpcomingReservationJob < ApplicationJob
+class SendUpcomingReservationReminderJob < ApplicationJob
   queue_as :default
 
   def perform(reservation_id)
@@ -23,7 +23,7 @@ class RemindUpcomingReservationJob < ApplicationJob
     reminder_time = upcoming_reservation.datetime_in - Reservation::REMINDER_OFFSET_MINUTES
 
     room.reservations
-      .where("datetime_in < ? AND datetime_in + (minutes * INTERVAL '1 minute') > ?", upcoming_reservation.datetime_in, reminder_time)
+      .overlapping(reminder_time, upcoming_reservation.datetime_in)
       .order(datetime_in: :desc)
       .first
   end

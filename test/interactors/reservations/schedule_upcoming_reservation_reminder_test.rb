@@ -34,7 +34,7 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
   end
 
   def teardown
-    RemindUpcomingReservationJob.unstub :set
+    SendUpcomingReservationReminderJob.unstub :set
   end
 
   test "schedules reminder job 10 minutes before future reservation time" do
@@ -42,7 +42,7 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
 
     job_mock = Minitest::Mock.new
 
-    RemindUpcomingReservationJob.expects(:set).with(wait_until: reminder_time).returns(job_mock)
+    SendUpcomingReservationReminderJob.expects(:set).with(wait_until: reminder_time).returns(job_mock)
 
     job_mock.expect(:perform_later, nil, [@future_reservation.id])
 
@@ -53,7 +53,7 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
   end
 
   test "perform job immediately for a upcoming reservation" do
-    RemindUpcomingReservationJob.expects(:perform_now).with(@upcoming_reservation.id)
+    SendUpcomingReservationReminderJob.expects(:perform_now).with(@upcoming_reservation.id)
 
     result = Reservations::ScheduleUpcomingReservationReminder.call(reservation: @upcoming_reservation)
 
@@ -61,7 +61,7 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
   end
 
   test "perform job immediately for a past reservation" do
-    RemindUpcomingReservationJob.expects(:perform_now).with(@past_reservation.id)
+    SendUpcomingReservationReminderJob.expects(:perform_now).with(@past_reservation.id)
 
     result = Reservations::ScheduleUpcomingReservationReminder.call(reservation: @past_reservation)
 

@@ -181,4 +181,21 @@ class ReservationTest < ApplicationSystemTestCase
     assert_equal find(".alert-info").text, "Reservation extended successfully."
     assert_text "150 minutes"
   end
+
+  test "user cannot extend reservation if no available timeslot for extension" do
+    # Setup
+    @user = users(:cowork_tahoe_member)
+    log_in @user
+
+    Reservation.create(room: @room, datetime_in: @reservation.datetime_out, user: @user, minutes: 30)
+
+    sleep 1
+    visit reservation_path(@reservation)
+
+    click_on "Extend booking time"
+    wait_for_ajax
+    find("#extension-duration").all("option").all?(&:disabled?)
+    assert_text "There is no timeslot available for the reservation extension"
+    assert_no_button "Pay & Confirm"
+  end
 end

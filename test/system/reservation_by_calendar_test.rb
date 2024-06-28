@@ -18,6 +18,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     StripeMock.start
 
     @user = users(:cowork_tahoe_member)
+    sleep 1
     log_in @user
 
     setup_stripe

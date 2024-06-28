@@ -1,6 +1,6 @@
 require "test_helper"
 
-class RemindUpcomingReservationJobTest < ActiveJob::TestCase
+class SendUpcomingReservationReminderJobTest < ActiveJob::TestCase
   def setup
     @user = users(:cowork_tahoe_member)
     @another_user = users(:cowork_tahoe_admin)
@@ -26,13 +26,13 @@ class RemindUpcomingReservationJobTest < ActiveJob::TestCase
 
     SendNotificationsJob.expects(:perform_now).with(prior_reservation, "UpcomingReservationReminder")
 
-    RemindUpcomingReservationJob.perform_now(@upcoming_reservation.id)
+    SendUpcomingReservationReminderJob.perform_now(@upcoming_reservation.id)
   end
 
   test "does not send reminder when no prior reservation exists" do
     SendNotificationsJob.expects(:perform_now).never
 
-    RemindUpcomingReservationJob.perform_now(@upcoming_reservation.id)
+    SendUpcomingReservationReminderJob.perform_now(@upcoming_reservation.id)
   end
 
   test "does not send reminder when the upcoming reservation is cancelled" do
@@ -40,7 +40,7 @@ class RemindUpcomingReservationJobTest < ActiveJob::TestCase
 
     SendNotificationsJob.expects(:perform_now).never
 
-    RemindUpcomingReservationJob.perform_now(@upcoming_reservation.id)
+    SendUpcomingReservationReminderJob.perform_now(@upcoming_reservation.id)
   end
 
   test "does not send reminder when the reservation is not found" do
@@ -48,6 +48,6 @@ class RemindUpcomingReservationJobTest < ActiveJob::TestCase
 
     SendNotificationsJob.expects(:perform_now).never
 
-    RemindUpcomingReservationJob.perform_now(not_existed_id)
+    SendUpcomingReservationReminderJob.perform_now(not_existed_id)
   end
 end

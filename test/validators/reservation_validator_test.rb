@@ -20,7 +20,7 @@ class ReservationValidatorTest < ActiveSupport::TestCase
     another_reservation = Reservation.create(room: @room, datetime_in: Time.zone.parse("2024-06-15 9:30:00"), user: @user, minutes: 45)
 
     assert_not @reservation.valid?
-    assert_includes @reservation.errors[:base], "This room is already booked for the selected time slot."
+    assert_includes @reservation.errors[:base], "The requested time slot conflicts with an existing reservation. Please choose a different time or room."
   end
 
   test "should not add error if room is not booked for the selected time slot" do
@@ -28,5 +28,17 @@ class ReservationValidatorTest < ActiveSupport::TestCase
 
     assert @reservation.valid?
     assert_empty @reservation.errors[:base]
+  end
+
+  test "should add error if a reservation extend a meeting time overlapped with other reservation" do
+    @reservation.save
+
+    another_reservation = Reservation.create(room: @room, datetime_in: @reservation.datetime_out, user: @user, minutes: 30)
+
+    @reservation.update(minutes: @reservation.minutes + 30)
+
+    assert another_reservation.valid?
+    assert_not @reservation.valid?
+    assert_includes @reservation.errors[:base], "The requested time slot conflicts with an existing reservation. Please choose a different time or room."
   end
 end

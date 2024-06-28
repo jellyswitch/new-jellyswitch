@@ -1,18 +1,19 @@
 class ReservationValidator < ActiveModel::Validator
   def validate(record)
-    return true if record.cancelled?
+    return if record.cancelled?
 
-    start_time = record.datetime_in
-    end_time = record.datetime_in + record.minutes.minutes
+    overlapping_reservations = find_overlapping_reservations(record)
 
-    unavailable_rooms = Room.unavailable(date: record.datetime_in.to_date, time: start_time.strftime("%H:%M"), duration: record.minutes)
-
-    if record.persisted?
-      return true # TODO: Implement this
+    if overlapping_reservations.exists?
+      record.errors.add(:base, "The requested time slot conflicts with an existing reservation. Please choose a different time or room.")
     end
+  end
 
-    if unavailable_rooms.exists?(id: record.room_id)
-      record.errors.add(:base, "This room is already booked for the selected time slot.")
-    end
+  private
+
+  def find_overlapping_reservations(record)
+    Reservation.overlapping(record.datetime_in, record.datetime_out)
+               .where(room_id: record.room_id)
+               .where.not(id: record.id)
   end
 end
