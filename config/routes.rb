@@ -326,6 +326,7 @@ Rails.application.routes.draw do
       get :available_extension_durations, to: "operator/reservations#available_extension_durations"
       get :calculate_additional_hour_price, to: "operator/reservations#calculate_additional_hour_price"
       put :extend_reservation, to: "operator/reservations#extend_reservation"
+      put :end_now, to: "operator/reservations#end_now"
     end
   end
   resources :rooms, controller: "operator/rooms", except: [:destroy] do

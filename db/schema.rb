@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_01_05_152841) do
+ActiveRecord::Schema[7.0].define(version: 2024_06_25_081809) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -426,6 +426,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_05_152841) do
     t.string "android_server_key"
     t.boolean "crm_enabled", default: false, null: false
     t.string "bundle_id"
+    t.string "simplybook_company"
+    t.string "simplybook_api_key"
+    t.string "simplybook_access_token"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -506,6 +509,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_01_05_152841) do
     t.boolean "cancelled", default: false, null: false
     t.integer "minutes", default: 0, null: false
     t.integer "credit_cost", default: 0, null: false
+    t.boolean "ended_early", default: false
   end
 
   create_table "rooms", force: :cascade do |t|

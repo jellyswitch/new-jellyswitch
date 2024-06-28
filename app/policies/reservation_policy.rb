@@ -12,11 +12,11 @@ class ReservationPolicy < ApplicationPolicy
   end
 
   def destroy?
-    (admin_or_manager? || (owner? && !record.is_charged?)) && upcoming_reservation?
+    (admin_or_manager? || (owner? && !record.is_charged?)) && record.future?
   end
 
   def cancel?
-    (admin_or_manager? || owner?) && upcoming_reservation?
+    (admin_or_manager? || owner?) && record.future?
   end
 
   def long_duration?
@@ -39,13 +39,13 @@ class ReservationPolicy < ApplicationPolicy
     extend_reservation? || destroy?
   end
 
+  def end_now?
+    (admin_or_manager? || owner?) && record.ongoing?
+  end
+
   private
 
   def admin_or_manager?
     admin? || community_manager? || general_manager?
-  end
-
-  def upcoming_reservation?
-    record.future? || record.ongoing?
   end
 end

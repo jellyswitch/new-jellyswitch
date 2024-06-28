@@ -12,7 +12,7 @@
 #  updated_at  :datetime         not null
 #  room_id     :integer          not null
 #  user_id     :integer          not null
-#
+#  ended_early :boolean          default(FALSE)
 
 class Reservation < ApplicationRecord
   # Relationships
@@ -81,5 +81,10 @@ class Reservation < ApplicationRecord
 
   def is_charged?
     !user.admin_or_manager? && Invoice.where("created_at >= ? AND amount_due > 0", self.created_at).where(billable_type: "User", billable_id: user.id).select { |invoice| invoice.description == self.charge_description }.any?
+  end
+
+  def end_now!
+    actual_duration = [(Time.current - datetime_in) / 60, minutes].min.floor
+    update(minutes: actual_duration, ended_early: true)
   end
 end
