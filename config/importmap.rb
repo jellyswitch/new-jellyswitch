@@ -25,6 +25,7 @@ pin "lodash.defaults", to: "https://ga.jspm.io/npm:lodash.defaults@4.2.0/index.j
 pin "path", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/path.js"
 pin "process", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/process-production.js"
 pin "util", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/util.js"
+pin "@nathanvda/cocoon", to: "https://ga.jspm.io/npm:@nathanvda/cocoon@1.2.14/cocoon.js"
 pin "trix"
 pin "@rails/actiontext", to: "actiontext.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true

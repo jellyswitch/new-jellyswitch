@@ -1,87 +1,88 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.4'
+ruby "2.7.4"
 
-gem 'activejob-traffic_control'
-gem 'acts_as_tenant', '0.5.0'
-gem 'ahoy_matey'
-gem 'apnotic'
-gem 'aws-sdk-s3', '~> 1.48', require: false
-gem 'bcrypt'
-gem 'bootstrap', '~> 4.3.1'
-gem 'chartkick', '>= 3.4.0'
-gem 'dotenv-rails', require: 'dotenv/rails-now'
-gem 'draper'
-gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
-gem 'fcm'
-gem 'friendly_id'
-gem 'groupdate'
-gem 'honeybadger'
-gem 'httparty'
-gem 'icalendar'
-gem 'image_processing', '~> 1.2'
-gem 'importmap-rails'
-gem 'interactor', "~> 3.0"
-gem 'jbuilder', '~> 2.11'
-gem 'jquery-rails', '>= 4.4.0'
-gem 'json', '>= 2.3.0'
-gem 'momentjs-rails', '>= 2.9.0'
-gem 'money'
-gem 'net-http'
-gem 'newrelic_rpm'
-gem 'octicons_helper'
-gem 'opensearch-ruby'
-gem 'pagy', '~> 6.0.2'
-gem 'pg'
-gem 'premailer-rails'
-gem 'puma', '~> 6.3'
-gem 'pundit'
-gem 'rack-cors'
-gem 'rails', '7.0.7'
-gem 'rails_autolink'
-gem 'redis'
-gem 'remotipart', '~> 1.2'
-gem 'request_store'
-gem 'roadie-rails', '~> 3.0'
-gem 'sassc-rails', '~> 2.1'
-gem 'searchkick'
-gem 'sidekiq', '~> 5.2.10'
-gem 'simple_calendar'
-gem 'sprockets-rails'
-gem 'stimulus-rails'
-gem 'stripe', '~> 5.0.0'
-gem 'turbo-rails'
-gem 'uglifier', '>= 1.3.0'
-gem 'view_component'
-gem 'working_hours'
-gem 'timecop'
+gem "activejob-traffic_control"
+gem "acts_as_tenant", "0.5.0"
+gem "ahoy_matey"
+gem "apnotic"
+gem "aws-sdk-s3", "~> 1.48", require: false
+gem "bcrypt"
+gem "bootstrap", "~> 4.3.1"
+gem "chartkick", ">= 3.4.0"
+gem "dotenv-rails", require: "dotenv/rails-now"
+gem "draper"
+gem "faker", :git => "https://github.com/stympy/faker.git", :branch => "master"
+gem "fcm"
+gem "friendly_id"
+gem "groupdate"
+gem "honeybadger"
+gem "httparty"
+gem "icalendar"
+gem "image_processing", "~> 1.2"
+gem "importmap-rails"
+gem "interactor", "~> 3.0"
+gem "jbuilder", "~> 2.11"
+gem "jquery-rails", ">= 4.4.0"
+gem "json", ">= 2.3.0"
+gem "momentjs-rails", ">= 2.9.0"
+gem "money"
+gem "net-http"
+gem "newrelic_rpm"
+gem "octicons_helper"
+gem "opensearch-ruby"
+gem "pagy", "~> 6.0.2"
+gem "pg"
+gem "premailer-rails"
+gem "puma", "~> 6.3"
+gem "pundit"
+gem "rack-cors"
+gem "rails", "7.0.7"
+gem "rails_autolink"
+gem "redis"
+gem "remotipart", "~> 1.2"
+gem "request_store"
+gem "roadie-rails", "~> 3.0"
+gem "sassc-rails", "~> 2.1"
+gem "searchkick"
+gem "sidekiq", "~> 5.2.10"
+gem "simple_calendar"
+gem "sprockets-rails"
+gem "stimulus-rails"
+gem "stripe", "~> 5.0.0"
+gem "turbo-rails"
+gem "uglifier", ">= 1.3.0"
+gem "view_component"
+gem "working_hours"
+gem "timecop"
+gem "cocoon"
 
 group :development do
-  gem 'annotate'
-  gem 'better_errors', '>= 2.8.0'
-  gem 'binding_of_caller'
-  gem 'listen', '>= 3.0.5', '< 3.8'
-  gem 'rack-mini-profiler', '~> 3.1'
-  gem 'rails-erd'
-  gem 'user-auth', git: "https://github.com/jellyswitch/user-auth", :branch => 'master'
-  gem 'web-console', '>= 4.1.0'
+  gem "annotate"
+  gem "better_errors", ">= 2.8.0"
+  gem "binding_of_caller"
+  gem "listen", ">= 3.0.5", "< 3.8"
+  gem "rack-mini-profiler", "~> 3.1"
+  gem "rails-erd"
+  gem "user-auth", git: "https://github.com/jellyswitch/user-auth", :branch => "master"
+  gem "web-console", ">= 4.1.0"
 end
 
 group :test do
-  gem 'capybara'
-  gem 'ffi'
-  gem 'selenium-webdriver'
-  gem 'webdrivers'
+  gem "capybara"
+  gem "ffi"
+  gem "selenium-webdriver"
+  gem "webdrivers"
 end
 
 group :development, :test do
-  gem 'bundler-audit'
-  gem 'debug', platforms: [:mri, :mingw, :x64_mingw]
-  gem 'mocha', '~> 1.14'
-  gem 'policy-assertions'
-  gem 'pry-byebug'
-  gem 'pry-rails'
-  gem 'rails-controller-testing'
-  gem 'stripe-ruby-mock', '~> 3.0.1', :require => 'stripe_mock'
+  gem "bundler-audit"
+  gem "debug", platforms: [:mri, :mingw, :x64_mingw]
+  gem "mocha", "~> 1.14"
+  gem "policy-assertions"
+  gem "pry-byebug"
+  gem "pry-rails"
+  gem "rails-controller-testing"
+  gem "stripe-ruby-mock", "~> 3.0.1", :require => "stripe_mock"
 end
