@@ -20,17 +20,17 @@ class AmenityTest < ActiveSupport::TestCase
     assert_not @amenity.valid?
   end
 
-  test "price should be present" do
-    @amenity.price = nil
-    assert_not @amenity.valid?
-  end
-
   test "price should be greater than or equal to 0" do
     @amenity.price = -1.0
     assert_not @amenity.valid?
 
     @amenity.price = 0
     assert @amenity.valid?
+  end
+
+  test "set price to zero if blank" do
+    @amenity.price = nil
+    assert_equal 0, @amenity.price
   end
 
   test "should belong to a room" do

@@ -13,7 +13,7 @@ module RoomsHelper
       :rentable,
       :hourly_rate_in_cents,
       :credit_cost,
-      amenities_attributes: [:id, :name, :price],
+      amenities_attributes: [:id, :name, :price, :_destroy],
     )
 
     dollars = Money.from_amount(p[:hourly_rate_in_cents].to_i, "USD")

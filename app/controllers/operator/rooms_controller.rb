@@ -65,6 +65,7 @@ class Operator::RoomsController < Operator::BaseController
     authorize @room
 
     @room.update(room_params)
+    handle_amenity_deletions_if_needed
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
@@ -92,5 +93,15 @@ class Operator::RoomsController < Operator::BaseController
     else
       Room.unscoped
     end.friendly.find(params[key])
+  end
+
+  def handle_amenity_deletions_if_needed
+    return unless params[:room][:amenities_attributes]
+
+    params[:room][:amenities_attributes].each do |_, amenity_attrs|
+      if amenity_attrs[:_destroy] == "1" && amenity_attrs[:id].present?
+        Amenity.find(amenity_attrs[:id]).destroy
+      end
+    end
   end
 end

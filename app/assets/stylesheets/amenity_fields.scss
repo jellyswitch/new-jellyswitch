@@ -1,0 +1,13 @@
+#amenities {
+  .amenity-container {
+    gap: 12px;
+
+    .name-group {
+      flex: 5;
+    }
+
+    .price-group {
+      flex: 4.5;
+    }
+  }
+}
