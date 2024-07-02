@@ -34,7 +34,7 @@ class Room < ApplicationRecord
   searchkick
   # Relationships
   has_many :reservations
-  has_many :amenities, -> { order(:name) }, dependent: :destroy
+  has_many :amenities, dependent: :destroy
   accepts_nested_attributes_for :amenities, reject_if: :all_blank
 
   belongs_to :operator
