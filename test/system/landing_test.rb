@@ -1,4 +1,4 @@
-require 'application_system_test_case'
+require "application_system_test_case"
 
 class LandingTest < ApplicationSystemTestCase
   include ApplicationHelper
@@ -13,7 +13,7 @@ class LandingTest < ApplicationSystemTestCase
     log_in @user
 
     assert_text "Upcoming Reservation"
-    assert_text long_date(@ongoing_reservation.datetime_in)
+    assert_text @ongoing_reservation.datetime_in.strftime("%B %-d, %Y")
     assert_text @ongoing_reservation.room.name
   end
 

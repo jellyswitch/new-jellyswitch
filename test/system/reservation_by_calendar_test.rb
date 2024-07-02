@@ -30,7 +30,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     find(".fc-day-top[data-date='#{@day.strftime("%Y-%m-%d")}']").click
 
     assert_text "Reservation Details"
-    assert_text @day.strftime("%B %d, %Y")
+    assert_text @day.strftime("%B %-d, %Y")
 
     find(".form-check-label", text: "Night (PM)").click
     find(".time-slot", text: @time).click
