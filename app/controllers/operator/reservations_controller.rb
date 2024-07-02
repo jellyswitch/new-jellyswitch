@@ -157,10 +157,11 @@ class Operator::ReservationsController < Operator::BaseController
   # New 'Reservation Now' flow
 
   def calendar
+    @current_date = Time.zone.today
     if params[:reserve_now]
-      @current_date = Time.zone.today
       @nearest_time_slot = calculate_nearest_time_slot(@current_date)
       @day_or_night = @nearest_time_slot.hour < 12 ? "day" : "night" if @nearest_time_slot
+      @is_reserve_now = true
     end
     background_image
   end

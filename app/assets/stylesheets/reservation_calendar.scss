@@ -636,8 +636,7 @@
     }
 
     .fc-unthemed .fc-disabled-day {
-        background: #d7d7d7;
-        opacity: .3;
+        background: rgba(52, 40, 104, .03);
     }
 
     /* Icons */
@@ -919,8 +918,18 @@
         right: 0;
     }
 
-    .fc-day-top.fc-other-month {
+    .fc-day.fc-other-month {
         opacity: 0.3;
+        background: rgba(52, 40, 104, .03);
+    }
+
+    .fc-day-top.fc-past {
+        opacity: 0.3;
+
+    }
+
+    .fc-disabled-day {
+        background: #fbfbfb;
     }
 
     .fc-basic-view .fc-week-number,
@@ -1349,12 +1358,8 @@
         font-weight: 400;
     }
 
-    .fc-day.fc-today {
-        background: rgba(52, 40, 104, .03);
-    }
-
     .fc-day.alert-info {
-        background: rgba(52, 40, 104, .03);
+        background: white;
     }
 
     .datepicker {

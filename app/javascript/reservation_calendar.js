@@ -2,7 +2,9 @@ $(document).ready(function () {
     // Initialize the ReservationCalendar class on document ready
     class ReservationCalendar {
         constructor() {
+            this.today = $('input[name="date"]').val();
             this.initializeCalendar();
+
             this.handleDurationChange();
             this.handleRoomSelectionChange();
             this.handleFormSubmission();
@@ -17,6 +19,7 @@ $(document).ready(function () {
                 themeSystem: 'bootstrap4',
                 businessHours: false,
                 defaultView: 'month',
+                showNonCurrentDates: false,
                 header: {
                     left: 'title',
                     right: 'today prev,next'
@@ -26,11 +29,12 @@ $(document).ready(function () {
         }
 
         handleReserveNowFlow() {
+            const isReserveNow = $('input[name="date"]').data('reserve-now');
             const currentDate = $('input[name="date"]').val();
             const availableTimeSlot = $("input[name='time']").val();
             const dayOrNight = $('input[name="day-light-options"]:checked').val();
 
-            if (currentDate && dayOrNight) {
+            if (isReserveNow && currentDate && dayOrNight) {
                 this.prefillReservationForm(currentDate, availableTimeSlot, dayOrNight);
             }
         }
@@ -77,6 +81,8 @@ $(document).ready(function () {
         }
 
         handleDayClick(date, event) {
+            if (moment(this.today).isAfter(date)) return;
+
             const formattedDate = date.format('YYYY-MM-DD');
             this.highlightSelectedDate(formattedDate);
             const displayDate = date.format('MMMM D, YYYY');
