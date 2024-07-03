@@ -71,7 +71,8 @@ class Operator::RoomsController < Operator::BaseController
       flash[:notice] = "Room #{@room.name} has been updated."
       turbo_redirect(room_path(@room))
     else
-      render :edit, status: 422
+      flash[:error] = @room.errors.full_messages.to_sentence
+      turbo_redirect(referrer_or_root)
     end
   rescue Exception => e
     Honeybadger.notify(e)
