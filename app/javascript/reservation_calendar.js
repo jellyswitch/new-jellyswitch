@@ -12,6 +12,12 @@ $(document).ready(function () {
             this.handleModalClose();
 
             this.handleReserveNowFlow();
+
+            this.USDollar = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+            });
+            this.reservationPrice = 0;
         }
 
         initializeCalendar() {
@@ -76,6 +82,11 @@ $(document).ready(function () {
                     return;
                 }
 
+                const selectedAmenities = [];
+                $('.amenity-checkbox:checked').each(function () {
+                    selectedAmenities.push($(this).val());
+                });
+
                 this.createReservation({ room_id: roomId, date, time, duration, day_or_night: dayOrNight });
             });
         }
@@ -126,6 +137,7 @@ $(document).ready(function () {
                 data: { room_id: roomId, date: date, duration: duration },
                 success: (room) => {
                     this.displayRoomDetails(room);
+                    this.reservationPrice = room.should_charge ? room.reservation_price : 0
                 },
                 error: (xhr, status, error) => {
                     console.error('Error fetching room details:', error);
@@ -161,6 +173,8 @@ $(document).ready(function () {
                 method: 'GET',
                 data: { date: date, time: time, duration: duration, day_or_night: dayOrNight },
                 success: (response) => {
+                    this.hideAmenities();
+
                     $(".available-room-group").removeClass('d-none');
                     $(".room-details").addClass('d-none');
                     $(".price-container").addClass('d-none');
@@ -280,10 +294,49 @@ $(document).ready(function () {
             });
         }
 
+        hideAmenities() {
+            $('.amenities-container').addClass('d-none');
+        }
+
+        displayAmenities(amenities) {
+            const amenitiesContainer = $('.amenities-container');
+            const amenitiesList = $('.amenities-list');
+            amenitiesList.empty();
+
+            if (amenities.length === 0) {
+                this.hideAmenities();
+                return;
+            }
+
+            amenities.forEach((amenity, index) => {
+                const amenityHtml = `
+                    <div class="col-md-4 col-sm-6">
+                        <div class="form-check">
+                            <input class="form-check-input amenity-checkbox" type="checkbox" value="${amenity.id}" id="amenity-${amenity.id}" data-price="${amenity.price}">
+                            <label class="form-check-label amenity-item" for="amenity-${amenity.id}">
+                                ${amenity.name} - $${amenity.price}
+                            </label>
+                        </div>
+                    </div>
+                `;
+                amenitiesList.append(amenityHtml);
+            });
+
+            amenitiesContainer.removeClass('d-none');
+
+            // Add event listener to update price when amenities are selected/deselected
+            $('.amenity-checkbox').on('change', (event) => {
+                const checkbox = $(event.target);
+                const price = parseFloat(checkbox.data('price'));
+                this.updateTotalPrice(price, checkbox.is(':checked'));
+            });
+        }
+
         displayRoomDetails(room) {
-            const should_charge = room.should_charge && room.hourly_price != "$0.00"
-            const hourlyPriceText = should_charge ? room.hourly_price : "Free";
-            const reservationPriceText = room.reservation_price;
+            const should_charge = room.should_charge && room.hourly_price != 0
+
+            const hourlyPriceText = should_charge ? this.USDollar.format(room.hourly_price) : "Free";
+            const reservationPriceText = this.USDollar.format(room.reservation_price);
 
             $('.room-details .hourly-price .details-value').text(hourlyPriceText);
             $('.room-details .room-capacity .details-value').text(room.capacity);
@@ -307,6 +360,21 @@ $(document).ready(function () {
             }
 
             $('.room-details').removeClass('d-none');
+
+            this.displayAmenities(room.amenities);
+        }
+
+        updateTotalPrice(price, isAdding) {
+            if (isAdding) {
+                this.reservationPrice += price;
+            } else {
+                this.reservationPrice -= price;
+            }
+
+            const isHidden = this.reservationPrice === 0;
+
+            $('.price-container').toggleClass('d-none', isHidden);
+            $('.price-container .price-value').text(this.USDollar.format(this.reservationPrice));
         }
     }
 
