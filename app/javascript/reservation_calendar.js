@@ -81,9 +81,9 @@ $(document).ready(function () {
         }
 
         handleDayClick(date, event) {
-            if (moment(this.today).isAfter(date)) return;
-
             const formattedDate = date.format('YYYY-MM-DD');
+            if ($(`td.fc-day[data-date="${formattedDate}"]`).hasClass('fc-past')) return;
+
             this.highlightSelectedDate(formattedDate);
             const displayDate = date.format('MMMM D, YYYY');
             this.updateDateDisplay(displayDate);

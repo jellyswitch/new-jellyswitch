@@ -3,7 +3,7 @@ require "application_system_test_case"
 class ReservationByCalendarTest < ApplicationSystemTestCase
   setup do
     @room = rooms(:small_meeting_room)
-    @day = Time.zone.tomorrow
+    @day = Time.now
 
     @time = "10:00"
 
