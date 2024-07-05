@@ -78,11 +78,15 @@ class Reservation < ApplicationRecord
     datetime_in > Time.zone.now
   end
 
-  def charge_amount
+  def room_price
     room_price = paid? ? ((room.hourly_rate_in_cents / 60.0) * minutes).to_i : 0
+  end
 
+  def amenity_price
     amenity_price = Money.from_amount(amenities.sum(:price), "USD").cents
+  end
 
+  def charge_amount
     room_price + amenity_price
   end
 

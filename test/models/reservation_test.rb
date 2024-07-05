@@ -65,6 +65,33 @@ class ReservationTest < ActiveSupport::TestCase
     end
   end
 
+  test "room_price returns the price of the room when paid? is true" do
+    @ongoing_room.update hourly_rate_in_cents: 1000
+    @ongoing_reservation.update(
+      paid: true,
+      minutes: 180,
+    )
+
+    assert_equal @ongoing_reservation.room_price, (180 / 60) * 1000
+  end
+
+  test "room_price returns the 0 when paid? is false" do
+    @ongoing_room.update hourly_rate_in_cents: 1000
+    @ongoing_reservation.update(
+      paid: false,
+      minutes: 180,
+    )
+
+    assert_equal @ongoing_reservation.room_price, 0
+  end
+
+  test "amenity_price returns the total amenity price in cents" do
+    @ongoing_reservation.amenities << [@amenity1, @amenity2]
+    expected_price = (@amenity1.price + @amenity2.price) * 100
+
+    assert_equal @ongoing_reservation.amenity_price, expected_price
+  end
+
   test "charge_amount calculation with no amenities" do
     @ongoing_reservation.amenities.destroy_all
 

@@ -60,4 +60,93 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     assert_text("#{@duration_minutes} minutes")
     assert_text("Amenities: AV")
   end
+
+  test "non-membership users reserve paid meeting room" do
+    StripeMock.start
+    @room.update hourly_rate_in_cents: 1000
+    @user = users(:cowork_tahoe_non_member)
+
+    sleep 1
+    log_in @user
+
+    click_on "Book a meeting room"
+
+    assert_text "Reservation Date"
+
+    find(".fc-day-top[data-date='#{@day.strftime("%Y-%m-%d")}']").click
+    find(".time-slot", text: @time).click
+    find(".duration-slot", text: @duration).click
+    select @room.name, from: "room_id"
+
+    click_on "Confirm"
+
+    assert_text("Reservation Details")
+    assert_text("Payment Required: Yes")
+  end
+
+  test "membership users reserve paid meeting room for free" do
+    StripeMock.start
+    @room.update hourly_rate_in_cents: 1000
+    @user = users(:cowork_tahoe_member)
+    setup_stripe
+
+    sleep 1
+    log_in @user
+
+    click_on "Reserve Now"
+
+    assert_text "Reservation Date"
+
+    find(".duration-slot", text: @duration).click
+    select @room.name, from: "room_id"
+
+    click_on "Confirm"
+
+    assert_text("Reservation Details")
+    assert_text("Payment Required: No")
+  end
+
+  test "membership users reserve free meeting room" do
+    StripeMock.start
+    @room.update hourly_rate_in_cents: 0
+    @user = users(:cowork_tahoe_member)
+    setup_stripe
+
+    sleep 1
+    log_in @user
+
+    click_on "Reserve Now"
+
+    assert_text "Reservation Date"
+
+    find(".duration-slot", text: @duration).click
+    select @room.name, from: "room_id"
+
+    click_on "Confirm"
+
+    assert_text("Reservation Details")
+    assert_text("Payment Required: No")
+  end
+
+  test "admin reserve paid meeting room for free but pay for amenities" do
+    StripeMock.start
+    @room.update hourly_rate_in_cents: 1000
+    @user = users(:cowork_tahoe_admin)
+
+    log_in @user
+    sleep 1
+
+    visit calendar_reservations_path(reserve_now: true)
+    assert_text "Reservation Date"
+
+    find(".duration-slot", text: @duration).click
+    select @room.name, from: "room_id"
+    find(".amenity-item", text: "AV - $50").click
+    assert_equal "$50.00", find(".price-value").text
+
+    click_on "Confirm"
+
+    assert_text("Reservation Details")
+    assert_text("Payment Required: No")
+  end
 end
