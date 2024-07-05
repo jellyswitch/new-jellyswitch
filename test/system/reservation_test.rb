@@ -10,6 +10,8 @@ class ReservationTest < ApplicationSystemTestCase
     @operator.update(credits_enabled: false)
     @reservation = reservations(:future_room_reservation)
 
+    Stripe::Invoice.any_instance.stubs(:number).returns("123456")
+
     setup_stripe
   end
 
@@ -140,8 +142,6 @@ class ReservationTest < ApplicationSystemTestCase
     log_in @user
     @room.update(hourly_rate_in_cents: 5000)
     @reservation.update(paid: true)
-
-    Stripe::Invoice.any_instance.stubs(:number).returns("123456")
 
     sleep 1
     # Test

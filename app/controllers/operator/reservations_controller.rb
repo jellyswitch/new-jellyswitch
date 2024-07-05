@@ -236,6 +236,8 @@ class Operator::ReservationsController < Operator::BaseController
     @day_or_night = reservation_params[:day_or_night]
     @hour = Time.strptime(reservation_params[:time], "%I:%M")
 
+    amenity_ids = params[:amenity_ids] || []
+
     # Adjust for AM/PM
     if @day_or_night == "night" && @hour.hour != 12
       @hour += 12.hours
@@ -251,6 +253,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  hours: @duration / 60,
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
+                                                                 amenity_ids: amenity_ids,
                                                                }, user: current_user)
 
     @reservation = result.reservation

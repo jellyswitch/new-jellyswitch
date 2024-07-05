@@ -12,6 +12,8 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     operator = operators(:cowork_tahoe)
     operator.update(credits_enabled: false)
+
+    Stripe::Invoice.any_instance.stubs(:number).returns("123456")
   end
 
   test "users go through the reserve by calendar flow and create reservation successfully" do
@@ -42,6 +44,11 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     select @room.name, from: "room_id"
 
+    assert_text "Additional Amenities"
+
+    find(".amenity-item", text: "AV - $50").click
+    assert_equal "$50.00", find(".price-value").text
+
     click_on "Confirm"
     wait_for_ajax
 
@@ -51,5 +58,6 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     assert_text("#{@day.strftime("%m/%d/%Y")} at #{@time}pm")
     assert_text("#{@duration_minutes} minutes")
+    assert_text("Amenities: AV")
   end
 end

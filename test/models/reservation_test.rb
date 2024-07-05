@@ -5,12 +5,21 @@ class ReservationTest < ActiveSupport::TestCase
     @ongoing_reservation = reservations(:room_reservation)
     @ongoing_reservation.update(datetime_in: Time.zone.now)
 
+    @ongoing_room = @ongoing_reservation.room
+
+    @amenity1 = Amenity.create(name: "Amenity 1", price: 10, room: @ongoing_room)
+    @amenity2 = Amenity.create(name: "Amenity 2", price: 15, room: @ongoing_room)
+
     @future_reservation = reservations(:future_room_reservation)
   end
 
   def teardown
     @future_reservation.destroy
     @ongoing_reservation.destroy
+  end
+
+  test "associations" do
+    assert_equal :has_and_belongs_to_many, Reservation.reflect_on_association(:amenities).macro
   end
 
   test "ongoing scope should return ongoing reservations" do
@@ -54,5 +63,35 @@ class ReservationTest < ActiveSupport::TestCase
       assert_equal @ongoing_reservation.minutes, original_duration
       assert @ongoing_reservation.ended_early?
     end
+  end
+
+  test "charge_amount calculation with no amenities" do
+    @ongoing_reservation.amenities.destroy_all
+
+    expected_amount = ((@ongoing_reservation.room.hourly_rate_in_cents / 60.0) * @ongoing_reservation.minutes).to_i
+
+    assert_equal @ongoing_reservation.charge_amount, expected_amount
+  end
+
+  test "charge_amount calculation with amenities" do
+    room = @ongoing_reservation.room
+
+    @ongoing_reservation.amenities << [@amenity1, @amenity2]
+
+    room_charge = ((room.hourly_rate_in_cents / 60.0) * @ongoing_reservation.minutes).to_i
+    amenity_charge = Money.from_amount(25, "USD").cents
+    expected_amount = room_charge + amenity_charge
+
+    assert_equal @ongoing_reservation.charge_amount, expected_amount
+  end
+
+  test "amenity_names returns a list of amenity names" do
+    room = @ongoing_reservation.room
+    room.update(av: true, whiteboard: true)
+
+    @ongoing_reservation.amenities << [@amenity1, @amenity2]
+
+    expected_names = ["Amenity 1", "Amenity 2", "AV Equipment", "Whiteboard"].join(", ")
+    assert_equal @ongoing_reservation.amenity_names, expected_names
   end
 end

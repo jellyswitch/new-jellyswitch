@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_01_043515) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_05_021621) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -101,6 +101,13 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_01_043515) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["room_id"], name: "index_amenities_on_room_id"
+  end
+
+  create_table "amenities_reservations", id: false, force: :cascade do |t|
+    t.bigint "reservation_id", null: false
+    t.bigint "amenity_id", null: false
+    t.index ["amenity_id", "reservation_id"], name: "index_amenities_reservations_on_amenity_id_and_reservation_id"
+    t.index ["reservation_id", "amenity_id"], name: "index_amenities_reservations_on_reservation_id_and_amenity_id"
   end
 
   create_table "announcements", force: :cascade do |t|
@@ -624,6 +631,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_01_043515) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "amenities", "rooms"
+  add_foreign_key "amenities_reservations", "amenities"
+  add_foreign_key "amenities_reservations", "reservations"
   add_foreign_key "doors", "locations"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
   add_foreign_key "office_leases", "offices", on_delete: :nullify

@@ -82,12 +82,12 @@ $(document).ready(function () {
                     return;
                 }
 
-                const selectedAmenities = [];
+                const amenityIds = [];
                 $('.amenity-checkbox:checked').each(function () {
-                    selectedAmenities.push($(this).val());
+                    amenityIds.push($(this).val());
                 });
 
-                this.createReservation({ room_id: roomId, date, time, duration, day_or_night: dayOrNight });
+                this.createReservation({ room_id: roomId, date, time, duration, day_or_night: dayOrNight, amenity_ids: amenityIds });
             });
         }
 
@@ -186,12 +186,12 @@ $(document).ready(function () {
             });
         }
 
-        createReservation({ room_id, date, time, duration, day_or_night }) {
+        createReservation({ room_id, date, time, duration, day_or_night, amenity_ids }) {
             $.ajax({
                 url: '/reservations',
                 method: 'POST',
                 data: {
-                    room_id, date, time, duration, day_or_night
+                    room_id, date, time, duration, day_or_night, amenity_ids
                 },
                 error: (xhr, status, error) => {
                     console.error('Error creating reservation:', error);
@@ -310,7 +310,7 @@ $(document).ready(function () {
 
             amenities.forEach((amenity, index) => {
                 const amenityHtml = `
-                    <div class="col-md-4 col-sm-6">
+                    <div class="col-6 col-md-4">
                         <div class="form-check">
                             <input class="form-check-input amenity-checkbox" type="checkbox" value="${amenity.id}" id="amenity-${amenity.id}" data-price="${amenity.price}">
                             <label class="form-check-label amenity-item" for="amenity-${amenity.id}">

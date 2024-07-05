@@ -33,6 +33,15 @@
     </span>
   </p>
 
+  <%- if (amenity_list = reservation.amenity_names).present? %>
+    <p class="lead font-weight-bold">
+      Amenities:
+      <span class="font-weight-normal">
+        <%= amenity_list %>
+      </span>
+    </p>
+  <%- end %>
+
   <%- if reservation.cancelled? %>
     <p class="font-weight-bold">
       Status:

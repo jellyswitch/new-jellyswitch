@@ -19,6 +19,7 @@ class Reservation < ApplicationRecord
   # Relationships
   belongs_to :room
   belongs_to :user
+  has_and_belongs_to_many :amenities
 
   validates_with ReservationValidator
 
@@ -78,7 +79,11 @@ class Reservation < ApplicationRecord
   end
 
   def charge_amount
-    ((room.hourly_rate_in_cents / 60.0) * minutes).to_i
+    room_price = paid? ? ((room.hourly_rate_in_cents / 60.0) * minutes).to_i : 0
+
+    amenity_price = Money.from_amount(amenities.sum(:price), "USD").cents
+
+    room_price + amenity_price
   end
 
   def charge_description
@@ -92,5 +97,13 @@ class Reservation < ApplicationRecord
   def end_now!
     actual_duration = [(Time.current - datetime_in) / 60, minutes].min.floor
     update(minutes: actual_duration, ended_early: true)
+  end
+
+  def amenity_names
+    names = amenities.pluck(:name)
+    names << "AV Equipment" if room.av?
+    names << "Whiteboard" if room.whiteboard?
+
+    names.join(", ")
   end
 end
