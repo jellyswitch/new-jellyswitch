@@ -1,4 +1,3 @@
-
 class Operator::RoomsController < Operator::BaseController
   include RoomsHelper
   include SessionsHelper
@@ -58,6 +57,7 @@ class Operator::RoomsController < Operator::BaseController
     find_room
     authorize @room
     background_image
+    @room.amenities.build if @room.amenities.empty?
   end
 
   def update
@@ -86,7 +86,7 @@ class Operator::RoomsController < Operator::BaseController
     @rentable_rooms = current_location.rooms.rentable.cheapest.all
   end
 
-  def find_room(key=:id)
+  def find_room(key = :id)
     @room = if logged_in?
       Room
     else
