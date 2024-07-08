@@ -65,12 +65,14 @@ class Operator::RoomsController < Operator::BaseController
     authorize @room
 
     @room.update(room_params)
+    handle_amenity_deletions_if_needed
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
       turbo_redirect(room_path(@room))
     else
-      render :edit, status: 422
+      flash[:error] = @room.errors.full_messages.to_sentence
+      turbo_redirect(referrer_or_root)
     end
   rescue Exception => e
     Honeybadger.notify(e)
@@ -92,5 +94,15 @@ class Operator::RoomsController < Operator::BaseController
     else
       Room.unscoped
     end.friendly.find(params[key])
+  end
+
+  def handle_amenity_deletions_if_needed
+    return unless params[:room][:amenities_attributes]
+
+    params[:room][:amenities_attributes].each do |_, amenity_attrs|
+      if amenity_attrs[:_destroy] == "1" && amenity_attrs[:id].present?
+        Amenity.find(amenity_attrs[:id]).destroy
+      end
+    end
   end
 end

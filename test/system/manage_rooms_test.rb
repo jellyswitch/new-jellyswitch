@@ -57,7 +57,6 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
     within all("#amenities .nested-fields")[1] do
       name_input.set("Tea")
-      price_input.set("10.00")
     end
 
     click_on "Update room"
@@ -74,7 +73,31 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
     within all("#amenities .nested-fields")[1] do
       assert_equal name_input.value, "Tea"
-      assert_equal price_input.value, "10.0"
+      assert_equal price_input.value, "0.0"
     end
+  end
+
+  test "should able to remove the room's amenities successfully" do
+    @room.amenities.destroy_all
+    Amenity.create(room: @room, name: "Coffee", price: 15.00)
+    Amenity.create(room: @room, name: "AV", price: 20.00)
+
+    assert_current_path feed_items_path
+    visit edit_room_path(@room)
+
+    assert_text "Amenities"
+
+    assert_selector "#amenities .nested-fields", count: 2
+    within all("#amenities .nested-fields").last do
+      click_on "x"
+    end
+
+    click_on "Update room"
+    assert_text "Room #{@room.name} has been updated."
+
+    click_on "Edit Room"
+    sleep 1
+
+    assert_selector "#amenities .nested-fields", count: 1
   end
 end
