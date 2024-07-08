@@ -208,8 +208,8 @@ class Operator::ReservationsController < Operator::BaseController
 
       should_charge = current_user.should_charge_for_reservation?(current_location, date)
 
-      hourly_price = number_to_currency(room.hourly_rate_in_cents / 100.0)
-      reservation_price = number_to_currency((room.hourly_rate_in_cents / 100.0) * (duration / 60.0))
+      hourly_price = room.hourly_rate_in_cents / 100.0
+      reservation_price = room.hourly_rate_in_cents / 100.0 * (duration / 60.0)
 
       render json: {
         id: room.id,
@@ -220,6 +220,7 @@ class Operator::ReservationsController < Operator::BaseController
         whiteboard: room.whiteboard,
         reservation_price: reservation_price,
         should_charge: should_charge,
+        amenities: room.amenities,
       }
     else
       render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
@@ -234,6 +235,8 @@ class Operator::ReservationsController < Operator::BaseController
 
     @day_or_night = reservation_params[:day_or_night]
     @hour = Time.strptime(reservation_params[:time], "%I:%M")
+
+    amenity_ids = params[:amenity_ids] || []
 
     # Adjust for AM/PM
     if @day_or_night == "night" && @hour.hour != 12
@@ -250,6 +253,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  hours: @duration / 60,
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
+                                                                 amenity_ids: amenity_ids,
                                                                }, user: current_user)
 
     @reservation = result.reservation

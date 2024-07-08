@@ -11,6 +11,10 @@ class AmenityTest < ActiveSupport::TestCase
     Amenity.destroy_all
   end
 
+  test "associations" do
+    assert_equal :has_and_belongs_to_many, Amenity.reflect_on_association(:reservations).macro
+  end
+
   test "should be valid" do
     assert @amenity.valid?
   end

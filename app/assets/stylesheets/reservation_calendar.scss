@@ -1571,6 +1571,18 @@
         }
     }
 
+    .amenities-container {
+        padding: 0 4px;
+
+        label {
+            font-size: 16px;
+        }
+
+        .amenity-item {
+            font-weight: 500;
+        }
+    }
+
     .price-container {
         display: flex;
         align-items: center;

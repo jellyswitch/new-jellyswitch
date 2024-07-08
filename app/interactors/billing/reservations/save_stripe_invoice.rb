@@ -14,7 +14,7 @@ class Billing::Reservations::SaveStripeInvoice
       charge_amount = ((reservation.room.hourly_rate_in_cents / 60.0) * additional_duration).to_i
     end
 
-    if reservation.paid?
+    if charge_amount.positive?
       @invoice_item = Stripe::InvoiceItem.create({
         customer: reservation.user.stripe_customer_id,
         currency: "usd",
