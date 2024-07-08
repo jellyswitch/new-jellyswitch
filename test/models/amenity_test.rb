@@ -30,10 +30,19 @@ class AmenityTest < ActiveSupport::TestCase
 
     @amenity.price = 0
     assert @amenity.valid?
+
+    @amenity.membership_price = -1.0
+    assert_not @amenity.valid?
+
+    @amenity.membership_price = 0
+    assert @amenity.valid?
   end
 
   test "set price to zero if blank" do
     @amenity.price = nil
+    assert_equal 0, @amenity.price
+
+    @amenity.membership_price = nil
     assert_equal 0, @amenity.price
   end
 

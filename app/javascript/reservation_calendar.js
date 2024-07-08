@@ -298,7 +298,7 @@ $(document).ready(function () {
             $('.amenities-container').addClass('d-none');
         }
 
-        displayAmenities(amenities) {
+        displayAmenities(amenities, isMembership) {
             const amenitiesContainer = $('.amenities-container');
             const amenitiesList = $('.amenities-list');
             amenitiesList.empty();
@@ -309,12 +309,14 @@ $(document).ready(function () {
             }
 
             amenities.forEach((amenity, index) => {
+                const displayPrice = isMembership ? amenity.membership_price : amenity.price;
+
                 const amenityHtml = `
                     <div class="col-6 col-md-4">
                         <div class="form-check">
-                            <input class="form-check-input amenity-checkbox" type="checkbox" value="${amenity.id}" id="amenity-${amenity.id}" data-price="${amenity.price}">
+                            <input class="form-check-input amenity-checkbox" type="checkbox" value="${amenity.id}" id="amenity-${amenity.id}" data-price="${displayPrice}">
                             <label class="form-check-label amenity-item" for="amenity-${amenity.id}">
-                                ${amenity.name} - $${amenity.price}
+                                ${amenity.name} - $${displayPrice}
                             </label>
                         </div>
                     </div>
@@ -324,12 +326,7 @@ $(document).ready(function () {
 
             amenitiesContainer.removeClass('d-none');
 
-            // Add event listener to update price when amenities are selected/deselected
-            $('.amenity-checkbox').on('change', (event) => {
-                const checkbox = $(event.target);
-                const price = parseFloat(checkbox.data('price'));
-                this.updateTotalPrice(price, checkbox.is(':checked'));
-            });
+            this.setupAmenityCheckboxHandlers();
         }
 
         displayRoomDetails(room) {
@@ -361,7 +358,8 @@ $(document).ready(function () {
 
             $('.room-details').removeClass('d-none');
 
-            this.displayAmenities(room.amenities);
+            const isMembership = !should_charge;
+            this.displayAmenities(room.amenities, isMembership);
         }
 
         updateTotalPrice(price, isAdding) {
@@ -375,6 +373,14 @@ $(document).ready(function () {
 
             $('.price-container').toggleClass('d-none', isHidden);
             $('.price-container .price-value').text(this.USDollar.format(this.reservationPrice));
+        }
+
+        setupAmenityCheckboxHandlers() {
+            $('.amenity-checkbox').off('change').on('change', (event) => {
+                const checkbox = $(event.target);
+                const price = parseFloat(checkbox.data('price'));
+                this.updateTotalPrice(price, checkbox.is(':checked'));
+            });
         }
     }
 
