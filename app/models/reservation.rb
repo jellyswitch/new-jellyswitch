@@ -83,7 +83,11 @@ class Reservation < ApplicationRecord
   end
 
   def amenity_price
-    amenity_price = Money.from_amount(amenities.sum(:price), "USD").cents
+    if user.should_charge_for_reservation?(room.location, datetime_in.to_date)
+      amenity_price = Money.from_amount(amenities.sum(:price), "USD").cents
+    else
+      amenity_price = Money.from_amount(amenities.sum(:membership_price), "USD").cents
+    end
   end
 
   def charge_amount

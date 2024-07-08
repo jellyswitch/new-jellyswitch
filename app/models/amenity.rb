@@ -4,8 +4,13 @@ class Amenity < ApplicationRecord
 
   validates :name, presence: true
   validates :price, numericality: { greater_than_or_equal_to: 0 }
+  validates :membership_price, numericality: { greater_than_or_equal_to: 0 }
 
   def price=(value)
+    super(value.present? ? value : 0)
+  end
+
+  def membership_price=(value)
     super(value.present? ? value : 0)
   end
 end

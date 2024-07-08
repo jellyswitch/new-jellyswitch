@@ -1,4 +1,6 @@
- <div class="form-group">
+<%= javascript_include_tag "manage_amenity.js" %>
+
+<div class="form-group">
   <%= f.label :name, "What is this room called?" %>
   <%= f.text_field :name, placeholder: "Conference Room", class: "form-control"
   %>
@@ -83,6 +85,17 @@
 
 <h4 class="mt-4">Amenities</h4>
 <div id="amenities">
+  <div class="form-group amenity-type-price">
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="amenity-type" id="regular-price" value="regular" checked>
+      <label class="form-check-label" for="regular-price">Regular</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="radio" name="amenity-type" id="membership-price" value="membership">
+      <label class="form-check-label" for="membership-price">Membership</label>
+    </div>
+  </div>
+
   <%= f.fields_for :amenities do |amenity_form| %>
     <%= render 'amenity_fields', f: amenity_form %>
   <% end %>

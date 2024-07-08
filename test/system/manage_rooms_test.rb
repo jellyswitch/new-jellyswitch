@@ -100,4 +100,46 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
     assert_selector "#amenities .nested-fields", count: 1
   end
+
+  test "should be able to add the room's amenities with regular and membership prices successfully" do
+    @room.amenities.destroy_all
+    assert_current_path feed_items_path
+    visit edit_room_path(@room)
+
+    assert_text "Amenities"
+
+    within all("#amenities .nested-fields")[0] do
+      name_input.set("Coffee")
+      price_input.set("15.00")
+    end
+
+    click_on "+ Add More"
+
+    within all("#amenities .nested-fields")[1] do
+      name_input.set("Projector")
+      price_input.set("30.00")
+    end
+
+    within ".amenity-type-price" do
+      find(".form-check-label", text: "Membership").click
+    end
+
+    within all("#amenities .nested-fields")[0] do
+      price_input.set("5.00")
+    end
+
+    click_on "Update room"
+
+    assert_text "Room #{@room.name} has been updated."
+    @room.reload
+    assert_equal 2, @room.amenities.count
+
+    coffee_amenity = @room.amenities.find_by(name: "Coffee")
+    assert_equal coffee_amenity.price, 15.0
+    assert_equal coffee_amenity.membership_price, 5.0
+
+    projector_amenity = @room.amenities.find_by(name: "Projector")
+    assert_equal projector_amenity.price, 30.0
+    assert_equal projector_amenity.membership_price, 0.0
+  end
 end

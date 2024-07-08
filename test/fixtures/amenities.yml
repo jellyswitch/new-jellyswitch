@@ -2,10 +2,12 @@
 
 av:
   name: AV
-  price: 50
+  price: 50.0
+  membership_price: 25.5
   room: small_meeting_room
 
 coffee:
   name: Coffee
   price: 10.5
+  membership_price: 0
   room: small_meeting_room

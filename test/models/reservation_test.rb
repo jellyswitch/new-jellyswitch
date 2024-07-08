@@ -7,6 +7,8 @@ class ReservationTest < ActiveSupport::TestCase
 
     @ongoing_room = @ongoing_reservation.room
 
+    User.any_instance.stubs(:should_charge_for_reservation?).returns(true)
+
     @amenity1 = Amenity.create(name: "Amenity 1", price: 10, room: @ongoing_room)
     @amenity2 = Amenity.create(name: "Amenity 2", price: 15, room: @ongoing_room)
 
@@ -85,11 +87,20 @@ class ReservationTest < ActiveSupport::TestCase
     assert_equal @ongoing_reservation.room_price, 0
   end
 
-  test "amenity_price returns the total amenity price in cents" do
+  test "amenity_price returns the total regular amenity price for non-members" do
+    User.any_instance.stubs(:should_charge_for_reservation?).returns(true)
     @ongoing_reservation.amenities << [@amenity1, @amenity2]
     expected_price = (@amenity1.price + @amenity2.price) * 100
 
-    assert_equal @ongoing_reservation.amenity_price, expected_price
+    assert_equal expected_price, @ongoing_reservation.amenity_price
+  end
+
+  test "amenity_price returns the total membership amenity price for members" do
+    User.any_instance.stubs(:should_charge_for_reservation?).returns(false)
+    @ongoing_reservation.amenities << [@amenity1, @amenity2]
+    expected_price = (@amenity1.membership_price + @amenity2.membership_price) * 100
+
+    assert_equal expected_price, @ongoing_reservation.amenity_price
   end
 
   test "charge_amount calculation with no amenities" do

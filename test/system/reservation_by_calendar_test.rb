@@ -46,8 +46,8 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     assert_text "Additional Amenities"
 
-    find(".amenity-item", text: "AV - $50").click
-    assert_equal "$50.00", find(".price-value").text
+    find(".amenity-item", text: "AV - $25.5").click
+    assert_equal "$25.50", find(".price-value").text
 
     click_on "Confirm"
     wait_for_ajax
@@ -77,6 +77,11 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     find(".time-slot", text: @time).click
     find(".duration-slot", text: @duration).click
     select @room.name, from: "room_id"
+
+    within ".amenities-list" do
+      assert_text("AV - $50")
+      assert_text("Coffee - $10.5")
+    end
 
     click_on "Confirm"
 
@@ -141,8 +146,14 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     find(".duration-slot", text: @duration).click
     select @room.name, from: "room_id"
-    find(".amenity-item", text: "AV - $50").click
-    assert_equal "$50.00", find(".price-value").text
+
+    within ".amenities-list" do
+      assert_text("AV - $25.5")
+      assert_text("Coffee - $0")
+    end
+
+    find(".amenity-item", text: "AV - $25.5").click
+    assert_equal "$25.50", find(".price-value").text
 
     click_on "Confirm"
 
