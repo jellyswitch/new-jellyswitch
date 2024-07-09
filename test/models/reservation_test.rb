@@ -132,4 +132,21 @@ class ReservationTest < ActiveSupport::TestCase
     expected_names = ["Amenity 1", "Amenity 2", "AV Equipment", "Whiteboard"].join(", ")
     assert_equal @ongoing_reservation.amenity_names, expected_names
   end
+
+  test "additional_duration_price returns calculation for paid? reservation" do
+    @ongoing_reservation.update paid: true
+
+    extra_minutes = 30
+    expected_price = ((@ongoing_room.hourly_rate_in_cents / 60.0) * extra_minutes).to_i
+
+    assert_equal @ongoing_reservation.additional_duration_price(extra_minutes), expected_price
+  end
+
+  test "additional_duration_price returns calculation for not paid reservation" do
+    @ongoing_reservation.update paid: false
+
+    extra_minutes = 30
+
+    assert_equal @ongoing_reservation.additional_duration_price(extra_minutes), 0
+  end
 end

@@ -82,6 +82,10 @@ class Reservation < ApplicationRecord
     room_price = paid? ? ((room.hourly_rate_in_cents / 60.0) * minutes).to_i : 0
   end
 
+  def additional_duration_price(duration_minutes)
+    room_price = paid? ? ((room.hourly_rate_in_cents / 60.0) * duration_minutes).to_i : 0
+  end
+
   def amenity_price
     if user.should_charge_for_reservation?(room.location, datetime_in.to_date)
       amenity_price = Money.from_amount(amenities.sum(:price), "USD").cents

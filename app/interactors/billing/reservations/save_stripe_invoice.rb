@@ -11,7 +11,7 @@ class Billing::Reservations::SaveStripeInvoice
     charge_amount = reservation.charge_amount
 
     if is_extend
-      charge_amount = ((reservation.room.hourly_rate_in_cents / 60.0) * additional_duration).to_i
+      charge_amount = reservation.additional_duration_price(additional_duration)
     end
 
     if charge_amount.positive?
