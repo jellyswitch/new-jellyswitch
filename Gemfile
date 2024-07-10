@@ -85,4 +85,6 @@ group :development, :test do
   gem "pry-rails"
   gem "rails-controller-testing"
   gem "stripe-ruby-mock", "~> 3.0.1", :require => "stripe_mock"
+  gem "rspec-rails"
+  gem "factory_bot_rails"
 end
