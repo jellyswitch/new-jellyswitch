@@ -5,7 +5,7 @@ class Operator::RsvpsController < Operator::BaseController
   def going
     result = ::Events::Going.call(
       event: @event,
-      user: current_user
+      user: current_user,
     )
 
     if !result.success?
@@ -18,7 +18,7 @@ class Operator::RsvpsController < Operator::BaseController
   def not_going
     result = ::Events::NotGoing.call(
       event: @event,
-      user: current_user
+      user: current_user,
     )
 
     if !result.success?
@@ -33,7 +33,7 @@ class Operator::RsvpsController < Operator::BaseController
       event: @event,
       email: params[:email],
       visit: current_visit,
-      operator: current_tenant
+      operator: current_tenant,
     )
 
     if result.success?
@@ -46,11 +46,16 @@ class Operator::RsvpsController < Operator::BaseController
   end
 
   def login
+    if params[:session].blank?
+      turbo_redirect(event_path(@event), action: "replace")
+      return
+    end
+
     result = ::Events::LoginAndGoing.call(
       email: params[:session][:email],
       password: params[:session][:password],
       operator: current_tenant,
-      event: @event
+      event: @event,
     )
 
     if result.success?
