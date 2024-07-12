@@ -1,0 +1,202 @@
+require "rails_helper"
+
+RSpec.describe Reservation, type: :model do
+  let(:room) { create(:room, name: "Meeting Room 3A", hourly_rate_in_cents: 1000) }
+
+  describe "associations" do
+    it "has and belongs to many amenities" do
+      expect(Reservation.reflect_on_association(:amenities).macro).to eq(:has_and_belongs_to_many)
+    end
+  end
+
+  describe "scopes" do
+    let!(:ongoing_reservation) { create(:reservation, datetime_in: Time.zone.now, room: room) }
+    let!(:future_reservation) { create(:reservation, :future, room: room) }
+
+    it "returns only ongoing reservations" do
+      expect(Reservation.ongoing).to contain_exactly(ongoing_reservation)
+    end
+  end
+
+  describe "#datetime_out" do
+    let(:reservation) { build(:reservation, datetime_in: Time.zone.parse("2024-07-01 07:15:00"), minutes: 60) }
+
+    it "returns the datetime_in plus the minutes" do
+      expect(reservation.datetime_out).to eq(Time.zone.parse("2024-07-01 08:15:00"))
+    end
+  end
+
+  describe "timing status" do
+    let(:ongoing_reservation) { build(:reservation, datetime_in: Time.current) }
+    let(:future_reservation) { build(:reservation, :future) }
+
+    describe "#ongoing?" do
+      it "returns true for ongoing reservation" do
+        expect(ongoing_reservation).to be_ongoing
+        expect(future_reservation).not_to be_ongoing
+      end
+    end
+
+    describe "#future?" do
+      it "returns true for future reservation" do
+        expect(future_reservation).to be_future
+        expect(ongoing_reservation).not_to be_future
+      end
+    end
+  end
+
+  describe "#end_now!" do
+    let(:reservation) { create(:reservation, datetime_in: Time.current, room: room, minutes: 60) }
+
+    before do
+      Timecop.freeze(reservation.datetime_in)
+    end
+
+    after do
+      Timecop.return
+    end
+
+    def travel_and_end_reservation(travel_time)
+      Timecop.travel(travel_time)
+      reservation.end_now!
+      reservation.reload
+    end
+
+    context "when ended before the original end time" do
+      let(:new_duration) { 35.minutes }
+
+      before { travel_and_end_reservation(reservation.datetime_in + new_duration) }
+
+      it "updates the minutes to the actual duration" do
+        expect(reservation.minutes).to eq(new_duration.to_i / 60)
+      end
+
+      it "marks the reservation as ended early" do
+        expect(reservation).to be_ended_early
+      end
+    end
+
+    context "when ended after the original end time" do
+      let(:late_duration) { 90.minutes }
+
+      before { travel_and_end_reservation(reservation.datetime_in + late_duration) }
+
+      it "does not change the original minutes" do
+        expect(reservation.minutes).to eq(60)
+      end
+
+      it "still marks the reservation as ended early" do
+        expect(reservation).to be_ended_early
+      end
+    end
+  end
+
+  describe "#room_price" do
+    let(:reservation) { build(:reservation, room: room, minutes: 180) }
+
+    context "when the reservation is paid" do
+      before { reservation.paid = true }
+
+      it "returns the actual price of the room" do
+        expect(reservation.room_price).to eq(180 / 60 * room.hourly_rate_in_cents)
+      end
+    end
+
+    context "when the reservation is not paid" do
+      before { reservation.paid = false }
+
+      it "returns zero" do
+        expect(reservation.room_price).to eq(0)
+      end
+    end
+  end
+
+  describe "#amenity_price" do
+    let(:reservation) { build(:reservation, room: room, minutes: 180) }
+    let(:amenity1) { create(:amenity, name: "Amenity 1", room: room) }
+    let(:amenity2) { create(:amenity, name: "Amenity 2", room: room) }
+
+    before do
+      reservation.amenities = [amenity1, amenity2]
+      reservation.save
+    end
+
+    context "when user should charge for reservation" do
+      before { allow_any_instance_of(User).to receive(:should_charge_for_reservation?).and_return(true) }
+
+      it "returns the total regular amenity price for non-members" do
+        expected_price = Money.from_amount(amenity1.price + amenity2.price, "USD").cents
+        expect(reservation.amenity_price).to eq(expected_price)
+      end
+    end
+
+    context "when user should not charge for reservation" do
+      before { allow_any_instance_of(User).to receive(:should_charge_for_reservation?).and_return(false) }
+
+      it "returns the total membership amenity price for non-members" do
+        expected_price = Money.from_amount(amenity1.membership_price + amenity2.membership_price, "USD").cents
+        expect(reservation.amenity_price).to eq(expected_price)
+      end
+    end
+  end
+
+  describe "#charge_amount" do
+    let(:room) { create(:room, hourly_rate_in_cents: 1000) }
+    let(:reservation) { create(:reservation, room: room, minutes: 60) }
+
+    context "with no amenities" do
+      it "calculates the correct amount" do
+        expect(reservation.charge_amount).to eq(1000)
+      end
+    end
+
+    context "with amenities" do
+      let(:amenity1) { Amenity.create(name: "Amenity 1", price: 10, room: room) }
+      let(:amenity2) { Amenity.create(name: "Amenity 2", price: 15, room: room) }
+
+      before { reservation.amenities = [amenity1, amenity2] }
+
+      it "calculates the correct amount including amenities" do
+        expected_amount = 1000 + (10 + 15) * 100
+        expect(reservation.charge_amount).to eq(expected_amount)
+      end
+    end
+  end
+
+  describe "#amenity_names" do
+    let(:reservation) { create(:reservation, room: room, amenities: [amenity1, amenity2]) }
+    let(:amenity1) { create(:amenity, name: "Biscuit", price: 10, room: room) }
+    let(:amenity2) { create(:amenity, name: "Presenter", price: 15, room: room) }
+
+    it "returns a list of amenity names" do
+      room.update(av: true, whiteboard: false, amenities: [amenity1, amenity2])
+
+      expected_names = ["Biscuit", "Presenter", "AV Equipment"].join(", ")
+      amenities_name = reservation.amenity_names
+
+      expect(amenities_name).to eq(expected_names)
+      expect(amenities_name).not_to include("Whiteboard")
+    end
+  end
+
+  describe "#additional_duration_price" do
+    let(:ongoing_reservation) { create(:reservation, room: room, minutes: 60) }
+
+    context "when paid? is true" do
+      it "returns the correct calculation" do
+        ongoing_reservation.update(paid: true)
+        extra_minutes = 30
+        expected_price = ((room.hourly_rate_in_cents / 60.0) * extra_minutes).to_i
+        expect(ongoing_reservation.additional_duration_price(extra_minutes)).to eq(expected_price)
+      end
+    end
+
+    context "when paid? is false" do
+      it "returns 0" do
+        ongoing_reservation.update(paid: false)
+        extra_minutes = 30
+        expect(ongoing_reservation.additional_duration_price(extra_minutes)).to eq(0)
+      end
+    end
+  end
+end
