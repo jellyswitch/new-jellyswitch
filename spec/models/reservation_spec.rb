@@ -199,4 +199,52 @@ RSpec.describe Reservation, type: :model do
       end
     end
   end
+
+  describe "DST transition" do
+    before { Time.zone = "Pacific Time (US & Canada)" }
+
+    let(:spring_forward_date) { Time.zone.parse("2024-03-10") }
+    let(:fall_back_date) { Time.zone.parse("2024-11-03") }
+
+    describe "Spring Forward" do
+      it "handles the spring forward transition correctly" do
+        reservation = create(:reservation, datetime_in: spring_forward_date.change(hour: 2, min: 00), minutes: 30)
+
+        Timecop.freeze(spring_forward_date.change(hour: 1, min: 59, sec: 59)) do
+          expect(Time.zone.now.hour).to eq(1)
+          expect(reservation).to be_future
+
+          Timecop.travel(2.minutes)
+
+          expect(Time.zone.now.hour).to eq(3)
+          expect(reservation.reload.datetime_in.hour).to eq(3)
+          expect(reservation).to be_ongoing
+          expect(reservation.datetime_out - reservation.datetime_in).to eq(30.minutes)
+        end
+      end
+    end
+
+    describe "Fall Back" do
+      it "handles the fallback transition correctly" do
+        start_time = fall_back_date.change(hour: 1, min: 30)
+        reservation = create(:reservation, datetime_in: start_time, minutes: 60)
+
+        Timecop.freeze(start_time) do
+          expect(Time.zone.now.hour).to eq(1)
+          expect(reservation).to be_ongoing
+
+          Timecop.travel(65.minutes)
+
+          expect(Time.zone.now.hour).to eq(1)
+          expect(reservation).not_to be_ongoing
+          expect(reservation.datetime_out).to be < Time.zone.now
+          expect(reservation.datetime_out - reservation.datetime_in).to eq(60.minutes)
+
+          Timecop.travel(1.hour)
+
+          expect(Time.zone.now.hour).to eq(2)
+        end
+      end
+    end
+  end
 end
