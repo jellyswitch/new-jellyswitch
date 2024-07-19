@@ -112,10 +112,6 @@ class Reservation < ApplicationRecord
   end
 
   def amenity_names
-    names = amenities.pluck(:name)
-    names << "AV Equipment" if room.av?
-    names << "Whiteboard" if room.whiteboard?
-
-    names.join(", ")
+    amenities.pluck(:name).join(", ")
   end
 end

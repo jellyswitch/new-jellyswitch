@@ -322,7 +322,7 @@ export default class extends Controller {
       const displayPrice = isMembership ? amenity.membership_price : amenity.price;
 
       const amenityHtml = `
-        <div class="col-6 col-md-4">
+        <div class="col-12 col-md-6">
           <div class="form-check">
             <input class="form-check-input amenity-checkbox" type="checkbox" value="${amenity.id}" id="amenity-${amenity.id}" data-price="${displayPrice}">
             <label class="form-check-label amenity-item" for="amenity-${amenity.id}">
@@ -349,8 +349,6 @@ export default class extends Controller {
     $('.room-details .room-capacity .details-value').text(room.capacity);
 
     let amenities = [];
-    if (room.av) amenities.push("AV Equipment");
-    if (room.whiteboard) amenities.push("Whiteboard");
 
     if (amenities.length > 0) {
       $('.room-details .room-amenities').show();

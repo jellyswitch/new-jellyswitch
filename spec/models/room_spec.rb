@@ -92,4 +92,50 @@ RSpec.describe Room, type: :model do
       expect(result).to eq([30, 60])
     end
   end
+
+  describe "has_av?" do
+    context "when one of the amenity names is 'AV Equipment'" do
+      it "returns true" do
+        room = create(:room)
+
+        create(:amenity, name: "AV Equipment", room: room)
+        create(:amenity, name: "Random #1", room: room)
+
+        expect(room).to have_av
+      end
+    end
+
+    context "when all the amenity names is not 'AV Equipment'" do
+      it "returns false" do
+        room = create(:room)
+        create(:amenity, name: "Random #1", room: room)
+        create(:amenity, name: "Random #1", room: room)
+
+        expect(room).not_to have_av
+      end
+    end
+  end
+
+  describe "has_whiteboard?" do
+    context "when one of the amenity names is 'Whiteboard'" do
+      it "returns true" do
+        room = create(:room)
+
+        create(:amenity, name: "Whiteboard", room: room)
+        create(:amenity, name: "Random #1", room: room)
+
+        expect(room).to have_whiteboard
+      end
+    end
+
+    context "when all the amenity names is not 'Whiteboard'" do
+      it "returns false" do
+        room = create(:room)
+        create(:amenity, name: "Random #1", room: room)
+        create(:amenity, name: "Random #2", room: room)
+
+        expect(room).not_to have_whiteboard
+      end
+    end
+  end
 end

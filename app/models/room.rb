@@ -179,4 +179,12 @@ class Room < ApplicationRecord
   def paid_room?
     rentable? && hourly_rate_in_cents > 0
   end
+
+  def has_av?
+    amenities.exists?(name: Amenity::AV_EQUIPMENT)
+  end
+
+  def has_whiteboard?
+    amenities.exists?(name: Amenity::WHITEBOARD)
+  end
 end

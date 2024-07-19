@@ -25,27 +25,11 @@
 
 <div class="form-group">
   <div class="form-check">
-    <%= f.check_box :whiteboard, class: "form-check-input" %>
-    <%= f.label :whiteboard, "Check this box if this room has a whiteboard",
-    class: "form-check-label" %>
-  </div>
-</div>
-
-<div class="form-group">
-  <div class="form-check">
     <%= f.check_box :allow_shorter_reservation_duration, class:
     "form-check-input" %>
     <%= f.label :allow_shorter_reservation_duration,
     "Check this box for 30-minute reservations, Uncheck for 4-hour and 8-hour options only",
     class: "form-check-label" %>
-  </div>
-</div>
-
-<div class="form-group">
-  <div class="form-check">
-    <%= f.check_box :av, class: "form-check-input" %>
-    <%= f.label :av, "Check this box if this room has AV equipment", {class:
-    "form-check-label"} %>
   </div>
 </div>
 

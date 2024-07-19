@@ -2,8 +2,6 @@ FactoryBot.define do
   factory :room do
     sequence(:name) { |n| "Meeting Room #{n}" }
     description { "Small Meeting Room with a Table & 4 Chairs" }
-    whiteboard { false }
-    av { false }
     capacity { 4 }
     sequence(:slug) { |n| "meeting-room-#{n}" }
     visible { true }
