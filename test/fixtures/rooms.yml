@@ -4,7 +4,6 @@
 #
 #  id                                 :bigint(8)        not null, primary key
 #  allow_shorter_reservation_duration :boolean          default(TRUE), not null
-#  av                                 :boolean          default(FALSE), not null
 #  capacity                           :integer          default(1), not null
 #  credit_cost                        :integer          default(0), not null
 #  description                        :text
@@ -14,7 +13,6 @@
 #  slug                               :string
 #  square_footage                     :integer          default(0), not null
 #  visible                            :boolean          default(TRUE), not null
-#  whiteboard                         :boolean          default(FALSE), not null
 #  created_at                         :datetime         not null
 #  updated_at                         :datetime         not null
 #  location_id                        :bigint(8)
@@ -32,8 +30,6 @@
 small_meeting_room:
   name: Meeting Room 3B
   description: Small Meeting Room with a Table & 4 Chairs
-  whiteboard: false
-  av: false
   capacity: 4
   slug: meeting-room-3b
   created_at: Thu, 16 Dec 2021 16:24:05.560703000 PST -08:00
