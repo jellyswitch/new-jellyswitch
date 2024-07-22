@@ -14,10 +14,10 @@
           </h5>
         </div>
         <div class="row">
-          <% if room.whiteboard? %>
+          <% if room.has_whiteboard? %>
           <span class="badge badge-info mr-1">Whiteboard</span>
           <% end %>
-          <% if room.av? %>
+          <% if room.has_av? %>
           <span class="badge badge-success mr-1">AV equipment</span>
           <% end %>
         </div>

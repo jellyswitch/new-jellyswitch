@@ -169,13 +169,10 @@ RSpec.describe Reservation, type: :model do
     let(:amenity2) { create(:amenity, name: "Presenter", price: 15, room: room) }
 
     it "returns a list of amenity names" do
-      room.update(av: true, whiteboard: false, amenities: [amenity1, amenity2])
-
-      expected_names = ["Biscuit", "Presenter", "AV Equipment"].join(", ")
+      expected_names = ["Biscuit", "Presenter"].join(", ")
       amenities_name = reservation.amenity_names
 
       expect(amenities_name).to eq(expected_names)
-      expect(amenities_name).not_to include("Whiteboard")
     end
   end
 

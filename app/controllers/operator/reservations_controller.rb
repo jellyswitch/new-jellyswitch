@@ -216,8 +216,6 @@ class Operator::ReservationsController < Operator::BaseController
         name: room.name,
         hourly_price: hourly_price,
         capacity: room.capacity,
-        av: room.av,
-        whiteboard: room.whiteboard,
         reservation_price: reservation_price,
         should_charge: should_charge,
         amenities: room.amenities,
