@@ -84,6 +84,14 @@
     </div>
   <%- end %>
 
+  <%- if current_user.admin_or_manager? %>
+    <div class="text-center">
+      <button id="update-note" type="button" class="btn btn-block btn-primary mb-2" data-toggle="modal" data-target="#reservation-note-modal" data-reservation-id="<%= reservation.id %>">
+        Update reservation note (for admin)
+      </button>
+    </div>
+  <%- end %>
+
   <%- if reservation.ongoing? %>
     <button id="end-early-button" type="button" class="btn btn-block btn-danger" data-toggle="modal" data-target="#end-early-modal" <%= 'disabled' unless policy(reservation).end_now? %> data-reservation-id="<%= reservation.id %>">
       End reservation now
@@ -96,6 +104,16 @@
 </li>
 
 <!-- Modal -->
+<%= render Bootstrap::Modal.new(id: "reservation-note-modal") do %>
+  <%= form_for(:reservation, url: update_note_reservation_path(reservation), method: :put, local: true) do |f| %>
+    <div class="form-group">
+      <%= f.label :note, class: "font-weight-bold" %>
+      <%= f.text_area :note, placeholder: "Add a reservation note (visible to admins only)", class: "form-control form-control-sm", rows: "3" %>
+    </div>
+    <%= f.submit "Update", class: "btn btn-block btn-primary" %>
+  <% end %>
+<% end %>
+
 <div class="modal fade" id="cancel-reservation-modal" tabindex="-1" role="dialog" aria-labelledby="cancelReservationTitle" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
