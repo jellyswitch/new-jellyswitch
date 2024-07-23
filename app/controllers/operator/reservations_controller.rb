@@ -252,6 +252,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
                                                                  amenity_ids: amenity_ids,
+                                                                 note: reservation_params[:note],
                                                                }, user: current_user)
 
     @reservation = result.reservation
@@ -338,7 +339,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def create_reservation_params
-    params.permit(:room_id, :date, :time, :duration, :day_or_night)
+    params.permit(:room_id, :date, :time, :duration, :day_or_night, :note)
   end
 
   def reservation_params
