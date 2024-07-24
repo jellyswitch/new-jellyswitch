@@ -14,7 +14,7 @@ module Permissions
 
   def has_reservation?
     reservations.any? do |reservation|
-      reservation.datetime_in.day == Time.current.day
+      reservation.ongoing?
     end
   end
 
@@ -26,10 +26,10 @@ module Permissions
     end
   end
 
-  def can_see_all_rooms?(location)
+  def can_see_all_rooms?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
       member?(location) ||
-      has_active_day_pass? ||
+      has_active_day_pass?(day) ||
       checked_in?(location) ||
       has_active_lease? ||
       admin?

@@ -190,7 +190,8 @@ class Operator::ReservationsController < Operator::BaseController
 
       available_rooms = current_location.rooms.available(date: date, time: time, duration: duration)
 
-      if !current_user.can_see_all_rooms?(current_location)
+      parsed_date = Time.zone.parse(date)
+      if !current_user.can_see_all_rooms?(current_location, parsed_date)
         available_rooms = available_rooms.rentable
       end
 
