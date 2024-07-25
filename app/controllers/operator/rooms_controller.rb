@@ -60,6 +60,19 @@ class Operator::RoomsController < Operator::BaseController
     @room.amenities.build if @room.amenities.empty?
   end
 
+  def destroy
+    find_room
+    authorize @room, :destroy?
+
+    if @room.destroy
+      flash[:notice] = "#{@room.name} deleted."
+      redirect_to rooms_path
+    else
+      flash[:error] = "Could not delete room."
+      redirect_to room_path(@room)
+    end
+  end
+
   def update
     find_room
     authorize @room

@@ -1,4 +1,3 @@
-
 class RoomPolicy < ApplicationPolicy
   def index?
     enabled? && is_user?
@@ -30,5 +29,9 @@ class RoomPolicy < ApplicationPolicy
 
   def enabled?
     operator.rooms_enabled?
+  end
+
+  def destroy?
+    enabled? && user.admin_or_manager?
   end
 end

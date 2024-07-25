@@ -330,7 +330,7 @@ Rails.application.routes.draw do
       put :update_note, to: "operator/reservations#update_note"
     end
   end
-  resources :rooms, controller: "operator/rooms", except: [:destroy] do
+  resources :rooms, controller: "operator/rooms" do
     get "day/:day/:month/:year", to: "operator/rooms#day", as: :day_availability
   end
   resources :search_results, only: [:new, :create], controller: "operator/search_results" do
