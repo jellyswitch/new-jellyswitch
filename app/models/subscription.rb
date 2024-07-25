@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: subscriptions
@@ -39,9 +38,9 @@ class Subscription < ApplicationRecord
   scope :pending, -> { where(pending: true) }
   scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
   scope :for_location, ->(location) do
-    joins(:plan).where(plans: {id: Plan.for_location(location).map(&:id) })
-  end
-  scope :for_week, -> (week_start, week_end) { where('created_at > ? and created_at <= ?', week_start, week_end) }
+          joins(:plan).where(plans: { id: Plan.for_location(location).map(&:id) })
+        end
+  scope :for_week, ->(week_start, week_end) { where("created_at > ? and created_at <= ?", week_start, week_end) }
 
   accepts_nested_attributes_for :plan
 
@@ -68,7 +67,7 @@ class Subscription < ApplicationRecord
     else
       Stripe::Subscription.retrieve(self.stripe_subscription_id, {
         api_key: plan.operator.stripe_secret_key,
-        stripe_account: plan.operator.stripe_user_id
+        stripe_account: plan.operator.stripe_user_id,
       })
     end
   end
@@ -78,7 +77,7 @@ class Subscription < ApplicationRecord
   end
 
   def check_for_stripe_subscription
-    if stripe_subscription_id.present?
+    if stripe_subscription_id.present? && active?
       raise "Cancel Stripe Subscription first: #{stripe_subscription_id}"
     end
   end

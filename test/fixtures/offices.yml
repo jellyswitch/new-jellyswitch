@@ -34,3 +34,15 @@ office_23b:
   updated_at: Thu, 28 May 2020 08:21:17.553791000 PDT -07:00
   location: cowork_tahoe_location
   square_footage: 50
+
+free_office:
+  operator: cowork_tahoe
+  name: Free Office
+  slug: free-office
+  capacity: 1
+  visible: true
+  description: ""
+  created_at: Fri, 12 Apr 2019 14:55:31.241447000 PDT -07:00
+  updated_at: Thu, 28 May 2020 08:21:17.553791000 PDT -07:00
+  location: cowork_tahoe_location
+  square_footage: 50

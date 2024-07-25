@@ -27,7 +27,7 @@
 class Office < ApplicationRecord
   belongs_to :operator
 
-  has_many :office_leases
+  has_many :office_leases, dependent: :destroy
   belongs_to :location
 
   acts_as_scopable :operator, :location

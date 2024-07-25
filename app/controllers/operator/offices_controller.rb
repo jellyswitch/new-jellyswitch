@@ -1,6 +1,5 @@
-
 class Operator::OfficesController < Operator::BaseController
-  before_action :find_office, only: [:show, :edit, :update]
+  before_action :find_office, only: [:show, :edit, :update, :destroy]
   before_action :background_image, except: [:create, :update]
 
   def index
@@ -36,6 +35,18 @@ class Operator::OfficesController < Operator::BaseController
     authorize @office
   end
 
+  def destroy
+    authorize @office, :destroy?
+
+    if @office.destroy
+      flash[:notice] = "#{@office.name} deleted."
+      redirect_to offices_path
+    else
+      flash[:error] = "Could not delete office."
+      redirect_to office_path(@office)
+    end
+  end
+
   def update
     authorize @office
 
@@ -62,7 +73,7 @@ class Operator::OfficesController < Operator::BaseController
 
   private
 
-  def find_office(key=:id)
+  def find_office(key = :id)
     @office = Office.friendly.find(params[key])
   end
 

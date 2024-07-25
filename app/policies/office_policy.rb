@@ -1,4 +1,3 @@
-
 class OfficePolicy < ApplicationPolicy
   def index?
     enabled? && (admin? || superadmin? || community_manager? || general_manager?)
@@ -34,5 +33,9 @@ class OfficePolicy < ApplicationPolicy
 
   def enabled?
     operator.offices_enabled?
+  end
+
+  def destroy?
+    enabled? && (user.admin_or_manager?) && !record.has_active_lease?
   end
 end
