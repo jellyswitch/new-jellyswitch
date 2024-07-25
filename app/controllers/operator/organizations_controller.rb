@@ -45,6 +45,18 @@ class Operator::OrganizationsController < Operator::BaseController
     background_image
   end
 
+  def destroy
+    authorize @organization, :destroy?
+
+    if @organization.destroy
+      flash[:notice] = "#{@organization.name} deleted."
+      redirect_to organizations_path
+    else
+      flash[:error] = "Could not delete organization."
+      redirect_to organization_path(@organization)
+    end
+  end
+
   def update
     authorize @organization
 

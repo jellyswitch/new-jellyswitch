@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: organizations
@@ -27,15 +26,15 @@ class Organization < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Relationships
-  has_many :users
-  has_many :office_leases
-  has_many :invoices, as: :billable
+  has_many :users, dependent: :nullify
+  has_many :office_leases, dependent: :destroy
+  has_many :invoices, as: :billable, dependent: :destroy
   belongs_to :owner, class_name: "User", optional: true
   belongs_to :billing_contact, class_name: "User", optional: true
   belongs_to :operator
   acts_as_tenant :operator
 
-  has_many :subscriptions, as: :subscribable
+  has_many :subscriptions, as: :subscribable, dependent: :destroy
 
   delegate :email, to: :owner
 
