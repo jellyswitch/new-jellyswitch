@@ -16,9 +16,10 @@ class PlanCategoriesTest < ApplicationSystemTestCase
   end
 
   test "'Become a Member' (from choose route) takes a non_member to plans index, if there are no plan_categories" do
-    log_in(@user)
     @plan_with_category.update(plan_category: nil)
     @plan_with_category.reload
+
+    log_in(@user)
 
     click_on "Become a member"
     assert_text "Plans"

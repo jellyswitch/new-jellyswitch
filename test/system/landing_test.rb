@@ -18,10 +18,10 @@ class LandingTest < ApplicationSystemTestCase
   end
 
   test "should not display the section if the user's do not have any future/ongoing reservation" do
-    log_in @user
-
     @user.reservations.future.destroy_all
     @user.reservations.ongoing.destroy_all
+
+    log_in @user
 
     assert_no_text "Upcoming Reservation"
   end
