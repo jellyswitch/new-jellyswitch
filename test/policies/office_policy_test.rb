@@ -1,7 +1,6 @@
 require "test_helper"
 
 class OfficePolicyTest < PolicyAssertions::Test
-
   setup do
     setup_initial_user_fixtures
   end
@@ -68,5 +67,27 @@ class OfficePolicyTest < PolicyAssertions::Test
     assert_permit @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
+  end
+
+  def test_upcoming_renewals
+    assert_not_permitted @member, Office
+    assert_permit @admin, Office
+    assert_permit @community_manager, Office
+    assert_permit @general_manager, Office
+    assert_permit @superadmin, Office
+  end
+
+  def test_destroy
+    office_with_active_lease = offices(:office_23b)
+
+    assert_not_permitted @member, office_with_active_lease
+    assert_not_permitted @admin, office_with_active_lease
+
+    office_no_active_lease = offices(:free_office)
+
+    assert_not_permitted @member, office_no_active_lease
+    assert_permit @community_manager, office_no_active_lease
+    assert_permit @general_manager, office_no_active_lease
+    assert_permit @superadmin, office_no_active_lease
   end
 end

@@ -46,6 +46,6 @@ class ReservationPolicy < ApplicationPolicy
   private
 
   def admin_or_manager?
-    admin? || community_manager? || general_manager?
+    admin? || community_manager? || general_manager? || superadmin?
   end
 end

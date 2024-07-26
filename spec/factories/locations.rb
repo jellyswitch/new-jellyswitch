@@ -1,0 +1,42 @@
+FactoryBot.define do
+  factory :location do
+    association :operator
+
+    name { "Cowork Tahoe" }
+    billing_state { "production" }
+    building_address { "3079 Harrison Ave" }
+    city { "South Lake Tahoe" }
+    state { "CA" }
+    zip { "96150" }
+    contact_email { "info@coworktahoe.com" }
+    contact_name { "David Orr" }
+    contact_phone { "530-600-3447" }
+    snippet { "Cowork Tahoe is South Lake Tahoe's first coworking space and a hub of innovation for the entire South Shore. We provide an innovative way to help you get your best work done by offering not only a cool place to do it, but a great community to do it with. Whether you are a freelancer, an entrepreneur, working remote, or just visiting, our mix of open-concept and private office space is perfectly suited to meet your workplace needs." }
+    square_footage { 12000 }
+    stripe_access_token { "foobar" }
+    stripe_publishable_key { "foobar" }
+    stripe_refresh_token { "foobar" }
+    wifi_name { "Mountain Lab" }
+    wifi_password { "LabRats337" }
+    working_day_start { "06:00" }
+    working_day_end { "20:00" }
+    stripe_user_id { nil }
+    time_zone { "Pacific Time (US & Canada)" }
+    visible { true }
+    flex_square_footage { 900 }
+    common_square_footage { 1000 }
+    building_access_instructions { "" }
+    allow_hourly { false }
+    hourly_rate_in_cents { 0 }
+    new_users_get_free_day_pass { false }
+    open_sunday { false }
+    open_monday { true }
+    open_tuesday { true }
+    open_wednesday { true }
+    open_thursday { true }
+    open_friday { true }
+    open_saturday { false }
+    credit_cost_in_cents { 0 }
+    childcare_reservation_cost_in_cents { 0 }
+  end
+end

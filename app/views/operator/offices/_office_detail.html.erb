@@ -50,7 +50,7 @@
   </div>
 </div>
 
-<div class="row mt-3">
+<div class="row mt-2">
   <div class="col">
     <% if office.has_active_lease? %>
       <% office.active_leases.each do |lease| %>
@@ -70,9 +70,35 @@
   </div>
 </div>
 
+<% if current_user.admin_or_manager? %>
+  <div class="row mt-2">
+    <div class="col">
+      <button type="button" class="btn btn-danger btn-block" data-toggle="modal" data-target="#delete-office-modal">
+        Delete this office
+      </button>
+    </div>
+  </div>
+
+  <%= render Bootstrap::Modal.new(id: "delete-office-modal") do %>
+    <h5 class="modal-title">Delete Office</h5>
+    <div>
+      <strong>Warning:</strong> This action cannot be undone. Deleting this office will permanently remove:
+      <ul>
+        <li>All office information (name, description, capacity, etc.)</li>
+        <li>All associated office lease history and data</li>
+      </ul>
+
+      <% if !policy(@office).destroy? %>
+        <div class="alert alert-danger">
+          <strong>Note:</strong> This office cannot be deleted because it has an active lease.
+        </div>
+      <% end %>
+
+      <%= button_to "Confirm", office_path(@office), method: :delete, class: "btn btn-block btn-danger", disabled: !policy(@office).destroy? %>
+    </div>    
+  <% end %>
+<% end %>
 <hr />
-
-
 
 <div class="row">
   <div class="col">
@@ -92,7 +118,7 @@
             (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
           </div>
         </div>
-        <div class="row">
+        <div class="row mb-2">
           <div class="col">
             <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
           </div>
