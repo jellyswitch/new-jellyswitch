@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: doors
@@ -31,13 +30,13 @@ class Door < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Relationships
-  has_many :door_punches
+  has_many :door_punches, dependent: :destroy
   belongs_to :operator
   acts_as_scopable :operator, :location
 
   def search_data
     {
-      name: name
+      name: name,
     }
   end
 end

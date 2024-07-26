@@ -1,4 +1,3 @@
-
 class DoorPolicy < ApplicationPolicy
   def index?
     enabled? && (admin? || community_manager? || general_manager?)
@@ -20,6 +19,10 @@ class DoorPolicy < ApplicationPolicy
     enabled? && (admin? || community_manager? || general_manager?)
   end
 
+  def destroy?
+    enabled? && superadmin?
+  end
+
   def edit?
     enabled? && (admin? || community_manager? || general_manager?)
   end
@@ -31,7 +34,7 @@ class DoorPolicy < ApplicationPolicy
   def keys?
     user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
   end
-  
+
   def enabled?
     operator.door_integration_enabled?
   end
