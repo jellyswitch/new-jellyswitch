@@ -32,15 +32,15 @@
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio"
                       name="day-light-options" id="day-radio" value="day"
-                      <%='checked' if @day_or_night == 'day' ||
-                      @day_or_night.blank? %> >
+                      <%= "checked" if @day_or_night == "day" ||
+                                       @day_or_night.blank? %> >
                     <label class="form-check-label" for="day-radio">Day
                       (AM)</label>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio"
                       name="day-light-options" id="night-radio" value="night"
-                      <%='checked' if @day_or_night == 'night' %> >
+                      <%= "checked" if @day_or_night == "night" %> >
                     <label class="form-check-label" for="night-radio">Night
                       (PM)</label>
                   </div>
@@ -99,9 +99,17 @@
                   <label class="mb-0">Total Price:</label>
                   <div class="price-value"></div>
                 </div>
+
+                <% if current_user.admin_or_manager? %>
+                  <div class="form-group note-container mt-1 pl-1 pr-1 d-none">
+                    <label for="reservation-note">Note</label>
+                    <textarea id="reservation-note" name="note" class="form-control form-control-sm" rows="3" placeholder="Add a reservation note (visible to admins only)"></textarea>
+                  </div>
+                <% end %>
               </div>
             </div>
           </div>
+          
           <div class="modal-footer">
             <button type="button" class="btn btn-dark cancel-btn"
               data-dismiss="modal">Close</button>

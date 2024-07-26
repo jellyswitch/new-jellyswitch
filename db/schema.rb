@@ -10,8 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_22_044116) do
+ActiveRecord::Schema[7.0].define(version: 2024_07_23_074321) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
 
   create_table "action_text_rich_texts", force: :cascade do |t|
@@ -443,9 +444,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_22_044116) do
     t.string "android_server_key"
     t.boolean "crm_enabled", default: false, null: false
     t.string "bundle_id"
-    t.string "simplybook_company"
-    t.string "simplybook_api_key"
-    t.string "simplybook_access_token"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -528,6 +526,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_22_044116) do
     t.integer "credit_cost", default: 0, null: false
     t.boolean "ended_early", default: false
     t.boolean "paid"
+    t.text "note"
   end
 
   create_table "rooms", force: :cascade do |t|
