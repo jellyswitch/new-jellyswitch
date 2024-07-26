@@ -4,13 +4,13 @@ require "test_helper"
 class DeleteOfficeTest < ApplicationSystemTestCase
   setup do
     @user = create(:user)
-    @admin = create(:user, admin: true)
+    @superadmin = create(:user, role: User::SUPERADMIN)
 
     @room = create(:room)
   end
 
-  test "admin should be able to delete a room" do
-    log_in(@admin)
+  test "superadmin should be able to delete a room" do
+    log_in(@superadmin)
 
     visit edit_room_path(@room)
 
@@ -18,7 +18,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
 
     within "#delete-room-modal" do
       assert_text "This action cannot be undone. Deleting this room will permanently remove:"
-      assert_text "All room information (name, amenities, photo,...)"
+      assert_text "All room information (name, amenities, photo, etc.)"
       assert_text "All reservation history"
 
       click_on "Confirm"

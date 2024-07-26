@@ -10,7 +10,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
     Door.reindex
   end
 
-  test "admin should be able to delete a door" do
+  test "superadmin should be able to delete a door" do
     log_in(@superadmin)
 
     visit edit_door_path(@door)
@@ -31,7 +31,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
     assert_nil Door.find_by(id: @door.id)
   end
 
-  test "normal should not be able to delete a door" do
+  test "user should not be able to delete a door" do
     log_in(@admin)
 
     visit edit_door_path(@door)

@@ -36,6 +36,6 @@ class OfficePolicy < ApplicationPolicy
   end
 
   def destroy?
-    enabled? && (user.admin_or_manager?) && !record.has_active_lease?
+    enabled? && (user.superadmin?) && !record.has_active_lease?
   end
 end

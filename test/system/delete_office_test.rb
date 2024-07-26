@@ -4,7 +4,7 @@ require "test_helper"
 class DeleteOfficeTest < ApplicationSystemTestCase
   setup do
     @user = create(:user)
-    @admin = create(:user, admin: true)
+    @superadmin = create(:user, role: User::SUPERADMIN)
 
     @office_no_lease = create(:office)
     @office_with_active_lease = create(:office, :with_active_lease)
@@ -13,8 +13,8 @@ class DeleteOfficeTest < ApplicationSystemTestCase
     create(:office_lease, office: @office_with_past_lease, start_date: 1.month.ago, end_date: 1.day.ago)
   end
 
-  test "admin should be able to delete an office with no active lease" do
-    log_in(@admin)
+  test "superadmin should be able to delete an office with no active lease" do
+    log_in(@superadmin)
 
     visit office_path(@office_no_lease)
 
@@ -34,8 +34,8 @@ class DeleteOfficeTest < ApplicationSystemTestCase
     assert_nil Office.find_by(id: @office_no_lease.id)
   end
 
-  test "admin should not be able to delete an office with an active lease" do
-    log_in(@admin)
+  test "superadmin should not be able to delete an office with an active lease" do
+    log_in(@superadmin)
 
     visit office_path(@office_with_active_lease)
 
@@ -48,8 +48,8 @@ class DeleteOfficeTest < ApplicationSystemTestCase
     end
   end
 
-  test "admin should be able to delete an office with an past lease" do
-    log_in(@admin)
+  test "superadmin should be able to delete an office with an past lease" do
+    log_in(@superadmin)
 
     visit office_path(@office_with_past_lease)
 

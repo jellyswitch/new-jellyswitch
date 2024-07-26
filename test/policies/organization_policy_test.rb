@@ -74,13 +74,13 @@ class OrganizationPolicyTest < PolicyAssertions::Test
     organization_with_lease.office_leases << create(:office_lease, start_date: 1.month.ago, end_date: 1.month.from_now)
 
     assert_not_permitted @member, organization_with_lease
-    assert_not_permitted @admin, organization_with_lease
+    assert_not_permitted @superadmin, organization_with_lease
 
     organization_no_lease = create(:organization)
 
     assert_not_permitted @member, organization_no_lease
-    assert_permit @community_manager, organization_no_lease
-    assert_permit @general_manager, organization_no_lease
+    assert_not_permitted @community_manager, organization_no_lease
+    assert_not_permitted @general_manager, organization_no_lease
     assert_permit @superadmin, organization_no_lease
   end
 

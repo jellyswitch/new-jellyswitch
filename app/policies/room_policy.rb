@@ -32,6 +32,6 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def destroy?
-    enabled? && user.admin_or_manager?
+    enabled? && user.superadmin?
   end
 end

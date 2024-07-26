@@ -42,8 +42,9 @@ class RoomPolicyTest < PolicyAssertions::Test
 
   def test_destroy
     assert_not_permitted @member, Room
-    assert_permit @admin, Room
-    assert_permit @community_manager, Room
-    assert_permit @general_manager, Room
+    assert_not_permitted @admin, Room
+    assert_not_permitted @community_manager, Room
+    assert_not_permitted @general_manager, Room
+    assert_permit @superadmin, Room
   end
 end

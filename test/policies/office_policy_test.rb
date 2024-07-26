@@ -81,13 +81,13 @@ class OfficePolicyTest < PolicyAssertions::Test
     office_with_active_lease = offices(:office_23b)
 
     assert_not_permitted @member, office_with_active_lease
-    assert_not_permitted @admin, office_with_active_lease
+    assert_not_permitted @superadmin, office_with_active_lease
 
     office_no_active_lease = offices(:free_office)
 
     assert_not_permitted @member, office_no_active_lease
-    assert_permit @community_manager, office_no_active_lease
-    assert_permit @general_manager, office_no_active_lease
+    assert_not_permitted @community_manager, office_no_active_lease
+    assert_not_permitted @general_manager, office_no_active_lease
     assert_permit @superadmin, office_no_active_lease
   end
 end
