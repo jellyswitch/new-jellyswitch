@@ -4,7 +4,7 @@ require "test_helper"
 class DeleteGroupTest < ApplicationSystemTestCase
   setup do
     @user = create(:user)
-    @admin = create(:user, admin: true)
+    @superadmin = create(:user, role: User::SUPERADMIN)
 
     @group_no_lease = create(:organization)
 
@@ -20,8 +20,8 @@ class DeleteGroupTest < ApplicationSystemTestCase
     Organization.reindex
   end
 
-  test "admin should be able to delete a group with no active lease" do
-    log_in(@admin)
+  test "superadmin should be able to delete a group with no active lease" do
+    log_in(@superadmin)
 
     visit organization_path(@group_no_lease)
 
@@ -41,8 +41,8 @@ class DeleteGroupTest < ApplicationSystemTestCase
     assert_nil Organization.find_by(id: @group_no_lease.id)
   end
 
-  test "admin should not be able to delete a group with an active lease" do
-    log_in(@admin)
+  test "superadmin should not be able to delete a group with an active lease" do
+    log_in(@superadmin)
 
     visit organization_path(@group_with_active_lease)
 
@@ -55,8 +55,8 @@ class DeleteGroupTest < ApplicationSystemTestCase
     end
   end
 
-  test "admin should not be able to delete a group with an active subscription" do
-    log_in(@admin)
+  test "superadmin should not be able to delete a group with an active subscription" do
+    log_in(@superadmin)
 
     visit organization_path(@group_with_active_subscription)
 
@@ -69,8 +69,8 @@ class DeleteGroupTest < ApplicationSystemTestCase
     end
   end
 
-  test "admin should be able to delete a group with an past lease" do
-    log_in(@admin)
+  test "superadmin should be able to delete a group with an past lease" do
+    log_in(@superadmin)
 
     visit organization_path(@group_with_past_lease)
 
@@ -86,7 +86,7 @@ class DeleteGroupTest < ApplicationSystemTestCase
     assert_nil Organization.find_by(id: @group_with_past_lease.id)
   end
 
-  test "user should not be able to delete a groupd" do
+  test "user should not be able to delete a group" do
     log_in(@user)
 
     visit organization_path(@group_with_active_lease)

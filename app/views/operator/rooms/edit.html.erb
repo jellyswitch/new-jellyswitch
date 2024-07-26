@@ -17,32 +17,29 @@
       <%= f.submit "Update room", class: "btn btn-block btn-primary" %>
     <%- end %>
 
-    <div class="row mt-2">
-      <div class="col">
-        <button type="button" class="btn btn-danger btn-block" data-toggle="modal" data-target="#delete-room-modal">
-          Delete this room
-        </button>
+    <% if current_user.superadmin? %>
+      <div class="row mt-2">
+        <div class="col">
+          <button type="button" class="btn btn-danger btn-block" data-toggle="modal" data-target="#delete-room-modal">
+            Delete this room
+          </button>
+        </div>
       </div>
-    </div>
 
-    <%= render Bootstrap::Modal.new(id: "delete-room-modal") do %>
-      <h5 class="modal-title">Delete Room</h5>
-      <div>
-        <strong>Warning:</strong> This action cannot be undone. Deleting this room will permanently remove:
-        <ul>
-          <li>All room information (name, amenities, photo,...)</li>
-          <li>All reservation history</li>
-        </ul>
+      <%= render Bootstrap::Modal.new(id: "delete-room-modal") do %>
+        <h5 class="modal-title">Delete Room</h5>
+        <div>
+          <strong>Warning:</strong> This action cannot be undone. Deleting this room will permanently remove:
+          <ul>
+            <li>All room information (name, amenities, photo, etc.)</li>
+            <li>All reservation history</li>
+          </ul>
 
-        <% if !policy(@room).destroy? %>
-          <div class="alert alert-danger">
-            <strong>Note:</strong> This room cannot be deleted because it has at least one active office lease or subscription.
-          </div>
-        <% end %>
-
-        <%= button_to "Confirm", room_path(@room), method: :delete, class: "btn btn-block btn-danger", disabled: !policy(@room).destroy? %>
-      </div>    
+          <%= button_to "Confirm", room_path(@room), method: :delete, class: "btn btn-block btn-danger", disabled: !policy(@room).destroy? %>
+        </div>    
+      <% end %>
     <% end %>
+
     <div class="row mt-2">
       <div class="col-12">
         <%- if !ios_request? %>

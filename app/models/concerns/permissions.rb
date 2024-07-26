@@ -61,7 +61,7 @@ module Permissions
   end
 
   def superadmin?
-    role == User::SUPERADMIN
+    role == User::SUPERADMIN || superadmin == true
   end
 
   def community_manager?
