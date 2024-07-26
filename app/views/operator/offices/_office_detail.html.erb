@@ -88,13 +88,13 @@
         <li>All associated office lease history and data</li>
       </ul>
 
-      <% if !policy(@office).destroy? %>
+      <% if @office.has_active_lease? %>
         <div class="alert alert-danger">
           <strong>Note:</strong> This office cannot be deleted because it has an active lease.
         </div>
       <% end %>
 
-      <%= button_to "Confirm", office_path(@office), method: :delete, class: "btn btn-block btn-danger", disabled: !policy(@office).destroy? %>
+      <%= button_to "Confirm", office_path(@office), method: :delete, class: "btn btn-block btn-danger", disabled: @office.has_active_lease? %>
     </div>    
   <% end %>
 <% end %>

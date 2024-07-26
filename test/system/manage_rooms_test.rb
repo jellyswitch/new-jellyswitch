@@ -63,7 +63,7 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
     assert_text "Room #{@room.name} has been updated."
 
-    click_on "Edit Room"
+    click_on "Manage Room"
     sleep 1
 
     within all("#amenities .nested-fields")[0] do
@@ -95,7 +95,7 @@ class ManageRoomsTest < ApplicationSystemTestCase
     click_on "Update room"
     assert_text "Room #{@room.name} has been updated."
 
-    click_on "Edit Room"
+    click_on "Manage Room"
     sleep 1
 
     assert_selector "#amenities .nested-fields", count: 1

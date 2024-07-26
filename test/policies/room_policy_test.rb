@@ -1,7 +1,6 @@
 require "test_helper"
 
 class RoomPolicyTest < PolicyAssertions::Test
-
   setup do
     setup_initial_user_fixtures
   end
@@ -35,6 +34,13 @@ class RoomPolicyTest < PolicyAssertions::Test
   end
 
   def test_update
+    assert_not_permitted @member, Room
+    assert_permit @admin, Room
+    assert_permit @community_manager, Room
+    assert_permit @general_manager, Room
+  end
+
+  def test_destroy
     assert_not_permitted @member, Room
     assert_permit @admin, Room
     assert_permit @community_manager, Room

@@ -3,8 +3,7 @@
     <div class="row">
       <div>
         <% if room.has_photo? %>
-        <%= image_tag room.square_photo, class: "img-thumbnail", style:
-        "max-height: 100px;" %>
+        <%= image_tag room.square_photo, class: "img-thumbnail", style: "max-height: 100px;" %>
         <% end %>
       </div>
       <div class="ml-4 mb-1">
@@ -27,8 +26,7 @@
         </div>
         <% if room.rentable? && policy(:payment).enabled? %>
         <div class="row">
-          <span class="text-dark">Available for <%=
-            number_to_currency(room.hourly_rate_in_cents.to_f / 100.0) %> /
+          <span class="text-dark">Available for <%= number_to_currency(room.hourly_rate_in_cents.to_f / 100.0) %> /
             hr</span>
         </div>
         <% end %>
@@ -47,39 +45,28 @@
         <% if room.available_now? %>
         <div class="row mt-2">
           <% if current_user.admin? %>
-          <%= link_to "Reserve Now", choose_member_reservations_path(room_id:
-          room.id, day: Time.current, hour:
-          pretty_time(Time.current.beginning_of_half_hour)), class:
-          "col btn btn-block btn-success" %>
+          <%= link_to "Reserve Now", choose_member_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_half_hour)), class: "col btn btn-block btn-success" %>
           <% else %>
-          <%= link_to "Reserve Now", choose_duration_reservations_path(room_id:
-          room.id, day: Time.current, hour:
-          pretty_time(Time.current.beginning_of_half_hour)), class:
-          "col btn btn-block btn-success" %>
+          <%= link_to "Reserve Now", choose_duration_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_half_hour)), class: "col btn btn-block btn-success" %>
           <% end %>
         </div>
         <% end %>
         <div class="row mt-2">
           <% if current_user.admin? %>
-          <%= link_to "Reserve Later", choose_member_reservations_path(room_id:
-          room.id), class: "col btn btn-block btn-primary" %>
+          <%= link_to "Reserve Later", choose_member_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>
           <% else %>
-          <%= link_to "Reserve Later", choose_day_reservations_path(room_id:
-          room.id), class: "col btn btn-block btn-primary" %>
+          <%= link_to "Reserve Later", choose_day_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>
           <% end %>
         </div>
         <% if admin? %>
         <div class="row mt-2">
-          <%= link_to "Edit Room", edit_room_path(room), class:
-          "col btn btn-block btn-secondary" %>
+          <%= link_to "Manage Room", edit_room_path(room), class: "col btn btn-block btn-secondary" %>
         </div>
         <div class="row mt-2">
           <% if mobile_app_request? %>
-          <%= link_to "Subscribe available on desktop", "#", class:
-          "col btn btn-block btn-info disabled"%>
+          <%= link_to "Subscribe available on desktop", "#", class: "col btn btn-block btn-info disabled" %>
           <% else %>
-          <%= link_to "Subscribe", room_url(room, protocol: :webcal, format:
-          :ics), class: "col btn btn-block btn-info" %>
+          <%= link_to "Subscribe", room_url(room, protocol: :webcal, format: :ics), class: "col btn btn-block btn-info" %>
           <% end %>
         </div>
         <% end %>
