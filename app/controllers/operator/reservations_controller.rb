@@ -320,6 +320,18 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def update_note
+    find_reservation
+
+    if @reservation.update(note: params[:reservation][:note])
+      flash[:notice] = "Reservation note updated successfully."
+      turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
+    else
+      flash[:error] = "An error occurred while update the reservation note."
+      turbo_redirect(reservation_path(@reservation), action: "replace")
+    end
+  end
+
   private
 
   def find_reservation(key = :id)
