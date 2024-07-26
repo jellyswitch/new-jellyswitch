@@ -52,6 +52,34 @@
         <% end %>
 
         <%= link_to "Edit group info", edit_organization_path(@organization), class: "btn btn-block btn-primary" %>
+        <% if current_user.admin_or_manager? %>
+          <div class="row mt-2">
+            <div class="col">
+              <button type="button" class="btn btn-danger btn-block" data-toggle="modal" data-target="#delete-group-modal">
+                Delete this group
+              </button>
+            </div>
+          </div>
+
+          <%= render Bootstrap::Modal.new(id: "delete-group-modal") do %>
+            <h5 class="modal-title">Delete Group</h5>
+            <div>
+              <strong>Warning:</strong> This action cannot be undone. Deleting this group will permanently remove:
+              <ul>
+                <li>All group information (name, stripe information, website, etc.)</li>
+                <li>All associated office lease and invoice history data</li>
+              </ul>
+
+              <% if !policy(@organization).destroy? %>
+                <div class="alert alert-danger">
+                  <strong>Note:</strong> This group cannot be deleted because it has at least one active office lease or subscription.
+                </div>
+              <% end %>
+
+              <%= button_to "Confirm", organization_path(@organization), method: :delete, class: "btn btn-block btn-danger", disabled: !policy(@organization).destroy? %>
+            </div>    
+          <% end %>
+        <% end %>
 
       <% end %>
 

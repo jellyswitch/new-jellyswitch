@@ -1,4 +1,3 @@
-
 class OrganizationPolicy < ApplicationPolicy
   def index?
     (admin? || superadmin? || community_manager? || general_manager?)
@@ -21,10 +20,6 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def update?
-    (admin? || superadmin? || community_manager? || general_manager?)
-  end
-
-  def destroy?
     (admin? || superadmin? || community_manager? || general_manager?)
   end
 
@@ -58,5 +53,9 @@ class OrganizationPolicy < ApplicationPolicy
 
   def ltv?
     (admin? || community_manager? || superadmin? || general_manager?)
+  end
+
+  def destroy?
+    user.admin_or_manager? && !record.has_active_lease? && !record.has_active_subscriptions? && record.subscriptions.active.empty?
   end
 end
