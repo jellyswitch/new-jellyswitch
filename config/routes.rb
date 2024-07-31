@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   namespace :mobile do
     get "/door_access", to: "door_access#index"
+    get "/building_access_permissions", to: "door_access#building_access_permissions"
+    get "/send_user_id_to_ios", to: "door_access#send_user_id_to_ios"
+    get "/logout", to: "door_access#logout"
   end
 
   get "masquerade", to: "masquerade#new", as: :new_masquerade

@@ -8,11 +8,11 @@ module Permissions
     has_active_lease? ||
     admin? ||
     superadmin? ||
-    has_reservation? ||
+    has_active_reservation? ||
     has_rsvp?
   end
 
-  def has_reservation?
+  def has_active_reservation?
     reservations.any? do |reservation|
       reservation.ongoing?
     end
@@ -84,6 +84,18 @@ module Permissions
     subscriptions.for_operator(operator).active.select do |sub|
       sub.has_days_left?
     end.count > 0
+  end
+
+  def has_building_access?
+    superadmin? ||
+    admin? ||
+    community_manager? ||
+    general_manager? ||
+    always_allow_building_access? ||
+    has_building_access_day_pass? ||
+    has_building_access_membership? ||
+    has_building_access_lease? ||
+    has_active_day_pass?
   end
 
   def has_building_access_membership?

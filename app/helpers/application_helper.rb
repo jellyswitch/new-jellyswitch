@@ -1,4 +1,3 @@
-
 module ApplicationHelper
   include ChildcareHelper
   include CreditHelper
@@ -21,7 +20,7 @@ module ApplicationHelper
   def pretty_time(time)
     time.strftime("%l:%M%P")
   end
-  
+
   def long_date(date)
     date.strftime("%B %e, %Y")
   end
@@ -48,7 +47,7 @@ module ApplicationHelper
 
   def pretty_price(office_lease)
     if office_lease.subscription.present? &&
-      office_lease.subscription.plan.present?
+       office_lease.subscription.plan.present?
       office_lease.subscription.plan.pretty_price
     else
       nil
@@ -64,7 +63,7 @@ module ApplicationHelper
   end
 
   def stripe_oauth_url(operator, options = {})
-    client_id = ENV['STRIPE_CLIENT_ID'] # the Jellyswitch SaaS Account ID
+    client_id = ENV["STRIPE_CLIENT_ID"] # the Jellyswitch SaaS Account ID
     redirect_uri = stripe_connect_setup_url # landing#stripe_connect_setup at https://.../stripe_connect_setup
     stripe_landing = options[:stripe_landing] || "login"
     "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}&stripe_landing=#{stripe_landing}"
@@ -75,7 +74,7 @@ module ApplicationHelper
   end
 
   def user_agent
-    request.env['HTTP_USER_AGENT']
+    request.env["HTTP_USER_AGENT"]
   end
 
   def has_user_agent?
@@ -113,7 +112,7 @@ module ApplicationHelper
     end
   end
 
-  def format_working_hours(location, separator="through")
+  def format_working_hours(location, separator = "through")
     start = Time.strptime(location.working_day_start, "%R").strftime("%l:%M %P")
     ending = Time.strptime(location.working_day_end, "%R").strftime("%l:%M %P")
     "#{start} #{separator} #{ending}"
@@ -136,7 +135,8 @@ module ApplicationHelper
       user.always_allow_building_access? ||
       user.has_building_access_day_pass? ||
       user.has_building_access_membership? ||
-      user.has_building_access_lease?
+      user.has_building_access_lease? ||
+      user.has_active_day_pass?
     end
   end
 
@@ -203,7 +203,7 @@ module ApplicationHelper
 
     working_hours_options.map do |day|
       if location.send("#{day}?".to_sym) == true
-        config[day.to_s.split("_").last.first(3).to_sym] = {location.working_day_start => location.working_day_end}
+        config[day.to_s.split("_").last.first(3).to_sym] = { location.working_day_start => location.working_day_end }
       end
     end
     config
