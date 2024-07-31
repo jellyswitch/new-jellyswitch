@@ -38,6 +38,7 @@ class Office < ApplicationRecord
   friendly_id :name, use: :slugged
 
   scope :visible, -> { where(visible: true) }
+  scope :archived, -> { where(visible: false) }
 
   def self.available_for_lease
     offices = visible.left_outer_joins(:office_leases)
