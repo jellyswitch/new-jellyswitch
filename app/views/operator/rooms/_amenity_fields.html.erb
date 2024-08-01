@@ -10,8 +10,8 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">$</span>
                 </div>
-                <%= f.number_field :price, class: "form-control regular-price", step: 0.1, min: "0", placeholder: "0.00", value: f.object.price || nil %>
-                <%= f.number_field :membership_price, class: "form-control membership-price ml-0", step: 0.1, min: "0", placeholder: "0.00", value: f.object.membership_price || nil, style: "display: none;" %>
+                <%= f.number_field :price, class: "form-control regular-price", step: 0.1, min: "0", placeholder: "0.00", value: f.object.persisted? ? f.object.price : nil %>
+                <%= f.number_field :membership_price, class: "form-control membership-price ml-0", step: 0.1, min: "0", placeholder: "0.00", value: f.object.persisted? ? f.object.membership_price : nil, style: "display: none;" %>
             </div>
         </div>
         <div class="form-group d-flex align-items-end">
