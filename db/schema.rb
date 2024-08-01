@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_07_23_074321) do
+ActiveRecord::Schema[7.0].define(version: 2024_08_01_033520) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -458,6 +458,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_07_23_074321) do
     t.string "stripe_customer_id"
     t.boolean "out_of_band", default: true, null: false
     t.integer "billing_contact_id"
+    t.boolean "visible", default: true, null: false
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
