@@ -5,6 +5,7 @@ class Operator::OrganizationsController < Operator::BaseController
   def index
     find_organizations
     authorize @organizations
+
     background_image
   end
 
@@ -140,7 +141,7 @@ class Operator::OrganizationsController < Operator::BaseController
   private
 
   def organization_params
-    params.require(:organization).permit(:name, :website, :owner_id, :billing_contact_id)
+    params.require(:organization).permit(:name, :website, :owner_id, :billing_contact_id, :visible)
   end
 
   def find_organization(key = :id)
@@ -148,6 +149,7 @@ class Operator::OrganizationsController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = Organization.all.order(:name)
+    @organizations = Organization.visible.order(:name)
+    @archived_organizations = Organization.archived.order(:name)
   end
 end

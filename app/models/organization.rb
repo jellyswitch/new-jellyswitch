@@ -13,7 +13,8 @@
 #  operator_id        :integer          default(1), not null
 #  owner_id           :integer
 #  stripe_customer_id :string
-#
+#  visible            :boolean          default(TRUE), not null
+
 # Indexes
 #
 #  index_organizations_on_operator_id  (operator_id)
@@ -39,6 +40,8 @@ class Organization < ApplicationRecord
   delegate :email, to: :owner
 
   scope :eligible_for_lease, -> { where.not(stripe_customer_id: nil).or(where(out_of_band: true)) }
+  scope :visible, -> { where(visible: true) }
+  scope :archived, -> { where(visible: false) }
 
   def search_data
     {
