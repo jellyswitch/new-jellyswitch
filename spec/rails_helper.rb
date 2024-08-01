@@ -69,11 +69,7 @@ RSpec.configure do |config|
   config.include SystemTestHelper, type: :system
 
   config.before(:each, type: :system) do
-    if Rails.env.production?
-      driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
-    else
-      driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
-    end
+    driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
 
     Capybara.app_host = "http://tml.lvh.me"
     Capybara.server_port = 9000
