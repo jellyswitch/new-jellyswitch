@@ -2,19 +2,17 @@
 
 <div class="form-group">
   <%= f.label :name, "What is this room called?" %>
-  <%= f.text_field :name, placeholder: "Conference Room", class: "form-control"
-  %>
+  <%= f.text_field :name, placeholder: "Conference Room", class: "form-control" %>
 </div>
 
 <div class="form-group">
   <%= f.label :description %>
-  <%= f.text_area :description, placeholder:
-  "Awesome space for productive people", class: "form-control" %>
+  <%= f.text_area :description, placeholder: "Awesome space for productive people", class: "form-control" %>
 </div>
 
 <div class="form-group">
   <%= f.label :capacity,
-  "Roughly how many people can sit comfortably in this room?" %>
+              "Roughly how many people can sit comfortably in this room?" %>
   <%= f.text_field :capacity, class: "form-control" %>
 </div>
 
@@ -25,19 +23,18 @@
 
 <div class="form-group">
   <div class="form-check">
-    <%= f.check_box :allow_shorter_reservation_duration, class:
-    "form-check-input" %>
+    <%= f.check_box :allow_shorter_reservation_duration, class: "form-check-input" %>
     <%= f.label :allow_shorter_reservation_duration,
-    "Check this box for 30-minute reservations, Uncheck for 4-hour and 8-hour options only",
-    class: "form-check-label" %>
+                "Check this box for 30-minute reservations, Uncheck for 4-hour and 8-hour options only",
+                class: "form-check-label" %>
   </div>
 </div>
 
 <div class="form-group">
   <div class="form-check">
     <%= f.check_box :visible, class: "form-check-input" %>
-    <%= f.label :visible, "Check this box to make this room visible right away",
-    {class: "form-check-label"} %>
+    <%= f.label :visible, "Check this box to make this room visible to customer",
+                { class: "form-check-label" } %>
   </div>
 </div>
 
@@ -45,8 +42,8 @@
   <div class="form-check">
     <%= f.check_box :rentable, class: "form-check-input" %>
     <%= f.label :rentable,
-    "Check this box to make this room available to rent for non-members",
-    {class: "form-check-label"} %>
+                "Check this box to make this room available to rent for non-members",
+                { class: "form-check-label" } %>
   </div>
 </div>
 
@@ -58,13 +55,12 @@
 <% end %>
 
 <%= f.label :amount_in_cents,
-"(For non-members) How much does this room cost per hour?" %>
+            "(For non-members) How much does this room cost per hour?" %>
 <div class="input-group">
   <div class="input-group-prepend">
     <span class="input-group-text">$</span>
   </div>
-  <%= f.text_field :hourly_rate_in_cents, class: "form-control", value:
-  number_with_precision(room.hourly_rate_in_cents / 100.0, precision: 2) %>
+  <%= f.text_field :hourly_rate_in_cents, class: "form-control", value: number_with_precision(room.hourly_rate_in_cents / 100.0, precision: 2) %>
 </div>
 
 <h4 class="mt-4">Amenities</h4>
@@ -81,11 +77,10 @@
   </div>
 
   <%= f.fields_for :amenities do |amenity_form| %>
-    <%= render 'amenity_fields', f: amenity_form %>
+    <%= render "amenity_fields", f: amenity_form %>
   <% end %>
   <div class="links text-center">
-    <%= link_to_add_association '+ Add More', f, :amenities, class:
-    'mt-2' %>
+    <%= link_to_add_association "+ Add More", f, :amenities, class: "mt-2" %>
   </div>
 </div>
 
