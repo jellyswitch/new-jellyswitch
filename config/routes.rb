@@ -256,6 +256,7 @@ Rails.application.routes.draw do
     collection do
       get :available, to: "operator/offices#available"
       get :upcoming_renewals, to: "operator/offices#upcoming_renewals"
+      get :archived, to: "operator/offices#archived"
     end
   end
   resources :office_leases, controller: "operator/office_leases"

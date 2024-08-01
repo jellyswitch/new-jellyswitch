@@ -31,6 +31,10 @@ class OfficePolicy < ApplicationPolicy
     enabled? && (admin? || superadmin? || community_manager? || general_manager?)
   end
 
+  def archived?
+    enabled? && (admin? || superadmin? || community_manager? || general_manager?)
+  end
+
   def enabled?
     operator.offices_enabled?
   end
