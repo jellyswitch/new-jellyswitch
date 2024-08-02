@@ -21,6 +21,7 @@ class Mobile::DoorAccessController < Operator::BaseController
 
   def logout
     log_out
+    @redirect_path = root_path
     turbo_redirect(mobile_send_user_id_to_ios_path(is_logout: true), action: restore_if_possible)
   end
 
