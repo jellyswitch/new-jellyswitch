@@ -1,4 +1,3 @@
-
 module SessionsHelper
   # Logs in the given user
   def log_in(user)
@@ -45,7 +44,7 @@ module SessionsHelper
     if !defined?(current_tenant)
       return nil
     end
-    
+
     # this will only return nil if there is more than one location to choose and one has NOT been selected already
 
     # In case I"m a superadmin and my location is set to a different operator
@@ -133,7 +132,7 @@ module SessionsHelper
   end
 
   def forget(user)
-    user.forget
+    user&.forget
     cookies.delete(:user_id)
     cookies.delete(:remember_token)
   end
