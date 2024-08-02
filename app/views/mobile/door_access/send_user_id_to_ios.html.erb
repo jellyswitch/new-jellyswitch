@@ -1,0 +1,7 @@
+<script>
+  window.webkit.messageHandlers.ApplicationController.postMessage(JSON.stringify({type: "setUserId", userId: "<%= current_user&.id %>"}));
+
+  setTimeout(() => {
+    Turbo.visit("<%= @redirect_path %>", { action: "replace" });
+  }, 500);
+</script>
