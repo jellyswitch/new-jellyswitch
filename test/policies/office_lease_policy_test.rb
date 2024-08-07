@@ -1,7 +1,6 @@
 require "test_helper"
 
 class OfficeLeasePolicyTest < PolicyAssertions::Test
-
   setup do
     setup_initial_user_fixtures
   end
@@ -44,5 +43,18 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
     assert_permit @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
+  end
+
+  def test_renewal
+    office_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 1.month)
+    not_valid_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 2.months)
+
+    assert_not_permitted @member, office_lease
+    assert_permit @admin, office_lease
+    assert_permit @community_manager, office_lease
+    assert_permit @general_manager, office_lease
+    assert_permit @superadmin, office_lease
+
+    assert_not_permitted @superadmin, not_valid_lease
   end
 end

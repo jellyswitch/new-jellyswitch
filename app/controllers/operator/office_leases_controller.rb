@@ -12,13 +12,32 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def new
-    @office_lease = OfficeLease.new
-    @office_lease.build_subscription
-    @office_lease.subscription.build_plan
+    @office_lease = initialize_office_lease
     find_organizations
     find_offices
     find_plans
+
     authorize @office_lease
+  end
+
+  def renewal
+    @current_lease = OfficeLease.find(params[:office_lease_id])
+    authorize @current_lease, :renewal?
+
+    @office_lease = initialize_office_lease
+
+    @office_lease.office = @current_lease.office
+    @office_lease.organization = @current_lease.organization
+    @office_lease.subscription.plan.amount_in_cents = @current_lease.subscription.plan.amount_in_cents
+
+    @office_lease.start_date = @office_lease.initial_invoice_date = @current_lease.end_date
+    @office_lease.end_date = @office_lease.start_date + 1.year
+
+    find_plans
+    @organizations = [@current_lease.organization]
+    @offices = [@current_lease.office]
+
+    authorize @office_lease, :new?
   end
 
   def create
@@ -117,5 +136,12 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def find_plans
     @plans = Plan.lease
+  end
+
+  def initialize_office_lease
+    office_lease = OfficeLease.new
+    office_lease.build_subscription
+    office_lease.subscription.build_plan
+    office_lease
   end
 end

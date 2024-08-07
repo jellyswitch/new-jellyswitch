@@ -63,7 +63,11 @@
     </dl>
 
     <% if @office_lease.has_lease? %>
-      <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: 'attachment'), class: "btn btn-block btn-primary" %>
+      <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: "attachment"), class: "btn btn-block btn-primary" %>
+    <% end %>
+
+    <% if @office_lease.eligible_for_renewal? %>
+      <%= link_to "Setup Renewal Lease", office_lease_renewal_path(@office_lease), class: "btn btn-block btn-primary" %>
     <% end %>
 
     <% if @office_lease.subscription_active? %>

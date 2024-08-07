@@ -262,7 +262,9 @@ Rails.application.routes.draw do
       get :archived, to: "operator/offices#archived"
     end
   end
-  resources :office_leases, controller: "operator/office_leases"
+  resources :office_leases, controller: "operator/office_leases" do
+    get :renewal, to: "operator/office_leases#renewal"
+  end
   delete "destroy_office_lease_now/:id", to: "operator/office_leases#destroy_office_lease_now", as: "destroy_office_lease_now"
   resources :organizations, controller: "operator/organizations" do
     post :add_member, to: "operator/organization_members#create"
