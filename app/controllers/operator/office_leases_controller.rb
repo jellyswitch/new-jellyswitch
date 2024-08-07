@@ -24,20 +24,11 @@ class Operator::OfficeLeasesController < Operator::BaseController
     @current_lease = OfficeLease.find(params[:office_lease_id])
     authorize @current_lease, :renewal?
 
-    @office_lease = initialize_office_lease
-
-    @office_lease.office = @current_lease.office
-    @office_lease.organization = @current_lease.organization
-    @office_lease.subscription.plan.amount_in_cents = @current_lease.subscription.plan.amount_in_cents
-
-    @office_lease.start_date = @office_lease.initial_invoice_date = @current_lease.end_date
-    @office_lease.end_date = @office_lease.start_date + 1.year
+    @office_lease = Billing::Leasing::InitializeRenewalOfficeLease.call(active_lease: @current_lease).renewal_lease
 
     find_plans
-    @organizations = [@current_lease.organization]
-    @offices = [@current_lease.office]
-
-    authorize @office_lease, :new?
+    @organizations = [@office_lease.organization]
+    @offices = [@office_lease.office]
   end
 
   def create
