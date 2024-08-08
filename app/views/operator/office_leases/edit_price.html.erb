@@ -1,0 +1,50 @@
+<% title "Update Lease Pricing" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
+  <li class="breadcrumb-item"><%= link_to @office_lease.office.name, office_path(@office_lease.office) %></li>
+  <li class="breadcrumb-item"><%= link_to "Lease", office_lease_path(@office_lease) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Update Pricing</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Update Lease Pricing for <%= @office_lease.office.name %></h4>
+
+    <%= form_with(model: @office_lease, url: office_lease_update_price_path(@office_lease), remote: true) do |form| %>
+      <div class="form-group">
+        <%= form.label :current_price, "Current Monthly Price" %>
+        <%= form.text_field :current_price, value: number_to_currency(@office_lease.subscription.plan.amount_in_cents / 100.0), class: "form-control", disabled: true %>
+      </div>
+
+      <div class="form-group">
+        <%= form.label :new_price, "New Monthly Price (in cents)" %>
+        <%= form.number_field :new_price, class: "form-control", step: "0.01", required: true, placeholder: @office_lease.subscription.plan.amount_in_cents %>
+        <small class="form-text text-muted">The new price will be charged in the next billing cycle.</small>
+      </div>
+
+      <%= form.button "Update Pricing", id: "update-pricing-btn", class: "btn btn-primary", data: { toggle: "modal", target: "#update-price-confirm-modal" }, type: "button", disabled: true %>
+      <%= link_to "Cancel", office_lease_path(@office_lease), class: "btn btn-secondary" %>
+
+      <%= render "update_price_confirm_modal", form: form %> 
+    <% end %>
+  <% end %>
+<% end %>
+
+<script>
+    $(document).ready(function() {
+        const $newPriceInput = $('#office_lease_new_price');
+        const $updatePricingBtn = $('#update-pricing-btn');
+
+        $newPriceInput.on('input', function() {
+            $updatePricingBtn.prop('disabled', !$(this).val());
+        });
+
+        $('form').on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>

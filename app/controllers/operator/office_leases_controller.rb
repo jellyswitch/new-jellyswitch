@@ -31,6 +31,17 @@ class Operator::OfficeLeasesController < Operator::BaseController
     @offices = [@office_lease.office]
   end
 
+  def edit_price
+    @office_lease = OfficeLease.find(params[:office_lease_id])
+    authorize @office_lease, :edit_price?
+
+    @next_billing_cycle = Time.at(@office_lease.current_period_end)
+  end
+
+  def update_price
+    # TODO: Implement
+  end
+
   def create
     @office_lease = current_location.office_leases.build(office_lease_params)
 

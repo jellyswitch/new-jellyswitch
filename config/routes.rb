@@ -264,6 +264,8 @@ Rails.application.routes.draw do
   end
   resources :office_leases, controller: "operator/office_leases" do
     get :renewal, to: "operator/office_leases#renewal"
+    get :edit_price, to: "operator/office_leases#edit_price"
+    post :update_price, to: "operator/office_leases#update_price"
   end
   delete "destroy_office_lease_now/:id", to: "operator/office_leases#destroy_office_lease_now", as: "destroy_office_lease_now"
   resources :organizations, controller: "operator/organizations" do

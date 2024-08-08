@@ -31,6 +31,14 @@ class OfficeLeasePolicy < ApplicationPolicy
     enabled? && (admin? || community_manager? || general_manager?) && record.eligible_for_renewal?
   end
 
+  def edit_price?
+    update_price?
+  end
+
+  def update_price?
+    enabled? && (admin? || community_manager? || general_manager?) && record.active? && record.subscription_active?
+  end
+
   private
 
   def owner?
