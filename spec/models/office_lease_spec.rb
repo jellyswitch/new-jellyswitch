@@ -1,6 +1,11 @@
 require "rails_helper"
 
 RSpec.describe OfficeLease, type: :model do
+  before do
+    Subscription.update_all(stripe_subscription_id: nil)
+    OfficeLease.destroy_all
+  end
+
   describe "eligible_for_renewal?" do
     context "when the lease is active and within the renewal window" do
       it "returns true" do
