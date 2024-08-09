@@ -59,6 +59,51 @@ module StripeUtils
     stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 
+  def update_stripe_subscription_price(subscription, new_price_in_cents)
+    stripe_subscription = retrieve_stripe_subscription(subscription)
+
+    subscription_args = {
+      items: [
+        {
+          id: stripe_subscription.items.data.first.id,
+          price_data: {
+            currency: "usd",
+            product: stripe_subscription.plan.product,
+            unit_amount: new_price_in_cents,
+            recurring: {
+              interval: subscription.plan.stripe_interval,
+              interval_count: subscription.plan.stripe_interval_count,
+            },
+          },
+        },
+      ],
+      proration_behavior: "none",
+    }
+
+    Rails.logger.info("Updating subscription price to #{new_price_in_cents}")
+    puts subscription_args
+
+    update_stripe_subscription(stripe_subscription.id, subscription_args)
+  end
+
+  def update_stripe_subscription(subscription_id, args)
+    Stripe::Subscription.update(
+      subscription_id,
+      args,
+      {
+        api_key: stripe_secret_key,
+        stripe_account: stripe_user_id,
+      }
+    )
+  rescue Stripe::StripeError => e
+    Honeybadger.notify(e)
+    raise e
+  end
+
+  def retrieve_stripe_subscription(subscription)
+    stripe_request(stripe_subscription, :retrieve, subscription.stripe_subscription_id)
+  end
+
   def list_stripe_subscriptions
     stripe_request(Subscription, :list, {})
   end

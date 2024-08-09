@@ -99,6 +99,7 @@ class Operator < ApplicationRecord
            :create_stripe_subscription,
            :retrieve_stripe_plans,
            :create_stripe_plan,
+           :update_stripe_subscription_price,
            :mark_invoice_paid,
            :create_or_update_customer_payment,
            :charge_invoice,

@@ -36,7 +36,7 @@ class OfficeLeasePolicy < ApplicationPolicy
   end
 
   def update_price?
-    enabled? && (admin? || community_manager? || general_manager?) && record.active? && record.subscription_active?
+    enabled? && admin_or_manager? && record.active? && record.subscription_active?
   end
 
   private

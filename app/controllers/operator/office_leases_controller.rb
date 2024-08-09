@@ -39,7 +39,22 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def update_price
-    # TODO: Implement
+    @office_lease = OfficeLease.find(params[:office_lease_id])
+    authorize @office_lease, :update_price?
+
+    result = Billing::Leasing::UpdateLeasePrice.call(
+      office_lease: @office_lease,
+      new_price_in_cents: params[:office_lease][:new_price].to_i,
+      operator: current_tenant,
+    )
+
+    if result.success?
+      flash[:notice] = "Lease price updated successfully."
+      turbo_redirect(office_lease_path(@office_lease))
+    else
+      flash[:error] = result.message
+      turbo_redirect(office_lease_edit_price_path(@office_lease))
+    end
   end
 
   def create
