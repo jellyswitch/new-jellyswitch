@@ -20,6 +20,6 @@ class PostPolicy < ApplicationPolicy
   end
 
   def can_see?
-    enabled? && (admin? || community_manager? || general_manager? || (user.member_at_operator?(operator) && approved?))
+    enabled? && (admin? || community_manager? || general_manager? || (user&.member_at_operator?(operator) && approved?))
   end
 end
