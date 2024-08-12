@@ -1,0 +1,15 @@
+<div class="row">
+    <div class="col">
+    Leased by <%= link_to lease.group_name, organization_path(lease.organization) %>
+    </div>
+</div>
+<div class="row">
+    <div class="col">
+    <%= pretty_price(lease) %> (<%= short_date(lease.start_date) %> - <%= short_date(lease.end_date) %>) 
+    </div>
+</div>
+<div class="row mb-2 mt-2">
+    <div class="col">
+    <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
+    </div>
+</div>

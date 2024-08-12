@@ -27,6 +27,10 @@ class OfficeLeasePolicy < ApplicationPolicy
     operator.offices_enabled?
   end
 
+  def renewal?
+    enabled? && (admin? || community_manager? || general_manager?) && record.eligible_for_renewal?
+  end
+
   private
 
   def owner?

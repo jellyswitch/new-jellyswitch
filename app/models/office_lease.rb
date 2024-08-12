@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: office_leases
@@ -46,19 +45,26 @@ class OfficeLease < ApplicationRecord
 
   accepts_nested_attributes_for :subscription
 
-  scope :active, -> { where('now() BETWEEN start_date AND end_date') }
-  scope :inactive, -> { where.not('now() BETWEEN start_date AND end_date') }
+  scope :active, -> { where("now() BETWEEN start_date AND end_date") }
+  scope :upcoming, -> { where("start_date > now() AND now() < end_date") }
+  scope :inactive, -> { where("end_date <= now()") }
+
+  RENEWAL_WINDOW_DAYS = 60.freeze
 
   def has_lease?
     lease_agreement.attached?
   end
 
   def active?
-      Time.current.between?(start_date, end_date)
+    Time.current.between?(start_date, end_date)
   end
 
   def subscription_active?
     subscription.active?
+  end
+
+  def eligible_for_renewal?
+    end_date.between?(Date.today, Date.today + RENEWAL_WINDOW_DAYS.days) && active?
   end
 
   def group_name

@@ -57,7 +57,7 @@
         <%= link_to office_lease_path(lease), class: "btn btn-block btn-primary" do %>
           <i class="fas fa-file-alt"></i>
           &nbsp;
-          View lease
+          Manage active lease
         <% end %>
       <% end %>
     <% else %>
@@ -100,6 +100,21 @@
 <% end %>
 <hr />
 
+<% if (upcoming_leases = office.office_leases.upcoming).any? %>
+  <div class="row">
+    <div class="col">
+      <h5 class="display-5 text-center">Upcoming Leases</h5>
+
+      <% upcoming_leases.each do |lease| %>
+        <%= render "operator/offices/lease_card", lease: lease %>
+      <% end %>
+    </div>
+  </div>
+
+  <hr />
+<% end %>
+
+
 <div class="row">
   <div class="col">
     <h5 class="display-5 text-center">Expired Leases</h5>
@@ -108,21 +123,7 @@
       No expired leases on file.
     <% else %>
       <% office.office_leases.inactive.each do |lease| %>
-        <div class="row">
-          <div class="col">
-            Leased by <%= link_to lease.group_name, organization_path(lease.organization) %>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col">
-            (<%= pretty_price(lease) %> until <%= short_date(lease.end_date) %>)
-          </div>
-        </div>
-        <div class="row mb-2">
-          <div class="col">
-            <%= link_to "View Lease", office_lease_path(lease), class: "btn btn-block btn-primary" %>
-          </div>
-        </div>
+        <%= render "operator/offices/lease_card", lease: lease %>
       <% end %>
     <% end %>
   </div>
