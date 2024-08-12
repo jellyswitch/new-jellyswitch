@@ -74,4 +74,8 @@ RSpec.configure do |config|
     Capybara.app_host = "http://tml.lvh.me"
     Capybara.server_port = 9000
   end
+
+  config.before(:each, type: :controller) do
+    @request.host = "tml.lvh.me"
+  end
 end

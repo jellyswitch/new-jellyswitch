@@ -1,4 +1,3 @@
-
 module PolicyHelpers
   protected
 
@@ -22,6 +21,10 @@ module PolicyHelpers
     is_user? && user.superadmin?
   end
 
+  def admin_or_manager?
+    admin? || superadmin? || community_manager? || general_manager?
+  end
+
   def checked_in?
     if @location.nil?
       false
@@ -33,7 +36,7 @@ module PolicyHelpers
   def approved?
     is_user? && user.approved?
   end
-  
+
   def owner?
     is_user? && (user == record.user)
   end

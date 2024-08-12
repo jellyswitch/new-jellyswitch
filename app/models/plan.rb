@@ -1,4 +1,3 @@
-
 # == Schema Information
 #
 # Table name: plans
@@ -43,20 +42,22 @@ class Plan < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
+  validates :amount_in_cents, numericality: { greater_than: 0 }
+
   # Scopes
   scope :available, -> { where(available: true) }
-  scope :unavailable, ->{ where(available: false) }
+  scope :unavailable, -> { where(available: false) }
   scope :visible, -> { where(visible: true) }
   scope :invisible, -> { where(visible: false) }
-  scope :individual, -> { where(plan_type: 'individual') }
+  scope :individual, -> { where(plan_type: "individual") }
   scope :for_individuals, -> { individual.available.visible }
   scope :for_location, ->(location) do
-    joins(:locations).where(locations: {id: location.id})
-  end
-  scope :lease, -> { where(plan_type: 'lease') }
-  scope :nonzero, -> { where('amount_in_cents > 0') }
-  scope :free, -> { where('amount_in_cents <= 0') }
-  scope :cheapest, -> { order('amount_in_cents ASC').first }
+          joins(:locations).where(locations: { id: location.id })
+        end
+  scope :lease, -> { where(plan_type: "lease") }
+  scope :nonzero, -> { where("amount_in_cents > 0") }
+  scope :free, -> { where("amount_in_cents <= 0") }
+  scope :cheapest, -> { order("amount_in_cents ASC").first }
   scope :uncategorized, -> { where(plan_category_id: nil) }
   scope :for_category, ->(plan_category) { where(plan_category_id: plan_category.id) }
 
@@ -65,8 +66,8 @@ class Plan < ApplicationRecord
   def stripe_plan
     Stripe::Plan.retrieve(self.stripe_plan_id, {
       api_key: operator.stripe_secret_key,
-      stripe_account: operator.stripe_user_id
-  })
+      stripe_account: operator.stripe_user_id,
+    })
   end
 
   def plan_name
@@ -80,7 +81,7 @@ class Plan < ApplicationRecord
       "monthly" => "month",
       "quarterly" => "quarter",
       "biannually" => "6-months",
-      "annually" => "year"
+      "annually" => "year",
     }[interval]
   end
 
@@ -91,7 +92,7 @@ class Plan < ApplicationRecord
       "monthly" => "month",
       "quarterly" => "month",
       "biannually" => "month",
-      "annually" => "year"
+      "annually" => "year",
     }[interval]
   end
 
@@ -112,7 +113,7 @@ class Plan < ApplicationRecord
       "monthly" => "mo",
       "quarterly" => "qt",
       "biannually" => "2x-yr",
-      "annually" => "yr"
+      "annually" => "yr",
     }[interval]
   end
 
@@ -126,12 +127,12 @@ class Plan < ApplicationRecord
     "monthly",
     "quarterly",
     "biannually",
-    "annually"
+    "annually",
   ]
 
   LEASE_INTERVAL_OPTIONS = [
     "monthly",
-    "annually"
+    "annually",
   ]
 
   # Class methods
@@ -171,7 +172,7 @@ class Plan < ApplicationRecord
   def quarterly?
     interval == "quarterly"
   end
-  
+
   def biannually?
     interval == "biannually"
   end

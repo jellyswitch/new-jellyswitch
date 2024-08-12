@@ -1,0 +1,37 @@
+<%= render Bootstrap::Modal.new(id: "update-price-confirm-modal") do %>
+  <h5 class="modal-title">Lease Price Update</h5>
+  <div>
+    <p>Please review the following information before confirming the price update:</p>
+    
+    <dl class="row">
+      <dt class="col-sm-4">Office:</dt>
+      <dd class="col-sm-8"><%= @office_lease.office.name %></dd>
+      
+      <dt class="col-sm-4">Organization:</dt>
+      <dd class="col-sm-8"><%= @office_lease.organization.name %></dd>
+      
+      <dt class="col-sm-4">Current Price:</dt>
+      <dd class="col-sm-8"><%= number_to_currency(@office_lease.subscription.plan.amount_in_cents / 100.0) %> per month</dd>
+      
+      <dt class="col-sm-4">New Price:</dt>
+      <dd class="col-sm-8"><strong id="new-price-display"></strong> per month</dd>
+      
+      <dt class="col-sm-4">Next Cycle:</dt>
+      <dd class="col-sm-8"><%= @next_billing_cycle.strftime("%B %d, %Y") %></dd>
+    </dl>
+
+    <strong>Note:</strong> The new price will be effective from the next billing cycle.
+
+    <%= form.submit "Update", class: "btn btn-block btn-primary mt-2" %>
+  </div>    
+<% end %>
+
+<script>
+  $(document).ready(function() {
+    // Update the modal content when it's about to be shown
+    $('#update-price-confirm-modal').on('show.bs.modal', function (event) {
+      var newPrice = $('#office_lease_new_price').val();
+      $('#new-price-display').text('$' + parseFloat(newPrice / 100).toFixed(2));
+    });
+  });
+</script>

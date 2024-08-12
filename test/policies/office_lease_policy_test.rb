@@ -57,4 +57,22 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
 
     assert_not_permitted @superadmin, not_valid_lease
   end
+
+  def test_update_price
+    office_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 1.month)
+    office_lease.stub(:subscription_active?, true) do
+      assert_not_permitted @member, office_lease, :update_price?
+      assert_permit @admin, office_lease, :update_price?
+      assert_permit @community_manager, office_lease, :update_price?
+      assert_permit @general_manager, office_lease, :update_price?
+      assert_permit @superadmin, office_lease, :update_price?
+    end
+
+    not_valid_lease = create(:office_lease, start_date: Date.today - 3.months, end_date: Date.today - 2.months)
+    assert_not_permitted @superadmin, not_valid_lease
+  end
+
+  def test_edit_price
+    test_update_price
+  end
 end

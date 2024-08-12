@@ -82,4 +82,8 @@ class OfficeLease < ApplicationRecord
   def pretty_date
     end_date.strftime("%m/%d/%Y")
   end
+
+  def current_period_end
+    subscription.stripe_subscription.current_period_end
+  end
 end
