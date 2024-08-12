@@ -95,10 +95,10 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_member)
     setup_stripe
 
-    sleep 1
     log_in @user
 
     click_on "Reserve Now"
+    wait_for_turbo
 
     assert_text "Reservation Date"
 
@@ -106,6 +106,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     select @room.name, from: "room_id"
 
     click_on "Confirm"
+    wait_for_turbo
 
     assert_text("Reservation Details")
     assert_text("Payment Required: No")
