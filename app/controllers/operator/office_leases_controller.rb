@@ -33,6 +33,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def edit_price
     @office_lease = OfficeLease.find(params[:office_lease_id])
+    @plan_interval = @office_lease.subscription.plan.interval
+    @display_interval = @office_lease.subscription.plan.display_interval
+
     authorize @office_lease, :edit_price?
 
     @next_billing_cycle = Time.at(@office_lease.current_period_end)

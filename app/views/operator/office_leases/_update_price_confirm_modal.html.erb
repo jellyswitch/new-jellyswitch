@@ -11,10 +11,10 @@
       <dd class="col-sm-8"><%= @office_lease.organization.name %></dd>
       
       <dt class="col-sm-4">Current Price:</dt>
-      <dd class="col-sm-8"><%= number_to_currency(@office_lease.subscription.plan.amount_in_cents / 100.0) %> per month</dd>
+      <dd class="col-sm-8"><%= number_to_currency(@office_lease.subscription.plan.amount_in_cents / 100.0) %> per <%= @display_interval %></dd>
       
       <dt class="col-sm-4">New Price:</dt>
-      <dd class="col-sm-8"><strong id="new-price-display"></strong> per month</dd>
+      <dd class="col-sm-8"><strong id="new-price-display"></strong> per <%= @display_interval %></dd>
       
       <dt class="col-sm-4">Next Cycle:</dt>
       <dd class="col-sm-8"><%= @next_billing_cycle.strftime("%B %d, %Y") %></dd>
