@@ -11,3 +11,4 @@ We would like to thank the following people who have contributed in various ways
 - Shelby Talbert - @miShelbyT
 - Andrew Neidley - @neidley
 - Tim Carey - @tim-carey-code
+- Dao Tran - @tranngminhdao

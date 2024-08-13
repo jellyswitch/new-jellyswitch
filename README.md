@@ -2,8 +2,8 @@
 
 Jellyswitch is a next-generation, mobile-first coworking platform that enables a superior member experience and allows coworking staff members and operators to run their daily operations quickly and effectively.
 
-- https://github.com/jellyswitch/jellyswitch-ios
-- https://github.com/jellyswitch/jellyswitch-android
+- [Jellyswitch android repostiory](https://github.com/jellyswitch/android)
+- [Jellyswitch iOS repostiory](https://github.com/jellyswitch/TahoeMountainLabiOS)
 
 ## Summary
 
@@ -13,7 +13,7 @@ The codebase makes heavy use of the [Interactor Pattern](https://github.com/coll
 
 All functionality is designed and implemented mobile-first but works great in a desktop browser as well.
 
-:fire: The platform has been battle-tested in production for almost two years, in use by hundreds of users every single day.
+:fire: The platform has been battle-tested in production for almost four years, in use by hundreds of users every single day.
 
 We would like to thank the people outlined in `AUTHORS.md` for their contributions to making Jellyswitch great.
 
@@ -100,7 +100,7 @@ Announcements allow staff members to push notifications directly to a user's pho
 
 These instructions assume a MacOS operating system. Almost all configuration lives in the `.env` file see "Environment Variables" in next section.
 
-Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
+Ensure you have ruby 2.7.4 installed (we can use [rvm](https://rvm.io) or [rbenv](https://github.com/rbenv/rbenv).)
 
 
 1. `bundle install`
@@ -109,7 +109,7 @@ Ensure you have ruby 2.7.4 installed (we use [rvm](https://rvm.io).)
   - `brew install redis`
   - `brew services start redis`
 4. Install Opensearch:
-  - `brew cask install homebrew/cask-versions/java8` (if not available, use Zulu Community 8: `brew install --cask zulu8`)
+  - `brew cask install homebrew/cask-versions/java8` (if not available, use Zulu Community 8: `brew install --cask zulu@8`)
   - `brew install opensearch`
   - `brew services start opensearch`
 5. Install [stripe-mock](https://github.com/stripe/stripe-mock) (to speed up testing)
@@ -199,3 +199,10 @@ Can also try PUT to `/_all/_settings` this: `{
 }`
 
 (From [https://github.com/ankane/searchkick/issues/1040](https://github.com/ankane/searchkick/issues/1040)
+
+## Other Errors
+If you are running in to the issue `+[__NSCFConstantString initialize] may have been in progress in another thread when fork() was called.` Run the following command in your terminal
+
+```
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES
+```
