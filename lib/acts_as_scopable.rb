@@ -17,7 +17,7 @@ module ActsAsScopable
       def acts_as_scopable(*resources)
         default_scope lambda {
           if ActsAsScopable.current_scope_resources.present?
-            query_criteria = ActsAsScopable.current_scope_resources.each_with_object({}) do |record, criteria|
+            query_criteria = ActsAsScopable.current_scope_resources.compact.each_with_object({}) do |record, criteria|
               criteria["#{record.class.name.downcase}_id".to_sym] = record.id
             end
 

@@ -5,8 +5,8 @@ class Webhooks::SubscriptionUpdated
 
   def call
     subscription = Subscription.find_by(stripe_subscription_id: event.data.object.id)
-      
-    if subscription.present? && subscription.plan.individual?
+
+    if subscription.present? && subscription.plan&.individual?
       if subscription.paused?
         if event.data.object.pause_collection.blank?
           result = UnpauseMembership.call(
