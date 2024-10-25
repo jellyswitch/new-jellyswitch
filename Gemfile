@@ -75,6 +75,7 @@ group :test do
   gem "ffi"
   gem "selenium-webdriver"
   gem "webdrivers"
+  gem "database_cleaner-active_record"
 end
 
 group :development, :test do
