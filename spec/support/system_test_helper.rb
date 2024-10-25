@@ -12,6 +12,13 @@ module SystemTestHelper
     wait_for_turbo
   end
 
+  def switch_to_location(location)
+    visit root_path
+    click_on "Change Location"
+    click_on location.name
+    wait_for_turbo
+  end
+
   def wait_for_ajax
     Timeout.timeout(Capybara.default_max_wait_time) do
       loop until finished_all_ajax_requests?

@@ -16,6 +16,19 @@ RSpec.describe Reservation, type: :model do
     it "returns only ongoing reservations" do
       expect(Reservation.ongoing).to contain_exactly(ongoing_reservation)
     end
+
+    context "for_location_id" do
+      let(:location) { create(:location) }
+      let!(:reservation) { create(:reservation, room: create(:room, location: location)) }
+
+      it "returns only reservations for the given location" do
+        expect(Reservation.for_location_id(location.id)).to contain_exactly(reservation)
+      end
+
+      it "returns all reservations if location_id is nil" do
+        expect(Reservation.for_location_id(nil)).to contain_exactly(ongoing_reservation, future_reservation, reservation)
+      end
+    end
   end
 
   describe "#datetime_out" do

@@ -127,7 +127,7 @@
         <% end %>
       <% end %>
 
-      <% if policy(:room).enabled? && current_user.upcoming_or_ongoing_reservation.present? %>
+      <% if policy(:room).enabled? && @reservation.present? %>
         <%= list_item do %>
           <div class="row">
             <div class="col">
