@@ -192,9 +192,9 @@ class User < ApplicationRecord
     to_partial_path
   end
 
-  def upcoming_or_ongoing_reservation
-    reservations.ongoing.order(:datetime_in).first ||
-    reservations.future.order(:datetime_in).first
+  def upcoming_or_ongoing_reservation(location_id = nil)
+    reservations.for_location_id(location_id).ongoing.order(:datetime_in).first ||
+    reservations.for_location_id(location_id).future.order(:datetime_in).first
   end
 
   # Auth Stuff

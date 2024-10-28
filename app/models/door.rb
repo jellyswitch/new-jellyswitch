@@ -32,6 +32,7 @@ class Door < ApplicationRecord
   # Relationships
   has_many :door_punches, dependent: :destroy
   belongs_to :operator
+  belongs_to :location
   acts_as_scopable :operator, :location
 
   def search_data

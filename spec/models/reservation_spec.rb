@@ -1,7 +1,8 @@
 require "rails_helper"
 
 RSpec.describe Reservation, type: :model do
-  let(:room) { create(:room, name: "Meeting Room 3A", hourly_rate_in_cents: 1000) }
+  let(:location) { Location.first }
+  let(:room) { create(:room, name: "Meeting Room 3A", hourly_rate_in_cents: 1000, location: location) }
 
   describe "associations" do
     it "has and belongs to many amenities" do
@@ -15,6 +16,20 @@ RSpec.describe Reservation, type: :model do
 
     it "returns only ongoing reservations" do
       expect(Reservation.ongoing).to contain_exactly(ongoing_reservation)
+    end
+
+    context "for_location_id" do
+      let(:location_2) { create(:location) }
+      let!(:room_2) { create(:room, location: location_2) }
+      let!(:reservation) { create(:reservation, room: room_2) }
+
+      it "returns only reservations for the given location" do
+        expect(Reservation.for_location_id(location_2.id)).to contain_exactly(reservation)
+      end
+
+      it "returns all reservations if location_id is nil" do
+        expect(Reservation.for_location_id(nil)).to contain_exactly(ongoing_reservation, future_reservation, reservation)
+      end
     end
   end
 

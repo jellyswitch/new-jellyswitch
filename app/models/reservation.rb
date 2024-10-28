@@ -37,6 +37,7 @@ class Reservation < ApplicationRecord
   scope :overlapping, ->(start_time, end_time) {
           where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
         }
+  scope :for_location_id, ->(location_id) { location_id ? joins(:room).where(rooms: { location_id: location_id }) : all }
 
   delegate :operator, to: :room
 
