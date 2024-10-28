@@ -33,6 +33,8 @@
 #  operator_id                   :integer          default(2), not null
 #  organization_id               :integer
 #  stripe_customer_id            :string
+#  original_location_id          :integer          # location where a normal user signed up, or where an admin manages
+#  current_location_id           :integer          # location where the user is currently checked in
 #
 # Indexes
 #
@@ -58,6 +60,8 @@ class User < ApplicationRecord
   has_many :member_feedbacks
   belongs_to :organization, optional: true
   belongs_to :operator
+  belongs_to :original_location, class_name: "Location", optional: true
+  belongs_to :current_location, class_name: "Location", optional: true
   has_many :operator_surveys
   has_many :reservations
   has_many :subscriptions, as: :subscribable

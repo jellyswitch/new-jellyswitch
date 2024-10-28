@@ -15,7 +15,7 @@ module SystemTestHelper
   def switch_to_location(location)
     visit root_path
     click_on "Change Location"
-    click_on location.name
+    page.find_button(location.name).click
     wait_for_turbo
   end
 

@@ -54,6 +54,16 @@
         <%- end %>
       </dd>
 
+      <%- if @user.original_location.present? %>
+        <dt class="col-6">Main location</dt>
+        <dd class="col original-location"><%= @user.original_location.name %></dd>
+      <%- end %>
+
+      <%- if @user.current_location.present? %>
+        <dt class="col-6">Current location</dt>
+        <dd class="col current-location"><%= @user.current_location.name %></dd>
+      <%- end %>
+
       <dt class="col-6">Bio</dt>
       <dd class="col"><%= @user.bio %></dd>
 
