@@ -58,12 +58,14 @@ class Organization < ApplicationRecord
     end.prepend(["", nil])
   end
 
-  def has_active_lease?
-    active_leases.length > 0
+  def has_active_lease?(location = nil)
+    active_leases(location).length > 0
   end
 
-  def active_leases
-    office_leases.active
+  def active_leases(location = nil)
+    leases = office_leases.active
+    leases = leases.where(location: location) if location
+    leases
   end
 
   def stripe_customer

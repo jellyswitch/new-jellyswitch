@@ -12,6 +12,7 @@
 #  day_pass_type_id :integer
 #  invoice_id       :integer
 #  operator_id      :integer          default(1), not null
+#  location_id      :integer
 #  stripe_charge_id :string
 #  user_id          :integer          not null
 #
@@ -22,6 +23,8 @@
 #
 
 class DayPass < ApplicationRecord
+  include HasLocation
+
   # Relationships
   belongs_to :billable, polymorphic: true
   belongs_to :day_pass_type

@@ -68,6 +68,7 @@ class Location < ApplicationRecord
   has_many :feed_items
   has_many :member_feedbacks
   has_and_belongs_to_many :plans
+  has_many :current_users, class_name: "User", foreign_key: "current_location_id"
 
   has_one_attached :background_image
   has_one_attached :photo

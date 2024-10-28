@@ -18,7 +18,7 @@ class FeedItemComment < ApplicationRecord
 
   after_commit :reindex_feed_item
 
-  delegate :operator, to: :feed_item
+  delegate :operator, :location, to: :feed_item
 
   def reindex_feed_item
     feed_item.reindex

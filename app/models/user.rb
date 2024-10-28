@@ -98,6 +98,9 @@ class User < ApplicationRecord
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
 
+  # TODO: support multiple locations per admin
+  scope :relevant_admins_of_location, ->(location) { where("(role = ? AND current_location_id = ?) OR (role = ? AND original_location_id = ?)", User::SUPERADMIN, location.id, User::ADMIN, location.id) }
+
   # Permissions
   delegate :member_at_operator?,
            :member?,

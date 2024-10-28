@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
+ActiveRecord::Schema[7.0].define(version: 2024_10_28_052137) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -119,6 +119,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "location_id"
+    t.index ["location_id"], name: "index_announcements_on_location_id"
   end
 
   create_table "checkins", force: :cascade do |t|
@@ -132,6 +133,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_checkins_on_location_id"
   end
 
   create_table "child_profiles", force: :cascade do |t|
@@ -184,7 +186,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "invoice_id"
     t.string "billable_type"
     t.bigint "billable_id"
+    t.integer "location_id"
     t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
@@ -239,7 +243,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "expense", default: false, null: false
+    t.integer "location_id"
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
+    t.index ["location_id"], name: "index_feed_items_on_location_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -350,6 +356,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "user_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
   create_table "office_leases", force: :cascade do |t|
@@ -505,6 +513,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.string "title", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_posts_on_location_id"
   end
 
   create_table "refunds", force: :cascade do |t|
@@ -628,6 +637,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.jsonb "previous_blob"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_weekly_updates_on_location_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
