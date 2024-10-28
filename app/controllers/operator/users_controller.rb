@@ -94,6 +94,8 @@ class Operator::UsersController < Operator::BaseController
     @user = User.new
     authorize @user
 
+    @locations = current_tenant.locations
+
     if logged_in? && !admin?
       # this is a normal user creating another user
       flash[:success] = "Please log out first."
@@ -125,6 +127,13 @@ class Operator::UsersController < Operator::BaseController
           turbo_redirect(user_path(result.user), action: "replace")
         end
       else
+        # set the current location based on the user's preferred location
+        if result.user.original_location.present?
+          checkout
+          unset_location
+          set_location(result.user.original_location)
+        end
+
         log_in(result.user)
 
         if current_location.new_users_get_free_day_pass?

@@ -8,7 +8,11 @@ module EventHelper
   end
 
   def find_upcoming_events
-    @events = current_location.events.future.limit(1).order("starts_at ASC").group_by_day(&:starts_at)
+    if current_location
+      @events = current_location&.events.future.limit(1).order("starts_at ASC").group_by_day(&:starts_at)
+    else
+      @events = []
+    end
   end
 
   def find_todays_events

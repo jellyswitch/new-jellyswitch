@@ -3,10 +3,16 @@ module SessionsHelper
   def log_in(user)
     session[:user_id] = user.id
     ahoy.authenticate(user)
+
+    # sets the user's current location to the current location
+    if current_location.present?
+      user.update(current_location: current_location)
+    end
   end
 
   def set_location(location)
     session[:location_id] = location.id
+    @current_location = location
   end
 
   def unset_location
