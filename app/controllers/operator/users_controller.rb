@@ -94,8 +94,6 @@ class Operator::UsersController < Operator::BaseController
     @user = User.new
     authorize @user
 
-    @locations = current_tenant.locations
-
     if logged_in? && !admin?
       # this is a normal user creating another user
       flash[:success] = "Please log out first."
