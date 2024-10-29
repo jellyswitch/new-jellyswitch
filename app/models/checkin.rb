@@ -20,9 +20,10 @@
 #
 
 class Checkin < ApplicationRecord
+  include HasLocation
+
   belongs_to :billable, polymorphic: true
   belongs_to :invoice, optional: true
-  belongs_to :location
   belongs_to :user
 
   scope :open, -> { where(datetime_out: nil) }

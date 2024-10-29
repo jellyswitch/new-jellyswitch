@@ -70,6 +70,8 @@ class User < ApplicationRecord
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
 
+  alias :location :current_location
+
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
@@ -97,6 +99,16 @@ class User < ApplicationRecord
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
+
+  # TODO: support multiple locations per admin
+  scope :relevant_admins_of_location, ->(location) {
+    if location.present?
+      where("(role = ? AND current_location_id = ?) OR (role = ? AND original_location_id = ?)",
+            User::SUPERADMIN, location.id, User::ADMIN, location.id)
+    else
+      none
+    end
+  }
 
   # Permissions
   delegate :member_at_operator?,

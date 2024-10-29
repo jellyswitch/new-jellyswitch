@@ -39,7 +39,7 @@ class Reservation < ApplicationRecord
         }
   scope :for_location_id, ->(location_id) { location_id ? joins(:room).where(rooms: { location_id: location_id }) : all }
 
-  delegate :operator, to: :room
+  delegate :operator, :location, to: :room
 
   REMINDER_OFFSET_MINUTES = 10.minutes.freeze
 

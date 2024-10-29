@@ -46,6 +46,24 @@ module Permissions
     has_active_subscription? || has_active_day_pass?(day = day) || has_active_lease?
   end
 
+  # TODO: replace all `member_at_operator?` with this
+  # Mainly for receiving notifications
+  def member_at_location?(location, day = Time.current)
+    current_location == location &&
+    (
+      has_active_subscription? || has_active_day_pass_at_location?(location, day = day) || has_active_lease?(location)
+    )
+  end
+
+  def admin_of_location?(location)
+    # TODO: support multiple locations per admin
+    admin? && original_location == location
+  end
+
+  def currently_at_location?(location)
+    current_location == location
+  end
+
   def member?(location, day = Time.current)
     has_active_subscription_at_location?(location)
   end
@@ -108,14 +126,18 @@ module Permissions
     day_passes.for_day(day).count > 0
   end
 
+  def has_active_day_pass_at_location?(location, day = Time.current)
+    day_passes.for_location(location).for_day(day).count > 0
+  end
+
   def has_building_access_day_pass?
     has_active_day_pass? && day_passes.today.any? do |day_pass|
       day_pass.day_pass_type.always_allow_building_access?
     end
   end
 
-  def has_active_lease?
-    organization.present? && organization.has_active_lease?
+  def has_active_lease?(location = nil)
+    organization.present? && organization.has_active_lease?(location)
   end
 
   def has_building_access_lease?

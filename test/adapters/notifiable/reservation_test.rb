@@ -3,6 +3,7 @@ require 'test_helper'
 class Notifiable::ReservationTest < ActiveSupport::TestCase
   def setup
     @reservation = reservations(:room_reservation)
+    @location = locations(:cowork_tahoe_location)
     @user = @reservation.user
     @operator = @user.operator
     @room = @reservation.room
@@ -10,7 +11,7 @@ class Notifiable::ReservationTest < ActiveSupport::TestCase
 
   test "create_feed_item creates a feed item with correct attributes" do
     notifiable = Notifiable::Reservation.new(@reservation)
-    FeedItemCreator.expects(:create_feed_item).with(@operator, @user, type: "reservation", reservation_id: @reservation.id)
+    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "reservation", reservation_id: @reservation.id)
 
     notifiable.send(:create_feed_item)
   end
@@ -39,6 +40,6 @@ class Notifiable::ReservationTest < ActiveSupport::TestCase
   test "recipients returns the correct recipients" do
     notifiable = Notifiable::Reservation.new(@reservation)
 
-    assert_equal @operator.users.admins, notifiable.send(:recipients)
+    assert_equal @operator.users.relevant_admins_of_location(@location), notifiable.send(:recipients)
   end
 end
