@@ -1,9 +1,10 @@
 
 module FeedItemCreator
   # for pub/sub
-  def self.create_feed_item(operator, user, blob, options = {})
+  def self.create_feed_item(operator, location, user, blob, options = {})
     feed_item = FeedItem.new
     feed_item.operator = operator
+    feed_item.location = location
     feed_item.user = user
     feed_item.blob = blob
 

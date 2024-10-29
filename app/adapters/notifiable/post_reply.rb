@@ -4,7 +4,7 @@ module Notifiable
 
     def create_feed_item
       blob = {type: "bulletin-board-post-reply", post_reply_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+      FeedItemCreator.create_feed_item(operator, location, user, blob, created_at: created_at)
     end
 
     def should_send_notification?

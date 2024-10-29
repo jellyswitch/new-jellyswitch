@@ -4,7 +4,7 @@ module Notifiable
 
     def create_feed_item
       blob = {type: "reservation", reservation_id: id}
-      FeedItemCreator.create_feed_item(operator, user, blob)
+      FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
 
     def should_send_notification?
@@ -16,7 +16,7 @@ module Notifiable
     end
 
     def recipients
-      operator.users.admins
+      operator.users.relevant_admins_of_location(location)
     end
   end
 end

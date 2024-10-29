@@ -4,7 +4,7 @@ module Notifiable
 
     def create_feed_item
       blob = { type: "new-user" }
-      FeedItemCreator.create_feed_item(operator, self.__getobj__, blob)
+      FeedItemCreator.create_feed_item(operator, location, self.__getobj__, blob)
     end
 
     def should_send_notification?
@@ -16,7 +16,7 @@ module Notifiable
     end
 
     def recipients
-      operator.users.admins
+      operator.users.relevant_admins_of_location(location)
     end
   end
 end
