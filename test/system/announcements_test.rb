@@ -21,6 +21,10 @@ class AnnouncementsTest < ApplicationSystemTestCase
     assert_text "posted an announcement"
     assert_text "Test announcement"
 
+    # admin sees the announcement in the list
+    visit announcements_path
+    assert_text "Test announcement"
+
     # change location
     if page.has_link?("Change Location")
       click_on "Change Location"
@@ -38,6 +42,10 @@ class AnnouncementsTest < ApplicationSystemTestCase
 
     # admin sees no feed item at the other location
     visit feed_items_path
+    assert_no_text "Test announcement"
+
+    # admin sees no announcement in the list at the other location
+    visit announcements_path
     assert_no_text "Test announcement"
   end
 end
