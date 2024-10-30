@@ -1,13 +1,14 @@
 class Announcements::Save
   include Interactor
 
-  delegate :body, :user, :operator, :created_at, to: :context
+  delegate :body, :user, :operator, :location, :created_at, to: :context
 
   def call
     params = {
       body: body,
       user: user,
-      operator: operator
+      operator: operator,
+      location: location
     }
 
     if created_at.present?

@@ -19,6 +19,7 @@ class Operator::AnnouncementsController < Operator::BaseController
       body: announcement_params[:body],
       user: current_user,
       operator: current_tenant,
+      location: current_location,
       blob: { type: "announcement" },
     )
 

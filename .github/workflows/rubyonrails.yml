@@ -9,7 +9,7 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, develop, multi-location-support ]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -57,6 +57,12 @@ jobs:
         run: bundle exec rspec
       - name: Run system tests
         run: bin/rails test:system
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: tmp/screenshots/**/*.png
 
   # lint:
   #   runs-on: ubuntu-latest

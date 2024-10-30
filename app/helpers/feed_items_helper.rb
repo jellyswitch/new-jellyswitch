@@ -34,24 +34,34 @@ module FeedItemsHelper
     @feed_item = FeedItem.new
   end
 
+  def generic_feed_items
+    items = FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC")
+    items = items.for_location(current_location) if current_location
+    return items
+  end
+
   def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC"))
+    @pagy, @feed_items = pagy(generic_feed_items)
   end
 
   def find_questions
-    @pagy, @feed_items = pagy(FeedItem.unscoped.questions.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.questions
+    @pagy, @feed_items = pagy(items)
   end
 
   def find_activity
-    @pagy, @feed_items = pagy(FeedItem.unscoped.activity.for_operator(current_tenant).order("updated_at DESC"))
-  end 
+    items = generic_feed_items.activity
+    @pagy, @feed_items = pagy(items)
+  end
 
   def find_notes
-    @pagy, @feed_items = pagy(FeedItem.unscoped.notes.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.notes
+    @pagy, @feed_items = pagy(items)
   end
 
   def find_financial
-    @pagy, @feed_items = pagy(FeedItem.unscoped.financial.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.financial
+    @pagy, @feed_items = pagy(items)
   end
 
   def feed_item_params

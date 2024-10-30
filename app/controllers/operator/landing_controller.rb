@@ -12,6 +12,9 @@ class Operator::LandingController < Operator::BaseController
     @member_feedback = MemberFeedback.new
     find_upcoming_events
     @reservation = current_user&.upcoming_or_ongoing_reservation(current_location&.id)
+    @announcement = current_tenant.announcements.for_location(current_location).latest
+    # for some reason sometimes latest returns activerecord relation
+    @announcement = @announcement.first if @announcement.is_a?(ActiveRecord::Relation)
     response.headers["Turbo-Location"] = home_url
     flash.keep
     home_redirect

@@ -11,6 +11,8 @@ class FeedItemComponent < ApplicationComponent
   attr_reader :feed_item, :comments
 
   def show_feed_item?
+    return false unless feed_item.present?
+
     case feed_item.type
     when "announcement"
       true

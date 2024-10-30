@@ -103,9 +103,9 @@
         <% end %>
       <% end %>
 
-      <% policy(:announcement).enabled? && if current_tenant.announcements.count > 0 %>
+      <% if policy(:announcement).enabled? && @announcement %>
         <%= list_item do %>
-          <%= render "shared/announcements_card" %>
+          <%= render "shared/announcements_card", announcement: @announcement %>
         <% end %>
       <% end %>
 

@@ -137,6 +137,9 @@ class User < ApplicationRecord
            :allowed_in?,
            :should_charge_for_reservation?,
            :can_see_all_rooms?,
+           :member_at_location?,
+           :admin_of_location?,
+           :currently_at_location?,
            to: :user_permissions
 
   # Roles
