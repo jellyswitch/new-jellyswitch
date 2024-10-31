@@ -25,11 +25,11 @@ RSpec.describe Operator, type: :model do
 
   describe "#update_kisi_api_key_for_locations" do
     it "updates the kisi_api_key for all locations" do
-      operator = create(:operator, kisi_api_key: "KISI1")
+      operator = Operator.last
+      operator.update kisi_api_key: "KISI1"
       location = create(:location, operator: operator)
       operator.update_kisi_api_key_for_locations
-      location.reload
-      expect(location.kisi_api_key).to eq("KISI1")
+      expect(location.reload.kisi_api_key).to eq("KISI1")
     end
   end
 end
