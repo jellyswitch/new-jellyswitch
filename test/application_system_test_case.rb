@@ -27,6 +27,18 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     end
   end
 
+  def switch_to_location(location)
+    visit root_path
+    if page.has_link?("Change Location")
+      click_on "Change Location"
+    else
+      find(".navbar-toggler").click
+      click_on "Change Location"
+    end
+    page.find_button(location.name).click
+    wait_for_turbo
+  end
+
   def wait_for_turbo
     has_css?("html.turbo-progress-bar", wait: 2)
     has_no_css?("html.turbo-progress-bar", wait: 2)

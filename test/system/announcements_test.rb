@@ -26,14 +26,7 @@ class AnnouncementsTest < ApplicationSystemTestCase
     assert_text "Test announcement"
 
     # change location
-    if page.has_link?("Change Location")
-      click_on "Change Location"
-    else
-      find(".navbar-toggler").click
-      click_on "Change Location"
-    end
-    page.find_button(other_location.name).click
-    wait_for_turbo
+    switch_to_location(other_location)
 
     # user sees no announcement at the other location
     visit home_path
