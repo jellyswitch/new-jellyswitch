@@ -4,8 +4,9 @@ module SessionsHelper
     session[:user_id] = user.id
     ahoy.authenticate(user)
 
-    # sets the user's current location to the current location
-    if current_location.present?
+    # sets the user's current location to the current location, unless operator onboarding
+    subdomain = request.subdomains.first.downcase
+    if subdomain != "app" && current_location.present?
       user.update(current_location: current_location)
     end
   end
@@ -75,9 +76,12 @@ module SessionsHelper
       else
         raise "No locations configured."
       end
-    elsif Location.count == 1 # if I only have one location, use it automatically
+    elsif current_tenant && current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
+    else
+      # nothing else, maybe onboarding?
+      nil
     end
   end
 

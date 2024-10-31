@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_10_28_052137) do
+ActiveRecord::Schema[7.0].define(version: 2024_10_31_032639) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -336,6 +336,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_28_052137) do
     t.boolean "open_saturday", default: false, null: false
     t.integer "credit_cost_in_cents", default: 0, null: false
     t.integer "childcare_reservation_cost_in_cents", default: 0, null: false
+    t.string "kisi_api_key"
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

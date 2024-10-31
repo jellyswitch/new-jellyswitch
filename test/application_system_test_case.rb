@@ -21,6 +21,12 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     wait_for_turbo
   end
 
+  def wait_for
+    Timeout.timeout(Capybara.default_max_wait_time) do
+      loop until yield
+    end
+  end
+
   def wait_for_ajax
     Timeout.timeout(Capybara.default_max_wait_time) do
       loop until finished_all_ajax_requests?

@@ -43,6 +43,7 @@
 #  updated_at                          :datetime         not null
 #  operator_id                         :bigint(8)
 #  stripe_user_id                      :string
+#  kisi_api_key                        :string
 #
 # Indexes
 #

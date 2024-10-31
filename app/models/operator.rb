@@ -112,6 +112,9 @@ class Operator < ApplicationRecord
   scope :production, -> { where(billing_state: "production") }
   scope :demo, -> { where(billing_state: "demo") }
 
+  # Callbacks
+  after_save :update_kisi_api_key_for_locations
+
   %w(rooms offices office_leases member_feedbacks feed_items doors).each do |resource|
     define_method "#{resource}_by_location" do |location|
       public_send(resource).where(location: location)
@@ -184,6 +187,10 @@ class Operator < ApplicationRecord
 
   def has_active_office_leases?
     office_leases.active.count > 0
+  end
+
+  def update_kisi_api_key_for_locations
+    locations.where(kisi_api_key: nil).update_all(kisi_api_key: kisi_api_key)
   end
 
   private

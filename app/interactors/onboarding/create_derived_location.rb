@@ -22,6 +22,9 @@ class Onboarding::CreateDerivedLocation
 
     if loc.save
       context.location = loc
+
+      # initialize user's location
+      context.user.update(original_location: loc, current_location: loc)
     else
       context.fail!(message: errors_for(loc))
     end

@@ -144,7 +144,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_door
-    result = Onboarding::GetKisiDoors.call(operator: current_tenant)
+    result = Onboarding::GetKisiDoors.call(location: current_location || current_tenant.locations.first)
 
     if result.success?
       @doors = result.doors

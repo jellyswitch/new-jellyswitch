@@ -17,4 +17,13 @@ namespace :migrations do
         end
       end
     end
+
+    desc "Update kisi api key for locations"
+    task update_kisi_api_key: :environment do
+      Operator.all.each do |operator|
+        p "Processing operator #{operator.name}"
+        p "Updating kisi api key for locations without a key"
+        operator.locations.where(kisi_api_key: nil).update_all(kisi_api_key: operator.kisi_api_key)
+      end
+    end
   end
