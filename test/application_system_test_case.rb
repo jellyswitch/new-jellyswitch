@@ -47,4 +47,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   def finished_all_ajax_requests?
     page.evaluate_script("jQuery.active").zero?
   end
+
+  def with_sidekiq_inline
+    original_mode = Sidekiq::Testing.disabled? ? :disable : (Sidekiq::Testing.fake? ? :fake : :inline)
+    Sidekiq::Testing.inline!
+    yield
+  ensure
+    case original_mode
+    when :disable
+      Sidekiq::Testing.disable!
+    when :fake
+      Sidekiq::Testing.fake!
+    when :inline
+      Sidekiq::Testing.inline!
+    end
+  end
 end
