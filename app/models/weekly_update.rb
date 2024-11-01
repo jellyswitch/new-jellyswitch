@@ -48,6 +48,7 @@ class WeeklyUpdate < ApplicationRecord
     w.week_start = report.week_start
     w.week_end = report.week_end
     w.operator_id = report.operator.id
+    w.location_id = report.location.id
 
     w.day_passes = report.day_passes
     w.checkins = report.checkins

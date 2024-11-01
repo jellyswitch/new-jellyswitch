@@ -9,8 +9,9 @@ class Demo::Recreate::WeeklyUpdates
       week_end = Time.current.end_of_week
 
       result = ::WeeklyUpdates::Create.call(
-        operator: operator, 
-        week_start: week_start, 
+        operator: operator,
+        location: operator.locations.first,
+        week_start: week_start,
         week_end: week_end
       )
 

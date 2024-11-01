@@ -11,6 +11,7 @@
 #  updated_at         :datetime         not null
 #  billing_contact_id :integer
 #  operator_id        :integer          default(1), not null
+#  location_id        :integer
 #  owner_id           :integer
 #  stripe_customer_id :string
 #  visible            :boolean          default(TRUE), not null
@@ -21,6 +22,8 @@
 #
 
 class Organization < ApplicationRecord
+  include HasLocation
+
   searchkick
   # Slugs
   extend FriendlyId

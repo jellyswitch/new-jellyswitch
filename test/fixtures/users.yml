@@ -68,6 +68,8 @@ cowork_tahoe_superadmin:
   childcare_reservation_balance: 0
   android_token: nil
   role: superadmin
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location
 
 cowork_tahoe_admin:
   name: Dave Paola
@@ -98,6 +100,8 @@ cowork_tahoe_admin:
   childcare_reservation_balance: 0
   android_token: nil
   role: admin
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location
 
 cowork_tahoe_member:
   name: Tim C
@@ -128,6 +132,8 @@ cowork_tahoe_member:
   childcare_reservation_balance: 0
   android_token: nil
   role: unassigned
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location
 
 cowork_tahoe_non_member:
   name: Andrew N
@@ -158,6 +164,8 @@ cowork_tahoe_non_member:
   childcare_reservation_balance: 0
   android_token: nil
   role: unassigned
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location
 
 cowork_tahoe_community_manager:
   name: Community Manager
@@ -188,6 +196,8 @@ cowork_tahoe_community_manager:
   childcare_reservation_balance: 0
   android_token: nil
   role: community-manager
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location
 
 cowork_tahoe_general_manager:
   name: General Manager
@@ -218,3 +228,5 @@ cowork_tahoe_general_manager:
   childcare_reservation_balance: 0
   android_token: nil
   role: general-manager
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location

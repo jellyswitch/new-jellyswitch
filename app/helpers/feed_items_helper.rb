@@ -90,7 +90,7 @@ module FeedItemsHelper
   end
 
   def find_upcoming_renewals
-    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
+    @upcoming_renewals = current_location.offices.upcoming_renewals(60)
   end
 
   def find_upcoming_childcare_reservations

@@ -106,7 +106,7 @@ class Operator::LandingController < Operator::BaseController
   # High level pages for nav
   def members_groups
     authorize :member_group, :show?
-    @report = Jellyswitch::Report.new(current_tenant)
+    @report = Jellyswitch::Report.new(current_tenant, current_location)
   end
 
   def plans_day_passes

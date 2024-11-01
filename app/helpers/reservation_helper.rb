@@ -1,8 +1,6 @@
 module ReservationHelper
-  def find_todays_reservations(operator)
-    operator.locations.map do |location|
-      location.rooms
-    end.flatten.map do |room|
+  def find_todays_reservations(location)
+    location.rooms.map do |room|
       groups = room.reservations.for_day(Time.current).group_by(&:user)
 
       result = groups.keys.map do |key|

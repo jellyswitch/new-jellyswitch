@@ -38,6 +38,9 @@ class OnboardingTest < ApplicationSystemTestCase
 
     assert_text "That's it!"
 
+    # check if user is approved
+    assert Operator.last.users.last.approved?
+
     # simulate already set up stripe
     Operator.last.update(billing_state: "production")
     click_on "Take me to my Jellyswitch"

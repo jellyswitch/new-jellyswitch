@@ -1,4 +1,6 @@
 module UsersHelper
+  include Pagy::Backend
+
   def user_params
     result = params.require(:user).permit(
       :name, :email, :phone, :password, :password_confirmation,
@@ -10,25 +12,39 @@ module UsersHelper
   end
 
   def find_user(key = :id)
-    @user = User.friendly.find(params[key])
+    if current_user && current_user.id == User.unscoped.friendly.find(params[key])&.id
+      # viewing self can be performed anywhere
+      @user = current_user
+    else
+      # viewing others can only be performed at the current location
+      @user = User.originally_at_location(current_location).friendly.find(params[key])
+    end
   end
 
   def find_approved_users(query = nil)
     if query.present?
       user_ids = User.search(query, fields: [:name, :email]).map(&:id)
       filtered_users = User.where(id: user_ids)
-      pagy(filtered_users.for_space(current_tenant).approved.visible.order("name"))
+      pagy(filtered_users.for_space(current_tenant).originally_at_location(current_location).approved.visible.order("name"))
     else
-      pagy(User.for_space(current_tenant).approved.visible.order("name"))
+      pagy(User.for_space(current_tenant).originally_at_location(current_location).approved.visible.order("name"))
     end
   end
 
   def find_unapproved_users
-    @users = User.for_space(current_tenant).unapproved.visible.order("name")
+    User.for_space(current_tenant).originally_at_location(current_location).unapproved.visible.order("name")
+  end
+
+  def set_unapproved_users
+    @users = find_unapproved_users
   end
 
   def find_archived_users
-    @pagy, @users = pagy(User.for_space(current_tenant).archived.order("name"))
+    User.for_space(current_tenant).originally_at_location(current_location).archived.order("name")
+  end
+
+  def set_archived_users
+    @pagy, @users = pagy(find_archived_users)
   end
 
   def approval_redirect_path

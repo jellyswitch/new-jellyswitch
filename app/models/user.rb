@@ -99,6 +99,8 @@ class User < ApplicationRecord
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
+  scope :originally_at_location, ->(location) { location.present? ? where(original_location_id: location.id) : all }
+  scope :currently_at_location, ->(location) { location.present? ? where(current_location_id: location.id) : all }
 
   # TODO: support multiple locations per admin
   scope :relevant_admins_of_location, ->(location) {

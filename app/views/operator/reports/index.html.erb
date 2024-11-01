@@ -1,7 +1,10 @@
 <% title "Data" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 mb-5 text-center">Data Reports</h4>
+  <h4 class="display-4 mb-1 text-center">Data Reports<%= current_location ? " for #{current_location.name}" : "" %></h4>
+  <p class="text-center mb-5">
+    Change to another location for its data
+  </p>
 
   <dl class="row">
     <dt class="col-lg-6">Weekly Updates</dt>
@@ -59,10 +62,10 @@
 <%= wide_card do %>
   <h4 class="display-4 mb-5 text-center">Monetization</h4>
 
-  <% current_tenant.locations.each do |location| %>
+  <% if current_location %>
     <dl class="row">
-      <dt class="col-lg-6"><%= location.name %></dt>
-      <dd class="col"><%= link_to "View Data", monetization_reports_path(location_id: location.id), class: "btn btn-primary btn-block" %></dd>
+      <dt class="col-lg-6"><%= current_location.name %></dt>
+      <dd class="col"><%= link_to "View Data", monetization_reports_path(location_id: current_location.id), class: "btn btn-primary btn-block" %></dd>
     </dl>
   <% end %>
 <% end %>

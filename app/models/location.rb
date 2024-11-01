@@ -69,7 +69,11 @@ class Location < ApplicationRecord
   has_many :feed_items
   has_many :member_feedbacks
   has_many :announcements
+  has_many :day_passes
+  has_many :organizations
+  has_many :weekly_updates
   has_and_belongs_to_many :plans
+  has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
 
   has_one_attached :background_image

@@ -151,7 +151,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def today
     authorize Reservation
-    @rooms = find_todays_reservations(current_tenant)
+    @rooms = find_todays_reservations(current_location)
   end
 
   # New 'Reservation Now' flow
@@ -336,7 +336,7 @@ class Operator::ReservationsController < Operator::BaseController
   private
 
   def find_reservation(key = :id)
-    @reservation = Reservation.find(params[key]).decorate
+    @reservation = Reservation.for_location_id(current_location&.id).find(params[key]).decorate
   end
 
   def set_reserved_user

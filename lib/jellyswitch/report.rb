@@ -2,27 +2,33 @@
 module Jellyswitch
   class Report
     include ApplicationHelper
-    attr_accessor :operator
+    attr_accessor :operator, :location
 
-    delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, :locations, :organizations, to: :operator
+    delegate :plans, :office_leases, :day_passes, :users, :square_footage, :name, :organizations, to: :delegate_target
+    delegate :locations, to: :operator
 
-    def initialize(operator)
+    def initialize(operator, location = nil)
       @operator = operator
+      @location = location
+    end
+
+    def delegate_target
+      location || operator
     end
 
     def member_csv
       CSV.generate(headers: true) do |csv|
-        csv << ["Name", 
+        csv << ["Name",
           "Account Creation Date",
-          "Email", 
-          "Member of organization?", 
+          "Email",
+          "Member of organization?",
           "Organization",
           "Membership",
           "Payment Method",
           "Stripe Customer ID"
         ]
-        
-        operator.users.map do |user|
+
+        operator.users.originally_at_location(location).map do |user|
           subscription = user.subscriptions.active.first
           if subscription.present?
             subscription = subscription.pretty_name
@@ -30,10 +36,10 @@ module Jellyswitch
             subscription = "None"
           end
 
-          csv << [user.name, 
+          csv << [user.name,
             short_date(user.created_at),
-            user.email, 
-            boolean_to_yesno(user.member_of_organization?), 
+            user.email,
+            boolean_to_yesno(user.member_of_organization?),
             user.organization_name,
             subscription,
             user.payment_method,
@@ -90,7 +96,13 @@ module Jellyswitch
     end
 
     def checkins_last_30_days
-      locations.map(&:checkins).flatten.select do |checkin|
+      checkins = if location
+        location.checkins
+      else
+        locations.map(&:checkins).flatten
+      end
+
+      checkins.select do |checkin|
         checkin.datetime_in > 30.days.ago
       end
     end
@@ -106,7 +118,7 @@ module Jellyswitch
     def all_member_count
       all_members.count
     end
-    
+
     def organization_count
       organizations.count
     end
@@ -114,13 +126,15 @@ module Jellyswitch
     def staff
       users.admins.non_superadmins
     end
-    
+
     def staff_count
       staff.count
     end
 
     def membership_breakdown
-      Subscription.for_operator(operator).where("plans.plan_type = ?", "individual").active
+      subscriptions = Subscription.for_operator(operator)
+      subscriptions = subscriptions.for_location(location) if location
+      subscriptions.where("plans.plan_type = ?", "individual").active
     end
 
     def membership_breakdown_count
@@ -132,25 +146,29 @@ module Jellyswitch
     end
 
     def revenue_by_month
+      # TODO: Update for location
       operator.invoices.paid.group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_week
+      # TODO: Update for location
       operator.invoices.paid.group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_day
+      # TODO: Update for location
       operator.invoices.paid.group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def checkins_by_day
-      locations.map do |location|
+      target_locations = location ? [location] : locations
+      target_locations.map do |location|
         Struct.new(:label, :data).new(
           location.name,
           location.checkins.group_by_day(:datetime_in).count
@@ -159,7 +177,8 @@ module Jellyswitch
     end
 
     def checkin_revenue_by_day
-      locations.map do |location|
+      target_locations = location ? [location] : locations
+      target_locations.map do |location|
         Struct.new(:label, :data).new(
           location.name,
           location.checkins.includes(:invoice).group_by_day(:datetime_in).sum("invoices.amount_due").transform_values {|v| v.to_f / 100.0}

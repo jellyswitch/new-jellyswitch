@@ -187,6 +187,7 @@ class UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 
+  # TODO: find out later if these need to be scoped to location
   def find_user(key = :id)
     @user = User.friendly.find(params[key])
   end

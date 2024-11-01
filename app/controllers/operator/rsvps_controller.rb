@@ -70,6 +70,6 @@ class Operator::RsvpsController < Operator::BaseController
   private
 
   def find_event
-    @event = current_tenant.events.find(params[:event_id])
+    @event = current_location.events.find(params[:event_id])
   end
 end

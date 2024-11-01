@@ -4,7 +4,7 @@ module PostsHelper
   end
 
   def find_post(key=:id)
-    @post = current_tenant.posts.find(params[key])
+    @post = current_location.posts.find(params[key])
   end
 
   def post_params
