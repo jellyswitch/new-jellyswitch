@@ -51,5 +51,32 @@ class OnboardingTest < ApplicationSystemTestCase
     wait_for do
       Location.last.kisi_api_key == "KISI1"
     end
+
+    # setup rooms
+    Capybara.app_host = "http://operator-company.lvh.me"
+    visit feed_items_path
+    click_on "Reservable rooms"
+
+    assert_text "What is this room called?"
+    fill_in "Conference Room", with: "Test Room 1"
+    fill_in "Description", with: "Test room for reservation"
+    fill_in "How big is this room (sq ft)?", with: "100"
+    fill_in "room[hourly_rate_in_cents]", with: "1000"
+    click_on "+ Add More"
+    fill_in "Name", with: "Whiteboard"
+    click_on "Just add this room"
+
+    assert_text "Room added."
+    assert_no_text "Reservable rooms"
+
+    # assert room appearance
+    visit home_path
+    assert_text "Reserve a meeting room"
+
+    other_location = create(:location, operator: Operator.last)
+
+    switch_to_location other_location
+    visit home_path
+    assert_no_text "Reserve a meeting room"
   end
 end
