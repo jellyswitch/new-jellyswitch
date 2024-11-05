@@ -141,7 +141,7 @@ class Operator < ApplicationRecord
     billing_state == "production" || subdomain == "southlakecoworking"
   end
 
-  def stripe_secret_key
+  def stripe_secret_key # moved to location
     if production? && subdomain != "southlakecoworking"
       Rails.configuration.stripe[:secret_key]
     else
@@ -149,7 +149,7 @@ class Operator < ApplicationRecord
     end
   end
 
-  def stripe_operator
+  def stripe_operator # moved to location
     @stripe_operator ||= StripeOperator.new(self)
   end
 
@@ -195,9 +195,9 @@ class Operator < ApplicationRecord
 
   private
 
-  class StripeOperator < SimpleDelegator
+  class StripeOperator < SimpleDelegator # moved to location
     include StripeUtils
   end
 
-  private_constant :StripeOperator
+  private_constant :StripeOperator # moved to location
 end

@@ -2,7 +2,7 @@
 class Billing::Plans::SavePlan
   include Interactor
 
-  delegate :plan, :operator, to: :context
+  delegate :plan, :operator, :location, to: :context
 
   def call
     unless plan.save

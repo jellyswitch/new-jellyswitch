@@ -1,4 +1,4 @@
-<% location.operator.plan_categories.order(name: :desc).all.select {|plan_category| plan_category.plans.individual.visible.available.count.positive? }.map do |plan_category| %>      
+<% location.plan_categories.order(name: :desc).all.select {|plan_category| plan_category.plans.individual.visible.available.count.positive? }.map do |plan_category| %>
   <%= list_item do %>
     <div class="row my-3">
       <div class="col text-center">

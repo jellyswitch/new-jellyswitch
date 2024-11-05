@@ -6,7 +6,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   def index
     authorize Subscription.new
     if params[:plan_category_id].present?
-      @plan_category = current_tenant.plan_categories.find(params[:plan_category_id])
+      @plan_category = current_location.plan_categories.find(params[:plan_category_id])
       if @plan_category.present?
         @plans = @plan_category.plans.visible.available.for_location(current_location).order(:amount_in_cents)
       else
@@ -46,11 +46,12 @@ class Operator::SubscriptionsController < Operator::BaseController
       user: @subscription.subscribable,
       start_day: start_day,
       out_of_band: out_of_band,
-      operator: current_tenant
+      operator: current_tenant,
+      location: current_location
     )
 
     if result.success?
-      flash[:success] = "Welcome to #{current_tenant.name}!"
+      flash[:success] = "Welcome to #{current_location.name}!"
       turbo_redirect(root_path)
     else
       flash[:error] = result.message
@@ -77,9 +78,10 @@ class Operator::SubscriptionsController < Operator::BaseController
       old_subscription: @subscription,
       new_subscription: @new_subscription,
       blob: { text: "#{@subscription.subscribable.name} switched their membership from #{@subscription.plan.name}, to #{@new_subscription.plan.name} ", type: "membership_updated" },
-      user: current_tenant.users.admins.first,
+      user: current_location.users.admins.first,
       operator: current_tenant,
-      notifiable: current_tenant.users.admins
+      location: current_location,
+      notifiable: current_location.users.admins
     )
 
     if result.success?
@@ -103,9 +105,10 @@ class Operator::SubscriptionsController < Operator::BaseController
     result = SetSubscriptionForCancellation.call(
       subscription: @subscription,
       blob: { text: "#{@subscription.subscribable.name} cancelled their membership.", type: "membership_cancellation" },
-      user: current_tenant.users.admins.first,
+      user: current_location.users.admins.first,
       operator: current_tenant,
-      notifiable: current_tenant.users.admins
+      location: current_location,
+      notifiable: current_location.users.admins
     )
 
     if result.success?
@@ -129,9 +132,10 @@ class Operator::SubscriptionsController < Operator::BaseController
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: @subscription,
       blob: { text: "#{@subscription.subscribable.name} cancelled their membership.", type: "membership_cancellation" },
-      user: current_tenant.users.admins.first,
+      user: current_location.users.admins.first,
       operator: current_tenant,
-      notifiable: current_tenant.users.admins,
+      location: current_location,
+      notifiable: current_location.users.admins,
       creditable: @subscription.subscribable
     )
 

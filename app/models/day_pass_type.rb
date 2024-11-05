@@ -12,9 +12,12 @@
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
 #  operator_id                  :integer          not null
+#  location_id                  :integer
 #
 
 class DayPassType < ApplicationRecord
+  include HasLocation
+
   has_many :day_passes
   belongs_to :operator
   acts_as_tenant :operator

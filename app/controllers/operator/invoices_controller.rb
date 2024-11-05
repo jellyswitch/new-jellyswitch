@@ -2,35 +2,35 @@
 class Operator::InvoicesController < Operator::BaseController
   before_action :background_image
   def index
-    @pagy, @invoices = pagy(Invoice.all.order('date DESC'))
+    @pagy, @invoices = pagy(current_location.invoices.order('date DESC'))
     authorize @invoices
     @title = "All Invoices"
     render :generic
   end
 
   def recent
-    @pagy, @invoices = pagy(Invoice.recent.order('date DESC'))
+    @pagy, @invoices = pagy(current_location.invoices.recent.order('date DESC'))
     authorize @invoices
     @title = "Recent Invoices"
     render :generic
   end
 
   def delinquent
-    @pagy, @invoices = pagy(Invoice.delinquent.order('date DESC'))
+    @pagy, @invoices = pagy(current_location.invoices.delinquent.order('date DESC'))
     authorize @invoices
     @title = "Delinquent Invoices"
     render :generic
   end
 
   def groups
-    @pagy, @invoices = pagy(Invoice.groups.order('date DESC'))
+    @pagy, @invoices = pagy(current_location.invoices.groups.order('date DESC'))
     authorize @invoices
     @title = "Group Invoices"
     render :generic
   end
 
   def open
-    @pagy, @invoices = pagy(Invoice.open.order('date DESC'))
+    @pagy, @invoices = pagy(current_location.invoices.open.order('date DESC'))
     authorize @invoices
     @title = "Open Invoices"
     render :generic
@@ -56,11 +56,11 @@ class Operator::InvoicesController < Operator::BaseController
 
   def new
     authorize Invoice.new
-    
+
     if params[:user_id].present?
-      @billable = current_tenant.users.find(params[:user_id])
+      @billable = current_location.users.find(params[:user_id])
     elsif params[:organization_id].present?
-      @billable = current_tenant.organizations.find(params[:organization_id])
+      @billable = current_location.organizations.find(params[:organization_id])
     else
       flash[:error] = "Create a new invoice from a member or group's profile."
       turbo_redirect(invoices_path, action: "replace")
@@ -78,9 +78,9 @@ class Operator::InvoicesController < Operator::BaseController
     authorize Invoice.new
 
     if params[:billable_type] == "User"
-      @billable = current_tenant.users.find(params[:billable_id])
+      @billable = current_location.users.find(params[:billable_id])
     elsif params[:billable_type] == "Organization"
-      @billable = current_tenant.organizations.find(params[:billable_id])
+      @billable = current_location.organizations.find(params[:billable_id])
     else
       flash[:error] = "No such member or group."
       turbo_redirect(root_path)
@@ -90,7 +90,8 @@ class Operator::InvoicesController < Operator::BaseController
       result = Billing::Invoices::Custom::Create.call(
         billable: @billable,
         amount: params[:amount],
-        description: params[:description]
+        description: params[:description],
+        location: current_location
       )
 
       if result.success?
@@ -110,7 +111,7 @@ class Operator::InvoicesController < Operator::BaseController
   private
 
   def find_invoice(key=:id)
-    @invoice = Invoice.find(params[key])
+    @invoice = current_location.invoices.find(params[key])
   end
 
   def billable_path(billable)

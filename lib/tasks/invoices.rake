@@ -1,5 +1,5 @@
 task backfill_invoices: :environment do
-  Operator.all.each do |operator|
-    BackfillInvoices.call(operator: operator)
+  Location.all.each do |location|
+    BackfillInvoices.call(location: location)
   end
 end

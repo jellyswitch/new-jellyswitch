@@ -70,9 +70,12 @@ class Location < ApplicationRecord
   has_many :member_feedbacks
   has_many :announcements
   has_many :day_passes
+  has_many :day_pass_types
   has_many :organizations
   has_many :weekly_updates
-  has_and_belongs_to_many :plans
+  has_many :plans
+  has_many :plan_categories
+  has_many :invoices
   has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
 
@@ -83,6 +86,26 @@ class Location < ApplicationRecord
   validates :working_day_end, presence: true
 
   scope :visible, -> { where(visible: true) }
+
+  delegate :create_stripe_customer,
+           :retrieve_stripe_customer,
+           :create_stripe_invoice_item,
+           :create_stripe_invoice,
+           :retrieve_stripe_invoice,
+           :create_stripe_refund,
+           :retrieve_stripe_refund,
+           :create_stripe_subscription,
+           :retrieve_stripe_plans,
+           :create_stripe_plan,
+           :update_stripe_subscription_price,
+           :mark_invoice_paid,
+           :create_or_update_customer_payment,
+           :charge_invoice,
+           :retrieve_stripe_customers,
+           :list_stripe_subscriptions,
+           :update_organization_customer_details,
+           :stripe_request,
+           to: :stripe_operator
 
   def search_data
     {
@@ -96,7 +119,7 @@ class Location < ApplicationRecord
   end
 
   def has_categories?
-    operator.plan_categories.select do |plan_category|
+    plan_categories.select do |plan_category|
       plan_category.plans.individual.available.visible.for_location(self).count.positive?
     end.count.positive?
   end
@@ -122,4 +145,25 @@ class Location < ApplicationRecord
   def full_address
     "#{building_address}, #{city} #{state} #{zip}"
   end
+
+  def stripe_secret_key
+    # TODO: check when migrating stripe connect
+    if operator.production? && operator.subdomain != "southlakecoworking"
+      Rails.configuration.stripe[:secret_key]
+    else
+      Rails.configuration.stripe[:test_secret_key]
+    end
+  end
+
+  def stripe_operator
+    @stripe_operator ||= StripeOperator.new(self)
+  end
+
+  private
+
+  class StripeOperator < SimpleDelegator
+    include StripeUtils
+  end
+
+  private_constant :StripeOperator
 end

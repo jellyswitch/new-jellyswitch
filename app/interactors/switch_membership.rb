@@ -30,8 +30,8 @@ class SwitchMembership
             }
           ],
       },{
-        api_key: new_subscription.plan.operator.stripe_secret_key,
-        stripe_account: new_subscription.plan.operator.stripe_user_id
+        api_key: new_subscription.plan.location.stripe_secret_key,
+        stripe_account: new_subscription.plan.location.stripe_user_id
       })
     end
   end

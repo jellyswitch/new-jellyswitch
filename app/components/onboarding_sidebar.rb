@@ -15,7 +15,7 @@ class OnboardingSidebar < ApplicationComponent
   end
 
   def show_day_pass_types?
-    billing_enabled? && operator.day_pass_types.count < 1
+    billing_enabled? && location.day_pass_types.count < 1
   end
 
   def show_rooms?
@@ -27,6 +27,6 @@ class OnboardingSidebar < ApplicationComponent
   end
 
   def show_members?
-    billing_enabled? && operator.users.members.count < 1
+    billing_enabled? && location.users.members.count < 1
   end
 end

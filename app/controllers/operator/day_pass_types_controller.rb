@@ -80,17 +80,17 @@ class Operator::DayPassTypesController < Operator::BaseController
   private
 
   def find_day_pass_type(key = :id)
-    @day_pass_type = DayPassType.find(params[key])
+    @day_pass_type = current_location.day_pass_types.find(params[key])
   end
 
   def find_day_pass_types
-    @day_pass_types = DayPassType.all
+    @day_pass_types = current_location.day_pass_types
   end
 
   def setting(symbol)
     find_day_pass_type(:day_pass_type_id)
     result = ToggleValue.call(object: @day_pass_type, value: symbol)
-    
+
     if !result.success?
       flash[:error] = result.message
     end

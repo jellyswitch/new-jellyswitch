@@ -12,20 +12,20 @@ class Checkins::CreateStripeInvoice
         amount: checkin.charge_amount,
         description: checkin.charge_description
       }, {
-        api_key: checkin.location.operator.stripe_secret_key,
-        stripe_account: checkin.location.operator.stripe_user_id
+        api_key: checkin.location.stripe_secret_key,
+        stripe_account: checkin.location.stripe_user_id
       })
 
       invoice_args = CheckInableFactory.for(checkin).invoice_args
       @invoice = Stripe::Invoice.create(
         invoice_args,
         {
-          api_key: checkin.location.operator.stripe_secret_key,
-          stripe_account: checkin.location.operator.stripe_user_id
+          api_key: checkin.location.stripe_secret_key,
+          stripe_account: checkin.location.stripe_user_id
         }
       )
 
-      result = CreateInvoice.call(stripe_invoice: @invoice)
+      result = CreateInvoice.call(stripe_invoice: @invoice, location: checkin.location)
       if !result.success?
         context.fail!(message: result.message)
       end

@@ -7,7 +7,8 @@ class Demo::Recreate::Plans
     plans.each do |plan|
       result = Billing::Plans::CreatePlan.call(
         plan: Plan.new(plan),
-        operator: operator
+        operator: operator,
+        location: operator.locations.first
       )
       if !result.success?
         context.fail!(message: result.message)

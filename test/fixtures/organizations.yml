@@ -24,6 +24,7 @@ sierra_nevada_organization:
   website: www.timsgroup.net
   slug: sierra-nevada-alliance
   operator: cowork_tahoe
+  location: cowork_tahoe_location
   stripe_customer_id: nil
   out_of_band: false
   billing_contact: cowork_tahoe_admin

@@ -1,7 +1,7 @@
 class Billing::DayPasses::SaveDayPass
   include Interactor
 
-  delegate :day_pass, :token, :operator, :out_of_band, :params, :user_id, to: :context
+  delegate :day_pass, :token, :operator, :location, :out_of_band, :params, :user_id, to: :context
 
   def call
     user = User.find_by(id: user_id)
@@ -17,6 +17,7 @@ class Billing::DayPasses::SaveDayPass
 
     day_pass = DayPass.new(params.merge({ day_pass_type: day_pass_type }))
     day_pass.user = user
+    day_pass.location = location
     day_pass.billable = BillableFactory.for(day_pass).billable
 
     unless day_pass_type.free? || day_pass.billable.has_stripe_customer?

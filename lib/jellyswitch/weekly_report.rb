@@ -38,9 +38,8 @@ class Jellyswitch::WeeklyReport
       }
     end
 
-    # TODO: change to per location
-    @paid_invoices = operator.invoices.for_week(@week_start, @week_end).paid
-    @unpaid_invoices = operator.invoices.for_week(@week_start, @week_end).open
+    @paid_invoices = location.invoices.for_week(@week_start, @week_end).paid
+    @unpaid_invoices = location.invoices.for_week(@week_start, @week_end).open
     @revenue = @paid_invoices.sum(:amount_due).to_f / 100.0
 
     @management_notes = location.feed_items.notes.for_week(@week_start, @week_end)

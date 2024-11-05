@@ -1,7 +1,7 @@
 class Billing::Invoices::Custom::CreateInvoice
   include Interactor
 
-  delegate :billable, :amount, :description, :created_at, to: :context
+  delegate :billable, :amount, :description, :location, :created_at, to: :context
 
   def call
     dollars = Money.from_amount(amount.to_i, "USD")
@@ -13,8 +13,8 @@ class Billing::Invoices::Custom::CreateInvoice
       amount: amount_in_cents,
       description: description
     }, {
-      api_key: billable.operator.stripe_secret_key,
-      stripe_account: billable.operator.stripe_user_id
+      api_key: billable.location.stripe_secret_key,
+      stripe_account: billable.location.stripe_user_id
     })
 
     invoice_args = {
@@ -35,19 +35,20 @@ class Billing::Invoices::Custom::CreateInvoice
       )
     end
 
+    location ||= billable.location # TODO: likely will cause issues later, but nothing we can do about it now
 
     @invoice = Stripe::Invoice.create(
       invoice_args,
       {
-        api_key: billable.operator.stripe_secret_key,
-        stripe_account: billable.operator.stripe_user_id
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id
       }
     )
 
     if created_at.present?
-      result = ::CreateInvoice.call(stripe_invoice: @invoice, created_at: created_at)
+      result = ::CreateInvoice.call(stripe_invoice: @invoice, location: location, created_at: created_at)
     else
-      result = ::CreateInvoice.call(stripe_invoice: @invoice)
+      result = ::CreateInvoice.call(stripe_invoice: @invoice, location: location)
     end
 
     if !result.success?

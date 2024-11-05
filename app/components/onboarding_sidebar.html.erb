@@ -1,12 +1,12 @@
 
 
-    
+
   <li class="list-group-item m-0 pt-3 pb-2" style="border-bottom: 0px;">
-    <h5>Onboarding Checklist</h5>  
+    <h5>Onboarding Checklist</h5>
   </li>
 
   <% if billing_enabled? %>
-    <% if operator.plans.count < 1 %>
+    <% if location.plans.count < 1 %>
       <%= link_to new_membership_plan_operator_onboarding_index_path, class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">
@@ -32,7 +32,7 @@
           <div class="col-1">
             <i class="fas fa-chevron-right"></i>
           </div>
-        </div>  
+        </div>
       <% end %>
     <% end %>
 

@@ -6,7 +6,7 @@
       <h4 class="display-4 text-center">Plans</h4>
 
       <p>
-        <%= current_tenant.name %> offers <%= current_tenant.plans.visible.available.count %> <%= quantize(current_tenant.plans.visible.available, "plans") %> for new members, and <%= current_tenant.plans.available.invisible.count %> additional <%= quantize(current_tenant.plans.available.invisible, "plans") %> available for other uses.
+        <%= current_location.name %> offers <%= current_location.plans.visible.available.count %> <%= quantize(current_location.plans.visible.available, "plans") %> for new members, and <%= current_location.plans.available.invisible.count %> additional <%= quantize(current_location.plans.available.invisible, "plans") %> available for other uses.
       </p>
 
       <%= link_to "View Plans", plans_path, class: "btn btn-block btn-primary" %>
@@ -17,7 +17,7 @@
       <h4 class="display-4 text-center">Plan Categories</h4>
 
       <p>
-        <%= current_tenant.name %> has <%= current_tenant.plan_categories.count %> <%= quantize(current_tenant.plan_categories, "plan categories") %>.
+        <%= current_location.name %> has <%= current_location.plan_categories.count %> <%= quantize(current_location.plan_categories, "plan categories") %>.
       </p>
 
       <%= link_to "Manage Plan Categories", operator_admin_plan_categories_path, class: "btn btn-block btn-primary" %>
@@ -27,7 +27,7 @@
       <h4 class="display-4 text-center">Day Pass Types</h4>
 
       <p>
-        <%= current_tenant.name %> offers <%= current_tenant.day_pass_types.available.visible.count %> <%= quantize(current_tenant.day_pass_types.available.visible, "day pass types") %> for members to purchase, and <%=  current_tenant.day_pass_types.invisible.available.count %> <%= quantize(current_tenant.day_pass_types.invisible.available, "day pass types") %> for other uses.
+        <%= current_location.name %> offers <%= current_location.day_pass_types.available.visible.count %> <%= quantize(current_location.day_pass_types.available.visible, "day pass types") %> for members to purchase, and <%=  current_location.day_pass_types.invisible.available.count %> <%= quantize(current_location.day_pass_types.invisible.available, "day pass types") %> for other uses.
       </p>
 
       <%= link_to "View Day Pass Types", day_pass_types_path, class: "btn btn-block btn-primary" %>

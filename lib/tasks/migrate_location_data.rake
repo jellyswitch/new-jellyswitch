@@ -7,7 +7,7 @@ namespace :migrations do
       if main_location
         p "Using location #{main_location.name}"
 
-        [:announcements, :day_passes, :member_feedbacks, :feed_items, :weekly_updates].each do |resource|
+        [:announcements, :day_passes, :member_feedbacks, :feed_items, :weekly_updates, :day_pass_types].each do |resource|
             p "Updating location for #{resource}"
             operator.send(resource).where(location_id: nil).update_all(location_id: main_location.id)
         end
@@ -34,6 +34,32 @@ namespace :migrations do
       main_location = operator.locations.order(:id).first
       p "Updating location for organizations"
       operator.organizations.where(location_id: nil).update(location_id: main_location.id) if main_location
+    end
+  end
+
+  desc "Migrate plans and invoices to locations"
+  task migrate_plans_and_invoices: :environment do
+    Operator.all.each do |operator|
+      p "Processing operator #{operator.name}"
+      main_location = operator.locations.order(:id).first
+      p "Migrating plans"
+      operator.plans.where(location_id: nil).update_all(location_id: main_location.id) if main_location
+      p "Migrating plan categories"
+      operator.plan_categories.where(location_id: nil).update_all(location_id: main_location.id) if main_location
+      p "Migrating invoices"
+      operator.invoices.where(location_id: nil).update_all(location_id: main_location.id) if main_location
+    end
+  end
+
+  desc "Migrate stripe keys to locations"
+  task migrate_stripe_keys: :environment do
+    Operator.all.each do |operator|
+      p "Processing operator #{operator.name}"
+      p "Migrating stripe keys"
+      operator.locations.where(stripe_access_token: nil).update_all(stripe_access_token: operator.stripe_access_token)
+      operator.locations.where(stripe_publishable_key: nil).update_all(stripe_publishable_key: operator.stripe_publishable_key)
+      operator.locations.where(stripe_refresh_token: nil).update_all(stripe_refresh_token: operator.stripe_refresh_token)
+      operator.locations.where(stripe_user_id: nil).update_all(stripe_user_id: operator.stripe_user_id)
     end
   end
 end

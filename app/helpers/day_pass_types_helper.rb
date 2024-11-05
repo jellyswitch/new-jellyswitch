@@ -13,6 +13,7 @@ module DayPassTypesHelper
     p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
+    p[:location_id] = current_location.id if current_location
     p
   end
 

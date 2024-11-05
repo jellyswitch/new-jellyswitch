@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_11_01_033147) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_04_030517) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -173,6 +173,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_01_033147) do
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "always_allow_building_access", default: false, null: false
     t.string "code"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_day_pass_types_on_location_id"
   end
 
   create_table "day_passes", force: :cascade do |t|
@@ -273,7 +275,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_01_033147) do
     t.datetime "due_date", precision: nil
     t.string "billable_type"
     t.bigint "billable_id"
+    t.integer "location_id"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_invoices_on_location_id"
   end
 
   create_table "lead_notes", force: :cascade do |t|
@@ -479,6 +483,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_01_033147) do
     t.integer "operator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_plan_categories_on_location_id"
   end
 
   create_table "plans", force: :cascade do |t|
@@ -500,6 +506,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_01_033147) do
     t.integer "commitment_interval"
     t.integer "childcare_reservations", default: 0, null: false
     t.integer "plan_category_id"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 

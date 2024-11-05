@@ -18,7 +18,7 @@
       <% end %>
     </div>
   </div>
-  
+
   <div class="row">
     <div class="col">
       <%= render "operator/plans/price", plan: plan %>
@@ -39,10 +39,6 @@
         Includes <strong><%= plan.childcare_reservations %></strong> childcare reservations
       </div>
     </div>
-  <% end %>
-  
-  <% plan.locations.each do |location| %>
-    <%= render "operator/plans/location_check", location: location %>
   <% end %>
 
   <div class="row">

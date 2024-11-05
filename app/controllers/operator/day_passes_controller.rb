@@ -29,7 +29,6 @@ class Operator::DayPassesController < Operator::BaseController
       out_of_band: out_of_band,
       location: current_location
     )
-    
     @day_pass = result.day_pass
 
     if result.success?
@@ -54,7 +53,7 @@ class Operator::DayPassesController < Operator::BaseController
     find_day_pass
     authorize @day_pass
   end
-  
+
   def code
     authorize DayPass.new
   end
@@ -74,6 +73,7 @@ class Operator::DayPassesController < Operator::BaseController
           out_of_band: current_user.out_of_band,
           user_id: current_user.id,
           operator: current_tenant,
+          location: current_location, # this might cause issues later, check if there is a bug
           params: {
             day: Time.current,
             day_pass_type: result.day_pass_type.id
@@ -98,7 +98,8 @@ class Operator::DayPassesController < Operator::BaseController
   def redeem_paid
     result = Billing::DayPasses::RedeemCode.call(
       code: params[:code],
-      operator: current_tenant
+      operator: current_tenant,
+      location: current_location
     )
 
     if result.success?
@@ -114,10 +115,11 @@ class Operator::DayPassesController < Operator::BaseController
   private
 
   def find_day_passes
-    @day_passes = DayPass.order('created_at DESC')
+    @day_passes = current_location.day_passes.order('created_at DESC')
   end
 
   def find_day_pass(key=:id)
+    # Maybe needs to show at another location so we don't use current_location
     @day_pass = DayPass.find(params[:id])
   end
 
@@ -126,6 +128,6 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   def find_day_pass_type(key=:day_pass_type_id)
-    @day_pass_type = current_tenant.day_pass_types.find(params[key])
+    @day_pass_type = current_location.day_pass_types.find(params[key])
   end
 end
