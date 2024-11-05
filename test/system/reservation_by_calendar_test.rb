@@ -11,7 +11,8 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     @duration_minutes = 90
 
     operator = operators(:cowork_tahoe)
-    operator.update(credits_enabled: false)
+    location = operator.locations.first
+    location.update(credits_enabled: false)
 
     Stripe::Invoice.any_instance.stubs(:number).returns("123456")
   end

@@ -36,6 +36,6 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.door_integration_enabled?
+    location.door_integration_enabled?
   end
 end

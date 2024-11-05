@@ -28,7 +28,7 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.rooms_enabled?
+    location.rooms_enabled?
   end
 
   def destroy?

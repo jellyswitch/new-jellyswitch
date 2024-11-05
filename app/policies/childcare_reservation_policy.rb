@@ -20,7 +20,7 @@ class ChildcareReservationPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.childcare_enabled?
+    location.childcare_enabled?
   end
 
   def confirm?

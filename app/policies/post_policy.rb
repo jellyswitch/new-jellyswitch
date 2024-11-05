@@ -16,7 +16,7 @@ class PostPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.bulletin_board_enabled?
+    location.bulletin_board_enabled?
   end
 
   def can_see?

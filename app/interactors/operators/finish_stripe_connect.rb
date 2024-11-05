@@ -5,6 +5,7 @@ class Operators::FinishStripeConnect
   def call
     stripe_code = context.stripe_code
     operator = context.operator
+    location = context.location
     webhook_url = context.webhook_url
 
     # Store credentials
@@ -31,8 +32,16 @@ class Operators::FinishStripeConnect
         billing_state: "production"
       )
 
-      # also update for locations
-      operator.locations.where(stripe_user_id: nil).update_all(stripe_user_id: stripe_user_id, stripe_publishable_key: stripe_publishable_key, stripe_refresh_token: refresh_token, stripe_access_token: access_token)
+      if location
+        location.update(
+          stripe_user_id: stripe_user_id,
+          stripe_publishable_key: stripe_publishable_key,
+          stripe_refresh_token: refresh_token,
+          stripe_access_token: access_token
+        )
+      else
+        operator.locations.where(stripe_user_id: nil).update_all(stripe_user_id: stripe_user_id, stripe_publishable_key: stripe_publishable_key, stripe_refresh_token: refresh_token, stripe_access_token: access_token)
+      end
 
       if !result
         context.fail!(message: "There was a problem storing your Stripe credentials.")
@@ -50,6 +59,7 @@ class Operators::FinishStripeConnect
       end
 
       # Migrate plans
+      # This likely won't work (but won't get called either)
       operator.plans.each do |plan|
         plan.create_stripe_plan
       end

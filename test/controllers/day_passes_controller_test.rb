@@ -9,6 +9,15 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     @day_pass = day_passes(:cowork_tahoe_day_pass)
     @day_pass_type = day_pass_type(:cowork_tahoe_day_pass_type)
     setup_stripe
+
+    stub_request(:post, "https://fcm.googleapis.com/fcm/send")
+      .to_return(
+        status: 200
+      )
+  end
+
+  teardown do
+    WebMock.reset!
   end
 
   test "should create a new day pass for today" do

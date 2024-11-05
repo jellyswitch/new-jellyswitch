@@ -1,13 +1,35 @@
 require 'application_system_test_case'
+require 'uri'
+require 'cgi'
 
 class OnboardingTest < ApplicationSystemTestCase
   setup do
     @original_app_host = Capybara.app_host
     Capybara.app_host = "http://app.lvh.me"
+    stub_request(:post, "https://connect.stripe.com/oauth/token")
+      .with(query: hash_including({}))
+      .to_return(
+        status: 200,
+        body: {
+          stripe_user_id: "acct_123456",
+          stripe_publishable_key: "pk_test_123456",
+          refresh_token: "rt_123456",
+          access_token: "sk_test_123456"
+        }.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
+
+    stub_request(:post, "https://api.stripe.com/v1/customers")
+      .to_return(
+        status: 200,
+        body: {id: "user123"}.to_json,
+        headers: { 'Content-Type' => 'application/json' }
+      )
   end
 
   teardown do
     Capybara.app_host = @original_app_host
+    WebMock.reset!
   end
 
   test "an operator signs up and goes through the whole flow" do
@@ -44,6 +66,22 @@ class OnboardingTest < ApplicationSystemTestCase
     # simulate already set up stripe
     Operator.last.update(billing_state: "production")
     click_on "Take me to my Jellyswitch"
+
+    # setup billing
+    mock_response = {
+      "stripe_user_id" => "acct_123456",
+      "stripe_publishable_key" => "pk_test_123456",
+      "refresh_token" => "rt_123456",
+      "access_token" => "sk_test_123456"
+    }
+
+    click_on "Enable billing & payments"
+    link = find_link("I already have a Stripe account")
+    uri = URI.parse(link[:href])
+    params = CGI.parse(uri.query)
+    visit params["redirect_uri"][0]
+
+    assert_text "Your location has been connected to Stripe"
 
     # setup building access / kisi
     find(".kisi-setup").click

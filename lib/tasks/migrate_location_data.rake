@@ -62,4 +62,21 @@ namespace :migrations do
       operator.locations.where(stripe_user_id: nil).update_all(stripe_user_id: operator.stripe_user_id)
     end
   end
+
+  desc "Migrate enabled modules to locations"
+  task migrate_module_enabled: :environment do
+    Operator.all.each do |operator|
+      p "Processing operator #{operator.name}"
+      p "Migrating enabled modules"
+      operator.locations.update_all(announcements_enabled: operator.announcements_enabled)
+      operator.locations.update_all(events_enabled: operator.events_enabled)
+      operator.locations.update_all(door_integration_enabled: operator.door_integration_enabled)
+      operator.locations.update_all(rooms_enabled: operator.rooms_enabled)
+      operator.locations.update_all(offices_enabled: operator.offices_enabled)
+      operator.locations.update_all(bulletin_board_enabled: operator.bulletin_board_enabled)
+      operator.locations.update_all(credits_enabled: operator.credits_enabled)
+      operator.locations.update_all(childcare_enabled: operator.childcare_enabled)
+      operator.locations.update_all(crm_enabled: operator.crm_enabled)
+    end
+  end
 end

@@ -5,6 +5,7 @@ require "minitest/mock"
 require "policy_assertions"
 require "minitest/unit"
 require "mocha/minitest"
+require 'webmock/minitest'
 require_relative "./clearance_helper"
 require_relative "./stripe_helper"
 require "sidekiq/testing"
@@ -19,6 +20,9 @@ class ActiveSupport::TestCase
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
+
+  WebMock.disable_net_connect!(allow_localhost: true)
+  NewRelic::Agent.manual_start(enabled: false)
 
   parallelize_setup do |worker|
     Searchkick.index_suffix = worker

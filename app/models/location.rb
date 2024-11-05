@@ -44,6 +44,16 @@
 #  operator_id                         :bigint(8)
 #  stripe_user_id                      :string
 #  kisi_api_key                        :string
+#  skip_onboarding                     :boolean          default(FALSE), not null
+#  announcements_enabled               :boolean
+#  events_enabled                      :boolean
+#  door_integration_enabled            :boolean
+#  rooms_enabled                       :boolean
+#  offices_enabled                     :boolean
+#  bulletin_board_enabled              :boolean
+#  credits_enabled                     :boolean
+#  childcare_enabled                   :boolean
+#  crm_enabled                         :boolean
 #
 # Indexes
 #
@@ -147,7 +157,6 @@ class Location < ApplicationRecord
   end
 
   def stripe_secret_key
-    # TODO: check when migrating stripe connect
     if operator.production? && operator.subdomain != "southlakecoworking"
       Rails.configuration.stripe[:secret_key]
     else
@@ -157,6 +166,28 @@ class Location < ApplicationRecord
 
   def stripe_operator
     @stripe_operator ||= StripeOperator.new(self)
+  end
+
+  def day_passes_enabled?
+    day_pass_types.count > 0
+  end
+
+  def memberships_enabled?
+    plans.individual.visible.available.count > 0
+  end
+
+  def onboarded?
+    plans.count > 0 &&
+    day_pass_types.count > 0 &&
+    users.members.count > 0
+  end
+
+  def stripe_setup?
+    stripe_user_id.present?
+  end
+
+  def has_active_office_leases?
+    office_leases.active.count > 0
   end
 
   private

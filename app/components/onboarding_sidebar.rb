@@ -11,7 +11,7 @@ class OnboardingSidebar < ApplicationComponent
   attr_reader :operator, :location
 
   def billing_enabled?
-    operator.production? && operator.subdomain != "southlakecoworking"
+    operator.subdomain != "southlakecoworking" && location.stripe_setup?
   end
 
   def show_day_pass_types?
@@ -19,11 +19,11 @@ class OnboardingSidebar < ApplicationComponent
   end
 
   def show_rooms?
-    billing_enabled? && operator.rooms_enabled? && location.rooms.count < 1
+    billing_enabled? && location.rooms_enabled? && location.rooms.count < 1
   end
 
   def show_doors?
-    billing_enabled? && operator.door_integration_enabled? && location.doors.count < 1
+    billing_enabled? && location.door_integration_enabled? && location.doors.count < 1
   end
 
   def show_members?

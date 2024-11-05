@@ -1,10 +1,10 @@
 class Crm::CreateLead
   include Interactor
 
-  delegate :user, :visit, :operator, to: :context
+  delegate :user, :visit, :operator, :event, to: :context
 
   def call
-    if operator.crm_enabled?
+    if event.location.crm_enabled?
       lead = operator.leads.new
       lead.user = user
       lead.ahoy_visit = visit

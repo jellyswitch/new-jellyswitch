@@ -1,6 +1,17 @@
 require 'application_system_test_case'
 
 class AnnouncementsTest < ApplicationSystemTestCase
+  setup do
+    stub_request(:post, "https://fcm.googleapis.com/fcm/send")
+      .to_return(
+        status: 200
+      )
+  end
+
+  teardown do
+    WebMock.reset!
+  end
+
   test "posting announcement note" do
     with_sidekiq_inline do
       log_in(users(:cowork_tahoe_admin))

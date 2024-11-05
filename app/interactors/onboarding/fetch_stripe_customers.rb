@@ -1,21 +1,20 @@
 class Onboarding::FetchStripeCustomers
   include Interactor
 
-  delegate :operator, to: :context
+  delegate :location, to: :context
 
   def call
-    stripe_data = operator.retrieve_stripe_customers
+    stripe_data = location.retrieve_stripe_customers
 
     customers = []
     stripe_data.auto_paging_each do |cust|
       customers << {
         stripe_customer_id: cust.id,
-        user: operator.users.find_by(stripe_customer_id: cust.id),
+        user: location.users.find_by(stripe_customer_id: cust.id),
         email: cust.email,
         card_added: card_added?(cust),
         name: cust.name,
       }
-      
     end
     context.customers = customers
   end

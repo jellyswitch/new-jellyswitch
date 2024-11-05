@@ -38,5 +38,14 @@ FactoryBot.define do
     open_saturday { false }
     credit_cost_in_cents { 0 }
     childcare_reservation_cost_in_cents { 0 }
+    announcements_enabled { true }
+    events_enabled { true }
+    door_integration_enabled { true }
+    rooms_enabled { true }
+    offices_enabled { true }
+    credits_enabled { false }
+    childcare_enabled { false }
+    bulletin_board_enabled { false }
+    crm_enabled { false }
   end
 end

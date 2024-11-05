@@ -29,7 +29,7 @@ class Operator::OperatorsController < Operator::BaseController
     turbo_redirect(referrer_or_root)
   end
 
-  def stripe_connect_setup
+  def stripe_connect_setup # seems like not used anymore, now using the one in LandingController#stripe_connect_setup
     find_operator
     if params[:error].present?
       flash[:error] = params[:error_description]

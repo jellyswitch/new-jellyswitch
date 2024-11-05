@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_11_04_030517) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_05_075424) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -341,6 +341,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_04_030517) do
     t.integer "credit_cost_in_cents", default: 0, null: false
     t.integer "childcare_reservation_cost_in_cents", default: 0, null: false
     t.string "kisi_api_key"
+    t.boolean "announcements_enabled", default: true, null: false
+    t.boolean "events_enabled", default: true, null: false
+    t.boolean "door_integration_enabled", default: true, null: false
+    t.boolean "rooms_enabled", default: true, null: false
+    t.boolean "offices_enabled", default: false, null: false
+    t.boolean "bulletin_board_enabled", default: false, null: false
+    t.boolean "credits_enabled", default: false, null: false
+    t.boolean "childcare_enabled", default: true, null: false
+    t.boolean "crm_enabled", default: true, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

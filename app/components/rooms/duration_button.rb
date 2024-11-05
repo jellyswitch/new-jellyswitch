@@ -42,6 +42,6 @@ class Rooms::DurationButton < ApplicationComponent
   end
 
   def credits_enabled?
-    room.operator.credits_enabled?
+    room.location.credits_enabled?
   end
 end

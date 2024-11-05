@@ -24,7 +24,7 @@ class OfficeLeasePolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.offices_enabled?
+    location.offices_enabled?
   end
 
   def renewal?

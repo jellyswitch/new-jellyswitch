@@ -64,7 +64,7 @@ module ApplicationHelper
 
   def stripe_oauth_url(operator, options = {})
     client_id = ENV["STRIPE_CLIENT_ID"] # the Jellyswitch SaaS Account ID
-    redirect_uri = stripe_connect_setup_url # landing#stripe_connect_setup at https://.../stripe_connect_setup
+    redirect_uri = stripe_connect_setup_url(options[:redirect_params]) # landing#stripe_connect_setup at https://.../stripe_connect_setup
     stripe_landing = options[:stripe_landing] || "login"
     "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}&stripe_landing=#{stripe_landing}"
   end

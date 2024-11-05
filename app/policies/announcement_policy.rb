@@ -12,11 +12,11 @@ class AnnouncementPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.announcements_enabled?
+    location.announcements_enabled?
   end
-  
+
   private
-  
+
 
   def can_see_announcements?
     staff? || member?

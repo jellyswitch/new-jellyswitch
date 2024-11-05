@@ -98,8 +98,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_stripe_members
-    # TODO: handle stripe flow for location
-    result = Onboarding::FetchStripeCustomers.call(operator: current_tenant)
+    result = Onboarding::FetchStripeCustomers.call(location: current_location)
 
     if result.success?
       @customers = result.customers
@@ -116,7 +115,9 @@ class Operator::OnboardingController < Operator::BaseController
       stripe_customer_id: params[:stripe_customer_id],
       card_added: params[:card_added] == "true",
       password: "pizza123",
-      approved: true
+      approved: true,
+      original_location_id: current_location.id,
+      current_location_id: current_location.id
     )
 
     if user.save

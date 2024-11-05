@@ -34,7 +34,7 @@ class Operator::ModulesController < Operator::BaseController
   end
 
   def offices
-    if current_tenant.has_active_office_leases?
+    if current_location.has_active_office_leases?
       flash[:error] = "Terminate active office leases before disabling."
       turbo_redirect(modules_path, action: "replace")
     else
@@ -45,8 +45,9 @@ class Operator::ModulesController < Operator::BaseController
   def childcare
     setting(:childcare_enabled)
   end
-  
+
   def reservation_credits_settings
+    # TODO: support per location
     location = current_tenant.locations.find(params[:location_id])
 
     dollars = Money.from_amount(params[:credit_cost].to_i, "USD")
@@ -60,6 +61,7 @@ class Operator::ModulesController < Operator::BaseController
   end
 
   def childcare_reservations_settings
+    # TODO: support per location
     location = current_tenant.locations.find(params[:location_id])
 
     dollars = Money.from_amount(params[:childcare_reservation_cost].to_i, "USD")
@@ -74,8 +76,8 @@ class Operator::ModulesController < Operator::BaseController
   private
 
   def setting(symbol)
-    result = ToggleValue.call(object: current_tenant, value: symbol)
-    
+    result = ToggleValue.call(object: current_location, value: symbol)
+
     if !result.success?
       flash[:error] = result.message
     end

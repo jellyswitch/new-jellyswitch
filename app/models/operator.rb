@@ -167,7 +167,7 @@ class Operator < ApplicationRecord
     Checkin.for_operator(self)
   end
 
-  # Predicates for features
+  # Predicates for features (most of the below moved to location)
 
   def day_passes_enabled?
     day_pass_types.count > 0
