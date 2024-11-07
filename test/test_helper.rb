@@ -36,6 +36,7 @@ class ActiveSupport::TestCase
 
   def setup_initial_user_fixtures
     @admin = UserContext.new(users(:cowork_tahoe_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @other_location_admin = UserContext.new(users(:other_location_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))

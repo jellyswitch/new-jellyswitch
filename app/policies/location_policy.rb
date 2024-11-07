@@ -24,11 +24,11 @@ class LocationPolicy < ApplicationPolicy
     admin?
   end
 
-  def allow_hourly?
+  def allow_hourly? # not used anymore
     admin?
   end
 
-  def new_users_get_free_day_pass?
+  def new_users_get_free_day_pass? # not used anymore
     admin?
   end
 

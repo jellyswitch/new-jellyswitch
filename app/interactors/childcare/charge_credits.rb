@@ -8,7 +8,7 @@ class Childcare::ChargeCredits
     if childcare_slot.location.childcare_enabled?
       user = child_profile.user
 
-      if !user.admin?
+      if !user.admin_of_location?(childcare_slot.location)
         @existing_balance = user.childcare_reservation_balance
 
         if @existing_balance < 1
@@ -26,7 +26,7 @@ class Childcare::ChargeCredits
     user = child_profile.user
 
     if childcare_slot.location.childcare_enabled?
-      if !user.admin?
+      if !user.admin_of_location?(childcare_slot.location)
         user.update(childcare_reservation_balance: user.childcare_reservation_balance + 1)
       end
     end

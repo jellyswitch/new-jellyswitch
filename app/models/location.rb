@@ -89,6 +89,9 @@ class Location < ApplicationRecord
   has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
 
+  has_many :location_managements
+  has_many :managers, through: :location_managements, source: :user
+
   has_one_attached :background_image
   has_one_attached :photo
 

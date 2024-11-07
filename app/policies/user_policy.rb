@@ -1,11 +1,11 @@
 
 class UserPolicy < ApplicationPolicy
   def index?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def unapproved?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def archived?
@@ -13,19 +13,19 @@ class UserPolicy < ApplicationPolicy
   end
 
   def search?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def show?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def about?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def childcare?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def credits?
@@ -33,43 +33,43 @@ class UserPolicy < ApplicationPolicy
   end
 
   def add_credits?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def add_childcare_reservations?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def ltv?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def usage?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def payment_method?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def membership?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def admin_day_passes?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def checkins?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def organization?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def admin_invoices?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def new?
@@ -77,11 +77,11 @@ class UserPolicy < ApplicationPolicy
   end
 
   def add_member?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def edit?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def create?
@@ -89,74 +89,99 @@ class UserPolicy < ApplicationPolicy
   end
 
   def update?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def change_password?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def update_password?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def remove_from_organization?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def update_organization?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def memberships?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def day_passes?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def reservations?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def past_reservations?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def invoices?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def approve?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def unapprove?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def edit_billing?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def update_billing?
-    (owner_or_admin? || community_manager? || general_manager?)
+    has_right_over_user?
   end
 
   def set_password_and_send_email?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def archive?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   def unarchive?
-    (admin? || community_manager? || general_manager?)
+    has_admin_right?
   end
 
   private
+
+  def has_right_over_user?
+    if (is_user? && user == record)
+      # the user themself, can access anywhere
+      return true
+    end
+
+    has_admin_right?
+  end
+
+  def has_admin_right?
+    if record.is_a?(User)
+      (record.original_location_id == nil || record.original_location_id == location.id) && # must be at the same location
+      (
+        (superadmin? || # superadmin can edit anyone
+        (
+          (admin? || community_manager? || general_manager?) && # other admin roles
+          record.role != "superadmin" # cannot touch superadmin
+        ))
+      )
+    else
+      (admin? || community_manager? || general_manager?)
+    end
+  end
+
 
   def owner_or_admin?
     # Needed because the record itself is the user

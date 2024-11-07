@@ -79,4 +79,16 @@ namespace :migrations do
       operator.locations.update_all(crm_enabled: operator.crm_enabled)
     end
   end
+
+  desc "Set location managers"
+  task set_location_managers: :environment do
+    Operator.all.each do |operator|
+      p "Processing operator #{operator.name}"
+      main_location = operator.locations.order(:id).first
+      p "Setting managed locations for admins"
+      operator.users.admins.each do |admin|
+        admin.update(managed_location_ids: [main_location.id])
+      end
+    end
+  end
 end

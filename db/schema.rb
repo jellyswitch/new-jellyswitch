@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_11_05_075424) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_06_014406) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -295,6 +295,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_05_075424) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "source"
+  end
+
+  create_table "location_managements", force: :cascade do |t|
+    t.bigint "location_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_location_managements_on_location_id"
+    t.index ["user_id"], name: "index_location_managements_on_user_id"
   end
 
   create_table "location_resources", id: :serial, force: :cascade do |t|
@@ -667,6 +676,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_05_075424) do
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
   add_foreign_key "doors", "locations"
+  add_foreign_key "location_managements", "locations"
+  add_foreign_key "location_managements", "users"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
   add_foreign_key "office_leases", "offices", on_delete: :nullify
   add_foreign_key "office_leases", "operators", on_delete: :nullify

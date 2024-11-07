@@ -47,7 +47,7 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "should get search results and render index template" do
-    @user.update(role: :admin)
+    @user.update(role: :admin, managed_locations: [locations(:cowork_tahoe_location)])
     User.reindex
 
     get search_users_path(params: { query: @user.name }), env: default_env

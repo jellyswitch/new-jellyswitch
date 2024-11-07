@@ -1,0 +1,3 @@
+location_cowork_tahoe_admin:
+  location: cowork_tahoe_location
+  user: cowork_tahoe_admin

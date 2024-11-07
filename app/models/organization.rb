@@ -55,8 +55,8 @@ class Organization < ApplicationRecord
   end
 
   # Form and view helpers
-  def self.options_for_select
-    Organization.all.map do |org|
+  def self.options_for_select(location)
+    Organization.for_location(location).all.map do |org|
       [org.name, org.id]
     end.prepend(["", nil])
   end

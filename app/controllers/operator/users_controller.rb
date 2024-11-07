@@ -94,7 +94,7 @@ class Operator::UsersController < Operator::BaseController
     @user = User.new
     authorize @user
 
-    if logged_in? && !admin?
+    if logged_in? && !admin_of_location?(current_location)
       # this is a normal user creating another user
       flash[:success] = "Please log out first."
       redirect_to root_path

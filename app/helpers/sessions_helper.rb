@@ -90,7 +90,7 @@ module SessionsHelper
   end
 
   def admin?
-    logged_in? && current_user.admin? || superadmin?
+    logged_in? && current_user.admin_of_location?(current_location)
   end
 
   def superadmin?

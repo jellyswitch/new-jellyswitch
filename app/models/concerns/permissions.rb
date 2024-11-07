@@ -3,10 +3,10 @@ module Permissions
 
   def allowed_in?(location)
     member?(location) ||
-    has_active_day_pass? ||
+    has_active_day_pass_at_location?(location) ||
     checked_in?(location) ||
     has_active_lease? ||
-    admin? ||
+    admin_of_location?(location) ||
     superadmin? ||
     has_active_reservation? ||
     has_rsvp?
@@ -20,7 +20,7 @@ module Permissions
 
   def should_charge_for_reservation?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
-      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin? || superadmin? || general_manager?)
+      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin_of_location?(location) || superadmin? || general_manager?)
     else
       false
     end
@@ -32,7 +32,7 @@ module Permissions
       has_active_day_pass?(day) ||
       checked_in?(location) ||
       has_active_lease? ||
-      admin?
+      admin_of_location?(location)
     else
       true
     end
@@ -55,11 +55,6 @@ module Permissions
     )
   end
 
-  def admin_of_location?(location)
-    # TODO: support multiple locations per admin
-    admin? && original_location == location
-  end
-
   def currently_at_location?(location)
     current_location == location
   end
@@ -74,6 +69,7 @@ module Permissions
     end.count > 0
   end
 
+  # PLEEEASE REFRAIN FROM USING THIS METHOD, only when there is no location to be checked
   def admin?
     role == User::ADMIN || admin == true
   end
@@ -90,8 +86,8 @@ module Permissions
     role == User::GENERAL_MANAGER
   end
 
-  def admin_or_manager?
-    admin? || superadmin? || community_manager? || general_manager?
+  def admin_or_manager?(location)
+    admin_of_location?(location) || superadmin? || community_manager? || general_manager?
   end
 
   def pending?
@@ -104,16 +100,16 @@ module Permissions
     end.count > 0
   end
 
-  def has_building_access?
+  def has_building_access?(location)
     superadmin? ||
-    admin? ||
+    admin_of_location?(location) ||
     community_manager? ||
     general_manager? ||
     always_allow_building_access? ||
     has_building_access_day_pass? ||
     has_building_access_membership? ||
     has_building_access_lease? ||
-    has_active_day_pass?
+    has_active_day_pass_at_location?(location)
   end
 
   def has_building_access_membership?

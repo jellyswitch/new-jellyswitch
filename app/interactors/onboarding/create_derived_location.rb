@@ -23,8 +23,8 @@ class Onboarding::CreateDerivedLocation
     if loc.save
       context.location = loc
 
-      # initialize user's location
-      context.user.update(original_location: loc, current_location: loc)
+      # initialize user's location, also he should be a superadmin
+      context.user.update(original_location: loc, current_location: loc, role: User::SUPERADMIN)
     else
       context.fail!(message: errors_for(loc))
     end

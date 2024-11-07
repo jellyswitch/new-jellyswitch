@@ -70,6 +70,9 @@ class User < ApplicationRecord
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
 
+  has_many :location_managements
+  has_many :managed_locations, through: :location_managements, source: :location
+
   alias :location :current_location
 
   # Slugs
@@ -270,8 +273,8 @@ class User < ApplicationRecord
     end
   end
 
-  def self.lease_options_for_select(operator)
-    User.for_space(operator).non_superadmins.order(:name).all.map do |user|
+  def self.lease_options_for_select(operator, location)
+    User.for_space(operator).originally_at_location(location).non_superadmins.order(:name).all.map do |user|
       option_helper(user)
     end
   end
@@ -340,6 +343,14 @@ class User < ApplicationRecord
 
   def user_permissions
     @user_permissions ||= UserPermissions.new(self)
+  end
+
+  def manages_location?(location)
+    managed_location_ids.include?(location&.id)
+  end
+
+  def admin_of_location?(location)
+    (admin? && manages_location?(location)) || superadmin?
   end
 
   class UserPermissions < SimpleDelegator

@@ -44,7 +44,7 @@
       <div class="col">
         <% if room.available_now? %>
         <div class="row mt-2">
-          <% if current_user.admin? %>
+          <% if current_user.admin_of_location?(current_location) %>
           <%= link_to "Reserve Now", choose_member_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_half_hour)), class: "col btn btn-block btn-success" %>
           <% else %>
           <%= link_to "Reserve Now", choose_duration_reservations_path(room_id: room.id, day: Time.current, hour: pretty_time(Time.current.beginning_of_half_hour)), class: "col btn btn-block btn-success" %>
@@ -52,7 +52,7 @@
         </div>
         <% end %>
         <div class="row mt-2">
-          <% if current_user.admin? %>
+          <% if current_user.admin_of_location?(current_location) %>
           <%= link_to "Reserve Later", choose_member_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>
           <% else %>
           <%= link_to "Reserve Later", choose_day_reservations_path(room_id: room.id), class: "col btn btn-block btn-primary" %>

@@ -28,6 +28,7 @@ class UsersController < ApplicationController
     @user = User.new
     authorize @user
 
+    # TODO: check where calls this and should we block lesser admins
     if logged_in? && !admin?
       # this is a normal user creating another user
       flash[:success] = "Please log out first."

@@ -43,7 +43,7 @@ class Checkins::CreateStripeInvoice
       !(checkin.user.member?(checkin.location, day= checkin.datetime_in) ||
         checkin.user.has_active_day_pass? ||
         checkin.user.has_active_lease? ||
-        checkin.user.admin?)
+        checkin.user.admin_of_location?(checkin.location))
     else
       false
     end

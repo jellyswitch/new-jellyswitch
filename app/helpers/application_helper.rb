@@ -128,15 +128,7 @@ module ApplicationHelper
     if (!user)
       return false
     else
-      user.superadmin? ||
-      user.admin? ||
-      user.community_manager? ||
-      user.general_manager? ||
-      user.always_allow_building_access? ||
-      user.has_building_access_day_pass? ||
-      user.has_building_access_membership? ||
-      user.has_building_access_lease? ||
-      user.has_active_day_pass?
+      user.has_building_access?(current_location)
     end
   end
 

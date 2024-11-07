@@ -16,7 +16,7 @@
     <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
-        <%= f.select :user_id, User.lease_options_for_select(current_tenant), { selected: current_user.id }, { class: "form-control" } %>
+        <%= f.select :user_id, User.lease_options_for_select(current_tenant, current_location), { selected: current_user.id }, { class: "form-control" } %>
       </div>
         <%= f.hidden_field :room_id, value: @room.id %>
         <%= f.hidden_field :day, value: params[:day] %>
