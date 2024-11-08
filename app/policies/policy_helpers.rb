@@ -14,11 +14,11 @@ module PolicyHelpers
   end
 
   def general_manager?
-    is_user? && user.general_manager?
+    is_user? && ((!location && user.general_manager?) || (location && user.general_manager_of_location?(location)))
   end
 
   def community_manager?
-    is_user? && user.community_manager?
+    is_user? && ((!location && user.community_manager?) || (location && user.community_manager_of_location?(location)))
   end
 
   def superadmin?

@@ -85,6 +85,19 @@ module SessionsHelper
     end
   end
 
+  def update_location(location)
+    checkout
+    unset_location
+    set_location(location)
+
+    # if there is an logged in user, set their current location
+    if logged_in? && current_user
+      current_user.update(current_location: location)
+    end
+
+    flash[:notice] = "Switched to location #{location.name}."
+  end
+
   def logged_in?
     !current_user.nil?
   end
@@ -98,11 +111,11 @@ module SessionsHelper
   end
 
   def community_manager?
-    logged_in? && current_user.community_manager?
+    logged_in? && current_user.community_manager_of_location?(current_location)
   end
 
   def general_manager?
-    logged_in? && current_user.general_manager?
+    logged_in? && current_user.general_manager_of_location?(current_location)
   end
 
   def pending?

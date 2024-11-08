@@ -139,6 +139,13 @@ class UserPolicyTest < PolicyAssertions::Test
     assert_permit @general_manager, User
   end
 
+  def test_edit_role
+    assert_not_permitted @member, User
+    assert_permit @admin, User
+    assert_not_permitted @community_manager, User
+    assert_permit @general_manager, User
+  end
+
   def test_update
     assert_not_permitted @member, User
     assert_permit @admin, User

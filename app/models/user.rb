@@ -154,8 +154,29 @@ class User < ApplicationRecord
   ADMIN = "admin".freeze
   SUPERADMIN = "superadmin".freeze
 
-  def self.role_options_for_select
-    roles.map { |r| [r.titleize, r] }
+  def role_options_for_select
+    eligible_roles = User.roles
+
+    # Only superadmins can assign superadmin role
+    if role != SUPERADMIN
+      eligible_roles -= [SUPERADMIN]
+    end
+
+    if role == GENERAL_MANAGER
+      eligible_roles -= [ADMIN]
+    end
+
+    eligible_roles.map { |r| [r.titleize, r] }
+  end
+
+  def managed_location_options_for_select
+    eligible_locations = operator.locations
+
+    if role != SUPERADMIN
+      eligible_locations = managed_locations
+    end
+
+    eligible_locations.map { |location| [location.name, location.id] }
   end
 
   def self.roles
@@ -351,6 +372,14 @@ class User < ApplicationRecord
 
   def admin_of_location?(location)
     (admin? && manages_location?(location)) || superadmin?
+  end
+
+  def general_manager_of_location?(location)
+    (general_manager? && manages_location?(location))
+  end
+
+  def community_manager_of_location?(location)
+    (community_manager? && manages_location?(location))
   end
 
   class UserPermissions < SimpleDelegator

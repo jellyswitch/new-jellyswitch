@@ -26,13 +26,13 @@ class OperatorPolicyTest < PolicyAssertions::Test
     assert_not_permitted @member, operators(:cowork_tahoe)
     assert_permit @admin, operators(:cowork_tahoe)
     assert_not_permitted @community_manager, operators(:cowork_tahoe)
-    assert_not_permitted @general_manager, operators(:cowork_tahoe)
+    assert_permit @general_manager, operators(:cowork_tahoe)
     assert_permit @superadmin, operators(:cowork_tahoe)
   end
 
   def test_edit
     assert_not_permitted @member, operators(:cowork_tahoe)
-    assert_permit @admin, operators(:cowork_tahoe)
+    assert_not_permitted @admin, operators(:cowork_tahoe)
     assert_not_permitted @community_manager, operators(:cowork_tahoe)
     assert_not_permitted @general_manager, operators(:cowork_tahoe)
     assert_permit @superadmin, operators(:cowork_tahoe)
@@ -40,7 +40,7 @@ class OperatorPolicyTest < PolicyAssertions::Test
 
   def test_update
     assert_not_permitted @member, operators(:cowork_tahoe)
-    assert_permit @admin, operators(:cowork_tahoe)
+    assert_not_permitted @admin, operators(:cowork_tahoe)
     assert_not_permitted @community_manager, operators(:cowork_tahoe)
     assert_not_permitted @general_manager, operators(:cowork_tahoe)
     assert_permit @superadmin, operators(:cowork_tahoe)

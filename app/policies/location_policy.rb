@@ -9,7 +9,7 @@ class LocationPolicy < ApplicationPolicy
   end
 
   def show?
-    admin?
+    admin? || general_manager?
   end
 
   def create?
@@ -17,11 +17,11 @@ class LocationPolicy < ApplicationPolicy
   end
 
   def edit?
-    admin?
+    user&.admin_of_location?(record) || user&.general_manager_of_location?(record)
   end
 
   def update?
-    admin?
+    admin? || general_manager?
   end
 
   def allow_hourly? # not used anymore

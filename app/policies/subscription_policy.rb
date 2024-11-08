@@ -3,7 +3,7 @@ class SubscriptionPolicy < ApplicationPolicy
   def index?
     is_user? && billing_enabled?
   end
-  
+
   def new?
     is_user? && billing_enabled?
   end
@@ -17,19 +17,19 @@ class SubscriptionPolicy < ApplicationPolicy
   end
 
   def edit?
-    (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
+    (admin? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
   end
 
   def update?
-    (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
+    (admin? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
   end
 
   def destroy?
-    (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
+    (admin? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
   end
 
   def destroy_subscription_now?
-    (admin? || community_manager? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
+    (admin? || general_manager? || (owner? && user.member?(location) && approved? && billing_enabled?))
   end
 
   private

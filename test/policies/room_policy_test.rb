@@ -15,28 +15,28 @@ class RoomPolicyTest < PolicyAssertions::Test
   def test_new
     assert_not_permitted @member, Room
     assert_permit @admin, Room
-    assert_permit @community_manager, Room
+    assert_not_permitted @community_manager, Room
     assert_permit @general_manager, Room
   end
 
   def test_create
     assert_not_permitted @member, Room
     assert_permit @admin, Room
-    assert_permit @community_manager, Room
+    assert_not_permitted @community_manager, Room
     assert_permit @general_manager, Room
   end
 
   def test_edit
     assert_not_permitted @member, Room
     assert_permit @admin, Room
-    assert_permit @community_manager, Room
+    assert_not_permitted @community_manager, Room
     assert_permit @general_manager, Room
   end
 
   def test_update
     assert_not_permitted @member, Room
     assert_permit @admin, Room
-    assert_permit @community_manager, Room
+    assert_not_permitted @community_manager, Room
     assert_permit @general_manager, Room
   end
 

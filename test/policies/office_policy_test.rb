@@ -8,7 +8,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_index
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -16,7 +16,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_show
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -24,7 +24,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_new
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -32,7 +32,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_create
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -40,7 +40,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_edit
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -48,7 +48,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_update
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -56,7 +56,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_available
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -64,7 +64,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_upcoming_renewals
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end
@@ -72,7 +72,7 @@ class OfficePolicyTest < PolicyAssertions::Test
   def test_upcoming_renewals
     assert_not_permitted @member, Office
     assert_permit @admin, Office
-    assert_permit @community_manager, Office
+    assert_not_permitted @community_manager, Office
     assert_permit @general_manager, Office
     assert_permit @superadmin, Office
   end

@@ -22,28 +22,28 @@ class DoorPolicyTest < PolicyAssertions::Test
   def test_new
     assert_not_permitted @member, Door
     assert_permit @admin, Door
-    assert_permit @community_manager, Door
+    assert_not_permitted @community_manager, Door
     assert_permit @general_manager, Door
   end
 
   def test_create
     assert_not_permitted @member, Door
     assert_permit @admin, Door
-    assert_permit @community_manager, Door
+    assert_not_permitted @community_manager, Door
     assert_permit @general_manager, Door
   end
 
   def test_update
     assert_not_permitted @member, Door
     assert_permit @admin, Door
-    assert_permit @community_manager, Door
+    assert_not_permitted @community_manager, Door
     assert_permit @general_manager, Door
   end
 
   def test_edit
     assert_not_permitted @member, Door
     assert_permit @admin, Door
-    assert_permit @community_manager, Door
+    assert_not_permitted @community_manager, Door
     assert_permit @general_manager, Door
   end
 

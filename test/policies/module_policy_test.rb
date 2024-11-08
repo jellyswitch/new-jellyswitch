@@ -9,7 +9,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_index
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -17,7 +17,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_announcements
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -25,7 +25,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_bulletin_board
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -33,7 +33,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_events
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -41,7 +41,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_door_integration
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -49,7 +49,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_rooms
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -57,7 +57,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_offices
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -65,7 +65,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_credits
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -73,7 +73,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_crm
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -81,7 +81,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_childcare
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end
@@ -89,7 +89,7 @@ class ModulePolicyTest < PolicyAssertions::Test
   def test_reservation_credits_settings
     assert_not_permitted @member, Module
     assert_permit @admin, Module
-    assert_permit @community_manager, Module
+    assert_not_permitted @community_manager, Module
     assert_permit @general_manager, Module
     assert_permit @superadmin, Module
   end

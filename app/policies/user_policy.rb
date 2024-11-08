@@ -84,6 +84,10 @@ class UserPolicy < ApplicationPolicy
     has_right_over_user?
   end
 
+  def edit_role?
+    has_admin_right? && user.role != "community-manager"
+  end
+
   def create?
     true # anyone can sign up
   end

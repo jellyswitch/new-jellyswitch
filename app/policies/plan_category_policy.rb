@@ -31,6 +31,6 @@ class PlanCategoryPolicy < ApplicationPolicy
   private
 
   def can_see?
-    ( admin? || community_manager? || general_manager? )
+    ( admin? || general_manager? )
   end
 end

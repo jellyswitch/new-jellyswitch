@@ -9,22 +9,22 @@ class DayPassTypePolicy < ApplicationPolicy
   end
 
   def edit?
-    (admin? || community_manager? || general_manager?) && billing_enabled?
+    (admin? || general_manager?) && billing_enabled?
   end
 
   def new?
-    (admin? || community_manager? || general_manager?) && billing_enabled?
+    (admin? || general_manager?) && billing_enabled?
   end
 
   def create?
-    (admin? || community_manager? || general_manager?) && billing_enabled?
+    (admin? || general_manager?) && billing_enabled?
   end
 
   def update?
-    (admin? || community_manager? || general_manager?) && billing_enabled?
+    (admin? || general_manager?) && billing_enabled?
   end
 
   def destroy?
-    (admin? || community_manager? || general_manager?) && billing_enabled?
+    (admin? || general_manager?) && billing_enabled?
   end
 end

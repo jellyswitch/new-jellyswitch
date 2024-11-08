@@ -183,6 +183,7 @@ class Navigation::Default < SimpleDelegator
 
     [
       {title: "Data", path: reports_path},
+      {title: "Customization", path: customization_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|
@@ -215,10 +216,6 @@ class Navigation::Default < SimpleDelegator
 
     items << {title: "Members & Groups", path: members_groups_path}
 
-    if policy(:office).enabled?
-      items << {title: "Offices & Leases", path: offices_path}
-    end
-
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
     end
@@ -227,17 +224,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Leads", path: leads_path}
     end
 
-    if policy(:payment).enabled?
-      [
-        {title: "Plans & Day Passes", path: plans_day_passes_path},
-        {title: "Invoices & Expenses", path: accounting_index_path}
-      ].each do |item|
-        items << item
-      end
-    end
-
     [
-      {title: "Data", path: reports_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|

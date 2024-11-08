@@ -44,6 +44,6 @@ class Billing::Reservations::ChargeCredits
 
   def staff?
     location = reservation.room.location
-    user.admin_of_location?(location) || user.general_manager? || user.community_manager?
+    user.admin_of_location?(location) || user.general_manager_of_location?(location) || user.community_manager_of_location?(location)
   end
 end

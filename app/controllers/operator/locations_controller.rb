@@ -29,10 +29,20 @@ class Operator::LocationsController < Operator::BaseController
   end
 
   def show
+    # switch to this location before editing
+    if current_location != @location
+      update_location(@location)
+    end
+
     authorize @location
   end
 
   def edit
+    # switch to this location before editing
+    if current_location != @location
+      update_location(@location)
+    end
+
     setup_hours
     authorize @location
   end
@@ -65,7 +75,7 @@ class Operator::LocationsController < Operator::BaseController
     find_location(:location_id)
     authorize @location
     result = ToggleValue.call(object: @location, value: :allow_hourly)
-    
+
     if !result.success?
       flash[:error] = result.message
     end
@@ -77,7 +87,7 @@ class Operator::LocationsController < Operator::BaseController
     find_location(:location_id)
     authorize @location
     result = ToggleValue.call(object: @location, value: :new_users_get_free_day_pass)
-    
+
     if !result.success?
       flash[:error] = result.message
     end
@@ -89,7 +99,7 @@ class Operator::LocationsController < Operator::BaseController
     find_location(:location_id)
     authorize @location
     result = ToggleValue.call(object: @location, value: :visible)
-    
+
     if !result.success?
       flash[:error] = result.message
     end
@@ -141,7 +151,7 @@ class Operator::LocationsController < Operator::BaseController
       :flex_square_footage, :common_square_footage, :building_access_instructions,
       :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass,
       :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
-      :open_friday, :open_saturday, :working_day_start, :working_day_end, 
+      :open_friday, :open_saturday, :working_day_start, :working_day_end,
       :credit_cost_in_cents
     )
   end

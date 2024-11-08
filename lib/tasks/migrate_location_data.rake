@@ -89,6 +89,16 @@ namespace :migrations do
       operator.users.admins.each do |admin|
         admin.update(managed_location_ids: [main_location.id])
       end
+
+      p "Setting managed locations for general managers"
+      operator.users.general_managers.each do |gm|
+        gm.update(managed_location_ids: [main_location.id])
+      end
+
+      p "Setting managed locations for community managers"
+      operator.users.community_managers.each do |cm|
+        cm.update(managed_location_ids: [main_location.id])
+      end
     end
   end
 end

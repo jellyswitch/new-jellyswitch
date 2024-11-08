@@ -3,8 +3,7 @@ class AnnouncementEmailJob < ApplicationJob
 
   def perform(announcement)
     announcement.operator.users.all.each do |user|
-      # TODO: check member_at_operator?
-      if user.admin_of_location?(announcement.location) || user.superadmin? || user.member_at_operator?(announcement.operator)
+      if user.admin_of_location?(announcement.location) || user.superadmin? || user.member_at_location?(announcement.location)
         JellyswitchMail.new(announcement.operator, dry_run: !Rails.env.production?).announcement(announcement, user)
       end
     end
