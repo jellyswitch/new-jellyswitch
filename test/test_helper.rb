@@ -21,7 +21,10 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
-  WebMock.disable_net_connect!(allow_localhost: true)
+  WebMock.disable_net_connect!(
+    allow_localhost: true,
+    allow: ['chromedriver.storage.googleapis.com', 'storage.googleapis.com', 'googlechromelabs.github.io', 'fcm.googleapis.com']
+  )
   NewRelic::Agent.manual_start(enabled: false)
 
   parallelize_setup do |worker|
@@ -82,6 +85,31 @@ class ActiveSupport::TestCase
     stripe_subscription = operators(:cowork_tahoe).stripe_request("Subscription", :create, params)
 
     subscription.update(stripe_subscription_id: stripe_subscription.id)
+  end
+
+  def setup_stripe_no_subscription
+    @stripe_helper = StripeMock.create_test_helper
+
+    # create plans in stripe
+    [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan].map do |plan_sym|
+      plan = plans(plan_sym)
+
+      product = Stripe::Product.create({ name: plan.plan_name, type: "service" })
+
+      stripe_plan = @stripe_helper.create_plan(
+        amount: plan.amount_in_cents,
+        interval: plan.stripe_interval,
+        interval_count: plan.stripe_interval_count,
+        product: product.id,
+        currency: "usd",
+        id: plan.plan_slug,
+      )
+
+      plan.update(stripe_plan_id: stripe_plan.id)
+    end
+
+    customer = Stripe::Customer.create({ email: @user.email })
+    @user.update(stripe_customer_id: customer.id)
   end
 end
 

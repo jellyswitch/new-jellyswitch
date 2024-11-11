@@ -108,8 +108,10 @@ class User < ApplicationRecord
   # TODO: support multiple locations per admin
   scope :relevant_admins_of_location, ->(location) {
     if location.present?
-      where("(role = ? AND current_location_id = ?) OR (role = ? AND original_location_id = ?)",
-            User::SUPERADMIN, location.id, User::ADMIN, location.id)
+      left_joins(:location_managements)
+        .where("(users.role = ? AND users.current_location_id = ?) OR (users.role = ? AND location_managements.location_id = ?)",
+              User::SUPERADMIN, location.id, User::ADMIN, location.id)
+        .distinct
     else
       none
     end

@@ -48,6 +48,6 @@ class Jellyswitch::WeeklyReport
 
     @unanswered_questions = @questions.unanswered
 
-    @admins = location.users.admins.non_superadmins
+    @admins = User.relevant_admins_of_location(location).admins
   end
 end

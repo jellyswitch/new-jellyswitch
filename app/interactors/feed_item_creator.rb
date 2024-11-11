@@ -43,7 +43,7 @@ module FeedItemCreator
       context.fail!(message: "Unable to generate feed item.")
     end
 
-    operator.users.admins.each do |admin_user|
+    operator.users.relevant_admins_of_location(feed_item.location).each do |admin_user|
       send_email_notification(admin_user, feed_item)
     end
     feed_item

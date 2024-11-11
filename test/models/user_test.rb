@@ -135,4 +135,11 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal user.upcoming_or_ongoing_reservation, future_reservation
   end
+
+  test 'relevant_admins_of_location should return all admins of the location' do
+    users = User.relevant_admins_of_location(@location)
+    assert_equal users.sort_by(&:id), [users(:cowork_tahoe_admin), users(:cowork_tahoe_superadmin)].sort_by(&:id)
+
+    assert_equal User.relevant_admins_of_location(nil), []
+  end
 end
