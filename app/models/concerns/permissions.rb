@@ -2,7 +2,7 @@ module Permissions
   # Included as a module in the User class
 
   def allowed_in?(location)
-    member?(location) ||
+    has_building_access_membership? ||
     has_active_day_pass_at_location?(location) ||
     checked_in?(location) ||
     has_active_lease? ||
