@@ -1,19 +1,25 @@
 import { Controller } from "@hotwired/stimulus";
 import "fullcalendar";
+import moment from "moment"
+import "moment-timezone"
 
 export default class extends Controller {
   connect() {
     this.today = $('input[name="date"]').val();
+    this.selectedRoomId = null;
+    this.reservationCounts = {};
+    this.isManager = this.element.dataset.isManager === "true";
 
     this.initializeCalendar();
+    this.initializeRoomFilter();
 
     this.handleDurationChange();
     this.handleRoomSelectionChange();
     this.handleFormSubmission();
     this.handleDayNightSelection();
     this.handleModalClose();
-
     this.handleReserveNowFlow();
+    this.handleReservationListToggle();
 
     this.USDollar = new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -33,11 +39,42 @@ export default class extends Controller {
         right: "today prev,next",
       },
       dayClick: this.handleDayClick.bind(this),
+      eventClick: (event) => {
+        this.handleDayClick(moment(event.id));
+      },
+      events: (start, end, timezone, callback) => {
+        $.ajax({
+          url: "/reservations/daily_counts",
+          method: "GET",
+          data: {
+            start_date: start.format("YYYY-MM-DD"),
+            end_date: end.format("YYYY-MM-DD"),
+            room_id: this.selectedRoomId,
+          },
+          success: (response) => {
+            const events = Object.entries(response)
+              .filter(([date, count]) => count > 0)
+              .map(([date, count]) => ({
+                id: date,
+                title: count === 1 ? "1 reservation" : `${count} reservations`,
+                start: date,
+                allDay: true,
+                className: 'reservation-count-event'
+              }));
+            callback(events);
+          },
+          error: (xhr, status, error) => {
+            console.error("Error fetching reservation counts:", error);
+            callback([]);
+          }
+        });
+      },
+      eventRender: function(event, element) {
+        element.find('.fc-content').html(event.title);
+      }
     });
 
-    setTimeout(function () {
-      window.dispatchEvent(new Event("resize"));
-    }, 100);
+    setTimeout(() => window.dispatchEvent(new Event("resize")), 100);
   }
 
   handleReserveNowFlow() {
@@ -49,6 +86,112 @@ export default class extends Controller {
     if (isReserveNow && currentDate && dayOrNight) {
       this.prefillReservationForm(currentDate, availableTimeSlot, dayOrNight);
     }
+  }
+
+  initializeRoomFilter() {
+    $("#room-filter").on("change", (event) => {
+      this.selectedRoomId = event.target.value;
+      this.updateCalendarWithReservations();
+    });
+  }
+
+  async fetchReservationCounts(start, end, callback) {
+    try {
+      const response = await $.ajax({
+        url: "/reservations/daily_counts",
+        method: "GET",
+        data: {
+          start_date: start.format("YYYY-MM-DD"),
+          end_date: end.format("YYYY-MM-DD"),
+          room_id: this.selectedRoomId,
+        },
+      });
+
+      // Transform the counts into fullCalendar events
+      const events = Object.entries(response).map(([date, count]) => ({
+        id: date,
+        title: count === 1 ? "1 reservation" : `${count} reservations`,
+        start: date,
+        allDay: true,
+        className: 'reservation-count-event'
+      })).filter(event => event.count > 0);
+
+      callback(events);
+    } catch (error) {
+      console.error("Error fetching reservation counts:", error);
+      callback([]);
+    }
+  }
+
+  async fetchDayReservations(date) {
+    try {
+      const response = await $.ajax({
+        url: "/reservations/daily_details",
+        method: "GET",
+        data: { date: date },
+      });
+      this.renderReservationsList(response);
+    } catch (error) {
+      console.error("Error fetching day reservations:", error);
+    }
+  }
+
+  renderReservationsList(reservations) {
+    const container = $(".reservations-list");
+    container.empty();
+    const locationTimezone = this.element.dataset.locationTimezone;
+    $(".reservation-count-badge").text(reservations.length);
+
+    if (reservations.length === 0) {
+      $(".existing-reservations").hide();
+      container.append('<div class="no-reservations">No reservations for this day</div>');
+      return;
+    }
+    $(".existing-reservations").show();
+
+    // Sort reservations by datetime_in
+    reservations.sort((a, b) => new Date(a.datetime_in) - new Date(b.datetime_in));
+
+    reservations.forEach(reservation => {
+      const startTime = moment.tz(reservation.datetime_in, locationTimezone);
+      const endTime = moment.tz(reservation.datetime_in, locationTimezone)
+        .add(reservation.minutes, 'minutes');
+
+      const extraDetails = this.isManager ? `<span class="reservation-note">(${reservation.user_name}${reservation.note ? ': ' + reservation.note : ''})</span>` : '';
+
+      const item = $(`
+        <div class="reservation-item">
+          ${this.formatTimeInTimezone(startTime)} - ${this.formatTimeInTimezone(endTime)} -
+          <span class="room-name font-weight-bold">${reservation.room_name}</span>
+          ${extraDetails}
+        </div>
+      `);
+      container.append(item);
+    });
+  }
+
+  formatTimeInTimezone(momentTime) {
+    return momentTime.format('h:mm A');
+  }
+
+  formatTime(date) {
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  }
+
+  handleReservationListToggle() {
+    $('.reservations-list-toggle').on('click', function() {
+      $(this).toggleClass('collapsed');
+      const icon = $(this).find('i.fas');
+      icon.toggleClass('fa-chevron-right fa-chevron-down');
+    });
+  }
+
+  updateCalendarWithReservations() {
+    $("#reservation-fullcalendar").fullCalendar('refetchEvents');
   }
 
   handleDurationChange() {
@@ -106,7 +249,7 @@ export default class extends Controller {
     });
   }
 
-  handleDayClick(date, event) {
+  async handleDayClick(date, event) {
     const formattedDate = date.format("YYYY-MM-DD");
 
     const hasFcPastClass = $(
@@ -114,12 +257,13 @@ export default class extends Controller {
     ).hasClass("fc-past");
     const beforeToday = moment(this.today).isAfter(date);
 
-    if (hasFcPastClass && beforeToday) return;
+    // if (hasFcPastClass && beforeToday) return;
 
     this.highlightSelectedDate(formattedDate);
     const displayDate = date.format("MMMM D, YYYY");
     this.updateDateDisplay(displayDate);
     this.setInputDate(formattedDate);
+    await this.fetchDayReservations(formattedDate);
     this.showEventModal();
 
     const dayOrNight = $('input[name="day-light-options"]:checked').val();

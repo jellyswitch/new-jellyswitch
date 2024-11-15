@@ -333,6 +333,61 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def daily_counts
+    start_date = Date.parse(params[:start_date])
+    end_date = Date.parse(params[:end_date])
+
+    reservations = Reservation.for_location_id(current_location.id).not_cancelled
+                            .where(datetime_in: start_date.beginning_of_day..end_date.end_of_day)
+
+    if params[:room_id].present?
+      reservations = reservations.where(room_id: params[:room_id])
+    end
+
+    pg_timezone = ActiveSupport::TimeZone::MAPPING[current_location.time_zone]
+
+    counts = reservations.group(
+      "DATE(datetime_in AT TIME ZONE 'UTC' AT TIME ZONE '#{pg_timezone}')"
+    ).count
+
+    formatted_counts = {}
+    (start_date..end_date).each do |date|
+      formatted_counts[date.strftime("%Y-%m-%d")] = counts[date] || 0
+    end
+
+    render json: formatted_counts
+  end
+
+  def daily_details
+    date = Date.parse(params[:date])
+
+    # Get reservations for the full day in location's timezone
+    start_time = date.in_time_zone(current_location.time_zone).beginning_of_day
+    end_time = date.in_time_zone(current_location.time_zone).end_of_day
+
+    reservations = Reservation.for_location_id(current_location.id)
+                            .not_cancelled
+                            .includes(:room) # Eager load room to avoid N+1
+                            .where(datetime_in: start_time..end_time)
+                            .order(datetime_in: :asc)
+
+    reservation_details = reservations.map do |reservation|
+      {
+        id: reservation.id,
+        datetime_in: reservation.datetime_in.in_time_zone(current_location.time_zone).iso8601,
+        minutes: reservation.minutes,
+        room_name: reservation.room.name,
+        room_id: reservation.room_id,
+        user_name: reservation.user.name,
+        note: reservation.note
+      }
+    end
+
+    render json: reservation_details
+  rescue ArgumentError => e
+    render json: { error: "Invalid date format" }, status: :unprocessable_entity
+  end
+
   private
 
   def find_reservation(key = :id)
