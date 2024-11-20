@@ -88,6 +88,8 @@ class Location < ApplicationRecord
   has_many :invoices
   has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
+  has_many :tracking_pixels
+  accepts_nested_attributes_for :tracking_pixels, allow_destroy: true, reject_if: ->(attributes) { attributes['name'].blank? || attributes['script'].blank? }
 
   has_many :location_managements
   has_many :managers, through: :location_managements, source: :user

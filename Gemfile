@@ -77,6 +77,7 @@ group :test do
   gem "webdrivers"
   gem "database_cleaner-active_record"
   gem "webmock"
+  gem "shoulda-matchers"
 end
 
 group :development, :test do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_11_06_014406) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_20_033705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -622,6 +622,19 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_06_014406) do
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 
+  create_table "tracking_pixels", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id", null: false
+    t.string "name"
+    t.string "script"
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_tracking_pixels_on_location_id"
+    t.index ["operator_id"], name: "index_tracking_pixels_on_operator_id"
+    t.index ["position"], name: "index_tracking_pixels_on_position"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email", null: false
@@ -686,4 +699,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_06_014406) do
   add_foreign_key "offices", "locations", on_delete: :nullify
   add_foreign_key "refunds", "invoices", on_delete: :nullify
   add_foreign_key "rooms", "locations"
+  add_foreign_key "tracking_pixels", "locations"
+  add_foreign_key "tracking_pixels", "operators"
 end
