@@ -27,6 +27,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Day pass added."
+      # TODO: check if we need to inject tracking pixels here
       turbo_redirect(user_path(@day_pass.user), action: "replace")
     else
       flash[:error] = result.message
@@ -39,7 +40,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
   end
 
   private
-  
+
   def day_pass_params
     params.require(:day_pass).permit(:day_pass_type, :day, :user_id)
   end

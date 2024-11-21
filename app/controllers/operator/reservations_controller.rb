@@ -90,6 +90,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      session[:should_track_pixels] = true
       if current_user.approved?
         turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
       else
@@ -260,6 +261,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      session[:should_track_pixels] = true
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     else
       flash[:error] = result.message

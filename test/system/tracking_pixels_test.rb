@@ -30,4 +30,35 @@ class TrackingPixelsTest < ApplicationSystemTestCase
       assert_equal "body", find('select.form-control').value
     end
   end
+
+  test "tracking pixels appears after user does a transaction" do
+    StripeMock.start
+
+    @user = users(:cowork_tahoe_non_member)
+    setup_stripe_no_subscription
+
+    log_in(@user)
+    operator = operators(:cowork_tahoe)
+    tracking_pixel = create :tracking_pixel, operator: operator, location: operator.locations.first, script: "<script>console.log('UA-12345678-1');</script>", position: :body
+    visit home_path
+
+    # assert the tracking pixel is not present
+    assert !page.html.include?("UA-12345678-1")
+
+    assert_text "Please select an option below."
+
+    click_on "Buy a day pass"
+    click_on "Select Standard Day Pass"
+
+    assert_text "$200"
+
+    click_on "Confirm and purchase"
+
+    assert_text "Building Access"
+
+    # assert the tracking pixel is present
+    assert page.html.include?("UA-12345678-1")
+
+    StripeMock.stop
+  end
 end

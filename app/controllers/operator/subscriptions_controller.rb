@@ -52,6 +52,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Welcome to #{current_location.name}!"
+      session[:should_track_pixels] = true
       turbo_redirect(root_path)
     else
       flash[:error] = result.message

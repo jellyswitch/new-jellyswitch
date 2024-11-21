@@ -188,6 +188,21 @@ module ApplicationHelper
     end
   end
 
+  def set_tracking_pixels
+    if session[:should_track_pixels]
+      # workaround for turbo redirect because it effectively renders twice
+      if session[:first_pixel_render]
+        @head_pixels = current_location.tracking_pixels.head
+        @body_pixels = current_location.tracking_pixels.body
+        @footer_pixels = current_location.tracking_pixels.footer
+        session.delete(:first_pixel_render)
+        session.delete(:should_track_pixels)
+      else
+        session[:first_pixel_render] = true
+      end
+    end
+  end
+
   private
 
   def working_hours_config(location)

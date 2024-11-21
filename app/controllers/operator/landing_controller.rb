@@ -41,6 +41,7 @@ class Operator::LandingController < Operator::BaseController
       if result.success?
         # redirect to home
         flash[:success] = "Welcome!"
+        session[:should_track_pixels] = true
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result.message
@@ -70,6 +71,7 @@ class Operator::LandingController < Operator::BaseController
       if result2.success?
         # redirect to home
         flash[:success] = "Welcome!"
+        session[:should_track_pixels] = true
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result2.message

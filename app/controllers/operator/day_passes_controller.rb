@@ -38,6 +38,7 @@ class Operator::DayPassesController < Operator::BaseController
         flash[:success] = "Thanks! Your day pass will be available on #{short_date(@day_pass.day)}."
       end
       flash.keep
+      session[:should_track_pixels] = true
       turbo_redirect(home_path)
     else
       flash[:error] = result.message
