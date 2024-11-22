@@ -1,0 +1,2 @@
+- Prefer double quotes (") when possible
+- Always aim for the best, highest-quality, production-grade code that is clean, optimized, maintainable and follow best practices while still aligning with existing coding standards and conventions in the code base.
