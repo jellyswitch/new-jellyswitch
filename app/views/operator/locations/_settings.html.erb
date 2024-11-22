@@ -11,7 +11,7 @@
     <%= render(OnOffSwitch.new(predicate: location.new_users_get_free_day_pass?, path: location_new_users_get_free_day_pass_path(location))) do %>
       Automatically provision free day passes to new users
     <% end %>
-    
+
     <%= render(OnOffSwitch.new(predicate: location.allow_hourly?, path: location_allow_hourly_path(location))) do %>
       Allow hourly check-ins and check-outs
     <% end %>
@@ -75,6 +75,9 @@
 
   <dt>Wifi Password</dt>
   <dd><%= location.wifi_password %></dd>
+
+  <dt>Kisi API Key</dt>
+  <dd><%= location.kisi_api_key %></dd>
 
   <dt>Building Access Instructions</dt>
   <dd>

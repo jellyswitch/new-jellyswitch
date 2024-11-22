@@ -5,7 +5,6 @@ class Billing::Reservations::SaveStripeInvoice
 
   def call
     location = reservation.room.location
-    operator = location.operator
     reservation_day = reservation.datetime_in.to_date
 
     charge_amount = reservation.charge_amount
@@ -21,20 +20,20 @@ class Billing::Reservations::SaveStripeInvoice
         amount: charge_amount,
         description: reservation.charge_description,
       }, {
-        api_key: operator.stripe_secret_key,
-        stripe_account: operator.stripe_user_id,
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id,
       })
 
       invoice_args = ReservableFactory.for(reservation).invoice_args
       @invoice = Stripe::Invoice.create(
         invoice_args,
         {
-          api_key: operator.stripe_secret_key,
-          stripe_account: operator.stripe_user_id,
+          api_key: location.stripe_secret_key,
+          stripe_account: location.stripe_user_id,
         }
       )
 
-      result = CreateInvoice.call(stripe_invoice: @invoice)
+      result = CreateInvoice.call(stripe_invoice: @invoice, location: location)
       if !result.success?
         context.fail!(message: result.message)
       end

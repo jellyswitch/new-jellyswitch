@@ -7,6 +7,7 @@ class MemberFeedback::Save
     member_feedback = MemberFeedback.new(context.member_feedback_params)
     member_feedback.user = context.user
     member_feedback.operator = context.operator
+    member_feedback.location = context.location
 
     if !member_feedback.save
       context.fail!(message: "Couldn't submit feedback.")

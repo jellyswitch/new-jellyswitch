@@ -6,9 +6,9 @@ RSpec.describe "Update Office Lease Price", type: :system do
       @next_cycle_date = Date.today + 1.months
       expect_any_instance_of(OfficeLease).to receive(:current_period_end).and_return(@next_cycle_date.to_time.to_i)
 
-      @admin = create(:user, role: User::ADMIN)
       @office = create(:office, name: "Office A")
       @office_lease = create(:office_lease, office: @office, start_date: Date.today, end_date: Date.today + 2.months)
+      @admin = create(:user, role: User::ADMIN, managed_locations: [@office.location])
 
       log_in @admin
       visit office_path(@office)

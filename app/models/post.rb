@@ -11,6 +11,8 @@
 #
 
 class Post < ApplicationRecord
+  include HasLocation
+
   belongs_to :location
   belongs_to :user
   delegate :operator, to: :location

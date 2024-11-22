@@ -5,16 +5,17 @@ class Operators::FinishStripeConnect
   def call
     stripe_code = context.stripe_code
     operator = context.operator
+    location = context.location
     webhook_url = context.webhook_url
 
     # Store credentials
-    response = HTTParty.post("https://connect.stripe.com/oauth/token", 
+    response = HTTParty.post("https://connect.stripe.com/oauth/token",
       query: {
         client_secret: ENV['STRIPE_SECRET_KEY'],
         code: stripe_code,
         grant_type: "authorization_code"
     })
-    
+
     if response["error"].present?
       context.fail!(message: response["error_description"])
     else
@@ -30,6 +31,17 @@ class Operators::FinishStripeConnect
         stripe_access_token: access_token,
         billing_state: "production"
       )
+
+      if location
+        location.update(
+          stripe_user_id: stripe_user_id,
+          stripe_publishable_key: stripe_publishable_key,
+          stripe_refresh_token: refresh_token,
+          stripe_access_token: access_token
+        )
+      else
+        operator.locations.where(stripe_user_id: nil).update_all(stripe_user_id: stripe_user_id, stripe_publishable_key: stripe_publishable_key, stripe_refresh_token: refresh_token, stripe_access_token: access_token)
+      end
 
       if !result
         context.fail!(message: "There was a problem storing your Stripe credentials.")
@@ -47,6 +59,7 @@ class Operators::FinishStripeConnect
       end
 
       # Migrate plans
+      # This likely won't work (but won't get called either)
       operator.plans.each do |plan|
         plan.create_stripe_plan
       end

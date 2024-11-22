@@ -17,7 +17,7 @@
           <%- end %>
         </p>
         <%= render "operator/users/social", user: member %>
-        <%- if member.admin? %>
+        <%- if member.admin_of_location?(current_location) %>
           <span class="badge badge-success">Operator</span>
         <%- end %>
         <%- if !member.approved? %>

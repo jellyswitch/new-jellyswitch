@@ -328,6 +328,9 @@ Rails.application.routes.draw do
       get :available_time_slots, to: "operator/reservations#available_time_slots"
       get :available_rooms, to: "operator/reservations#available_rooms"
       get :room_price_and_details, to: "operator/reservations#room_price_and_details"
+
+      get :daily_counts, to: "operator/reservations#daily_counts"
+      get :daily_details, to: "operator/reservations#daily_details"
     end
 
     member do

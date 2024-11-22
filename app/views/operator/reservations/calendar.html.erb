@@ -2,9 +2,21 @@
 
 <% title "Reservation" %>
 
-<div id="reservation-calendar-container" data-controller="reservation-calendar">
+<div id="reservation-calendar-container" data-controller="reservation-calendar" data-location-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_location.time_zone] %>" data-is-manager="<%= current_user.role != User::UNASSIGNED %>">
   <div class="full-calendar-container">
-    <h2 class="mb-4">Reservation Date</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-0">Reservation Date</h2>
+
+      <div class="room-filter-container">
+        <select id="room-filter" class="form-control">
+          <option value="">All Rooms</option>
+          <% current_location.rooms.visible.order(:name).each do |room| %>
+            <option value="<%= room.id %>"><%= room.name %></option>
+          <% end %>
+        </select>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-body p-0">
         <div class="mx-auto" id="reservation-fullcalendar"></div>
@@ -18,22 +30,39 @@
         <form id="add-reservation" method="post">
           <div class="modal-body">
             <h4>Reservation Details</h4>
+
             <div class="form-group">
               <label>Date</label>
               <p class="date-value"></p>
               <input type='date' class="reservation-date-input form-control"
                 name="date" value="<%= @current_date %>" data-reserve-now="<%= @is_reserve_now %>" hidden>
             </div>
+
+            <div class="existing-reservations mb-3">
+              <div class="d-flex align-items-center reservations-list-toggle collapsed"
+                   data-toggle="collapse"
+                   data-target="#reservationsList"
+                   aria-expanded="false">
+                <i class="fas fa-chevron-right mr-2"></i>
+                <span>Existing Reservations</span><span class="badge badge-dark ml-2 reservation-count-badge">0</span>
+              </div>
+
+              <div id="reservationsList" class="collapse">
+                <div class="reservations-list mt-2">
+                  <!-- Dynamically populated by JS -->
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
-              <div
-                class="row justify-content-between align-items-center mx-0 mb-1">
+              <div class="row justify-content-between align-items-center mx-0 mb-1">
                 <label>Start Time</label>
                 <div class="day-light-radio-container">
                   <div class="form-check form-check-inline">
                     <input class="form-check-input" type="radio"
                       name="day-light-options" id="day-radio" value="day"
                       <%= "checked" if @day_or_night == "day" ||
-                                       @day_or_night.blank? %> >
+                                     @day_or_night.blank? %> >
                     <label class="form-check-label" for="day-radio">Day
                       (AM)</label>
                   </div>
@@ -100,7 +129,7 @@
                   <div class="price-value"></div>
                 </div>
 
-                <% if current_user&.admin_or_manager? %>
+                <% if current_user&.admin_or_manager?(current_location) %>
                   <div class="form-group note-container mt-1 pl-1 pr-1 d-none">
                     <label for="reservation-note">Note</label>
                     <textarea id="reservation-note" name="note" class="form-control form-control-sm" rows="3" placeholder="Add a reservation note (visible to admins only)"></textarea>

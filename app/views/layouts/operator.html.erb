@@ -25,6 +25,12 @@
 
     <% title = yield(:title) %>
     <title><%= title || current_tenant.name %></title>
+    <% set_tracking_pixels %>
+    <% if @head_pixels %>
+      <% @head_pixels.each do |pixel| %>
+        <%= raw pixel.script %>
+      <% end %>
+    <% end %>
   </head>
 
   <% if @background_image %>
@@ -46,5 +52,17 @@
     <% if untethered_ios_request? %>
       <div style="min-height: 6em;">&nbsp;</div>
     <% end %>
+    <% if @body_pixels %>
+      <% @body_pixels.each do |pixel| %>
+        <%= pixel.script %>
+      <% end %>
+    <% end %>
   </body>
+  <footer>
+    <% if @footer_pixels %>
+      <% @footer_pixels.each do |pixel| %>
+        <%= raw pixel.script %>
+      <% end %>
+    <% end %>
+  </footer>
 </html>

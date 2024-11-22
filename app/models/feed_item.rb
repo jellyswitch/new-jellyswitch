@@ -9,6 +9,7 @@
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  operator_id :integer          not null
+#  location_id :integer
 #  user_id     :integer
 #
 # Indexes
@@ -17,6 +18,8 @@
 #
 
 class FeedItem < ApplicationRecord
+  include HasLocation
+
   MONTHS = [["Select Month", ""], ["January", 1], ["February", 2], ["March", 3], ["April", 4], ["May", 5], ["June", 6], ["July", 7], ["August", 8], ["September", 9], ["Octobor", 10], ["November", 11], ["December", 12]]
   searchkick
   has_many_attached :photos

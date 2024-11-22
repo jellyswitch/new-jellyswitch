@@ -1,0 +1,11 @@
+location_cowork_tahoe_admin:
+  location: cowork_tahoe_location
+  user: cowork_tahoe_admin
+
+location_cowork_tahoe_general_manager:
+  location: cowork_tahoe_location
+  user: cowork_tahoe_general_manager
+
+location_cowork_tahoe_community_manager:
+  location: cowork_tahoe_location
+  user: cowork_tahoe_community_manager

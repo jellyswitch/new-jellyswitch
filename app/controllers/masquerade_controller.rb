@@ -32,6 +32,7 @@ class MasqueradeController < Operator::BaseController
   def masquerade_as(user, location=nil)
     raise("Cannot masquerade as admin user") if user.admin?
     raise("Only admin users are allowed to masquerade") if !current_user.admin?
+    raise("Admin cannot masquerade as users from other location") if (current_user.admin? && !user.manages_location?(user.original_location))
     # store the original admin user's session details
     session[:masquerade_by_user_id] = current_user.id
     session[:masquerade_original_location] = current_location.id

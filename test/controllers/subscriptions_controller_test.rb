@@ -9,6 +9,14 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     log_in @user
     StripeMock.start
     setup_stripe
+    stub_request(:post, "https://fcm.googleapis.com/fcm/send")
+      .to_return(
+        status: 200
+      )
+  end
+
+  teardown do
+    WebMock.reset!
   end
 
   test "should subscribe to operator" do

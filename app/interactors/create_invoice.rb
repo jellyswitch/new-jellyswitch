@@ -2,7 +2,7 @@
 class CreateInvoice
   include Interactor
 
-  delegate :stripe_invoice, :created_at, to: :context
+  delegate :stripe_invoice, :location, :created_at, to: :context
 
   def call
     invoice = Invoice.find_by(stripe_invoice_id: stripe_invoice.id)
@@ -32,7 +32,7 @@ class CreateInvoice
       operator_id: billable.operator.id,
       amount_due: stripe_invoice.amount_due.to_i,
       amount_paid: stripe_invoice.amount_paid.to_i,
-      number: stripe_invoice.number,
+      number: stripe_invoice.try(:number),
       stripe_invoice_id: stripe_invoice.id,
       date: invoice_date,
       due_date: due_date,
@@ -42,6 +42,10 @@ class CreateInvoice
     if created_at.present?
       params[:created_at] = created_at
       params[:updated_at] = created_at
+    end
+
+    if location.present?
+      params[:location_id] = location.id
     end
 
     invoice = Invoice.create!(params)

@@ -15,8 +15,8 @@ class UnpauseMembership
             pause_collection: ''
           },
           {
-            api_key: subscription.plan.operator.stripe_secret_key,
-            stripe_account: subscription.plan.operator.stripe_user_id
+            api_key: subscription.plan.location.stripe_secret_key,
+            stripe_account: subscription.plan.location.stripe_user_id
           })
 
         context.fail!(message: "Stripe Subscription couldn't update")

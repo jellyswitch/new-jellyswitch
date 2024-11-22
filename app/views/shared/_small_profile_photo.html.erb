@@ -1,6 +1,6 @@
 <div style="height: 40px; width: 40px;">
   <%- if user.has_profile_photo? %>
-    <%- if user.admin? %>
+    <%- if user.admin_of_location?(current_location) %>
       <%= image_tag user.small_square_profile_photo, class: "img-fluid rounded-circle border border-success" %>
     <%- else %>
       <%= image_tag user.small_square_profile_photo, class: "img-fluid rounded-circle" %>

@@ -59,6 +59,11 @@
   </div>
 
   <div class="form-group">
+    <%= f.label :kisi_api_key %>
+    <%= f.text_field :kisi_api_key, placeholder: "Kisi API Key", class: "form-control" %>
+  </div>
+
+  <div class="form-group">
     <%= f.label :building_access_instructions %>
     <%= f.text_field :building_access_instructions, placeholder: "Please see a host for your key...", class: "form-control" %>
   </div>
@@ -89,6 +94,21 @@
     <%= f.file_field :background_image, placeholder: "Background Image File Path", class: "custom-file-input" %>
   </div>
 
+  <% if policy(location).edit_tracking_pixels? %>
+    <div class="form-group custom-file mb-3">
+      <%= f.label :tracking_pixels, "Tracking Pixels", class: "font-weight-bold" %>
+      <% if f.object.tracking_pixels.empty? %>
+        <p class="text-muted">No tracking pixels have been added yet.</p>
+      <% end %>
+      <%= f.fields_for :tracking_pixels do |pixel_form| %>
+        <%= render "pixel_fields", f: pixel_form %>
+      <% end %>
+      <div class="links text-center">
+        <%= link_to_add_association "+ Add Tracking Pixel", f, :tracking_pixels, partial: 'operator/locations/pixel_fields', class: "mt-2" %>
+      </div>
+    </div>
+  <% end %>
+
   <div class="form-group">
     <%= f.label :time_zone %>
     <%= f.time_zone_select(:time_zone, nil, {},  {class: "form-control form-control-sm"}) %>
@@ -96,12 +116,12 @@
 
   <div class="form-group">
     <%= f.label :working_day_start %>
-    <%= f.select :working_day_start, @hourly_options %>    
+    <%= f.select :working_day_start, @hourly_options %>
   </div>
 
   <div class="form-group">
     <%= f.label :working_day_end %>
-    <%= f.select :working_day_end, @hourly_options %>    
+    <%= f.select :working_day_end, @hourly_options %>
   </div>
 
   <div class="form-group">

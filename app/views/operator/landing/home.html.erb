@@ -103,9 +103,9 @@
         <% end %>
       <% end %>
 
-      <% policy(:announcement).enabled? && if current_tenant.announcements.count > 0 %>
+      <% if policy(:announcement).enabled? && @announcement %>
         <%= list_item do %>
-          <%= render "shared/announcements_card" %>
+          <%= render "shared/announcements_card", announcement: @announcement %>
         <% end %>
       <% end %>
 
@@ -149,14 +149,14 @@
         <% end %>
       <% end %>
 
-      <% if policy(:post).enabled? && current_tenant.posts.count > 0 %>
+      <% if policy(:post).enabled? && current_location.posts.count > 0 %>
         <%= list_item do %>
           <h5 class="card-title">
             Bulletin Board
           </h5>
         <% end %>
 
-        <% current_tenant.posts.order("created_at DESC").limit(2).each do |post| %>
+        <% current_location.posts.order("created_at DESC").limit(2).each do |post| %>
           <%= render Posts::PostLink.new(post: post) %>
         <% end %>
 

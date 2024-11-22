@@ -103,7 +103,7 @@ class Operator::RoomsController < Operator::BaseController
 
   def find_room(key = :id)
     @room = if logged_in?
-      Room
+      current_location.rooms
     else
       Room.unscoped
     end.friendly.find(params[key])

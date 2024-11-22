@@ -69,7 +69,7 @@ cowork_tahoe_location:
   wifi_password: LabRats337
   working_day_start: '06:00'
   working_day_end: '20:00'
-  stripe_user_id: nil
+  stripe_user_id: acct_1JrA0qBKOLuysEMe
   time_zone: Pacific Time (US & Canada)
   visible: true
   flex_square_footage: 900
@@ -87,4 +87,12 @@ cowork_tahoe_location:
   open_saturday: false
   credit_cost_in_cents: 0
   childcare_reservation_cost_in_cents: 0
-  plans: cowork_tahoe_full_time_plan, cowork_tahoe_part_time_plan, cowork_tahoe_archived_plan, cowork_tahoe_office_lease_plan
+  announcements_enabled: true
+  events_enabled: true
+  door_integration_enabled: true
+  rooms_enabled: true
+  offices_enabled: true
+  credits_enabled: true
+  childcare_enabled: false
+  bulletin_board_enabled: true
+  crm_enabled: true

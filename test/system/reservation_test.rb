@@ -7,7 +7,8 @@ class ReservationTest < ApplicationSystemTestCase
     @room = rooms(:small_meeting_room)
     @user = users(:cowork_tahoe_member)
     @operator = operators(:cowork_tahoe)
-    @operator.update(credits_enabled: false)
+    location = @operator.locations.first
+    location.update(credits_enabled: false)
     @reservation = reservations(:future_room_reservation)
 
     Stripe::Invoice.any_instance.stubs(:number).returns("123456")

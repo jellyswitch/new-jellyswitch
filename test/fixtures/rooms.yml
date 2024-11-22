@@ -41,3 +41,19 @@ small_meeting_room:
   rentable: true
   hourly_rate_in_cents: 0
   credit_cost: 5
+
+
+large_meeting_room:
+  name: Meeting Room 4A
+  description: Large Meeting Room with a Table & 8 Chairs
+  capacity: 8
+  slug: meeting-room-4a
+  created_at: <%= Time.zone.now %>
+  updated_at: <%= Time.zone.now %>
+  visible: true
+  operator: cowork_tahoe
+  location: cowork_tahoe_location
+  square_footage: 120
+  rentable: true
+  hourly_rate_in_cents: 0
+  credit_cost: 8

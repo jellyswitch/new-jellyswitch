@@ -12,23 +12,23 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def new?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def create?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def edit?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def update?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def enabled?
-    operator.rooms_enabled?
+    location.rooms_enabled?
   end
 
   def destroy?

@@ -21,7 +21,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
   def create
     @plan_category = PlanCategory.new(plan_category_params)
     authorize @plan_category
-    
+
     if @plan_category.save
       flash[:notice] = "Plan Category created."
       turbo_redirect(operator_admin_plan_category_path(@plan_category))
@@ -37,7 +37,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
 
     new_params = plan_category_params
     new_params[:plan_ids] = new_params[:plan_ids].concat(@plan_category.plans.map(&:id))
-    
+
     if @plan_category.update(new_params)
       flash[:notice] = "Plan Category updated."
       turbo_redirect(operator_admin_plan_category_path(@plan_category))
@@ -62,7 +62,7 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
 
   def remove_plan
     find_plan_category(:plan_category_id)
-    @plan = current_tenant.plans.find(params[:plan_id])
+    @plan = current_location.plans.find(params[:plan_id])
     authorize @plan_category
 
     if @plan.update(plan_category_id: nil)
@@ -85,6 +85,6 @@ class Operator::Admin::PlanCategoriesController < Operator::BaseController
   end
 
   def plan_category_params
-    params.require(:plan_category).permit(:name, plan_ids: []).merge( { operator_id: current_tenant.id } )
+    params.require(:plan_category).permit(:name, plan_ids: []).merge( { operator_id: current_tenant.id, location_id: current_location.id } )
   end
 end

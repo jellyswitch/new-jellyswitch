@@ -1,7 +1,7 @@
 
 class CreditPolicy < ApplicationPolicy
   def enabled?
-    operator.credits_enabled?
+    location.credits_enabled?
   end
 
   def new?

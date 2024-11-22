@@ -44,7 +44,7 @@ class Subscription < ApplicationRecord
 
   accepts_nested_attributes_for :plan
 
-  delegate :operator, to: :subscribable
+  delegate :operator, :location, to: :subscribable
 
   # Instance methods
   def cancel_stripe!
@@ -66,8 +66,8 @@ class Subscription < ApplicationRecord
       nil
     else
       Stripe::Subscription.retrieve(self.stripe_subscription_id, {
-        api_key: plan.operator.stripe_secret_key,
-        stripe_account: plan.operator.stripe_user_id,
+        api_key: plan.location.stripe_secret_key,
+        stripe_account: plan.location.stripe_user_id,
       })
     end
   end

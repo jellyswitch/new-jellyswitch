@@ -2,7 +2,7 @@
 class Billing::DayPasses::CreateStripeInvoice
   include Interactor
 
-  delegate :day_pass, :token, :operator, :out_of_band, :params, :user_id, :user, to: :context
+  delegate :day_pass, :token, :operator, :location, :out_of_band, :params, :user_id, :user, to: :context
 
   def call
     @invoice_item = Stripe::InvoiceItem.create({
@@ -11,20 +11,20 @@ class Billing::DayPasses::CreateStripeInvoice
       amount: day_pass.day_pass_type.amount_in_cents,
       description: day_pass.charge_description
     }, {
-      api_key: operator.stripe_secret_key,
-      stripe_account: operator.stripe_user_id
+      api_key: location.stripe_secret_key,
+      stripe_account: location.stripe_user_id
     })
 
     invoice_args = DayPassableFactory.for(day_pass).invoice_args
     @invoice = Stripe::Invoice.create(
       invoice_args,
       {
-        api_key: operator.stripe_secret_key,
-        stripe_account: operator.stripe_user_id
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id
       }
     )
 
-    result = CreateInvoice.call(stripe_invoice: @invoice)
+    result = CreateInvoice.call(stripe_invoice: @invoice, location: location)
     if !result.success?
       context.fail!(message: result.message)
     end

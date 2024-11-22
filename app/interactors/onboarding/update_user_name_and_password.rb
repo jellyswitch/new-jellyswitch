@@ -9,6 +9,9 @@ class Onboarding::UpdateUserNameAndPassword
     user.password = password
     user.phone = phone
 
+    # also approve user, he's the first admin anyway
+    user.approved = true
+
     unless user.save
       context.fail!(errors_for(user))
     end

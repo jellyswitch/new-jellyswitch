@@ -8,7 +8,7 @@ class Operator::FeedItemsController < Operator::BaseController
   before_action :background_image
   before_action :find_todays_events
   before_action :find_room_reservations
-  before_action :find_unapproved_users
+  before_action :set_unapproved_users
   before_action :find_upcoming_renewals
   before_action :find_delinquent_invoices
   before_action :find_upcoming_childcare_reservations
@@ -84,7 +84,7 @@ class Operator::FeedItemsController < Operator::BaseController
 
   def create
     authorize FeedItem.new
-    
+
     result = FeedItems::Create.call(
       blob: { text: strip_tags(feed_item_params[:text]), type: "post" },
       text: feed_item_params[:text],

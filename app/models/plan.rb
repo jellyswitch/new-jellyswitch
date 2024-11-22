@@ -19,6 +19,7 @@
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
 #  operator_id                  :integer          default(1), not null
+#  location_id                  :integer
 #  stripe_plan_id               :string
 #
 # Indexes
@@ -28,6 +29,7 @@
 
 class Plan < ApplicationRecord
   include ActionView::Helpers::NumberHelper
+  include HasLocation
   acts_as_tenant :operator
 
   has_rich_text :description
@@ -36,7 +38,7 @@ class Plan < ApplicationRecord
   has_many :subscriptions
   belongs_to :operator
   belongs_to :plan_category, optional: true
-  has_and_belongs_to_many :locations
+  # has_and_belongs_to_many :locations
 
   # Slugs
   extend FriendlyId
@@ -51,9 +53,7 @@ class Plan < ApplicationRecord
   scope :invisible, -> { where(visible: false) }
   scope :individual, -> { where(plan_type: "individual") }
   scope :for_individuals, -> { individual.available.visible }
-  scope :for_location, ->(location) do
-          joins(:locations).where(locations: { id: location.id })
-        end
+  scope :for_location, ->(location) { where(location_id: location.id) }
   scope :lease, -> { where(plan_type: "lease") }
   scope :nonzero, -> { where("amount_in_cents > 0") }
   scope :free, -> { where("amount_in_cents <= 0") }
@@ -65,13 +65,13 @@ class Plan < ApplicationRecord
 
   def stripe_plan
     Stripe::Plan.retrieve(self.stripe_plan_id, {
-      api_key: operator.stripe_secret_key,
-      stripe_account: operator.stripe_user_id,
+      api_key: location.stripe_secret_key,
+      stripe_account: location.stripe_user_id,
     })
   end
 
   def plan_name
-    "#{operator.name} #{name}"
+    "#{location.name} #{name}"
   end
 
   def display_interval

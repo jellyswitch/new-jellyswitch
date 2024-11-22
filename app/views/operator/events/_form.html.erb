@@ -6,7 +6,7 @@
 </div>
 
 <div class="form-group row m-0 p-0 mt-2">
-  
+
   <div class="col pl-0 m-0">
     <%= f.label :image, "Add an image" do %>
       <span class="btn btn-sm btn-info">Add an image</span>
@@ -18,7 +18,7 @@
       %>
     <%- end %>
   </div>
-  
+
 </div>
 
 <div class="form-group">
@@ -32,8 +32,13 @@
 </div>
 
 <div class="form-group">
-  <%= f.label :location_string, "Location (leave blank to use #{current_location.name})" %>
-  <%= f.text_field :location_string, class: "form-control", placeholder: current_location.name %>
+  <%= f.label :location_id, "Location" %>
+  <%= f.text_field :location, value: current_location.name, class: "form-control", readonly: true %>
+</div>
+
+<div class="form-group">
+  <%= f.label :location_string, "Specific address (if different from location's address)" %>
+  <%= f.text_field :location_string, class: "form-control", placeholder: "Leave blank if unchanged" %>
 </div>
 
 <div class="form-group">
@@ -43,12 +48,12 @@
 
 
 <script type="text/javascript">
-  
+
   document.addEventListener("turbo:load", () => {
     var callback = function(e) {
       $("#ends_at").datetimepicker('minDate', $("#starts_at").datetimepicker('viewDate'));
     };
-    
+
     var starts_at_val = $("#starts_at").attr("data-value");
     if (starts_at_val !== "0") {
       starts_at_val = moment.unix(starts_at_val)

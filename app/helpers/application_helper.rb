@@ -64,7 +64,7 @@ module ApplicationHelper
 
   def stripe_oauth_url(operator, options = {})
     client_id = ENV["STRIPE_CLIENT_ID"] # the Jellyswitch SaaS Account ID
-    redirect_uri = stripe_connect_setup_url # landing#stripe_connect_setup at https://.../stripe_connect_setup
+    redirect_uri = stripe_connect_setup_url(options[:redirect_params]) # landing#stripe_connect_setup at https://.../stripe_connect_setup
     stripe_landing = options[:stripe_landing] || "login"
     "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{client_id}&scope=read_write&redirect_uri=#{redirect_uri}&stripe_landing=#{stripe_landing}"
   end
@@ -128,15 +128,7 @@ module ApplicationHelper
     if (!user)
       return false
     else
-      user.superadmin? ||
-      user.admin? ||
-      user.community_manager? ||
-      user.general_manager? ||
-      user.always_allow_building_access? ||
-      user.has_building_access_day_pass? ||
-      user.has_building_access_membership? ||
-      user.has_building_access_lease? ||
-      user.has_active_day_pass?
+      user.has_building_access?(current_location)
     end
   end
 
@@ -193,6 +185,21 @@ module ApplicationHelper
   def link_to_modal(id)
     render Bootstrap::LinkToModal.new(id: id) do
       yield
+    end
+  end
+
+  def set_tracking_pixels
+    if session[:should_track_pixels]
+      # workaround for turbo redirect because it effectively renders twice
+      if session[:first_pixel_render]
+        @head_pixels = current_location.tracking_pixels.head
+        @body_pixels = current_location.tracking_pixels.body
+        @footer_pixels = current_location.tracking_pixels.footer
+        session.delete(:first_pixel_render)
+        session.delete(:should_track_pixels)
+      else
+        session[:first_pixel_render] = true
+      end
     end
   end
 

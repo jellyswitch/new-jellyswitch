@@ -1,34 +1,34 @@
 class OfficeLeasePolicy < ApplicationPolicy
   def index?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def show?
-    enabled? && (admin? || owner? || community_manager? || general_manager?)
+    enabled? && (admin? || owner? || general_manager?)
   end
 
   def new?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def create?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def destroy?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def destroy_office_lease_now?
-    enabled? && (admin? || owner? || community_manager? || general_manager?)
+    enabled? && (admin? || owner? || general_manager?)
   end
 
   def enabled?
-    operator.offices_enabled?
+    location.offices_enabled?
   end
 
   def renewal?
-    enabled? && (admin? || community_manager? || general_manager?) && record.eligible_for_renewal?
+    enabled? && (admin? || general_manager?) && record.eligible_for_renewal?
   end
 
   def edit_price?
@@ -36,7 +36,7 @@ class OfficeLeasePolicy < ApplicationPolicy
   end
 
   def update_price?
-    enabled? && admin_or_manager? && record.active? && record.subscription_active?
+    enabled? && (admin? || general_manager?) && record.active? && record.subscription_active?
   end
 
   private

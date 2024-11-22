@@ -84,7 +84,7 @@
     </div>
   <%- end %>
 
-  <%- if current_user.admin_or_manager? %>
+  <%- if current_user.admin_or_manager?(current_location) %>
     <div class="text-center">
       <button id="update-note" type="button" class="btn btn-block btn-primary mb-2" data-toggle="modal" data-target="#reservation-note-modal" data-reservation-id="<%= reservation.id %>">
         Update reservation note (for admin)

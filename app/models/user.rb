@@ -70,6 +70,11 @@ class User < ApplicationRecord
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
 
+  has_many :location_managements
+  has_many :managed_locations, through: :location_managements, source: :location
+
+  alias :location :current_location
+
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
@@ -97,6 +102,20 @@ class User < ApplicationRecord
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }
   scope :not_in_organization, ->(organization) { where("organization_id != ? OR organization_id IS NULL", organization.id) }
+  scope :originally_at_location, ->(location) { location.present? ? where(original_location_id: location.id) : all }
+  scope :currently_at_location, ->(location) { location.present? ? where(current_location_id: location.id) : all }
+
+  # TODO: support multiple locations per admin
+  scope :relevant_admins_of_location, ->(location) {
+    if location.present?
+      left_joins(:location_managements)
+        .where("(users.role = ? AND users.current_location_id = ?) OR (users.role = ? AND location_managements.location_id = ?)",
+              User::SUPERADMIN, location.id, User::ADMIN, location.id)
+        .distinct
+    else
+      none
+    end
+  }
 
   # Permissions
   delegate :member_at_operator?,
@@ -125,6 +144,9 @@ class User < ApplicationRecord
            :allowed_in?,
            :should_charge_for_reservation?,
            :can_see_all_rooms?,
+           :member_at_location?,
+           :admin_of_location?,
+           :currently_at_location?,
            to: :user_permissions
 
   # Roles
@@ -134,8 +156,29 @@ class User < ApplicationRecord
   ADMIN = "admin".freeze
   SUPERADMIN = "superadmin".freeze
 
-  def self.role_options_for_select
-    roles.map { |r| [r.titleize, r] }
+  def role_options_for_select
+    eligible_roles = User.roles
+
+    # Only superadmins can assign superadmin role
+    if role != SUPERADMIN
+      eligible_roles -= [SUPERADMIN]
+    end
+
+    if role == GENERAL_MANAGER
+      eligible_roles -= [ADMIN]
+    end
+
+    eligible_roles.map { |r| [r.titleize, r] }
+  end
+
+  def managed_location_options_for_select
+    eligible_locations = operator.locations
+
+    if role != SUPERADMIN
+      eligible_locations = managed_locations
+    end
+
+    eligible_locations.map { |location| [location.name, location.id] }
   end
 
   def self.roles
@@ -253,8 +296,8 @@ class User < ApplicationRecord
     end
   end
 
-  def self.lease_options_for_select(operator)
-    User.for_space(operator).non_superadmins.order(:name).all.map do |user|
+  def self.lease_options_for_select(operator, location)
+    User.for_space(operator).originally_at_location(location).non_superadmins.order(:name).all.map do |user|
       option_helper(user)
     end
   end
@@ -323,6 +366,22 @@ class User < ApplicationRecord
 
   def user_permissions
     @user_permissions ||= UserPermissions.new(self)
+  end
+
+  def manages_location?(location)
+    managed_location_ids.include?(location&.id)
+  end
+
+  def admin_of_location?(location)
+    (admin? && manages_location?(location)) || superadmin?
+  end
+
+  def general_manager_of_location?(location)
+    (general_manager? && manages_location?(location))
+  end
+
+  def community_manager_of_location?(location)
+    (community_manager? && manages_location?(location))
   end
 
   class UserPermissions < SimpleDelegator

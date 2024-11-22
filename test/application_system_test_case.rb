@@ -21,10 +21,28 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     wait_for_turbo
   end
 
+  def wait_for
+    Timeout.timeout(Capybara.default_max_wait_time) do
+      loop until yield
+    end
+  end
+
   def wait_for_ajax
     Timeout.timeout(Capybara.default_max_wait_time) do
       loop until finished_all_ajax_requests?
     end
+  end
+
+  def switch_to_location(location)
+    visit root_path
+    if page.has_link?("Change Location")
+      click_on "Change Location"
+    else
+      find(".navbar-toggler").click
+      click_on "Change Location"
+    end
+    page.find_button(location.name).click
+    wait_for_turbo
   end
 
   def wait_for_turbo
@@ -34,5 +52,20 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   def finished_all_ajax_requests?
     page.evaluate_script("jQuery.active").zero?
+  end
+
+  def with_sidekiq_inline
+    original_mode = Sidekiq::Testing.disabled? ? :disable : (Sidekiq::Testing.fake? ? :fake : :inline)
+    Sidekiq::Testing.inline!
+    yield
+  ensure
+    case original_mode
+    when :disable
+      Sidekiq::Testing.disable!
+    when :fake
+      Sidekiq::Testing.fake!
+    when :inline
+      Sidekiq::Testing.inline!
+    end
   end
 end

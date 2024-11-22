@@ -6,7 +6,7 @@ module Notifiable
     def create_feed_item
       blob = {type: "weekly-update", weekly_update_id: id}
       user = ::User.first # Dave???
-      FeedItemCreator.create_feed_item(operator, user, blob, created_at: created_at)
+      FeedItemCreator.create_feed_item(operator, location, user, blob, created_at: created_at)
     end
 
     def should_send_notification?
@@ -18,7 +18,7 @@ module Notifiable
     end
 
     def recipients
-      operator.users.admins
+      operator.users.relevant_admins_of_location(location)
     end
   end
 end

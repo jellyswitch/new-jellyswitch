@@ -43,6 +43,17 @@
 #  updated_at                          :datetime         not null
 #  operator_id                         :bigint(8)
 #  stripe_user_id                      :string
+#  kisi_api_key                        :string
+#  skip_onboarding                     :boolean          default(FALSE), not null
+#  announcements_enabled               :boolean
+#  events_enabled                      :boolean
+#  door_integration_enabled            :boolean
+#  rooms_enabled                       :boolean
+#  offices_enabled                     :boolean
+#  bulletin_board_enabled              :boolean
+#  credits_enabled                     :boolean
+#  childcare_enabled                   :boolean
+#  crm_enabled                         :boolean
 #
 # Indexes
 #
@@ -67,7 +78,21 @@ class Location < ApplicationRecord
   has_many :posts
   has_many :feed_items
   has_many :member_feedbacks
-  has_and_belongs_to_many :plans
+  has_many :announcements
+  has_many :day_passes
+  has_many :day_pass_types
+  has_many :organizations
+  has_many :weekly_updates
+  has_many :plans
+  has_many :plan_categories
+  has_many :invoices
+  has_many :users, class_name: "User", foreign_key: "original_location_id"
+  has_many :current_users, class_name: "User", foreign_key: "current_location_id"
+  has_many :tracking_pixels
+  accepts_nested_attributes_for :tracking_pixels, allow_destroy: true, reject_if: ->(attributes) { attributes['name'].blank? || attributes['script'].blank? }
+
+  has_many :location_managements
+  has_many :managers, through: :location_managements, source: :user
 
   has_one_attached :background_image
   has_one_attached :photo
@@ -76,6 +101,26 @@ class Location < ApplicationRecord
   validates :working_day_end, presence: true
 
   scope :visible, -> { where(visible: true) }
+
+  delegate :create_stripe_customer,
+           :retrieve_stripe_customer,
+           :create_stripe_invoice_item,
+           :create_stripe_invoice,
+           :retrieve_stripe_invoice,
+           :create_stripe_refund,
+           :retrieve_stripe_refund,
+           :create_stripe_subscription,
+           :retrieve_stripe_plans,
+           :create_stripe_plan,
+           :update_stripe_subscription_price,
+           :mark_invoice_paid,
+           :create_or_update_customer_payment,
+           :charge_invoice,
+           :retrieve_stripe_customers,
+           :list_stripe_subscriptions,
+           :update_organization_customer_details,
+           :stripe_request,
+           to: :stripe_operator
 
   def search_data
     {
@@ -89,7 +134,7 @@ class Location < ApplicationRecord
   end
 
   def has_categories?
-    operator.plan_categories.select do |plan_category|
+    plan_categories.select do |plan_category|
       plan_category.plans.individual.available.visible.for_location(self).count.positive?
     end.count.positive?
   end
@@ -115,4 +160,46 @@ class Location < ApplicationRecord
   def full_address
     "#{building_address}, #{city} #{state} #{zip}"
   end
+
+  def stripe_secret_key
+    if operator.production? && operator.subdomain != "southlakecoworking"
+      Rails.configuration.stripe[:secret_key]
+    else
+      Rails.configuration.stripe[:test_secret_key]
+    end
+  end
+
+  def stripe_operator
+    @stripe_operator ||= StripeOperator.new(self)
+  end
+
+  def day_passes_enabled?
+    day_pass_types.count > 0
+  end
+
+  def memberships_enabled?
+    plans.individual.visible.available.count > 0
+  end
+
+  def onboarded?
+    plans.count > 0 &&
+    day_pass_types.count > 0 &&
+    users.members.count > 0
+  end
+
+  def stripe_setup?
+    stripe_user_id.present?
+  end
+
+  def has_active_office_leases?
+    office_leases.active.count > 0
+  end
+
+  private
+
+  class StripeOperator < SimpleDelegator
+    include StripeUtils
+  end
+
+  private_constant :StripeOperator
 end

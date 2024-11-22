@@ -35,12 +35,12 @@ class EventPolicy < ApplicationPolicy
   def rsvp?
     enabled? && future?
   end
-  
+
   def future?
     record.starts_at >= Time.current
   end
 
   def enabled?
-    operator.events_enabled?
+    location.events_enabled?
   end
 end

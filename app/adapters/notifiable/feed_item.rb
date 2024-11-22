@@ -12,7 +12,7 @@ module Notifiable
     end
 
     def recipients
-      operator.users.admins
+      operator.users.relevant_admins_of_location(location)
     end
   end
 end

@@ -11,7 +11,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_membership_plan
-    @plan = current_tenant.plans.new
+    @plan = current_location.plans.new
   end
 
   def create_membership_plan
@@ -20,6 +20,7 @@ class Operator::OnboardingController < Operator::BaseController
     result = Billing::Plans::CreatePlan.call(
       plan: @plan,
       operator: current_tenant,
+      location: current_location
     )
 
     if result.success?
@@ -34,7 +35,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_day_pass_type
-    @day_pass_type = current_tenant.day_pass_types.new
+    @day_pass_type = current_location.day_pass_types.new
   end
 
   def create_day_pass_type
@@ -77,11 +78,11 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_member
-    @user = current_tenant.users.new
+    @user = current_location.users.new
   end
 
   def create_member
-    result = Users::Create.call(params: user_params, operator: current_tenant)
+    result = Users::Create.call(params: user_params, operator: current_tenant, location: current_location)
 
     if result.success?
       flash[:success] = "Member #{result.user.name} added."
@@ -97,7 +98,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_stripe_members
-    result = Onboarding::FetchStripeCustomers.call(operator: current_tenant)
+    result = Onboarding::FetchStripeCustomers.call(location: current_location)
 
     if result.success?
       @customers = result.customers
@@ -114,7 +115,9 @@ class Operator::OnboardingController < Operator::BaseController
       stripe_customer_id: params[:stripe_customer_id],
       card_added: params[:card_added] == "true",
       password: "pizza123",
-      approved: true
+      approved: true,
+      original_location_id: current_location.id,
+      current_location_id: current_location.id
     )
 
     if user.save
@@ -127,7 +130,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_kisi
-    if current_tenant.kisi_api_key.present?
+    if current_location.kisi_api_key.present?
       turbo_redirect(new_door_operator_onboarding_index_path, action: "replace")
     end
   end
@@ -139,12 +142,13 @@ class Operator::OnboardingController < Operator::BaseController
       render :new_kisi
     else
       current_tenant.update(kisi_api_key: api_key)
+      current_location.update(kisi_api_key: api_key)
       turbo_redirect(new_door_operator_onboarding_index_path)
     end
   end
 
   def new_door
-    result = Onboarding::GetKisiDoors.call(operator: current_tenant)
+    result = Onboarding::GetKisiDoors.call(location: current_location || current_tenant.locations.first)
 
     if result.success?
       @doors = result.doors

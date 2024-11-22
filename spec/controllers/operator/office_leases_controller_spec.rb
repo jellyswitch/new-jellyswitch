@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe Operator::OfficeLeasesController, type: :controller do
   let!(:office_lease) { create(:office_lease, start_date: Date.today - 1.month, end_date: Date.today + 1.month) }
   let!(:operator) { create(:operator) }
-  let!(:admin) { create(:user, role: User::ADMIN) }
+  let!(:admin) { create(:user, role: User::ADMIN, managed_locations: [office_lease.location]) }
 
   before do
     allow(controller).to receive(:current_user).and_return(admin)

@@ -1,10 +1,10 @@
 module PostsHelper
   def find_posts
-    @posts = current_tenant.posts.order("created_at DESC")
+    @posts = current_location.posts.order("created_at DESC")
   end
 
   def find_post(key=:id)
-    @post = current_tenant.posts.find(params[key])
+    @post = current_location.posts.find(params[key])
   end
 
   def post_params

@@ -17,7 +17,7 @@ class Billing::Invoices::AddCreditsToSubscribable
   end
 
   def credits(subscription)
-    if invoice.operator.credits_enabled?
+    if invoice.location.credits_enabled?
       if subscription.plan.credits > 0
         subscription.subscribable.update(credit_balance: subscription.plan.credits)
       end
@@ -25,7 +25,7 @@ class Billing::Invoices::AddCreditsToSubscribable
   end
 
   def childcare_reservations(subscription)
-    if invoice.operator.childcare_enabled?
+    if invoice.location.childcare_enabled?
       if subscription.plan.childcare_reservations > 0
         subscription.subscribable.update(childcare_reservation_balance: subscription.plan.childcare_reservations)
       end

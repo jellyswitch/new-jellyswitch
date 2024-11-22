@@ -8,14 +8,7 @@ class Operator::SetLocationController < Operator::BaseController
 
   def update
     location = Location.find(location_params[:id])
-    checkout
-    unset_location
-    set_location(location)
-
-    # if there is an logged in user, set their current location
-    if logged_in? && current_user
-      current_user.update(current_location: location)
-    end
+    update_location(location)
 
     turbo_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e

@@ -80,7 +80,7 @@
     <%= render "amenity_fields", f: amenity_form %>
   <% end %>
   <div class="links text-center">
-    <%= link_to_add_association "+ Add More", f, :amenities, class: "mt-2" %>
+    <%= link_to_add_association "+ Add More", f, :amenities, partial: 'operator/rooms/amenity_fields', class: "mt-2" %>
   </div>
 </div>
 

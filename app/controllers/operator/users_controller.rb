@@ -5,7 +5,7 @@ class Operator::UsersController < Operator::BaseController
 
   def index
     @pagy, @users = find_approved_users
-    @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
+    @unapproved_users = find_unapproved_users
     @archived_users = User.for_space(current_tenant).archived.order("name")
     authorize @users
   end
@@ -13,19 +13,19 @@ class Operator::UsersController < Operator::BaseController
   def search
     @query = params[:query]
     @pagy, @users = find_approved_users(@query)
-    @unapproved_users = User.for_space(current_tenant).unapproved.visible.order("name")
+    @unapproved_users = find_unapproved_users
     @archived_users = User.for_space(current_tenant).archived.order("name")
     authorize @users
     render :index
   end
 
   def unapproved
-    find_unapproved_users
+    set_unapproved_users
     authorize @users
   end
 
   def archived
-    find_archived_users
+    set_archived_users
     authorize @users
   end
 
@@ -94,9 +94,7 @@ class Operator::UsersController < Operator::BaseController
     @user = User.new
     authorize @user
 
-    @locations = current_tenant.locations
-
-    if logged_in? && !admin?
+    if logged_in? && !admin_of_location?(current_location)
       # this is a normal user creating another user
       flash[:success] = "Please log out first."
       redirect_to root_path
@@ -494,17 +492,16 @@ class Operator::UsersController < Operator::BaseController
   end
 
   def find_upcoming_reservations
-    @reservations = @user.reservations.future.order("datetime_in ASC").limit(100).group_by_day(&:datetime_in)
+    @reservations = @user.reservations.for_location_id(current_location&.id).future.order("datetime_in ASC").limit(100).group_by_day(&:datetime_in)
     @reservations.keys.each do |key|
       @reservations[key] = @reservations[key].map(&:decorate)
     end
   end
 
   def find_past_reservations
-    @reservations = @user.reservations.past.order("datetime_in ASC").limit(100).group_by_day(reverse: true) {|r| r.datetime_in }
+    @reservations = @user.reservations.for_location_id(current_location&.id).past.order("datetime_in ASC").limit(100).group_by_day(reverse: true) {|r| r.datetime_in }
     @reservations.keys.each do |key|
       @reservations[key] = @reservations[key].map(&:decorate)
     end
-
   end
 end

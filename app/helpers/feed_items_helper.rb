@@ -34,24 +34,34 @@ module FeedItemsHelper
     @feed_item = FeedItem.new
   end
 
+  def generic_feed_items
+    items = FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC")
+    items = items.for_location(current_location) if current_location
+    return items
+  end
+
   def find_feed_items
-    @pagy, @feed_items = pagy(FeedItem.unscoped.for_operator(current_tenant).order("updated_at DESC"))
+    @pagy, @feed_items = pagy(generic_feed_items)
   end
 
   def find_questions
-    @pagy, @feed_items = pagy(FeedItem.unscoped.questions.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.questions
+    @pagy, @feed_items = pagy(items)
   end
 
   def find_activity
-    @pagy, @feed_items = pagy(FeedItem.unscoped.activity.for_operator(current_tenant).order("updated_at DESC"))
-  end 
+    items = generic_feed_items.activity
+    @pagy, @feed_items = pagy(items)
+  end
 
   def find_notes
-    @pagy, @feed_items = pagy(FeedItem.unscoped.notes.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.notes
+    @pagy, @feed_items = pagy(items)
   end
 
   def find_financial
-    @pagy, @feed_items = pagy(FeedItem.unscoped.financial.for_operator(current_tenant).order("updated_at DESC"))
+    items = generic_feed_items.financial
+    @pagy, @feed_items = pagy(items)
   end
 
   def feed_item_params
@@ -80,7 +90,7 @@ module FeedItemsHelper
   end
 
   def find_upcoming_renewals
-    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
+    @upcoming_renewals = current_location.offices.upcoming_renewals(60)
   end
 
   def find_upcoming_childcare_reservations
@@ -88,7 +98,7 @@ module FeedItemsHelper
   end
 
   def find_delinquent_invoices
-    @delinquent_invoices = current_tenant.invoices.delinquent.order('date DESC')
+    @delinquent_invoices = current_location.invoices.delinquent.order('date DESC')
     @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
   end
 end

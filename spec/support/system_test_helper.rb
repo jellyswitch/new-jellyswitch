@@ -14,7 +14,12 @@ module SystemTestHelper
 
   def switch_to_location(location)
     visit root_path
-    click_on "Change Location"
+    if page.has_link?("Change Location")
+      click_on "Change Location"
+    else
+      find(".navbar-toggler").click
+      click_on "Change Location"
+    end
     page.find_button(location.name).click
     wait_for_turbo
   end

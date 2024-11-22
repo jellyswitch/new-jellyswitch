@@ -15,6 +15,7 @@
 #  updated_at        :datetime         not null
 #  billable_id       :bigint(8)
 #  operator_id       :integer
+#  location_id       :integer
 #  stripe_invoice_id :string
 #
 # Indexes
@@ -23,6 +24,8 @@
 #
 
 class Invoice < ApplicationRecord
+  include HasLocation
+
   belongs_to :operator
   acts_as_tenant :operator
 
@@ -61,8 +64,8 @@ class Invoice < ApplicationRecord
   def stripe_invoice
     if stripe_invoice_id.present?
       @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id, {
-        api_key: operator.stripe_secret_key,
-        stripe_account: operator.stripe_user_id
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id
       })
     else
       nil

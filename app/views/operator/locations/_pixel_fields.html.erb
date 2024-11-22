@@ -1,0 +1,18 @@
+<div class="nested-fields pixel-fields-container">
+    <div class="form-row mx-0 w-100 align-items-center">
+        <div class="form-group col name-group mb-3">
+            <%= f.text_field :name, class: "form-control", placeholder: "Name" %>
+        </div>
+        <div class="form-group col position-group mb-3">
+            <%= f.select :position, TrackingPixel.positions.keys.map { |p| [p.titleize, p] }, {}, class: "form-control" %>
+        </div>
+        <div class="form-group mb-3 pl-2">
+            <%= link_to_remove_association "x", f, class: "btn btn-outline-danger" %>
+        </div>
+    </div>
+    <div class="form-row mx-0 w-100">
+        <div class="form-group col-12 script-group">
+            <%= f.text_area :script, class: "form-control", placeholder: "Pixel code" %>
+        </div>
+    </div>
+</div>

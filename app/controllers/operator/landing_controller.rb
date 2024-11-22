@@ -12,6 +12,9 @@ class Operator::LandingController < Operator::BaseController
     @member_feedback = MemberFeedback.new
     find_upcoming_events
     @reservation = current_user&.upcoming_or_ongoing_reservation(current_location&.id)
+    @announcement = current_tenant.announcements.for_location(current_location).latest
+    # for some reason sometimes latest returns activerecord relation
+    @announcement = @announcement.first if @announcement.is_a?(ActiveRecord::Relation)
     response.headers["Turbo-Location"] = home_url
     flash.keep
     home_redirect
@@ -38,6 +41,7 @@ class Operator::LandingController < Operator::BaseController
       if result.success?
         # redirect to home
         flash[:success] = "Welcome!"
+        session[:should_track_pixels] = true
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result.message
@@ -67,6 +71,7 @@ class Operator::LandingController < Operator::BaseController
       if result2.success?
         # redirect to home
         flash[:success] = "Welcome!"
+        session[:should_track_pixels] = true
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result2.message
@@ -87,23 +92,23 @@ class Operator::LandingController < Operator::BaseController
       end
     end
     flash.keep
-    @day_pass_types = current_tenant.day_pass_types.available.visible
-    @plans = current_tenant.plans.for_individuals.order("amount_in_cents DESC")
-    @plan = current_tenant.plans.available.visible.individual.cheapest
+    @day_pass_types = current_location.day_pass_types.available.visible
+    @plans = current_location.plans.for_individuals.order("amount_in_cents DESC")
+    @plan = current_location.plans.available.visible.individual.cheapest
     @rooms = current_location.rooms.visible.rentable
 
     @available_rooms_now = @rooms.available
   end
 
   def upgrade
-    @day_pass_types = current_tenant.day_pass_types.available.visible.order("amount_in_cents DESC")
-    @plans = current_tenant.plans.for_individuals.order("amount_in_cents DESC")
+    @day_pass_types = current_location.day_pass_types.available.visible.order("amount_in_cents DESC")
+    @plans = current_location.plans.for_individuals.order("amount_in_cents DESC")
   end
 
   # High level pages for nav
   def members_groups
     authorize :member_group, :show?
-    @report = Jellyswitch::Report.new(current_tenant)
+    @report = Jellyswitch::Report.new(current_tenant, current_location)
   end
 
   def plans_day_passes

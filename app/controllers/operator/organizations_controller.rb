@@ -145,11 +145,11 @@ class Operator::OrganizationsController < Operator::BaseController
   end
 
   def find_organization(key = :id)
-    @organization = Organization.friendly.find(params[key])
+    @organization = Organization.for_location(current_location).friendly.find(params[key])
   end
 
   def find_organizations
-    @organizations = Organization.visible.order(:name)
-    @archived_organizations = Organization.archived.order(:name)
+    @organizations = Organization.for_location(current_location).visible.order(:name)
+    @archived_organizations = Organization.for_location(current_location).archived.order(:name)
   end
 end

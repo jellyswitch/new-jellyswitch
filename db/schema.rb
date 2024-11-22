@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
+ActiveRecord::Schema[7.0].define(version: 2024_11_20_033705) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -119,6 +119,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "location_id"
+    t.index ["location_id"], name: "index_announcements_on_location_id"
   end
 
   create_table "checkins", force: :cascade do |t|
@@ -132,6 +133,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.index ["billable_type", "billable_id"], name: "index_checkins_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_checkins_on_location_id"
   end
 
   create_table "child_profiles", force: :cascade do |t|
@@ -171,6 +173,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "always_allow_building_access", default: false, null: false
     t.string "code"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_day_pass_types_on_location_id"
   end
 
   create_table "day_passes", force: :cascade do |t|
@@ -184,7 +188,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "invoice_id"
     t.string "billable_type"
     t.bigint "billable_id"
+    t.integer "location_id"
     t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
   end
 
@@ -239,7 +245,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.boolean "expense", default: false, null: false
+    t.integer "location_id"
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
+    t.index ["location_id"], name: "index_feed_items_on_location_id"
   end
 
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
@@ -267,7 +275,9 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "due_date", precision: nil
     t.string "billable_type"
     t.bigint "billable_id"
+    t.integer "location_id"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
+    t.index ["location_id"], name: "index_invoices_on_location_id"
   end
 
   create_table "lead_notes", force: :cascade do |t|
@@ -285,6 +295,15 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "source"
+  end
+
+  create_table "location_managements", force: :cascade do |t|
+    t.bigint "location_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_location_managements_on_location_id"
+    t.index ["user_id"], name: "index_location_managements_on_user_id"
   end
 
   create_table "location_resources", id: :serial, force: :cascade do |t|
@@ -330,6 +349,16 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.boolean "open_saturday", default: false, null: false
     t.integer "credit_cost_in_cents", default: 0, null: false
     t.integer "childcare_reservation_cost_in_cents", default: 0, null: false
+    t.string "kisi_api_key"
+    t.boolean "announcements_enabled", default: true, null: false
+    t.boolean "events_enabled", default: true, null: false
+    t.boolean "door_integration_enabled", default: true, null: false
+    t.boolean "rooms_enabled", default: true, null: false
+    t.boolean "offices_enabled", default: false, null: false
+    t.boolean "bulletin_board_enabled", default: false, null: false
+    t.boolean "credits_enabled", default: false, null: false
+    t.boolean "childcare_enabled", default: true, null: false
+    t.boolean "crm_enabled", default: true, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"
@@ -350,6 +379,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "user_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
   create_table "office_leases", force: :cascade do |t|
@@ -460,6 +491,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.boolean "out_of_band", default: true, null: false
     t.integer "billing_contact_id"
     t.boolean "visible", default: true, null: false
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_organizations_on_location_id"
     t.index ["operator_id"], name: "index_organizations_on_operator_id"
   end
 
@@ -468,6 +501,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "operator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_plan_categories_on_location_id"
   end
 
   create_table "plans", force: :cascade do |t|
@@ -489,6 +524,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.integer "commitment_interval"
     t.integer "childcare_reservations", default: 0, null: false
     t.integer "plan_category_id"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
 
@@ -505,6 +542,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.string "title", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_posts_on_location_id"
   end
 
   create_table "refunds", force: :cascade do |t|
@@ -584,6 +622,19 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 
+  create_table "tracking_pixels", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id", null: false
+    t.string "name"
+    t.string "script"
+    t.integer "position", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_tracking_pixels_on_location_id"
+    t.index ["operator_id"], name: "index_tracking_pixels_on_operator_id"
+    t.index ["position"], name: "index_tracking_pixels_on_position"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email", null: false
@@ -628,6 +679,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.jsonb "previous_blob"
+    t.integer "location_id"
+    t.index ["location_id"], name: "index_weekly_updates_on_location_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -636,6 +689,8 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
   add_foreign_key "doors", "locations"
+  add_foreign_key "location_managements", "locations"
+  add_foreign_key "location_managements", "users"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
   add_foreign_key "office_leases", "offices", on_delete: :nullify
   add_foreign_key "office_leases", "operators", on_delete: :nullify
@@ -644,4 +699,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_10_25_095510) do
   add_foreign_key "offices", "locations", on_delete: :nullify
   add_foreign_key "refunds", "invoices", on_delete: :nullify
   add_foreign_key "rooms", "locations"
+  add_foreign_key "tracking_pixels", "locations"
+  add_foreign_key "tracking_pixels", "operators"
 end

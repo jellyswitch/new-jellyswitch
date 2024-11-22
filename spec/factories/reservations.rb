@@ -25,5 +25,22 @@ FactoryBot.define do
     trait :future do
       datetime_in { 1.week.from_now }
     end
+
+    # New traits for calendar testing
+    trait :morning do
+      datetime_in { Time.current.change(hour: 9) }
+    end
+
+    trait :afternoon do
+      datetime_in { Time.current.change(hour: 14) }
+    end
+
+    trait :evening do
+      datetime_in { Time.current.change(hour: 16) }
+    end
+
+    trait :next_day do
+      datetime_in { Time.current.tomorrow.change(hour: 10) }
+    end
   end
 end

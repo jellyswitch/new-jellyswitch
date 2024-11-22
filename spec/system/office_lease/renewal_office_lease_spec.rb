@@ -4,9 +4,9 @@ RSpec.describe "Renewal Office Lease", type: :system do
   include ApplicationHelper
   fixtures :plans
 
-  let(:admin) { create(:user, role: User::ADMIN) }
   let(:office) { create(:office, name: "Office A") }
   let!(:office_lease) { create(:office_lease, office: office, start_date: Date.today, end_date: Date.today + 20.days) }
+  let(:admin) { create(:user, role: User::ADMIN, managed_locations: [office_lease.location]) }
   let(:lease_plan) { plans(:cowork_tahoe_office_lease_plan) }
 
   context "when the office lease is able to be renewed" do

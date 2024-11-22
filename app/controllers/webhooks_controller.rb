@@ -11,6 +11,7 @@ class WebhooksController < ApplicationController
       if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
         update_status(@event.data.object)
       else
+        # TODO: see how we can get a location where this invoice should be created
         result = CreateInvoice.call(stripe_invoice: @event.data.object)
         if result.success? || result.error_message == 'nonexistent-customer'
           ok

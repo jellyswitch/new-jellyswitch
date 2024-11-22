@@ -53,6 +53,6 @@ class Operator::ReportsController < Operator::BaseController
   private
 
   def generate_report
-    @report = Jellyswitch::Report.new(current_tenant)
+    @report = Jellyswitch::Report.new(current_tenant, current_location)
   end
 end

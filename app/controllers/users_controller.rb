@@ -28,6 +28,7 @@ class UsersController < ApplicationController
     @user = User.new
     authorize @user
 
+    # TODO: check where calls this and should we block lesser admins
     if logged_in? && !admin?
       # this is a normal user creating another user
       flash[:success] = "Please log out first."
@@ -187,6 +188,7 @@ class UsersController < ApplicationController
     params.require(:user).permit(:name, :email, :password, :password_confirmation)
   end
 
+  # TODO: find out later if these need to be scoped to location
   def find_user(key = :id)
     @user = User.friendly.find(params[key])
   end

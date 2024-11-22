@@ -3,10 +3,10 @@ class Operator::OfficesController < Operator::BaseController
   before_action :background_image, except: [:create, :update]
 
   def index
-    @offices = current_tenant.offices.order(:name).occupied
-    @available_offices = current_tenant.offices.available_for_lease
-    @upcoming_renewals = current_tenant.offices.upcoming_renewals(60)
-    @archived_offices = current_tenant.offices.archived
+    @offices = current_location.offices.order(:name).occupied
+    @available_offices = current_location.offices.available_for_lease
+    @upcoming_renewals = current_location.offices.upcoming_renewals(60)
+    @archived_offices = current_location.offices.archived
     authorize Office
   end
 
@@ -63,24 +63,24 @@ class Operator::OfficesController < Operator::BaseController
   end
 
   def available
-    @offices = current_tenant.offices.available_for_lease
+    @offices = current_location.offices.available_for_lease
     authorize Office
   end
 
   def upcoming_renewals
-    @offices = current_tenant.offices.upcoming_renewals(60)
+    @offices = current_location.offices.upcoming_renewals(60)
     authorize Office
   end
 
   def archived
-    @offices = current_tenant.offices.archived
+    @offices = current_location.offices.archived
     authorize Office
   end
 
   private
 
   def find_office(key = :id)
-    @office = Office.friendly.find(params[key])
+    @office = current_location.offices.friendly.find(params[key])
   end
 
   def office_params

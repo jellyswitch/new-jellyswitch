@@ -30,36 +30,16 @@
         <i>None</i>
       <% end %>
     </dd>
-    
-    <dt>Contact Name (for members)</dt>
-    <dd><%= operator.contact_name %></dd>
 
-    <dt>Contact email (for members)</dt>
-    <dd><%= operator.contact_email %></dd>
+    <dt>More info</dt>
+    <dd>Details like contact info, square footage, wifi, address, stripe and kisi keys are moved into each location</dd>
 
-    <dt>Contact phone (for members)</dt>
-    <dd><%= operator.contact_phone %></dd>
-
-    <dt>Square Footage</dt>
-    <dd><%= operator.square_footage %></dd>
-
-    <dt>Wifi Name</dt>
-    <dd><%= operator.wifi_name %></dd>
-
-    <dt>Wifi Password</dt>
-    <dd><%= operator.wifi_password %></dd>
-
-    <dt>Building Address</dt>
-    <dd><%= operator.building_address %></dd>
-
-    <dt>Stripe Account ID</dt>
-    <dd>
-      <%- if operator.production? %>
-        <pre><%= operator.stripe_user_id %></pre>
-      <%- else %>
-        <i>Not set. Enable Billing & Payments in Modules</i>
-      <%- end %>
-    </dd>
+    <% current_tenant.locations.each do |location| %>
+      <% if policy(location).edit? %>
+        <dt><%= link_to "Manage #{location.name}", edit_location_path(location) %></dt>
+      <% end %>
+    <% end %>
+    <dd></dd>
 
     <dt>Subdomain</dt>
     <dd><pre><%= operator.subdomain %></pre></dd>
@@ -101,15 +81,6 @@
       <%- end %>
     </dd>
 
-    <dt>Kisi API Key</dt>
-    <dd>
-      <%- if operator.kisi_api_key.present? %>
-        <%= operator.kisi_api_key %>
-      <%- else %>
-        <i>Not set</i>
-      <%- end %>
-    </dd>
-
     <dt>Logo</dt>
     <dd>
       <%- if operator.logo_image.attached? %>
@@ -130,5 +101,7 @@
     </dd>
   </dl>
 
-  <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
+  <% if policy(:operator).edit? %>
+    <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
+  <% end %>
 <% end %>

@@ -10,10 +10,13 @@
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  operator_id :integer          not null
+#  location_id :integer
 #  user_id     :integer
 #
 
 class MemberFeedback < ApplicationRecord
+  include HasLocation
+
   belongs_to :operator
   belongs_to :user
 

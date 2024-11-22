@@ -894,6 +894,7 @@
   .fc-view > table {
     position: relative;
     z-index: 1;
+    cursor: pointer;
   }
 
   /* BasicView */
@@ -924,6 +925,10 @@
 
   .fc-day-top.fc-past {
     opacity: 0.3;
+  }
+
+  .fc-past {
+    cursor: not-allowed;
   }
 
   .fc-disabled-day {
@@ -1604,5 +1609,19 @@
       height: 120px;
       padding: 10px;
     }
+  }
+
+  .reservation-count-event::before {
+    border: none !important;
+  }
+
+  .reservation-count-event .fc-content {
+    text-align: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .reservations-list-toggle {
+    cursor: pointer;
   }
 }

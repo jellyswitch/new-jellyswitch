@@ -4,6 +4,8 @@
     <p>
       Showing rooms for <strong><%= current_location.name %></strong>. Switch locations to manage rooms at other locations.
     </p>
-    <%= link_to "Add a new room", new_room_path, class: "btn btn-block btn-primary" %>
+    <% if policy(:room).new? %>
+      <%= link_to "Add a new room", new_room_path, class: "btn btn-block btn-primary" %>
+    <% end %>
   <% end %>
 <% end %>

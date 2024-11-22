@@ -5,6 +5,7 @@ class Billing::SubscriptionSync
     user = subscription.subscribable
     operator = user.operator
 
+    # Should be location.create_stripe_subscription but we don't have location, and also this is not used anymore
     stripe_subscription = operator.create_stripe_subscription(user, subscription, start_date)
 
     if stripe_subscription

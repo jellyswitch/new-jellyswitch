@@ -7,10 +7,13 @@
 #  created_at  :datetime         not null
 #  updated_at  :datetime         not null
 #  operator_id :integer
+#  location_id :integer
 #  user_id     :integer
 #
 
 class Announcement < ApplicationRecord
+  include HasLocation
+
   searchkick
   acts_as_tenant :operator
   belongs_to :user

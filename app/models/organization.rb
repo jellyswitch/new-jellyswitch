@@ -11,6 +11,7 @@
 #  updated_at         :datetime         not null
 #  billing_contact_id :integer
 #  operator_id        :integer          default(1), not null
+#  location_id        :integer
 #  owner_id           :integer
 #  stripe_customer_id :string
 #  visible            :boolean          default(TRUE), not null
@@ -21,6 +22,8 @@
 #
 
 class Organization < ApplicationRecord
+  include HasLocation
+
   searchkick
   # Slugs
   extend FriendlyId
@@ -52,18 +55,20 @@ class Organization < ApplicationRecord
   end
 
   # Form and view helpers
-  def self.options_for_select
-    Organization.all.map do |org|
+  def self.options_for_select(location)
+    Organization.for_location(location).all.map do |org|
       [org.name, org.id]
     end.prepend(["", nil])
   end
 
-  def has_active_lease?
-    active_leases.length > 0
+  def has_active_lease?(location = nil)
+    active_leases(location).length > 0
   end
 
-  def active_leases
-    office_leases.active
+  def active_leases(location = nil)
+    leases = office_leases.active
+    leases = leases.where(location: location) if location
+    leases
   end
 
   def stripe_customer

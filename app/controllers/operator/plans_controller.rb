@@ -24,7 +24,8 @@ class Operator::PlansController < Operator::BaseController
 
     result = Billing::Plans::CreatePlan.call(
       plan: @plan,
-      operator: current_tenant
+      operator: current_tenant,
+      location: current_location
     )
 
     if result.success?

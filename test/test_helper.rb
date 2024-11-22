@@ -5,6 +5,7 @@ require "minitest/mock"
 require "policy_assertions"
 require "minitest/unit"
 require "mocha/minitest"
+require 'webmock/minitest'
 require_relative "./clearance_helper"
 require_relative "./stripe_helper"
 require "sidekiq/testing"
@@ -20,6 +21,12 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
+  WebMock.disable_net_connect!(
+    allow_localhost: true,
+    allow: ['chromedriver.storage.googleapis.com', 'storage.googleapis.com', 'googlechromelabs.github.io', 'fcm.googleapis.com']
+  )
+  NewRelic::Agent.manual_start(enabled: false)
+
   parallelize_setup do |worker|
     Searchkick.index_suffix = worker
 
@@ -32,6 +39,7 @@ class ActiveSupport::TestCase
 
   def setup_initial_user_fixtures
     @admin = UserContext.new(users(:cowork_tahoe_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @other_location_admin = UserContext.new(users(:other_location_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @member = UserContext.new(users(:cowork_tahoe_member), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
@@ -77,6 +85,31 @@ class ActiveSupport::TestCase
     stripe_subscription = operators(:cowork_tahoe).stripe_request("Subscription", :create, params)
 
     subscription.update(stripe_subscription_id: stripe_subscription.id)
+  end
+
+  def setup_stripe_no_subscription
+    @stripe_helper = StripeMock.create_test_helper
+
+    # create plans in stripe
+    [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan].map do |plan_sym|
+      plan = plans(plan_sym)
+
+      product = Stripe::Product.create({ name: plan.plan_name, type: "service" })
+
+      stripe_plan = @stripe_helper.create_plan(
+        amount: plan.amount_in_cents,
+        interval: plan.stripe_interval,
+        interval_count: plan.stripe_interval_count,
+        product: product.id,
+        currency: "usd",
+        id: plan.plan_slug,
+      )
+
+      plan.update(stripe_plan_id: stripe_plan.id)
+    end
+
+    customer = Stripe::Customer.create({ email: @user.email })
+    @user.update(stripe_customer_id: customer.id)
   end
 end
 

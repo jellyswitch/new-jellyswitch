@@ -8,7 +8,7 @@ module DoorsHelper
     {
       'Accept' => 'application/json',
       'Content-type' => 'application/json',
-      'Authorization' => "KISI-LOGIN #{door.operator.kisi_api_key}"
+      'Authorization' => "KISI-LOGIN #{door.location.kisi_api_key}"
     }
   end
 end

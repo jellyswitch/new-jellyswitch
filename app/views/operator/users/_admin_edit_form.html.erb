@@ -38,10 +38,17 @@
       <%= f.check_box :approved, class: "form-check-box" %>
     </div>
 
-    <div class="form-group">
-      <%= f.label :role, class: "form-label" %>
-      <%= f.select :role, options_for_select(User.role_options_for_select, selected: (User.role_options_for_select.select {|a| a.include?(@user.role)}.first) ), {}, class: "form-control" %>
-    </div>
+    <% if policy(@user).edit_role? %>
+      <div class="form-group">
+        <%= f.label :role, class: "form-label" %>
+        <%= f.select :role, options_for_select(current_user.role_options_for_select, selected: (current_user.role_options_for_select.select {|a| a.include?(@user.role)}.first) ), {}, class: "form-control" %>
+      </div>
+
+      <div class="form-group managed-location">
+        <%= f.label :managed_location_ids, 'Managed Locations', class: "form-label" %>
+        <%= f.select :managed_location_ids, options_for_select(current_user.managed_location_options_for_select, selected: @user.managed_location_ids), {}, multiple: true, class: "form-control" %>
+      </div>
+    <% end %>
 
     <div class="form-group">
       <%= f.label :always_allow_building_access, class: "form-check-label" %>
@@ -67,3 +74,14 @@
   <%= f.submit "Add member and add another", class: "btn btn-block btn-primary", name: "add_member_and_create_another" %>
   <%= f.submit "Just add this member", class: "btn btn-block btn-outline-primary  ", name: "add_member" %>
 <% end %>
+<script>
+  $(document).ready(function() {
+    $('#user_role').on('change', function() {
+      if (['admin', 'general-manager', 'community-manager'].includes($(this).val())) {
+        $('.managed-location').show();
+      } else {
+        $('.managed-location').hide();
+      }
+    }).trigger('change');
+  });
+</script>

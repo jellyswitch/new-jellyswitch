@@ -1,7 +1,7 @@
 <% title "How long?" %>
 
 <%= breadcrumb do %>
-  <% if current_user.admin? %>
+  <% if current_user.admin_of_location?(current_location) %>
     <li class="breadcrumb-item"><%= link_to "Choose a member", choose_member_reservations_path(room_id: @room.id) %></li>
   <% end %>
   <li class="breadcrumb-item"><%= link_to "Choose a day", choose_day_reservations_path(room_id: @room.id, user_id: @user.id) %></li>

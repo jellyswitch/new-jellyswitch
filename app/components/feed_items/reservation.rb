@@ -1,6 +1,6 @@
 class FeedItems::Reservation < ApplicationComponent
   include ApplicationHelper
-  
+
   def initialize(feed_item:)
     @feed_item = feed_item
   end
@@ -10,6 +10,6 @@ class FeedItems::Reservation < ApplicationComponent
   attr_reader :feed_item
 
   def credits_enabled?
-    feed_item.operator.credits_enabled?
+    feed_item.location.credits_enabled?
   end
 end

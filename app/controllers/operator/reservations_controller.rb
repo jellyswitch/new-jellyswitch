@@ -90,6 +90,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      session[:should_track_pixels] = true
       if current_user.approved?
         turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
       else
@@ -151,7 +152,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def today
     authorize Reservation
-    @rooms = find_todays_reservations(current_tenant)
+    @rooms = find_todays_reservations(current_location)
   end
 
   # New 'Reservation Now' flow
@@ -260,6 +261,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      session[:should_track_pixels] = true
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     else
       flash[:error] = result.message
@@ -333,10 +335,65 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def daily_counts
+    start_date = Date.parse(params[:start_date])
+    end_date = Date.parse(params[:end_date])
+
+    reservations = Reservation.for_location_id(current_location.id).not_cancelled
+                            .where(datetime_in: start_date.beginning_of_day..end_date.end_of_day)
+
+    if params[:room_id].present?
+      reservations = reservations.where(room_id: params[:room_id])
+    end
+
+    pg_timezone = ActiveSupport::TimeZone::MAPPING[current_location.time_zone]
+
+    counts = reservations.group(
+      "DATE(datetime_in AT TIME ZONE 'UTC' AT TIME ZONE '#{pg_timezone}')"
+    ).count
+
+    formatted_counts = {}
+    (start_date..end_date).each do |date|
+      formatted_counts[date.strftime("%Y-%m-%d")] = counts[date] || 0
+    end
+
+    render json: formatted_counts
+  end
+
+  def daily_details
+    date = Date.parse(params[:date])
+
+    # Get reservations for the full day in location's timezone
+    start_time = date.in_time_zone(current_location.time_zone).beginning_of_day
+    end_time = date.in_time_zone(current_location.time_zone).end_of_day
+
+    reservations = Reservation.for_location_id(current_location.id)
+                            .not_cancelled
+                            .includes(:room) # Eager load room to avoid N+1
+                            .where(datetime_in: start_time..end_time)
+                            .order(datetime_in: :asc)
+
+    reservation_details = reservations.map do |reservation|
+      {
+        id: reservation.id,
+        datetime_in: reservation.datetime_in.in_time_zone(current_location.time_zone).iso8601,
+        minutes: reservation.minutes,
+        room_name: reservation.room.name,
+        room_id: reservation.room_id,
+        user_name: reservation.user.name,
+        note: reservation.note
+      }
+    end
+
+    render json: reservation_details
+  rescue ArgumentError => e
+    render json: { error: "Invalid date format" }, status: :unprocessable_entity
+  end
+
   private
 
   def find_reservation(key = :id)
-    @reservation = Reservation.find(params[key]).decorate
+    @reservation = Reservation.for_location_id(current_location&.id).find(params[key]).decorate
   end
 
   def set_reserved_user
@@ -348,7 +405,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def staff
-    current_user.admin? || current_user.general_manager? || current_user.community_manager?
+    current_user.admin_of_location?(current_location) || current_user.general_manager_of_location?(current_location) || current_user.community_manager_of_location?(location)
   end
 
   def create_reservation_params

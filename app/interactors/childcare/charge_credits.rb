@@ -5,10 +5,10 @@ class Childcare::ChargeCredits
   delegate :operator, :child_profile, :childcare_slot, :date, to: :context
 
   def call
-    if operator.childcare_enabled?
+    if childcare_slot.location.childcare_enabled?
       user = child_profile.user
-      
-      if !user.admin?
+
+      if !user.admin_of_location?(childcare_slot.location)
         @existing_balance = user.childcare_reservation_balance
 
         if @existing_balance < 1
@@ -25,8 +25,8 @@ class Childcare::ChargeCredits
   def rollback
     user = child_profile.user
 
-    if operator.childcare_enabled?
-      if !user.admin?
+    if childcare_slot.location.childcare_enabled?
+      if !user.admin_of_location?(childcare_slot.location)
         user.update(childcare_reservation_balance: user.childcare_reservation_balance + 1)
       end
     end

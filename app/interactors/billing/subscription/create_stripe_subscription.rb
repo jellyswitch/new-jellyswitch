@@ -1,12 +1,12 @@
 
 class Billing::Subscription::CreateStripeSubscription
   include Interactor
-  delegate :subscription, :operator, :start_day, to: :context
+  delegate :subscription, :operator, :location, :start_day, to: :context
 
   def call
     user = subscription.subscribable
     begin
-      stripe_subscription = operator.create_stripe_subscription(subscription)
+      stripe_subscription = location.create_stripe_subscription(subscription)
     rescue StandardError => e
       context.fail!(message: e.message)
     end
@@ -16,6 +16,6 @@ class Billing::Subscription::CreateStripeSubscription
     else
       context.fail!(message: "Could not save subscription.")
     end
-    
+
   end
 end

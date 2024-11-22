@@ -10,6 +10,7 @@ class BackfillOfficeLeaseStripeSubscriptions < ActiveRecord::Migration[5.2]
       operator = office_lease.operator
       subscription = office_lease.subscription
       organization = office_lease.organization
+      location = office_lease.location
 
       Stripe::Customer.update(
         organization.stripe_customer_id, {
@@ -22,7 +23,7 @@ class BackfillOfficeLeaseStripeSubscriptions < ActiveRecord::Migration[5.2]
 
       start_date = Time.zone.at(1.month.from_now.beginning_of_month + 2.hours).to_i
 
-      stripe_subscription = operator.create_stripe_subscription(organization, subscription, start_date)
+      stripe_subscription = location.create_stripe_subscription(organization, subscription, start_date)
 
       if stripe_subscription
         subscription.update(stripe_subscription_id: stripe_subscription.id)

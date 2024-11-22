@@ -2,11 +2,11 @@ module Permissions
   # Included as a module in the User class
 
   def allowed_in?(location)
-    member?(location) ||
-    has_active_day_pass? ||
+    has_building_access_membership? ||
+    has_active_day_pass_at_location?(location) ||
     checked_in?(location) ||
     has_active_lease? ||
-    admin? ||
+    admin_of_location?(location) ||
     superadmin? ||
     has_active_reservation? ||
     has_rsvp?
@@ -20,7 +20,8 @@ module Permissions
 
   def should_charge_for_reservation?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
-      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin? || superadmin? || general_manager?)
+      # now adding community manager per https://github.com/jellyswitch/new-jellyswitch/commit/a3418b6a9f89562dba398f7920e7c7a7cede02a7 probably missed this
+      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin_of_location?(location) || superadmin? || general_manager_of_location?(location) || community_manager_of_location?(location))
     else
       false
     end
@@ -32,7 +33,7 @@ module Permissions
       has_active_day_pass?(day) ||
       checked_in?(location) ||
       has_active_lease? ||
-      admin?
+      admin_of_location?(location)
     else
       true
     end
@@ -46,6 +47,19 @@ module Permissions
     has_active_subscription? || has_active_day_pass?(day = day) || has_active_lease?
   end
 
+  # TODO: replace all `member_at_operator?` with this
+  # Mainly for receiving notifications
+  def member_at_location?(location, day = Time.current)
+    current_location == location &&
+    (
+      has_active_subscription? || has_active_day_pass_at_location?(location, day = day) || has_active_lease?(location)
+    )
+  end
+
+  def currently_at_location?(location)
+    current_location == location
+  end
+
   def member?(location, day = Time.current)
     has_active_subscription_at_location?(location)
   end
@@ -56,6 +70,7 @@ module Permissions
     end.count > 0
   end
 
+  # PLEEEASE REFRAIN FROM USING THIS METHOD, only when there is no location to be checked
   def admin?
     role == User::ADMIN || admin == true
   end
@@ -72,8 +87,8 @@ module Permissions
     role == User::GENERAL_MANAGER
   end
 
-  def admin_or_manager?
-    admin? || superadmin? || community_manager? || general_manager?
+  def admin_or_manager?(location)
+    admin_of_location?(location) || superadmin? || community_manager_of_location?(location) || general_manager_of_location?(location)
   end
 
   def pending?
@@ -86,16 +101,16 @@ module Permissions
     end.count > 0
   end
 
-  def has_building_access?
+  def has_building_access?(location)
     superadmin? ||
-    admin? ||
-    community_manager? ||
-    general_manager? ||
+    admin_of_location?(location) ||
+    community_manager_of_location?(location) ||
+    general_manager_of_location?(location) ||
     always_allow_building_access? ||
     has_building_access_day_pass? ||
     has_building_access_membership? ||
     has_building_access_lease? ||
-    has_active_day_pass?
+    has_active_day_pass_at_location?(location)
   end
 
   def has_building_access_membership?
@@ -108,14 +123,18 @@ module Permissions
     day_passes.for_day(day).count > 0
   end
 
+  def has_active_day_pass_at_location?(location, day = Time.current)
+    day_passes.for_location(location).for_day(day).count > 0
+  end
+
   def has_building_access_day_pass?
     has_active_day_pass? && day_passes.today.any? do |day_pass|
       day_pass.day_pass_type.always_allow_building_access?
     end
   end
 
-  def has_active_lease?
-    organization.present? && organization.has_active_lease?
+  def has_active_lease?(location = nil)
+    organization.present? && organization.has_active_lease?(location)
   end
 
   def has_building_access_lease?

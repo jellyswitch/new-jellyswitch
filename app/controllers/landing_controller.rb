@@ -1,5 +1,7 @@
 
 class LandingController < ApplicationController
+  include SessionsHelper
+
   def index
     if logged_in?
       if superadmin?
@@ -19,21 +21,36 @@ class LandingController < ApplicationController
       flash[:error] = params[:error_description]
       redirect_to landing_url(subdomain: current_user.operator.subdomain)
     else
+      location = nil
+      if params[:location_id].present?
+        location = current_user.operator.locations.find(params[:location_id])
+      end
+      set_location(location) if location
+
       result = Operators::FinishStripeConnect.call(
         stripe_code: params[:code],
         operator: current_user.operator,
+        location: location,
         webhook_url: stripe_webhooks_url
       )
 
       if result.success?
-        flash[:success] = "Your account has been connected to Stripe."
+        flash[:success] = location ? "Your location has been connected to Stripe" : "Your account has been connected to Stripe."
         redirect_to landing_url(subdomain: current_user.operator.subdomain)
       else
         flash[:error] = "There was a problem storing your Stripe credentials. (#{result.message})"
-        if current_user.operator.onboarded?
-          redirect_to modules_url(subdomain: current_user.operator.subdomain)
+        if location
+          if location.onboarded?
+            redirect_to modules_url(subdomain: current_user.operator.subdomain)
+          else
+            redirect_to landing_url(subdomain: current_user.operator.subdomain)
+          end
         else
-          redirect_to landing_url(subdomain: current_user.operator.subdomain)
+          if current_user.operator.onboarded?
+            redirect_to modules_url(subdomain: current_user.operator.subdomain)
+          else
+            redirect_to landing_url(subdomain: current_user.operator.subdomain)
+          end
         end
       end
     end

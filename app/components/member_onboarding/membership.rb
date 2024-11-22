@@ -8,7 +8,7 @@ class MemberOnboarding::Membership < ApplicationComponent
   private
 
   def credit_enabled?
-    plan.operator.credits_enabled?
+    plan.location.credits_enabled?
   end
 
   attr_reader :plan

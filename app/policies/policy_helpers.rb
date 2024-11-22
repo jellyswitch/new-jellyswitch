@@ -5,16 +5,20 @@ module PolicyHelpers
     user.present?
   end
 
+  def location
+    @location
+  end
+
   def admin?
-    is_user? && (user.admin? || user.superadmin?)
+    is_user? && (((!location && user.admin?) || (location && user.admin_of_location?(location))) || user.superadmin?)
   end
 
   def general_manager?
-    is_user? && user.general_manager?
+    is_user? && ((!location && user.general_manager?) || (location && user.general_manager_of_location?(location)))
   end
 
   def community_manager?
-    is_user? && user.community_manager?
+    is_user? && ((!location && user.community_manager?) || (location && user.community_manager_of_location?(location)))
   end
 
   def superadmin?

@@ -19,6 +19,7 @@
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null
 #  operator_id                  :integer          default(1), not null
+#  location_id                  :integer
 #  stripe_plan_id               :string
 #
 # Indexes
@@ -42,7 +43,7 @@ cowork_tahoe_part_time_plan:
  commitment_interval: nil
  childcare_reservations: 0
  plan_category: nil
- locations: cowork_tahoe_location
+ location: cowork_tahoe_location
 
 cowork_tahoe_full_time_plan:
  interval: monthly
@@ -61,7 +62,7 @@ cowork_tahoe_full_time_plan:
  commitment_interval: nil
  childcare_reservations: 0
  plan_category: private_desk_pod
- locations: cowork_tahoe_location
+ location: cowork_tahoe_location
 
 cowork_tahoe_archived_plan:
  interval: monthly
@@ -79,7 +80,7 @@ cowork_tahoe_archived_plan:
  credits: 0
  commitment_interval: nil
  childcare_reservations: 0
- locations: cowork_tahoe_location
+ location: cowork_tahoe_location
 
 cowork_tahoe_office_lease_plan:
  interval: monthly
@@ -97,5 +98,5 @@ cowork_tahoe_office_lease_plan:
  credits: 0
  commitment_interval: nil
  childcare_reservations: 0
- locations: cowork_tahoe_location
+ location: cowork_tahoe_location
 

@@ -5,7 +5,9 @@ class Billing::Reservations::ChargeCredits
   delegate :reservation, :reservation_params, :user, to: :context
 
   def call
-    if user.operator.credits_enabled?
+    location = reservation.room.location
+
+    if location.credits_enabled?
       if !staff?
         @existing_balance = user.credit_balance
 
@@ -30,7 +32,9 @@ class Billing::Reservations::ChargeCredits
   end
 
   def rollback
-    if user.operator.credits_enabled?
+    location = reservation.room.location
+
+    if location.credits_enabled?
       if !staff?
         user.update(credit_balance: @existing_balance)
         reservation.update(credit_cost: 0)
@@ -39,6 +43,7 @@ class Billing::Reservations::ChargeCredits
   end
 
   def staff?
-    user.admin? || user.general_manager? || user.community_manager?
+    location = reservation.room.location
+    user.admin_of_location?(location) || user.general_manager_of_location?(location) || user.community_manager_of_location?(location)
   end
 end

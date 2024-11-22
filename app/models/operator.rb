@@ -112,6 +112,9 @@ class Operator < ApplicationRecord
   scope :production, -> { where(billing_state: "production") }
   scope :demo, -> { where(billing_state: "demo") }
 
+  # Callbacks
+  after_save :update_kisi_api_key_for_locations
+
   %w(rooms offices office_leases member_feedbacks feed_items doors).each do |resource|
     define_method "#{resource}_by_location" do |location|
       public_send(resource).where(location: location)
@@ -138,7 +141,7 @@ class Operator < ApplicationRecord
     billing_state == "production" || subdomain == "southlakecoworking"
   end
 
-  def stripe_secret_key
+  def stripe_secret_key # moved to location
     if production? && subdomain != "southlakecoworking"
       Rails.configuration.stripe[:secret_key]
     else
@@ -146,7 +149,7 @@ class Operator < ApplicationRecord
     end
   end
 
-  def stripe_operator
+  def stripe_operator # moved to location
     @stripe_operator ||= StripeOperator.new(self)
   end
 
@@ -164,7 +167,7 @@ class Operator < ApplicationRecord
     Checkin.for_operator(self)
   end
 
-  # Predicates for features
+  # Predicates for features (most of the below moved to location)
 
   def day_passes_enabled?
     day_pass_types.count > 0
@@ -186,11 +189,15 @@ class Operator < ApplicationRecord
     office_leases.active.count > 0
   end
 
+  def update_kisi_api_key_for_locations
+    locations.where(kisi_api_key: nil).update_all(kisi_api_key: kisi_api_key)
+  end
+
   private
 
-  class StripeOperator < SimpleDelegator
+  class StripeOperator < SimpleDelegator # moved to location
     include StripeUtils
   end
 
-  private_constant :StripeOperator
+  private_constant :StripeOperator # moved to location
 end

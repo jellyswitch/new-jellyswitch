@@ -15,14 +15,14 @@
         </div>
       </div>
 
-      <% if policy(:location).show? %>
+      <% if policy(location).edit? %>
         <div class="row">
           <div class="col">
             <%= link_to "Manage #{location.name}", location, class: "btn btn-info btn-block" %>
           </div>
         </div>
-      <% end %>      
-      
+      <% end %>
+
       <div class="row mt-2">
         <div class="col">
           <%= form_for(:location, url: set_location_path, method: :put, remote: true, html: {class: "form"}) do |f| %>

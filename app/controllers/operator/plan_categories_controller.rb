@@ -9,7 +9,7 @@ class Operator::PlanCategoriesController < Operator::BaseController
   private
 
   def find_plan_categories
-    @plan_categories = current_tenant.plan_categories.select do |plan_category|
+    @plan_categories = current_location.plan_categories.select do |plan_category|
       plan_category.plans.individual.visible.available.for_location(current_location).count.positive?
     end
 

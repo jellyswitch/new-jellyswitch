@@ -16,10 +16,10 @@ class PostPolicy < ApplicationPolicy
   end
 
   def enabled?
-    operator.bulletin_board_enabled?
+    location.bulletin_board_enabled?
   end
 
   def can_see?
-    enabled? && (admin? || community_manager? || general_manager? || (user&.member_at_operator?(operator) && approved?))
+    enabled? && (admin? || community_manager? || general_manager? || (user&.member_at_location?(location) && approved?))
   end
 end

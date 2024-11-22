@@ -8,7 +8,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
   def test_index
     assert_not_permitted @member, office_leases(:office_23b_lease)
     assert_permit @admin, office_leases(:office_23b_lease)
-    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_not_permitted @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
   end
@@ -16,7 +16,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
   def test_show
     assert_not_permitted @member, office_leases(:office_23b_lease)
     assert_permit @admin, office_leases(:office_23b_lease)
-    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_not_permitted @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
   end
@@ -24,7 +24,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
   def test_new
     assert_not_permitted @member, office_leases(:office_23b_lease)
     assert_permit @admin, office_leases(:office_23b_lease)
-    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_not_permitted @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
   end
@@ -32,7 +32,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
   def test_create
     assert_not_permitted @member, office_leases(:office_23b_lease)
     assert_permit @admin, office_leases(:office_23b_lease)
-    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_not_permitted @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
   end
@@ -40,7 +40,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
   def test_destroy
     assert_not_permitted @member, office_leases(:office_23b_lease)
     assert_permit @admin, office_leases(:office_23b_lease)
-    assert_permit @community_manager, office_leases(:office_23b_lease)
+    assert_not_permitted @community_manager, office_leases(:office_23b_lease)
     assert_permit @general_manager, office_leases(:office_23b_lease)
     assert_permit @superadmin, office_leases(:office_23b_lease)
   end
@@ -51,7 +51,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
 
     assert_not_permitted @member, office_lease
     assert_permit @admin, office_lease
-    assert_permit @community_manager, office_lease
+    assert_not_permitted @community_manager, office_lease
     assert_permit @general_manager, office_lease
     assert_permit @superadmin, office_lease
 
@@ -63,7 +63,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
     office_lease.stub(:subscription_active?, true) do
       assert_not_permitted @member, office_lease, :update_price?
       assert_permit @admin, office_lease, :update_price?
-      assert_permit @community_manager, office_lease, :update_price?
+      assert_not_permitted @community_manager, office_lease, :update_price?
       assert_permit @general_manager, office_lease, :update_price?
       assert_permit @superadmin, office_lease, :update_price?
     end

@@ -1,9 +1,10 @@
 
 module FeedItemCreator
   # for pub/sub
-  def self.create_feed_item(operator, user, blob, options = {})
+  def self.create_feed_item(operator, location, user, blob, options = {})
     feed_item = FeedItem.new
     feed_item.operator = operator
+    feed_item.location = location
     feed_item.user = user
     feed_item.blob = blob
 
@@ -42,7 +43,7 @@ module FeedItemCreator
       context.fail!(message: "Unable to generate feed item.")
     end
 
-    operator.users.admins.each do |admin_user|
+    operator.users.relevant_admins_of_location(feed_item.location).each do |admin_user|
       send_email_notification(admin_user, feed_item)
     end
     feed_item

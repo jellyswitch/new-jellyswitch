@@ -58,7 +58,7 @@ class Jellyswitch::MonetizationReport
   end
 
   def flex_income
-    @flex_income ||= location.operator.plans.individual.map do |plan|
+    @flex_income ||= location.plans.individual.map do |plan|
       income = plan.subscriptions.active.count * (plan.amount_in_cents.to_f / 100.0)
 
       flex_income_klass.new(

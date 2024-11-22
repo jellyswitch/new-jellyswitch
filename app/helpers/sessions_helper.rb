@@ -4,8 +4,9 @@ module SessionsHelper
     session[:user_id] = user.id
     ahoy.authenticate(user)
 
-    # sets the user's current location to the current location
-    if current_location.present?
+    # sets the user's current location to the current location, unless operator onboarding
+    subdomain = request.subdomains.first.downcase
+    if subdomain != "app" && current_location.present?
       user.update(current_location: current_location)
     end
   end
@@ -75,10 +76,26 @@ module SessionsHelper
       else
         raise "No locations configured."
       end
-    elsif Location.count == 1 # if I only have one location, use it automatically
+    elsif current_tenant && current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
+    else
+      # nothing else, maybe onboarding?
+      nil
     end
+  end
+
+  def update_location(location)
+    checkout
+    unset_location
+    set_location(location)
+
+    # if there is an logged in user, set their current location
+    if logged_in? && current_user
+      current_user.update(current_location: location)
+    end
+
+    flash[:notice] = "Switched to location #{location.name}."
   end
 
   def logged_in?
@@ -86,7 +103,7 @@ module SessionsHelper
   end
 
   def admin?
-    logged_in? && current_user.admin? || superadmin?
+    logged_in? && current_user.admin_of_location?(current_location)
   end
 
   def superadmin?
@@ -94,11 +111,11 @@ module SessionsHelper
   end
 
   def community_manager?
-    logged_in? && current_user.community_manager?
+    logged_in? && current_user.community_manager_of_location?(current_location)
   end
 
   def general_manager?
-    logged_in? && current_user.general_manager?
+    logged_in? && current_user.general_manager_of_location?(current_location)
   end
 
   def pending?

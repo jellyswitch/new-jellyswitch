@@ -1,6 +1,6 @@
 
 class ChildcarePolicy < ApplicationPolicy
   def enabled?
-    operator.childcare_enabled?
+    location.childcare_enabled?
   end
 end

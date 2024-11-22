@@ -4,7 +4,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
 
   def new
     authorize DayPass.new
-    @user = current_tenant.users.find(params[:user_id])
+    @user = current_location.users.find(params[:user_id])
   end
 
   def create
@@ -27,6 +27,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Day pass added."
+      # TODO: check if we need to inject tracking pixels here
       turbo_redirect(user_path(@day_pass.user), action: "replace")
     else
       flash[:error] = result.message
@@ -39,7 +40,7 @@ class Operator::Admin::DayPassesController < Operator::BaseController
   end
 
   private
-  
+
   def day_pass_params
     params.require(:day_pass).permit(:day_pass_type, :day, :user_id)
   end

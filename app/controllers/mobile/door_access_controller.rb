@@ -8,7 +8,7 @@ class Mobile::DoorAccessController < Operator::BaseController
 
   def building_access_permissions
     user = User.find_by(id: request.headers["X-User-Id"])
-    authorized = user&.has_building_access?
+    authorized = user&.has_building_access?(current_location)
 
     render json: { authorized: authorized }
   end

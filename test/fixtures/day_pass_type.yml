@@ -1,6 +1,7 @@
 cowork_tahoe_day_pass_type:
   name: Standard Day Pass
   operator: cowork_tahoe
+  location: cowork_tahoe_location
   amount_in_cents: 20000
   available: true
   visible: true
@@ -10,6 +11,7 @@ cowork_tahoe_day_pass_type:
 free_day_pass_type:
   name: Free Day Pass
   operator: cowork_tahoe
+  location: cowork_tahoe_location
   amount_in_cents: 0
   available: true
   visible: true

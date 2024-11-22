@@ -78,6 +78,6 @@ class Operator::CheckinsController < Operator::BaseController
   end
 
   def find_checkins
-    @pagy, @checkins = pagy(current_tenant.checkins)
+    @pagy, @checkins = pagy(current_location.checkins)
   end
 end

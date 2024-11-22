@@ -10,6 +10,6 @@ class DashboardPolicyTest < PolicyAssertions::Test
     assert_not_permitted @member, :dashboard
     assert_permit @admin, :dashboard
     assert_not_permitted @community_manager, :dashboard
-    assert_not_permitted @general_manager, :dashboard
+    assert_permit @general_manager, :dashboard
   end
 end

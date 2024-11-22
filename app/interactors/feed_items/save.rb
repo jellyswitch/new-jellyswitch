@@ -1,13 +1,14 @@
 class FeedItems::Save
   include Interactor
 
-  delegate :text, :blob, :operator, :user, :photos, :created_at, :announcement, to: :context
+  delegate :text, :blob, :operator, :location, :user, :photos, :created_at, :announcement, to: :context
 
   def call
     @feed_item = FeedItem.new
     @feed_item.blob = blob
     @feed_item.text = text
     @feed_item.operator = operator
+    @feed_item.location = location
     @feed_item.user = user
 
     if @feed_item.type == "announcement"

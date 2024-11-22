@@ -3,6 +3,6 @@ class DashboardPolicy < Struct.new(:user, :dashboard)
   include PolicyHelpers
 
   def show?
-    admin?
+    admin? || general_manager?
   end
 end
