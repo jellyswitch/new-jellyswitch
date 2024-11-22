@@ -70,4 +70,11 @@ class LocationPolicyTest < PolicyAssertions::Test
     assert_not_permitted @community_manager, Location
     assert_not_permitted @general_manager, Location
   end
+
+  def test_edit_tracking_pixels
+    assert_not_permitted @member, Location
+    assert_permit @admin, Location
+    assert_not_permitted @community_manager, Location
+    assert_not_permitted @general_manager, Location
+  end
 end

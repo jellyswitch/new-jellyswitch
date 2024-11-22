@@ -35,4 +35,8 @@ class LocationPolicy < ApplicationPolicy
   def visible?
     admin?
   end
+
+  def edit_tracking_pixels?
+    admin?
+  end
 end
