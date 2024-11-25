@@ -53,7 +53,7 @@ class ActiveSupport::TestCase
     [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan].map do |plan_sym|
       plan = plans(plan_sym)
 
-      product = Stripe::Product.create({ name: plan.plan_name, type: "service" })
+      product = Stripe::Product.create(name: plan.plan_name, type: "service")
 
       stripe_plan = @stripe_helper.create_plan(
         amount: plan.amount_in_cents,
@@ -67,7 +67,7 @@ class ActiveSupport::TestCase
       plan.update(stripe_plan_id: stripe_plan.id)
     end
 
-    customer = Stripe::Customer.create({ email: @user.email })
+    customer = Stripe::Customer.create({ email: @user.email }, { stripe_account: @user.operator.stripe_user_id })
     @user.update(stripe_customer_id: customer.id)
 
     # create subscriptions in stripe

@@ -5,12 +5,12 @@ module StripeHelper
 
   def setup_stripe
     @stripe_helper = StripeMock.create_test_helper
-    
+
     # create plans in stripe
     [:cowork_tahoe_part_time_plan, :cowork_tahoe_full_time_plan, :cowork_tahoe_office_lease_plan].map do |plan_sym|
       plan = plans(plan_sym)
 
-      product = Stripe::Product.create({ name: plan.plan_name, type: 'service' })
+      product = Stripe::Product.create(name: plan.plan_name, type: 'service')
 
       stripe_plan = @stripe_helper.create_plan(
         amount: plan.amount_in_cents,
@@ -24,9 +24,9 @@ module StripeHelper
       plan.update(stripe_plan_id: stripe_plan.id)
     end
 
-    customer = Stripe::Customer.create({ email: @user.email })
+    customer = Stripe::Customer.create(email: @user.email)
     @user.update(stripe_customer_id: customer.id)
-    
+
     # create subscriptions in stripe
     subscription = subscriptions(:cowork_tahoe_subscription)
 
@@ -38,7 +38,7 @@ module StripeHelper
       billing: 'send_invoice',
       days_until_due: 30
     }
-    
+
     stripe_subscription = operators(:cowork_tahoe).stripe_request('Subscription', :create, params)
 
     subscription.update(stripe_subscription_id: stripe_subscription.id)

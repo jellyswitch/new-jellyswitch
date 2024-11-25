@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "2.7.4"
+ruby "3.2.6"
 
 gem "activejob-traffic_control"
 gem "acts_as_tenant", "0.5.0"
@@ -88,7 +88,7 @@ group :development, :test do
   gem "pry-byebug"
   gem "pry-rails"
   gem "rails-controller-testing"
-  gem "stripe-ruby-mock", "~> 3.0.1", :require => "stripe_mock"
+  gem "stripe-ruby-mock", :require => "stripe_mock"
   gem "rspec-rails"
   gem "factory_bot_rails"
 end
