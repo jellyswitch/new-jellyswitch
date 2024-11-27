@@ -14,11 +14,13 @@ class FeedItemsControllerTest < ActionDispatch::IntegrationTest
   test "should create a new feed item and redirect back to index (web)" do
     post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: default_env
     assert_redirected_to controller: "operator/feed_items", action: "index"
+    assert FeedItem.last.location = locations(:cowork_tahoe_location)
   end
 
   test "should create a new feed item and redirect back to index (iOS)" do
     post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: ios_env
     assert_redirected_to controller: "operator/feed_items", action: "index"
+    assert FeedItem.last.location = locations(:cowork_tahoe_location)
   end
 
   test "should create membership updated feed item and redirect back to index (web)" do

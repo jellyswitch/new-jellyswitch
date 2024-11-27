@@ -16,7 +16,11 @@ module EventHelper
   end
 
   def find_todays_events
-    @events = current_location.events.today.order("starts_at ASC")
+    if current_location
+      @events = current_location.events.today.order("starts_at ASC")
+    else
+      @events = []
+    end
   end
 
   def find_event

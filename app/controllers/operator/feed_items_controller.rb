@@ -90,6 +90,7 @@ class Operator::FeedItemsController < Operator::BaseController
       text: feed_item_params[:text],
       user: current_user,
       operator: current_tenant,
+      location: current_location,
       photos: feed_item_params[:photos],
     )
 

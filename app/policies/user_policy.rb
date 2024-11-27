@@ -173,7 +173,7 @@ class UserPolicy < ApplicationPolicy
 
   def has_admin_right?
     if record.is_a?(User)
-      (record.original_location_id == nil || record.original_location_id == location.id) && # must be at the same location
+      (record.original_location_id == nil || (location && record.original_location_id == location.id)) && # must be at the same location
       (
         (superadmin? || # superadmin can edit anyone
         (
