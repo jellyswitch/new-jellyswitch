@@ -5,15 +5,15 @@
   <div class="btn-group mt-2" role="group" aria-label="Filter">
     <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbo-action" => "replace"} %>
 
-    <%= link_to notes_feed_items_path, class: "btn btn-light #{@notes_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to notes_feed_items_path, class: "filter-note-feed-items btn btn-light #{@notes_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-clipboard"></i>
     <% end %>
 
-    <%= link_to questions_feed_items_path, class: "btn btn-light #{@questions_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to questions_feed_items_path, class: "filter-question-feed-items btn btn-light #{@questions_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-question"></i>
     <% end %>
 
-    <%= link_to activity_feed_items_path, class: "btn btn-light #{@activity_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to activity_feed_items_path, class: "filter-activity-feed-items btn btn-light #{@activity_active}", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-users"></i>
     <% end %>
 
