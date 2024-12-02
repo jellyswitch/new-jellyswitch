@@ -46,6 +46,9 @@ class CreateInvoice
 
     if location.present?
       params[:location_id] = location.id
+    else
+      # Hail mary effort to find location, since this is triggered from a webhook
+      params[:location_id] = billable.location&.id
     end
 
     invoice = Invoice.create!(params)
