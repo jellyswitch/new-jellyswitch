@@ -55,4 +55,17 @@ Rails.application.configure do
 
   # Annotate rendered view with file names.
   config.action_view.annotate_rendered_view_with_filenames = true
+
+  config.before_configuration do
+    # Default to port 9000 if ASSET_HOST isn't set
+    host = URI(ENV.fetch('ASSET_HOST', 'http://app.lvh.me:9000'))
+
+    config.action_controller.asset_host = -> (source, request = nil) do
+      if request && request.env['SERVER_PORT']
+        "#{host.scheme}://#{host.host}:#{request.env['SERVER_PORT']}"
+      else
+        ENV['ASSET_HOST']
+      end
+    end
+  end
 end

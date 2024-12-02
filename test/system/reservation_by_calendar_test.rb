@@ -269,6 +269,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
       end
 
       # close modal
+      sleep 1
       find(".cancel-btn").click
     end
 
