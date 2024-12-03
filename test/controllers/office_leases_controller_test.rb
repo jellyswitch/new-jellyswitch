@@ -1,6 +1,14 @@
 require 'test_helper'
 
 class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
+  setup do
+    stub_request(:post, "https://api.stripe.com/v1/plans")
+      .to_return(status: 200, body: {id: 'plan_xxx'}.to_json, headers: {})
+
+    stub_request(:post, "https://api.stripe.com/v1/subscriptions")
+      .to_return(status: 200, body: {id: 'sub_xxx'}.to_json, headers: {})
+  end
+
   test "should cancel office lease now to operator" do
     @user = users(:cowork_tahoe_member)
     @office_lease_plan = office_leases(:office_23b_lease)
@@ -15,12 +23,6 @@ class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
     log_in users(:cowork_tahoe_admin)
 
     OfficeLease.delete_all
-
-    stub_request(:post, "https://api.stripe.com/v1/plans")
-      .to_return(status: 200, body: {id: 'plan_xxx'}.to_json, headers: {})
-
-    stub_request(:post, "https://api.stripe.com/v1/subscriptions")
-      .to_return(status: 200, body: {id: 'sub_xxx'}.to_json, headers: {})
 
     current_time = Time.current
     post office_leases_path, params: { office_lease: {

@@ -10,6 +10,13 @@ on:
     branches: [ main, develop, upgrade-heroku-22-stack ]
   pull_request:
     branches: [ main, develop, upgrade-heroku-22-stack ]
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
 jobs:
   test:
     runs-on: ubuntu-latest

@@ -71,7 +71,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
       operator: current_tenant,
       plan: @office_lease.subscription.plan,
       location: current_location,
-    )
+      )
 
     if result.success?
       flash[:notice] = "Office lease created."
