@@ -62,6 +62,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def create
     @office_lease = current_location.office_leases.build(office_lease_params)
+    @office_lease.subscription.plan.location_id = current_location.id
 
     authorize @office_lease
 
@@ -69,6 +70,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
       office_lease: @office_lease,
       operator: current_tenant,
       plan: @office_lease.subscription.plan,
+      location: current_location,
     )
 
     if result.success?
