@@ -18,7 +18,7 @@ FactoryBot.define do
     operator { Operator.find_by(name: "Cowork Tahoe") || association(:operator) }
 
     after(:create) do |plan|
-      plan.location = Location.find_by(name: "Cowork Tahoe") || create(:location)
+      plan.location ||= (Location.find_by(name: "Cowork Tahoe") || create(:location))
       plan.save!
     end
   end
