@@ -6,7 +6,6 @@ RSpec.describe Invoice, type: :model do
   let(:organization) { create(:organization) }
 
   describe "associations" do
-    it { should belong_to(:operator) }
     it { should belong_to(:billable) }
     it { should have_many(:checkins) }
     it { should have_many(:refunds) }

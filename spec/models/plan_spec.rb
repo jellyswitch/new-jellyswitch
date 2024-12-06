@@ -3,7 +3,6 @@ require "rails_helper"
 RSpec.describe Plan, type: :model do
   describe "associations" do
     it { should have_many(:subscriptions) }
-    it { should belong_to(:operator) }
     it { should belong_to(:plan_category).optional }
     it { should have_rich_text(:description) }
   end

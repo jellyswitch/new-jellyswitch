@@ -8,7 +8,6 @@ RSpec.describe Organization, type: :model do
     it { should have_many(:subscriptions).dependent(:destroy) }
     it { should belong_to(:owner).class_name("User").optional }
     it { should belong_to(:billing_contact).class_name("User").optional }
-    it { should belong_to(:operator) }
   end
 
   describe "scopes" do

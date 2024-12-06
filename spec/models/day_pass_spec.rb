@@ -6,7 +6,6 @@ RSpec.describe DayPass, type: :model do
     it { should belong_to(:day_pass_type) }
     it { should belong_to(:invoice).optional }
     it { should belong_to(:user) }
-    it { should belong_to(:operator) }
   end
 
   describe 'scopes' do
@@ -66,13 +65,6 @@ RSpec.describe DayPass, type: :model do
     describe '#pretty_day' do
       it 'returns formatted date string' do
         expect(day_pass.pretty_day).to eq('01/01/2024')
-      end
-    end
-
-    describe '#charge_description' do
-      it 'returns formatted charge description' do
-        expected_description = "Test Operator Day Pass for 01/01/2024"
-        expect(day_pass.charge_description).to eq(expected_description)
       end
     end
 

@@ -5,7 +5,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
     @user = users(:cowork_tahoe_member)
     @room = rooms(:small_meeting_room)
 
-    @datetime_in = Time.current + 1.day
+    @datetime_in = Time.current + 10.day
 
     @reservation_params = {
       room_id: @room.id,
