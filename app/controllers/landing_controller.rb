@@ -21,10 +21,9 @@ class LandingController < ApplicationController
       flash[:error] = params[:error_description]
       redirect_to landing_url(subdomain: current_user.operator.subdomain)
     else
-      location = nil
-      if params[:location_id].present?
-        location = current_user.operator.locations.find(params[:location_id])
-      end
+      location_id = params[:state]
+
+      location = current_user.operator.locations.find(location_id)
       set_location(location) if location
 
       result = Operators::FinishStripeConnect.call(
@@ -41,15 +40,15 @@ class LandingController < ApplicationController
         flash[:error] = "There was a problem storing your Stripe credentials. (#{result.message})"
         if location
           if location.onboarded?
-            redirect_to modules_url(subdomain: current_user.operator.subdomain)
+            redirect_to modules_url(subdomain: current_user.operator.subdomain), allow_other_host: true
           else
-            redirect_to landing_url(subdomain: current_user.operator.subdomain)
+            redirect_to landing_url(subdomain: current_user.operator.subdomain), allow_other_host: true
           end
         else
           if current_user.operator.onboarded?
-            redirect_to modules_url(subdomain: current_user.operator.subdomain)
+            redirect_to modules_url(subdomain: current_user.operator.subdomain), allow_other_host: true
           else
-            redirect_to landing_url(subdomain: current_user.operator.subdomain)
+            redirect_to landing_url(subdomain: current_user.operator.subdomain), allow_other_host: true
           end
         end
       end
