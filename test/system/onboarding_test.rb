@@ -119,5 +119,11 @@ class OnboardingTest < ApplicationSystemTestCase
     switch_to_location other_location
     visit home_path
     assert_no_text "Reserve a meeting room"
+
+    visit edit_location_path(other_location)
+    fill_in "location[kisi_api_key]", with: "New KISI key"
+    click_on "Update"
+    assert_text "Location updated."
+    assert_text "New KISI key"
   end
 end
