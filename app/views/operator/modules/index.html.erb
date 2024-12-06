@@ -197,11 +197,10 @@
           <dl class="row">
             <dt class="col-lg-6"><%= sym.to_s %></dt>
             <dd class="col">
-              <%= current_tenant.send(sym) %>
+              <%= current_location&.send(sym) %>
             </dd>
           </dl>
         <% end %>
-
       <% end %>
     <% end %>
   <% end %>
