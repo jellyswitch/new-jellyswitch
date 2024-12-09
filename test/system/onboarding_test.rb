@@ -79,7 +79,11 @@ class OnboardingTest < ApplicationSystemTestCase
     link = find_link("I already have a Stripe account")
     uri = URI.parse(link[:href])
     params = CGI.parse(uri.query)
-    visit params["redirect_uri"][0]
+    redirect_link = params["redirect_uri"][0]
+    uri = URI.parse(redirect_link)
+    uri.query = URI.encode_www_form({state: Location.last.id})
+    p "New url is #{uri.to_s}"
+    visit uri.to_s
 
     assert_text "Your location has been connected to Stripe"
 

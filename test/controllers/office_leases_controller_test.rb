@@ -9,6 +9,10 @@ class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
       .to_return(status: 200, body: {id: 'sub_xxx'}.to_json, headers: {})
   end
 
+  teardown do
+    WebMock.reset!
+  end
+
   test "should cancel office lease now to operator" do
     @user = users(:cowork_tahoe_member)
     @office_lease_plan = office_leases(:office_23b_lease)
