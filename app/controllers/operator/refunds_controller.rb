@@ -6,7 +6,7 @@ class Operator::RefundsController < Operator::BaseController
 
     refundable_invoice = RefundableFactory.for(invoice)
 
-    result = Billing::Invoices::Refunds::Create.call(operator: current_tenant, invoice: refundable_invoice)
+    result = Billing::Invoices::Refunds::Create.call(operator: current_tenant, invoice: refundable_invoice, location: current_location)
 
     if result.success?
       flash[:notice] = "Successfully refunded invoice"
