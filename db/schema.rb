@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_11_20_033705) do
+ActiveRecord::Schema[7.0].define(version: 2024_12_11_014722) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -635,6 +635,19 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_20_033705) do
     t.index ["position"], name: "index_tracking_pixels_on_position"
   end
 
+  create_table "user_payment_profiles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "location_id", null: false
+    t.string "stripe_customer_id"
+    t.boolean "card_added", default: false, null: false
+    t.boolean "bill_to_organization", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_user_payment_profiles_on_location_id"
+    t.index ["user_id", "location_id"], name: "index_user_payment_profiles_on_user_id_and_location_id", unique: true
+    t.index ["user_id"], name: "index_user_payment_profiles_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name"
     t.string "email", null: false
@@ -701,4 +714,6 @@ ActiveRecord::Schema[7.0].define(version: 2024_11_20_033705) do
   add_foreign_key "rooms", "locations"
   add_foreign_key "tracking_pixels", "locations"
   add_foreign_key "tracking_pixels", "operators"
+  add_foreign_key "user_payment_profiles", "locations"
+  add_foreign_key "user_payment_profiles", "users"
 end

@@ -73,6 +73,8 @@ class User < ApplicationRecord
   has_many :location_managements
   has_many :managed_locations, through: :location_managements, source: :location
 
+  has_many :user_payment_profiles, dependent: :destroy
+
   alias :location :current_location
 
   # Slugs
@@ -383,6 +385,24 @@ class User < ApplicationRecord
   def community_manager_of_location?(location)
     (community_manager? && manages_location?(location))
   end
+
+  # payment profile methods
+  def payment_profile_for_location(location)
+    user_payment_profiles.find_by(location: location)
+  end
+
+  def stripe_customer_id_for_location(location)
+    payment_profile_for_location(location)&.stripe_customer_id
+  end
+
+  def card_added_for_location(location)
+    payment_profile_for_location(location)&.card_added
+  end
+
+  # TODO: probably legacy functionality
+  # def bill_to_organization_for_location(location)
+  #   payment_profile_for_location(location)&.bill_to_organization
+  # end
 
   class UserPermissions < SimpleDelegator
     include Permissions
