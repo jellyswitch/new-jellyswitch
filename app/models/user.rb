@@ -312,7 +312,7 @@ class User < ApplicationRecord
 
   # Stripe Stuff
   def stripe_customer
-    @stripe_customer ||= operator.retrieve_stripe_customer(self)
+    @stripe_customer ||= original_location.retrieve_stripe_customer(self)
   end
 
   def has_stripe_customer?

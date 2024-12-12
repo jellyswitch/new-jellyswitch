@@ -73,11 +73,11 @@ class Organization < ApplicationRecord
 
   def stripe_customer
     return unless stripe_customer_id
-    operator.retrieve_stripe_customer(self)
+    location.retrieve_stripe_customer(self)
   end
 
   def find_or_create_stripe_customer
-    stripe_customer || operator.create_stripe_customer(self)
+    stripe_customer || location.create_stripe_customer(self)
   end
 
   def has_billing?
