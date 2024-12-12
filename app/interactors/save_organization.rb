@@ -2,9 +2,11 @@
 class SaveOrganization
   include Interactor
 
-  delegate :organization, :operator, to: :context
+  delegate :organization, :operator, :location, to: :context
 
   def call
+    organization.location = location
+
     if organization.save
       context.billable = organization
     else

@@ -24,7 +24,7 @@ class Operator::OrganizationsController < Operator::BaseController
     @organization = Organization.new(organization_params)
     authorize @organization
 
-    result = CreateOrganization.call(organization: @organization, operator: current_tenant)
+    result = CreateOrganization.call(organization: @organization, operator: current_tenant, location: current_location)
 
     if result.success?
       flash[:notice] = "Organization #{@organization.name} has been created."
