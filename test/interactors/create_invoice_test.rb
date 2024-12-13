@@ -10,7 +10,7 @@ class CreateInvoiceTest < ActiveSupport::TestCase
       id: "in_1H9J9v2eZvKYlo2C5",
       amount_due: 1000,
       amount_paid: 0,
-      customer: user.stripe_customer_id,
+      customer: user.stripe_customer_id_for_location(location),
       created: Time.now.to_i,
       due_date: Time.now.to_i + 30.days,
       status: "open"

@@ -78,6 +78,16 @@ RSpec.configure do |config|
   config.before(:each, type: :controller) do
     @request.host = "tml.lvh.me"
   end
+
+  config.before(:each) do
+    allow_any_instance_of(StripeUtils).to receive(:stripe_request).and_wrap_original do |method, klass, action, *args|
+      if klass == 'Customer' && action == :create
+        OpenStruct.new(id: "cus_12345")
+      else
+        method.call(klass, action, *args)
+      end
+    end
+  end
 end
 
 Shoulda::Matchers.configure do |config|

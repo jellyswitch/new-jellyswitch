@@ -197,7 +197,7 @@ class User < ApplicationRecord
     {
       name: name,
       email: email,
-      stripe_customer_id: stripe_customer_id,
+      stripe_customer_id: stripe_customer_id_for_location(original_location),
       bio: bio,
       slug: slug,
       twitter: twitter,
@@ -313,23 +313,26 @@ class User < ApplicationRecord
   end
 
   # Stripe Stuff
-  def stripe_customer
-    @stripe_customer ||= original_location.retrieve_stripe_customer(self)
+  def stripe_customer_for_location(location)
+    @stripe_customer ||= location.retrieve_stripe_customer(self)
   end
 
-  def has_stripe_customer?
-    stripe_customer_id.present?
+  def has_stripe_customer_for_location?(location)
+    stripe_customer_id_for_location(location).present?
   end
 
-  def has_billing?
-    has_stripe_customer? && (out_of_band? || card_added?)
+  # This is used in views, important
+  def has_billing_for_location?(location)
+    has_stripe_customer_for_location?(location) && (out_of_band? || card_added_for_location?(location))
   end
 
   def delinquent?
     stripe_customer.delinquent == true
   end
 
-  def card_last_4_digits
+  def card_last_4_digits(location)
+    stripe_customer = stripe_customer_for_location(location)
+
     if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
       if stripe_customer.sources.data.count < 1
         nil
@@ -388,15 +391,38 @@ class User < ApplicationRecord
 
   # payment profile methods
   def payment_profile_for_location(location)
-    user_payment_profiles.find_by(location: location)
+    payment_profile = user_payment_profiles.find_or_create_by(location: location)
+
+    if payment_profile.previously_new_record?
+      stripe_customer = location.create_stripe_customer(self)
+      payment_profile.stripe_customer_id = stripe_customer.id
+      payment_profile.save
+    end
+
+    payment_profile
   end
 
   def stripe_customer_id_for_location(location)
     payment_profile_for_location(location)&.stripe_customer_id
   end
 
-  def card_added_for_location(location)
+  def card_added_for_location?(location)
     payment_profile_for_location(location)&.card_added
+  end
+
+  def update_stripe_customer_id_for_location(location, stripe_customer_id)
+    payment_profile = payment_profile_for_location(location)
+    payment_profile.update stripe_customer_id: stripe_customer_id
+  end
+
+  def update_card_added_for_location(location, card_added)
+    payment_profile = payment_profile_for_location(location)
+    payment_profile.update card_added: card_added
+  end
+
+  def self.find_by_stripe_customer_id(stripe_customer_id)
+    user_payment_profile = UserPaymentProfile.find_by(stripe_customer_id: stripe_customer_id)
+    user_payment_profile&.user
   end
 
   # TODO: probably legacy functionality

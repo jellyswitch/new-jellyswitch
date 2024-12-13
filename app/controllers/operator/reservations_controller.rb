@@ -63,7 +63,7 @@ class Operator::ReservationsController < Operator::BaseController
     @staff = staff
 
     parse_time
-    if @user.should_charge_for_reservation?(current_location, @day) || !@user.has_billing?
+    if @user.should_charge_for_reservation?(current_location, @day) || !@user.has_billing_for_location?(current_location)
       include_stripe
     end
   end
@@ -84,6 +84,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                                  minutes: @duration.to_i,
                                                                                  room: @room,
                                                                                }, user: current_user,
+                                                                               location: current_location,
                                                                                token: token,
                                                                                out_of_band: false)
     @reservation = result.reservation
@@ -118,7 +119,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  hours: @duration,
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
-                                                               }, user: @user)
+                                                               }, user: @user, location: current_location)
 
     @reservation = result.reservation
 
@@ -255,7 +256,7 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  room: @room,
                                                                  amenity_ids: amenity_ids,
                                                                  note: reservation_params[:note],
-                                                               }, user: current_user)
+                                                               }, user: current_user, location: current_location)
 
     @reservation = result.reservation
 

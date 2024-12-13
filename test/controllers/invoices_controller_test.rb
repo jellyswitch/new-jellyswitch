@@ -9,18 +9,18 @@ class InvoicesControllerTest < ActionDispatch::IntegrationTest
 
     @invoices.map do |invoice|
       stripe_invoice = Stripe::Invoice.create(
-        customer: @user.stripe_customer_id,
+        customer: @user.stripe_customer_id_for_location(invoice.location),
         currency: 'usd',
         amount: invoice.amount_due,
         description: 'test invoice'
       )
-      
+
       invoice.update(stripe_invoice_id: stripe_invoice.id)
     end
     Invoice.any_instance.stubs(:payment_method).returns("Credit Card")
   end
 
-  test "should get invoice index" do    
+  test "should get invoice index" do
     get invoices_path, env: default_env
     assert_response :success
   end

@@ -21,6 +21,7 @@ class Billing::DayPasses::SaveDayPassTest < ActiveSupport::TestCase
             day_pass: nil,
             token: nil,
             operator: nil,
+            location: locations(:cowork_tahoe_location),
             out_of_band: nil,
             params: @params,
             user_id: @user.id,

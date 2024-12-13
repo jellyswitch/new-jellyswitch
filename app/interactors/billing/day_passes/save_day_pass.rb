@@ -20,7 +20,7 @@ class Billing::DayPasses::SaveDayPass
     day_pass.location = location
     day_pass.billable = BillableFactory.for(day_pass).billable
 
-    unless day_pass_type.free? || day_pass.billable.has_stripe_customer?
+    unless day_pass_type.free? || day_pass.billable.has_stripe_customer_for_location?(location)
       context.fail!(message: "Cannot create paid day pass for user without billing info.")
     end
 

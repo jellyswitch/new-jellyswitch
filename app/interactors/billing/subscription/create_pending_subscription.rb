@@ -3,10 +3,10 @@ class Billing::Subscription::CreatePendingSubscription
   include Interactor
   include ErrorsHelper
 
-  delegate :subscription, :user, :start_day, to: :context
+  delegate :subscription, :user, :location, :start_day, to: :context
 
   def call
-    if !user.out_of_band? && !user.card_added?
+    if !user.out_of_band? && !user.card_added_for_location?(location)
       # create a pending subscription instead
       subscription.pending = true
       subscription.active = false

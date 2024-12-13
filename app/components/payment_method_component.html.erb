@@ -1,21 +1,21 @@
 <h4 class="display-4">Payment method</h4>
 <p>Tap to change:</p>
 <ul class="list-group mt-4">
-  <% if card_added? %>
+  <% if card_added_for_location?(helpers.current_location) %>
     <% if cash_or_check? %>
-      <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
+      <%= link_to "Card ending in #{last_4_digits(helpers.current_location)}", credit_card_path, class: "list-group-item" %>
     <% else %>
       <% if user? %>
         <% if bill_to_group? %>
-          <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
+          <%= link_to "Card ending in #{last_4_digits(helpers.current_location)}", credit_card_path, class: "list-group-item" %>
         <% else %>
-          <li class="list-group-item active">Card ending in <%= last_4_digits %></li>
+          <li class="list-group-item active">Card ending in <%= last_4_digits(helpers.current_location) %></li>
         <% end %>
       <% else %>
         <% if cash_or_check? %>
-          <%= link_to "Card ending in #{last_4_digits}", credit_card_path, class: "list-group-item" %>
+          <%= link_to "Card ending in #{last_4_digits(helpers.current_location)}", credit_card_path, class: "list-group-item" %>
         <% else %>
-          <li class="list-group-item active">Card ending in <%= last_4_digits %></li>
+          <li class="list-group-item active">Card ending in <%= last_4_digits(helpers.current_location) %></li>
         <% end %>
       <% end %>
     <% end %>

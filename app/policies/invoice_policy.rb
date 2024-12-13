@@ -5,7 +5,7 @@ class InvoicePolicy < ApplicationPolicy
   def index?
     (admin? || community_manager? || general_manager? || superadmin?) && billing_enabled?
   end
-  
+
   def due?
     (admin? || community_manager? || general_manager? || superadmin?) && billing_enabled?
   end
@@ -43,9 +43,9 @@ class InvoicePolicy < ApplicationPolicy
   def card_added?
     case record.billable_type
     when "User"
-      record.billable.card_added?
+      record.billable.card_added_for_location?(record&.location || location)
     when "Organization"
-      record.billable.has_billing?
+      record.billable.has_billing_for_location?(record&.location || location)
     end
   end
 end

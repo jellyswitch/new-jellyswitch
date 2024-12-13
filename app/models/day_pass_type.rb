@@ -37,11 +37,11 @@ class DayPassType < ApplicationRecord
     where(operator_id: operator.id).available.visible
   end
 
-  def self.all_options_for_select(operator, user)
-    if user.has_billing? || user.out_of_band?
-      where(operator_id: operator.id).available
+  def self.all_options_for_select(location, user)
+    if user.has_billing_for_location?(location) || user.out_of_band?
+      where(location_id: location.id).available
     else
-      where(operator_id: operator.id).available.free
+      where(location_id: location.id).available.free
     end
   end
 

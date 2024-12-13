@@ -1,3 +1,4 @@
+# Assuming always use this from a Location instance, Operator instance is deprecated
 module StripeUtils
   STRIPE_CLASS_MAP = {
     customer: "Customer",
@@ -13,7 +14,7 @@ module StripeUtils
   end
 
   def create_stripe_customer(customer)
-    return retrieve_stripe_customer(customer) if customer.stripe_customer_id
+    return retrieve_stripe_customer(customer) if customer.stripe_customer_id_for_location(self)
 
     case customer.class.name
     when "User"
@@ -36,7 +37,7 @@ module StripeUtils
   end
 
   def retrieve_stripe_customer(customer)
-    stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id)
+    stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id_for_location(self))
   end
 
   def retrieve_stripe_invoice(invoice)
@@ -55,7 +56,7 @@ module StripeUtils
   end
 
   def create_stripe_subscription(subscription, lease: nil)
-    subscribable = StripeSubscriptionFactory.for(subscription, lease)
+    subscribable = StripeSubscriptionFactory.for(subscription, self, lease)
     stripe_request(stripe_subscription, :create, subscribable.subscription_args)
   end
 
@@ -126,14 +127,14 @@ module StripeUtils
   end
 
   def create_stripe_invoice(user)
-    invoice_args = { customer: user.stripe_customer_id }
+    invoice_args = { customer: user.stripe_customer_id_for_location(self) }
 
     stripe_request(stripe_invoice, :create, invoice_args)
   end
 
   def create_stripe_invoice_item(user, plan)
     invoice_item_args = {
-      customer: user.stripe_customer_id,
+      customer: user.stripe_customer_id_for_location(self),
       currency: "usd",
       amount: plan.amount_in_cents,
       description: plan.name,
@@ -145,15 +146,15 @@ module StripeUtils
   def charge_invoice(invoice)
     case invoice.billable_type
     when "User"
-      if !invoice.billable.card_added
+      if !invoice.billable.card_added_for_location?(invoice.location)
         raise "No card on file."
       end
     when "Organization"
-      if !invoice.billable.has_billing?
+      if !invoice.billable.has_billing_for_location?(invoice.location)
         raise "No card on file."
       end
     end
-    stripe_customer = invoice.billable.stripe_customer
+    stripe_customer = invoice.billable.stripe_customer_for_location(invoice.location)
 
     if stripe_customer.sources.data.count == 0
       raise "No card on file."

@@ -36,6 +36,7 @@ class Operator::LandingController < Operator::BaseController
         subscription: current_user.subscriptions.pending.first,
         user: current_user,
         operator: current_tenant,
+        location: current_location,
         start_day: nil,
       )
       if result.success?
@@ -57,6 +58,7 @@ class Operator::LandingController < Operator::BaseController
     token = params[:stripeToken]
     result = Billing::Payment::UpdateUserPayment.call(
       user: current_user,
+      location: current_location,
       token: token,
       out_of_band: false,
     )
@@ -66,6 +68,7 @@ class Operator::LandingController < Operator::BaseController
         subscription: current_user.subscriptions.pending.first,
         user: current_user,
         operator: current_tenant,
+        location: current_location,
         start_day: nil,
       )
       if result2.success?

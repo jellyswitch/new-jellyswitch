@@ -1,16 +1,17 @@
 
 module StripeSubscription
   class DefaultSubscription < SimpleDelegator
-    attr_accessor :subscription, :lease
+    attr_accessor :subscription, :lease, :location
 
-    def initialize(subscription, lease)
+    def initialize(subscription, location, lease)
       @subscription = subscription
+      @location = location
       @lease = lease
     end
 
     def subscription_args
       {
-        customer: subscription.billable.stripe_customer_id,
+        customer: subscription.billable.stripe_customer_id_for_location(location),
         items: [{ plan: subscription.plan.stripe_plan_id }],
         prorate: false,
         billing_cycle_anchor: billing_cycle_anchor,

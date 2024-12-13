@@ -15,7 +15,7 @@ class Billing::Reservations::SaveStripeInvoice
 
     if charge_amount.positive?
       @invoice_item = Stripe::InvoiceItem.create({
-        customer: reservation.user.stripe_customer_id,
+        customer: reservation.user.stripe_customer_id_for_location(location),
         currency: "usd",
         amount: charge_amount,
         description: reservation.charge_description,

@@ -2,7 +2,7 @@
 class Billing::Payment::UpdateUserPayment
   include Interactor
 
-  delegate :user, :token, :out_of_band, to: :context
+  delegate :user, :location, :token, :out_of_band, to: :context
 
   def call
     if out_of_band
@@ -15,7 +15,8 @@ class Billing::Payment::UpdateUserPayment
           stripe_subscription.save
         end
 
-        if user.original_location.create_or_update_customer_payment(user, token)
+        if location.create_or_update_customer_payment(user, token)
+          user.update_card_added_for_location(location, true)
           user.update(card_added: true, out_of_band: false)
         else
           context.fail!(message: "Cannot update payment method.")

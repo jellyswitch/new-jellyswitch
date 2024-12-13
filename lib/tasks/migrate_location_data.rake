@@ -101,4 +101,18 @@ namespace :migrations do
       end
     end
   end
+
+  desc "Create user payment profiles for existing users"
+  task create_user_payment_profiles: :environment do
+    Location.find_each do |location|
+      p "Processing location ##{location.id} - #{location.name}"
+      location.users.find_each do |user|
+        p "Processing user ##{user.id} - #{user.name}"
+        payment_profile = user.user_payment_profiles.new(location_id: location.id)
+        payment_profile.stripe_customer_id = user.stripe_customer_id
+        payment_profile.card_added = user.card_added
+        payment_profile.save
+      end
+    end
+  end
 end

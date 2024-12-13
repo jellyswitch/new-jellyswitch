@@ -337,7 +337,7 @@ class Operator::UsersController < Operator::BaseController
   def update_billing
     find_user(:user_id)
     token = params[:stripeToken]
-    result = Billing::Payment::UpdateUserPayment.call(user: current_user, token: token)
+    result = Billing::Payment::UpdateUserPayment.call(user: current_user, location: current_location, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
       turbo_redirect(user_path(current_user))
@@ -367,7 +367,7 @@ class Operator::UsersController < Operator::BaseController
 
   def credit_card
     find_user(:user_id)
-    result = Billing::Payment::SetToCreditCard.call(user: @user)
+    result = Billing::Payment::SetToCreditCard.call(user: @user, location: current_location)
 
     if result.success?
       flash[:success] = "Payment method updated."
@@ -426,7 +426,7 @@ class Operator::UsersController < Operator::BaseController
 
   def out_of_band
     find_user(:user_id)
-    result = Billing::Payment::SetToOutOfBand.call(user: @user)
+    result = Billing::Payment::SetToOutOfBand.call(user: @user, location: current_location)
 
     if result.success?
       flash[:success] = "Payment method updated."

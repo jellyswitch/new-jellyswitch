@@ -21,6 +21,20 @@ class ActiveSupport::TestCase
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   fixtures :all
 
+  setup do
+    stub_request(:post, "https://api.stripe.com/v1/customers")
+      .to_return(
+        status: 200,
+        body: {
+          id: 'cus_12345',
+        }.to_json
+      )
+  end
+
+  teardown do
+    WebMock.reset!
+  end
+
   WebMock.disable_net_connect!(
     allow_localhost: true,
     allow: ['chromedriver.storage.googleapis.com', 'storage.googleapis.com', 'googlechromelabs.github.io', 'fcm.googleapis.com']
@@ -67,14 +81,14 @@ class ActiveSupport::TestCase
       plan.update(stripe_plan_id: stripe_plan.id)
     end
 
-    customer = Stripe::Customer.create({ email: @user.email }, { stripe_account: @user.operator.stripe_user_id })
-    @user.update(stripe_customer_id: customer.id)
+    customer = Stripe::Customer.create({ email: @user.email }, { stripe_account: @user.original_location.stripe_user_id })
+    @user.update_stripe_customer_id_for_location(@user.original_location, customer.id)
 
     # create subscriptions in stripe
     subscription = subscriptions(:cowork_tahoe_subscription)
 
     params = {
-      customer: subscription.billable.stripe_customer_id,
+      customer: subscription.billable.stripe_customer_id_for_location(locations(:cowork_tahoe_location)),
       items: [{ plan: subscription.plan.stripe_plan_id }],
       prorate: false,
       billing_cycle_anchor: nil,
@@ -109,7 +123,7 @@ class ActiveSupport::TestCase
     end
 
     customer = Stripe::Customer.create({ email: @user.email })
-    @user.update(stripe_customer_id: customer.id)
+    @user.update_stripe_customer_id_for_location(@user.original_location, customer.id)
   end
 end
 

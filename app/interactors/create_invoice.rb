@@ -13,7 +13,7 @@ class CreateInvoice
     customer = stripe_invoice.customer
 
     # TODO: put type in stripe invoice metadata
-    billable = User.find_by(stripe_customer_id: customer) || Organization.find_by(stripe_customer_id: customer)
+    billable = User.find_by_stripe_customer_id(customer) || Organization.find_by(stripe_customer_id: customer)
 
     if billable.nil?
       context.error_message = 'nonexistent-customer'

@@ -10,10 +10,10 @@
   <div class="col-lg-6 m-0 pl-0 pr-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        
+
         <h4 class="display-4 text-center mt-4">Invoices</h4>
           <div class="card-body list-group list-group-flush p-0">
-            <% if @organization.has_billing? || @organization.out_of_band? %>
+            <% if @organization.has_billing_for_location?(current_location) || @organization.out_of_band? %>
               <%= link_to new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary" do %>
                 <i class="fas fa-dollar-sign"></i>
                 &nbsp;
@@ -27,7 +27,7 @@
             <% end %>
             <%= render @organization.invoices %>
           </div>
-        
+
       <% end %>
     <% end %>
   </div>

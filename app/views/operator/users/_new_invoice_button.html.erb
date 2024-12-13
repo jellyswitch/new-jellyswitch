@@ -9,9 +9,9 @@
     <% end %>
     <div class="text-center">
       <small>This user is marked as "bill to group" but is not a member of a group.</small>
-    </div>  
+    </div>
   <% end %>
-<% elsif user.out_of_band? || user.card_added? %>
+<% elsif user.out_of_band? || user.card_added_for_location?(current_location) %>
   <%= link_to new_invoice_path(user_id: user.id), class: classes do %>
     <%= yield %>
   <% end %>

@@ -25,7 +25,7 @@ class Users::Save
 
     context.notifiable = @user
 
-    result = CreateStripeCustomer.call(user: @user)
+    result = CreateStripeCustomer.call(user: @user, location: @user.original_location)
 
     if !result.success?
       context.fail!(message: result.message)
