@@ -2,10 +2,10 @@
 class Billing::Subscription::ActivateSubscription
   include Interactor
 
-  delegate :subscription, :user, to: :context
+  delegate :subscription, :user, :location, to: :context
 
   def call
-    unless user.has_billing? || user.out_of_band?
+    unless user.has_billing_for_location?(location) || user.out_of_band?
       context.fail!(message: "Can't activate a subscription for someone with no billing info on file.")
     end
 

@@ -1,6 +1,6 @@
 class ReservableFactory
   def self.for(reservation)
-    if reservation.user.out_of_band? || !reservation.user.card_added?
+    if reservation.user.out_of_band? || !reservation.user.card_added_for_location?(reservation.room.location)
       Reservable::OutOfBand
     else
       Reservable::InBand

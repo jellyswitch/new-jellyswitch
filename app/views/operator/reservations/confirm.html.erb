@@ -67,7 +67,7 @@
     </dl>
 
     <% if current_user.should_charge_for_reservation?(current_location, @day) %>
-      <% if current_user.has_billing? %>
+      <% if current_user.has_billing_for_location?(current_location) %>
         <%= link_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), class: "btn btn-block btn-primary", remote: true, data: {turbo: "false", disable_with: "Reserving..."} %>
       <% else %>
         <%= render "billing" %>

@@ -12,7 +12,7 @@
 
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.select :day_pass_type, day_pass_type_options(DayPassType.all_options_for_select(current_tenant, user)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <%= f.select :day_pass_type, day_pass_type_options(DayPassType.all_options_for_select(current_location, user)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
     <div class="col-1"></div>
   </div>
 

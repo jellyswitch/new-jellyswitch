@@ -16,7 +16,7 @@ class ReservableFactoryTest < ActiveSupport::TestCase
 
   test 'returns an instance of Reservable::OutOfBand if user payment method is not out of band and is not card_added' do
     @user.stubs(:out_of_band?).returns(false)
-    @user.stubs(:card_added?).returns(false)
+    @user.stubs(:card_added_for_location?).returns(false)
 
     reservable = ReservableFactory.for(@reservation)
 
@@ -25,7 +25,7 @@ class ReservableFactoryTest < ActiveSupport::TestCase
 
   test 'returns an instance of Reservable::InBand if user is card_added is true' do
     @user.stubs(:out_of_band?).returns(false)
-    @user.stubs(:card_added?).returns(true)
+    @user.stubs(:card_added_for_location?).returns(true)
 
     reservable = ReservableFactory.for(@reservation)
 

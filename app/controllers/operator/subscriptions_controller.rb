@@ -32,7 +32,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
     token = params[:stripeToken]
-    card_added = @subscription.subscribable.card_added?
+    card_added = @subscription.subscribable.card_added_for_location?(current_location)
 
     interactor = Billing::Subscription::UpdatePaymentAndCreateSubscription
 

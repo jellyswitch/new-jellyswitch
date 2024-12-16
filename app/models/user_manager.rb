@@ -7,7 +7,7 @@ class UserManager
 
   def ready
     raise GroupOwnerException if user.organization_owner?
-    
+
     ActiveRecord::Base.transaction do
       create_feed_item
 
@@ -19,7 +19,7 @@ class UserManager
         twitter: nil,
         website: nil,
         phone: nil,
-        stripe_customer_id: nil,
+        stripe_customer_id: nil, # May cause problems
         archived: true,
         card_added: false,
         organization_id: nil,

@@ -36,7 +36,7 @@
 
   <%= f.hidden_field :user_id, value: user.id %>
 
-  <% if !user.has_billing? && !user.bill_to_organization? %>
+  <% if !user.has_billing_for_location?(current_location) && !user.bill_to_organization? %>
     <div class="form-group row">
       <div class="col-1"></div>
       <%= render "shared/billing" %>

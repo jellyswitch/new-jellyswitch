@@ -7,7 +7,7 @@ class LandingController < ApplicationController
       if superadmin?
         redirect_to operators_path
       else
-        redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        redirect_to landing_url(subdomain: current_user.operator.subdomain), allow_other_host: true
       end
     end
   end

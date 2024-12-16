@@ -1,6 +1,6 @@
 module SystemTestHelper
   def log_in(user)
-    user.update(password: "password")
+    user.reload.update(password: "password")
     visit login_path
 
     expect(page).to have_content("Welcome back to Cowork Tahoe!")

@@ -9,7 +9,7 @@ module Reservable
 
     def invoice_args
       {
-        customer: reservation.user.stripe_customer_id,
+        customer: reservation.user.stripe_customer_id_for_location(reservation.room.location),
         auto_advance: true
       }
     end

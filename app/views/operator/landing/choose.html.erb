@@ -9,7 +9,7 @@
   <% if current_location.hourly_enabled? %>
     <%= list_item do %>
       <% if active_working_hours?(current_location) %>
-        <%= render(MemberOnboarding::Checkin.new(location: current_location, has_billing: current_user.has_billing?)) %>
+        <%= render(MemberOnboarding::Checkin.new(location: current_location, has_billing: current_user.has_billing_for_location?(current_location))) %>
       <% else %>
         <div class="row mb-2 mr-1 ml-1">
           <div class="col mt-3">

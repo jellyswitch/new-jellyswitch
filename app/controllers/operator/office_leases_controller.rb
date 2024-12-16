@@ -149,7 +149,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
   def find_organizations
     @organizations = Organization.all.select do |org|
-      org.has_stripe_customer?
+      org.has_stripe_customer_for_location?(current_location)
     end
   end
 

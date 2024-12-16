@@ -43,7 +43,7 @@ module Jellyswitch
             user.organization_name,
             subscription,
             user.payment_method,
-            user.stripe_customer_id
+            user.stripe_customer_id_for_location(location)
           ]
         end
       end

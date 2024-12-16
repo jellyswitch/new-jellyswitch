@@ -5,27 +5,28 @@ class Checkins::CreateStripeInvoice
   delegate :checkin, to: :context
 
   def call
+    location = checkin.location
     if generate_invoice?
       @invoice_item = Stripe::InvoiceItem.create({
-        customer: checkin.billable.stripe_customer_id,
+        customer: checkin.billable.stripe_customer_id_for_location(location),
         currency: 'usd',
         amount: checkin.charge_amount,
         description: checkin.charge_description
       }, {
-        api_key: checkin.location.stripe_secret_key,
-        stripe_account: checkin.location.stripe_user_id
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id
       })
 
       invoice_args = CheckInableFactory.for(checkin).invoice_args
       @invoice = Stripe::Invoice.create(
         invoice_args,
         {
-          api_key: checkin.location.stripe_secret_key,
-          stripe_account: checkin.location.stripe_user_id
+          api_key: location.stripe_secret_key,
+          stripe_account: location.stripe_user_id
         }
       )
 
-      result = CreateInvoice.call(stripe_invoice: @invoice, location: checkin.location)
+      result = CreateInvoice.call(stripe_invoice: @invoice, location: location)
       if !result.success?
         context.fail!(message: result.message)
       end
@@ -40,10 +41,10 @@ class Checkins::CreateStripeInvoice
 
   def generate_invoice?
     if checkin.user.operator.production? || checkin.user.operator.subdomain == "southlakecoworking"
-      !(checkin.user.member?(checkin.location, day= checkin.datetime_in) ||
+      !(checkin.user.member?(location, day= checkin.datetime_in) ||
         checkin.user.has_active_day_pass? ||
         checkin.user.has_active_lease? ||
-        checkin.user.admin_of_location?(checkin.location))
+        checkin.user.admin_of_location?(location))
     else
       false
     end

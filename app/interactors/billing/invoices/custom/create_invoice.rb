@@ -8,7 +8,7 @@ class Billing::Invoices::Custom::CreateInvoice
     amount_in_cents = dollars.cents
 
     @invoice_item = Stripe::InvoiceItem.create({
-      customer: billable.stripe_customer_id,
+      customer: billable.stripe_customer_id_for_location(location),
       currency: 'usd',
       amount: amount_in_cents,
       description: description
@@ -18,7 +18,7 @@ class Billing::Invoices::Custom::CreateInvoice
     })
 
     invoice_args = {
-      customer: billable.stripe_customer_id,
+      customer: billable.stripe_customer_id_for_location(location),
       auto_advance: true
     }
 

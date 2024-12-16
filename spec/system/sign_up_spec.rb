@@ -5,7 +5,7 @@ RSpec.describe "Sign up / Registration flow", type: :system do
 
   let(:operator) { Operator.first }
   let(:location) { Location.first }
-  let!(:other_location) { create(:location, name: "Other location", operator: operator) }
+  let!(:other_location) { create(:location, name: "Other location", operator: operator, stripe_user_id: location.stripe_user_id) }
 
   context "user signs up specifying a different location than the default" do
     before do
@@ -27,6 +27,7 @@ RSpec.describe "Sign up / Registration flow", type: :system do
       wait_for_turbo
 
       expect(page).to have_content other_location.name
+      sleep 10
       expect(page).to have_content "Please select an option below."
 
       # user sees his current location in account info

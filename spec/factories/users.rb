@@ -18,5 +18,11 @@ FactoryBot.define do
     slug { "john-doe" }
 
     operator { Operator.find_by(name: "Cowork Tahoe") || association(:operator) }
+    original_location { operator.locations.first }
+
+    after(:create) do |user|
+      payment_profile = user.user_payment_profiles.find_or_create_by(location: user.original_location)
+      payment_profile.update(stripe_customer_id: user.stripe_customer_id)
+    end
   end
 end

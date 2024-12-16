@@ -5,7 +5,7 @@ class Billing::Credits::CreateStripeInvoice
 
   def call
     invoice_item = Stripe::InvoiceItem.create({
-      customer: user.stripe_customer_id,
+      customer: user.stripe_customer_id_for_location(location),
       currency: 'usd',
       amount: total_cost,
       description: "#{amount} credits at #{location.name}"
@@ -14,7 +14,7 @@ class Billing::Credits::CreateStripeInvoice
       stripe_account: location.stripe_user_id
     })
 
-    invoice_args = CreditPurchaseFactory.for(user).invoice_args
+    invoice_args = CreditPurchaseFactory.for(user, location).invoice_args
     @invoice = Stripe::Invoice.create(
       invoice_args,
       {

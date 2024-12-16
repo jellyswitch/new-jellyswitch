@@ -109,6 +109,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def create_stripe_members
+    # if there are future errors check this
     user = current_tenant.users.new(
       name: params[:name],
       email: params[:email],
@@ -118,6 +119,12 @@ class Operator::OnboardingController < Operator::BaseController
       approved: true,
       original_location_id: current_location.id,
       current_location_id: current_location.id
+    )
+
+    user.user_payment_profiles.new(
+      location_id: current_location.id,
+      stripe_customer_id: params[:stripe_customer_id],
+      card_added: params[:card_added] == "true"
     )
 
     if user.save

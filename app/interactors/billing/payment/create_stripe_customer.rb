@@ -1,4 +1,4 @@
-
+# Only used for organization creation in app/interactors/create_organization.rb
 class Billing::Payment::CreateStripeCustomer
   include Interactor
 

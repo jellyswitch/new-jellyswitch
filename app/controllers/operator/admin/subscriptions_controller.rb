@@ -32,28 +32,29 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     @subscription = new_subscription
     start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
-    
+
     interactor = if @subscription.subscribable.bill_to_organization
       Billing::Subscription::CreateSubscription
     else
       if out_of_band
         Billing::Subscription::CreateSubscription
       else
-        if @subscription.subscribable.card_added
+        if @subscription.subscribable.card_added_for_location?(current_location)
           Billing::Subscription::CreateSubscription
         else
           Billing::Subscription::CreatePendingSubscription
         end
       end
     end
-    
+
     result = interactor.call(
       subscription: @subscription,
       token: params[:stripeToken],
       user: @subscription.subscribable,
       start_day: start_day,
       out_of_band: out_of_band,
-      operator: current_tenant
+      operator: current_tenant,
+      location: current_location,
     )
 
     if result.success?

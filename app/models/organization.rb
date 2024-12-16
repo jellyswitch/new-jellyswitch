@@ -71,17 +71,17 @@ class Organization < ApplicationRecord
     leases
   end
 
-  def stripe_customer
+  def stripe_customer_for_location(location)
     return unless stripe_customer_id
-    location.retrieve_stripe_customer(self)
+    self.location.retrieve_stripe_customer(self)
   end
 
   def find_or_create_stripe_customer
     stripe_customer || location.create_stripe_customer(self)
   end
 
-  def has_billing?
-    has_stripe_customer? && card_added?
+  def has_billing_for_location?(location)
+    has_stripe_customer_for_location?(location) && card_added?
   end
 
   def card_added
@@ -92,11 +92,23 @@ class Organization < ApplicationRecord
     card_added
   end
 
-  def has_stripe_customer?
+  # TODO: since organization is tied to location for now, this passes through
+  def card_added_for_location?(location)
+    card_added?
+  end
+
+  # TODO: since organization is tied to location for now, this passes through
+  def stripe_customer_id_for_location(location)
+    stripe_customer_id
+  end
+
+  # TODO: since organization is tied to location for now, this passes through
+  def has_stripe_customer_for_location?(location)
     stripe_customer_id.present?
   end
 
-  def card_last_4_digits
+  def card_last_4_digits(location)
+    stripe_customer = stripe_customer_for_location(location)
     if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
       if stripe_customer.sources.data.count < 1
         nil
@@ -118,7 +130,7 @@ class Organization < ApplicationRecord
   end
 
   def payment_method
-    if has_billing?
+    if has_billing_for_location?(location)
       "Credit card on file"
     else
       if out_of_band?

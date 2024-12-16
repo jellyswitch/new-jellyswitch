@@ -97,6 +97,8 @@ class Location < ApplicationRecord
   has_one_attached :background_image
   has_one_attached :photo
 
+  has_many :user_payment_profiles, dependent: :destroy
+
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true
 

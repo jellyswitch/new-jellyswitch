@@ -78,48 +78,48 @@ RSpec.describe Organization, type: :model do
 
       before do
         organization.stripe_customer_id = "cus_123"
-        allow(organization.operator).to receive(:retrieve_stripe_customer)
+        allow(organization.location).to receive(:retrieve_stripe_customer)
           .and_return(stripe_customer_double)
       end
 
-      describe "#stripe_customer" do
+      describe "#stripe_customer_for_location" do
         it "returns nil when no stripe_customer_id" do
           organization.stripe_customer_id = nil
-          expect(organization.stripe_customer).to be_nil
+          expect(organization.stripe_customer_for_location(organization.location)).to be_nil
         end
 
         it "retrieves stripe customer when stripe_customer_id exists" do
-          expect(organization.stripe_customer).to eq(stripe_customer_double)
+          expect(organization.stripe_customer_for_location(organization.location)).to eq(stripe_customer_double)
         end
       end
 
-      describe "#has_billing?" do
+      describe "#has_billing_for_location?" do
         it "returns true when has stripe customer and card" do
-          allow(organization).to receive(:has_stripe_customer?).and_return(true)
+          allow(organization).to receive(:has_stripe_customer_for_location?).and_return(true)
           allow(organization).to receive(:card_added?).and_return(true)
-          expect(organization.has_billing?).to be true
+          expect(organization.has_billing_for_location?(organization.location)).to be true
         end
 
         it "returns false when missing stripe customer or card" do
-          allow(organization).to receive(:has_stripe_customer?).and_return(false)
-          expect(organization.has_billing?).to be false
+          allow(organization).to receive(:has_stripe_customer_for_location?).and_return(false)
+          expect(organization.has_billing_for_location?(organization.location)).to be false
         end
       end
 
       describe "#payment_method" do
         it "returns 'Credit card on file' when has billing" do
-          allow(organization).to receive(:has_billing?).and_return(true)
+          allow(organization).to receive(:has_billing_for_location?).and_return(true)
           expect(organization.payment_method).to eq("Credit card on file")
         end
 
         it "returns 'Via cash or check' when out of band" do
-          allow(organization).to receive(:has_billing?).and_return(false)
+          allow(organization).to receive(:has_billing_for_location?).and_return(false)
           organization.out_of_band = true
           expect(organization.payment_method).to eq("Via cash or check")
         end
 
         it "returns 'None' when no billing and not out of band" do
-          allow(organization).to receive(:has_billing?).and_return(false)
+          allow(organization).to receive(:has_billing_for_location?).and_return(false)
           organization.out_of_band = false
           expect(organization.payment_method).to eq("None")
         end

@@ -7,12 +7,12 @@ class PaymentMethodComponent < ApplicationComponent
 
   attr_reader :billable
 
-  def card_added?
-    billable.card_added?
+  def card_added_for_location?(location)
+    billable.card_added_for_location?(location)
   end
 
-  def last_4_digits
-    billable.card_last_4_digits # XXX extract this into a concern on the user / organization model
+  def last_4_digits(location)
+    billable.card_last_4_digits(location) # XXX extract this into a concern on the user / organization model
   end
 
   def credit_card_path

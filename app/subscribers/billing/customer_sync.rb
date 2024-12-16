@@ -1,4 +1,4 @@
-
+# Not used anymore
 class Billing::CustomerSync
   def self.call(billable_id:, billable_type:)
     billable = billable_type.constantize.find(billable_id)

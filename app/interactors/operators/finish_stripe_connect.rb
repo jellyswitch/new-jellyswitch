@@ -50,7 +50,7 @@ class Operators::FinishStripeConnect
       # Overwrite existing user's stripe credentials with new stripe customer in new Stripe Connect account
       results = []
       operator.users.non_superadmins.each do |user|
-        result = CreateStripeCustomer.call(user: user)
+        result = CreateStripeCustomer.call(user: user, location: location)
         results.push(result)
       end
       failures = results.select { |result| !result.success? }

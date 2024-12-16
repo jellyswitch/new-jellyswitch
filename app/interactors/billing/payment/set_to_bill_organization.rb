@@ -6,7 +6,7 @@ class Billing::Payment::SetToBillOrganization
 
   def call
     if user.member_of_organization?
-      if user.organization.has_billing?
+      if user.organization.has_billing_for_location?(user.organization.location)
         if !user.update(bill_to_organization: true, out_of_band: false)
           context.fail!(message: "An error occurred.")
         end

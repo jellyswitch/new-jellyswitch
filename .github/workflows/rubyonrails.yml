@@ -7,9 +7,9 @@
 name: "Ruby on Rails CI"
 on:
   push:
-    branches: [ main, develop, upgrade-heroku-22-stack ]
+    branches: [ main, develop, multiple-stripe-payment-profiles ]
   pull_request:
-    branches: [ main, develop, upgrade-heroku-22-stack ]
+    branches: [ main, develop, multiple-stripe-payment-profiles ]
   workflow_dispatch:
     inputs:
       debug_enabled:

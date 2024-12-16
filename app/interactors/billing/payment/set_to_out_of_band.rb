@@ -1,7 +1,7 @@
 class Billing::Payment::SetToOutOfBand
   include Interactor
 
-  delegate :user, to: :context
+  delegate :user, :location, to: :context
 
   def call
     user.subscriptions_billable.active.each do |subscription|
@@ -11,6 +11,7 @@ class Billing::Payment::SetToOutOfBand
       stripe_subscription.save
     end
 
+    user.update_card_added_for_location(location, false)
     if !user.update(card_added: false, out_of_band: true, bill_to_organization: false)
       context.fail!(message: "An error occurred.")
     end

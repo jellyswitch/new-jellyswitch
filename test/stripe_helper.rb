@@ -25,13 +25,13 @@ module StripeHelper
     end
 
     customer = Stripe::Customer.create(email: @user.email)
-    @user.update(stripe_customer_id: customer.id)
+    @user.update_stripe_customer_id_for_location(locations(:cowork_tahoe_location), customer.id)
 
     # create subscriptions in stripe
     subscription = subscriptions(:cowork_tahoe_subscription)
 
     params = {
-      customer: subscription.billable.stripe_customer_id,
+      customer: subscription.billable.stripe_customer_id_for_location(locations(:cowork_tahoe_location)),
       items: [{ plan: subscription.plan.stripe_plan_id }],
       prorate: false,
       billing_cycle_anchor: nil,

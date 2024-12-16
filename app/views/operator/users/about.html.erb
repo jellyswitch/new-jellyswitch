@@ -12,16 +12,16 @@
         <div class="col-2">
           <%= render "shared/small_profile_photo", user: @user %>
         </div>
-        <div class="col">		
-          <h5 class="mb-1">		
-            <%= link_to @user.name, user_path(@user) %>		
-          </h5>		
-          <small>		
-            Joined		
-            <%= time_ago_in_words(@user.created_at) %>		
-            ago		
-            (<%= @user.created_at.strftime("%F") %>)		
-          </small>		
+        <div class="col">
+          <h5 class="mb-1">
+            <%= link_to @user.name, user_path(@user) %>
+          </h5>
+          <small>
+            Joined
+            <%= time_ago_in_words(@user.created_at) %>
+            ago
+            (<%= @user.created_at.strftime("%F") %>)
+          </small>
         </div>
       </div>
       <dl class="row mt-3">
@@ -57,9 +57,9 @@
 
       <% if superadmin? %>
         <dl class="row mt-3">
-          <dt class="col-sm-3">Stripe Customer ID</dt>
+          <dt class="col-sm-3">Stripe Customer ID (for <%= current_location.name %>)</dt>
           <dd class="col-sm">
-            <pre><%= @user.stripe_customer_id %></pre>
+            <pre><%= @user.stripe_customer_id_for_location(current_location) %></pre>
           </dd>
         </dl>
       <% end %>
@@ -72,7 +72,7 @@
           </dd>
         </dl>
       <% end %>
-      
+
       <div class="row mt-4">
         <div class="col">
           <div class="row">
@@ -83,7 +83,7 @@
               <%= render "approval_toggle", user: @user %>
             </div>
           </div>
-        
+
           <div class="row mt-2">
             <div class="col">
               <%= render "archive_toggle", user: @user %>

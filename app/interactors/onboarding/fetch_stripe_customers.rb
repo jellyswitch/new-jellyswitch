@@ -10,7 +10,7 @@ class Onboarding::FetchStripeCustomers
     stripe_data.auto_paging_each do |cust|
       customers << {
         stripe_customer_id: cust.id,
-        user: location.users.find_by(stripe_customer_id: cust.id),
+        user: find_user_by_stripe_customer_id(cust.id),
         email: cust.email,
         card_added: card_added?(cust),
         name: cust.name,
@@ -20,6 +20,10 @@ class Onboarding::FetchStripeCustomers
   end
 
   private
+
+  def find_user_by_stripe_customer_id(stripe_customer_id)
+    User.find_by_stripe_customer_id(stripe_customer_id)
+  end
 
   def card_added?(stripe_customer)
     if stripe_customer && stripe_customer.sources && stripe_customer.sources.data

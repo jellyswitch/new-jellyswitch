@@ -16,6 +16,9 @@ module UsersHelper
     if current_user && current_user.id == User.unscoped.friendly.find(params[key])&.id
       # viewing self can be performed anywhere
       @user = current_user
+    elsif current_user&.admin? || current_user&.superadmin?
+      # or by admins
+      @user = User.unscoped.friendly.find(params[key])
     else
       # viewing others can only be performed at the current location
       @user = User.originally_at_location(current_location).friendly.find(params[key])
