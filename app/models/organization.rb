@@ -76,6 +76,11 @@ class Organization < ApplicationRecord
     self.location.retrieve_stripe_customer(self)
   end
 
+  def stripe_customer
+    # TODO: since organization is tied to location for now, this passes through
+    stripe_customer_for_location(location)
+  end
+
   def find_or_create_stripe_customer
     stripe_customer || location.create_stripe_customer(self)
   end
