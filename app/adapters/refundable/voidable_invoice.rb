@@ -2,7 +2,7 @@
 module Refundable
   class VoidableInvoice < SimpleDelegator
     def cancel
-      stripe_invoice = operator.retrieve_stripe_invoice(self)
+      stripe_invoice = self.location.retrieve_stripe_invoice(self)
 
       case stripe_invoice.status
       when 'draft'

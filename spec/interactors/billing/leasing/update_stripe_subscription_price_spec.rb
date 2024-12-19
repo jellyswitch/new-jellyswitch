@@ -7,7 +7,7 @@ RSpec.describe Billing::Leasing::UpdateStripeSubscriptionPrice, type: :interacto
 
   describe "when the update is successful" do
     it "calls update_stripe_subscription_price on the operator and set to context" do
-      expect_any_instance_of(Operator).to receive(:update_stripe_subscription_price).with(office_lease.subscription, 100).and_return(stripe_subscription)
+      expect_any_instance_of(Location).to receive(:update_stripe_subscription_price).with(office_lease.subscription, 100).and_return(stripe_subscription)
 
       result = Billing::Leasing::UpdateStripeSubscriptionPrice.call(office_lease: office_lease, new_price_in_cents: 100, operator: operator)
 
@@ -19,7 +19,7 @@ RSpec.describe Billing::Leasing::UpdateStripeSubscriptionPrice, type: :interacto
     let(:error_message) { "Stripe API error" }
 
     before do
-      allow(operator).to receive(:update_stripe_subscription_price).and_raise(StandardError.new(error_message))
+      allow(office_lease.location).to receive(:update_stripe_subscription_price).and_raise(StandardError.new(error_message))
     end
 
     it "returns error message to context" do
