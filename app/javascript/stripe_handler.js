@@ -2,7 +2,7 @@ function doStripe() {
   if (!document.getElementById('card-element')) {
     return;
   }
-  var stripe = Stripe(window.stripe_key);
+  window.stripe = Stripe(window.stripe_key);
   var elements = stripe.elements();
 
   var style = {};
@@ -35,7 +35,7 @@ function doStripe() {
       console.log(window.has_token);
       event.preventDefault();
 
-      stripe.createToken(card).then(function(result) {
+      window.stripe.createToken(card).then(function(result) {
         if (result.error) {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;

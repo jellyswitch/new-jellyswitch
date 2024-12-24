@@ -60,7 +60,7 @@ class Operator::CheckinsController < Operator::BaseController
     find_checkin
     authorize @checkin
 
-    result = Checkins::Checkout.call(checkin: @checkin, datetime_out: Time.current)
+    result = Checkins::Checkout.call(checkin: @checkin, datetime_out: Time.current, location: current_location)
 
     if result.success?
       flash[:success] = "You've checked out."
