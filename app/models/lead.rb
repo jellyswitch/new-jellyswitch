@@ -43,7 +43,7 @@ class Lead < ApplicationRecord
   def set_source
     if source.blank?
       if ahoy_visit.present?
-        source.update(source: SOURCES[:web])
+        update(source: SOURCES[:web])
       end
     end
   end
