@@ -1,4 +1,5 @@
 class Operator::SessionsController < Operator::BaseController
+  skip_before_action :reset_location, only: [:new, :create, :destroy]
   before_action :background_image
 
   def new

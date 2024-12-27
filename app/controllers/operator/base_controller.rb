@@ -1,12 +1,12 @@
 class Operator::BaseController < ApplicationController
   set_current_tenant_through_filter
   before_action :set_tenant_based_on_subdomain
-  
+
   before_action :store_ios_token, if: :logged_in?
   before_action :store_android_token, if: :logged_in?
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
-  before_action :reset_location, if: :logged_in?
+  before_action :reset_location
   before_action :set_navigation
 
   layout "operator"
@@ -55,7 +55,7 @@ class Operator::BaseController < ApplicationController
 
   def set_navigation
     @navigation = NavigationFactory.for(
-      logged_in?, 
+      logged_in?,
       current_tenant,
       current_location,
       current_user)
@@ -79,8 +79,13 @@ class Operator::BaseController < ApplicationController
 
   def reset_location
     if current_location.blank?
-      log_out
-      redirect_to root_path
+      if logged_in?
+        log_out
+        redirect_to root_path
+      elsif (request.get? && request.format.html?) && !(controller_name == "landing" && action_name == "index")
+        # If the user tries go go anywhere that is not the landing page, they should be redirected to the landing page where they will select location
+        redirect_to root_path
+      end
     end
   end
 end
