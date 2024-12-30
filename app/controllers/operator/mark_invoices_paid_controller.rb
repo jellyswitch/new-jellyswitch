@@ -1,10 +1,12 @@
 
 class Operator::MarkInvoicesPaidController < Operator::BaseController
+  before_action :require_authentication
+
   def update
     invoice = Invoice.find(params[:invoice_id])
 
     result = Billing::Invoices::MarkInvoiceAsPaid.call(
-      invoice: invoice, 
+      invoice: invoice,
       operator: current_tenant)
 
     if result.success?

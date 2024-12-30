@@ -1,5 +1,7 @@
 
 class Operator::OrganizationBillingController < Operator::BaseController
+  before_action :require_authentication
+
   def create
     organization = Organization.friendly.find(params[:organization_id])
     out_of_band = params[:out_of_band]

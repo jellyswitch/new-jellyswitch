@@ -1,5 +1,6 @@
 class Operator::PlanCategoriesController < Operator::BaseController
   include PlansHelper
+  before_action :require_authentication
   before_action :background_image
 
   def index

@@ -1,5 +1,6 @@
 class Operator::LeadNotesController < Operator::BaseController
   include LeadsHelper
+  before_action :require_authentication
 
   def create
     @lead = find_lead(:lead_id)

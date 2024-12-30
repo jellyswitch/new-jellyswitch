@@ -1,5 +1,6 @@
 class Operator::PauseMembershipsController < Operator::BaseController
   include SubscriptionsHelper
+  before_action :require_authentication
 
   def create
     find_subscription

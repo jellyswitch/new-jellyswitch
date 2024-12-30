@@ -1,4 +1,5 @@
 class Operator::NotificationsController < Operator::BaseController
+  before_action :require_authentication
   before_action :background_image
 
   def index
@@ -40,7 +41,7 @@ class Operator::NotificationsController < Operator::BaseController
 
   def setting(symbol)
     result = ToggleValue.call(object: current_tenant, value: symbol)
-    
+
     if !result.success?
       flash[:error] = result.message
     end

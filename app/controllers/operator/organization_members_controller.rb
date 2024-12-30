@@ -1,5 +1,7 @@
 
 class Operator::OrganizationMembersController < Operator::BaseController
+  before_action :require_authentication
+
   def create
     organization = Organization.friendly.find(params[:organization_id])
 

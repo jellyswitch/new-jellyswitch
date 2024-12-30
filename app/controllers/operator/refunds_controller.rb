@@ -1,5 +1,6 @@
 
 class Operator::RefundsController < Operator::BaseController
+  before_action :require_authentication
 
   def create
     invoice = Invoice.find(params[:invoice_id])

@@ -88,4 +88,11 @@ class Operator::BaseController < ApplicationController
       end
     end
   end
+
+  def require_authentication
+    unless current_user
+      flash[:error] = "You must be logged in to access this page."
+      turbo_redirect(login_path, action: :replace)
+    end
+  end
 end

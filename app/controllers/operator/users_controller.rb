@@ -1,6 +1,7 @@
 
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
+  before_action :require_authentication, except: [:new, :create]
   before_action :background_image
 
   def index

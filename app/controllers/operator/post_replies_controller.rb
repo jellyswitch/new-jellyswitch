@@ -1,5 +1,6 @@
 class Operator::PostRepliesController < Operator::BaseController
   include PostsHelper
+  before_action :require_authentication
   before_action :background_image
 
   def create

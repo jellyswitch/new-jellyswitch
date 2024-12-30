@@ -1,4 +1,5 @@
 class Operator::RsvpsController < Operator::BaseController
+  before_action :require_authentication
   before_action :background_image
   before_action :find_event
 

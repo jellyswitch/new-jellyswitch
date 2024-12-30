@@ -1,5 +1,6 @@
 
 class Operator::SearchResultsController < Operator::BaseController
+  before_action :require_authentication
   before_action :background_image
 
   def new
@@ -14,19 +15,19 @@ class Operator::SearchResultsController < Operator::BaseController
   def query
     @query = params[:query]
     @results = Searchkick.search(
-      @query, 
+      @query,
       fields: [
-        :name, 
-        :text, 
-        :comments, 
-        :user_name, 
-        :type, 
-        :amount, 
-        :stripe_customer_id, 
-        :email, 
-        :organization, 
+        :name,
+        :text,
+        :comments,
+        :user_name,
+        :type,
+        :amount,
+        :stripe_customer_id,
+        :email,
+        :organization,
         :owner,
-        :announcement], 
+        :announcement],
       models: [FeedItem, User, Organization, Room, Door, Location, Announcement],
       operator: "or"
     )
