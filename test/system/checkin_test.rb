@@ -16,7 +16,7 @@ class CheckinTest < ApplicationSystemTestCase
 
   test "user accesses a location via its checkin" do
     operator = operators(:cowork_tahoe)
-    other_location = create(:location, operator: operator, name: "Other Location", allow_hourly: true, hourly_rate_in_cents: 500, working_day_start: "00:00", working_day_end: "23:59")
+    other_location = create(:location, operator: operator, name: "Other Location", allow_hourly: true, hourly_rate_in_cents: 500, working_day_start: "00:00", working_day_end: "23:59", open_saturday: true, open_sunday: true)
     switch_to_location(other_location)
     log_in(@user)
     visit home_path

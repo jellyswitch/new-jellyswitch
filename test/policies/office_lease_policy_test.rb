@@ -47,7 +47,7 @@ class OfficeLeasePolicyTest < PolicyAssertions::Test
 
   def test_renewal
     office_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 1.month)
-    not_valid_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 2.months)
+    not_valid_lease = create(:office_lease, start_date: Date.today, end_date: Date.today + 3.months)
 
     assert_not_permitted @member, office_lease
     assert_permit @admin, office_lease
