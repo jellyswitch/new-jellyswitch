@@ -109,7 +109,7 @@ other_location_admin:
   password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
   admin: true
   remember_digest: nil
-  slug: dave-paola
+  slug: other-loc-admin
   bio: When you play a game of thrones you win or you die.
   linkedin: ""
   twitter: ""

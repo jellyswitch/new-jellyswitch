@@ -7,7 +7,7 @@ class AuthenticationCheckTest < ApplicationSystemTestCase
 
     log_in(user)
     visit user_path(user)
-    wait_for_ajax
+    wait_for_turbo
 
     assert_text "My Account"
     assert_text "View my membership"
@@ -21,5 +21,15 @@ class AuthenticationCheckTest < ApplicationSystemTestCase
 
     assert_text "You must be logged in to access this page."
     assert_text "Sign In"
+
+    user.update(password: "password")
+    fill_in "Email", with: user.email
+    fill_in "Password", with: "password"
+
+    find("#sign-in").click
+    wait_for_turbo
+
+    assert_text "My Account"
+    assert_text "View my membership"
   end
 end

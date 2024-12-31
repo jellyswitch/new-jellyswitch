@@ -25,7 +25,7 @@ class Operator::SessionsController < Operator::BaseController
       if ios_request?
         turbo_redirect(mobile_send_user_id_to_ios_path, action: restore_if_possible)
       else
-        turbo_redirect(landing_path, action: restore_if_possible)
+        redirect_to_stored_location_or_default(landing_path)
       end
     else
       flash[:error] = result.message
@@ -40,5 +40,12 @@ class Operator::SessionsController < Operator::BaseController
     else
       turbo_redirect(root_path, action: restore_if_possible)
     end
+  end
+
+  private
+
+  def redirect_to_stored_location_or_default(default_path)
+    path = session.delete(:return_to) || default_path
+    turbo_redirect(path, action: :advance)
   end
 end

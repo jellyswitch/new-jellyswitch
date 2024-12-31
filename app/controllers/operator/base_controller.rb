@@ -91,8 +91,20 @@ class Operator::BaseController < ApplicationController
 
   def require_authentication
     unless current_user
+      store_location
+
       flash[:error] = "You must be logged in to access this page."
       turbo_redirect(login_path, action: :replace)
     end
+  end
+
+  def store_location
+    # Don't store the location for certain requests
+    return if request.xhr? ||
+            request.format.json? ||
+            request.path.start_with?('/login') ||
+            request.path.start_with?('/logout')
+
+    session[:return_to] = request.fullpath
   end
 end
