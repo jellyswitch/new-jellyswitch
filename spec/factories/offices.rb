@@ -12,7 +12,7 @@ FactoryBot.define do
 
     trait :with_active_lease do
       after(:create) do |office|
-        create(:office_lease, office: office, start_date: 1.month.ago, end_date: 1.month.from_now)
+        create(:office_lease, office: office, operator: office.operator, location: office.location, start_date: 1.month.ago, end_date: 1.month.from_now)
       end
     end
   end

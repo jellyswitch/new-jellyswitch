@@ -24,6 +24,10 @@ class LocationPolicy < ApplicationPolicy
     admin? || general_manager?
   end
 
+  def destroy?
+    superadmin?
+  end
+
   def allow_hourly? # not used anymore
     admin?
   end
