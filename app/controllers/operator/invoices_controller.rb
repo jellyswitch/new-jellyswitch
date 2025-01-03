@@ -64,6 +64,7 @@ class Operator::InvoicesController < Operator::BaseController
     else
       flash[:error] = "Create a new invoice from a member or group's profile."
       turbo_redirect(invoices_path, action: "replace")
+      return
     end
 
     @invoice = @billable.invoices.new
@@ -84,6 +85,7 @@ class Operator::InvoicesController < Operator::BaseController
     else
       flash[:error] = "No such member or group."
       turbo_redirect(root_path)
+      return
     end
 
     if @billable

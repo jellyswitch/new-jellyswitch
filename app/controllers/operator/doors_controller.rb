@@ -117,6 +117,6 @@ class Operator::DoorsController < Operator::BaseController
   end
 
   def log_door_punch
-    DoorPunch.create!(user: current_user, door: @door)
+    DoorPunch.create!(user: current_user, door: @door, operator: current_tenant)
   end
 end

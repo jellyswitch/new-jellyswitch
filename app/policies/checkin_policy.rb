@@ -1,7 +1,7 @@
 
 class CheckinPolicy < ApplicationPolicy
   def new?
-    true
+    is_user?
   end
 
   def required?
@@ -9,7 +9,7 @@ class CheckinPolicy < ApplicationPolicy
   end
 
   def create?
-    true
+    is_user?
   end
 
   def show?
