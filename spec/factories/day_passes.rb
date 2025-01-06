@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :day_pass do
-    day { Date.today }
+    day { Date.current }
     operator { Operator.find_by(name: "Cowork Tahoe") || association(:operator) }
     location { Location.find_by(name: "Cowork Tahoe") }
     user { association(:user) }
