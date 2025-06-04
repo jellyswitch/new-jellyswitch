@@ -25,7 +25,7 @@ class Notifiable::Default < SimpleDelegator
   end
 
   def ios
-    if operator.push_notification_certificate.attached?
+    if operator.push_notification_certificate.attached? && operator.bundle_id.present?
       recipients.each do |user|
         puts "Pushing iOS notification to #{user.name}: #{message}"
 
@@ -45,7 +45,7 @@ class Notifiable::Default < SimpleDelegator
         end
       end
     else
-      puts "Operator #{operator.name} has no push notification certificate."
+      puts "Operator #{operator.name} has no push notification certificate. Or bundle_id is missing"
     end
   end
 
