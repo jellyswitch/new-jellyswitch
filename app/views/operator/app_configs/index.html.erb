@@ -14,12 +14,12 @@
         <%- end %>
       </dd>
 
-      <dt>iOS Push Notification Certificate</dt>
+      <dt>Android Push Notification Certificate</dt>
       <dd>
-        <%- if current_tenant.android_server_key.present? %>
-          Present
+        <%- if current_tenant.android_push_notification_key.attached? %>
+          Uploaded
         <%- else %>
-          Not Entered
+          Not Uploaded
         <%- end %>
       </dd>
 

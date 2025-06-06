@@ -114,4 +114,95 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     
     @notifiable.send(:ios)
   end
+
+  test "android notification is sent when operator has both firebase key and project_id" do
+    # Get the actual recipients and manually set their android tokens in the database
+    recipients = @notifiable.send(:recipients)
+    recipients.each { |user| user.update!(android_token: "android_device_token") }
+    
+    # Setup operator with both firebase key and project_id
+    # Need to allow download to be called multiple times (once per recipient)
+    firebase_key_mock = mock
+    firebase_key_mock.stubs(:attached?).returns(true)
+    firebase_key_mock.stubs(:download).returns("firebase_key_content")
+    @operator.stubs(:android_push_notification_key).returns(firebase_key_mock)
+    @operator.stubs(:firebase_project_id).returns("test-project-id")
+    
+    # Mock FCM - expect it to be called for each recipient with android token
+    fcm_mock = mock
+    fcm_mock.expects(:send_v1).with({
+      "token": "android_device_token",
+      "notification": {
+        "title": @notifiable.send(:message),
+        "body": @notifiable.send(:message)
+      }
+    }).times(recipients.count)
+    
+    FCM.expects(:new).with('', instance_of(StringIO), "test-project-id").returns(fcm_mock).times(recipients.count)
+    
+    @notifiable.send(:android)
+  end
+
+  test "android notification is not sent when operator has firebase key but no project_id" do
+    # Setup operator with firebase key but no project_id
+    @operator.stubs(:android_push_notification_key).returns(mock(attached?: true))
+    @operator.stubs(:firebase_project_id).returns(nil)
+    @operator.stubs(:name).returns("Test Operator")
+    
+    # Mock recipients
+    @notifiable.stubs(:recipients).returns([@user])
+    
+    # FCM should not be called
+    FCM.expects(:new).never
+    
+    @notifiable.send(:android)
+  end
+
+  test "android notification is not sent when operator has project_id but no firebase key" do
+    # Setup operator with project_id but no firebase key
+    @operator.stubs(:android_push_notification_key).returns(mock(attached?: false))
+    @operator.stubs(:firebase_project_id).returns("test-project-id")
+    @operator.stubs(:name).returns("Test Operator")
+    
+    # Mock recipients
+    @notifiable.stubs(:recipients).returns([@user])
+    
+    # FCM should not be called
+    FCM.expects(:new).never
+    
+    @notifiable.send(:android)
+  end
+
+  test "android notification is not sent when operator has neither firebase key nor project_id" do
+    # Setup operator with neither firebase key nor project_id
+    @operator.stubs(:android_push_notification_key).returns(mock(attached?: false))
+    @operator.stubs(:firebase_project_id).returns(nil)
+    @operator.stubs(:name).returns("Test Operator")
+    
+    # Mock recipients
+    @notifiable.stubs(:recipients).returns([@user])
+    
+    # FCM should not be called
+    FCM.expects(:new).never
+    
+    @notifiable.send(:android)
+  end
+
+  test "android notification is not sent when user has no android token" do
+    # Ensure recipients have no android tokens in the database
+    recipients = @notifiable.send(:recipients)
+    recipients.each { |user| user.update!(android_token: nil) }
+    
+    # Setup operator with both firebase key and project_id
+    firebase_key_mock = mock
+    firebase_key_mock.stubs(:attached?).returns(true)
+    firebase_key_mock.stubs(:download).returns("firebase_key_content")
+    @operator.stubs(:android_push_notification_key).returns(firebase_key_mock)
+    @operator.stubs(:firebase_project_id).returns("test-project-id")
+    
+    # FCM object should not be created since users have no token
+    FCM.expects(:new).never
+    
+    @notifiable.send(:android)
+  end
 end

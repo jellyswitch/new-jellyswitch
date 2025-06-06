@@ -34,6 +34,7 @@ RSpec.describe Operator, type: :model do
     it { should have_one_attached(:logo_image) }
     it { should have_one_attached(:terms_of_service) }
     it { should have_one_attached(:push_notification_certificate) }
+    it { should have_one_attached(:android_push_notification_key) }
   end
 
   describe 'scopes' do

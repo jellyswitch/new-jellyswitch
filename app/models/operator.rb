@@ -88,6 +88,7 @@ class Operator < ApplicationRecord
   has_one_attached :logo_image
   has_one_attached :terms_of_service
   has_one_attached :push_notification_certificate
+  has_one_attached :android_push_notification_key
 
   delegate :create_stripe_customer,
            :retrieve_stripe_customer,

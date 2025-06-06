@@ -43,7 +43,7 @@
           <span class="badge badge-danger">iOS Not ready</span>
         <% end %>
 
-        <% if report.operator.android_server_key.present? %>
+        <% if report.operator.android_push_notification_key.attached? %>
           <span class="badge badge-success">Android Ready</span>
         <% else %>
           <span class="badge badge-danger">Android Not ready</span>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2024_12_11_014722) do
+ActiveRecord::Schema[7.0].define(version: 2025_06_06_075538) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -476,6 +476,7 @@ ActiveRecord::Schema[7.0].define(version: 2024_12_11_014722) do
     t.string "android_server_key"
     t.boolean "crm_enabled", default: false, null: false
     t.string "bundle_id"
+    t.string "firebase_project_id"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

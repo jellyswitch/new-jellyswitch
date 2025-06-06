@@ -50,13 +50,17 @@ class Notifiable::Default < SimpleDelegator
   end
 
   def android
-    if operator.android_server_key.present?
+    if operator.android_push_notification_key.attached? && operator.firebase_project_id.present?
       recipients.each do |user|
         puts "Pushing android notification to #{user.name}: #{message}"
         if user.android_token.present?
-          fcm = FCM.new(operator.android_server_key)
-          fcm.send([user.android_token], {"notification": {"title": message, "body": message}})
-          
+          fcm = FCM.new('',StringIO.new(operator.android_push_notification_key.download),operator.firebase_project_id)
+          fcm.send_v1({
+                "token": user.android_token,
+                "notification": {
+                  "title": message,
+                  "body": message
+              }})
           puts "Pushed message: #{message} to #{user.name}'s android device: #{user.android_token}"
         else
           puts "Cannot push Android message to #{user.email} since android token is: #{user.android_token}"
