@@ -7,8 +7,21 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
 
-    mail to: user.email, subject: "#{@operator.name} password reset", from: "noreply@jellyswitch.com", reply_to: @operator.contact_email
-    recipients = User.superadmins.all.map {|u| u.email }
+    mail to: user.email, subject: "#{@operator.name} password reset", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: 'david@untethered.space',
+    'X-SMTPAPI' => {
+      "filters" => {
+        "clicktrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        },
+        "opentrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        }
+      }
+    }.to_json
   end
 
   def event_registration(user, password, event)
@@ -24,7 +37,7 @@ class UserMailer < ApplicationMailer
     @user = user
     @event_name = event_name
     @operator = operator
-    
+
     @host = ENV['ASSET_HOST']
     mail to: @user.email, subject: "Cancelled: #{@event_name}", from: "noreply@jellyswitch.com", reply_to: @operator.contact_email
   end

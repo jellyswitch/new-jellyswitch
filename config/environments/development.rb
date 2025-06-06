@@ -40,12 +40,20 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  # Mail Catcher
+  # Sendgrid
   config.action_mailer.delivery_method = :smtp
+  config.action_mailer.perform_deliveries = true
   config.action_mailer.smtp_settings = {
-    :address => ENV["SMTP_HOST"],
-    :port => ENV["SMTP_PORT"].to_i,
+    :user_name => 'apikey',
+    :password => ENV['SENDGRID_API_KEY'],
+    :domain => ENV['HOST'],
+    :address => ENV['SMTP_HOST'],
+    :port => ENV['SMTP_PORT'].to_i,
+    :authentication => :plain,
+    :enable_starttls_auto => true
   }
+  config.force_ssl = true
+
 
   # Raise exceptions for disallowed deprecations.
   config.active_support.disallowed_deprecation = :raise
