@@ -73,9 +73,19 @@
   </div>
 
   <%- if editable_subdomain %>
+    <%= f.label :push_notification_certificate, "iOS push notification certificate (PEM)" %>
     <div class="form-group custom-file mb-3">
       <label class="custom-file-label" for="customFile">Choose push notification certificate (PEM)</label>
       <%= f.file_field :push_notification_certificate, placeholder: "Push Notification Certificate PEM", class: "custom-file-input" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :firebase_project_id, "Android push notification" %>
+      <%= f.text_field :firebase_project_id, placeholder: "Firebase project id", class: "form-control" %>
+    </div>
+    <div class="form-group custom-file mb-3">
+      <label class="custom-file-label" for="customFile">Choose push notification key (JSON)</label>
+      <%= f.file_field :android_push_notification_key, placeholder: "Push Notification Certificate JSON", class: "custom-file-input" %>
     </div>
 
     <div class="form-group mb-3">

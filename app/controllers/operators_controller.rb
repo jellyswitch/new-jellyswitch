@@ -15,7 +15,7 @@ class OperatorsController < ApplicationController
     @demo_reports = @demo_operators.all.map do |operator|
       Jellyswitch::Report.new(operator)
     end
-    
+
     @production_staff = @production_reports.sum(&:staff_count)
     @demo_staff = @demo_reports.sum(&:staff_count)
   end
@@ -77,6 +77,6 @@ class OperatorsController < ApplicationController
     params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address,
                                      :approval_required, :subdomain, :contact_name, :contact_email, :contact_phone,
                                      :background_image, :logo_image, :square_footage, :email_enabled, :kisi_api_key, :terms_of_service,
-                                     :push_notification_certificate, :ios_url, :android_url, :checkin_required, :android_server_key, :membership_text, :bundle_id)
+                                     :push_notification_certificate, :ios_url, :android_push_notification_key, :firebase_project_id, :android_url, :checkin_required, :android_server_key, :membership_text, :bundle_id)
   end
 end
