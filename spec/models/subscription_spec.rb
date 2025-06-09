@@ -73,7 +73,7 @@ RSpec.describe Subscription, type: :model do
 
     describe '#cancel_stripe!' do
       it 'deletes the stripe subscription' do
-        expect(stripe_subscription_mock).to receive(:delete)
+        expect(stripe_subscription_mock).to receive(:cancel)
         subscription.cancel_stripe!
       end
     end

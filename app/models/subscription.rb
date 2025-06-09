@@ -48,7 +48,7 @@ class Subscription < ApplicationRecord
 
   # Instance methods
   def cancel_stripe!
-    stripe_subscription.delete
+    stripe_subscription.cancel
   end
 
   def set_stripe_to_cancel!
