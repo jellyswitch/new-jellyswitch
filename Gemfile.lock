@@ -162,7 +162,7 @@ GEM
       addressable
     dalli (3.2.3)
     dante (0.2.0)
-    database_cleaner-active_record (2.2.0)
+    database_cleaner-active_record (2.2.1)
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
