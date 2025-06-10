@@ -9,7 +9,7 @@ gem "ahoy_matey"
 gem "apnotic"
 gem "aws-sdk-s3", "~> 1.48", require: false
 gem "bcrypt"
-gem "bootstrap", "~> 4.6.2"
+gem "bootstrap", "~> 5.3.5"
 gem "chartkick", ">= 3.4.0"
 gem "dotenv-rails", require: "dotenv/rails-now"
 gem "draper"
