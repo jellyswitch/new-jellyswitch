@@ -57,7 +57,7 @@ gem "view_component"
 gem "working_hours"
 gem "timecop"
 gem "cocoon"
-gem "uri", "0.10.0"
+gem "uri", "0.11.3"
 
 group :development do
   gem "annotate"
