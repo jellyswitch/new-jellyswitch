@@ -13,7 +13,7 @@ pin "@/moment-timezone-data", to: "https://ga.jspm.io/npm:moment-timezone@0.5.43
 pin "rails-erb-loader", to: "https://ga.jspm.io/npm:rails-erb-loader@5.5.2/index.js"
 pin "tempusdominus-bootstrap-4", to: "https://ga.jspm.io/npm:tempusdominus-bootstrap-4@5.1.2/build/js/tempusdominus-bootstrap-4.js"
 pin "tempusdominus-core", to: "https://ga.jspm.io/npm:tempusdominus-core@5.0.3/build/js/tempusdominus-core.js"
-pin "trix", to: "https://ga.jspm.io/npm:trix@1.2.0/dist/trix.js"
+pin "trix", to: "https://ga.jspm.io/npm:trix@2.0.8/dist/trix.esm.min.js"
 pin "big.js", to: "https://ga.jspm.io/npm:big.js@5.2.2/big.js"
 pin "buffer", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/buffer.js"
 pin "child_process", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/child_process.js"
@@ -27,7 +27,6 @@ pin "path", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browse
 pin "process", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/process-production.js"
 pin "util", to: "https://ga.jspm.io/npm:@jspm/core@2.0.0-beta.26/nodelibs/browser/util.js"
 pin "@nathanvda/cocoon", to: "https://ga.jspm.io/npm:@nathanvda/cocoon@1.2.14/cocoon.js"
-pin "trix"
 pin "@rails/actiontext", to: "actiontext.js"
 pin "@hotwired/turbo-rails", to: "turbo.min.js", preload: true
 pin "@hotwired/stimulus", to: "stimulus.min.js", preload: true
