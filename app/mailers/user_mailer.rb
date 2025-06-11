@@ -7,7 +7,7 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
 
-    mail to: user.email, subject: "#{@operator.name} password reset", from: 'David <david@untethered.space>', reply_to: 'david@untethered.space',
+    mail to: user.email, subject: "#{@operator.name} password reset", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: 'david@untethered.space',
     'X-SMTPAPI' => {
       "filters" => {
         "clicktrack" => {
