@@ -79,7 +79,7 @@ module SessionsHelper
     elsif current_tenant && current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
-    elsif current_tenant
+    elsif current_tenant && current_user
       Honeybadger.notify("No location set for operator #{current_tenant.name}")
       nil
     end
