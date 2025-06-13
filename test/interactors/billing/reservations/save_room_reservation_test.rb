@@ -68,4 +68,32 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
     assert_equal "Unable to create reservation, please try again.", context.message
     refute context.reservation&.persisted?
   end
+
+  test "fails when user should be charged but has no payment method" do
+    @room.update(hourly_rate_in_cents: 100)
+    @user.stubs(:should_charge_for_reservation?).returns(true)
+    @user.stubs(:payment_method).returns("None")
+
+    context = Billing::Reservations::SaveRoomReservation.call(
+      user: @user,
+      reservation_params: @reservation_params,
+    )
+
+    assert context.failure?
+    assert_equal "Please provide payment method!", context.message
+  end
+
+  test "succeeds when user should be charged and has payment method" do
+    @room.update(hourly_rate_in_cents: 100)
+    @user.stubs(:should_charge_for_reservation?).returns(true)
+    @user.stubs(:payment_method).returns("card")
+
+    context = Billing::Reservations::SaveRoomReservation.call(
+      user: @user,
+      reservation_params: @reservation_params,
+    )
+
+    assert context.success?
+    assert context.reservation.paid?
+  end
 end

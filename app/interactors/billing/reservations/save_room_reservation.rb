@@ -7,6 +7,10 @@ class Billing::Reservations::SaveRoomReservation
 
     should_charge = context.user.should_charge_for_reservation?(reservation.room.location, reservation.datetime_in.to_date) && reservation.room.hourly_rate_in_cents > 0
 
+    if should_charge && context.user.payment_method == "None"
+      context.fail!(message: "Please provide payment method!")
+    end
+
     reservation.paid = should_charge
     reservation.user = context.user
 
