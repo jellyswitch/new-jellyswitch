@@ -3,8 +3,6 @@ module Notifiable
     private
 
     def create_feed_item
-      blob = {type: "reservation", reservation_id: id}
-      FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
 
     def should_send_notification?
