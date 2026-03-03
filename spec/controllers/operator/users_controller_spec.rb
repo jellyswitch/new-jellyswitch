@@ -43,6 +43,7 @@ RSpec.describe Operator::UsersController, type: :controller do
     end
 
     it "searches users by query" do
+      allow(User).to receive(:search).with(test_user.name, fields: [:name, :email]).and_return([test_user])
       get :search, params: { query: test_user.name }
       expect(assigns(:users)).to include(test_user)
     end
@@ -110,6 +111,7 @@ RSpec.describe Operator::UsersController, type: :controller do
         end
 
         it "redirects to user path" do
+        allow(CreateStripeCustomer).to receive(:call).and_return(double(success?: true))
           post :create, params: valid_params
           expect(response).to redirect_to(user_path(User.last))
         end
@@ -155,6 +157,7 @@ RSpec.describe Operator::UsersController, type: :controller do
     end
 
     it "redirects to user path" do
+        allow(CreateStripeCustomer).to receive(:call).and_return(double(success?: true))
       put :update, params: update_params
       expect(response).to redirect_to(user_path(test_user))
     end

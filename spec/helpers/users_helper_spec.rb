@@ -14,7 +14,6 @@ RSpec.describe UsersHelper, type: :helper do
   before do
     allow(helper).to receive(:current_tenant).and_return(operator)
     allow(helper).to receive(:current_location).and_return(location)
-    User.reindex
   end
 
   describe "#find_user" do
@@ -51,6 +50,7 @@ RSpec.describe UsersHelper, type: :helper do
   describe '#find_approved_users' do
     context 'when query is present' do
       it 'returns paginated approved users based on query' do
+        allow(User).to receive(:search).with("another", fields: [:name, :email]).and_return([approved_location_another_user])
         expect(helper.find_approved_users("another")[1]).to eq([approved_location_another_user])
       end
     end

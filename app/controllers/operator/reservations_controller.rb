@@ -423,8 +423,6 @@ class Operator::ReservationsController < Operator::BaseController
 
   def parse_time
     zone = ActiveSupport::TimeZone[@room.location.time_zone]
-    offset = zone.now.formatted_offset
-    time_input = "#{short_date(@day)} #{pretty_time(@hour)} #{offset}"
-    @datetime_in = Time.strptime(time_input, "%m/%d/%Y %l:%M%P %Z")
+    @datetime_in = zone.local(@day.year, @day.month, @day.day, @hour.hour, @hour.min)
   end
 end

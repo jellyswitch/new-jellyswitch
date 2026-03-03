@@ -32,7 +32,11 @@ RSpec.describe Operator::ReservationsController, type: :controller do
     before { get :calendar }
 
     context "with reserve_now parameter" do
-      before { get :calendar, params: { reserve_now: true } }
+      before do
+        Timecop.freeze(Time.zone.parse("2025-01-15 09:00:00"))
+        get :calendar, params: { reserve_now: true }
+      end
+      after { Timecop.return }
 
       it "assigns @current_date" do
         expect(assigns(:current_date)).to eq(Time.zone.today)
@@ -43,10 +47,11 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       end
 
       it "assigns @day_or_night" do
-        expect(assigns(:day_or_night)).to be_in(['day', 'night'])
+        expect(assigns(:day_or_night)).to be_in(["day", "night"])
       end
     end
   end
+
 
   describe "GET #available_time_slots" do
     let(:valid_params) do
@@ -126,6 +131,7 @@ RSpec.describe Operator::ReservationsController, type: :controller do
 
     context "with valid params" do
       before do
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
         allow(Stripe::InvoiceItem).to receive(:create).and_return(true)
         invoice = double(id: "invoice_id", customer: "cus_123",
           created: Time.current.to_i,
@@ -315,9 +321,29 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       expect(result).to be_an(Array)
     end
 
+
     it "calculates nearest time slot" do
-      result = calculate_nearest_time_slot(Time.current.to_date)
-      expect(result).to be_a(Time)
+      Timecop.freeze(Time.zone.parse("2025-01-15 09:00:00")) do
+        result = calculate_nearest_time_slot(Time.current.to_date)
+        expect(result).to be_a(Time)
+      end
+    end
+  end
+
+  describe "DST handling" do
+    include ReservationHelper
+    include CreditHelper
+
+    it "creates reservation at correct time across DST boundary" do
+      # March 9, 2025 is spring-forward day
+      Timecop.freeze(Time.zone.parse("2025-03-03 10:00:00")) do
+        zone = ActiveSupport::TimeZone[location.time_zone]
+        target_date = Date.parse("2025-03-09")
+        hour = Time.strptime("9:00", "%I:%M") + 12.hours # 9pm
+        result = zone.local(target_date.year, target_date.month, target_date.day, hour.hour, hour.min)
+        expect(result.hour).to eq(21)
+        expect(result.utc_offset).to eq(-7 * 3600) # PDT
+      end
     end
   end
 end
