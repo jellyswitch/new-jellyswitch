@@ -60,6 +60,7 @@ class FeedItem < ApplicationRecord
       user_name: user.present? ? user.name : "Anonymous",
       comments: feed_item_comments.map(&:comment),
       stripe_customer_id: user.present? ? user.stripe_customer_id_for_location(location) : nil, # TODO: search may break here
+      operator_id: operator_id,
     }
   end
 

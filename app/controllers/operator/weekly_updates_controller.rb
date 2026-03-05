@@ -30,7 +30,7 @@ class Operator::WeeklyUpdatesController < Operator::BaseController
   private
 
   def find_weekly_updates
-    @weekly_updates = current_location.weekly_updates.order('week_start DESC').all
+    @pagy, @weekly_updates = pagy(current_location.weekly_updates.order('week_start DESC'))
   end
 
   def find_weekly_update(key=:id)

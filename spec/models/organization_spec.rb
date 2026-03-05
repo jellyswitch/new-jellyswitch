@@ -169,7 +169,8 @@ RSpec.describe Organization, type: :model do
         expect(organization.search_data).to eq({
           name: "Test Org",
           owner: "John Doe",
-          stripe_customer_id: "cus_123"
+          stripe_customer_id: "cus_123",
+          operator_id: organization.operator_id,
         })
       end
     end

@@ -33,7 +33,7 @@
       <%= link_to archived_users_path, class: "list-group-item list-group-item-action d-flx m-0", style: "border-top: 0px;" do %>
         <i class="fas fa-archive"></i>
         &nbsp;
-        View archived members (<%= @archived_users.count %> members)
+        View archived members (<%= @archived_users_count %> members)
       <% end %>
 
       <%= form_with(url: search_users_path, method: :get, local: true) do |f| %>

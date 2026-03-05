@@ -15,25 +15,23 @@ class Jellyswitch::WeeklyReport
     @day_passes = location.day_passes.for_week(@week_start, @week_end).count
     @checkins = location.checkins.for_week(@week_start, @week_end).count
 
-    @new_active_members = location.plans.individual.nonzero.map do |plan|
-      plan.subscriptions.active.for_week(@week_start, @week_end).map(&:subscribable)
-    end.flatten.uniq.count
-    @new_free_members = location.plans.individual.free.map do |plan|
-      plan.subscriptions.active.for_week(@week_start, @week_end).map(&:subscribable)
-    end.flatten.uniq.count
+    @new_active_members = Subscription.where(plan: location.plans.individual.nonzero, active: true)
+      .for_week(@week_start, @week_end).select(:subscribable_id).distinct.count
+    @new_free_members = Subscription.where(plan: location.plans.individual.free, active: true)
+      .for_week(@week_start, @week_end).select(:subscribable_id).distinct.count
 
-    @reservations = location.rooms.map do |room|
-      room.reservations.for_week(@week_start, @week_end)
-    end.flatten.uniq.count
+    @reservations = Reservation.where(room: location.rooms).for_week(@week_start, @week_end).distinct.count
 
+    room_counts = Reservation.where(room: location.rooms)
+      .for_week(@week_start, @week_end)
+      .group(:room_id).count
     @rooms = location.rooms.map do |room|
-      count = room.reservations.for_week(@week_start, @week_end).count
+      count = room_counts[room.id] || 0
       percent = @reservations == 0 ? 0 : count.to_f / @reservations.to_f
-      name = room.name
 
       {
         percent: percent.to_f,
-        name: name,
+        name: room.name,
         count: count
       }
     end

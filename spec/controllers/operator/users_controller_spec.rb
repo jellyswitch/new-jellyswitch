@@ -29,10 +29,10 @@ RSpec.describe Operator::UsersController, type: :controller do
         expect(assigns(:unapproved_users)).to include(unapproved_user)
       end
 
-      it "assigns @archived_users" do
-        archived_user = create(:user, operator: operator, archived: true)
+      it "assigns @archived_users_count" do
+        create(:user, operator: operator, archived: true)
         get :index
-        expect(assigns(:archived_users)).to include(archived_user)
+        expect(assigns(:archived_users_count)).to be >= 1
       end
     end
   end

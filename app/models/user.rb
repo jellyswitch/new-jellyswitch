@@ -202,6 +202,7 @@ class User < ApplicationRecord
       slug: slug,
       twitter: twitter,
       organization: organization.present? ? organization.name : nil,
+      operator_id: operator_id,
     }
   end
 

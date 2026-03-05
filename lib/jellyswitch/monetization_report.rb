@@ -7,8 +7,8 @@ class Jellyswitch::MonetizationReport
   end
 
   def office_income
-    @office_income ||= location.offices.map do |office|
-      income = office.office_leases.active.map(&:subscription).map(&:plan).flatten.sum {|p| p.amount_in_cents }.to_f / 100.0
+    @office_income ||= location.offices.includes(office_leases: { subscription: :plan }).map do |office|
+      income = office.office_leases.select(&:active?).map(&:subscription).map(&:plan).sum {|p| p.amount_in_cents }.to_f / 100.0
       income_per_square_foot = income / office.square_footage
 
       office_income_klass.new(
@@ -58,8 +58,8 @@ class Jellyswitch::MonetizationReport
   end
 
   def flex_income
-    @flex_income ||= location.plans.individual.map do |plan|
-      income = plan.subscriptions.active.count * (plan.amount_in_cents.to_f / 100.0)
+    @flex_income ||= location.plans.individual.includes(:subscriptions).map do |plan|
+      income = plan.subscriptions.select(&:active?).count * (plan.amount_in_cents.to_f / 100.0)
 
       flex_income_klass.new(
         plan,

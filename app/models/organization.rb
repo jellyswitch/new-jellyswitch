@@ -51,6 +51,7 @@ class Organization < ApplicationRecord
       name: name,
       owner: owner.name,
       stripe_customer_id: stripe_customer_id,
+      operator_id: operator_id,
     }
   end
 

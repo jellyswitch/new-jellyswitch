@@ -12,7 +12,9 @@ class Operator::AccountingController < Operator::BaseController
 
   def expenses
     background_image
-    @expenses = FeedItem.for_operator(current_tenant).expenses.order("created_at DESC").all
+    expenses_scope = FeedItem.for_operator(current_tenant).expenses.order("created_at DESC")
+    @expenses_total = expenses_scope.sum(:amount)
+    @pagy, @expenses = pagy(expenses_scope)
   end
 
   def update_expenses

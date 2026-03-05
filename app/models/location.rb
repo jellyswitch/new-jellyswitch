@@ -127,7 +127,8 @@ class Location < ApplicationRecord
   def search_data
     {
       name: name,
-      text: snippet
+      text: snippet,
+      operator_id: operator_id,
     }
   end
 

@@ -129,7 +129,8 @@ class UsersController < ApplicationController
     find_user(:user_id)
     authorize @user
 
-    @reservations = @user.reservations.order("created_at DESC").all.decorate
+    @pagy, @reservations = pagy(@user.reservations.order("created_at DESC"), items: 50)
+    @reservations = @reservations.decorate
     background_image
   end
 

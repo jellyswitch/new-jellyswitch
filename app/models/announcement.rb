@@ -22,7 +22,8 @@ class Announcement < ApplicationRecord
 
   def search_data
     {
-      announcement: body
+      announcement: body,
+      operator_id: operator_id,
     }
   end
 end

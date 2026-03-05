@@ -23,9 +23,10 @@
       <tr>
         <td class="text-right"><strong>Total</strong></td>
         <td class="text-right">
-          <%= number_to_currency(@expenses.sum {|e| e.amount }.to_f / 100.0) %>
+          <%= number_to_currency(@expenses_total.to_f / 100.0) %>
         </td>
       </tr>
     </table>
   </div>
+  <%== pagy_bootstrap_nav(@pagy) %>
 <%- end %>

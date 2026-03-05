@@ -58,6 +58,7 @@ class Room < ApplicationRecord
     {
       name: name,
       text: description,
+      operator_id: operator_id,
     }
   end
 

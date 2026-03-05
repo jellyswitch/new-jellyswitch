@@ -38,6 +38,7 @@ class Door < ApplicationRecord
   def search_data
     {
       name: name,
+      operator_id: operator_id,
     }
   end
 end
