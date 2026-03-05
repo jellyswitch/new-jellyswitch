@@ -1,3 +1,4 @@
+require "csv"
 
 module Jellyswitch
   class Report
@@ -17,7 +18,7 @@ module Jellyswitch
     end
 
     def member_csv
-      CSV.generate(headers: true) do |csv|
+      ::CSV.generate(headers: true) do |csv|
         csv << ["Name",
           "Account Creation Date",
           "Email",
