@@ -6,6 +6,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, child_profile.user, blob, created_at: created_at)
     end
 
+    def deep_link_data
+      { type: "childcare_reservation", resource_id: id, path: "/childcare_reservations/#{id}" }
+    end
+
     def should_send_notification?
       true
     end

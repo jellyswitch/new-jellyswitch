@@ -6,6 +6,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
 
+    def deep_link_data
+      { type: "day_pass", resource_id: id, path: "/day_passes/#{id}" }
+    end
+
     def should_send_notification?
       operator.day_pass_notifications?
     end

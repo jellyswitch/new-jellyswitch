@@ -9,6 +9,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, subscribable, blob, created_at: created_at)
     end
 
+    def deep_link_data
+      { type: "subscription", resource_id: id, path: "/subscriptions/#{id}" }
+    end
+
     def should_send_notification?
       operator.membership_notifications?
     end

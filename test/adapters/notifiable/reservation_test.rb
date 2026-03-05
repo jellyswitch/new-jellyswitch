@@ -16,6 +16,15 @@ class Notifiable::ReservationTest < ActiveSupport::TestCase
     notifiable.send(:create_feed_item)
   end
 
+  test "deep_link_data returns correct type and path" do
+    notifiable = Notifiable::Reservation.new(@reservation)
+    data = notifiable.send(:deep_link_data)
+
+    assert_equal "reservation", data[:type]
+    assert_equal @reservation.id, data[:resource_id]
+    assert_equal "/reservations/#{@reservation.id}", data[:path]
+  end
+
   test "should_send_notification? returns true when operator has reservation_notifications enabled" do
     @operator.update reservation_notifications: true
     notifiable = Notifiable::Reservation.new(@reservation)

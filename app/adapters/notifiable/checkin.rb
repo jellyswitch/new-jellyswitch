@@ -6,6 +6,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, user, blob, created_at: created_at)
     end
 
+    def deep_link_data
+      { type: "checkin", resource_id: id, path: "/checkins/#{id}" }
+    end
+
     def should_send_notification?
       location.operator.checkin_notifications?
     end

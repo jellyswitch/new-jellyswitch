@@ -7,6 +7,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, self.__getobj__, blob)
     end
 
+    def deep_link_data
+      { type: "user", resource_id: id, path: "/users/#{id}" }
+    end
+
     def should_send_notification?
       operator.signup_notifications?
     end

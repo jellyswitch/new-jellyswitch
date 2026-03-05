@@ -3,6 +3,10 @@ module Notifiable
     def create_feed_item
     end
 
+    def deep_link_data
+      { type: "feed_item", resource_id: id, path: "/feed_items/#{id}" }
+    end
+
     def should_send_notification?
       operator.post_notifications?
     end

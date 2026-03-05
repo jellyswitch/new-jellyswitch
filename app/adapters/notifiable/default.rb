@@ -24,6 +24,10 @@ class Notifiable::Default < SimpleDelegator
     android
   end
 
+  def deep_link_data
+    {}
+  end
+
   def ios
     if operator.push_notification_certificate.attached? && operator.bundle_id.present?
       recipients.each do |user|
@@ -31,7 +35,7 @@ class Notifiable::Default < SimpleDelegator
 
         begin
           if user.ios_token.present?
-            response = IosNotification.new(user: user, message: message).send!
+            response = IosNotification.new(user: user, message: message, data: deep_link_data).send!
             if response.ok?
               puts "Pushed iOS message: #{message} to #{user.name}'s device: #{user.ios_token}"
             else
@@ -55,12 +59,14 @@ class Notifiable::Default < SimpleDelegator
         puts "Pushing android notification to #{user.name}: #{message}"
         if user.android_token.present?
           fcm = FCM.new('',StringIO.new(operator.android_push_notification_key.download),operator.firebase_project_id)
-          fcm.send_v1({
+          payload = {
                 "token": user.android_token,
                 "notification": {
                   "title": message,
                   "body": message
-              }})
+              }}
+          payload["data"] = deep_link_data.transform_values(&:to_s) if deep_link_data.present?
+          fcm.send_v1(payload)
           puts "Pushed message: #{message} to #{user.name}'s android device: #{user.android_token}"
         else
           puts "Cannot push Android message to #{user.email} since android token is: #{user.android_token}"

@@ -1,9 +1,10 @@
 class IosNotification
-  attr_reader :user, :message
+  attr_reader :user, :message, :data
 
-  def initialize(user:, message:)
+  def initialize(user:, message:, data: {})
     @user = user
     @message = message
+    @data = data
   end
 
   def send!
@@ -12,6 +13,7 @@ class IosNotification
     notification = Apnotic::Notification.new(user.ios_token)
     notification.alert = message
     notification.topic = user.operator.bundle_id
+    notification.custom_payload = data if data.present?
     response = connection.push(notification)
     connection.close
     response

@@ -7,6 +7,10 @@ module Notifiable
       FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
 
+    def deep_link_data
+      { type: "reservation", resource_id: id, path: "/reservations/#{id}" }
+    end
+
     def should_send_notification?
       room.paid_room?
     end
