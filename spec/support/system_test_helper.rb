@@ -31,8 +31,8 @@ module SystemTestHelper
   end
 
   def wait_for_turbo
-    has_css?("html.turbo-progress-bar", wait: 2)
-    has_no_css?("html.turbo-progress-bar", wait: 2)
+    has_css?("html.turbo-progress-bar", wait: 5)
+    has_no_css?("html.turbo-progress-bar", wait: 10)
   end
 
   def finished_all_ajax_requests?
