@@ -9,7 +9,8 @@ class Operator::ReportsController < Operator::BaseController
 
   def member_csv
     authorize :report, :member_csv?
-    send_data @report.member_csv, filename: "Jellyswitch-Member-Data-#{short_date(Time.current)}.csv"
+    MemberCsvExportJob.perform_later(current_tenant.id, current_location&.id, current_user.email)
+    redirect_to reports_path, notice: "Your member CSV is being generated. It will be emailed to #{current_user.email} shortly."
   end
 
   def active_lease_members
