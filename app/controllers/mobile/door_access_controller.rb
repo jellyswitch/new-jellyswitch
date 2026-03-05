@@ -1,5 +1,6 @@
 class Mobile::DoorAccessController < Operator::BaseController
   rescue_from Pundit::NotAuthorizedError, with: :not_logged_in_yet
+  before_action :suppress_location_notification, only: [:send_user_id_to_ios]
 
   def index
     find_doors
@@ -26,6 +27,10 @@ class Mobile::DoorAccessController < Operator::BaseController
   end
 
   private
+
+  def suppress_location_notification
+    @suppress_location_notification = true
+  end
 
   def not_logged_in_yet
     turbo_redirect(login_path, action: :replace)

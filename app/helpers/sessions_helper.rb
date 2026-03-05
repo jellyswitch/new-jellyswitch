@@ -80,7 +80,7 @@ module SessionsHelper
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
     elsif current_tenant && current_user
-      Honeybadger.notify("No location set for operator #{current_tenant.name}")
+      Honeybadger.notify("No location set for operator #{current_tenant.name}") unless @suppress_location_notification
       nil
     end
   end
