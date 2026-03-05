@@ -9,6 +9,13 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
     @room = @reservation.room
   end
 
+  test "create_feed_item creates a feed item with correct attributes" do
+    notifiable = Notifiable::PaidRoomReservation.new(@reservation)
+    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "paid-room-reservation", reservation_id: @reservation.id)
+
+    notifiable.send(:create_feed_item)
+  end
+
   test "should_send_notification? returns true if room is a paid room" do
     @room.stubs(:paid_room?).returns(true)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)

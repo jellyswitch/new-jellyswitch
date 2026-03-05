@@ -45,7 +45,7 @@ class FeedItem < ApplicationRecord
   scope :reservations, -> { where("blob->> 'type' = ?", "reservation") }
   scope :announcements, -> { where("blob->> 'type' = ?", "announcement") }
   scope :questions, -> { where("blob->> 'text' LIKE '%\?%'") }
-  scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin") }
+  scope :activity, -> { where("blob->> 'type' IN (?, ?, ?, ?, ?, ?)", "feedback", "day-pass", "reservation", "subscription", "checkin", "paid-room-reservation") }
   scope :notes, -> { where("blob->> 'type' = ? AND expense = ?", "post", false) }
   scope :financial, -> { where("blob->> 'type' IN (?) OR expense = ?", "refund", true) }
   scope :expenses, -> { where(expense: true) }
@@ -72,6 +72,8 @@ class FeedItem < ApplicationRecord
       "made a childcare reservation"
     when "reservation"
       "reserved a room"
+    when "paid-room-reservation"
+      "booked a paid meeting room"
     when "feedback"
       "left feedback"
     when "refund"
@@ -102,7 +104,7 @@ class FeedItem < ApplicationRecord
   end
 
   def requires_approval?
-    ["subscription", "day-pass", "new-user", "reservation"].any? {|t| type == t}
+    ["subscription", "day-pass", "new-user", "reservation", "paid-room-reservation"].any? {|t| type == t}
   end
 
   def weekly_update?

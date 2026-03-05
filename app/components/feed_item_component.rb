@@ -24,6 +24,8 @@ class FeedItemComponent < ApplicationComponent
       feed_item.operator.checkin_notifications?
     when "childcare-reservation"
       true
+    when "paid-room-reservation"
+      true
     when "day-pass"
       feed_item.operator.day_pass_notifications?
     when "feedback"
@@ -59,7 +61,7 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::Checkin
     when "childcare-reservation"
       FeedItems::ChildcareReservation
-    when "reservation"
+    when "reservation", "paid-room-reservation"
       FeedItems::Reservation
     when "membership_cancellation"
       FeedItems::MembershipCancellation
