@@ -105,7 +105,7 @@ class Operator::DoorsController < Operator::BaseController
 
   def find_doors
     @doors = current_location.doors
-    @doors = @doors.where(private: false) unless admin?
+    @doors = @doors.where(private: [false, nil]) unless admin?
   end
 
   def find_door(key = :id)

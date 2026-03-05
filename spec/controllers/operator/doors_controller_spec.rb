@@ -29,6 +29,14 @@ RSpec.describe Operator::DoorsController, type: :controller do
       get :index
       expect(assigns(:doors)).not_to include(private_door)
     end
+
+    it "includes doors where private is nil for non-admin users" do
+      nil_private_door = create(:door, operator: operator, location: location, name: "Nil Door")
+      nil_private_door.update_column(:private, nil)
+      allow(controller).to receive(:current_user).and_return(regular_user)
+      get :index
+      expect(assigns(:doors)).to include(nil_private_door)
+    end
   end
 
   describe "GET #show" do
@@ -252,10 +260,13 @@ RSpec.describe Operator::DoorsController, type: :controller do
       expect(assigns(:doors)).to be_present
     end
 
-    context "as an approved member without active subscription or day pass" do
+    context "as an approved member with active subscription" do
       let(:member_user) { create(:user, operator: operator, original_location: location, approved: true) }
 
       before do
+        plan = create(:plan, operator: operator, location: location)
+        create(:subscription, subscribable: member_user, billable: member_user, plan: plan,
+               start_date: 1.month.ago, pending: false)
         allow(controller).to receive(:current_user).and_return(member_user)
       end
 
@@ -270,6 +281,13 @@ RSpec.describe Operator::DoorsController, type: :controller do
         get :keys
         expect(assigns(:doors)).to include(door)
         expect(assigns(:doors)).not_to include(private_door)
+      end
+
+      it "includes doors where private is nil" do
+        nil_private_door = create(:door, operator: operator, location: location, name: "Nil Door")
+        nil_private_door.update_column(:private, nil)
+        get :keys
+        expect(assigns(:doors)).to include(nil_private_door)
       end
     end
 

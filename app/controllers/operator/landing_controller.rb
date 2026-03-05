@@ -133,6 +133,6 @@ class Operator::LandingController < Operator::BaseController
 
   def find_doors
     @doors = current_location.doors
-    @doors = @doors.where(private: false) unless admin?
+    @doors = @doors.where(private: [false, nil]) unless admin?
   end
 end

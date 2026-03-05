@@ -104,10 +104,10 @@ class Navigation::Default < SimpleDelegator
       if policy(:room).enabled? && location.rooms.visible.count > 0
         items << {title: "Reserve a room", path: calendar_reservations_path}
       end
-    end
 
-    if policy(:door).enabled? && location.doors.count > 0
-      items << {title: "Building Access", path: keys_doors_path}
+      if policy(:door).enabled? && location.doors.count > 0
+        items << {title: "Building Access", path: keys_doors_path}
+      end
     end
 
     if policy(:childcare).enabled?
