@@ -5,6 +5,11 @@ class Billing::Invoices::MarkInvoiceAsPaid
   delegate :invoice, :operator, to: :context
 
   def call
+    if invoice.paid?
+      context.fail!(message: 'Invoice is already paid.')
+      return
+    end
+
     if invoice.location
       if invoice.location.mark_invoice_paid(invoice, paid_out_of_band: true)
         invoice.update(status: 'paid')

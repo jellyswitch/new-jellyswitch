@@ -2,6 +2,8 @@
 module Refundable
   class RefundableInvoice < SimpleDelegator
     def cancel
+      return true if refunded?
+
       stripe_refund = self.location.create_stripe_refund(self)
 
       refunds.create(
