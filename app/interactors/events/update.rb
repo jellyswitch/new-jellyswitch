@@ -1,5 +1,6 @@
 class Events::Update
   include Interactor
+  include Events::TimeParsing
 
   delegate :event, :event_params, :user, :location, to: :context
 
@@ -10,21 +11,13 @@ class Events::Update
     })
 
     if params[:starts_at].present?
-      zone = ActiveSupport::TimeZone[location.time_zone]
-      offset = zone.now.formatted_offset
-      time_input = "#{params[:starts_at]} #{offset}"
-
-      params[:starts_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p %Z")
+      params[:starts_at] = parse_time_in_zone(params[:starts_at], location.time_zone)
     else
       context.fail!(message: "You must provide a start date for your event.")
     end
 
     if params[:ends_at].present?
-      zone = ActiveSupport::TimeZone[location.time_zone]
-      offset = zone.now.formatted_offset
-      time_input = "#{params[:ends_at]} #{offset}"
-
-      params[:ends_at] = Time.strptime(time_input, "%m/%d/%Y %l:%M %p %Z")
+      params[:ends_at] = parse_time_in_zone(params[:ends_at], location.time_zone)
     end
 
     if !event.update(params)
