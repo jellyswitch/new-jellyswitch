@@ -9,6 +9,9 @@ export default class extends Controller {
     this.selectedRoomId = null;
     this.reservationCounts = {};
     this.isManager = this.element.dataset.isManager === "true";
+    this.needsBilling = false;
+    this.stripe = null;
+    this.card = null;
 
     this.initializeCalendar();
     this.initializeRoomFilter();
@@ -303,11 +306,51 @@ export default class extends Controller {
       success: (room) => {
         this.displayRoomDetails(room);
         this.reservationPrice = room.should_charge ? room.reservation_price : 0;
+        this.checkNeedsBilling(date);
       },
       error: (xhr, status, error) => {
         console.error("Error fetching room details:", error);
       },
     });
+  }
+
+  checkNeedsBilling(date) {
+    $.ajax({
+      url: "/reservations/needs_billing",
+      method: "GET",
+      data: { date: date },
+      success: (response) => {
+        this.needsBilling = response.needs_billing;
+        if (this.needsBilling) {
+          this.showBillingSection();
+        } else {
+          this.hideBillingSection();
+        }
+      },
+      error: (xhr, status, error) => {
+        console.error("Error checking billing status:", error);
+        this.needsBilling = false;
+        this.hideBillingSection();
+      },
+    });
+  }
+
+  showBillingSection() {
+    $(".billing-section").removeClass("d-none");
+    if (!this.stripe) {
+      this.stripe = Stripe(window.stripe_key);
+      const elements = this.stripe.elements();
+      this.card = elements.create("card", {});
+      this.card.mount("#card-element");
+      this.card.addEventListener("change", (event) => {
+        const displayError = document.getElementById("card-errors");
+        displayError.textContent = event.error ? event.error.message : "";
+      });
+    }
+  }
+
+  hideBillingSection() {
+    $(".billing-section").addClass("d-none");
   }
 
   fetchAvailableTimeSlots(date, dayOrNight, callback = null) {
@@ -356,7 +399,7 @@ export default class extends Controller {
     });
   }
 
-  createReservation({
+  async createReservation({
     room_id,
     date,
     time,
@@ -365,18 +408,26 @@ export default class extends Controller {
     amenity_ids,
     note,
   }) {
+    const data = { room_id, date, time, duration, day_or_night, amenity_ids, note };
+
+    if (this.needsBilling && this.stripe && this.card) {
+      const submitBtn = $("#add-reservation button[type='submit']");
+      submitBtn.attr("disabled", true);
+
+      const result = await this.stripe.createToken(this.card);
+      if (result.error) {
+        const errorElement = document.getElementById("card-errors");
+        errorElement.textContent = result.error.message;
+        submitBtn.removeAttr("disabled");
+        return;
+      }
+      data.stripeToken = result.token.id;
+    }
+
     $.ajax({
       url: "/reservations",
       method: "POST",
-      data: {
-        room_id,
-        date,
-        time,
-        duration,
-        day_or_night,
-        amenity_ids,
-        note,
-      },
+      data: data,
       error: (xhr, status, error) => {
         console.error("Error creating reservation:", error);
         alert(
@@ -436,6 +487,9 @@ export default class extends Controller {
 
     $(".note-container").addClass("d-none");
     $("#reservation-note").val("");
+
+    this.needsBilling = false;
+    this.hideBillingSection();
   }
 
   handleFormState() {

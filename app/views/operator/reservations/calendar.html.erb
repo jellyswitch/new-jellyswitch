@@ -129,6 +129,12 @@
                   <div class="price-value"></div>
                 </div>
 
+                <div class="billing-section d-none">
+                  <label>Payment Information</label>
+                  <div id="card-element" class="form-control mb-2"></div>
+                  <div id="card-errors" class="text-danger mb-2" role="alert"></div>
+                </div>
+
                 <% if current_user&.admin_or_manager?(current_location) %>
                   <div class="form-group note-container mt-1 pl-1 pr-1 d-none">
                     <label for="reservation-note">Note</label>

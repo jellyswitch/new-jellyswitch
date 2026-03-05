@@ -159,6 +159,7 @@ class Operator::ReservationsController < Operator::BaseController
   # New 'Reservation Now' flow
 
   def calendar
+    include_stripe
     @current_date = Time.zone.today
     if params[:reserve_now]
       @nearest_time_slot = calculate_nearest_time_slot(@current_date)
@@ -249,14 +250,23 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = reservation_params[:duration].to_i
     parse_time
 
-    result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
-                                                                 datetime_in: @datetime_in,
-                                                                 hours: @duration / 60,
-                                                                 minutes: @duration.to_i,
-                                                                 room: @room,
-                                                                 amenity_ids: amenity_ids,
-                                                                 note: reservation_params[:note],
-                                                               }, user: current_user, location: current_location)
+    token = params[:stripeToken]
+
+    interactor = if token.present?
+      Billing::Reservations::UpdateBillingAndCreateRoomReservation
+    else
+      Billing::Reservations::CreateRoomReservation
+    end
+
+    result = interactor.call(reservation_params: {
+                               datetime_in: @datetime_in,
+                               hours: @duration / 60,
+                               minutes: @duration.to_i,
+                               room: @room,
+                               amenity_ids: amenity_ids,
+                               note: reservation_params[:note],
+                             }, user: current_user, location: current_location,
+                             token: token, out_of_band: false)
 
     @reservation = result.reservation
 
@@ -334,6 +344,14 @@ class Operator::ReservationsController < Operator::BaseController
       flash[:error] = "An error occurred while update the reservation note."
       turbo_redirect(reservation_path(@reservation), action: "replace")
     end
+  end
+
+  def needs_billing
+    date = Time.zone.parse(params[:date])
+    should_charge = current_user.should_charge_for_reservation?(current_location, date)
+    has_billing = current_user.has_billing_for_location?(current_location)
+
+    render json: { needs_billing: should_charge && !has_billing }
   end
 
   def daily_counts

@@ -158,6 +158,22 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       end
     end
 
+    context "with stripeToken" do
+      let(:success_result) { OpenStruct.new(success?: true, reservation: reservation) }
+
+      it "uses UpdateBillingAndCreateRoomReservation when token is present" do
+        expect(Billing::Reservations::UpdateBillingAndCreateRoomReservation)
+          .to receive(:call).and_return(success_result)
+        post :create, params: valid_params.merge(stripeToken: "tok_visa")
+      end
+
+      it "uses CreateRoomReservation when no token is present" do
+        expect(Billing::Reservations::CreateRoomReservation)
+          .to receive(:call).and_return(success_result)
+        post :create, params: valid_params
+      end
+    end
+
     context "with invalid params" do
       before do
         allow(Billing::Reservations::CreateRoomReservation)
@@ -167,6 +183,47 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       it "sets error flash message" do
         post :create, params: valid_params
         expect(flash[:error]).to be_present
+      end
+    end
+  end
+
+  describe "GET #needs_billing" do
+    let(:date) { Time.current.tomorrow.to_date.to_s }
+
+    context "when user should be charged and has no billing" do
+      before do
+        allow(regular_user).to receive(:should_charge_for_reservation?).and_return(true)
+        allow(regular_user).to receive(:has_billing_for_location?).and_return(false)
+      end
+
+      it "returns needs_billing true" do
+        get :needs_billing, params: { date: date }, format: :json
+        expect(response).to have_http_status(:success)
+        expect(JSON.parse(response.body)["needs_billing"]).to eq(true)
+      end
+    end
+
+    context "when user has billing on file" do
+      before do
+        allow(regular_user).to receive(:should_charge_for_reservation?).and_return(true)
+        allow(regular_user).to receive(:has_billing_for_location?).and_return(true)
+      end
+
+      it "returns needs_billing false" do
+        get :needs_billing, params: { date: date }, format: :json
+        expect(JSON.parse(response.body)["needs_billing"]).to eq(false)
+      end
+    end
+
+    context "when reservation is free" do
+      before do
+        allow(regular_user).to receive(:should_charge_for_reservation?).and_return(false)
+        allow(regular_user).to receive(:has_billing_for_location?).and_return(false)
+      end
+
+      it "returns needs_billing false" do
+        get :needs_billing, params: { date: date }, format: :json
+        expect(JSON.parse(response.body)["needs_billing"]).to eq(false)
       end
     end
   end
