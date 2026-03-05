@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.7"
+ruby "3.3.10"
 
 gem "activejob-traffic_control"
 gem "acts_as_tenant", "1.0.1"
