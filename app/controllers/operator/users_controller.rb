@@ -286,6 +286,7 @@ class Operator::UsersController < Operator::BaseController
   def approve
     find_user(:user_id)
     if @user.update(approved: true)
+      SendNotificationsJob.perform_later(@user, "Approval")
       flash[:success] = "User approved."
     else
       flash[:error] = "Couldn't approve user."

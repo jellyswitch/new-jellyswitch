@@ -33,6 +33,8 @@ class NotifiableFactory
       Notifiable::PaidRoomReservation
     when "UpcomingReservationReminder"
       Notifiable::UpcomingReservationReminder
+    when "Approval"
+      Notifiable::Approval
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)

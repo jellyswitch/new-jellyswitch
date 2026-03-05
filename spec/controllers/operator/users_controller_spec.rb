@@ -197,6 +197,12 @@ RSpec.describe Operator::UsersController, type: :controller do
       unapproved_user.reload
       expect(unapproved_user.approved).to be true
     end
+
+    it "enqueues a SendNotificationsJob with Approval type" do
+      expect {
+        post :approve, params: { user_id: unapproved_user.id }
+      }.to have_enqueued_job(SendNotificationsJob).with(unapproved_user, "Approval")
+    end
   end
 
   describe "POST #unapprove" do
