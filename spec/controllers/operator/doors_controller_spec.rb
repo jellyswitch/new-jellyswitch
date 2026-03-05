@@ -251,5 +251,38 @@ RSpec.describe Operator::DoorsController, type: :controller do
     it "assigns @doors" do
       expect(assigns(:doors)).to be_present
     end
+
+    context "as an approved member without active subscription or day pass" do
+      let(:member_user) { create(:user, operator: operator, original_location: location, approved: true) }
+
+      before do
+        allow(controller).to receive(:current_user).and_return(member_user)
+      end
+
+      it "allows access to the keys page" do
+        get :keys
+        expect(response).not_to have_http_status(:forbidden)
+        expect(assigns(:doors)).to be_present
+      end
+
+      it "excludes private doors" do
+        private_door = create(:door, operator: operator, location: location, private: true)
+        get :keys
+        expect(assigns(:doors)).to include(door)
+        expect(assigns(:doors)).not_to include(private_door)
+      end
+    end
+
+    context "when door_integration_enabled is false" do
+      before do
+        location.update!(door_integration_enabled: false)
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "still allows access since keys? does not check enabled?" do
+        get :keys
+        expect(response).not_to have_http_status(:forbidden)
+      end
+    end
   end
 end

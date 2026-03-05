@@ -32,7 +32,7 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def keys?
-    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
+    user.present? && (admin? || community_manager? || general_manager? || approved? || billing_disabled?)
   end
 
   def enabled?
