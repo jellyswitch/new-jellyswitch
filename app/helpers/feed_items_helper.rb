@@ -84,9 +84,7 @@ module FeedItemsHelper
   end
 
   def find_room_reservations
-    @reservations = current_location.rooms.map do |room|
-      room.reservations.today
-    end.flatten.uniq.count
+    @reservations = Reservation.where(room: current_location.rooms).today.distinct.count
   end
 
   def find_upcoming_renewals

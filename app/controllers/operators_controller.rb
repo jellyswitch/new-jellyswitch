@@ -4,10 +4,6 @@ class OperatorsController < ApplicationController
     find_operators
     authorize @production_operators
 
-    @all_reports = @operators.all.map do |operator|
-      Jellyswitch::Report.new(operator)
-    end
-
     @production_reports = @production_operators.all.map do |operator|
       Jellyswitch::Report.new(operator)
     end
@@ -16,8 +12,8 @@ class OperatorsController < ApplicationController
       Jellyswitch::Report.new(operator)
     end
 
-    @production_staff = @production_reports.sum(&:staff_count)
-    @demo_staff = @demo_reports.sum(&:staff_count)
+    @production_staff = User.where(operator: @production_operators).admins.non_superadmins.count
+    @demo_staff = User.where(operator: @demo_operators).admins.non_superadmins.count
   end
 
   def show

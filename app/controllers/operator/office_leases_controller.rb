@@ -148,9 +148,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = Organization.all.select do |org|
-      org.has_stripe_customer_for_location?(current_location)
-    end
+    @organizations = current_location.organizations.where.not(stripe_customer_id: [nil, ''])
   end
 
   def find_offices

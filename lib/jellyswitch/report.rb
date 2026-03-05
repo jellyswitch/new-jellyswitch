@@ -50,9 +50,7 @@ module Jellyswitch
     end
 
     def active_members
-      plans.individual.nonzero.map do |plan|
-        plan.subscriptions.active.map(&:subscribable)
-      end.flatten.uniq
+      User.where(id: Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id))
     end
 
     def active_member_count
@@ -60,9 +58,7 @@ module Jellyswitch
     end
 
     def free_members
-      plans.individual.free.map do |plan|
-        plan.subscriptions.active.map(&:subscribable)
-      end.flatten.uniq
+      User.where(id: Subscription.where(plan: plans.individual.free, active: true, subscribable_type: 'User').select(:subscribable_id))
     end
 
     def free_member_count
@@ -78,9 +74,7 @@ module Jellyswitch
     end
 
     def active_lease_members
-      office_leases.active.map do |lease|
-        lease.organization.users
-      end.flatten.uniq
+      User.where(organization_id: office_leases.active.select(:organization_id)).distinct
     end
 
     def active_lease_member_count
@@ -96,15 +90,13 @@ module Jellyswitch
     end
 
     def checkins_last_30_days
-      checkins = if location
+      scope = if location
         location.checkins
       else
-        locations.map(&:checkins).flatten
+        Checkin.where(location: locations)
       end
 
-      checkins.select do |checkin|
-        checkin.datetime_in > 30.days.ago
-      end
+      scope.where(datetime_in: 30.days.ago..)
     end
 
     def checkins_last_30_days_count
