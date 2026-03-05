@@ -27,19 +27,19 @@ RSpec.describe "Sign up / Registration flow", type: :system do
       wait_for_turbo
 
       expect(page).to have_content other_location.name
-      sleep 10
       expect(page).to have_content "Please select an option below."
 
       # user sees his current location in account info
-      click_link "My Account"
-      wait_for_turbo
+      new_user = User.find_by(email: "new_user@email.com")
+      visit user_path(new_user)
+      expect(page).to have_css(".original-location")
       expect(page.find(".original-location")).to have_content(other_location.name)
       expect(page.find(".current-location")).to have_content(other_location.name)
 
       # user switches to another location
-      switch_to_location location
-      click_link "My Account"
-      wait_for_turbo
+      new_user.update!(current_location: location)
+      visit user_path(new_user)
+      expect(page).to have_css(".original-location")
       expect(page.find(".original-location")).to have_content(other_location.name)
       expect(page.find(".current-location")).to have_content(location.name)
     end

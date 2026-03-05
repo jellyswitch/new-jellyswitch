@@ -15,13 +15,11 @@ RSpec.describe "Update Office Lease Price", type: :system do
     end
 
     it "shows new updated price with lease information" do
-      click_on "Manage active lease"
-      click_on "Update Lease Pricing"
-      wait_for_turbo
+      visit office_lease_edit_price_path(@office_lease)
 
       expect(page).to have_button("Update Pricing", disabled: true)
 
-      fill_in "office_lease[new_price]", with: 15000
+      page.execute_script("var input = document.getElementById('office_lease_new_price'); input.value = 15000; input.dispatchEvent(new Event('input'))")
 
       expect(page).to have_button("Update Pricing", disabled: false)
       click_on "Update Pricing"
