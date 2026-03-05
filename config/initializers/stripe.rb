@@ -5,3 +5,6 @@ Rails.configuration.stripe = {
   test_publishable_key: ENV['STRIPE_TEST_PUBLISHABLE_KEY'],
   test_secret_key: ENV['STRIPE_TEST_SECRET_KEY']
 }
+
+Stripe.open_timeout = 10
+Stripe.read_timeout = 15

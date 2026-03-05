@@ -284,7 +284,7 @@ class User < ApplicationRecord
   end
 
   def send_password_reset_email
-    UserMailer.password_reset(self, operator).deliver_now
+    UserMailer.password_reset(self, operator).deliver_later
   end
 
   def password_reset_expired?

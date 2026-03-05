@@ -15,7 +15,7 @@ class Onboarding::GetKisiDoors
       "Content-type" => "application/json",
       "Authorization" => "KISI-LOGIN #{location.kisi_api_key}",
     }
-    context.doors = HTTParty.get(url, headers: headers)
+    context.doors = HTTParty.get(url, headers: headers, timeout: 10)
     raise "Error getting doors" unless context.doors.success?
   rescue StandardError => e
     context.fail!(message: e.message)

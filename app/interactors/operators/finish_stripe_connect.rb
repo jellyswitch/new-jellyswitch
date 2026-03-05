@@ -14,7 +14,9 @@ class Operators::FinishStripeConnect
         client_secret: ENV['STRIPE_SECRET_KEY'],
         code: stripe_code,
         grant_type: "authorization_code"
-    })
+      },
+      timeout: 10
+    )
 
     if response["error"].present?
       context.fail!(message: response["error_description"])
