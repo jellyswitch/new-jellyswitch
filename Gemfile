@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.2.6"
+ruby "3.3.7"
 
 gem "activejob-traffic_control"
 gem "acts_as_tenant", "1.0.1"
@@ -35,7 +35,7 @@ gem "opensearch-ruby"
 gem "pagy", "~> 6.0.2"
 gem "pg"
 gem "premailer-rails"
-gem "puma", "~> 6.6"
+gem "puma", "~> 7.0"
 gem "pundit"
 gem "rack-cors"
 gem "rails", "7.0.8.7"
