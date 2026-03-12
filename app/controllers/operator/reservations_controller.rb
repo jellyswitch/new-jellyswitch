@@ -17,50 +17,10 @@ class Operator::ReservationsController < Operator::BaseController
     authorize :reservation
     @room = current_tenant.rooms.find(params[:room_id])
     @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
-    # Build filtered member list: only paying members, day pass holders,
-    # users with future reservations, lease holders, and admins/managers
-    today = Time.current.to_date
-    eligible_ids = Set.new
-
-    # Current user always eligible
-    eligible_ids << current_user.id
-
-    # Admins and managers at this location
-    eligible_ids.merge(
-      User.for_space(current_tenant).where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id)
-    )
-
-    # Active subscribers at this location
-    plan_ids = Plan.where(location_id: current_location.id).pluck(:id)
-    if plan_ids.any?
-      eligible_ids.merge(
-        Subscription.where(active: true, plan_id: plan_ids).pluck(:user_id)
-      )
-    end
-
-    # Day pass holders (today or future)
-    eligible_ids.merge(
-      DayPass.where("day >= ?", today).pluck(:user_id)
-    )
-
-    # Users with future reservations
-    eligible_ids.merge(
-      Reservation.unscoped.where("datetime_in >= ?", Time.current).where(cancelled: false).pluck(:user_id)
-    )
-
-    # Build options list: admin first, then others alphabetically
-    users = User.where(id: eligible_ids.to_a).includes(:organization).order(:name)
-    admin_option = nil
-    others = []
-    users.each do |user|
-      opt = User.option_helper(user)
-      if user.id == current_user.id
-        admin_option = opt
-      else
-        others << opt
-      end
-    end
+    all_options = User.lease_options_for_select(current_tenant, current_location)
+    admin_option = all_options.find { |_name, id| id == current_user.id }
     admin_option ||= [current_user.name, current_user.id]
+    others = all_options.reject { |_name, id| id == current_user.id }
     @member_options = [admin_option] + others
   end
 
