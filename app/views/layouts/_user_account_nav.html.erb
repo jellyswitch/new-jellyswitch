@@ -8,6 +8,7 @@
         <%= link_to "My Organization", organization_path(current_user.organization), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <% end %>
       <%= link_to "My Account", user_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
+      <%= link_to "My Messages", my_feedback_member_feedbacks_path, class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <%= link_to "My Membership", user_memberships_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <%= link_to "My Day Passes", user_day_passes_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <%= link_to "My Reservations", user_reservations_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>

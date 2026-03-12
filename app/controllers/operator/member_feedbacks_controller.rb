@@ -36,6 +36,18 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     authorize @member_feedback
     @feedback_replies = @member_feedback.feedback_replies.order(:created_at)
     @new_reply = FeedbackReply.new
+
+    # Mark as read when the thread owner views it
+    if @member_feedback.user_id == current_user.id
+      @member_feedback.mark_as_read!
+    end
+  end
+
+  def dismiss
+    find_member_feedback
+    authorize @member_feedback, :show?
+    @member_feedback.mark_as_read!
+    turbo_redirect(home_path, action: restore_if_possible)
   end
 
   def reply
@@ -53,9 +65,13 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     if save_result.success?
       # Send push notification separately — don't let failure affect the reply
       begin
-        NotifiableFactory.for(save_result.feedback_reply).notify
+        reply = save_result.feedback_reply
+        Rails.logger.info("[FeedbackReply] Sending notification for reply #{reply.id} from #{current_user.name} (admin?=#{reply.from_admin?})")
+        NotifiableFactory.for(reply).notify
+        Rails.logger.info("[FeedbackReply] Notification sent successfully")
       rescue => e
         Rails.logger.error("FeedbackReply notification error: #{e.class}: #{e.message}")
+        Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         Honeybadger.notify(e)
       end
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")

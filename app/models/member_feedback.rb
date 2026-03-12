@@ -28,4 +28,20 @@ class MemberFeedback < ApplicationRecord
   def anonymous?
     self.anonymous == true
   end
+
+  def has_unread_replies?
+    return false if feedback_replies.empty?
+    return true if last_read_at.nil?
+    feedback_replies.where("created_at > ?", last_read_at).exists?
+  end
+
+  def mark_as_read!
+    update_column(:last_read_at, Time.current)
+  end
+
+  def unread_reply_count
+    return 0 if feedback_replies.empty?
+    return feedback_replies.count if last_read_at.nil?
+    feedback_replies.where("created_at > ?", last_read_at).count
+  end
 end

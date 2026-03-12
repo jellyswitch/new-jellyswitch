@@ -22,6 +22,30 @@
         <% end %>
       <% end %>
 
+      <% if @open_tickets.present? && @open_tickets.any? %>
+        <% @open_tickets.each do |ticket| %>
+          <%= list_item do %>
+            <div class="open-ticket-card">
+              <div class="d-flex align-items-center mb-2">
+                <span class="badge badge-warning mr-2">New Reply</span>
+                <small class="text-muted"><%= time_ago_in_words(ticket.updated_at) %> ago</small>
+              </div>
+              <p class="mb-2 text-dark"><%= truncate(ticket.comment, length: 80) %></p>
+              <% latest_reply = ticket.feedback_replies.order(created_at: :desc).first %>
+              <% if latest_reply&.from_admin? %>
+                <p class="mb-2 text-muted" style="font-size: 14px;">
+                  <strong><%= latest_reply.user.name %></strong> replied: "<%= truncate(latest_reply.body, length: 60) %>"
+                </p>
+              <% end %>
+              <div class="d-flex">
+                <%= link_to "View Thread", member_feedback_path(ticket), class: "btn btn-primary btn-sm mr-2" %>
+                <%= link_to "Dismiss", dismiss_member_feedback_path(ticket), method: :post, class: "btn btn-outline-secondary btn-sm" %>
+              </div>
+            </div>
+          <% end %>
+        <% end %>
+      <% end %>
+
       <div class="list-group-item m-0" style="border-top: 0px; border-bottom: 0px;">
         <h5 class="card-title">Quick Actions</h5>
       </div>

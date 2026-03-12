@@ -209,6 +209,7 @@ Rails.application.routes.draw do
   resources :member_feedbacks, controller: "operator/member_feedbacks" do
     member do
       post :reply
+      post :dismiss
     end
     collection do
       get :my_feedback

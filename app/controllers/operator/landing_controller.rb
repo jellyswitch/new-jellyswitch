@@ -15,6 +15,19 @@ class Operator::LandingController < Operator::BaseController
     @announcement = current_tenant.announcements.for_location(current_location).latest
     # for some reason sometimes latest returns activerecord relation
     @announcement = @announcement.first if @announcement.is_a?(ActiveRecord::Relation)
+
+    # Open feedback tickets with unread admin replies for this member
+    begin
+      @open_tickets = current_user&.member_feedbacks
+                        &.joins(:feedback_replies)
+                        &.where("feedback_replies.created_at > COALESCE(member_feedbacks.last_read_at, '1970-01-01')")
+                        &.distinct
+                        &.order(updated_at: :desc) || []
+    rescue => e
+      Rails.logger.error("open_tickets error: #{e.class}: #{e.message}")
+      @open_tickets = []
+    end
+
     response.headers["Turbo-Location"] = home_url
     flash.keep
     home_redirect
