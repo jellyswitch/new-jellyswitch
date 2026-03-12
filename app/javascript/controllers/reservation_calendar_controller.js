@@ -533,6 +533,7 @@ export default class extends Controller {
       },
       success: (response) => {
         this.hideAmenities();
+        this.hideOverageAlert();
 
         $(".available-room-group").removeClass("d-none");
         $(".room-details").addClass("d-none");
