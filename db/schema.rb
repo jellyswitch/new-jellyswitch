@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2025_06_06_075538) do
+ActiveRecord::Schema[7.1].define(version: 2025_06_12_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -250,6 +250,18 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_06_075538) do
     t.index ["location_id"], name: "index_feed_items_on_location_id"
   end
 
+  create_table "feedback_replies", force: :cascade do |t|
+    t.bigint "member_feedback_id", null: false
+    t.bigint "user_id", null: false
+    t.text "body", null: false
+    t.integer "operator_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["member_feedback_id"], name: "index_feedback_replies_on_member_feedback_id"
+    t.index ["operator_id"], name: "index_feedback_replies_on_operator_id"
+    t.index ["user_id"], name: "index_feedback_replies_on_user_id"
+  end
+
   create_table "friendly_id_slugs", id: :serial, force: :cascade do |t|
     t.string "slug", null: false
     t.integer "sluggable_id", null: false
@@ -380,6 +392,7 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_06_075538) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.integer "location_id"
+    t.datetime "last_read_at"
     t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
@@ -699,6 +712,8 @@ ActiveRecord::Schema[7.0].define(version: 2025_06_06_075538) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "feedback_replies", "member_feedbacks"
+  add_foreign_key "feedback_replies", "users"
   add_foreign_key "amenities", "rooms"
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
