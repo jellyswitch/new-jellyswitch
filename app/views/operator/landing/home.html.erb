@@ -191,6 +191,15 @@
 
       <%= list_item do %>
         <%= render "shared/send_feedback_card" %>
+
+        <% if @message_count > 0 %>
+          <%= link_to my_feedback_member_feedbacks_path, class: "btn btn-block btn-outline-primary mt-3" do %>
+            <i class="fas fa-envelope"></i>&nbsp; My Messages
+            <% if @open_tickets.present? && @open_tickets.any? %>
+              <span class="badge badge-danger ml-1"><%= @open_tickets.size %></span>
+            <% end %>
+          <% end %>
+        <% end %>
       <% end %>
 
       <%= list_item do %>

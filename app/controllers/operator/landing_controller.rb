@@ -26,9 +26,11 @@ class Operator::LandingController < Operator::BaseController
                         &.distinct
                         &.order(updated_at: :desc)
                         &.to_a || []
+      @message_count = current_user&.member_feedbacks&.joins(:feedback_replies)&.distinct&.count || 0
     rescue => e
       Rails.logger.error("open_tickets error: #{e.class}: #{e.message}")
       @open_tickets = []
+      @message_count = 0
     end
 
     response.headers["Turbo-Location"] = home_url

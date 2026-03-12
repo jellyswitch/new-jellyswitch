@@ -68,6 +68,7 @@ class Navigation::Default < SimpleDelegator
     [
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
+      {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|
@@ -114,6 +115,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Childcare", path: childcare_index_path}
     end
 
+    items << {title: "My Messages", path: my_feedback_member_feedbacks_path}
     items << {title: "My Account", path: user_path(user)}
 
     if operator.locations.count > 1
@@ -184,6 +186,7 @@ class Navigation::Default < SimpleDelegator
     [
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
+      {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|
@@ -225,6 +228,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     [
+      {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
     ].each do |item|
