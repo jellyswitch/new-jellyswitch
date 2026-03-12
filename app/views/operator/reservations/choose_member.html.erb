@@ -16,9 +16,23 @@
     <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
-        <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off">
+        <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off"
+               oninput="filterMembers(this.value)">
         <input type="hidden" name="user_id" id="user-id-hidden" value="<%= current_user.id %>">
-        <div class="member-list" id="member-list"></div>
+
+        <div class="member-list" id="member-list">
+          <% @member_options.each do |name, id| %>
+            <div class="member-item<%= ' active' if id == current_user.id %>"
+                 data-id="<%= id %>"
+                 data-name="<%= name.downcase %>"
+                 onclick="selectMember(this, '<%= id %>')">
+              <%= name %>
+            </div>
+          <% end %>
+          <% if @member_options.empty? %>
+            <div class="member-no-results">No members available</div>
+          <% end %>
+        </div>
       </div>
 
       <%= f.hidden_field :room_id, value: @room.id %>
@@ -67,62 +81,27 @@
 </style>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
-    var searchInput = document.getElementById("member-search");
-    var listContainer = document.getElementById("member-list");
-    var hiddenInput = document.getElementById("user-id-hidden");
-
-    var allMembers = <%= raw @member_options.map { |name, id| { name: name, id: id } }.to_json %>;
-    var selectedId = String(hiddenInput.value);
-
-    function renderList(query) {
-      listContainer.innerHTML = "";
-      var q = (query || "").toLowerCase().trim();
-
-      var filtered = allMembers.filter(function(m) {
-        return q === "" || m.name.toLowerCase().indexOf(q) !== -1;
-      });
-
-      if (filtered.length === 0) {
-        var noResults = document.createElement("div");
-        noResults.className = "member-no-results";
-        noResults.textContent = "No members found";
-        listContainer.appendChild(noResults);
-        return;
-      }
-
-      filtered.forEach(function(m) {
-        var item = document.createElement("div");
-        item.className = "member-item";
-        item.textContent = m.name;
-        item.setAttribute("data-id", String(m.id));
-
-        if (String(m.id) === selectedId) {
-          item.classList.add("active");
-        }
-
-        item.addEventListener("click", function() {
-          selectedId = String(m.id);
-          hiddenInput.value = m.id;
-
-          // Update all items
-          var items = listContainer.querySelectorAll(".member-item");
-          items.forEach(function(el) { el.classList.remove("active"); });
-          item.classList.add("active");
-
-          // Scroll the selected item into view
-          item.scrollIntoView({ block: "nearest" });
-        });
-
-        listContainer.appendChild(item);
-      });
+  function selectMember(el, id) {
+    document.getElementById("user-id-hidden").value = id;
+    var items = document.querySelectorAll(".member-item");
+    for (var i = 0; i < items.length; i++) {
+      items[i].classList.remove("active");
     }
+    el.classList.add("active");
+  }
 
-    searchInput.addEventListener("input", function() {
-      renderList(this.value);
-    });
-
-    // Render full list on load with admin pre-selected
-    renderList("");
-  });
+  function filterMembers(query) {
+    var q = query.toLowerCase().trim();
+    var items = document.querySelectorAll(".member-item");
+    var anyVisible = false;
+    for (var i = 0; i < items.length; i++) {
+      var name = items[i].getAttribute("data-name");
+      if (q === "" || name.indexOf(q) !== -1) {
+        items[i].style.display = "";
+        anyVisible = true;
+      } else {
+        items[i].style.display = "none";
+      }
+    }
+  }
 </script>
