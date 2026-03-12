@@ -1,7 +1,7 @@
 
 class Operator::UsersController < Operator::BaseController
   include UsersHelper
-  before_action :require_authentication, except: [:new, :create]
+  before_action :require_authentication, except: [:new, :create, :confirmation_pending]
   before_action :background_image
 
   def index
@@ -113,12 +113,17 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
   end
 
+  def confirmation_pending
+    @email = params[:email]
+  end
+
   def create
     authorize User.new
-    result = Users::Create.call(params: user_params, operator: current_tenant)
+    is_admin = admin?
+    result = Users::Create.call(params: user_params, operator: current_tenant, admin_created: is_admin)
 
     if result.success?
-      if admin? # admin is creating the user
+      if is_admin # admin is creating the user
         flash[:success] = "Member #{result.user.name} added."
         if params[:add_member_and_create_another].present?
           turbo_redirect(add_member_users_path, action: "replace")
@@ -126,30 +131,8 @@ class Operator::UsersController < Operator::BaseController
           turbo_redirect(user_path(result.user), action: "replace")
         end
       else
-        # set the current location based on the user's preferred location
-        if result.user.original_location.present?
-          checkout
-          unset_location
-          set_location(result.user.original_location)
-        end
-
-        log_in(result.user)
-
-        if current_location.new_users_get_free_day_pass?
-          # todo: fold this into two interactors: one that creates a user and one that creates a user and provisoins a new day pass
-          # provision new free day pass
-          day_pass_result = Billing::DayPasses::CreateFreeDayPass.call(
-            user: current_user,
-            location: current_location,
-          )
-
-          if day_pass_result.success?
-            flash[:success] = "Thanks for signing up! You've been granted a free day pass, pending approval. Enjoy!"
-          else
-            flash[:error] = day_pass_result.message
-          end
-        end
-        turbo_redirect(home_path, action: "replace")
+        # Redirect to confirmation pending page instead of logging in
+        turbo_redirect(confirmation_pending_users_path(email: result.user.email), action: "replace")
       end
     else
       @user = result.user

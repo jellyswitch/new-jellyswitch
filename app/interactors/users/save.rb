@@ -19,6 +19,11 @@ class Users::Save
       @user.current_location_id = @user.original_location_id
     end
 
+    # Admin-created users are auto-confirmed
+    if context.admin_created
+      @user.email_confirmed = true
+    end
+
     if !@user.save
       context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
     end
@@ -29,6 +34,17 @@ class Users::Save
 
     if !result.success?
       context.fail!(message: result.message)
+    end
+
+    # Send confirmation email for self-signup users
+    if !context.admin_created && !@user.email_confirmed?
+      begin
+        @user.generate_confirmation_token
+        @user.send_confirmation_email
+      rescue => e
+        Rails.logger.error("Email confirmation send error: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
     end
   end
 end

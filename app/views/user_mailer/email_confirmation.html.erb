@@ -1,0 +1,18 @@
+<h1>Confirm Your Email Address</h1>
+<p>Hello <%= @user.name || "there" %>,</p>
+<p>
+Thanks for signing up for <%= @operator.name %>! Please confirm your email address by clicking the link below:
+</p>
+<p>
+<%= link_to "Confirm My Email", email_confirmation_url(@token, email: @user.email, subdomain: @operator.subdomain) %>
+</p>
+<p>
+If the link above doesn't work, copy and paste this URL into your browser:<br>
+<%= email_confirmation_url(@token, email: @user.email, subdomain: @operator.subdomain) %>
+</p>
+<p>
+This link will expire in 24 hours. If you didn't sign up for <%= @operator.name %>, you can safely ignore this email.
+</p>
+<p>
+Thank you<br>
+</p>

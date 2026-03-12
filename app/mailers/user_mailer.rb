@@ -25,6 +25,27 @@ class UserMailer < ApplicationMailer
     recipients = User.superadmins.all.map {|u| u.email }
   end
 
+  def email_confirmation(user, operator, token)
+    @user = user
+    @operator = operator
+    @token = token
+    mail to: user.email, subject: "Confirm your email for #{@operator.name}", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: @operator.contact_email,
+    'X-SMTPAPI' => {
+      "filters" => {
+        "clicktrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        },
+        "opentrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        }
+      }
+    }.to_json
+  end
+
   def event_registration(user, password, event)
     @user = user
     @password = password

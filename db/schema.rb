@@ -697,6 +697,9 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_12_210000) do
     t.string "role", default: "unassigned", null: false
     t.integer "original_location_id"
     t.integer "current_location_id"
+    t.boolean "email_confirmed", default: false, null: false
+    t.string "confirmation_token"
+    t.datetime "confirmation_sent_at"
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 

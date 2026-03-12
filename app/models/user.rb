@@ -83,11 +83,12 @@ class User < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Auth stuff
-  attr_accessor :remember_token, :reset_token
+  attr_accessor :remember_token, :reset_token, :raw_confirmation_token
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
   validates :name, presence: true
+  validates :phone, presence: true
   validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
   has_secure_password
 
@@ -292,6 +293,30 @@ class User < ApplicationRecord
 
   def password_reset_expired?
     reset_sent_at < 2.hours.ago
+  end
+
+  # Email confirmation
+  def generate_confirmation_token
+    self.raw_confirmation_token = User.new_token
+    update_attribute(:confirmation_token, User.digest(raw_confirmation_token))
+    update_attribute(:confirmation_sent_at, Time.zone.now)
+  end
+
+  def send_confirmation_email
+    UserMailer.email_confirmation(self, operator, raw_confirmation_token).deliver_now
+  end
+
+  def confirm_email!
+    update_columns(email_confirmed: true, confirmation_token: nil, confirmation_sent_at: nil)
+  end
+
+  def confirmation_expired?
+    confirmation_sent_at.nil? || confirmation_sent_at < 24.hours.ago
+  end
+
+  def valid_confirmation_token?(token)
+    return false if confirmation_token.nil?
+    BCrypt::Password.new(confirmation_token).is_password?(token)
   end
 
   # Form and view helpers

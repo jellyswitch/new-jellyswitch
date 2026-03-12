@@ -19,6 +19,13 @@ class Operator::SessionsController < Operator::BaseController
     )
 
     if result.success?
+      # Block unconfirmed email users (staff roles bypass this check)
+      if !result.user.email_confirmed? && result.user.role == User::UNASSIGNED
+        flash[:error] = "Please verify your email address. Check your inbox for a confirmation link."
+        turbo_redirect(login_path, action: "replace")
+        return
+      end
+
       log_in(result.user)
       remember(result.user)
 

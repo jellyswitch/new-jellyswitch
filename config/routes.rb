@@ -294,6 +294,8 @@ Rails.application.routes.draw do
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
   end
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
+  resources :email_confirmations, only: [:show], controller: "operator/email_confirmations"
+  post :resend_confirmation, to: "operator/email_confirmations#resend"
   resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"
@@ -368,6 +370,7 @@ Rails.application.routes.draw do
       get :archived, to: "operator/users#archived"
       get :unapproved, to: "operator/users#unapproved"
       get :search, to: "operator/users#search"
+      get :confirmation_pending, to: "operator/users#confirmation_pending"
     end
     get :about, to: "operator/users#about"
     post :add_childcare_reservations, to: "operator/users#add_childcare_reservations"

@@ -1,0 +1,27 @@
+<%- title "Check Your Email" %>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-4 pt-4 text-center">
+      <h4 class="display-4 mt-4">Check Your Email</h4>
+      <p class="lead mt-3 mb-3">
+        We've sent a confirmation email to <strong><%= @email %></strong>.
+      </p>
+      <p class="text-muted">
+        Please click the link in the email to verify your account. The link will expire in 24 hours.
+      </p>
+      <p class="text-muted mt-3">
+        Didn't receive the email? Check your spam folder or
+        <%= form_tag(resend_confirmation_path, method: :post, style: "display: inline") do %>
+          <%= hidden_field_tag :email, @email %>
+          <%= submit_tag "resend the confirmation email", class: "btn btn-link p-0 align-baseline", style: "border: none; text-decoration: underline;" %>
+        <% end %>.
+      </p>
+      <p class="mt-4">
+        <%= link_to "Back to Login", login_path, class: "btn btn-outline-primary" %>
+      </p>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>
