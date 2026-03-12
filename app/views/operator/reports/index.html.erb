@@ -1,93 +1,88 @@
 <% title "Data" %>
 
 <%= super_wide_card do %>
-  <h4 class="display-4 mb-1 text-center">Dashboard<%= current_location ? " &mdash; #{current_location.name}" : "" %></h4>
+  <h4 class="display-4 mb-1 text-center"><%= current_location ? "#{current_location.name} Data" : "Data" %></h4>
   <p class="text-center text-muted mb-4">
     Change to another location for its data
   </p>
 
   <%# ── Key Metrics ── %>
-  <div class="row text-center mb-4">
-    <div class="col-6 col-md-3 mb-3">
-      <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="display-4 font-weight-bold text-primary"><%= @report.active_member_count %></div>
-          <div class="text-muted mt-1">Active Members</div>
-          <% breakdown = @report.active_member_breakdown %>
-          <small class="text-muted">
-            <%= breakdown[:subscribed] %> subscribed
-            <% if breakdown[:out_of_band] > 0 %>
-              &middot; <%= breakdown[:out_of_band] %> out-of-band
-            <% end %>
+  <% breakdown = @report.active_member_breakdown %>
+  <div class="row text-center mb-3">
+    <div class="col-6 mb-3">
+      <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="h1 mb-0 font-weight-bold text-primary"><%= @report.active_member_count %></div>
+          <div class="text-muted small mt-1">Active Members</div>
+          <small class="text-muted" style="font-size: 0.7rem;">
+            <%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> out-of-band<% end %>
           </small>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <%= link_to active_leases_reports_path, class: "text-decoration-none text-dark d-block" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="display-4 font-weight-bold text-success"><%= @report.active_lease_count %></div>
-          <div class="text-muted mt-1">Active Leases</div>
+    <div class="col-6 mb-3">
+      <%= link_to active_leases_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="h1 mb-0 font-weight-bold text-success"><%= @report.active_lease_count %></div>
+          <div class="text-muted small mt-1">Active Leases</div>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <%= link_to active_lease_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="display-4 font-weight-bold text-info"><%= @report.active_lease_member_count %></div>
-          <div class="text-muted mt-1">Lease Members</div>
+    <div class="col-6 mb-3">
+      <%= link_to active_lease_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="h1 mb-0 font-weight-bold text-info"><%= @report.active_lease_member_count %></div>
+          <div class="text-muted small mt-1">Lease Members</div>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <div class="border rounded p-3 h-100">
+    <div class="col-6 mb-3">
+      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
         <% if current_location %>
-          <div class="display-4 font-weight-bold text-warning"><%= number_to_currency(@report.this_month_revenue) %></div>
-          <div class="text-muted mt-1">Revenue This Month</div>
-          <small class="text-muted">From paid invoices</small>
+          <div class="h2 mb-0 font-weight-bold text-warning"><%= number_to_currency(@report.this_month_revenue, precision: 0) %></div>
+          <div class="text-muted small mt-1">Revenue This Month</div>
         <% else %>
-          <div class="display-4 font-weight-bold text-muted">&mdash;</div>
-          <div class="text-muted mt-1">Revenue This Month</div>
-          <small class="text-muted">Select a location</small>
+          <div class="h2 mb-0 font-weight-bold text-muted">--</div>
+          <div class="text-muted small mt-1">Revenue This Month</div>
         <% end %>
       </div>
     </div>
   </div>
 
-  <%# ── Additional Stats Row ── %>
-  <div class="row text-center mb-4">
-    <div class="col-6 col-md-3 mb-3">
-      <%= link_to total_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="h2 font-weight-bold"><%= @report.all_member_count %></div>
-          <div class="text-muted">Total Members</div>
+  <%# ── Secondary Stats ── %>
+  <div class="row text-center mb-2">
+    <div class="col-6 mb-3">
+      <%= link_to total_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="h3 mb-0 font-weight-bold"><%= @report.all_member_count %></div>
+          <div class="text-muted small">Total Members</div>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <%= link_to last_30_day_passes_reports_path, class: "text-decoration-none text-dark d-block" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="h2 font-weight-bold"><%= @report.last_30_day_pass_count %></div>
-          <div class="text-muted">Day Passes (30 days)</div>
+    <div class="col-6 mb-3">
+      <%= link_to last_30_day_passes_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+          <div class="h3 mb-0 font-weight-bold"><%= @report.last_30_day_pass_count %></div>
+          <div class="text-muted small">Day Passes (30d)</div>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <div class="border rounded p-3 h-100">
-        <div class="h2 font-weight-bold"><%= @report.free_member_count %></div>
-        <div class="text-muted">Free Members</div>
+    <div class="col-6 mb-3">
+      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+        <div class="h3 mb-0 font-weight-bold"><%= @report.free_member_count %></div>
+        <div class="text-muted small">Free Members</div>
       </div>
     </div>
 
-    <div class="col-6 col-md-3 mb-3">
-      <div class="border rounded p-3 h-100">
-        <div class="h2 font-weight-bold"><%= @report.checkins_last_30_days_count %></div>
-        <div class="text-muted">Check-ins (30 days)</div>
+    <div class="col-6 mb-3">
+      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
+        <div class="h3 mb-0 font-weight-bold"><%= @report.checkins_last_30_days_count %></div>
+        <div class="text-muted small">Check-ins (30d)</div>
       </div>
     </div>
   </div>
@@ -114,7 +109,7 @@
 <%# ── Revenue Trend ── %>
 <% if policy(:report).revenue? && current_location %>
   <%= super_wide_card do %>
-    <h5 class="text-center mb-3">Revenue &mdash; Last 12 Months</h5>
+    <h5 class="text-center mb-3">Revenue — Last 12 Months</h5>
     <p class="text-center text-muted small mb-3">Based on paid invoices</p>
     <%= column_chart @report.revenue_by_month,
           prefix: "$",
@@ -197,7 +192,7 @@
   <%= wide_card do %>
     <h5 class="text-center mb-3">Monetization</h5>
     <%= link_to monetization_reports_path(location_id: current_location.id), class: "btn btn-primary btn-block" do %>
-      View Monetization &mdash; <%= current_location.name %>
+      View Monetization — <%= current_location.name %>
     <% end %>
   <% end %>
 <% end %>
