@@ -17,10 +17,7 @@
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
         <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off">
-        <%= f.select :user_id,
-            User.reservation_options_for_select(current_tenant, current_location, current_user),
-            { selected: current_user.id },
-            { class: "form-control", id: "user-id-select", size: 12 } %>
+        <%= f.select :user_id, @member_options, { selected: current_user.id }, { class: "form-control", id: "user-id-select", size: 12 } %>
       </div>
         <%= f.hidden_field :room_id, value: @room.id %>
         <%= f.hidden_field :day, value: params[:day] %>
@@ -43,10 +40,8 @@
       var query = this.value.toLowerCase().trim();
       var selectedValue = selectEl.value;
 
-      // Clear current options
       selectEl.innerHTML = "";
 
-      // Filter and re-add matching options
       allOptions.forEach(function(opt) {
         if (query === "" || opt.text.toLowerCase().indexOf(query) !== -1) {
           var option = document.createElement("option");
@@ -59,13 +54,11 @@
         }
       });
 
-      // If nothing selected after filter, select first visible option
       if (!selectEl.value && selectEl.options.length > 0) {
         selectEl.options[0].selected = true;
       }
     });
 
-    // Auto-focus search input
     searchInput.focus();
   });
 </script>

@@ -17,6 +17,7 @@ class Operator::ReservationsController < Operator::BaseController
     authorize :reservation
     @room = current_tenant.rooms.find(params[:room_id])
     @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
+    @member_options = User.reservation_options_for_select(current_tenant, current_location, current_user)
   end
 
   def choose_day

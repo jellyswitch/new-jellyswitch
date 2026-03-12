@@ -319,7 +319,7 @@ class User < ApplicationRecord
     eligible_ids += scope.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id)
 
     # Users with active subscriptions at this location
-    plan_ids = Plan.for_location(location).pluck(:id)
+    plan_ids = Plan.where(location_id: location.id).pluck(:id)
     if plan_ids.any?
       eligible_ids += scope.joins(:subscriptions)
                            .where(subscriptions: { active: true, plan_id: plan_ids })
@@ -333,15 +333,22 @@ class User < ApplicationRecord
 
     # Users with billing info (card added or out_of_band) at this location
     eligible_ids += scope.joins(:user_payment_profiles)
-                         .where(user_payment_profiles: { location_id: location.id })
-                         .where("user_payment_profiles.card_added = ? OR users.out_of_band = ?", true, true)
+                         .where(user_payment_profiles: { location_id: location.id, card_added: true })
                          .pluck(:id)
 
+    # Users set to out_of_band billing
+    eligible_ids += scope.where(out_of_band: true).pluck(:id)
+
     # Users with active organization leases at this location
-    eligible_ids += scope.joins(organization: :office_leases)
-                         .where("office_leases.start_date <= ? AND office_leases.end_date >= ?", today, today)
-                         .where(office_leases: { location_id: location.id })
-                         .pluck(:id)
+    eligible_ids += User.for_space(operator)
+                        .originally_at_location(location)
+                        .non_superadmins
+                        .visible
+                        .where.not(organization_id: nil)
+                        .joins("INNER JOIN office_leases ON office_leases.organization_id = users.organization_id")
+                        .where("office_leases.start_date <= ? AND office_leases.end_date >= ?", today, today)
+                        .where("office_leases.location_id = ?", location.id)
+                        .pluck(:id)
 
     # Always include the requesting admin
     eligible_ids << requesting_user.id
@@ -349,12 +356,17 @@ class User < ApplicationRecord
     eligible_ids = eligible_ids.uniq
     return [] if eligible_ids.empty?
 
-    admin_id = requesting_user.id
+    admin_id = requesting_user.id.to_i
     users = User.where(id: eligible_ids)
                 .includes(:organization)
-                .order(Arel.sql("CASE WHEN users.id = #{admin_id.to_i} THEN 0 ELSE 1 END, users.name ASC"))
+                .order(Arel.sql("CASE WHEN users.id = #{admin_id} THEN 0 ELSE 1 END, users.name ASC"))
 
     users.map { |user| option_helper(user) }
+  rescue => e
+    Rails.logger.error("reservation_options_for_select error: #{e.class}: #{e.message}")
+    Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
+    # Fall back to the full user list so the page still loads
+    lease_options_for_select(operator, location)
   end
 
   def self.option_helper(user)
