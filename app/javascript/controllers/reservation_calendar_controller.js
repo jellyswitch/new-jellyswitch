@@ -12,6 +12,8 @@ export default class extends Controller {
     this.needsBilling = false;
     this.stripe = null;
     this.card = null;
+    this.isModalOpen = false;
+    this.pendingAjax = [];
 
     this.initializeCalendar();
     this.initializeRoomFilter();
@@ -43,7 +45,10 @@ export default class extends Controller {
       },
       dayClick: this.handleDayClick.bind(this),
       eventClick: (event) => {
-        this.handleDayClick(moment(event.id));
+        const eventDate = moment(event.id);
+        // Block past date events too
+        if (moment(this.today).isAfter(eventDate)) return;
+        this.handleDayClick(eventDate);
       },
       events: (start, end, timezone, callback) => {
         $.ajax({
@@ -268,15 +273,17 @@ export default class extends Controller {
   }
 
   async handleDayClick(date, event) {
+    // Prevent opening modal if already open (avoid double-click issues)
+    if (this.isModalOpen) return;
+
     const formattedDate = date.format("YYYY-MM-DD");
+    const todayMoment = moment(this.today).startOf("day");
+    const clickedDate = moment(date).startOf("day");
 
-    const hasFcPastClass = $(
-      `td.fc-day[data-date="${formattedDate}"]`
-    ).hasClass("fc-past");
-    const beforeToday = moment(this.today).isAfter(date);
+    // Block all past dates (before today)
+    if (clickedDate.isBefore(todayMoment)) return;
 
-    if (hasFcPastClass && beforeToday) return;
-
+    this.isModalOpen = true;
     this.highlightSelectedDate(formattedDate);
     const displayDate = date.format("MMMM D, YYYY");
     this.updateDateDisplay(displayDate);
@@ -288,7 +295,8 @@ export default class extends Controller {
   }
 
   handleTimeSlotClick(element, time) {
-    $(".time-slot").removeClass("selected-time");
+    // Deselect ALL time slots first, then select this one
+    $("#time-slots-container .time-slot").removeClass("selected-time");
     element.addClass("selected-time");
 
     // Extract just the HH:MM part for the time input (strip AM/PM)
@@ -313,7 +321,15 @@ export default class extends Controller {
 
   handleModalClose() {
     $("#modal-view-event-add").on("hidden.bs.modal", () => {
+      // Abort any pending AJAX requests to prevent stale callbacks
+      this.pendingAjax.forEach(xhr => {
+        if (xhr && xhr.readyState !== 4) {
+          xhr.abort();
+        }
+      });
+      this.pendingAjax = [];
       this.clearSelections();
+      this.isModalOpen = false;
     });
   }
 
@@ -374,7 +390,7 @@ export default class extends Controller {
   }
 
   fetchAvailableTimeSlots(date, dayOrNight, callback = null) {
-    $.ajax({
+    const xhr = $.ajax({
       url: "/reservations/available_time_slots",
       method: "GET",
       data: { day: date, day_or_night: dayOrNight },
@@ -383,9 +399,12 @@ export default class extends Controller {
         callback && callback();
       },
       error: (xhr, status, error) => {
-        console.error("Error fetching time slots:", error);
+        if (status !== "abort") {
+          console.error("Error fetching time slots:", error);
+        }
       },
     });
+    this.pendingAjax.push(xhr);
   }
 
   fetchAvailableRooms() {
@@ -396,7 +415,7 @@ export default class extends Controller {
 
     if (!date || !time || !duration) return;
 
-    $.ajax({
+    const xhr = $.ajax({
       url: "/reservations/available_rooms",
       method: "GET",
       data: {
@@ -414,9 +433,12 @@ export default class extends Controller {
         this.renderAvailableRooms(response);
       },
       error: (xhr, status, error) => {
-        console.error("Error fetching available rooms:", error);
+        if (status !== "abort") {
+          console.error("Error fetching available rooms:", error);
+        }
       },
     });
+    this.pendingAjax.push(xhr);
   }
 
   async createReservation({
@@ -487,7 +509,9 @@ export default class extends Controller {
   }
 
   clearSelections() {
-    $(".time-slot").removeClass("selected-time");
+    // Clear time slot handlers and content to prevent stale state
+    $("#time-slots-container").off("click", ".time-slot");
+    $("#time-slots-container").empty();
     $('input[name="time"]').val("");
 
     $(".duration-group").addClass("d-none");
@@ -496,7 +520,9 @@ export default class extends Controller {
     $(".duration-slot").removeClass("selected-time");
     $('input[name="duration"]').val("");
 
-    $('input[name="day_or_night"]').val("day");
+    // Default AM/PM based on current time
+    const currentHour = new Date().getHours();
+    $('input[name="day_or_night"]').val(currentHour >= 12 ? "night" : "day");
 
     $("#add-reservation button[type='submit']").attr("disabled", true);
 
@@ -523,6 +549,8 @@ export default class extends Controller {
   // Rendering Functions
   renderTimeSlots(timeSlots) {
     const timeSlotsContainer = $("#time-slots-container");
+    // Remove old event handlers and clear content
+    timeSlotsContainer.off("click", ".time-slot");
     timeSlotsContainer.empty();
 
     if (timeSlots.length === 0) {
@@ -532,10 +560,14 @@ export default class extends Controller {
 
     timeSlots.forEach((slot) => {
       const timeSlotElement = $(`<div class="time-slot">${slot}</div>`);
-      timeSlotElement.on("click", () =>
-        this.handleTimeSlotClick(timeSlotElement, slot)
-      );
       timeSlotsContainer.append(timeSlotElement);
+    });
+
+    // Use event delegation so only one handler exists for all time slots
+    timeSlotsContainer.on("click", ".time-slot", (e) => {
+      const clicked = $(e.currentTarget);
+      const slotText = clicked.text();
+      this.handleTimeSlotClick(clicked, slotText);
     });
   }
 

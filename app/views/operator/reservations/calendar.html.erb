@@ -60,7 +60,7 @@
               <div id="time-slots-container"></div>
               <input type='text' class="form-control" name="time" hidden
                 value="<%= @nearest_time_slot&.strftime("%I:%M") %>">
-              <input type='hidden' name="day_or_night" value="day">
+              <input type='hidden' name="day_or_night" value="<%= Time.current.hour >= 12 ? 'night' : 'day' %>">
             </div>
 
             <div class="form-group duration-group d-none">

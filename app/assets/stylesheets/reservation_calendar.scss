@@ -927,8 +927,20 @@
     opacity: 0.3;
   }
 
+  .fc-day.fc-past {
+    background-color: #f0f0f0 !important;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
   .fc-past {
     cursor: not-allowed;
+  }
+
+  // Also grey out past events so they can't be clicked
+  .fc-past .reservation-count-event {
+    pointer-events: none;
+    opacity: 0.4;
   }
 
   .fc-disabled-day {
