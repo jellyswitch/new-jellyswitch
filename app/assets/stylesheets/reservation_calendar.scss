@@ -1698,6 +1698,19 @@
       font-size: 13px;
     }
 
+    // The content-skeleton layer (z-index 4) sits on top of the
+    // fc-bg layer (z-index 1) where dayClick fires, blocking touches
+    // from reaching the background. Let touch events pass through
+    // the skeleton, but keep event badges clickable.
+    .fc-row .fc-content-skeleton {
+      pointer-events: none;
+    }
+
+    .fc-row .fc-content-skeleton .fc-event,
+    .fc-row .fc-content-skeleton a {
+      pointer-events: auto;
+    }
+
     // Give each date cell a larger tappable area with active feedback
     .fc-day-top {
       cursor: pointer;
