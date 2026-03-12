@@ -42,17 +42,25 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     find_member_feedback
     authorize @member_feedback, :reply?
 
-    result = MemberFeedback::CreateReply.call(
+    # Save the reply first (separate from notification so a push failure doesn't rollback the reply)
+    save_result = MemberFeedback::SaveReply.call(
       member_feedback: @member_feedback,
       user: current_user,
       operator: current_tenant,
       body: params[:feedback_reply][:body]
     )
 
-    if result.success?
+    if save_result.success?
+      # Send push notification separately — don't let failure affect the reply
+      begin
+        NotifiableFactory.for(save_result.feedback_reply).notify
+      rescue => e
+        Rails.logger.error("FeedbackReply notification error: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     else
-      flash[:error] = result.message
+      flash[:error] = save_result.message
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     end
   rescue Exception => e

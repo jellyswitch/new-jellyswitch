@@ -51,7 +51,7 @@
     </div>
 
     <%# Reply form %>
-    <%= form_with url: reply_member_feedback_path(@member_feedback), method: :post, local: true do |f| %>
+    <%= form_with url: reply_member_feedback_path(@member_feedback), scope: :feedback_reply, method: :post, local: true do |f| %>
       <div class="feedback-reply-form mt-3">
         <div class="input-group">
           <%= f.text_area :body, placeholder: "Type a reply...", class: "form-control", rows: 2, required: true, id: "reply-body" %>
