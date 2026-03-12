@@ -42,7 +42,7 @@
     <div class="col-6 mb-3">
       <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
         <% if current_location %>
-          <div class="h2 mb-0 font-weight-bold text-warning"><%= number_to_currency(@report.this_month_revenue, precision: 0) %></div>
+          <div class="mb-0 font-weight-bold text-warning" style="font-size: 1.4rem;"><%= number_to_currency(@report.this_month_revenue, precision: 0) %></div>
           <div class="text-muted small mt-1">Revenue This Month</div>
         <% else %>
           <div class="h2 mb-0 font-weight-bold text-muted">--</div>
