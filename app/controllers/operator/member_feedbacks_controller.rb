@@ -124,7 +124,10 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   end
 
   def find_member_feedback(key=:id)
-    @member_feedback = MemberFeedback.for_location(current_location).find(params[key])
+    # Try location-scoped first (for admins viewing all feedback),
+    # then fall back to user's own feedback (for members viewing their threads)
+    @member_feedback = MemberFeedback.for_location(current_location).find_by(id: params[key])
+    @member_feedback ||= current_user.member_feedbacks.find(params[key])
   end
 
   def member_feedback_params
