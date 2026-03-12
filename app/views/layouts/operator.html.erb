@@ -9,6 +9,9 @@
     <meta name="turbolinks-cache-control" content="no-cache">
     <%= stylesheet_link_tag 'application', 'data-turbo-track': 'reload' %>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <script   src="https://code.jquery.com/jquery-3.4.1.min.js"   integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="   crossorigin="anonymous"></script>
     <%= javascript_importmap_tags %>
     <% if @include_stripe %>
@@ -37,10 +40,10 @@
     <% if @background_image.attached? %>
       <body style="background-image: url('<%= url_for(@background_image) %>'); background-repeat: no-repeat; background-size: cover;">
     <% else %>
-      <body style="background-color: #dfe9fd;">
+      <body style="background-color: #f5f5f7;">
     <% end %>
   <% else %>
-    <body style="background-color: #dfe9fd;">
+    <body style="background-color: #f5f5f7;">
   <% end %>
     <%= render "layouts/nav_renderer" %>
     <div class="container-fluid" style="min-height: 100vh;">

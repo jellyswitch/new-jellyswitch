@@ -52,8 +52,121 @@ require_* statement.
   "dark": $dark-color
 );
 
+// ── Modern UI overrides (set before Bootstrap import) ──
+$font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-base: $font-family-sans-serif;
+$border-radius: 0.625rem;         // 10px — modern rounded corners
+$border-radius-lg: 0.75rem;       // 12px
+$border-radius-sm: 0.5rem;        // 8px
+$card-border-radius: 0.75rem;     // 12px for cards
+$btn-border-radius: 0.5rem;       // 8px for buttons
+$btn-border-radius-lg: 0.625rem;
+$btn-border-radius-sm: 0.375rem;
+$card-border-color: rgba(0, 0, 0, 0.06);
+$input-border-radius: 0.5rem;
+$input-border-radius-lg: 0.5rem;
+$input-border-radius-sm: 0.375rem;
+
 /* finally, import Bootstrap */
 @import "bootstrap";
+
+// ── Modern UI overrides ──
+
+// Cards: subtle shadow, no harsh border
+.card {
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s ease;
+}
+
+// Navbar: clean white with subtle bottom shadow
+.navbar {
+  background-color: #fff !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 0.75rem 1rem;
+
+  .navbar-brand {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .nav-link {
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: #4b5563 !important;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: #111827 !important;
+    }
+  }
+}
+
+// Buttons: smooth transitions
+.btn {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  transition: all 0.15s ease;
+  border-width: 1px;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+}
+
+// Badge pills: slightly more padding
+.badge-pill {
+  padding: 0.35em 0.65em;
+  font-weight: 500;
+}
+
+// Tables: cleaner look
+.table {
+  thead th {
+    border-top: none;
+    font-weight: 600;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b7280;
+  }
+}
+
+// List groups: softer borders
+.list-group-item {
+  border-color: rgba(0, 0, 0, 0.06);
+  transition: background-color 0.15s ease;
+}
+
+// Form controls: modern feel
+.form-control {
+  border-color: #d1d5db;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: $primary-color;
+    box-shadow: 0 0 0 3px rgba($primary-color, 0.1);
+  }
+}
+
+// Typography: tighter letter spacing for headings
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+// Text muted: slightly darker for readability
+.text-muted {
+  color: #6b7280 !important;
+}
 
 /* Fix zoom issue on iOS */
 
@@ -111,7 +224,7 @@ input[type="submit"]:disabled {
 
 // Tribute styles
 .tribute-container {
-  border-radius: 4px;
+  border-radius: 0.5rem;
   border: 1px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.1), 0 5px 20px rgba(0, 0, 0, 0.05);
 
