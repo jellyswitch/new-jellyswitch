@@ -306,8 +306,8 @@ class User < ApplicationRecord
   end
 
   # Filtered list for reservation member selection:
-  # Only includes active members, day pass holders (today or future),
-  # users with billing info, and admins/managers at the location.
+  # Only includes paying members, day pass holders (today or future),
+  # users with a paid reservation (current or future), and admins/managers.
   # Returns the requesting admin first, then the rest alphabetically.
   def self.reservation_options_for_select(operator, location, requesting_user)
     today = Time.current.to_date
@@ -318,7 +318,7 @@ class User < ApplicationRecord
     # Admins and managers always eligible
     eligible_ids += scope.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id)
 
-    # Users with active subscriptions at this location
+    # Paying members: users with active subscriptions at this location
     plan_ids = Plan.where(location_id: location.id).pluck(:id)
     if plan_ids.any?
       eligible_ids += scope.joins(:subscriptions)
@@ -326,18 +326,16 @@ class User < ApplicationRecord
                            .pluck(:id)
     end
 
-    # Users with day passes for today or future
+    # Users with a current or future day pass
     eligible_ids += scope.joins(:day_passes)
                          .where("day_passes.day >= ?", today)
                          .pluck(:id)
 
-    # Users with billing info (card added or out_of_band) at this location
-    eligible_ids += scope.joins(:user_payment_profiles)
-                         .where(user_payment_profiles: { location_id: location.id, card_added: true })
+    # Users with a paid meeting room reservation (current or future)
+    eligible_ids += scope.joins(:reservations)
+                         .where("reservations.datetime_in >= ?", Time.current)
+                         .where(reservations: { cancelled: false })
                          .pluck(:id)
-
-    # Users set to out_of_band billing
-    eligible_ids += scope.where(out_of_band: true).pluck(:id)
 
     # Users with active organization leases at this location
     eligible_ids += User.for_space(operator)

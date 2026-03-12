@@ -16,49 +16,138 @@
     <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
-        <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off">
-        <%= f.select :user_id, @member_options, { selected: current_user.id }, { class: "form-control", id: "user-id-select", size: 12 } %>
-      </div>
-        <%= f.hidden_field :room_id, value: @room.id %>
-        <%= f.hidden_field :day, value: params[:day] %>
-        <%= f.hidden_field :hour, value: params[:hour] %>
 
-      <%= f.submit "Next", class: "btn btn-primary" %>
+        <div class="member-search-dropdown" id="member-search-dropdown">
+          <input type="text" id="member-search" class="form-control" placeholder="Search by name..." autocomplete="off">
+          <div class="member-dropdown-list" id="member-dropdown-list"></div>
+          <input type="hidden" name="user_id" id="user-id-hidden" value="<%= current_user.id %>">
+        </div>
+      </div>
+
+      <%= f.hidden_field :room_id, value: @room.id %>
+      <%= f.hidden_field :day, value: params[:day] %>
+      <%= f.hidden_field :hour, value: params[:hour] %>
+
+      <%= f.submit "Next", class: "btn btn-primary btn-block mt-3" %>
     <% end %>
   <% end %>
 <% end %>
 
+<style>
+  .member-search-dropdown {
+    position: relative;
+  }
+  .member-dropdown-list {
+    border: 1px solid #ced4da;
+    border-top: none;
+    border-radius: 0 0 .25rem .25rem;
+    max-height: 280px;
+    overflow-y: auto;
+    background: #fff;
+    -webkit-overflow-scrolling: touch;
+  }
+  .member-dropdown-item {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.1s;
+  }
+  .member-dropdown-item:last-child {
+    border-bottom: none;
+  }
+  .member-dropdown-item:hover,
+  .member-dropdown-item:active {
+    background-color: #e9ecef;
+  }
+  .member-dropdown-item.selected {
+    background-color: #007bff;
+    color: #fff;
+  }
+  .member-dropdown-item.selected:hover {
+    background-color: #0056b3;
+  }
+  .member-no-results {
+    padding: 10px 14px;
+    color: #6c757d;
+    font-style: italic;
+  }
+</style>
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     var searchInput = document.getElementById("member-search");
-    var selectEl = document.getElementById("user-id-select");
-    var allOptions = Array.from(selectEl.options).map(function(opt) {
-      return { text: opt.text, value: opt.value, selected: opt.selected };
-    });
+    var dropdownList = document.getElementById("member-dropdown-list");
+    var hiddenInput = document.getElementById("user-id-hidden");
 
-    searchInput.addEventListener("input", function() {
-      var query = this.value.toLowerCase().trim();
-      var selectedValue = selectEl.value;
+    var allMembers = <%= raw @member_options.map { |name, id| { name: name, id: id } }.to_json %>;
+    var selectedId = String(hiddenInput.value);
 
-      selectEl.innerHTML = "";
+    function renderList(query) {
+      dropdownList.innerHTML = "";
+      var q = (query || "").toLowerCase().trim();
 
-      allOptions.forEach(function(opt) {
-        if (query === "" || opt.text.toLowerCase().indexOf(query) !== -1) {
-          var option = document.createElement("option");
-          option.value = opt.value;
-          option.text = opt.text;
-          if (opt.value === selectedValue) {
-            option.selected = true;
-          }
-          selectEl.appendChild(option);
-        }
+      var filtered = allMembers.filter(function(m) {
+        return q === "" || m.name.toLowerCase().indexOf(q) !== -1;
       });
 
-      if (!selectEl.value && selectEl.options.length > 0) {
-        selectEl.options[0].selected = true;
+      if (filtered.length === 0) {
+        var noResults = document.createElement("div");
+        noResults.className = "member-no-results";
+        noResults.textContent = "No members found";
+        dropdownList.appendChild(noResults);
+        return;
       }
+
+      filtered.forEach(function(m) {
+        var item = document.createElement("div");
+        item.className = "member-dropdown-item";
+        item.textContent = m.name;
+        item.setAttribute("data-id", m.id);
+
+        if (String(m.id) === selectedId) {
+          item.classList.add("selected");
+        }
+
+        item.addEventListener("click", function() {
+          selectedId = String(m.id);
+          hiddenInput.value = m.id;
+
+          // Update selection visuals
+          var allItems = dropdownList.querySelectorAll(".member-dropdown-item");
+          allItems.forEach(function(el) { el.classList.remove("selected"); });
+          item.classList.add("selected");
+
+          // Show selected name in search input
+          searchInput.value = m.name;
+        });
+
+        dropdownList.appendChild(item);
+      });
+    }
+
+    searchInput.addEventListener("input", function() {
+      renderList(this.value);
     });
 
+    // Clear search on focus to show full list
+    searchInput.addEventListener("focus", function() {
+      if (selectedId) {
+        this.select();
+      }
+      renderList(this.value);
+    });
+
+    // Set initial display: show the admin's name in the search box
+    if (allMembers.length > 0) {
+      var firstMember = allMembers.find(function(m) { return String(m.id) === selectedId; });
+      if (firstMember) {
+        searchInput.value = firstMember.name;
+      }
+    }
+
+    // Render the initial full list
+    renderList("");
     searchInput.focus();
   });
 </script>
