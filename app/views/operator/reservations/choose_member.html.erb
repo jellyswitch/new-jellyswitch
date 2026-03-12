@@ -16,16 +16,9 @@
     <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
-
-        <div class="member-search-dropdown" id="member-search-dropdown">
-          <input type="text" id="member-search" class="form-control" placeholder="Search by name..." autocomplete="off">
-          <div class="member-dropdown-list" id="member-dropdown-list" style="display:none;"></div>
-          <input type="hidden" name="user_id" id="user-id-hidden" value="<%= current_user.id %>">
-        </div>
-
-        <div class="selected-member-display mt-2" id="selected-member-display">
-          <span class="badge badge-primary p-2" style="font-size: 15px;" id="selected-member-badge"></span>
-        </div>
+        <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off">
+        <input type="hidden" name="user_id" id="user-id-hidden" value="<%= current_user.id %>">
+        <div class="member-list" id="member-list"></div>
       </div>
 
       <%= f.hidden_field :room_id, value: @room.id %>
@@ -38,40 +31,36 @@
 <% end %>
 
 <style>
-  .member-search-dropdown {
-    position: relative;
-  }
-  .member-dropdown-list {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    border: 1px solid #ced4da;
-    border-top: none;
-    border-radius: 0 0 .25rem .25rem;
-    max-height: 260px;
+  .member-list {
+    border: 1px solid #dee2e6;
+    border-radius: .25rem;
+    max-height: 300px;
     overflow-y: auto;
     background: #fff;
     -webkit-overflow-scrolling: touch;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
   }
-  .member-dropdown-item {
-    padding: 11px 14px;
-    cursor: pointer;
-    font-size: 15px;
+  .member-item {
+    padding: 12px 14px;
+    font-size: 16px;
     border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0, 123, 255, 0.15);
+    user-select: none;
+    -webkit-user-select: none;
   }
-  .member-dropdown-item:last-child {
+  .member-item:last-child {
     border-bottom: none;
   }
-  .member-dropdown-item:hover,
-  .member-dropdown-item:active {
+  .member-item.active {
     background-color: #007bff;
     color: #fff;
+    font-weight: 500;
+  }
+  .member-item:not(.active):active {
+    background-color: #e9ecef;
   }
   .member-no-results {
-    padding: 11px 14px;
+    padding: 12px 14px;
     color: #6c757d;
     font-style: italic;
   }
@@ -80,94 +69,60 @@
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     var searchInput = document.getElementById("member-search");
-    var dropdownList = document.getElementById("member-dropdown-list");
+    var listContainer = document.getElementById("member-list");
     var hiddenInput = document.getElementById("user-id-hidden");
-    var badge = document.getElementById("selected-member-badge");
-    var badgeContainer = document.getElementById("selected-member-display");
 
     var allMembers = <%= raw @member_options.map { |name, id| { name: name, id: id } }.to_json %>;
     var selectedId = String(hiddenInput.value);
 
-    function showDropdown() { dropdownList.style.display = "block"; }
-    function hideDropdown() { dropdownList.style.display = "none"; }
-
-    function updateBadge() {
-      var member = allMembers.find(function(m) { return String(m.id) === selectedId; });
-      if (member) {
-        badge.textContent = member.name;
-        badgeContainer.style.display = "block";
-      } else {
-        badgeContainer.style.display = "none";
-      }
-    }
-
     function renderList(query) {
-      dropdownList.innerHTML = "";
+      listContainer.innerHTML = "";
       var q = (query || "").toLowerCase().trim();
 
-      if (q === "") {
-        hideDropdown();
-        return;
-      }
-
       var filtered = allMembers.filter(function(m) {
-        return m.name.toLowerCase().indexOf(q) !== -1;
+        return q === "" || m.name.toLowerCase().indexOf(q) !== -1;
       });
 
       if (filtered.length === 0) {
         var noResults = document.createElement("div");
         noResults.className = "member-no-results";
         noResults.textContent = "No members found";
-        dropdownList.appendChild(noResults);
-        showDropdown();
+        listContainer.appendChild(noResults);
         return;
       }
 
       filtered.forEach(function(m) {
         var item = document.createElement("div");
-        item.className = "member-dropdown-item";
+        item.className = "member-item";
         item.textContent = m.name;
-        item.setAttribute("data-id", m.id);
+        item.setAttribute("data-id", String(m.id));
 
-        item.addEventListener("mousedown", function(e) {
-          e.preventDefault(); // Prevent blur from firing before click registers
+        if (String(m.id) === selectedId) {
+          item.classList.add("active");
+        }
+
+        item.addEventListener("click", function() {
           selectedId = String(m.id);
           hiddenInput.value = m.id;
-          searchInput.value = "";
-          hideDropdown();
-          updateBadge();
+
+          // Update all items
+          var items = listContainer.querySelectorAll(".member-item");
+          items.forEach(function(el) { el.classList.remove("active"); });
+          item.classList.add("active");
+
+          // Scroll the selected item into view
+          item.scrollIntoView({ block: "nearest" });
         });
 
-        dropdownList.appendChild(item);
+        listContainer.appendChild(item);
       });
-
-      showDropdown();
     }
 
     searchInput.addEventListener("input", function() {
       renderList(this.value);
     });
 
-    searchInput.addEventListener("focus", function() {
-      if (this.value.length > 0) {
-        renderList(this.value);
-      }
-    });
-
-    searchInput.addEventListener("blur", function() {
-      // Small delay so mousedown on dropdown items can fire first
-      setTimeout(hideDropdown, 150);
-    });
-
-    // Close dropdown on Escape
-    searchInput.addEventListener("keydown", function(e) {
-      if (e.key === "Escape") {
-        this.value = "";
-        hideDropdown();
-      }
-    });
-
-    // Set initial selected member badge
-    updateBadge();
+    // Render full list on load with admin pre-selected
+    renderList("");
   });
 </script>
