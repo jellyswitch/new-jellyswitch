@@ -928,19 +928,37 @@
   }
 
   .fc-day.fc-past {
-    background-color: #f0f0f0 !important;
+    background-color: #d5d5d5 !important;
     cursor: not-allowed;
+    position: relative;
+  }
+
+  // Diagonal strikethrough overlay on past dates
+  .fc-day.fc-past::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.05) 10px,
+      rgba(0, 0, 0, 0.05) 11px
+    );
     pointer-events: none;
+    z-index: 2;
   }
 
   .fc-past {
     cursor: not-allowed;
   }
 
-  // Also grey out past events so they can't be clicked
+  // Grey out past events
   .fc-past .reservation-count-event {
-    pointer-events: none;
-    opacity: 0.4;
+    opacity: 0.3;
   }
 
   .fc-disabled-day {

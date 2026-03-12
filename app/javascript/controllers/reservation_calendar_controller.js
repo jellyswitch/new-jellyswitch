@@ -33,6 +33,31 @@ export default class extends Controller {
     this.reservationPrice = 0;
   }
 
+  disconnect() {
+    // Clean up all event handlers when Stimulus disconnects
+    $("#duration-slots-container").off("click", ".duration-slot");
+    $("#time-slots-container").off("click", ".time-slot");
+    $("#rooms-select").off("change");
+    $("#add-reservation").off("submit");
+    $("#modal-view-event-add").off("hidden.bs.modal");
+    $("#room-filter").off("change");
+    $(".reservations-list-toggle").off("click");
+
+    // Abort pending AJAX
+    this.pendingAjax.forEach(xhr => {
+      if (xhr && xhr.readyState !== 4) xhr.abort();
+    });
+    this.pendingAjax = [];
+
+    // Force close modal and clean up backdrop
+    if (this.isModalOpen) {
+      $("#modal-view-event-add").modal("hide");
+      $(".modal-backdrop").remove();
+      $("body").removeClass("modal-open").css("padding-right", "");
+    }
+    this.isModalOpen = false;
+  }
+
   initializeCalendar() {
     $("#reservation-fullcalendar").fullCalendar({
       themeSystem: "bootstrap4",
@@ -47,7 +72,7 @@ export default class extends Controller {
       eventClick: (event) => {
         const eventDate = moment(event.id);
         // Block past date events too
-        if (moment(this.today).isAfter(eventDate)) return;
+        if (moment().startOf("day").isAfter(eventDate)) return;
         this.handleDayClick(eventDate);
       },
       events: (start, end, timezone, callback) => {
@@ -96,7 +121,7 @@ export default class extends Controller {
   }
 
   initializeRoomFilter() {
-    $("#room-filter").on("change", (event) => {
+    $("#room-filter").off("change").on("change", (event) => {
       this.selectedRoomId = event.target.value;
       this.updateCalendarWithReservations();
     });
@@ -190,7 +215,7 @@ export default class extends Controller {
   }
 
   handleReservationListToggle() {
-    $('.reservations-list-toggle').on('click', function() {
+    $('.reservations-list-toggle').off('click').on('click', function() {
       $(this).toggleClass('collapsed');
       const icon = $(this).find('i.fas');
       icon.toggleClass('fa-chevron-right fa-chevron-down');
@@ -202,10 +227,12 @@ export default class extends Controller {
   }
 
   handleDurationChange() {
-    $("#duration-slots-container .duration-slot").on("click", (event) => {
-      const duration = $(event.target).data("duration");
+    $("#duration-slots-container").off("click", ".duration-slot");
+    $("#duration-slots-container").on("click", ".duration-slot", (event) => {
+      const slot = $(event.currentTarget);
+      const duration = slot.data("duration");
       $(".duration-slot").removeClass("selected-time");
-      $(event.target).addClass("selected-time");
+      slot.addClass("selected-time");
       $('input[name="duration"]').val(duration);
       this.fetchAvailableRooms();
 
@@ -220,7 +247,7 @@ export default class extends Controller {
   }
 
   handleRoomSelectionChange() {
-    $("#rooms-select").on("change", () => {
+    $("#rooms-select").off("change").on("change", () => {
       const roomId = $("#rooms-select").val();
       const duration = $('input[name="duration"]').val();
       const date = $('input[name="date"]').val();
@@ -240,7 +267,7 @@ export default class extends Controller {
   }
 
   handleFormSubmission() {
-    $("#add-reservation").on("submit", (event) => {
+    $("#add-reservation").off("submit").on("submit", (event) => {
       event.preventDefault();
 
       const roomId = $('select[name="room_id"]').val();
@@ -277,7 +304,8 @@ export default class extends Controller {
     if (this.isModalOpen) return;
 
     const formattedDate = date.format("YYYY-MM-DD");
-    const todayMoment = moment(this.today).startOf("day");
+    // Use browser's current date as the source of truth for "today"
+    const todayMoment = moment().startOf("day");
     const clickedDate = moment(date).startOf("day");
 
     // Block all past dates (before today)
@@ -320,7 +348,8 @@ export default class extends Controller {
   }
 
   handleModalClose() {
-    $("#modal-view-event-add").on("hidden.bs.modal", () => {
+    // Use .off first to prevent duplicate handlers from Stimulus re-connect
+    $("#modal-view-event-add").off("hidden.bs.modal").on("hidden.bs.modal", () => {
       // Abort any pending AJAX requests to prevent stale callbacks
       this.pendingAjax.forEach(xhr => {
         if (xhr && xhr.readyState !== 4) {
@@ -330,6 +359,10 @@ export default class extends Controller {
       this.pendingAjax = [];
       this.clearSelections();
       this.isModalOpen = false;
+
+      // Force cleanup backdrop in case Bootstrap leaves it behind
+      $(".modal-backdrop").remove();
+      $("body").removeClass("modal-open").css("padding-right", "");
     });
   }
 
