@@ -1523,12 +1523,17 @@
   .time-slot,
   .duration-slot {
     border: 1px solid black;
-    width: 64px;
+    min-width: 72px;
     text-align: center;
-    padding: 6px 0;
+    padding: 6px 8px;
     border-radius: 4px;
     outline: none !important;
     cursor: pointer;
+    font-size: 14px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
     &:hover,
     &.selected-time {
@@ -1540,7 +1545,7 @@
 
   .duration-slot {
     width: fit-content;
-    padding: 6px 10px;
+    padding: 8px 14px;
   }
 
   // Room Details
@@ -1623,5 +1628,96 @@
 
   .reservations-list-toggle {
     cursor: pointer;
+  }
+
+  // Time slots container scrollable on mobile
+  #time-slots-container {
+    max-height: 240px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  // Bottom sheet handle — hidden on desktop
+  .bottom-sheet-handle {
+    display: none;
+  }
+
+  // Bottom sheet styles for mobile
+  @media (max-width: 768px) {
+    .bottom-sheet-modal .modal-dialog {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      margin: 0;
+      max-width: 100%;
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+    }
+
+    .bottom-sheet-modal.show .modal-dialog {
+      transform: translateY(0);
+    }
+
+    .bottom-sheet-modal .modal-content {
+      border-radius: 16px 16px 0 0;
+      max-height: 85vh;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .bottom-sheet-handle {
+      display: block;
+      padding: 4px 0;
+      cursor: grab;
+
+      span {
+        display: block;
+        width: 40px;
+        height: 4px;
+        background: #ccc;
+        border-radius: 2px;
+        margin: 8px auto;
+      }
+    }
+
+    // Larger touch targets on mobile
+    .time-slot {
+      min-height: 44px;
+      min-width: 80px;
+      font-size: 14px;
+    }
+
+    .duration-slot {
+      min-height: 44px;
+      padding: 8px 14px;
+    }
+
+    #rooms-select {
+      height: 50px;
+    }
+
+    // Full-width confirm button on mobile
+    .modal-footer {
+      flex-direction: column;
+      gap: 8px;
+      position: sticky;
+      bottom: 0;
+      background: #f3f5f9;
+      z-index: 10;
+      padding: 12px 16px;
+      border-top: 1px solid #dee2e6;
+
+      .btn {
+        width: 100%;
+        margin: 0;
+      }
+    }
+
+    // Remove centered dialog positioning for bottom sheet
+    .bottom-sheet-modal .modal-dialog-centered {
+      min-height: auto;
+      align-items: flex-end;
+    }
   }
 }

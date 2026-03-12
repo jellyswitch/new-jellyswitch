@@ -24,9 +24,10 @@
     </div>
   </div>
 
-  <div id="modal-view-event-add" class="modal modal-top fade calendar-modal">
+  <div id="modal-view-event-add" class="modal modal-top fade calendar-modal bottom-sheet-modal">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
+        <div class="bottom-sheet-handle"><span></span></div>
         <form id="add-reservation" method="post">
           <div class="modal-body">
             <h4>Reservation Details</h4>
@@ -55,29 +56,11 @@
             </div>
 
             <div class="form-group">
-              <div class="row justify-content-between align-items-center mx-0 mb-1">
-                <label>Start Time</label>
-                <div class="day-light-radio-container">
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio"
-                      name="day-light-options" id="day-radio" value="day"
-                      <%= "checked" if @day_or_night == "day" ||
-                                     @day_or_night.blank? %> >
-                    <label class="form-check-label" for="day-radio">Day
-                      (AM)</label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio"
-                      name="day-light-options" id="night-radio" value="night"
-                      <%= "checked" if @day_or_night == "night" %> >
-                    <label class="form-check-label" for="night-radio">Night
-                      (PM)</label>
-                  </div>
-                </div>
-              </div>
+              <label>Select a Time</label>
               <div id="time-slots-container"></div>
               <input type='text' class="form-control" name="time" hidden
                 value="<%= @nearest_time_slot&.strftime("%I:%M") %>">
+              <input type='hidden' name="day_or_night" value="day">
             </div>
 
             <div class="form-group duration-group d-none">

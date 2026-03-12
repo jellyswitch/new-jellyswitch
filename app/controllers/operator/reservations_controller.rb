@@ -174,9 +174,14 @@ class Operator::ReservationsController < Operator::BaseController
     if params[:day].present? && params[:day_or_night].present?
       @day = Date.parse(params[:day])
       @day_or_night = params[:day_or_night]
-      @available_time_slots = calculate_available_time_slots(@day, @day_or_night)
 
-      render json: @available_time_slots.map { |slot| slot.strftime("%I:%M") }
+      if @day_or_night == "all"
+        @available_time_slots = calculate_all_available_time_slots(@day)
+        render json: @available_time_slots.map { |slot| slot.strftime("%I:%M %p") }
+      else
+        @available_time_slots = calculate_available_time_slots(@day, @day_or_night)
+        render json: @available_time_slots.map { |slot| slot.strftime("%I:%M") }
+      end
     else
       render json: { error: "Invalid date or day/night selection" }, status: :unprocessable_entity
     end

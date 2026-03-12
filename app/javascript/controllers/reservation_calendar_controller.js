@@ -19,10 +19,10 @@ export default class extends Controller {
     this.handleDurationChange();
     this.handleRoomSelectionChange();
     this.handleFormSubmission();
-    this.handleDayNightSelection();
     this.handleModalClose();
     this.handleReserveNowFlow();
     this.handleReservationListToggle();
+    this.initializeBottomSheet();
 
     this.USDollar = new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -84,10 +84,9 @@ export default class extends Controller {
     const isReserveNow = $('input[name="date"]').data("reserve-now");
     const currentDate = $('input[name="date"]').val();
     const availableTimeSlot = $("input[name='time']").val();
-    const dayOrNight = $('input[name="day-light-options"]:checked').val();
 
-    if (isReserveNow && currentDate && dayOrNight) {
-      this.prefillReservationForm(currentDate, availableTimeSlot, dayOrNight);
+    if (isReserveNow && currentDate) {
+      this.prefillReservationForm(currentDate, availableTimeSlot);
     }
   }
 
@@ -204,6 +203,14 @@ export default class extends Controller {
       $(event.target).addClass("selected-time");
       $('input[name="duration"]').val(duration);
       this.fetchAvailableRooms();
+
+      // Auto-scroll to room selection
+      setTimeout(() => {
+        const roomGroup = document.querySelector(".available-room-group");
+        if (roomGroup) {
+          roomGroup.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 300);
     });
   }
 
@@ -215,6 +222,14 @@ export default class extends Controller {
       if (roomId && date && duration) {
         this.fetchRoomDetails(roomId, date, duration);
         $("#add-reservation button[type='submit']").removeAttr("disabled");
+
+        // Auto-scroll to confirm button
+        setTimeout(() => {
+          const footer = document.querySelector(".modal-footer");
+          if (footer) {
+            footer.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 300);
       }
     });
   }
@@ -226,7 +241,7 @@ export default class extends Controller {
       const roomId = $('select[name="room_id"]').val();
       const date = $('input[name="date"]').val();
       const time = $('input[name="time"]').val();
-      const dayOrNight = $('input[name="day-light-options"]:checked').val();
+      const dayOrNight = $('input[name="day_or_night"]').val();
       const duration = $('input[name="duration"]').val();
       const note = $("#reservation-note").val();
 
@@ -260,7 +275,7 @@ export default class extends Controller {
     ).hasClass("fc-past");
     const beforeToday = moment(this.today).isAfter(date);
 
-    // if (hasFcPastClass && beforeToday) return;
+    if (hasFcPastClass && beforeToday) return;
 
     this.highlightSelectedDate(formattedDate);
     const displayDate = date.format("MMMM D, YYYY");
@@ -269,26 +284,31 @@ export default class extends Controller {
     await this.fetchDayReservations(formattedDate);
     this.showEventModal();
 
-    const dayOrNight = $('input[name="day-light-options"]:checked').val();
-    this.fetchAvailableTimeSlots(formattedDate, dayOrNight);
+    this.fetchAvailableTimeSlots(formattedDate, "all");
   }
 
   handleTimeSlotClick(element, time) {
     $(".time-slot").removeClass("selected-time");
     element.addClass("selected-time");
-    $('input[name="time"]').val(time);
+
+    // Extract just the HH:MM part for the time input (strip AM/PM)
+    const timeOnly = time.replace(/ (AM|PM)$/i, "");
+    $('input[name="time"]').val(timeOnly);
+
+    // Auto-detect AM/PM from the selected time and set hidden input
+    const isPM = /PM$/i.test(time);
+    $('input[name="day_or_night"]').val(isPM ? "night" : "day");
+
     $(".duration-group").removeClass("d-none");
     this.fetchAvailableRooms();
-  }
 
-  handleDayNightSelection() {
-    $('input[name="day-light-options"]').on("change", () => {
-      const selectedOption = $('input[name="day-light-options"]:checked').val();
-      const date = $('input[name="date"]').val();
-      if (date) {
-        this.fetchAvailableTimeSlots(date, selectedOption);
+    // Auto-scroll to duration section
+    setTimeout(() => {
+      const durationGroup = document.querySelector(".duration-group");
+      if (durationGroup) {
+        durationGroup.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-    });
+    }, 100);
   }
 
   handleModalClose() {
@@ -372,7 +392,7 @@ export default class extends Controller {
     const date = $('input[name="date"]').val();
     const time = $('input[name="time"]').val();
     const duration = $('input[name="duration"]').val();
-    const dayOrNight = $('input[name="day-light-options"]:checked').val();
+    const dayOrNight = $('input[name="day_or_night"]').val();
 
     if (!date || !time || !duration) return;
 
@@ -438,17 +458,12 @@ export default class extends Controller {
   }
 
   // Utility Functions
-  prefillReservationForm(date, time, dayOrNight) {
+  prefillReservationForm(date, time) {
     const dayClickDate = moment(date).startOf("day");
 
     this.handleDayClick(dayClickDate);
 
-    $(`input[name="day-light-options"][value="${dayOrNight}"]`).prop(
-      "checked",
-      true
-    );
-
-    this.fetchAvailableTimeSlots(date, dayOrNight, () => {
+    this.fetchAvailableTimeSlots(date, "all", () => {
       time && $(`.time-slot:contains("${time}")`).click();
     });
   }
@@ -481,7 +496,7 @@ export default class extends Controller {
     $(".duration-slot").removeClass("selected-time");
     $('input[name="duration"]').val("");
 
-    $("#day-radio").prop("checked", true);
+    $('input[name="day_or_night"]').val("day");
 
     $("#add-reservation button[type='submit']").attr("disabled", true);
 
@@ -642,5 +657,32 @@ export default class extends Controller {
         const price = parseFloat(checkbox.data("price"));
         this.updateTotalPrice(price, checkbox.is(":checked"));
       });
+  }
+
+  initializeBottomSheet() {
+    const handle = document.querySelector(".bottom-sheet-handle");
+    if (!handle) return;
+
+    let startY = 0;
+    let currentY = 0;
+
+    handle.addEventListener("touchstart", (e) => {
+      if (window.innerWidth > 768) return;
+      startY = e.touches[0].clientY;
+      currentY = startY;
+    }, { passive: true });
+
+    handle.addEventListener("touchmove", (e) => {
+      if (window.innerWidth > 768) return;
+      currentY = e.touches[0].clientY;
+    }, { passive: true });
+
+    handle.addEventListener("touchend", () => {
+      if (window.innerWidth > 768) return;
+      const swipeDistance = currentY - startY;
+      if (swipeDistance > 100) {
+        $("#modal-view-event-add").modal("hide");
+      }
+    });
   }
 }

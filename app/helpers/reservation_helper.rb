@@ -43,6 +43,20 @@ module ReservationHelper
     time_slots
   end
 
+  def calculate_all_available_time_slots(date)
+    start_time = date.in_time_zone(Time.zone).beginning_of_day
+    end_time = date.in_time_zone(Time.zone).end_of_day
+    now = Time.zone.now
+    time_slots = []
+
+    while start_time <= end_time
+      time_slots << start_time if start_time > now
+      start_time += 15.minutes
+    end
+
+    time_slots
+  end
+
   def calculate_nearest_time_slot(date)
     now = Time.zone.now
     day_or_night = now.hour < 12 ? "day" : "night"
