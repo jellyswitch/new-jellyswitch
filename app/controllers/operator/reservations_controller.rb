@@ -281,15 +281,36 @@ class Operator::ReservationsController < Operator::BaseController
       hourly_price = room.hourly_rate_in_cents / 100.0
       reservation_price = room.hourly_rate_in_cents / 100.0 * (duration / 60.0)
 
-      render json: {
+      # Check day pass overage for day pass holders
+      day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date, duration)
+
+      response = {
         id: room.id,
         name: room.name,
         hourly_price: hourly_price,
         capacity: room.capacity,
         reservation_price: reservation_price,
         should_charge: should_charge,
+        is_day_pass_overage: false,
         amenities: room.amenities,
       }
+
+      if day_pass_charge_info
+        if day_pass_charge_info[:charge_type] == :partial_overage
+          response[:should_charge] = true
+          response[:is_day_pass_overage] = true
+          response[:reservation_price] = day_pass_charge_info[:overage_amount_in_cents] / 100.0
+          response[:included_minutes_remaining] = day_pass_charge_info[:remaining_free]
+          response[:overage_minutes] = day_pass_charge_info[:overage_minutes_rounded]
+          response[:overage_rate_hourly] = day_pass_charge_info[:overage_rate_in_cents] / 100.0
+        else
+          response[:should_charge] = false
+          response[:reservation_price] = 0
+          response[:included_minutes_remaining] = day_pass_charge_info[:remaining_free]
+        end
+      end
+
+      render json: response
     else
       render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
     end
@@ -318,6 +339,9 @@ class Operator::ReservationsController < Operator::BaseController
 
     token = params[:stripeToken]
 
+    # Compute day pass overage info for the interactor chain
+    day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, @day, @duration)
+
     interactor = if token.present?
       Billing::Reservations::UpdateBillingAndCreateRoomReservation
     else
@@ -332,7 +356,8 @@ class Operator::ReservationsController < Operator::BaseController
                                amenity_ids: amenity_ids,
                                note: reservation_params[:note],
                              }, user: current_user, location: current_location,
-                             token: token, out_of_band: false)
+                             token: token, out_of_band: false,
+                             day_pass_charge_info: day_pass_charge_info)
 
     @reservation = result.reservation
 
@@ -415,6 +440,16 @@ class Operator::ReservationsController < Operator::BaseController
   def needs_billing
     date = Time.zone.parse(params[:date])
     should_charge = current_user.should_charge_for_reservation?(current_location, date)
+
+    # Check day pass overage: if user is day pass holder and booking exceeds included time
+    if !should_charge && params[:duration].present? && current_user.has_active_day_pass?(date)
+      duration = params[:duration].to_i
+      charge_info = current_user.day_pass_reservation_charge_info(current_location, date, duration)
+      if charge_info && charge_info[:charge_type] == :partial_overage
+        should_charge = true
+      end
+    end
+
     has_billing = current_user.has_billing_for_location?(current_location)
 
     render json: { needs_billing: should_charge && !has_billing }

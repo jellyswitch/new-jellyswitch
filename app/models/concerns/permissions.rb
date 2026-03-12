@@ -167,4 +167,53 @@ module Permissions
   def checked_in?(location)
     checkins.for_location(location).open.count > 0
   end
+
+  # Returns charge info for day pass users booking meeting rooms.
+  # Returns nil if user is not a day pass holder or day pass has no meeting room limit.
+  # Otherwise returns a hash describing whether the booking is free or has overage.
+  def day_pass_reservation_charge_info(location, day, requested_minutes)
+    return nil unless has_active_day_pass?(day)
+
+    # Find the most generous day pass type (nil = unlimited first, then highest minutes)
+    active_passes = day_passes.for_day(day).includes(:day_pass_type)
+    day_pass = active_passes.sort_by { |dp|
+      dp.day_pass_type.included_meeting_room_minutes || Float::INFINITY
+    }.last
+    return nil unless day_pass
+
+    day_pass_type = day_pass.day_pass_type
+    return nil unless day_pass_type.has_meeting_room_limit?
+
+    # Calculate cumulative usage: sum of minutes from non-cancelled reservations for this user on this day
+    used_minutes = Reservation.where(user_id: id, cancelled: false)
+                              .where(datetime_in: day.beginning_of_day..day.end_of_day)
+                              .sum(:minutes)
+
+    remaining_free = [day_pass_type.included_meeting_room_minutes - used_minutes, 0].max
+
+    if requested_minutes <= remaining_free
+      {
+        charge_type: :free,
+        overage_minutes: 0,
+        overage_minutes_rounded: 0,
+        overage_amount_in_cents: 0,
+        remaining_free: remaining_free,
+        overage_rate_in_cents: day_pass_type.overage_rate_in_cents
+      }
+    else
+      overage_minutes = requested_minutes - remaining_free
+      # Round up to nearest 30-minute increment
+      overage_minutes_rounded = (overage_minutes / 30.0).ceil * 30
+      overage_amount = (day_pass_type.overage_rate_per_minute_in_cents * overage_minutes_rounded).to_i
+
+      {
+        charge_type: :partial_overage,
+        overage_minutes: overage_minutes,
+        overage_minutes_rounded: overage_minutes_rounded,
+        overage_amount_in_cents: overage_amount,
+        remaining_free: remaining_free,
+        overage_rate_in_cents: day_pass_type.overage_rate_in_cents
+      }
+    end
+  end
 end

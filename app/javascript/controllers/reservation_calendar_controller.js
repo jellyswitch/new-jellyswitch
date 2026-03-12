@@ -415,6 +415,14 @@ export default class extends Controller {
       success: (room) => {
         this.displayRoomDetails(room);
         this.reservationPrice = room.should_charge ? room.reservation_price : 0;
+
+        // Handle day pass overage alert
+        if (room.is_day_pass_overage) {
+          this.showOverageAlert(room);
+        } else {
+          this.hideOverageAlert();
+        }
+
         this.checkNeedsBilling(date);
       },
       error: (xhr, status, error) => {
@@ -423,11 +431,37 @@ export default class extends Controller {
     });
   }
 
+  showOverageAlert(room) {
+    const freeMinutes = room.included_minutes_remaining;
+    const overageMinutes = room.overage_minutes;
+    const overageRate = this.USDollar.format(room.overage_rate_hourly);
+    const overagePrice = this.USDollar.format(room.reservation_price);
+
+    let message = "";
+    if (freeMinutes > 0) {
+      message = `Your day pass includes ${freeMinutes} free minutes remaining. ` +
+                `This booking exceeds that by ${overageMinutes} minutes. ` +
+                `You will be charged ${overagePrice} at a rate of ${overageRate}/hour.`;
+    } else {
+      message = `You've used all your included meeting room time. ` +
+                `This ${overageMinutes}-minute booking will cost ${overagePrice} ` +
+                `at ${overageRate}/hour.`;
+    }
+
+    $(".day-pass-overage-alert .overage-message").text(message);
+    $(".day-pass-overage-alert").removeClass("d-none");
+  }
+
+  hideOverageAlert() {
+    $(".day-pass-overage-alert").addClass("d-none");
+  }
+
   checkNeedsBilling(date) {
+    const duration = $('input[name="duration"]').val();
     $.ajax({
       url: "/reservations/needs_billing",
       method: "GET",
-      data: { date: date },
+      data: { date: date, duration: duration },
       success: (response) => {
         this.needsBilling = response.needs_billing;
         if (this.needsBilling) {
@@ -604,6 +638,7 @@ export default class extends Controller {
 
     this.needsBilling = false;
     this.hideBillingSection();
+    this.hideOverageAlert();
   }
 
   handleFormState() {

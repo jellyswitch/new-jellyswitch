@@ -7,10 +7,17 @@ class Billing::Reservations::SaveStripeInvoice
     location = reservation.room.location
     reservation_day = reservation.datetime_in.to_date
 
-    charge_amount = reservation.charge_amount
+    # Use day pass overage amount if present, otherwise standard charge
+    charge_amount = context.overage_charge_amount || reservation.charge_amount
 
     if is_extend
       charge_amount = reservation.additional_duration_price(additional_duration)
+    end
+
+    charge_description = if context.overage_charge_amount
+      "#{reservation.room.location.operator.name} meeting room overage for #{reservation.pretty_datetime}"
+    else
+      reservation.charge_description
     end
 
     if charge_amount.positive?
@@ -18,7 +25,7 @@ class Billing::Reservations::SaveStripeInvoice
         customer: reservation.user.stripe_customer_id_for_location(location),
         currency: "usd",
         amount: charge_amount,
-        description: reservation.charge_description,
+        description: charge_description,
       }, {
         api_key: location.stripe_secret_key,
         stripe_account: location.stripe_user_id,

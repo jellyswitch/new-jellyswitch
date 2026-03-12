@@ -51,6 +51,27 @@
       </div>
     </div>
 
+    <div class="row mt-2">
+      <div class="col">
+        <strong>Meeting Room Time:</strong>
+        <% if day_pass_type.has_meeting_room_limit? %>
+          <%= day_pass_type.included_meeting_room_minutes / 60.0 %> hour(s) included
+        <% else %>
+          <span class="text-muted">Unlimited</span>
+        <% end %>
+      </div>
+    </div>
+
+    <% if day_pass_type.has_meeting_room_limit? && day_pass_type.overage_rate_in_cents > 0 %>
+      <div class="row">
+        <div class="col">
+          <strong>Overage Rate:</strong>
+          <%= number_to_currency(day_pass_type.overage_rate_in_cents / 100.0) %>/hour
+          <small class="text-muted">(billed in 30-min increments)</small>
+        </div>
+      </div>
+    <% end %>
+
     <% if view %>
       <%= link_to 'View', day_pass_type_path(day_pass_type), class: "btn btn-block btn-primary mt-3" %>
     <% else %>

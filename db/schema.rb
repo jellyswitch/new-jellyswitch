@@ -174,6 +174,8 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_12_210000) do
     t.boolean "always_allow_building_access", default: false, null: false
     t.string "code"
     t.integer "location_id"
+    t.integer "included_meeting_room_minutes"
+    t.integer "overage_rate_in_cents", default: 0, null: false
     t.index ["location_id"], name: "index_day_pass_types_on_location_id"
   end
 

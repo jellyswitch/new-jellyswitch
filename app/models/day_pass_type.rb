@@ -48,4 +48,13 @@ class DayPassType < ApplicationRecord
   def free?
     amount_in_cents == 0
   end
+
+  # Meeting room limit helpers
+  def has_meeting_room_limit?
+    included_meeting_room_minutes.present?
+  end
+
+  def overage_rate_per_minute_in_cents
+    overage_rate_in_cents / 60.0
+  end
 end
