@@ -7,7 +7,7 @@ RSpec.describe Billing::Invoices::MarkInvoiceAsPaid, type: :interactor do
   describe "#call" do
     context "when invoice is open and has a location" do
       before do
-        allow(invoice.location).to receive(:mark_invoice_paid).and_return(true)
+        allow_any_instance_of(Location).to receive(:mark_invoice_paid).and_return(true)
         allow(Billing::Invoices::AddCreditsToSubscribable).to receive(:call).and_return(double(success?: true))
       end
 
