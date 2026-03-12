@@ -274,6 +274,7 @@ export default class extends Controller {
       $("#duration-slots-container .duration-slot").removeClass("selected-time");
       slot.addClass("selected-time");
       $('input[name="duration"]').val(duration);
+      this.hideOverageAlert();
       this.fetchAvailableRooms();
 
       // Auto-scroll to room selection
