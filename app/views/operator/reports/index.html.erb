@@ -128,38 +128,44 @@
 
 <%# ── Lifetime Value ── %>
 <% if current_location %>
-  <% ltv = @report.ltv_summary %>
-  <%= super_wide_card do %>
-    <h5 class="text-center mb-3">Customer Lifetime Value</h5>
-    <p class="text-center text-muted small mb-3">All-time average and median revenue per customer by product</p>
+  <% begin %>
+    <% ltv = @report.ltv_summary %>
+    <%= super_wide_card do %>
+      <h5 class="text-center mb-3">Customer Lifetime Value</h5>
+      <p class="text-center text-muted small mb-3">All-time average and median revenue per customer by product</p>
 
-    <table class="table table-sm text-center">
-      <thead>
-        <tr>
-          <th class="text-left">Product</th>
-          <th>Customers</th>
-          <th>Total Revenue</th>
-          <th>Avg LTV</th>
-          <th>Median LTV</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% [:day_passes, :memberships, :office_leases, :meeting_rooms].each do |key| %>
-          <% r = ltv[key] %>
+      <table class="table table-sm text-center">
+        <thead>
           <tr>
-            <td class="text-left"><%= r.product %></td>
-            <td><%= number_with_delimiter(r.customers) %></td>
-            <td><%= number_to_currency(r.total_revenue, precision: 0) %></td>
-            <td class="font-weight-bold"><%= number_to_currency(r.average, precision: 0) %></td>
-            <td><%= number_to_currency(r.median, precision: 0) %></td>
+            <th class="text-left">Product</th>
+            <th>Customers</th>
+            <th>Total Revenue</th>
+            <th>Avg LTV</th>
+            <th>Median LTV</th>
           </tr>
-        <% end %>
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <% [:day_passes, :memberships, :office_leases, :meeting_rooms].each do |key| %>
+            <% r = ltv[key] %>
+            <tr>
+              <td class="text-left"><%= r.product %></td>
+              <td><%= number_with_delimiter(r.customers) %></td>
+              <td><%= number_to_currency(r.total_revenue, precision: 0) %></td>
+              <td class="font-weight-bold"><%= number_to_currency(r.average, precision: 0) %></td>
+              <td><%= number_to_currency(r.median, precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
 
-    <div class="text-center mt-3">
-      <%= link_to "Detailed LTV Analysis", ltv_reports_path, class: "btn btn-outline-primary btn-sm" %>
-    </div>
+      <div class="text-center mt-3">
+        <%= link_to "Detailed LTV Analysis", ltv_reports_path, class: "btn btn-outline-primary btn-sm" %>
+      </div>
+    <% end %>
+  <% rescue => e %>
+    <%= super_wide_card do %>
+      <p class="text-danger text-center">LTV Error: <%= e.message %></p>
+    <% end %>
   <% end %>
 <% end %>
 
@@ -205,6 +211,11 @@
         <%= link_to last_30_day_passes_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
           Day Passes (30 days)
           <span class="badge badge-primary badge-pill"><%= @report.last_30_day_pass_count %></span>
+        <% end %>
+        <% if current_location %>
+          <%= link_to ltv_reports_path, class: "list-group-item list-group-item-action" do %>
+            Customer Lifetime Value
+          <% end %>
         <% end %>
       </div>
     </div>
