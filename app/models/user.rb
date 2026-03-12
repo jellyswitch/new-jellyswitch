@@ -311,55 +311,39 @@ class User < ApplicationRecord
   # Returns the requesting admin first, then the rest alphabetically.
   def self.reservation_options_for_select(operator, location, requesting_user)
     today = Time.current.to_date
-    eligible_ids = []
 
-    scope = User.for_space(operator).originally_at_location(location).non_superadmins.visible
+    # Load all users at this location (proven working query)
+    all_users = User.for_space(operator)
+                    .originally_at_location(location)
+                    .non_superadmins
+                    .visible
+                    .includes(:organization, :subscriptions, :day_passes, :reservations)
+                    .order(:name)
 
-    # Admins and managers always eligible
-    eligible_ids += scope.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id)
+    # Collect IDs of eligible day pass holders and reservation holders
+    day_pass_user_ids = DayPass.where("day >= ?", today).pluck(:user_id).to_set
+    reservation_user_ids = Reservation.where("datetime_in >= ?", Time.current)
+                                      .where(cancelled: false)
+                                      .pluck(:user_id).to_set
 
-    # Paying members: users with active subscriptions at this location
-    plan_ids = Plan.where(location_id: location.id).pluck(:id)
-    if plan_ids.any?
-      eligible_ids += scope.joins(:subscriptions)
-                           .where(subscriptions: { active: true, plan_id: plan_ids })
-                           .pluck(:id)
+    # Plan IDs for this location
+    location_plan_ids = Plan.where(location_id: location.id).pluck(:id).to_set
+
+    admin_id = requesting_user.id
+
+    eligible = all_users.select do |user|
+      user.id == admin_id ||
+      [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER].include?(user.role) ||
+      user.subscriptions.any? { |s| s.active? && location_plan_ids.include?(s.plan_id) } ||
+      day_pass_user_ids.include?(user.id) ||
+      reservation_user_ids.include?(user.id) ||
+      (user.organization.present? && user.organization.has_active_lease?(location))
     end
 
-    # Users with a current or future day pass
-    eligible_ids += scope.joins(:day_passes)
-                         .where("day_passes.day >= ?", today)
-                         .pluck(:id)
+    # Sort: requesting admin first, then alphabetically
+    eligible.sort_by! { |u| [u.id == admin_id ? 0 : 1, u.name.to_s.downcase] }
 
-    # Users with a paid meeting room reservation (current or future)
-    eligible_ids += scope.joins(:reservations)
-                         .where("reservations.datetime_in >= ?", Time.current)
-                         .where(reservations: { cancelled: false })
-                         .pluck(:id)
-
-    # Users with active organization leases at this location
-    eligible_ids += User.for_space(operator)
-                        .originally_at_location(location)
-                        .non_superadmins
-                        .visible
-                        .where.not(organization_id: nil)
-                        .joins("INNER JOIN office_leases ON office_leases.organization_id = users.organization_id")
-                        .where("office_leases.start_date <= ? AND office_leases.end_date >= ?", today, today)
-                        .where("office_leases.location_id = ?", location.id)
-                        .pluck(:id)
-
-    # Always include the requesting admin
-    eligible_ids << requesting_user.id
-
-    eligible_ids = eligible_ids.uniq
-    return [] if eligible_ids.empty?
-
-    admin_id = requesting_user.id.to_i
-    users = User.where(id: eligible_ids)
-                .includes(:organization)
-                .order(Arel.sql("CASE WHEN users.id = #{admin_id} THEN 0 ELSE 1 END, users.name ASC"))
-
-    users.map { |user| option_helper(user) }
+    eligible.map { |user| option_helper(user) }
   rescue => e
     Rails.logger.error("reservation_options_for_select error: #{e.class}: #{e.message}")
     Rails.logger.error(e.backtrace&.first(10)&.join("\n"))
