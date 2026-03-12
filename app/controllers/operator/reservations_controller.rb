@@ -18,6 +18,31 @@ class Operator::ReservationsController < Operator::BaseController
     @room = current_tenant.rooms.find(params[:room_id])
     @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
     all_options = User.lease_options_for_select(current_tenant, current_location)
+
+    # Filter to eligible members only
+    begin
+      today = Time.current.to_date
+      eligible = Set.new
+      eligible << current_user.id
+
+      # Admins/managers
+      User.for_space(current_tenant).where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id).each { |uid| eligible << uid }
+
+      # Active subscribers
+      plan_ids = Plan.where(location_id: current_location.id).pluck(:id)
+      Subscription.where(active: true, plan_id: plan_ids).pluck(:user_id).each { |uid| eligible << uid } if plan_ids.any?
+
+      # Day pass holders (today or future)
+      DayPass.where("day >= ?", today).pluck(:user_id).each { |uid| eligible << uid }
+
+      # Users with future reservations (bypass default scope)
+      Reservation.unscoped.where(cancelled: false).where("datetime_in >= ?", Time.current).pluck(:user_id).each { |uid| eligible << uid }
+
+      all_options = all_options.select { |_name, id| eligible.include?(id) }
+    rescue => e
+      Rails.logger.error("choose_member filter error: #{e.class}: #{e.message}")
+    end
+
     admin_option = all_options.find { |_name, id| id == current_user.id }
     admin_option ||= [current_user.name, current_user.id]
     others = all_options.reject { |_name, id| id == current_user.id }
