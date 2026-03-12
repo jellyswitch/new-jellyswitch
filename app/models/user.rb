@@ -150,6 +150,7 @@ class User < ApplicationRecord
            :member_at_location?,
            :admin_of_location?,
            :currently_at_location?,
+           :day_pass_reservation_charge_info,
            to: :user_permissions
 
   # Roles
