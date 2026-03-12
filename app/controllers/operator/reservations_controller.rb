@@ -17,7 +17,11 @@ class Operator::ReservationsController < Operator::BaseController
     authorize :reservation
     @room = current_tenant.rooms.find(params[:room_id])
     @next_step_path = params[:day].present? && params[:hour].present? ? choose_duration_reservations_path : choose_day_reservations_path
-    @member_options = User.reservation_options_for_select(current_tenant, current_location, current_user)
+    # Use the proven lease_options_for_select, then move current admin to the top
+    all_options = User.lease_options_for_select(current_tenant, current_location)
+    admin_option = all_options.find { |name, id| id == current_user.id }
+    others = all_options.reject { |name, id| id == current_user.id }
+    @member_options = admin_option ? [admin_option] + others : all_options
   end
 
   def choose_day
