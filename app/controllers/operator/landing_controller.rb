@@ -16,6 +16,9 @@ class Operator::LandingController < Operator::BaseController
     # for some reason sometimes latest returns activerecord relation
     @announcement = @announcement.first if @announcement.is_a?(ActiveRecord::Relation)
 
+    # Count of user's feedback submissions (for showing My Messages button)
+    @message_count = current_user&.member_feedbacks&.count || 0
+
     # Open feedback tickets with unread admin replies for this member
     # .to_a forces query execution here so the rescue catches DB errors
     # (e.g. missing table/column before migrations have run)
@@ -26,11 +29,9 @@ class Operator::LandingController < Operator::BaseController
                         &.distinct
                         &.order(updated_at: :desc)
                         &.to_a || []
-      @message_count = current_user&.member_feedbacks&.joins(:feedback_replies)&.distinct&.count || 0
     rescue => e
       Rails.logger.error("open_tickets error: #{e.class}: #{e.message}")
       @open_tickets = []
-      @message_count = 0
     end
 
     response.headers["Turbo-Location"] = home_url
