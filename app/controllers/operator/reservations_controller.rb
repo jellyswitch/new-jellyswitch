@@ -283,9 +283,11 @@ class Operator::ReservationsController < Operator::BaseController
 
       # Check day pass overage for day pass holders
       begin
+        Rails.logger.info("DAY_PASS_DEBUG: user=#{current_user.id}, location=#{current_location.id}, date=#{date.to_date}, duration=#{duration}, has_day_pass=#{current_user.has_active_day_pass?(date.to_date)}")
         day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
+        Rails.logger.info("DAY_PASS_DEBUG: charge_info=#{day_pass_charge_info.inspect}")
       rescue => e
-        Rails.logger.error("day_pass_reservation_charge_info error: #{e.class}: #{e.message}")
+        Rails.logger.error("day_pass_reservation_charge_info error: #{e.class}: #{e.message}\n#{e.backtrace.first(5).join("\n")}")
         Honeybadger.notify(e)
         day_pass_charge_info = nil
       end
