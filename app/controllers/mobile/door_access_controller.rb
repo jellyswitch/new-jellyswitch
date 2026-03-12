@@ -37,7 +37,7 @@ class Mobile::DoorAccessController < Operator::BaseController
   end
 
   def find_doors
-    @doors = current_location.doors
+    @doors = current_location&.doors || Door.none
     @doors = @doors.where(private: [false, nil]) unless admin?
   end
 

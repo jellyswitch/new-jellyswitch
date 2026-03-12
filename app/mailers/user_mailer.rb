@@ -3,9 +3,10 @@ class UserMailer < ApplicationMailer
   helper ApplicationHelper
   helper LayoutHelper
 
-  def password_reset(user, operator)
+  def password_reset(user, operator, reset_token = nil)
     @user = user
     @operator = operator
+    @reset_token = reset_token || user.reset_token
     mail to: user.email, subject: "#{@operator.name} password reset", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: @operator.contact_email,
     'X-SMTPAPI' => {
       "filters" => {

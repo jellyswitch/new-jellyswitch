@@ -84,11 +84,19 @@ module FeedItemsHelper
   end
 
   def find_room_reservations
-    @reservations = Reservation.where(room: current_location.rooms).today.distinct.count
+    if current_location.present?
+      @reservations = Reservation.where(room: current_location.rooms).today.distinct.count
+    else
+      @reservations = 0
+    end
   end
 
   def find_upcoming_renewals
-    @upcoming_renewals = current_location.offices.upcoming_renewals(60)
+    if current_location.present?
+      @upcoming_renewals = current_location.offices.upcoming_renewals(60)
+    else
+      @upcoming_renewals = []
+    end
   end
 
   def find_upcoming_childcare_reservations
@@ -96,7 +104,12 @@ module FeedItemsHelper
   end
 
   def find_delinquent_invoices
-    @delinquent_invoices = current_location.invoices.delinquent.order('date DESC')
-    @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
+    if current_location.present?
+      @delinquent_invoices = current_location.invoices.delinquent.order('date DESC')
+      @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
+    else
+      @delinquent_invoices = Invoice.none
+      @delinquent_amount = 0
+    end
   end
 end

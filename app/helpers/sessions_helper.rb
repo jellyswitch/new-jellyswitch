@@ -69,18 +69,20 @@ module SessionsHelper
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
-      current_location = current_tenant.locations.find_by(id: location_id)
-      if current_location
-        set_location(location)
-        @current_location = current_location
+      found_location = current_tenant.locations.find_by(id: location_id)
+      if found_location
+        set_location(found_location)
+        @current_location = found_location
       else
-        raise "No locations configured."
+        cookies.delete(:location_id)
+        nil
       end
     elsif current_tenant && current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
     elsif current_tenant && current_user
-      Honeybadger.notify("No location set for operator #{current_tenant.name}") unless @suppress_location_notification
+      # Multi-location operator with no location selected yet — this is expected.
+      # The user will be redirected to select a location by reset_location in BaseController.
       nil
     end
   end

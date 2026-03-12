@@ -9,6 +9,7 @@ class Operator::ReservationsController < Operator::BaseController
   def show
     find_reservation
     authorize @reservation
+    @reservation = @reservation.decorate
     background_image
   end
 
@@ -412,7 +413,7 @@ class Operator::ReservationsController < Operator::BaseController
   private
 
   def find_reservation(key = :id)
-    @reservation = Reservation.for_location_id(current_location&.id).find(params[key]).decorate
+    @reservation = Reservation.for_location_id(current_location&.id).find(params[key])
   end
 
   def set_reserved_user

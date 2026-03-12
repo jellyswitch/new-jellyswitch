@@ -89,11 +89,19 @@ class Operator::LandingController < Operator::BaseController
   def choose
     if !logged_in?
       redirect_to root_path
-    else
-      if (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking") || (current_user.member?(current_location) && approved?) || admin?
-        redirect_to home_path
-      end
+      return
     end
+
+    if current_location.blank?
+      redirect_to root_path
+      return
+    end
+
+    if (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking") || (current_user.member?(current_location) && approved?) || admin?
+      redirect_to home_path
+      return
+    end
+
     flash.keep
     @day_pass_types = current_location.day_pass_types.available.visible
     @plans = current_location.plans.for_individuals.order("amount_in_cents DESC")
@@ -104,6 +112,11 @@ class Operator::LandingController < Operator::BaseController
   end
 
   def upgrade
+    if current_location.blank?
+      redirect_to root_path
+      return
+    end
+
     @day_pass_types = current_location.day_pass_types.available.visible.order("amount_in_cents DESC")
     @plans = current_location.plans.for_individuals.order("amount_in_cents DESC")
   end
@@ -132,7 +145,7 @@ class Operator::LandingController < Operator::BaseController
   private
 
   def find_doors
-    @doors = current_location.doors
+    @doors = current_location&.doors || Door.none
     @doors = @doors.where(private: [false, nil]) unless admin?
   end
 end
