@@ -282,7 +282,13 @@ class Operator::ReservationsController < Operator::BaseController
       reservation_price = room.hourly_rate_in_cents / 100.0 * (duration / 60.0)
 
       # Check day pass overage for day pass holders
-      day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date, duration)
+      begin
+        day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
+      rescue => e
+        Rails.logger.error("day_pass_reservation_charge_info error: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+        day_pass_charge_info = nil
+      end
 
       response = {
         id: room.id,
@@ -340,7 +346,13 @@ class Operator::ReservationsController < Operator::BaseController
     token = params[:stripeToken]
 
     # Compute day pass overage info for the interactor chain
-    day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, @day, @duration)
+    begin
+      day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, @day, @duration)
+    rescue => e
+      Rails.logger.error("day_pass_reservation_charge_info error in create: #{e.class}: #{e.message}")
+      Honeybadger.notify(e)
+      day_pass_charge_info = nil
+    end
 
     interactor = if token.present?
       Billing::Reservations::UpdateBillingAndCreateRoomReservation
@@ -442,9 +454,9 @@ class Operator::ReservationsController < Operator::BaseController
     should_charge = current_user.should_charge_for_reservation?(current_location, date)
 
     # Check day pass overage: if user is day pass holder and booking exceeds included time
-    if !should_charge && params[:duration].present? && current_user.has_active_day_pass?(date)
+    if !should_charge && params[:duration].present? && current_user.has_active_day_pass?(date.to_date)
       duration = params[:duration].to_i
-      charge_info = current_user.day_pass_reservation_charge_info(current_location, date, duration)
+      charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
       if charge_info && charge_info[:charge_type] == :partial_overage
         should_charge = true
       end

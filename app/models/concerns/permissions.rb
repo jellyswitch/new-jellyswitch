@@ -172,6 +172,7 @@ module Permissions
   # Returns nil if user is not a day pass holder or day pass has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.
   def day_pass_reservation_charge_info(location, day, requested_minutes)
+    day = day.to_date if day.respond_to?(:to_date)
     return nil unless has_active_day_pass?(day)
 
     # Find the most generous day pass type (nil = unlimited first, then highest minutes)
