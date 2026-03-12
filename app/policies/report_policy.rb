@@ -42,4 +42,8 @@ class ReportPolicy < ApplicationPolicy
   def monetization?
     (admin? || superadmin? || general_manager?)
   end
+
+  def ltv?
+    (admin? || superadmin? || general_manager?)
+  end
 end

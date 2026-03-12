@@ -1,0 +1,58 @@
+<% title "Customer Lifetime Value" %>
+
+<%= wide_card do %>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <h4 class="display-4 text-center">Customer Lifetime Value</h4>
+  <p class="text-center text-muted">Average and median revenue per customer by product type</p>
+<% end %>
+
+<% timeframes = {
+  "Last 12 Months" => @ltv_1y,
+  "Last 2.5 Years" => @ltv_2_5y,
+  "All Time" => @ltv_all
+} %>
+
+<% timeframes.each do |label, ltv| %>
+  <%= wide_card do %>
+    <h5 class="text-center mb-3"><%= label %></h5>
+
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th class="text-right">Customers</th>
+          <th class="text-right">Total Revenue</th>
+          <th class="text-right">Avg LTV</th>
+          <th class="text-right">Median LTV</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% [:day_passes, :memberships, :office_leases, :meeting_rooms].each do |key| %>
+          <% r = ltv[key] %>
+          <tr>
+            <td><%= r.product %></td>
+            <td class="text-right"><%= number_with_delimiter(r.customers) %></td>
+            <td class="text-right"><%= number_to_currency(r.total_revenue, precision: 0) %></td>
+            <td class="text-right font-weight-bold"><%= number_to_currency(r.average, precision: 0) %></td>
+            <td class="text-right"><%= number_to_currency(r.median, precision: 0) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr class="font-weight-bold">
+          <td>Total</td>
+          <td class="text-right">
+            <%= number_with_delimiter(ltv.values.sum(&:customers)) %>
+          </td>
+          <td class="text-right">
+            <%= number_to_currency(ltv.values.sum(&:total_revenue), precision: 0) %>
+          </td>
+          <td class="text-right" colspan="2"></td>
+        </tr>
+      </tfoot>
+    </table>
+  <% end %>
+<% end %>

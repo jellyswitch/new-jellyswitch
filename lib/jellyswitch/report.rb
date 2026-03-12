@@ -207,5 +207,84 @@ module Jellyswitch
         )
       end
     end
+
+    # ── Lifetime Value (LTV) ──
+
+    LtvResult = Struct.new(:product, :customers, :total_revenue, :average, :median, keyword_init: true)
+
+    def ltv_summary
+      {
+        day_passes: day_pass_ltv,
+        memberships: membership_ltv,
+        office_leases: office_lease_ltv,
+        meeting_rooms: meeting_room_ltv
+      }
+    end
+
+    def ltv_for_timeframe(since: nil)
+      {
+        day_passes: day_pass_ltv(since: since),
+        memberships: membership_ltv(since: since),
+        office_leases: office_lease_ltv(since: since),
+        meeting_rooms: meeting_room_ltv(since: since)
+      }
+    end
+
+    def day_pass_ltv(since: nil)
+      scope = day_passes.joins(:day_pass_type)
+      scope = scope.where("day_passes.day >= ?", since) if since
+      # Revenue per user: count of passes * price per pass type
+      per_user = scope.group(:user_id).select(
+        "user_id, SUM(day_pass_types.amount_in_cents) as total_cents"
+      ).map { |r| r.total_cents.to_f / 100.0 }
+      build_ltv_result("Day Passes", per_user)
+    end
+
+    def membership_ltv(since: nil)
+      scope = location_invoices.paid.where(billable_type: "User")
+      scope = scope.where("invoices.due_date >= ?", since) if since
+      per_user = scope.group(:billable_id).sum(:amount_due).values.map { |v| v.to_f / 100.0 }
+      build_ltv_result("Memberships", per_user)
+    end
+
+    def office_lease_ltv(since: nil)
+      scope = location_invoices.paid.where(billable_type: "Organization")
+      scope = scope.where("invoices.due_date >= ?", since) if since
+      per_org = scope.group(:billable_id).sum(:amount_due).values.map { |v| v.to_f / 100.0 }
+      build_ltv_result("Office Leases", per_org)
+    end
+
+    def meeting_room_ltv(since: nil)
+      target_locations = location ? [location] : locations
+      room_ids = Room.where(location: target_locations, rentable: true).pluck(:id)
+      scope = Reservation.unscoped.where(cancelled: false, paid: true, room_id: room_ids)
+      scope = scope.where("datetime_in >= ?", since) if since
+      # Calculate per-user revenue from room charges
+      reservations_with_rooms = scope.includes(:room)
+      user_totals = Hash.new(0.0)
+      reservations_with_rooms.find_each do |res|
+        next unless res.room
+        charge = ((res.room.hourly_rate_in_cents / 60.0) * res.minutes).to_i
+        user_totals[res.user_id] += charge.to_f / 100.0
+      end
+      build_ltv_result("Meeting Rooms", user_totals.values)
+    end
+
+    private
+
+    def build_ltv_result(product, values)
+      values = values.reject { |v| v <= 0 }
+      total = values.sum
+      avg = values.any? ? total / values.size : 0
+      med = median(values)
+      LtvResult.new(product: product, customers: values.size, total_revenue: total, average: avg, median: med)
+    end
+
+    def median(values)
+      return 0 if values.empty?
+      sorted = values.sort
+      mid = sorted.size / 2
+      sorted.size.odd? ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2.0
+    end
   end
 end

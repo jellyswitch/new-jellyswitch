@@ -318,6 +318,7 @@ Rails.application.routes.draw do
       get :revenue
       get :monetization
       get :checkins
+      get :ltv
     end
   end
   resources :reservations, controller: "operator/reservations", except: [:index, :new] do

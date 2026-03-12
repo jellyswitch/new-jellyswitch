@@ -45,6 +45,13 @@ class Operator::ReportsController < Operator::BaseController
     authorize :report, :checkins?
   end
 
+  def ltv
+    authorize :report, :ltv?
+    @ltv_1y = @report.ltv_for_timeframe(since: 1.year.ago)
+    @ltv_2_5y = @report.ltv_for_timeframe(since: 30.months.ago)
+    @ltv_all = @report.ltv_for_timeframe(since: nil)
+  end
+
   def monetization
     @location = Location.find(params[:location_id])
     authorize :report, :monetization?
