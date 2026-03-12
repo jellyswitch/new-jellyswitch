@@ -82,7 +82,26 @@ class Operator::DoorsController < Operator::BaseController
     find_door(:door_id)
     authorize @door
     log_door_punch
-    OpenDoorJob.perform_later(@door, current_user)
+
+    # Call Kisi API inline instead of via background job for reliability
+    begin
+      kisi_url = "https://api.kisi.io/locks/#{@door.kisi_id}/unlock"
+      kisi_headers = {
+        'Accept' => 'application/json',
+        'Content-type' => 'application/json',
+        'Authorization' => "KISI-LOGIN #{@door.location.kisi_api_key}"
+      }
+      kisi_result = HTTParty.post(kisi_url, headers: kisi_headers)
+      DoorPunch.create(user: current_user, door: @door, operator: current_tenant, json: kisi_result.parsed_response)
+      Rails.logger.info("[DoorOpen] #{@door.name} kisi_id=#{@door.kisi_id} => #{kisi_result.code}")
+
+      if !kisi_result.success?
+        Rails.logger.error("[DoorOpen] Kisi error: #{kisi_result.code} #{kisi_result.body}")
+      end
+    rescue => e
+      Rails.logger.error("[DoorOpen] Error unlocking #{@door.name}: #{e.class}: #{e.message}")
+      Honeybadger.notify(e)
+    end
 
     respond_to do |format|
       format.html {
@@ -90,14 +109,13 @@ class Operator::DoorsController < Operator::BaseController
           response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         else
-          # unusual condition?
           response.headers["Turbo-Location"] = home_url
           redirect_to home_path
         end
       }
       format.js {
- # render open.js.erb template
-        }
+        # render open.js.erb template
+      }
     end
   end
 
