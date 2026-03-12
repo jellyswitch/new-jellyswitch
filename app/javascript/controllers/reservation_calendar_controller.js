@@ -14,6 +14,8 @@ export default class extends Controller {
     this.card = null;
     this.isModalOpen = false;
     this.pendingAjax = [];
+    this._durationClickLock = false;
+    this._timeSlotClickLock = false;
 
     this.initializeCalendar();
     this.initializeRoomFilter();
@@ -35,8 +37,8 @@ export default class extends Controller {
 
   disconnect() {
     // Clean up all event handlers when Stimulus disconnects
-    $("#duration-slots-container").off("click", ".duration-slot");
-    $("#time-slots-container").off("click", ".time-slot");
+    $("#duration-slots-container").off("click.duration touchend.duration");
+    $("#time-slots-container").off("click.timeslot touchend.timeslot");
     $("#rooms-select").off("change");
     $("#add-reservation").off("submit");
     $("#modal-view-event-add").off("hidden.bs.modal");
@@ -227,11 +229,21 @@ export default class extends Controller {
   }
 
   handleDurationChange() {
-    $("#duration-slots-container").off("click", ".duration-slot");
-    $("#duration-slots-container").on("click", ".duration-slot", (event) => {
+    $("#duration-slots-container").off("click.duration touchend.duration");
+    $("#duration-slots-container").on("click.duration touchend.duration", ".duration-slot", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Debounce guard: ignore rapid duplicate fires (touch + click)
+      if (this._durationClickLock) return;
+      this._durationClickLock = true;
+      setTimeout(() => { this._durationClickLock = false; }, 400);
+
       const slot = $(event.currentTarget);
       const duration = slot.data("duration");
-      $(".duration-slot").removeClass("selected-time");
+
+      // Remove selection from ALL duration slots, then select this one
+      $("#duration-slots-container .duration-slot").removeClass("selected-time");
       slot.addClass("selected-time");
       $('input[name="duration"]').val(duration);
       this.fetchAvailableRooms();
@@ -543,7 +555,7 @@ export default class extends Controller {
 
   clearSelections() {
     // Clear time slot handlers and content to prevent stale state
-    $("#time-slots-container").off("click", ".time-slot");
+    $("#time-slots-container").off("click.timeslot touchend.timeslot");
     $("#time-slots-container").empty();
     $('input[name="time"]').val("");
 
@@ -583,7 +595,7 @@ export default class extends Controller {
   renderTimeSlots(timeSlots) {
     const timeSlotsContainer = $("#time-slots-container");
     // Remove old event handlers and clear content
-    timeSlotsContainer.off("click", ".time-slot");
+    timeSlotsContainer.off("click.timeslot touchend.timeslot");
     timeSlotsContainer.empty();
 
     if (timeSlots.length === 0) {
@@ -597,7 +609,15 @@ export default class extends Controller {
     });
 
     // Use event delegation so only one handler exists for all time slots
-    timeSlotsContainer.on("click", ".time-slot", (e) => {
+    timeSlotsContainer.on("click.timeslot touchend.timeslot", ".time-slot", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Debounce guard: ignore rapid duplicate fires (touch + click)
+      if (this._timeSlotClickLock) return;
+      this._timeSlotClickLock = true;
+      setTimeout(() => { this._timeSlotClickLock = false; }, 400);
+
       const clicked = $(e.currentTarget);
       const slotText = clicked.text();
       this.handleTimeSlotClick(clicked, slotText);
