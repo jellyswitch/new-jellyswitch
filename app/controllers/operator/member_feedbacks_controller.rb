@@ -54,25 +54,36 @@ class Operator::MemberFeedbacksController < Operator::BaseController
     find_member_feedback
     authorize @member_feedback, :reply?
 
-    # Save the reply first (separate from notification so a push failure doesn't rollback the reply)
+    # Extract body from params — handle both scoped and unscoped form submissions
+    body = params.dig(:feedback_reply, :body) || params[:body]
+
+    if body.blank?
+      flash[:error] = "Reply cannot be blank."
+      turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
+      return
+    end
+
+    # Save the reply
     save_result = MemberFeedback::SaveReply.call(
       member_feedback: @member_feedback,
       user: current_user,
       operator: current_tenant,
-      body: params[:feedback_reply][:body]
+      body: body
     )
 
     if save_result.success?
       # Send push notification separately — don't let failure affect the reply
       begin
-        reply = save_result.feedback_reply
-        Rails.logger.info("[FeedbackReply] Sending notification for reply #{reply.id} from #{current_user.name} (admin?=#{reply.from_admin?})")
-        NotifiableFactory.for(reply).notify
+        reply_record = save_result.feedback_reply
+        Rails.logger.info("[FeedbackReply] Sending notification for reply #{reply_record.id} from #{current_user.name} (admin?=#{reply_record.from_admin?})")
+        NotifiableFactory.for(reply_record).notify
         Rails.logger.info("[FeedbackReply] Notification sent successfully")
+        flash[:success] = "Reply sent."
       rescue => e
         Rails.logger.error("FeedbackReply notification error: #{e.class}: #{e.message}")
         Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         Honeybadger.notify(e)
+        flash[:success] = "Reply sent (notification error logged)."
       end
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     else
