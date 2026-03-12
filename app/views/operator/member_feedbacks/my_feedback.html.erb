@@ -1,0 +1,29 @@
+<% title "My Messages" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item active" aria-current="page">My Messages</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">My Messages</h4>
+
+    <% if @member_feedbacks.any? %>
+      <div class="list-group list-group-flush mt-3">
+        <% @member_feedbacks.each do |feedback| %>
+          <%= link_to member_feedback_path(feedback), class: "list-group-item list-group-item-action" do %>
+            <p class="mb-1"><%= truncate(feedback.comment, length: 100) %></p>
+            <small class="text-muted">
+              <%= time_ago_in_words(feedback.updated_at) %> ago
+              <% if feedback.feedback_replies.any? %>
+                &middot; <%= feedback.feedback_replies.count %> <%= "reply".pluralize(feedback.feedback_replies.count) %>
+              <% end %>
+            </small>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-center text-muted mt-4">No messages yet.</p>
+    <% end %>
+  <% end %>
+<% end %>

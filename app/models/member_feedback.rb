@@ -19,6 +19,7 @@ class MemberFeedback < ApplicationRecord
 
   belongs_to :operator
   belongs_to :user
+  has_many :feedback_replies, dependent: :destroy
 
   acts_as_tenant :operator
 

@@ -34,6 +34,36 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   def show
     find_member_feedback
     authorize @member_feedback
+    @feedback_replies = @member_feedback.feedback_replies.order(:created_at)
+    @new_reply = FeedbackReply.new
+  end
+
+  def reply
+    find_member_feedback
+    authorize @member_feedback, :reply?
+
+    result = MemberFeedback::CreateReply.call(
+      member_feedback: @member_feedback,
+      user: current_user,
+      operator: current_tenant,
+      body: params[:feedback_reply][:body]
+    )
+
+    if result.success?
+      turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
+    else
+      flash[:error] = result.message
+      turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
+    end
+  rescue Exception => e
+    Honeybadger.notify(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
+  end
+
+  def my_feedback
+    @member_feedbacks = MemberFeedback.where(user: current_user).order(updated_at: :desc)
+    authorize @member_feedbacks
   end
 
   private

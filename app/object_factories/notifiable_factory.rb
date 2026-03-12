@@ -15,6 +15,8 @@ class NotifiableFactory
       Notifiable::FeedItem
     when "FeedItemComment"
       Notifiable::FeedItemComment
+    when "FeedbackReply"
+      Notifiable::FeedbackReply
     when "MemberFeedback"
       Notifiable::MemberFeedback
     when "Post"

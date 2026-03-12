@@ -1,0 +1,124 @@
+<% title "Feedback Thread" %>
+
+<%= breadcrumb do %>
+  <% if current_user.admin_or_manager?(current_location) %>
+    <li class="breadcrumb-item"><%= link_to "Member Feedback", member_feedbacks_path %></li>
+  <% end %>
+  <li class="breadcrumb-item active">Thread</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Feedback Thread</h4>
+
+    <div class="feedback-chat" id="feedback-chat">
+      <%# Original feedback message %>
+      <div class="chat-bubble chat-bubble-member">
+        <div class="chat-body"><%= simple_format(@member_feedback.comment) %></div>
+        <div class="chat-meta">
+          <% if current_user.admin_or_manager?(current_location) %>
+            Member
+          <% else %>
+            You
+          <% end %>
+          &middot; <%= time_ago_in_words(@member_feedback.created_at) %> ago
+        </div>
+      </div>
+
+      <%# Replies %>
+      <% @feedback_replies.each do |reply| %>
+        <% if reply.from_admin? %>
+          <div class="chat-bubble chat-bubble-admin">
+            <div class="chat-body"><%= simple_format(reply.body) %></div>
+            <div class="chat-meta">
+              <%= reply.user.name %> &middot; <%= time_ago_in_words(reply.created_at) %> ago
+            </div>
+          </div>
+        <% else %>
+          <div class="chat-bubble chat-bubble-member">
+            <div class="chat-body"><%= simple_format(reply.body) %></div>
+            <div class="chat-meta">
+              <% if current_user.admin_or_manager?(current_location) %>
+                Member
+              <% else %>
+                You
+              <% end %>
+              &middot; <%= time_ago_in_words(reply.created_at) %> ago
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+
+    <%# Reply form %>
+    <%= form_with url: reply_member_feedback_path(@member_feedback), method: :post, local: true do |f| %>
+      <div class="feedback-reply-form mt-3">
+        <div class="input-group">
+          <%= f.text_area :body, placeholder: "Type a reply...", class: "form-control", rows: 2, required: true, id: "reply-body" %>
+        </div>
+        <%= f.submit "Send", class: "btn btn-primary btn-block mt-2", id: "reply-submit" %>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<style>
+  .feedback-chat {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px 0;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+  }
+  .chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+  }
+  .chat-bubble p {
+    margin-bottom: 0;
+  }
+  .chat-bubble-admin {
+    background: #007bff;
+    color: #fff;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+  .chat-bubble-member {
+    background: #f1f1f1;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+  .chat-meta {
+    font-size: 11px;
+    margin-top: 4px;
+    opacity: 0.7;
+  }
+  .chat-bubble-admin .chat-meta {
+    color: rgba(255,255,255,0.8);
+  }
+  .feedback-reply-form {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding-top: 8px;
+  }
+  @media (max-width: 768px) {
+    .chat-bubble {
+      max-width: 90%;
+    }
+    .feedback-chat {
+      max-height: 60vh;
+    }
+  }
+</style>
+
+<script>
+  // Auto-scroll to bottom of chat
+  var chat = document.getElementById("feedback-chat");
+  if (chat) chat.scrollTop = chat.scrollHeight;
+</script>

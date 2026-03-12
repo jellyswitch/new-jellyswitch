@@ -206,7 +206,14 @@ Rails.application.routes.draw do
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
     get :visible, to: "operator/locations#visible"
   end
-  resources :member_feedbacks, controller: "operator/member_feedbacks"
+  resources :member_feedbacks, controller: "operator/member_feedbacks" do
+    member do
+      post :reply
+    end
+    collection do
+      get :my_feedback
+    end
+  end
   resources :modules, controller: "operator/modules" do
     collection do
       get :announcements

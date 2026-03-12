@@ -58,6 +58,7 @@ class User < ApplicationRecord
   has_many :leads
   has_many :lead_notes
   has_many :member_feedbacks
+  has_many :feedback_replies
   belongs_to :organization, optional: true
   belongs_to :operator
   belongs_to :original_location, class_name: "Location", optional: true
