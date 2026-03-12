@@ -37,6 +37,7 @@ export default class extends Controller {
 
   disconnect() {
     // Clean up all event handlers when Stimulus disconnects
+    $("#reservation-fullcalendar").off("click.mobiletap");
     $("#duration-slots-container").off("click.duration touchend.duration");
     $("#time-slots-container").off("click.timeslot touchend.timeslot");
     $("#rooms-select").off("change");
@@ -110,6 +111,33 @@ export default class extends Controller {
     });
 
     setTimeout(() => window.dispatchEvent(new Event("resize")), 100);
+
+    // On mobile, the content-skeleton layer covers the fc-bg layer and
+    // blocks dayClick from firing on much of the cell. Attach a direct
+    // tap handler on the entire calendar so ANY touch inside a date cell
+    // triggers handleDayClick, making the full rectangle tappable.
+    if (window.innerWidth <= 768) {
+      this._mobileTapLock = false;
+      $("#reservation-fullcalendar").on("click.mobiletap", ".fc-content-skeleton td, .fc-day-grid-event, .fc-day-number", (e) => {
+        // Debounce to avoid double-fire with dayClick/eventClick
+        if (this._mobileTapLock) return;
+        this._mobileTapLock = true;
+        setTimeout(() => { this._mobileTapLock = false; }, 500);
+
+        // Walk up to find the column index, then look up the date from the bg row
+        const td = $(e.target).closest("td");
+        const row = td.closest(".fc-row");
+        const colIndex = td.index();
+
+        // The fc-bg table in the same row has td.fc-day elements with data-date
+        const bgCell = row.find(".fc-bg td.fc-day").eq(colIndex);
+        const dateStr = bgCell.data("date");
+        if (!dateStr) return;
+
+        const clickedDate = moment(dateStr);
+        this.handleDayClick(clickedDate);
+      });
+    }
   }
 
   handleReserveNowFlow() {

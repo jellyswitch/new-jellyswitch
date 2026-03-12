@@ -1672,63 +1672,11 @@
     display: none;
   }
 
-  // Make calendar dates easier to tap on mobile
+  // Mobile: make entire date cell tappable (JS handles tap routing)
   @media (max-width: 768px) {
-    .fc-basic-view .fc-body .fc-row {
-      min-height: 5.5em;
-    }
-
-    .fc .fc-row .fc-content-skeleton table,
-    .fc .fc-row .fc-content-skeleton td,
-    .fc .fc-row .fc-helper-skeleton td {
-      padding: 0.75rem 0.5rem;
-    }
-
-    .fc-basic-view .fc-day-number {
-      font-size: 18px;
-      font-weight: 500;
-      padding: 6px 8px;
-      display: block;
-      text-align: center;
-      float: none !important;
-    }
-
-    .fc th.fc-day-header {
-      padding: 8px 4px;
-      font-size: 13px;
-    }
-
-    // The content-skeleton layer (z-index 4) sits on top of the
-    // fc-bg layer (z-index 1) where dayClick fires, blocking touches
-    // from reaching the background. Let touch events pass through
-    // the skeleton, but keep event badges clickable.
-    .fc-row .fc-content-skeleton {
-      pointer-events: none;
-    }
-
-    .fc-row .fc-content-skeleton .fc-event,
-    .fc-row .fc-content-skeleton a {
-      pointer-events: auto;
-    }
-
-    // Give each date cell a larger tappable area with active feedback
+    // Give visual tap feedback on date cells
     .fc-day-top {
-      cursor: pointer;
       -webkit-tap-highlight-color: rgba(0, 123, 255, 0.15);
-    }
-
-    .fc-day-top:active:not(.fc-past) {
-      background-color: rgba(0, 123, 255, 0.1);
-    }
-
-    // Toolbar adjustments for mobile
-    .fc-toolbar h2 {
-      font-size: 16px;
-    }
-
-    .fc-toolbar .fc-button {
-      padding: 6px 10px !important;
-      font-size: 14px;
     }
   }
 
