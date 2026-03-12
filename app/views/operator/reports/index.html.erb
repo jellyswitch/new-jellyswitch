@@ -128,20 +128,20 @@
 
 <%# ── Lifetime Value ── %>
 <% if current_location %>
-  <% begin %>
-    <% ltv = @report.ltv_summary %>
-    <%= super_wide_card do %>
-      <h5 class="text-center mb-3">Customer Lifetime Value</h5>
-      <p class="text-center text-muted small mb-3">All-time average and median revenue per customer by product</p>
+  <% ltv = @report.ltv_summary %>
+  <%= super_wide_card do %>
+    <h5 class="text-center mb-3">Customer Lifetime Value</h5>
+    <p class="text-center text-muted small mb-3">All-time average and median revenue per customer by product</p>
 
-      <table class="table table-sm text-center">
+    <div class="table-responsive">
+      <table class="table table-sm text-right" style="font-size: 0.85rem;">
         <thead>
           <tr>
             <th class="text-left">Product</th>
-            <th>Customers</th>
-            <th>Total Revenue</th>
-            <th>Avg LTV</th>
-            <th>Median LTV</th>
+            <th class="text-right">Count</th>
+            <th class="text-right">Revenue</th>
+            <th class="text-right">Avg</th>
+            <th class="text-right">Median</th>
           </tr>
         </thead>
         <tbody>
@@ -157,15 +157,11 @@
           <% end %>
         </tbody>
       </table>
+    </div>
 
-      <div class="text-center mt-3">
-        <%= link_to "Detailed LTV Analysis", ltv_reports_path, class: "btn btn-outline-primary btn-sm" %>
-      </div>
-    <% end %>
-  <% rescue => e %>
-    <%= super_wide_card do %>
-      <p class="text-danger text-center">LTV Error: <%= e.message %></p>
-    <% end %>
+    <div class="text-center mt-3">
+      <%= link_to "Detailed LTV Analysis", ltv_reports_path, class: "btn btn-outline-primary btn-sm" %>
+    </div>
   <% end %>
 <% end %>
 
