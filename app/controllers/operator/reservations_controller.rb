@@ -20,28 +20,38 @@ class Operator::ReservationsController < Operator::BaseController
     all_options = User.lease_options_for_select(current_tenant, current_location)
 
     # Filter to eligible members only
+    eligible = Set.new([current_user.id])
+
+    # Admins/managers
     begin
-      today = Time.current.to_date
-      eligible = Set.new
-      eligible << current_user.id
-
-      # Admins/managers
-      User.for_space(current_tenant).where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id).each { |uid| eligible << uid }
-
-      # Active subscribers
-      plan_ids = Plan.where(location_id: current_location.id).pluck(:id)
-      Subscription.where(active: true, plan_id: plan_ids).pluck(:user_id).each { |uid| eligible << uid } if plan_ids.any?
-
-      # Day pass holders (today or future)
-      DayPass.where("day >= ?", today).pluck(:user_id).each { |uid| eligible << uid }
-
-      # Users with future reservations (bypass default scope)
-      Reservation.unscoped.where(cancelled: false).where("datetime_in >= ?", Time.current).pluck(:user_id).each { |uid| eligible << uid }
-
-      all_options = all_options.select { |_name, id| eligible.include?(id) }
+      eligible.merge(User.for_space(current_tenant).where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id))
     rescue => e
-      Rails.logger.error("choose_member filter error: #{e.class}: #{e.message}")
+      Rails.logger.error("choose_member admins error: #{e.class}: #{e.message}")
     end
+
+    # Active subscribers
+    begin
+      plan_ids = Plan.where(location_id: current_location.id).pluck(:id)
+      eligible.merge(Subscription.where(active: true, plan_id: plan_ids).pluck(:user_id)) if plan_ids.any?
+    rescue => e
+      Rails.logger.error("choose_member subscribers error: #{e.class}: #{e.message}")
+    end
+
+    # Day pass holders (today or future)
+    begin
+      eligible.merge(DayPass.where("day >= ?", Time.current.to_date).pluck(:user_id))
+    rescue => e
+      Rails.logger.error("choose_member day_passes error: #{e.class}: #{e.message}")
+    end
+
+    # Users with future reservations
+    begin
+      eligible.merge(Reservation.where("datetime_in >= ?", Time.current).pluck(:user_id))
+    rescue => e
+      Rails.logger.error("choose_member reservations error: #{e.class}: #{e.message}")
+    end
+
+    all_options = all_options.select { |_name, id| eligible.include?(id) } if eligible.size > 1
 
     admin_option = all_options.find { |_name, id| id == current_user.id }
     admin_option ||= [current_user.name, current_user.id]
