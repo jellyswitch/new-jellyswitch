@@ -29,12 +29,32 @@ class Operator::ReservationsController < Operator::BaseController
       Rails.logger.error("choose_member admins error: #{e.class}: #{e.message}")
     end
 
-    # Active subscribers
+    # Active subscribers (subscribable is polymorphic — subscribable_type "User" means subscribable_id is the user_id)
     begin
       plan_ids = Plan.where(location_id: current_location.id).pluck(:id)
-      eligible.merge(Subscription.where(active: true, plan_id: plan_ids).pluck(:user_id)) if plan_ids.any?
+      if plan_ids.any?
+        eligible.merge(Subscription.where(active: true, plan_id: plan_ids, subscribable_type: "User").pluck(:subscribable_id))
+      end
     rescue => e
       Rails.logger.error("choose_member subscribers error: #{e.class}: #{e.message}")
+    end
+
+    # Organization subscribers — orgs with active subscriptions, then their member user IDs
+    begin
+      if plan_ids.present? && plan_ids.any?
+        org_ids = Subscription.where(active: true, plan_id: plan_ids, subscribable_type: "Organization").pluck(:subscribable_id)
+        eligible.merge(User.for_space(current_tenant).where(organization_id: org_ids).pluck(:id)) if org_ids.any?
+      end
+    rescue => e
+      Rails.logger.error("choose_member org_subscribers error: #{e.class}: #{e.message}")
+    end
+
+    # Organization members with active office leases at this location
+    begin
+      lease_org_ids = OfficeLease.active.where(location_id: current_location.id).pluck(:organization_id)
+      eligible.merge(User.for_space(current_tenant).where(organization_id: lease_org_ids).pluck(:id)) if lease_org_ids.any?
+    rescue => e
+      Rails.logger.error("choose_member lease_members error: #{e.class}: #{e.message}")
     end
 
     # Day pass holders (today or future)
@@ -44,7 +64,7 @@ class Operator::ReservationsController < Operator::BaseController
       Rails.logger.error("choose_member day_passes error: #{e.class}: #{e.message}")
     end
 
-    # Users with future reservations
+    # Users with current or future reservations
     begin
       eligible.merge(Reservation.where("datetime_in >= ?", Time.current).pluck(:user_id))
     rescue => e
