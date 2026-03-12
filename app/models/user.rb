@@ -305,6 +305,68 @@ class User < ApplicationRecord
     end
   end
 
+  # Filtered list for reservation member selection:
+  # Only includes active members, day pass holders (today or future),
+  # users with billing info, and admins/managers at the location.
+  # Returns the admin (current_user) first, then the rest alphabetically.
+  def self.reservation_options_for_select(operator, location, current_user)
+    base_users = User.for_space(operator)
+                     .originally_at_location(location)
+                     .non_superadmins
+                     .visible
+                     .includes(:subscriptions, :day_passes, :user_payment_profiles, :organization)
+
+    today = Time.current.to_date
+
+    eligible_user_ids = Set.new
+
+    # Admins and managers always eligible
+    base_users.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER]).pluck(:id).each do |id|
+      eligible_user_ids.add(id)
+    end
+
+    # Users with active subscriptions at this location
+    plan_ids = Plan.for_location(location).pluck(:id)
+    if plan_ids.any?
+      User.for_space(operator).originally_at_location(location).non_superadmins.visible
+          .joins(:subscriptions)
+          .where(subscriptions: { active: true, plan_id: plan_ids })
+          .pluck(:id).each { |id| eligible_user_ids.add(id) }
+    end
+
+    # Users with day passes for today or future
+    User.for_space(operator).originally_at_location(location).non_superadmins.visible
+        .joins(:day_passes)
+        .where("day_passes.day >= ?", today)
+        .pluck(:id).each { |id| eligible_user_ids.add(id) }
+
+    # Users with billing info (card added or out_of_band) at this location
+    User.for_space(operator).originally_at_location(location).non_superadmins.visible
+        .joins(:user_payment_profiles)
+        .where(user_payment_profiles: { location_id: location.id })
+        .where("user_payment_profiles.card_added = ? OR users.out_of_band = ?", true, true)
+        .pluck(:id).each { |id| eligible_user_ids.add(id) }
+
+    # Users with active organization leases at this location
+    User.for_space(operator).originally_at_location(location).non_superadmins.visible
+        .joins(organization: :office_leases)
+        .where("office_leases.start_date <= ? AND office_leases.end_date >= ?", today, today)
+        .where(office_leases: { location_id: location.id })
+        .pluck(:id).each { |id| eligible_user_ids.add(id) }
+
+    return [] if eligible_user_ids.empty?
+
+    # Always include the current admin
+    eligible_user_ids.add(current_user.id)
+
+    # Fetch eligible users, admin first then alphabetical
+    users = User.where(id: eligible_user_ids.to_a)
+                .includes(:organization)
+                .order(Arel.sql("CASE WHEN users.id = #{current_user.id} THEN 0 ELSE 1 END, users.name ASC"))
+
+    users.map { |user| option_helper(user) }
+  end
+
   def self.option_helper(user)
     if user.organization.blank?
       [user.name, user.id]

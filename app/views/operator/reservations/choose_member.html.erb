@@ -16,7 +16,11 @@
     <%= form_with url: @next_step_path, method: :get, local: true do |f| %>
       <div class="form-group">
         <%= f.label :user, "Select Member" %>
-        <%= f.select :user_id, User.lease_options_for_select(current_tenant, current_location), { selected: current_user.id }, { class: "form-control" } %>
+        <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name..." autocomplete="off">
+        <%= f.select :user_id,
+            User.reservation_options_for_select(current_tenant, current_location, current_user),
+            { selected: current_user.id },
+            { class: "form-control", id: "user-id-select", size: 12 } %>
       </div>
         <%= f.hidden_field :room_id, value: @room.id %>
         <%= f.hidden_field :day, value: params[:day] %>
@@ -26,3 +30,42 @@
     <% end %>
   <% end %>
 <% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var searchInput = document.getElementById("member-search");
+    var selectEl = document.getElementById("user-id-select");
+    var allOptions = Array.from(selectEl.options).map(function(opt) {
+      return { text: opt.text, value: opt.value, selected: opt.selected };
+    });
+
+    searchInput.addEventListener("input", function() {
+      var query = this.value.toLowerCase().trim();
+      var selectedValue = selectEl.value;
+
+      // Clear current options
+      selectEl.innerHTML = "";
+
+      // Filter and re-add matching options
+      allOptions.forEach(function(opt) {
+        if (query === "" || opt.text.toLowerCase().indexOf(query) !== -1) {
+          var option = document.createElement("option");
+          option.value = opt.value;
+          option.text = opt.text;
+          if (opt.value === selectedValue) {
+            option.selected = true;
+          }
+          selectEl.appendChild(option);
+        }
+      });
+
+      // If nothing selected after filter, select first visible option
+      if (!selectEl.value && selectEl.options.length > 0) {
+        selectEl.options[0].selected = true;
+      }
+    });
+
+    // Auto-focus search input
+    searchInput.focus();
+  });
+</script>
