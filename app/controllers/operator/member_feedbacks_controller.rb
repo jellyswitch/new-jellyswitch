@@ -75,15 +75,31 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       # Send push notification separately — don't let failure affect the reply
       begin
         reply_record = save_result.feedback_reply
-        Rails.logger.info("[FeedbackReply] Sending notification for reply #{reply_record.id} from #{current_user.name} (admin?=#{reply_record.from_admin?})")
+        is_admin = reply_record.from_admin?
+        notif_enabled = current_tenant.member_feedback_notifications?
+        has_cert = current_tenant.push_notification_certificate.attached?
+        has_bundle = current_tenant.bundle_id.present?
+
+        # Determine recipient
+        if is_admin
+          recipient = @member_feedback.user
+        else
+          recipient = current_tenant.users.relevant_admins_of_location(current_location).first
+        end
+        has_ios = recipient&.ios_token.present?
+        has_android = recipient&.android_token.present?
+
+        diag = "admin?=#{is_admin}, notif=#{notif_enabled}, cert=#{has_cert}, bundle=#{has_bundle}, recipient=#{recipient&.name}, ios=#{has_ios}, android=#{has_android}"
+        Rails.logger.info("[FeedbackReply] DIAG: #{diag}")
+
         NotifiableFactory.for(reply_record).notify
         Rails.logger.info("[FeedbackReply] Notification sent successfully")
-        flash[:success] = "Reply sent."
+        flash[:success] = "Reply sent. [#{diag}]"
       rescue => e
         Rails.logger.error("FeedbackReply notification error: #{e.class}: #{e.message}")
         Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         Honeybadger.notify(e)
-        flash[:success] = "Reply sent (notification error logged)."
+        flash[:success] = "Reply sent (ERROR: #{e.class}: #{e.message})"
       end
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     else
