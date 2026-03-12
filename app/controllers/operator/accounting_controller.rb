@@ -3,11 +3,15 @@ class Operator::AccountingController < Operator::BaseController
   def index
     background_image
 
-    @last_month_revenue = current_location.invoices.last_month.sum(:amount_due)
-    @last_month_square_footage = (@last_month_revenue.to_f / 100.0) / current_location.square_footage.to_f
+    # Use for_location to include invoices with NULL location_id (e.g. office leases from webhooks)
+    invoices = Invoice.for_location(current_location)
 
-    @this_month_revenue = current_location.invoices.this_month.sum(:amount_due)
-    @this_month_square_footage = (@this_month_revenue.to_f / 100.0) / current_location.square_footage.to_f
+    @last_month_revenue = invoices.last_month.sum(:amount_due)
+    sq_ft = current_location.square_footage.to_f
+    @last_month_square_footage = sq_ft > 0 ? (@last_month_revenue.to_f / 100.0) / sq_ft : 0
+
+    @this_month_revenue = invoices.this_month.sum(:amount_due)
+    @this_month_square_footage = sq_ft > 0 ? (@this_month_revenue.to_f / 100.0) / sq_ft : 0
   end
 
   def expenses

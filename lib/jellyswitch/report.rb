@@ -159,25 +159,31 @@ module Jellyswitch
       membership_breakdown.group(:plan).count
     end
 
+    # Use Invoice.for_location which includes invoices with NULL location_id
+    # (office leases created via webhook may not have location_id set)
+    def location_invoices
+      Invoice.for_location(location)
+    end
+
     def this_month_revenue
       return 0 unless location
-      location.invoices.paid.where(due_date: Time.current.beginning_of_month..Time.current.end_of_month).sum(:amount_due).to_f / 100.0
+      location_invoices.paid.where(due_date: Time.current.beginning_of_month..Time.current.end_of_month).sum(:amount_due).to_f / 100.0
     end
 
     def revenue_by_month
-      location.invoices.paid.where(due_date: 12.months.ago..).group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
+      location_invoices.paid.where(due_date: 12.months.ago..).group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_week
-      location.invoices.paid.where(due_date: 6.months.ago..).group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
+      location_invoices.paid.where(due_date: 6.months.ago..).group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_day
-      location.invoices.paid.where(due_date: 3.months.ago..).group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
+      location_invoices.paid.where(due_date: 3.months.ago..).group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
