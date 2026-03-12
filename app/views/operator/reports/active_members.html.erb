@@ -1,27 +1,53 @@
 <% title "Active Members" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center">Active Members</h4>
-  <p class="lead">Total: <%= @report.active_member_count %></p>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
 
-  <table class="table">
-    <tr>
-      <th>Member</th>
-      <th>Join Date</th>
-      <th>Membership</th>
-    </tr>
-    <% @report.active_members.each do |user| %>
-      <tr>
-        <td><%= link_to user.name, user_path(user) %></td>
-        <td><%= short_date(user.created_at) %></td>
-        <td>
-          <% user.subscriptions.active.each do |subscription| %>
-            <span class="badge badge-primary">
-              <%= subscription.pretty_name %>
-            </span>
-          <% end %>
-        </td>
-      </tr>
+  <h4 class="display-4 text-center">Active Members</h4>
+  <p class="lead text-center">Total: <%= @report.active_member_count %></p>
+  <% breakdown = @report.active_member_breakdown %>
+  <p class="text-center text-muted">
+    <%= breakdown[:subscribed] %> subscribed
+    <% if breakdown[:out_of_band] > 0 %>
+      &middot; <%= breakdown[:out_of_band] %> out-of-band
     <% end %>
+    &middot; <%= breakdown[:free] %> free
+  </p>
+
+  <table class="table table-sm">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th>Join Date</th>
+        <th>Membership</th>
+        <th>Payment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @report.active_members.each do |user| %>
+        <tr>
+          <td><%= link_to user.name, user_path(user) %></td>
+          <td><%= short_date(user.created_at) %></td>
+          <td>
+            <% user.subscriptions.active.each do |subscription| %>
+              <span class="badge badge-primary">
+                <%= subscription.pretty_name %>
+              </span>
+            <% end %>
+          </td>
+          <td>
+            <% if user.out_of_band? %>
+              <span class="badge badge-warning">Out-of-band</span>
+            <% elsif user.card_added? %>
+              <span class="badge badge-success">Card</span>
+            <% elsif user.member_of_organization? %>
+              <span class="badge badge-info">Group</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
   </table>
 <% end %>

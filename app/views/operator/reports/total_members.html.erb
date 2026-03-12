@@ -1,8 +1,12 @@
 <% title "Total Members" %>
 
 <%= wide_card do %>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
   <h4 class="display-4 text-center">Total Members</h4>
-  <p class="lead">Total: <%= @report.all_member_count %></p>
+  <p class="lead text-center">Total: <%= @report.all_member_count %></p>
 
   <table class="table">
     <tr>

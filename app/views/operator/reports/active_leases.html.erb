@@ -1,23 +1,47 @@
 <% title "Active Leases" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center">Active Leases</h4>
-  <p class="lead">Total: <%= @report.active_lease_count %></p>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
 
-  <table class="table">
-    <tr>
-      <th>Group</th>
-      <th>Office</th>
-      <th>Monthly revenue per member</th>
-    </tr>
-    <% @report.active_leases.each do |office_lease| %>
+  <h4 class="display-4 text-center">Active Leases</h4>
+  <p class="lead text-center">Total: <%= @report.active_lease_count %></p>
+
+  <table class="table table-sm">
+    <thead>
       <tr>
-        <td><%= link_to office_lease.organization.name, organization_path(office_lease.organization) %></td>
-        <td><%= link_to office_lease.office.name, office_path(office_lease.office) %></td>
-        <td>
-          <%= number_to_currency((office_lease.subscription.plan.amount_in_cents.to_f) / 100 / (office_lease.organization.users.count.to_f)) %>
-        </td>
+        <th>Group</th>
+        <th>Office</th>
+        <th>Monthly Total</th>
+        <th>Per Member</th>
+        <th>Payment</th>
       </tr>
-    <% end %>
+    </thead>
+    <tbody>
+      <% @report.active_leases.each do |office_lease| %>
+        <tr>
+          <td><%= link_to office_lease.organization.name, organization_path(office_lease.organization) %></td>
+          <td><%= link_to office_lease.office.name, office_path(office_lease.office) %></td>
+          <td><%= number_to_currency(office_lease.subscription.plan.amount_in_cents.to_f / 100) %></td>
+          <td>
+            <% user_count = office_lease.organization.users.count %>
+            <% if user_count > 0 %>
+              <%= number_to_currency((office_lease.subscription.plan.amount_in_cents.to_f) / 100 / user_count) %>
+              <small class="text-muted">(<%= user_count %> members)</small>
+            <% else %>
+              &mdash;
+            <% end %>
+          </td>
+          <td>
+            <% if office_lease.organization.out_of_band? %>
+              <span class="badge badge-warning">Out-of-band</span>
+            <% else %>
+              <span class="badge badge-success">Stripe</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
   </table>
 <% end %>

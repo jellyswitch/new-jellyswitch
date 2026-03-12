@@ -50,12 +50,33 @@ module Jellyswitch
       end
     end
 
-    def active_members
+    def subscribed_members
       User.where(id: Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id))
+    end
+
+    def out_of_band_members
+      users.members.where(out_of_band: true)
+    end
+
+    def active_members
+      # Combine subscribed + out-of-band members via ID union
+      subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
+      oob_ids = out_of_band_members.select(:id)
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids))
     end
 
     def active_member_count
       active_members.count
+    end
+
+    def active_member_breakdown
+      subscribed_count = subscribed_members.count
+      oob_count = out_of_band_members.where.not(id: subscribed_members.select(:id)).count
+      {
+        subscribed: subscribed_count,
+        out_of_band: oob_count,
+        free: free_member_count
+      }
     end
 
     def free_members
@@ -138,40 +159,45 @@ module Jellyswitch
       membership_breakdown.group(:plan).count
     end
 
+    def this_month_revenue
+      return 0 unless location
+      location.invoices.paid.where(due_date: Time.current.beginning_of_month..Time.current.end_of_month).sum(:amount_due).to_f / 100.0
+    end
+
     def revenue_by_month
-      location.invoices.paid.group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
+      location.invoices.paid.where(due_date: 12.months.ago..).group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_week
-      location.invoices.paid.group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
+      location.invoices.paid.where(due_date: 6.months.ago..).group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_day
-      location.invoices.paid.group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
+      location.invoices.paid.where(due_date: 3.months.ago..).group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def checkins_by_day
       target_locations = location ? [location] : locations
-      target_locations.map do |location|
+      target_locations.map do |loc|
         Struct.new(:label, :data).new(
-          location.name,
-          location.checkins.group_by_day(:datetime_in).count
+          loc.name,
+          loc.checkins.where(datetime_in: 90.days.ago..).group_by_day(:datetime_in).count
         )
       end
     end
 
     def checkin_revenue_by_day
       target_locations = location ? [location] : locations
-      target_locations.map do |location|
+      target_locations.map do |loc|
         Struct.new(:label, :data).new(
-          location.name,
-          location.checkins.includes(:invoice).group_by_day(:datetime_in).sum("invoices.amount_due").transform_values {|v| v.to_f / 100.0}
+          loc.name,
+          loc.checkins.where(datetime_in: 90.days.ago..).includes(:invoice).group_by_day(:datetime_in).sum("invoices.amount_due").transform_values {|v| v.to_f / 100.0}
         )
       end
     end

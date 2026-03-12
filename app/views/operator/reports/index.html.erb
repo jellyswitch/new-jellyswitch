@@ -1,71 +1,203 @@
 <% title "Data" %>
 
-<%= wide_card do %>
-  <h4 class="display-4 mb-1 text-center">Data Reports<%= current_location ? " for #{current_location.name}" : "" %></h4>
-  <p class="text-center mb-5">
+<%= super_wide_card do %>
+  <h4 class="display-4 mb-1 text-center">Dashboard<%= current_location ? " &mdash; #{current_location.name}" : "" %></h4>
+  <p class="text-center text-muted mb-4">
     Change to another location for its data
   </p>
 
-  <dl class="row">
-    <dt class="col-lg-6">Weekly Updates</dt>
-    <dd class="col"><%= link_to "View Weekly Updates", weekly_updates_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+  <%# ── Key Metrics ── %>
+  <div class="row text-center mb-4">
+    <div class="col-6 col-md-3 mb-3">
+      <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
+        <div class="border rounded p-3 h-100">
+          <div class="display-4 font-weight-bold text-primary"><%= @report.active_member_count %></div>
+          <div class="text-muted mt-1">Active Members</div>
+          <% breakdown = @report.active_member_breakdown %>
+          <small class="text-muted">
+            <%= breakdown[:subscribed] %> subscribed
+            <% if breakdown[:out_of_band] > 0 %>
+              &middot; <%= breakdown[:out_of_band] %> out-of-band
+            <% end %>
+          </small>
+        </div>
+      <% end %>
+    </div>
 
-  <dl class="row">
-    <dt class="col-lg-6"><%= @report.active_member_count %> active members</dt>
-    <dd class="col"><%= link_to "View Data", active_members_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <%= link_to active_leases_reports_path, class: "text-decoration-none text-dark d-block" do %>
+        <div class="border rounded p-3 h-100">
+          <div class="display-4 font-weight-bold text-success"><%= @report.active_lease_count %></div>
+          <div class="text-muted mt-1">Active Leases</div>
+        </div>
+      <% end %>
+    </div>
 
-  <dl class="row">
-    <dt class="col-lg-6"><%= @report.active_lease_count %> active leases</dt>
-    <dd class="col"><%= link_to "View Data", active_leases_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <%= link_to active_lease_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
+        <div class="border rounded p-3 h-100">
+          <div class="display-4 font-weight-bold text-info"><%= @report.active_lease_member_count %></div>
+          <div class="text-muted mt-1">Lease Members</div>
+        </div>
+      <% end %>
+    </div>
 
-  <dl class="row">
-    <dt class="col-lg-6"><%= @report.active_lease_member_count %> members on active leases</dt>
-    <dd class="col"><%= link_to "View Data", active_lease_members_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <% if current_location %>
+          <div class="display-4 font-weight-bold text-warning"><%= number_to_currency(@report.this_month_revenue) %></div>
+          <div class="text-muted mt-1">Revenue This Month</div>
+          <small class="text-muted">From paid invoices</small>
+        <% else %>
+          <div class="display-4 font-weight-bold text-muted">&mdash;</div>
+          <div class="text-muted mt-1">Revenue This Month</div>
+          <small class="text-muted">Select a location</small>
+        <% end %>
+      </div>
+    </div>
+  </div>
 
-  <dl class="row">
-    <dt class="col-lg-6"><%= @report.last_30_day_pass_count %> day passes (last 30 days)</dt>
-    <dd class="col"><%= link_to "View Data", last_30_day_passes_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+  <%# ── Additional Stats Row ── %>
+  <div class="row text-center mb-4">
+    <div class="col-6 col-md-3 mb-3">
+      <%= link_to total_members_reports_path, class: "text-decoration-none text-dark d-block" do %>
+        <div class="border rounded p-3 h-100">
+          <div class="h2 font-weight-bold"><%= @report.all_member_count %></div>
+          <div class="text-muted">Total Members</div>
+        </div>
+      <% end %>
+    </div>
 
-  <dl class="row">
-    <dt class="col-lg-6"><%= @report.all_member_count %> total members</dt>
-    <dd class="col"><%= link_to "View Data", total_members_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <%= link_to last_30_day_passes_reports_path, class: "text-decoration-none text-dark d-block" do %>
+        <div class="border rounded p-3 h-100">
+          <div class="h2 font-weight-bold"><%= @report.last_30_day_pass_count %></div>
+          <div class="text-muted">Day Passes (30 days)</div>
+        </div>
+      <% end %>
+    </div>
 
-  <dl class="row">
-    <dt class="col-lg-6">Membership Breakdown</dt>
-    <dd class="col"><%= link_to "View Data", membership_breakdown_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="h2 font-weight-bold"><%= @report.free_member_count %></div>
+        <div class="text-muted">Free Members</div>
+      </div>
+    </div>
 
-<% if policy(:report).revenue? %>
-  <dl class="row">
-    <dt class="col-lg-6">Revenue</dt>
-    <dd class="col"><%= link_to "View Data", revenue_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+    <div class="col-6 col-md-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="h2 font-weight-bold"><%= @report.checkins_last_30_days_count %></div>
+        <div class="text-muted">Check-ins (30 days)</div>
+      </div>
+    </div>
+  </div>
 <% end %>
-  <dl class="row">
-    <dt class="col-lg-6">Check-ins</dt>
-    <dd class="col"><%= link_to "View Data", checkins_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
 
-  <dl class="row">
-    <dt class="col-lg-6">Member CSV Export</dt>
-    <dd class="col"><%= link_to "Email CSV", member_csv_reports_path, class: "btn btn-primary btn-block" %></dd>
-  </dl>
+<%# ── Membership Breakdown ── %>
+<%= super_wide_card do %>
+  <h5 class="text-center mb-3">Membership Breakdown</h5>
+  <div class="row">
+    <div class="col-md-8 mx-auto">
+      <%= pie_chart @report.membership_breakdown_count,
+            donut: true,
+            legend: "bottom",
+            colors: ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"],
+            height: "300px",
+            library: { plugins: { legend: { labels: { boxWidth: 12, padding: 15 } } } } %>
+    </div>
+  </div>
+  <div class="text-center mt-3">
+    <%= link_to "View Details", membership_breakdown_reports_path, class: "btn btn-outline-primary btn-sm" %>
+  </div>
+<% end %>
 
- <% end %>
+<%# ── Revenue Trend ── %>
+<% if policy(:report).revenue? && current_location %>
+  <%= super_wide_card do %>
+    <h5 class="text-center mb-3">Revenue &mdash; Last 12 Months</h5>
+    <p class="text-center text-muted small mb-3">Based on paid invoices</p>
+    <%= column_chart @report.revenue_by_month,
+          prefix: "$",
+          thousands: ",",
+          colors: ["#4e79a7"],
+          height: "300px",
+          library: {
+            scales: { y: { beginAtZero: true } },
+            plugins: { legend: { display: false } }
+          } %>
+    <div class="text-center mt-3">
+      <%= link_to "Detailed Revenue", revenue_reports_path, class: "btn btn-outline-primary btn-sm" %>
+    </div>
+  <% end %>
+<% end %>
 
+<%# ── Quick Links ── %>
 <%= wide_card do %>
-  <h4 class="display-4 mb-5 text-center">Monetization</h4>
+  <h5 class="text-center mb-3">Reports</h5>
 
-  <% if current_location %>
-    <dl class="row">
-      <dt class="col-lg-6"><%= current_location.name %></dt>
-      <dd class="col"><%= link_to "View Data", monetization_reports_path(location_id: current_location.id), class: "btn btn-primary btn-block" %></dd>
-    </dl>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="list-group list-group-flush">
+        <%= link_to active_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+          Active Members
+          <span class="badge badge-primary badge-pill"><%= @report.active_member_count %></span>
+        <% end %>
+        <%= link_to active_leases_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+          Active Leases
+          <span class="badge badge-primary badge-pill"><%= @report.active_lease_count %></span>
+        <% end %>
+        <%= link_to active_lease_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+          Lease Members
+          <span class="badge badge-primary badge-pill"><%= @report.active_lease_member_count %></span>
+        <% end %>
+        <%= link_to total_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+          Total Members
+          <span class="badge badge-primary badge-pill"><%= @report.all_member_count %></span>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="list-group list-group-flush">
+        <%= link_to membership_breakdown_reports_path, class: "list-group-item list-group-item-action" do %>
+          Membership Breakdown
+        <% end %>
+        <% if policy(:report).revenue? %>
+          <%= link_to revenue_reports_path, class: "list-group-item list-group-item-action" do %>
+            Revenue
+          <% end %>
+        <% end %>
+        <%= link_to checkins_reports_path, class: "list-group-item list-group-item-action" do %>
+          Check-ins
+        <% end %>
+        <%= link_to last_30_day_passes_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+          Day Passes (30 days)
+          <span class="badge badge-primary badge-pill"><%= @report.last_30_day_pass_count %></span>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="row mt-3">
+    <div class="col-md-6">
+      <%= link_to member_csv_reports_path, class: "btn btn-outline-secondary btn-block btn-sm" do %>
+        <i class="fas fa-download"></i> Email Member CSV
+      <% end %>
+    </div>
+    <div class="col-md-6">
+      <%= link_to weekly_updates_path, class: "btn btn-outline-secondary btn-block btn-sm" do %>
+        <i class="fas fa-calendar-week"></i> Weekly Updates
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%# ── Monetization ── %>
+<% if current_location %>
+  <%= wide_card do %>
+    <h5 class="text-center mb-3">Monetization</h5>
+    <%= link_to monetization_reports_path(location_id: current_location.id), class: "btn btn-primary btn-block" do %>
+      View Monetization &mdash; <%= current_location.name %>
+    <% end %>
   <% end %>
 <% end %>

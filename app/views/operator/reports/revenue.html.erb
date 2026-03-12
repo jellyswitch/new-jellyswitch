@@ -1,25 +1,40 @@
 <% title "Revenue" %>
 
 <%= wide_card do %>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
   <h4 class="display-4 text-center">Revenue</h4>
-  <p>
-    Based on paid invoices
-  </p>
-  <div class="row">
-    <div class="col">
-      <%= column_chart @report.revenue_by_month, xtitle: "Revenue", ytitle: "Month", prefix: "$", thousands: "," %>
-    </div>
-  </div>
+  <p class="text-center text-muted">Based on paid invoices</p>
 
-  <div class="row">
-    <div class="col">
-      <%= column_chart @report.revenue_by_week, xtitle: "Revenue", ytitle: "Week", prefix: "$", thousands: "," %>
-    </div>
-  </div>
+  <h5 class="mt-4 mb-3">By Month <small class="text-muted">(Last 12 months)</small></h5>
+  <%= column_chart @report.revenue_by_month,
+        prefix: "$", thousands: ",",
+        colors: ["#4e79a7"],
+        height: "300px",
+        library: {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } }
+        } %>
 
-  <div class="row">
-    <div class="col">
-      <%= column_chart @report.revenue_by_day, xtitle: "Revenue", ytitle: "Day", prefix: "$", thousands: "," %>
-    </div>
-  </div>
+  <h5 class="mt-5 mb-3">By Week <small class="text-muted">(Last 6 months)</small></h5>
+  <%= column_chart @report.revenue_by_week,
+        prefix: "$", thousands: ",",
+        colors: ["#59a14f"],
+        height: "300px",
+        library: {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } }
+        } %>
+
+  <h5 class="mt-5 mb-3">By Day <small class="text-muted">(Last 3 months)</small></h5>
+  <%= column_chart @report.revenue_by_day,
+        prefix: "$", thousands: ",",
+        colors: ["#f28e2b"],
+        height: "300px",
+        library: {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } }
+        } %>
 <% end %>
