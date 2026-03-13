@@ -88,4 +88,31 @@ class UserMailer < ApplicationMailer
     @host = ENV['ASSET_HOST']
     mail to: user.email, subject: "Childcare confirmation", from: @operator.sender_from_address, reply_to: @operator.contact_email
   end
+
+  def product_onboarding_email(user, operator, template, sendable)
+    @user = user
+    @operator = operator
+    @template = template
+    @sendable = sendable
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
+  end
+
+  def product_follow_up_email(user, operator, template, sendable)
+    @user = user
+    @operator = operator
+    @template = template
+    @sendable = sendable
+    @host = ENV['ASSET_HOST']
+    @google_reviews_url = operator.google_reviews_url
+    mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
+  end
+
+  def signup_nudge_email(user, operator, template)
+    @user = user
+    @operator = operator
+    @template = template
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
+  end
 end

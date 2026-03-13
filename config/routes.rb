@@ -111,6 +111,16 @@ Rails.application.routes.draw do
     end
   end
 
+  # Product Email Templates
+  resources :product_email_templates, controller: "operator/product_email_templates", only: [:index, :edit, :update] do
+    member do
+      get :toggle_enabled
+    end
+    collection do
+      get :send_log
+    end
+  end
+
   # Alphabetized Member Resources
   resources :accounting, controller: "operator/accounting" do
     collection do

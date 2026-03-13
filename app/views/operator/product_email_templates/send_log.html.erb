@@ -1,0 +1,42 @@
+<%= list_item do %>
+  <h4 class="display-4 text-center">Email Send Log</h4>
+
+  <% if @sends.any? %>
+    <div class="table-responsive">
+      <table class="table table-sm table-striped">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Recipient</th>
+            <th>Type</th>
+            <th>Product</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @sends.each do |send_record| %>
+            <tr>
+              <td><%= send_record.sent_at&.strftime("%b %d, %Y %l:%M %p") %></td>
+              <td><%= send_record.user&.name || send_record.user&.email %></td>
+              <td><%= send_record.email_type.humanize %></td>
+              <td><%= send_record.sendable_type %></td>
+              <td>
+                <% if send_record.status == "sent" %>
+                  <span class="badge badge-success">Sent</span>
+                <% else %>
+                  <span class="badge badge-danger" title="<%= send_record.error_message %>">Failed</span>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <p class="text-muted text-center mt-4">No emails have been sent yet.</p>
+  <% end %>
+
+  <div class="mt-3">
+    <%= link_to "Back to Automated Emails", product_email_templates_path, class: "btn btn-outline-secondary btn-block" %>
+  </div>
+<% end %>

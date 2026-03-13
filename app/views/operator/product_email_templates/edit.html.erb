@@ -1,0 +1,32 @@
+<%= list_item do %>
+  <h4 class="display-4 text-center">Edit <%= @template.product_label %> <%= @template.email_type_label %> Email</h4>
+
+  <%= form_with(model: @template, url: product_email_template_path(@template), method: :patch, local: true) do |f| %>
+    <%= render "shared/error_messages", model: @template %>
+
+    <div class="form-group">
+      <%= f.label :subject, "Email Subject" %>
+      <%= f.text_field :subject, class: "form-control", placeholder: "Subject line..." %>
+    </div>
+
+    <% if @template.has_delay? %>
+      <div class="form-group">
+        <%= f.label :follow_up_delay_days, "Send Delay (days after purchase/signup)" %>
+        <%= f.number_field :follow_up_delay_days, class: "form-control", min: 1, max: 365 %>
+        <small class="form-text text-muted">Number of days to wait before sending this email.</small>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= f.label :body, "Email Body" %>
+      <%= f.rich_text_area :body, class: "form-control" %>
+      <small class="form-text text-muted">Use the editor to format your email content. Images, links, and rich text are supported.</small>
+    </div>
+
+    <%= f.submit "Save Template", class: "btn btn-primary btn-block" %>
+  <% end %>
+
+  <div class="mt-3">
+    <%= link_to "Back to Automated Emails", product_email_templates_path, class: "btn btn-outline-secondary btn-block" %>
+  </div>
+<% end %>

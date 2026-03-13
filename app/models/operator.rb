@@ -77,6 +77,8 @@ class Operator < ApplicationRecord
   has_many :office_leases
   has_many :locations
   has_many :weekly_updates
+  has_many :product_email_templates
+  has_many :product_email_sends
 
   has_many :childcare_reservations, through: :locations
   has_many :child_profiles, through: :users

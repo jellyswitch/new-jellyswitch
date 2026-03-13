@@ -5,6 +5,7 @@ class Billing::DayPasses::CreateDayPass
   organize(
     Billing::DayPasses::SaveDayPass,
     Billing::DayPasses::CreateStripeInvoice,
-    CreateNotifications
+    CreateNotifications,
+    Billing::DayPasses::ScheduleDayPassEmails
   )
 end

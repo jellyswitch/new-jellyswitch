@@ -8,6 +8,7 @@ class Billing::Reservations::CreateRoomReservation
     Billing::Reservations::GrantFreeDayPass,
     Reservations::ScheduleUpcomingReservationReminder,
     CreateNotificationsAsync,
-    SendAdminNotificationForPaidRoom
+    SendAdminNotificationForPaidRoom,
+    Billing::Reservations::ScheduleReservationEmails
   )
 end

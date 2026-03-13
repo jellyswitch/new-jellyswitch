@@ -1,0 +1,48 @@
+<%= list_item do %>
+  <h4 class="display-4 text-center">Automated Emails</h4>
+  <p class="text-muted text-center mb-4">Configure automated emails sent to members after purchases and signups. Edit the content using the rich text editor.</p>
+
+  <hr />
+  <h5>Onboarding Emails</h5>
+  <p class="text-muted small">Sent immediately after a purchase is made.</p>
+  <dl>
+    <% @onboarding_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Follow-Up Emails</h5>
+  <p class="text-muted small">Sent after a configurable delay to solicit feedback and reviews.</p>
+  <dl>
+    <% @follow_up_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Signup Nudge Email</h5>
+  <p class="text-muted small">Sent to new signups who haven't made a purchase yet.</p>
+  <dl>
+    <% @nudge_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <%= link_to "View Send Log", send_log_product_email_templates_path, class: "btn btn-block btn-outline-secondary" %>
+<% end %>

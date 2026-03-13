@@ -46,5 +46,14 @@ class Users::Save
         Honeybadger.notify(e)
       end
     end
+
+    # Schedule signup nudge email for self-signup users
+    if !context.admin_created
+      begin
+        ScheduleSignupNudgeJob.perform_later(@user.id, context.operator.id)
+      rescue => e
+        Rails.logger.error("Signup nudge schedule error: #{e.class}: #{e.message}")
+      end
+    end
   end
 end

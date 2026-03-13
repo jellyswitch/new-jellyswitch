@@ -65,6 +65,8 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Childcare", path: childcare_index_path}
     end
 
+    items << {title: "Automated Emails", path: product_email_templates_path}
+
     [
       {title: "Data", path: reports_path},
       {title: "Customization", path: customization_path},
@@ -182,6 +184,8 @@ class Navigation::Default < SimpleDelegator
         items << item
       end
     end
+
+    items << {title: "Automated Emails", path: product_email_templates_path}
 
     [
       {title: "Data", path: reports_path},

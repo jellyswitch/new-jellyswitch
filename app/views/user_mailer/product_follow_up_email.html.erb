@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title><%= @template.subject %></title>
+    <style media="all" type="text/css">
+    @media only screen and (max-width: 640px) {
+      .main { border-left-width: 0 !important; border-radius: 0 !important; border-right-width: 0 !important; }
+      .wrapper { padding: 8px !important; }
+      .container { padding: 0 !important; padding-top: 8px !important; width: 100% !important; }
+      .btn a { font-size: 16px !important; max-width: 100% !important; width: 100% !important; }
+    }
+    </style>
+  </head>
+  <body style="font-family: Helvetica, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.4; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" class="body" style="border-collapse: separate; width: 100%; background-color: #f6f6f6;" width="100%" bgcolor="#f6f6f6">
+      <tr>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top;" valign="top">&nbsp;</td>
+        <td class="container" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; margin: 0 auto !important; max-width: 600px; padding: 0; padding-top: 24px; width: 600px;" width="600" valign="top">
+          <div class="content" style="box-sizing: border-box; display: block; margin: 0 auto; max-width: 600px; padding: 0;">
+
+            <% if @operator.logo_image.attached? %>
+            <div class="header" style="margin-bottom: 24px; margin-top: 0; width: 100%;">
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;" width="100%">
+                <tr>
+                  <td style="text-align: center;" align="center">
+                    <img src="<%= polymorphic_url(@operator.logo_image, subdomain: @operator.subdomain) %>" width="70" alt="<%= @operator.name %>" style="border: none; max-width: 100%;">
+                  </td>
+                </tr>
+              </table>
+            </div>
+            <% end %>
+
+            <table border="0" cellpadding="0" cellspacing="0" class="main" style="border-collapse: separate; width: 100%; background: #fff; border-radius: 4px;" width="100%">
+              <tr>
+                <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 24px;" valign="top">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;" width="100%">
+                    <tr>
+                      <td style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top;" valign="top">
+                        <div style="font-family: Helvetica, sans-serif; font-size: 14px; line-height: 1.6;">
+                          <%= @template.body %>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+
+              <!-- CTA Buttons -->
+              <tr>
+                <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 0 24px 24px;" valign="top">
+                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;" width="100%">
+                    <tr>
+                      <td align="center" style="padding-bottom: 12px;">
+                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate;">
+                          <tr>
+                            <td style="border-radius: 4px; background-color: #3498db; text-align: center;" align="center" bgcolor="#3498db">
+                              <a href="<%= home_url(subdomain: @operator.subdomain) %>" target="_blank" style="display: inline-block; color: #ffffff; background-color: #3498db; border: solid 1px #3498db; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Share Your Feedback</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <% if @google_reviews_url.present? %>
+                    <tr>
+                      <td align="center" style="padding-bottom: 12px;">
+                        <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate;">
+                          <tr>
+                            <td style="border-radius: 4px; background-color: #27ae60; text-align: center;" align="center" bgcolor="#27ae60">
+                              <a href="<%= @google_reviews_url %>" target="_blank" style="display: inline-block; color: #ffffff; background-color: #27ae60; border: solid 1px #27ae60; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Leave a Google Review</a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                    <% end %>
+                  </table>
+                </td>
+              </tr>
+
+              <% if @operator.has_mobile_app_links? %>
+              <tr>
+                <td class="wrapper" style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top; box-sizing: border-box; padding: 0 24px 24px;" valign="top">
+                  <p style="font-family: Helvetica, sans-serif; font-size: 14px; text-align: center; margin-bottom: 16px;">Download our app:</p>
+                  <%= render "user_mailer/app_links", operator: @operator, host: @host %>
+                </td>
+              </tr>
+              <% end %>
+            </table>
+
+            <div class="footer" style="clear: both; padding-top: 24px; text-align: center; width: 100%;">
+              <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%;" width="100%">
+                <tr>
+                  <td style="font-family: Helvetica, sans-serif; vertical-align: top; padding-bottom: 24px; font-size: 12px; color: #999999; text-align: center;" valign="top" align="center">
+                    <span style="color: #999999; font-size: 12px; text-align: center;"><%= @operator.name %></span>
+                  </td>
+                </tr>
+              </table>
+            </div>
+
+          </div>
+        </td>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; vertical-align: top;" valign="top">&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>

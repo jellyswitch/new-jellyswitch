@@ -5,6 +5,7 @@ class Billing::Subscription::CreateSubscription
   organize(
     Billing::Subscription::SaveSubscription,
     Billing::Subscription::CreateStripeSubscription,
-    CreateNotifications
+    CreateNotifications,
+    Billing::Subscription::ScheduleSubscriptionEmails
   )
 end
