@@ -39,7 +39,8 @@ function doStripe() {
         if (result.error) {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;
-          document.getElementById('stripe-submit').disabled = false;
+          var submitButton = document.getElementById('stripe-submit');
+          window.Rails.enableElement(submitButton);
         } else {
           stripeTokenHandler(result.token);
         }
