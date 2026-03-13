@@ -49,6 +49,14 @@ class Operator::LandingController < Operator::BaseController
     end
   end
 
+  def approval_status
+    if logged_in? && approved?
+      render json: { approved: true }
+    else
+      render json: { approved: false }
+    end
+  end
+
   def activate
     if current_user.out_of_band?
       result = Billing::Subscription::ActivatePendingSubscription.call(

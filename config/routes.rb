@@ -79,6 +79,7 @@ Rails.application.routes.draw do
   get "landing/index", to: "operator/landing#index", as: :landing
   get "/home", to: "operator/landing#home"
   get "/wait", to: "operator/landing#wait"
+  get "/approval_status", to: "operator/landing#approval_status"
   get "/choose", to: "operator/landing#choose"
   get "/activate", to: "operator/landing#activate"
   post "/activate_membership", to: "operator/landing#activate_membership"
