@@ -52,13 +52,20 @@ export default class extends Controller {
     });
     this.pendingAjax = [];
 
-    // Force close modal and clean up backdrop
-    if (this.isModalOpen) {
-      $("#modal-view-event-add").modal("hide");
-      $(".modal-backdrop").remove();
-      $("body").removeClass("modal-open").css("padding-right", "");
-    }
+    // Clean up modal state without triggering Bootstrap modal methods
+    // (calling .modal("hide") during Turbo teardown can error on stale DOM)
+    $(".modal-backdrop").remove();
+    $("body").removeClass("modal-open").css("padding-right", "");
     this.isModalOpen = false;
+
+    // Destroy the fullCalendar instance to prevent memory leaks
+    try {
+      if ($("#reservation-fullcalendar").length) {
+        $("#reservation-fullcalendar").fullCalendar("destroy");
+      }
+    } catch (e) {
+      // Ignore errors during teardown
+    }
   }
 
   initializeCalendar() {

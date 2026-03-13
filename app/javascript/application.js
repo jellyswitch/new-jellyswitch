@@ -43,8 +43,10 @@ ActiveStorage.start();
   })
 
   $doc.on('turbo:before-visit', function () {
-    $('.modal').modal('hide');
-    $('body').removeClass('modal-open');
+    // Remove modal backdrops and body classes directly instead of
+    // calling .modal('hide') which can error during Turbo teardown
+    $('.modal.show').removeClass('show').attr('aria-hidden', 'true').css('display', 'none');
+    $('body').removeClass('modal-open').css('padding-right', '');
     $('.modal-backdrop').remove();
   });
 })()

@@ -8,7 +8,7 @@
           <%= image_tag "profile-125x125.jpg", class: "img-thumbnail", style: "height: 100px;" %>
         <%- end %>
       </div>
-      <div class="ml-2">
+      <div class="ml-2 flex-grow-1">
         <p class="mb-1">
           <%- if policy(member).index? %>
             <%= link_to member.name, user_path(member) %>
@@ -26,6 +26,13 @@
         <span class="badge badge-info">Member</span>
         <br />
       </div>
+      <% if policy(member).remove_from_organization? && member.member_of_organization? %>
+        <div class="ml-auto d-flex align-items-center">
+          <%= link_to user_remove_from_organization_path(member), class: "btn btn-outline-danger btn-sm", data: { confirm: "Remove #{member.name} from this group?" } do %>
+            <i class="fas fa-times"></i> Remove
+          <% end %>
+        </div>
+      <% end %>
     </div>
     <div class="row">
       <p class="card-text"><%= member.bio %></p>
