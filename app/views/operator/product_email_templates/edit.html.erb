@@ -11,9 +11,9 @@
 
     <% if @template.has_delay? %>
       <div class="form-group">
-        <%= f.label :follow_up_delay_days, "Send Delay (days after purchase/signup)" %>
-        <%= f.number_field :follow_up_delay_days, class: "form-control", min: 1, max: 365 %>
-        <small class="form-text text-muted">Number of days to wait before sending this email.</small>
+        <%= f.label :follow_up_delay_days, "Send Delay (days)" %>
+        <%= f.number_field :follow_up_delay_days, class: "form-control", min: 0, max: 365 %>
+        <small class="form-text text-muted"><%= @template.delay_description %></small>
       </div>
     <% end %>
 

@@ -80,6 +80,19 @@ class ProductEmailTemplate < ApplicationRecord
     email_type.in?(%w[follow_up nudge])
   end
 
+  def delay_description
+    case product_type
+    when "day_pass"
+      "Days after the day pass date. Email sends at noon. Set to 0 to send midway through their visit day."
+    when "reservation"
+      "Days after the reservation ends. Set to 0 to send right after their booking."
+    when "signup_nudge"
+      "Days after signup to send if they haven't made a purchase."
+    else
+      "Days after purchase to send the follow-up email."
+    end
+  end
+
   # Merge tags available for this template's product type
   def available_merge_tags
     tags = [
