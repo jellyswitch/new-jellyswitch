@@ -79,4 +79,85 @@ class ProductEmailTemplate < ApplicationRecord
   def has_delay?
     email_type.in?(%w[follow_up nudge])
   end
+
+  # Merge tags available for this template's product type
+  def available_merge_tags
+    tags = [
+      { tag: "{{first_name}}", label: "First Name", description: "Member's first name" },
+      { tag: "{{full_name}}", label: "Full Name", description: "Member's full name" },
+      { tag: "{{space_name}}", label: "Space Name", description: "Your coworking space name" }
+    ]
+
+    case product_type
+    when "day_pass"
+      tags += [
+        { tag: "{{date}}", label: "Date", description: "Day pass date" },
+        { tag: "{{day_pass_type}}", label: "Day Pass Type", description: "Type of day pass" }
+      ]
+    when "reservation"
+      tags += [
+        { tag: "{{date}}", label: "Date", description: "Reservation date" },
+        { tag: "{{time}}", label: "Time", description: "Reservation start time" },
+        { tag: "{{duration}}", label: "Duration", description: "Reservation duration" },
+        { tag: "{{room_name}}", label: "Room Name", description: "Name of reserved room" }
+      ]
+    when "office_lease"
+      tags += [
+        { tag: "{{office_name}}", label: "Office Name", description: "Leased office name" },
+        { tag: "{{start_date}}", label: "Start Date", description: "Lease start date" },
+        { tag: "{{end_date}}", label: "End Date", description: "Lease end date" }
+      ]
+    when "membership"
+      tags += [
+        { tag: "{{plan_name}}", label: "Plan Name", description: "Membership plan name" },
+        { tag: "{{start_date}}", label: "Start Date", description: "Membership start date" }
+      ]
+    end
+
+    tags
+  end
+
+  # Replace merge tags in body content with actual values
+  def self.replace_merge_tags(content, user:, operator:, sendable: nil)
+    return content if content.blank?
+
+    result = content.to_s
+
+    # Universal tags
+    first_name = user.name.to_s.split(" ").first || user.name.to_s
+    result = result.gsub("{{first_name}}", first_name)
+    result = result.gsub("{{full_name}}", user.name.to_s)
+    result = result.gsub("{{space_name}}", operator.name.to_s)
+
+    # Product-specific tags
+    if sendable.present?
+      case sendable
+      when DayPass
+        result = result.gsub("{{date}}", sendable.day&.strftime("%B %-d, %Y").to_s)
+        result = result.gsub("{{day_pass_type}}", sendable.day_pass_type&.name.to_s)
+      when Reservation
+        result = result.gsub("{{date}}", sendable.datetime_in&.strftime("%B %-d, %Y").to_s)
+        result = result.gsub("{{time}}", sendable.datetime_in&.strftime("%-I:%M %p").to_s)
+        duration_mins = sendable.minutes
+        duration_text = if duration_mins >= 60
+          hours = duration_mins / 60
+          mins = duration_mins % 60
+          mins > 0 ? "#{hours}h #{mins}m" : "#{hours} #{"hour".pluralize(hours)}"
+        else
+          "#{duration_mins} minutes"
+        end
+        result = result.gsub("{{duration}}", duration_text)
+        result = result.gsub("{{room_name}}", sendable.room&.name.to_s)
+      when OfficeLease
+        result = result.gsub("{{office_name}}", sendable.office&.name.to_s)
+        result = result.gsub("{{start_date}}", sendable.start_date&.strftime("%B %-d, %Y").to_s)
+        result = result.gsub("{{end_date}}", sendable.end_date&.strftime("%B %-d, %Y").to_s)
+      when Subscription
+        result = result.gsub("{{plan_name}}", sendable.plan&.name.to_s)
+        result = result.gsub("{{start_date}}", sendable.start_date&.strftime("%B %-d, %Y").to_s)
+      end
+    end
+
+    result
+  end
 end

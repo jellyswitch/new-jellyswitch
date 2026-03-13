@@ -17,10 +17,24 @@
       </div>
     <% end %>
 
-    <div class="form-group">
+    <div class="form-group" data-controller="merge-tags">
       <%= f.label :body, "Email Body" %>
+
+      <div class="mb-2">
+        <small class="text-muted d-block mb-1"><strong>Insert merge tag:</strong> <span class="text-muted">(click to insert at cursor)</span></small>
+        <% @template.available_merge_tags.each do |mt| %>
+          <button type="button"
+                  class="btn btn-outline-secondary btn-sm mr-1 mb-1"
+                  data-action="merge-tags#insert"
+                  data-tag="<%= mt[:tag] %>"
+                  title="<%= mt[:description] %>">
+            <i class="fas fa-code"></i> <%= mt[:label] %>
+          </button>
+        <% end %>
+      </div>
+
       <%= f.rich_text_area :body, class: "form-control" %>
-      <small class="form-text text-muted">Use the editor to format your email content. Images, links, and rich text are supported.</small>
+      <small class="form-text text-muted">Use the editor to format your email content. Merge tags will be replaced with actual values when the email is sent.</small>
     </div>
 
     <%= f.submit "Save Template", class: "btn btn-primary btn-block" %>

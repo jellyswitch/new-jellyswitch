@@ -95,6 +95,7 @@ class UserMailer < ApplicationMailer
     @template = template
     @sendable = sendable
     @host = ENV['ASSET_HOST']
+    @processed_body = process_merge_tags(template, user, operator, sendable)
     mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
   end
 
@@ -105,6 +106,7 @@ class UserMailer < ApplicationMailer
     @sendable = sendable
     @host = ENV['ASSET_HOST']
     @google_reviews_url = operator.google_reviews_url
+    @processed_body = process_merge_tags(template, user, operator, sendable)
     mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
   end
 
@@ -113,6 +115,15 @@ class UserMailer < ApplicationMailer
     @operator = operator
     @template = template
     @host = ENV['ASSET_HOST']
+    @processed_body = process_merge_tags(template, user, operator)
     mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
+  end
+
+  private
+
+  def process_merge_tags(template, user, operator, sendable = nil)
+    return "" if template.body.blank?
+    body_html = template.body.to_s
+    ProductEmailTemplate.replace_merge_tags(body_html, user: user, operator: operator, sendable: sendable).html_safe
   end
 end
