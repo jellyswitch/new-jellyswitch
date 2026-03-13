@@ -410,4 +410,14 @@ Rails.application.routes.draw do
   resources :weekly_updates, controller: "operator/weekly_updates"
 
   resources :mentions, controller: "operator/mentions", only: [:index]
+
+  # Block common bot/scanner probe paths (WordPress, PHP, etc.)
+  match '/wp-json(/*path)', to: proc { [404, {}, ['']] }, via: :all
+  match '/wp-admin(/*path)', to: proc { [404, {}, ['']] }, via: :all
+  match '/wp-login.php', to: proc { [404, {}, ['']] }, via: :all
+  match '/wp-content(/*path)', to: proc { [404, {}, ['']] }, via: :all
+  match '/wp-includes(/*path)', to: proc { [404, {}, ['']] }, via: :all
+  match '/xmlrpc.php', to: proc { [404, {}, ['']] }, via: :all
+  match '/.env', to: proc { [404, {}, ['']] }, via: :all
+  match '/vendor(/*path)', to: proc { [404, {}, ['']] }, via: :all
 end
