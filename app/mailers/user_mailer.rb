@@ -63,4 +63,29 @@ class UserMailer < ApplicationMailer
     @host = ENV['ASSET_HOST']
     mail to: @user.email, subject: "Cancelled: #{@event_name}", from: @operator.sender_from_address, reply_to: @operator.contact_email
   end
+
+  def announcement_email(announcement, recipient)
+    @announcement = announcement
+    @user = recipient
+    @operator = announcement.operator
+    @host = ENV['ASSET_HOST']
+    reply_to = "#{announcement.user.name} <#{@operator.contact_email}>"
+    mail to: recipient.email, subject: "Announcement from #{@operator.name}", from: @operator.sender_from_address, reply_to: reply_to
+  end
+
+  def onboarding_email(user, operator, password)
+    @user = user
+    @operator = operator
+    @password = password
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: "Welcome to #{@operator.name}!", from: @operator.sender_from_address, reply_to: @operator.contact_email
+  end
+
+  def childcare_confirmation_email(childcare_reservation, user)
+    @reservation = childcare_reservation
+    @user = user
+    @operator = user.operator
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: "Childcare confirmation", from: @operator.sender_from_address, reply_to: @operator.contact_email
+  end
 end

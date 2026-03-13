@@ -1,0 +1,7 @@
+<h1>Announcement from <%= @operator.name %></h1>
+<p>
+<%= simple_format(@announcement.body) %>
+</p>
+<p style="font-size: 12px; color: #999999;">
+<%= @operator.name %>, <%= @operator.building_address %>
+</p>

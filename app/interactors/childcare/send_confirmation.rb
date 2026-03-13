@@ -4,6 +4,7 @@ class Childcare::SendConfirmation
   delegate :operator, :child_profile, :childcare_slot, :childcare_reservation, :date, to: :context
 
   def call
-    JellyswitchMail.new(operator, dry_run: !Rails.env.production?).childcare_confirmation(childcare_reservation, childcare_reservation.child_profile.user)
+    user = childcare_reservation.child_profile.user
+    UserMailer.childcare_confirmation_email(childcare_reservation, user).deliver_now
   end
 end

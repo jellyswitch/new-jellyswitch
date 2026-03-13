@@ -10,6 +10,6 @@ class Onboarding::SetPasswordAndSendEmail
       context.fail!(message: "Unable to update password (#{errors_for(user)}).")
     end
 
-    JellyswitchMail.new(user.operator, dry_run: !Rails.env.production?).onboarding(user, context.password)
+    UserMailer.onboarding_email(user, user.operator, context.password).deliver_now
   end
 end

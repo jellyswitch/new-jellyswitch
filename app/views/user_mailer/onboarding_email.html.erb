@@ -1,0 +1,31 @@
+<h1>Welcome to <%= @operator.name %>!</h1>
+<p>Hi <%= @user.name || "there" %>,</p>
+<p>
+Exciting news! <%= @operator.name %> now has its very own smartphone app for iPhone and Android! The new app will allow you to:
+</p>
+<ul>
+  <li>Manage your membership</li>
+  <li>See all of the events happening at <%= @operator.name %></li>
+  <li>Book conference rooms</li>
+</ul>
+<p>
+We've already created an account for you, and transferred over all of your member information, including your membership plan. Just log in with the following credentials:
+</p>
+<p>
+<strong>Username:</strong> <%= @user.email %><br>
+<strong>Password:</strong> <%= @password %>
+</p>
+<p>
+<em>Be sure to change your password as soon as possible!</em>
+</p>
+<p>
+I hope the app gives you an even better experience at <%= @operator.name %>. Please let me know if there's anything I can do to help.
+</p>
+<p>
+Thanks, and have a great week!
+</p>
+<p>
+<%= @operator.contact_name %>,<br>
+<%= @operator.name %>
+</p>
+<%= render "user_mailer/app_links", operator: @operator, host: @host %>
