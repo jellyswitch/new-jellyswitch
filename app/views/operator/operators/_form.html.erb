@@ -63,6 +63,12 @@
     <small class="form-text text-muted">Used in follow-up emails to link members to your Google Reviews page.</small>
   </div>
 
+  <div class="form-group">
+    <%= f.label :renewal_reminder_days, "Membership Renewal Reminder (days before)" %>
+    <%= f.number_field :renewal_reminder_days, class: "form-control", min: 0, max: 90, placeholder: "7" %>
+    <small class="form-text text-muted">Send members a reminder email this many days before their membership renews. Set to 0 to disable.</small>
+  </div>
+
   <div class="form-group custom-file mb-3">
     <label class="custom-file-label" for="customFile">Upload Terms of Service</label>
     <%= f.file_field :terms_of_service, placeholder: "Terms of Service", class: "custom-file-input" %>

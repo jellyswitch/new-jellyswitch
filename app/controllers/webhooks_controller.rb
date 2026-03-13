@@ -20,9 +20,21 @@ class WebhooksController < ApplicationController
           error(result.message)
         end
       end
-    when "invoice.payment_succeeded", "invoice.payment_failed", "invoice.voided", "invoice.marked_uncollectible"
+    when "invoice.payment_succeeded", "invoice.voided", "invoice.marked_uncollectible"
       if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
         update_status(@event.data.object)
+      end
+    when "invoice.payment_failed"
+      if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
+        update_status(@event.data.object)
+
+        # Send payment failed recovery email
+        begin
+          invoice = Invoice.find_by(stripe_invoice_id: @event.data.object.id)
+          SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id) if invoice
+        rescue => e
+          Rails.logger.error("Payment failed email schedule error: #{e.class}: #{e.message}")
+        end
       end
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)

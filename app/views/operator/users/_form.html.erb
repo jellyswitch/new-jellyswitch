@@ -37,6 +37,45 @@
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
+    <div class="form-check col">
+      <%= f.check_box :marketing_consent, class: "form-check-input", id: "marketing_consent" %>
+      <%= f.label :marketing_consent, "I'd like to receive events and special promotions", class: "form-check-label", for: "marketing_consent" %>
+    </div>
+    <div class="col-1"></div>
+  </div>
+  <% if current_tenant.terms_of_service.attached? %>
+    <div class="form-group row">
+      <div class="col-1"></div>
+      <div class="form-check col">
+        <%= f.check_box :terms_accepted, class: "form-check-input", id: "terms_accepted", required: true %>
+        <%= f.label :terms_accepted, class: "form-check-label", for: "terms_accepted" do %>
+          I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Use</a>
+        <% end %>
+      </div>
+      <div class="col-1"></div>
+    </div>
+
+    <div class="modal fade" id="termsModal" tabindex="-1" role="dialog" aria-labelledby="termsModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="termsModalLabel">Terms of Use</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <iframe src="<%= url_for(current_tenant.terms_of_service) %>" width="100%" height="500" frameborder="0" style="border: none;"></iframe>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+  <div class="form-group row">
+    <div class="col-1"></div>
     <%= f.submit label, class: "form-control btn btn-primary col", data: { acc: 'register' } %>
     <div class="col-1"></div>
   </div>

@@ -83,13 +83,14 @@ class User < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Auth stuff
-  attr_accessor :remember_token, :reset_token, :raw_confirmation_token
+  attr_accessor :remember_token, :reset_token, :raw_confirmation_token, :terms_accepted
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
   validates :name, presence: true
   validates :phone, presence: true
   validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
+  validate :terms_must_be_accepted, on: :create
   has_secure_password
 
   # Scopes
@@ -509,4 +510,14 @@ class User < ApplicationRecord
   end
 
   private_constant :UserPermissions
+
+  private
+
+  def terms_must_be_accepted
+    return unless operator&.terms_of_service&.attached?
+    return if terms_accepted_at.present?
+    return if terms_accepted == "1" || terms_accepted == true
+
+    errors.add(:terms_accepted, "must be accepted to create an account")
+  end
 end

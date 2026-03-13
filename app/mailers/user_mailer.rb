@@ -110,6 +110,22 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: template.subject, from: operator.sender_from_address, reply_to: operator.contact_email
   end
 
+  def payment_failed_email(user, operator, invoice)
+    @user = user
+    @operator = operator
+    @invoice = invoice
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: "Action Required: Your recent payment failed", from: operator.sender_from_address, reply_to: operator.contact_email
+  end
+
+  def renewal_reminder_email(user, operator, subscription)
+    @user = user
+    @operator = operator
+    @subscription = subscription
+    @host = ENV['ASSET_HOST']
+    mail to: user.email, subject: "Your membership renews soon", from: operator.sender_from_address, reply_to: operator.contact_email
+  end
+
   def signup_nudge_email(user, operator, template)
     @user = user
     @operator = operator

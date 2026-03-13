@@ -14,6 +14,11 @@ class Users::Save
 
     @user.operator = context.operator
 
+    # Set terms_accepted_at when user accepts terms
+    if @user.terms_accepted == "1" && @user.terms_accepted_at.blank?
+      @user.terms_accepted_at = Time.current
+    end
+
     # if user chose an original location and not having current location set, set current location to original location
     if @user.original_location_id.present? && @user.current_location_id.blank?
       @user.current_location_id = @user.original_location_id
