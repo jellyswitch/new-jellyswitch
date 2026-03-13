@@ -134,6 +134,16 @@ class Operator < ApplicationRecord
     email_enabled || Rails.env.development?
   end
 
+  # Returns formatted "From" address for emails.
+  # Uses operator's sender_email if set, otherwise falls back to Jellyswitch default.
+  def sender_from_address
+    if sender_email.present?
+      "#{name} <#{sender_email}>"
+    else
+      'Jellyswitch <noreply@jellyswitch.com>'
+    end
+  end
+
   def demo?
     billing_state == "demo"
   end

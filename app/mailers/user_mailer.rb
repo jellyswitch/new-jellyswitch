@@ -7,7 +7,7 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
     @reset_token = reset_token || user.reset_token
-    mail to: user.email, subject: "#{@operator.name} password reset", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: @operator.contact_email,
+    mail to: user.email, subject: "#{@operator.name} password reset", from: @operator.sender_from_address, reply_to: @operator.contact_email,
     'X-SMTPAPI' => {
       "filters" => {
         "clicktrack" => {
@@ -29,7 +29,7 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
     @token = token
-    mail to: user.email, subject: "Confirm your email for #{@operator.name}", from: 'Jellyswitch <noreply@jellyswitch.com>', reply_to: @operator.contact_email,
+    mail to: user.email, subject: "Confirm your email for #{@operator.name}", from: @operator.sender_from_address, reply_to: @operator.contact_email,
     'X-SMTPAPI' => {
       "filters" => {
         "clicktrack" => {
@@ -52,7 +52,7 @@ class UserMailer < ApplicationMailer
     @event = event
 
     @host = ENV['ASSET_HOST']
-    mail to: @user.email, subject: "You're all set for #{@event.title}!", from: "noreply@jellyswitch.com", reply_to: @user.operator.contact_email
+    mail to: @user.email, subject: "You're all set for #{@event.title}!", from: @user.operator.sender_from_address, reply_to: @user.operator.contact_email
   end
 
   def event_cancellation(user, event_name, operator)
@@ -61,6 +61,6 @@ class UserMailer < ApplicationMailer
     @operator = operator
 
     @host = ENV['ASSET_HOST']
-    mail to: @user.email, subject: "Cancelled: #{@event_name}", from: "noreply@jellyswitch.com", reply_to: @operator.contact_email
+    mail to: @user.email, subject: "Cancelled: #{@event_name}", from: @operator.sender_from_address, reply_to: @operator.contact_email
   end
 end

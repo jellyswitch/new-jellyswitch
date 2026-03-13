@@ -492,6 +492,7 @@ ActiveRecord::Schema[7.1].define(version: 2025_06_12_210000) do
     t.boolean "crm_enabled", default: false, null: false
     t.string "bundle_id"
     t.string "firebase_project_id"
+    t.string "sender_email"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
