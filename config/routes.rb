@@ -422,6 +422,12 @@ Rails.application.routes.draw do
 
   resources :mentions, controller: "operator/mentions", only: [:index]
 
+  # Return proper empty responses for common bot/crawler requests
+  match '/.well-known/assetlinks.json', to: proc { [200, { 'Content-Type' => 'application/json' }, ['[]']] }, via: :get
+  match '/sitemap.xml', to: proc { [404, { 'Content-Type' => 'application/xml' }, ['']] }, via: :get
+  match '/sitemap_index.xml', to: proc { [404, { 'Content-Type' => 'application/xml' }, ['']] }, via: :get
+  match '/robots.txt', to: proc { [200, { 'Content-Type' => 'text/plain' }, ["User-agent: *\nAllow: /\n"]] }, via: :get
+
   # Block common bot/scanner probe paths (WordPress, PHP, etc.)
   match '/wp-json(/*path)', to: proc { [404, {}, ['']] }, via: :all
   match '/wp-admin(/*path)', to: proc { [404, {}, ['']] }, via: :all
