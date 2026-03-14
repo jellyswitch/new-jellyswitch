@@ -7,6 +7,13 @@ class UserMailer < ApplicationMailer
     @user = user
     @operator = operator
     @reset_token = reset_token || user.reset_token
+
+    if @reset_token.blank?
+      Rails.logger.error("PasswordReset: reset_token is nil for user #{user.id} (#{user.email})")
+      Honeybadger.notify("Password reset token is nil", context: { user_id: user.id, email: user.email, operator_id: operator.id })
+      return
+    end
+
     mail to: user.email, subject: "#{@operator.name} password reset", from: @operator.sender_from_address, reply_to: @operator.contact_email,
     'X-SMTPAPI' => {
       "filters" => {
