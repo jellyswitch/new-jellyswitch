@@ -437,4 +437,8 @@ Rails.application.routes.draw do
   match '/xmlrpc.php', to: proc { [404, {}, ['']] }, via: :all
   match '/.env', to: proc { [404, {}, ['']] }, via: :all
   match '/vendor(/*path)', to: proc { [404, {}, ['']] }, via: :all
+
+  # Catch bot scanners using prefixed WordPress paths (e.g. /cms/wp-includes/, /wp2/wp-admin/)
+  match '/*path', to: proc { [404, {}, ['']] }, via: :all,
+    constraints: ->(req) { req.path.match?(%r{/wp-(?:includes|content|admin|json|login)|/xmlrpc\.php|/wlwmanifest\.xml|\.php$}) }
 end
