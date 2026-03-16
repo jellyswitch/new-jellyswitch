@@ -33,8 +33,8 @@
         <% end %>
       </div>
 
-      <%= f.rich_text_area :body, class: "form-control" %>
-      <small class="form-text text-muted">Use the editor to format your email content. Merge tags will be replaced with actual values when the email is sent.</small>
+      <%= f.rich_text_area :body %>
+      <small class="form-text text-muted mt-2 d-block">Use the editor to format your email content. Merge tags will be replaced with actual values when the email is sent.</small>
     </div>
 
     <%= f.submit "Save Template", class: "btn btn-primary btn-block" %>

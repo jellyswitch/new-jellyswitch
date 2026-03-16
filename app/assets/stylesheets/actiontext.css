@@ -33,4 +33,6 @@
 trix-editor {
   max-height: 400px;
   overflow-y: auto;
+  display: block;
+  position: relative;
 }
