@@ -147,6 +147,7 @@ class UserMailer < ApplicationMailer
   def process_merge_tags(template, user, operator, sendable = nil)
     return "" if template.body.blank?
     body_html = template.body.to_s
-    ProductEmailTemplate.replace_merge_tags(body_html, user: user, operator: operator, sendable: sendable).html_safe
+    host = ENV['ASSET_HOST']
+    ProductEmailTemplate.replace_merge_tags(body_html, user: user, operator: operator, sendable: sendable, host: host).html_safe
   end
 end

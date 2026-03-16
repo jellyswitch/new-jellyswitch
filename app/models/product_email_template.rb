@@ -127,11 +127,16 @@ class ProductEmailTemplate < ApplicationRecord
       ]
     end
 
+    if operator&.has_mobile_app_links?
+      tags << { tag: "{{app_store_badge}}", label: "App Store Badge", description: "Apple App Store download badge with link" }
+      tags << { tag: "{{play_store_badge}}", label: "Play Store Badge", description: "Google Play Store download badge with link" }
+    end
+
     tags
   end
 
   # Replace merge tags in body content with actual values
-  def self.replace_merge_tags(content, user:, operator:, sendable: nil)
+  def self.replace_merge_tags(content, user:, operator:, sendable: nil, host: nil)
     return content if content.blank?
 
     result = content.to_s
@@ -141,6 +146,14 @@ class ProductEmailTemplate < ApplicationRecord
     result = result.gsub("{{first_name}}", first_name)
     result = result.gsub("{{full_name}}", user.name.to_s)
     result = result.gsub("{{space_name}}", operator.name.to_s)
+
+    # App store badge tags
+    if operator.has_mobile_app_links? && host.present?
+      app_store_html = '<a href="' + operator.ios_url.to_s + '"><img src="' + ActionController::Base.helpers.asset_url('appstore.png', host: host) + '" width="135" height="40" alt="Download on the App Store" style="border: none;"></a>'
+      play_store_html = '<a href="' + operator.android_url.to_s + '"><img src="' + ActionController::Base.helpers.asset_url('playstore.png', host: host) + '" width="135" height="40" alt="Get it on Google Play" style="border: none;"></a>'
+      result = result.gsub("{{app_store_badge}}", app_store_html)
+      result = result.gsub("{{play_store_badge}}", play_store_html)
+    end
 
     # Product-specific tags
     if sendable.present?
