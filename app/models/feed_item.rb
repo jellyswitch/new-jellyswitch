@@ -75,7 +75,7 @@ class FeedItem < ApplicationRecord
     when "paid-room-reservation"
       "booked a paid meeting room"
     when "feedback"
-      "left feedback"
+      "sent a message"
     when "refund"
       "was issued a refund"
     when "subscription"

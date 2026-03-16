@@ -1,15 +1,15 @@
-<% title "Feedback Thread" %>
+<% title "Conversation" %>
 
 <%= breadcrumb do %>
   <% if current_user.admin_or_manager?(current_location) %>
-    <li class="breadcrumb-item"><%= link_to "Member Feedback", member_feedbacks_path %></li>
+    <li class="breadcrumb-item"><%= link_to "Messages", member_feedbacks_path %></li>
   <% end %>
-  <li class="breadcrumb-item active">Thread</li>
+  <li class="breadcrumb-item active">Conversation</li>
 <% end %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center">Feedback Thread</h4>
+    <h4 class="display-4 text-center">Conversation</h4>
 
     <div class="feedback-chat" id="feedback-chat">
       <%# Original feedback message %>
