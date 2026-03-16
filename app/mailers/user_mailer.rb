@@ -148,6 +148,31 @@ class UserMailer < ApplicationMailer
     return "" if template.body.blank?
     body_html = template.body.to_s
     host = ENV['ASSET_HOST']
+
+    # Replace relative ActiveStorage blob URLs with absolute service URLs
+    # so attachments work in email clients
+    body_html = replace_blob_urls(body_html)
+
     ProductEmailTemplate.replace_merge_tags(body_html, user: user, operator: operator, sendable: sendable, host: host).html_safe
+  end
+
+  def replace_blob_urls(html)
+    # Match ActiveStorage blob URLs (redirect, proxy, or representation patterns)
+    html.gsub(%r{(href|src)="(/rails/active_storage/(?:blobs|representations)/(?:redirect|proxy)/([^/]+)/[^"]+)"}) do
+      attr = $1
+      path = $2
+      signed_id = $3
+      begin
+        blob = ActiveStorage::Blob.find_signed(signed_id)
+        if blob
+          "#{attr}=\"#{blob.url}\""
+        else
+          "#{attr}=\"#{path}\""
+        end
+      rescue => e
+        Rails.logger.error("Blob URL replacement error: #{e.message}")
+        "#{attr}=\"#{path}\""
+      end
+    end
   end
 end
