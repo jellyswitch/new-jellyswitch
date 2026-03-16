@@ -46,11 +46,10 @@
   <% if current_tenant.terms_of_service.attached? %>
     <div class="form-group row">
       <div class="col-1"></div>
-      <div class="form-check col">
-        <%= f.check_box :terms_accepted, class: "form-check-input", id: "terms_accepted", required: true %>
-        <%= f.label :terms_accepted, class: "form-check-label", for: "terms_accepted" do %>
-          I agree to the <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Use</a>
-        <% end %>
+      <div class="col d-flex align-items-center" style="gap: 8px;">
+        <%= f.check_box :terms_accepted, id: "terms_accepted", required: true, style: "width: 22px; height: 22px; min-width: 22px; margin: 0; cursor: pointer;" %>
+        <label for="terms_accepted" style="margin: 0; cursor: pointer;">I agree to the</label>
+        <a href="#" data-toggle="modal" data-target="#termsModal">Terms of Use</a>
       </div>
       <div class="col-1"></div>
     </div>
