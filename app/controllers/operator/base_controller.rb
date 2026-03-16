@@ -105,14 +105,14 @@ class Operator::BaseController < ApplicationController
     return if controller_name == "users" && action_name.in?(%w[edit update])
     return if request.format.json? || request.xhr?
 
+    # Only enforce profile completion for users missing a phone number,
+    # which indicates they were created by an admin without full details.
+    # We don't check TOS here because existing members who signed up before
+    # TOS was added would get blocked from using the app.
     needs_phone = current_user.phone.blank?
-    needs_tos = current_user.terms_accepted_at.blank? && current_tenant&.terms_of_service&.attached?
 
-    if needs_phone || needs_tos
-      messages = []
-      messages << "add your phone number" if needs_phone
-      messages << "accept the Terms of Service" if needs_tos
-      flash[:warning] = "Please #{messages.join(' and ')} to continue."
+    if needs_phone
+      flash[:warning] = "Please add your phone number to continue."
       redirect_to edit_user_path(current_user)
     end
   end
