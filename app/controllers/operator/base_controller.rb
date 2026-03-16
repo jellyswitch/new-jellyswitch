@@ -100,21 +100,9 @@ class Operator::BaseController < ApplicationController
   end
 
   def require_complete_profile
-    return unless logged_in? && current_user.present?
-    return if controller_name.in?(%w[sessions landing])
-    return if controller_name == "users" && action_name.in?(%w[edit update])
-    return if request.format.json? || request.xhr?
-
-    # Only enforce profile completion for users missing a phone number,
-    # which indicates they were created by an admin without full details.
-    # We don't check TOS here because existing members who signed up before
-    # TOS was added would get blocked from using the app.
-    needs_phone = current_user.phone.blank?
-
-    if needs_phone
-      flash[:warning] = "Please add your phone number to continue."
-      redirect_to edit_user_path(current_user)
-    end
+    # Disabled: was blocking existing members who had blank phone or TOS fields.
+    # Profile completion is encouraged via the edit form banner but no longer
+    # enforced via redirect, so members can always access doors and the app.
   end
 
   def store_location
