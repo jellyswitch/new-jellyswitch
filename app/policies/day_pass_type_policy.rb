@@ -27,4 +27,12 @@ class DayPassTypePolicy < ApplicationPolicy
   def destroy?
     (admin? || general_manager?) && billing_enabled?
   end
+
+  def archived?
+    (admin? || community_manager? || general_manager?) && billing_enabled?
+  end
+
+  def unarchive?
+    (admin? || general_manager?) && billing_enabled?
+  end
 end

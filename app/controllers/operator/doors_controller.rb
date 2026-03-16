@@ -45,13 +45,32 @@ class Operator::DoorsController < Operator::BaseController
     find_door
     authorize @door, :destroy?
 
-    if @door.destroy
-      flash[:notice] = "#{@door.name} deleted."
-      redirect_to doors_path
+    @door.update(available: false)
+    if @door.save
+      flash[:notice] = "#{@door.name} archived."
+      turbo_redirect(doors_path)
     else
-      flash[:error] = "Could not delete door."
-      redirect_to door_path(@door)
+      flash[:error] = "Could not archive door."
+      turbo_redirect(door_path(@door))
     end
+  end
+
+  def archived
+    @doors = current_location.doors.unavailable
+    authorize @doors, policy_class: ::DoorPolicy
+    background_image
+  end
+
+  def unarchive
+    find_door(:door_id)
+    authorize @door
+    @door.update(available: true)
+    if @door.save
+      flash[:success] = "Door unarchived."
+    else
+      flash[:error] = "Could not unarchive door."
+    end
+    turbo_redirect(doors_path)
   end
 
   def update
@@ -122,7 +141,7 @@ class Operator::DoorsController < Operator::BaseController
   private
 
   def find_doors
-    @doors = current_location.doors
+    @doors = current_location.doors.available
     @doors = @doors.where(private: [false, nil]) unless admin?
   end
 

@@ -10,7 +10,26 @@
     <h4 class="display-4 text-center mt-4 mb-4">Day Pass Types</h4>
 
     <%= link_to "Add a new day pass type", new_day_pass_type_path, class: "btn btn-primary btn-block" %>
+  <% end %>
 
+  <%= link_to archived_day_pass_types_path, class: "list-group-item list-group-item-action d-flex m-0" do %>
+    <div class="row w-100">
+      <div class="col-11">
+        <i class="fas fa-archive"></i>
+        &nbsp;
+        Archived Day Pass Types
+      </div>
+      <div class="col-1">
+        <i class="fas fa-chevron-right"></i>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @day_pass_types.count < 1 %>
+    <%= list_item do %>
+      <i>There are no day pass types available.</i>
+    <% end %>
+  <% else %>
     <div class="list-group list-group-flush mt-4">
       <%= render @day_pass_types, view: true %>
     </div>

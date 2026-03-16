@@ -35,6 +35,10 @@ class Door < ApplicationRecord
   belongs_to :location
   acts_as_scopable :operator, :location
 
+  # Scopes
+  scope :available, -> { where(available: true) }
+  scope :unavailable, -> { where(available: false) }
+
   def search_data
     {
       name: name,

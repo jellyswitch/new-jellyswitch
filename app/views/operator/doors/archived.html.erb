@@ -1,0 +1,29 @@
+<%- title "Archived Doors" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Doors", doors_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Archived</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center">Archived Doors</h4>
+
+  <% if @doors.count < 1 %>
+    <p class="text-center"><i>No archived doors.</i></p>
+  <% else %>
+    <div class="list-group list-group-flush mt-4">
+      <% @doors.each do |door| %>
+        <div class="list-group-item">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><%= door.name %></strong>
+              <br>
+              <small class="text-muted">Kisi ID: <%= door.kisi_id %></small>
+            </div>
+            <%= link_to "Unarchive", door_unarchive_path(door), method: :post, class: "btn btn-sm btn-success", data: { confirm: "Unarchive #{door.name}?" } %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

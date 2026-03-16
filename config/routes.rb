@@ -164,11 +164,17 @@ Rails.application.routes.draw do
     get :available, to: "operator/day_pass_types#available"
     get :visible, to: "operator/day_pass_types#visible"
     get :always_allow_building_access, to: "operator/day_pass_types#always_allow_building_access"
+    post :unarchive, to: "operator/day_pass_types#unarchive"
+    collection do
+      get :archived, to: "operator/day_pass_types#archived"
+    end
   end
   resources :doors, controller: "operator/doors" do
     get "open", to: "operator/doors#open"
+    post :unarchive, to: "operator/doors#unarchive"
     collection do
       get "keys", to: "operator/doors#keys"
+      get :archived, to: "operator/doors#archived"
     end
   end
   resources :door_punches, controller: "operator/door_punches"

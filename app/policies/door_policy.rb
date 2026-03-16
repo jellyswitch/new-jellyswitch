@@ -20,7 +20,15 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def destroy?
-    enabled? && superadmin?
+    enabled? && (admin? || general_manager?)
+  end
+
+  def archived?
+    enabled? && (admin? || community_manager? || general_manager?)
+  end
+
+  def unarchive?
+    enabled? && (admin? || general_manager?)
   end
 
   def edit?

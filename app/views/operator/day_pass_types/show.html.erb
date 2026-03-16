@@ -9,4 +9,8 @@
   <div class="list-group list-group-flush">
     <%= render @day_pass_type, view: false %>
   </div>
+
+  <% if @day_pass_type.available? %>
+    <%= link_to "Archive", day_pass_type_path(@day_pass_type), method: :delete, class: "btn btn-outline-danger btn-block mt-3", data: { confirm: "Are you sure you want to archive #{@day_pass_type.name}?" } %>
+  <% end %>
 <% end %>
