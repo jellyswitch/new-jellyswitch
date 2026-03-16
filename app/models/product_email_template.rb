@@ -132,6 +132,10 @@ class ProductEmailTemplate < ApplicationRecord
       tags << { tag: "{{play_store_badge}}", label: "Play Store Badge", description: "Google Play Store download badge with link" }
     end
 
+    if operator&.google_reviews_url.present?
+      tags << { tag: "{{google_review_button}}", label: "Google Review Button", description: "Green button linking to your Google Reviews page" }
+    end
+
     tags
   end
 
@@ -153,6 +157,12 @@ class ProductEmailTemplate < ApplicationRecord
       play_store_html = '<a href="' + operator.android_url.to_s + '"><img src="' + ActionController::Base.helpers.asset_url('playstore.png', host: host) + '" width="135" height="40" alt="Get it on Google Play" style="border: none;"></a>'
       result = result.gsub("{{app_store_badge}}", app_store_html)
       result = result.gsub("{{play_store_badge}}", play_store_html)
+    end
+
+    # Google Review button tag
+    if operator.google_reviews_url.present?
+      google_review_html = '<a href="' + operator.google_reviews_url.to_s + '" target="_blank" style="display: inline-block; color: #ffffff; background-color: #27ae60; border: solid 1px #27ae60; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Leave a Google Review</a>'
+      result = result.gsub("{{google_review_button}}", google_review_html)
     end
 
     # Product-specific tags
