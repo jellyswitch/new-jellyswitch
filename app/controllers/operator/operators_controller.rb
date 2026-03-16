@@ -19,7 +19,7 @@ class Operator::OperatorsController < Operator::BaseController
 
     if @operator.save
       flash[:success] = "Operator has been updated."
-      redirect_to operator_path(@operator)
+      turbo_redirect(operator_path(@operator, subdomain: @operator.subdomain))
     else
       render :edit, status: 422
     end
@@ -82,8 +82,8 @@ class Operator::OperatorsController < Operator::BaseController
   end
 
   def operator_params
-    params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address, 
+    params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address,
       :approval_required, :contact_name, :contact_email, :contact_phone,
-      :background_image, :logo_image, :square_footage, :kisi_api_key, :terms_of_service, :checkin_required, :membership_text, :bundle_id, :google_reviews_url, :renewal_reminder_days)
+      :background_image, :logo_image, :square_footage, :kisi_api_key, :terms_of_service, :checkin_required, :membership_text, :bundle_id, :ios_url, :android_url, :google_reviews_url, :renewal_reminder_days)
   end
 end
