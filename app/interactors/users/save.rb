@@ -24,9 +24,10 @@ class Users::Save
       @user.current_location_id = @user.original_location_id
     end
 
-    # Admin-created users are auto-confirmed
+    # Admin-created users are auto-confirmed and skip phone/TOS validations
     if context.admin_created
       @user.email_confirmed = true
+      @user.admin_created = true
     end
 
     if !@user.save

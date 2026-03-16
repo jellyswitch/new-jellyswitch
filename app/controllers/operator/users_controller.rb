@@ -155,6 +155,11 @@ class Operator::UsersController < Operator::BaseController
 
     @user.update(user_params)
 
+    # Set terms_accepted_at when user accepts terms on profile edit
+    if params[:user][:terms_accepted] == "1" && @user.terms_accepted_at.blank?
+      @user.terms_accepted_at = Time.current
+    end
+
     if @user.save
       flash[:success] = "Your profile has been updated."
       turbo_redirect(user_path(@user))

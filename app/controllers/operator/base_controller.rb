@@ -7,6 +7,7 @@ class Operator::BaseController < ApplicationController
   before_action :set_resource_scopes
   around_action :set_time_zone, if: :current_location
   before_action :reset_location
+  before_action :require_complete_profile
   before_action :set_navigation
 
   layout "operator"
@@ -95,6 +96,24 @@ class Operator::BaseController < ApplicationController
 
       flash[:error] = "You must be logged in to access this page."
       turbo_redirect(login_path, action: :replace)
+    end
+  end
+
+  def require_complete_profile
+    return unless logged_in? && current_user.present?
+    return if controller_name.in?(%w[sessions landing])
+    return if controller_name == "users" && action_name.in?(%w[edit update])
+    return if request.format.json? || request.xhr?
+
+    needs_phone = current_user.phone.blank?
+    needs_tos = current_user.terms_accepted_at.blank? && current_tenant&.terms_of_service&.attached?
+
+    if needs_phone || needs_tos
+      messages = []
+      messages << "add your phone number" if needs_phone
+      messages << "accept the Terms of Service" if needs_tos
+      flash[:warning] = "Please #{messages.join(' and ')} to continue."
+      redirect_to edit_user_path(current_user)
     end
   end
 
