@@ -58,6 +58,12 @@
   </div>
 
   <div class="form-group">
+    <%= f.label :sender_email, "Sender Email Address" %>
+    <%= f.text_field :sender_email, placeholder: "team@yourdomain.com", class: "form-control" %>
+    <small class="form-text text-muted">Emails to members will be sent from this address. Must be verified in SendGrid.</small>
+  </div>
+
+  <div class="form-group">
     <%= f.label :google_reviews_url, "Google Reviews URL" %>
     <%= f.text_field :google_reviews_url, placeholder: "https://g.page/r/your-business/review", class: "form-control" %>
     <small class="form-text text-muted">Used in follow-up emails to link members to your Google Reviews page.</small>
