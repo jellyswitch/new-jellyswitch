@@ -248,10 +248,35 @@ module Jellyswitch
     end
 
     def office_lease_ltv(since: nil)
-      scope = location_invoices.paid.where(billable_type: "Organization")
-      scope = scope.where("invoices.due_date >= ?", since) if since
-      per_org = scope.group(:billable_id).sum(:amount_due).values.map { |v| v.to_f / 100.0 }
-      build_ltv_result("Office Leases", per_org)
+      org_totals = Hash.new(0.0)
+
+      office_leases.includes(subscription: :plan).find_each do |lease|
+        plan = lease.subscription&.plan
+        next unless plan
+
+        effective_start = since ? [lease.start_date, since.to_date].max : lease.start_date
+        effective_end = [lease.end_date, Date.today].min
+        next if effective_start >= effective_end
+
+        months_active = ((effective_end.year * 12 + effective_end.month) -
+                         (effective_start.year * 12 + effective_start.month)).to_f
+
+        interval_months = case plan.interval
+                          when "monthly" then 1
+                          when "quarterly" then 3
+                          when "biannually" then 6
+                          when "annually" then 12
+                          else 1
+                          end
+
+        billing_periods = (months_active / interval_months).ceil
+        billing_periods = [billing_periods, 1].max
+        revenue = (plan.amount_in_cents * billing_periods) / 100.0
+
+        org_totals[lease.organization_id] += revenue
+      end
+
+      build_ltv_result("Office Leases", org_totals.values)
     end
 
     def meeting_room_ltv(since: nil)
