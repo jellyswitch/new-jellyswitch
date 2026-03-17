@@ -189,12 +189,20 @@ module ApplicationHelper
   end
 
   def set_tracking_pixels
+    return unless current_location.present?
+
+    # Always-on pixels (e.g. Google Analytics) load on every page
+    @head_pixels = current_location.tracking_pixels.head.always_on.to_a
+    @body_pixels = current_location.tracking_pixels.body.always_on.to_a
+    @footer_pixels = current_location.tracking_pixels.footer.always_on.to_a
+
+    # Conversion-only pixels fire once after membership activation
     if session[:should_track_pixels]
       # workaround for turbo redirect because it effectively renders twice
       if session[:first_pixel_render]
-        @head_pixels = current_location.tracking_pixels.head
-        @body_pixels = current_location.tracking_pixels.body
-        @footer_pixels = current_location.tracking_pixels.footer
+        @head_pixels += current_location.tracking_pixels.head.conversion_only.to_a
+        @body_pixels += current_location.tracking_pixels.body.conversion_only.to_a
+        @footer_pixels += current_location.tracking_pixels.footer.conversion_only.to_a
         session.delete(:first_pixel_render)
         session.delete(:should_track_pixels)
       else

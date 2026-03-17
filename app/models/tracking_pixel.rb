@@ -18,4 +18,7 @@ class TrackingPixel < ApplicationRecord
   acts_as_tenant :operator
 
   enum position: { head: 0, body: 1, footer: 2 }
+
+  scope :always_on, -> { where(always_on: true) }
+  scope :conversion_only, -> { where(always_on: false) }
 end

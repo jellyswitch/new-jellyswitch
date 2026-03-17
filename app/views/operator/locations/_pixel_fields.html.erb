@@ -10,6 +10,15 @@
             <%= link_to_remove_association "x", f, class: "btn btn-outline-danger" %>
         </div>
     </div>
+    <div class="form-row mx-0 w-100 align-items-center">
+        <div class="form-group col-12 mb-3">
+            <div class="form-check">
+                <%= f.check_box :always_on, class: "form-check-input" %>
+                <%= f.label :always_on, "Always on (loads on every page, e.g. Google Analytics)", class: "form-check-label" %>
+            </div>
+            <small class="text-muted">Leave unchecked for conversion pixels that only fire once after signup.</small>
+        </div>
+    </div>
     <div class="form-row mx-0 w-100">
         <div class="form-group col-12 script-group">
             <%= f.text_area :script, class: "form-control", placeholder: "Pixel code" %>
