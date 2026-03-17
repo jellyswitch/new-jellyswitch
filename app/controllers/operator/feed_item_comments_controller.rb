@@ -11,6 +11,10 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     )
 
     if result.success?
+      # If this is a feedback-type feed item, also create a FeedbackReply
+      # so the member sees the reply in their Messages thread and gets notified
+      bridge_feedback_reply if @feed_item.type == "feedback"
+
       flash[:success] = "Comment posted."
     else
       flash[:error] = result.message
@@ -31,5 +35,31 @@ class Operator::FeedItemCommentsController < Operator::BaseController
 
   def feed_item_comment_params
     params.require(:feed_item_comment).permit(:comment)
+  end
+
+  def bridge_feedback_reply
+    member_feedback = @feed_item.member_feedback
+    return unless member_feedback
+
+    body = params.dig(:feed_item_comment, :comment)
+    return if body.blank?
+
+    # Create a FeedbackReply so it shows in the member's Messages thread
+    save_result = MemberFeedback::SaveReply.call(
+      member_feedback: member_feedback,
+      user: current_user,
+      operator: current_tenant,
+      body: body
+    )
+
+    # Send push notification to the member
+    if save_result.success?
+      begin
+        NotifiableFactory.for(save_result.feedback_reply).notify
+      rescue => e
+        Rails.logger.error("FeedbackReply bridge notification error: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
+    end
   end
 end
