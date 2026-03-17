@@ -75,6 +75,11 @@ class Operator::FeedItemsController < Operator::BaseController
   def show
     find_feed_item
     authorize @feed_item
+
+    if @feed_item.type == "feedback" && @feed_item.member_feedback.present?
+      redirect_to member_feedback_path(@feed_item.member_feedback)
+      return
+    end
   end
 
   def new

@@ -3,3 +3,12 @@
     <%= feed_item.member_feedback.comment %>
   </p>
 </div>
+<% if feed_item.member_feedback.present? %>
+  <div class="row mt-1">
+    <div class="col">
+      <%= link_to member_feedback_path(feed_item.member_feedback), class: "btn btn-sm btn-outline-primary" do %>
+        <i class="fas fa-comments"></i> View Conversation
+      <% end %>
+    </div>
+  </div>
+<% end %>

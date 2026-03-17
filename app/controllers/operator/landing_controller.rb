@@ -19,21 +19,6 @@ class Operator::LandingController < Operator::BaseController
     # Count of user's feedback submissions (for showing My Messages button)
     @message_count = current_user&.member_feedbacks&.count || 0
 
-    # Open feedback tickets with unread admin replies for this member
-    # .to_a forces query execution here so the rescue catches DB errors
-    # (e.g. missing table/column before migrations have run)
-    begin
-      @open_tickets = current_user&.member_feedbacks
-                        &.joins(:feedback_replies)
-                        &.where("feedback_replies.created_at > COALESCE(member_feedbacks.last_read_at, '1970-01-01')")
-                        &.distinct
-                        &.order(updated_at: :desc)
-                        &.to_a || []
-    rescue => e
-      Rails.logger.error("open_tickets error: #{e.class}: #{e.message}")
-      @open_tickets = []
-    end
-
     response.headers["Turbo-Location"] = home_url
     flash.keep
     home_redirect
