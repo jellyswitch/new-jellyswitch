@@ -4,7 +4,11 @@ class BackfillFeedbackRepliesFromFeedComments < ActiveRecord::Migration[7.0]
 
     # Find all feedback-type FeedItems with comments in the last 2 days
     FeedItem.where("blob->>'type' = ?", "feedback").find_each do |feed_item|
-      member_feedback = feed_item.member_feedback
+      begin
+        member_feedback = feed_item.member_feedback
+      rescue ActiveRecord::RecordNotFound
+        next
+      end
       next unless member_feedback
 
       operator = feed_item.operator
