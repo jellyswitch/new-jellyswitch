@@ -70,6 +70,27 @@
         </div>
       <% end %>
 
+      <div class="row mt-2">
+        <div class="col">
+          <strong>Meeting Room Time:</strong>
+          <% if @plan.has_meeting_room_limit? %>
+            <%= @plan.included_meeting_room_minutes / 60.0 %> hour(s) per billing cycle
+          <% else %>
+            <span class="text-muted">Unlimited</span>
+          <% end %>
+        </div>
+      </div>
+
+      <% if @plan.has_meeting_room_limit? && @plan.overage_rate_in_cents.to_i > 0 %>
+        <div class="row">
+          <div class="col">
+            <strong>Overage Rate:</strong>
+            <%= number_to_currency(@plan.overage_rate_in_cents / 100.0) %>/hour
+            <small class="text-muted">(billed in 30-min increments)</small>
+          </div>
+        </div>
+      <% end %>
+
       <div class="mt-3"></div>
       <div class="row">
         <% if @plan.location %>
