@@ -124,7 +124,20 @@ class Operator::ReservationsController < Operator::BaseController
     @staff = staff
 
     parse_time
-    if @user.should_charge_for_reservation?(current_location, @day) || !@user.has_billing_for_location?(current_location)
+    should_charge = @user.should_charge_for_reservation?(current_location, @day)
+
+    # Check subscription overage
+    if !should_charge && @duration.present?
+      begin
+        sub_info = @user.subscription_reservation_charge_info(current_location, @duration)
+        should_charge = true if sub_info && sub_info[:charge_type] == :partial_overage
+      rescue => e
+        Rails.logger.error("subscription_reservation_charge_info error in confirm: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
+    end
+
+    if should_charge || !@user.has_billing_for_location?(current_location)
       include_stripe
     end
   end
@@ -175,12 +188,22 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = params[:duration].to_i
     parse_time
 
+    # Compute subscription overage info for members
+    begin
+      subscription_charge_info = @user.subscription_reservation_charge_info(current_location, @duration)
+    rescue => e
+      Rails.logger.error("subscription_reservation_charge_info error in create_reservation: #{e.class}: #{e.message}")
+      Honeybadger.notify(e)
+      subscription_charge_info = nil
+    end
+
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
                                                                  datetime_in: @datetime_in,
                                                                  hours: @duration,
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
-                                                               }, user: @user, location: current_location)
+                                                               }, user: @user, location: current_location,
+                                                               subscription_charge_info: subscription_charge_info)
 
     @reservation = result.reservation
 
@@ -316,6 +339,34 @@ class Operator::ReservationsController < Operator::BaseController
         end
       end
 
+      # Check subscription meeting room overage for members
+      begin
+        subscription_charge_info = current_user.subscription_reservation_charge_info(current_location, duration)
+      rescue => e
+        Rails.logger.error("subscription_reservation_charge_info error: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+        subscription_charge_info = nil
+      end
+
+      if subscription_charge_info
+        if subscription_charge_info[:charge_type] == :partial_overage
+          response[:should_charge] = true
+          response[:is_subscription_overage] = true
+          response[:reservation_price] = subscription_charge_info[:overage_amount_in_cents] / 100.0
+          response[:included_minutes_remaining] = subscription_charge_info[:remaining_free]
+          response[:overage_minutes] = subscription_charge_info[:overage_minutes_rounded]
+          response[:overage_rate_hourly] = subscription_charge_info[:overage_rate_in_cents] / 100.0
+          response[:used_minutes] = subscription_charge_info[:used_minutes]
+          response[:included_minutes] = subscription_charge_info[:included_minutes]
+        elsif !day_pass_charge_info
+          response[:should_charge] = false
+          response[:reservation_price] = 0
+          response[:included_minutes_remaining] = subscription_charge_info[:remaining_free]
+          response[:used_minutes] = subscription_charge_info[:used_minutes]
+          response[:included_minutes] = subscription_charge_info[:included_minutes]
+        end
+      end
+
       render json: response
     else
       render json: { error: "Invalid or missing parameters" }, status: :unprocessable_entity
@@ -354,6 +405,15 @@ class Operator::ReservationsController < Operator::BaseController
       day_pass_charge_info = nil
     end
 
+    # Compute subscription overage info
+    begin
+      subscription_charge_info = current_user.subscription_reservation_charge_info(current_location, @duration)
+    rescue => e
+      Rails.logger.error("subscription_reservation_charge_info error in create: #{e.class}: #{e.message}")
+      Honeybadger.notify(e)
+      subscription_charge_info = nil
+    end
+
     interactor = if token.present?
       Billing::Reservations::UpdateBillingAndCreateRoomReservation
     else
@@ -369,7 +429,8 @@ class Operator::ReservationsController < Operator::BaseController
                                note: reservation_params[:note],
                              }, user: current_user, location: current_location,
                              token: token, out_of_band: false,
-                             day_pass_charge_info: day_pass_charge_info)
+                             day_pass_charge_info: day_pass_charge_info,
+                             subscription_charge_info: subscription_charge_info)
 
     @reservation = result.reservation
 
@@ -459,6 +520,20 @@ class Operator::ReservationsController < Operator::BaseController
       charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
       if charge_info && charge_info[:charge_type] == :partial_overage
         should_charge = true
+      end
+    end
+
+    # Check subscription overage: if member's plan has meeting room limits
+    if !should_charge && params[:duration].present?
+      begin
+        duration = params[:duration].to_i
+        sub_info = current_user.subscription_reservation_charge_info(current_location, duration)
+        if sub_info && sub_info[:charge_type] == :partial_overage
+          should_charge = true
+        end
+      rescue => e
+        Rails.logger.error("subscription_reservation_charge_info error in needs_billing: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
       end
     end
 

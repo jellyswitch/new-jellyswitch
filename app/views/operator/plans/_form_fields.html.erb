@@ -91,6 +91,36 @@
   </div>
 <% end %>
 
+<%= render Accordion.new(title: "Meeting Room Limits") do %>
+  <div class="form-group">
+    <%= f.label :included_meeting_room_minutes, "Included meeting room hours per billing cycle" %>
+    <div class="input-group">
+      <%= f.number_field :included_meeting_room_minutes,
+          value: plan.included_meeting_room_minutes ? plan.included_meeting_room_minutes / 60.0 : nil,
+          step: 0.5, min: 0, placeholder: "Leave blank for unlimited",
+          class: "form-control" %>
+      <div class="input-group-append">
+        <span class="input-group-text">hours</span>
+      </div>
+    </div>
+    <small class="form-text text-muted">Leave blank for unlimited meeting room use.</small>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :overage_rate_in_cents, "Overage rate per hour" %>
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <span class="input-group-text">$</span>
+      </div>
+      <%= f.number_field :overage_rate_in_cents,
+          value: plan.overage_rate_in_cents && plan.overage_rate_in_cents > 0 ? plan.overage_rate_in_cents / 100.0 : nil,
+          step: 0.01, min: 0, placeholder: "0.00",
+          class: "form-control" %>
+    </div>
+    <small class="form-text text-muted">Charged in 30-minute increments when member exceeds included hours.</small>
+  </div>
+<% end %>
+
 <%= render Accordion.new(title: "Commitment Length") do %>
   <div class="form-group">
     <%= f.label :commitment_interval, "For example, 6 for 6 months, 12 for 12 weeks, etc" %>

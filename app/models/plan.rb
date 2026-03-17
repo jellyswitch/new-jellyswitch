@@ -177,6 +177,14 @@ class Plan < ApplicationRecord
     interval == "biannually"
   end
 
+  def has_meeting_room_limit?
+    included_meeting_room_minutes.present? && included_meeting_room_minutes > 0
+  end
+
+  def overage_rate_per_minute_in_cents
+    (overage_rate_in_cents || 0) / 60.0
+  end
+
   def has_commitment_interval?
     commitment_interval.present?
   end

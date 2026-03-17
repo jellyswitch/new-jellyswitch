@@ -168,6 +168,61 @@ module Permissions
     checkins.for_location(location).open.count > 0
   end
 
+  def active_subscription_for_location(location)
+    subscriptions.active.joins(:plan).find_by(plans: { location_id: location.id })
+  end
+
+  # Returns charge info for subscription members booking meeting rooms.
+  # Returns nil if user has no active subscription or plan has no meeting room limit.
+  # Otherwise returns a hash describing whether the booking is free or has overage.
+  def subscription_reservation_charge_info(location, requested_minutes)
+    subscription = active_subscription_for_location(location)
+    return nil unless subscription
+
+    plan = subscription.plan
+    return nil unless plan.has_meeting_room_limit?
+
+    # Determine current billing cycle dates from Stripe
+    period_start, period_end = subscription.current_billing_period
+    return nil unless period_start
+
+    # Sum non-cancelled reservation minutes in this billing cycle
+    used_minutes = Reservation.where(user_id: id, cancelled: false)
+                              .where(datetime_in: period_start..period_end)
+                              .sum(:minutes)
+
+    remaining_free = [plan.included_meeting_room_minutes - used_minutes, 0].max
+
+    if requested_minutes <= remaining_free
+      {
+        charge_type: :free,
+        overage_minutes: 0,
+        overage_minutes_rounded: 0,
+        overage_amount_in_cents: 0,
+        remaining_free: remaining_free,
+        overage_rate_in_cents: plan.overage_rate_in_cents,
+        used_minutes: used_minutes,
+        included_minutes: plan.included_meeting_room_minutes
+      }
+    else
+      overage_minutes = requested_minutes - remaining_free
+      # Round up to nearest 30-minute increment
+      overage_minutes_rounded = (overage_minutes / 30.0).ceil * 30
+      overage_amount = (plan.overage_rate_per_minute_in_cents * overage_minutes_rounded).to_i
+
+      {
+        charge_type: :partial_overage,
+        overage_minutes: overage_minutes,
+        overage_minutes_rounded: overage_minutes_rounded,
+        overage_amount_in_cents: overage_amount,
+        remaining_free: remaining_free,
+        overage_rate_in_cents: plan.overage_rate_in_cents,
+        used_minutes: used_minutes,
+        included_minutes: plan.included_meeting_room_minutes
+      }
+    end
+  end
+
   # Returns charge info for day pass users booking meeting rooms.
   # Returns nil if user is not a day pass holder or day pass has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.

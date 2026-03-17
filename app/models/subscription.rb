@@ -100,6 +100,15 @@ class Subscription < ApplicationRecord
     plan.day_limit - report.days_used_count
   end
 
+  def current_billing_period
+    return [start_date.beginning_of_day, Time.current] unless has_stripe_subscription?
+
+    sub = stripe_subscription
+    [Time.at(sub.current_period_start), Time.at(sub.current_period_end)]
+  rescue StandardError => e
+    [start_date.beginning_of_day, Time.current]
+  end
+
   def has_end_date?
     has_stripe_subscription? && stripe_subscription.cancel_at.present?
   rescue StandardError => e

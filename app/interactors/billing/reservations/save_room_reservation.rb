@@ -13,6 +13,12 @@ class Billing::Reservations::SaveRoomReservation
       context.overage_charge_amount = context.day_pass_charge_info[:overage_amount_in_cents]
     end
 
+    # Subscription overage check: if member's plan has meeting room limits
+    if !should_charge && context.subscription_charge_info && context.subscription_charge_info[:charge_type] == :partial_overage
+      should_charge = true
+      context.overage_charge_amount = context.subscription_charge_info[:overage_amount_in_cents]
+    end
+
     if should_charge && context.user.payment_method == "None"
       context.fail!(message: "Please provide payment method!")
     end
