@@ -167,13 +167,32 @@ module Jellyswitch
 
     def this_month_revenue
       return 0 unless location
-      location_invoices.paid.where(due_date: Time.current.beginning_of_month..Time.current.end_of_month).sum(:amount_due).to_f / 100.0
+      invoice_rev = location_invoices.paid.where(billable_type: "User")
+        .where(due_date: Time.current.beginning_of_month..Time.current.end_of_month)
+        .sum(:amount_due).to_f / 100.0
+      lease_rev = lease_revenue_for_month(Date.today)
+      invoice_rev + lease_rev
     end
 
     def revenue_by_month
-      location_invoices.paid.where(due_date: 12.months.ago..).group_by_month(:due_date).sum(:amount_due).transform_values do |amt|
-        amt.to_f / 100.0
+      # Non-lease invoice revenue (memberships, day passes, etc.)
+      invoice_rev = location_invoices.paid.where(billable_type: "User")
+        .where(due_date: 12.months.ago..)
+        .group_by_month(:due_date).sum(:amount_due)
+        .transform_values { |amt| amt.to_f / 100.0 }
+
+      # Merge lease revenue per month
+      start_month = 12.months.ago.to_date.beginning_of_month
+      current_month = Date.today.beginning_of_month
+      month = start_month
+      while month <= current_month
+        lease_rev = lease_revenue_for_month(month)
+        key = month.to_time
+        invoice_rev[key] = (invoice_rev[key] || 0) + lease_rev
+        month = month.next_month
       end
+
+      invoice_rev.sort.to_h
     end
 
     def revenue_by_week
@@ -310,6 +329,34 @@ module Jellyswitch
       sorted = values.sort
       mid = sorted.size / 2
       sorted.size.odd? ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2.0
+    end
+
+    # Calculate total lease revenue for a given month based on active leases
+    # For monthly plans: full plan amount if lease is active during the month
+    # For annual plans: plan amount / 12 (amortized monthly)
+    def lease_revenue_for_month(date)
+      month_start = date.to_date.beginning_of_month
+      month_end = date.to_date.end_of_month
+      total = 0.0
+
+      office_leases.includes(subscription: :plan).find_each do |lease|
+        plan = lease.subscription&.plan
+        next unless plan
+        # Lease must overlap with this month
+        next if lease.end_date < month_start || lease.start_date > month_end
+
+        monthly_amount = case plan.interval
+                         when "monthly" then plan.amount_in_cents
+                         when "quarterly" then plan.amount_in_cents / 3.0
+                         when "biannually" then plan.amount_in_cents / 6.0
+                         when "annually" then plan.amount_in_cents / 12.0
+                         else plan.amount_in_cents
+                         end
+
+        total += monthly_amount / 100.0
+      end
+
+      total
     end
   end
 end
