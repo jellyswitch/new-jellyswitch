@@ -176,23 +176,26 @@ module Jellyswitch
 
     def revenue_by_month
       # Non-lease invoice revenue (memberships, day passes, etc.)
-      invoice_rev = location_invoices.paid.where(billable_type: "User")
+      invoice_data = location_invoices.paid.where(billable_type: "User")
         .where(due_date: 12.months.ago..)
         .group_by_month(:due_date).sum(:amount_due)
-        .transform_values { |amt| amt.to_f / 100.0 }
 
-      # Merge lease revenue per month
+      # Normalize all keys to Date (beginning of month) and merge
+      combined = Hash.new(0.0)
+      invoice_data.each do |key, amt|
+        combined[key.to_date.beginning_of_month] += amt.to_f / 100.0
+      end
+
+      # Add lease revenue per month
       start_month = 12.months.ago.to_date.beginning_of_month
       current_month = Date.today.beginning_of_month
       month = start_month
       while month <= current_month
-        lease_rev = lease_revenue_for_month(month)
-        key = month.to_time
-        invoice_rev[key] = (invoice_rev[key] || 0) + lease_rev
+        combined[month] += lease_revenue_for_month(month)
         month = month.next_month
       end
 
-      invoice_rev.sort.to_h
+      combined.sort.to_h
     end
 
     def revenue_by_week
