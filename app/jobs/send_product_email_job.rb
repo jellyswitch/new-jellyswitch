@@ -13,9 +13,13 @@ class SendProductEmailJob < ApplicationJob
       sendable = sendable_type.constantize.find_by(id: sendable_id)
       return unless sendable
 
-      # Find the template
+      # Resolve the location from the sendable
+      location = resolve_location(sendable, user)
+
+      # Find the template scoped to the location
       template = ProductEmailTemplate.find_by(
         operator: operator,
+        location: location,
         product_type: product_type,
         email_type: email_type
       )
@@ -41,11 +45,11 @@ class SendProductEmailJob < ApplicationJob
       begin
         case email_type
         when "onboarding"
-          UserMailer.product_onboarding_email(user, operator, template, sendable).deliver_now
+          UserMailer.product_onboarding_email(user, operator, template, sendable, location).deliver_now
         when "follow_up"
-          UserMailer.product_follow_up_email(user, operator, template, sendable).deliver_now
+          UserMailer.product_follow_up_email(user, operator, template, sendable, location).deliver_now
         when "nudge"
-          UserMailer.signup_nudge_email(user, operator, template).deliver_now
+          UserMailer.signup_nudge_email(user, operator, template, location).deliver_now
         end
 
         ProductEmailSend.create!(
@@ -70,6 +74,25 @@ class SendProductEmailJob < ApplicationJob
           sent_at: Time.current
         )
       end
+    end
+  end
+
+  private
+
+  def resolve_location(sendable, user)
+    case sendable
+    when DayPass
+      sendable.location
+    when Reservation
+      sendable.room&.location
+    when OfficeLease
+      sendable.location
+    when Subscription
+      sendable.plan&.location
+    when User
+      Location.find_by(id: sendable.original_location_id)
+    else
+      Location.find_by(id: user.original_location_id)
     end
   end
 end

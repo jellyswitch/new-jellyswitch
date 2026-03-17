@@ -9,9 +9,12 @@ class ScheduleProductEmails
 
     return unless sendable && product_type && user && operator
 
+    location = resolve_location(sendable, user)
+
     # Schedule onboarding email (immediate)
     onboarding_template = ProductEmailTemplate.find_by(
       operator: operator,
+      location: location,
       product_type: product_type,
       email_type: "onboarding"
     )
@@ -30,6 +33,7 @@ class ScheduleProductEmails
     # Schedule follow-up email (delayed — timed from usage, not purchase)
     follow_up_template = ProductEmailTemplate.find_by(
       operator: operator,
+      location: location,
       product_type: product_type,
       email_type: "follow_up"
     )
@@ -54,6 +58,21 @@ class ScheduleProductEmails
   end
 
   private
+
+  def resolve_location(sendable, user)
+    case sendable
+    when DayPass
+      sendable.location
+    when Reservation
+      sendable.room&.location
+    when OfficeLease
+      sendable.location
+    when Subscription
+      sendable.plan&.location
+    else
+      Location.find_by(id: user.original_location_id)
+    end
+  end
 
   def calculate_follow_up_time(sendable, product_type, template)
     delay_days = (template.follow_up_delay_days || 1).days

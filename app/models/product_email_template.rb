@@ -1,6 +1,7 @@
 class ProductEmailTemplate < ApplicationRecord
   acts_as_tenant :operator
   belongs_to :operator
+  belongs_to :location
 
   has_rich_text :body
 
@@ -30,19 +31,20 @@ class ProductEmailTemplate < ApplicationRecord
   validates :product_type, presence: true, inclusion: { in: PRODUCT_TYPES }
   validates :email_type, presence: true, inclusion: { in: EMAIL_TYPES }
   validates :subject, presence: true
-  validates :product_type, uniqueness: { scope: [:operator_id, :email_type] }
+  validates :product_type, uniqueness: { scope: [:operator_id, :location_id, :email_type] }
 
   scope :onboarding, -> { where(email_type: "onboarding") }
   scope :follow_up, -> { where(email_type: "follow_up") }
   scope :nudge, -> { where(email_type: "nudge") }
   scope :enabled, -> { where(enabled: true) }
   scope :for_product, ->(type) { where(product_type: type) }
+  scope :for_location, ->(location) { where(location: location) }
 
-  def self.seed_defaults_for(operator)
+  def self.seed_defaults_for(operator, location:)
     # Product onboarding + follow-up
     %w[day_pass reservation office_lease membership].each do |product|
       %w[onboarding follow_up].each do |etype|
-        find_or_create_by(operator: operator, product_type: product, email_type: etype) do |t|
+        find_or_create_by(operator: operator, location: location, product_type: product, email_type: etype) do |t|
           t.subject = DEFAULT_SUBJECTS["#{product}_#{etype}"] || "Email from #{operator.name}"
           t.follow_up_delay_days = DEFAULT_DELAYS[product] if etype == "follow_up"
           t.enabled = false
@@ -51,7 +53,7 @@ class ProductEmailTemplate < ApplicationRecord
     end
 
     # Signup nudge
-    find_or_create_by(operator: operator, product_type: "signup_nudge", email_type: "nudge") do |t|
+    find_or_create_by(operator: operator, location: location, product_type: "signup_nudge", email_type: "nudge") do |t|
       t.subject = DEFAULT_SUBJECTS["signup_nudge_nudge"] || "Come check us out!"
       t.follow_up_delay_days = DEFAULT_DELAYS["signup_nudge"]
       t.enabled = false
@@ -98,7 +100,10 @@ class ProductEmailTemplate < ApplicationRecord
     tags = [
       { tag: "{{first_name}}", label: "First Name", description: "Member's first name" },
       { tag: "{{full_name}}", label: "Full Name", description: "Member's full name" },
-      { tag: "{{space_name}}", label: "Space Name", description: "Your coworking space name" }
+      { tag: "{{space_name}}", label: "Space Name", description: "Location name" },
+      { tag: "{{location_address}}", label: "Location Address", description: "Location's full address" },
+      { tag: "{{location_phone}}", label: "Location Phone", description: "Location's contact phone" },
+      { tag: "{{location_email}}", label: "Location Email", description: "Location's contact email" }
     ]
 
     case product_type
@@ -132,7 +137,8 @@ class ProductEmailTemplate < ApplicationRecord
       tags << { tag: "{{play_store_badge}}", label: "Play Store Badge", description: "Google Play Store download badge with link" }
     end
 
-    if operator&.google_reviews_url.present?
+    google_url = location&.effective_google_reviews_url || operator&.google_reviews_url
+    if google_url.present?
       tags << { tag: "{{google_review_button}}", label: "Google Review Button", description: "Green button linking to your Google Reviews page" }
     end
 
@@ -140,7 +146,7 @@ class ProductEmailTemplate < ApplicationRecord
   end
 
   # Replace merge tags in body content with actual values
-  def self.replace_merge_tags(content, user:, operator:, sendable: nil, host: nil)
+  def self.replace_merge_tags(content, user:, operator:, location: nil, sendable: nil, host: nil)
     return content if content.blank?
 
     result = content.to_s
@@ -149,7 +155,14 @@ class ProductEmailTemplate < ApplicationRecord
     first_name = user.name.to_s.split(" ").first || user.name.to_s
     result = result.gsub("{{first_name}}", first_name)
     result = result.gsub("{{full_name}}", user.name.to_s)
-    result = result.gsub("{{space_name}}", operator.name.to_s)
+    result = result.gsub("{{space_name}}", location&.name || operator.name.to_s)
+
+    # Location-specific tags
+    if location
+      result = result.gsub("{{location_address}}", location.full_address.to_s)
+      result = result.gsub("{{location_phone}}", location.contact_phone.to_s)
+      result = result.gsub("{{location_email}}", location.contact_email.to_s)
+    end
 
     # App store badge tags
     if operator.has_mobile_app_links? && host.present?
@@ -160,8 +173,9 @@ class ProductEmailTemplate < ApplicationRecord
     end
 
     # Google Review button tag
-    if operator.google_reviews_url.present?
-      google_review_html = '<a href="' + operator.google_reviews_url.to_s + '" target="_blank" style="display: inline-block; color: #ffffff; background-color: #27ae60; border: solid 1px #27ae60; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Leave a Google Review</a>'
+    google_url = location&.effective_google_reviews_url || operator.google_reviews_url
+    if google_url.present?
+      google_review_html = '<a href="' + google_url.to_s + '" target="_blank" style="display: inline-block; color: #ffffff; background-color: #27ae60; border: solid 1px #27ae60; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Leave a Google Review</a>'
       result = result.gsub("{{google_review_button}}", google_review_html)
     end
 

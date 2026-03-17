@@ -88,6 +88,7 @@ class Location < ApplicationRecord
   has_many :invoices
   has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
+  has_many :product_email_templates
   has_many :tracking_pixels
   accepts_nested_attributes_for :tracking_pixels, allow_destroy: true, reject_if: ->(attributes) { attributes['name'].blank? || attributes['script'].blank? }
 
@@ -196,6 +197,24 @@ class Location < ApplicationRecord
 
   def has_active_office_leases?
     office_leases.active.count > 0
+  end
+
+  # Email settings — location overrides operator defaults
+
+  def sender_from_address
+    if sender_email.present?
+      "#{name} <#{sender_email}>"
+    else
+      operator.sender_from_address
+    end
+  end
+
+  def effective_google_reviews_url
+    google_reviews_url.presence || operator.google_reviews_url
+  end
+
+  def effective_renewal_reminder_days
+    renewal_reminder_days || operator.renewal_reminder_days
   end
 
   private

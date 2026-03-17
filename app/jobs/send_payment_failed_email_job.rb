@@ -21,7 +21,8 @@ class SendPaymentFailedEmailJob < ApplicationJob
 
       return unless user&.email.present?
 
-      UserMailer.payment_failed_email(user, operator, invoice).deliver_now
+      location = invoice.location || Location.find_by(id: user.original_location_id)
+      UserMailer.payment_failed_email(user, operator, invoice, location).deliver_now
     end
   rescue => e
     Honeybadger.notify(e)

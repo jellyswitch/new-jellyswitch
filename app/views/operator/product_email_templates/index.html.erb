@@ -2,6 +2,22 @@
   <h4 class="display-4 text-center">Automated Emails</h4>
   <p class="text-muted text-center mb-4">Configure automated emails sent to members after purchases and signups. Edit the content using the rich text editor.</p>
 
+  <% if @locations.size > 1 %>
+    <div class="mb-4 text-center">
+      <div class="btn-group" role="group">
+        <% @locations.each do |loc| %>
+          <%= link_to loc.name,
+                product_email_templates_path(location_id: loc.id),
+                class: "btn btn-sm #{loc == @location ? 'btn-primary' : 'btn-outline-primary'}" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <% if @location %>
+    <h5 class="text-center text-muted mb-3"><%= @location.name %></h5>
+  <% end %>
+
   <hr />
   <h5>Onboarding Emails</h5>
   <p class="text-muted small">Sent immediately after a purchase is made.</p>

@@ -33,6 +33,30 @@
     <%= f.text_field :contact_phone, placeholder: "Contact Phone Number", class: "form-control" %>
   </div>
 
+  <hr />
+  <h5>Email Settings</h5>
+  <p class="text-muted small">Override operator-level email settings for this location. Leave blank to use the operator defaults.</p>
+
+  <div class="form-group">
+    <%= f.label :sender_email, "Sender Email" %>
+    <%= f.text_field :sender_email, placeholder: "team@yourlocation.com", class: "form-control" %>
+    <small class="form-text text-muted">Emails to members at this location will be sent from this address. Must be verified in SendGrid.</small>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :google_reviews_url, "Google Reviews URL" %>
+    <%= f.text_field :google_reviews_url, placeholder: "https://g.page/r/your-location/review", class: "form-control" %>
+    <small class="form-text text-muted">Used in follow-up emails to link members to this location's Google Reviews page.</small>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :renewal_reminder_days, "Renewal Reminder Days" %>
+    <%= f.number_field :renewal_reminder_days, class: "form-control", min: 0, max: 90, placeholder: "7" %>
+    <small class="form-text text-muted">Send renewal reminder this many days before membership renewal. Set to 0 to disable.</small>
+  </div>
+
+  <hr />
+
   <div class="form-group">
     <%= f.label :square_footage %>
     <%= f.number_field :square_footage, placeholder: "Square Footage", class: "form-control" %>
