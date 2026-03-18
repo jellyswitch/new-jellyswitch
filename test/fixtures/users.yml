@@ -64,6 +64,7 @@ cowork_tahoe_superadmin:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -96,6 +97,7 @@ cowork_tahoe_admin:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -128,6 +130,7 @@ other_location_admin:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -160,6 +163,7 @@ cowork_tahoe_member:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -192,6 +196,7 @@ cowork_tahoe_non_member:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -224,6 +229,7 @@ cowork_tahoe_community_manager:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 10
   childcare_reservation_balance: 0
   android_token: nil
@@ -256,6 +262,7 @@ cowork_tahoe_general_manager:
   bill_to_organization: false
   archived: false
   phone: "555-555-5555"
+  email_confirmed: true
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil

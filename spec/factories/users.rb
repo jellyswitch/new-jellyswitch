@@ -17,6 +17,7 @@ FactoryBot.define do
     role { "unassigned" }
     slug { "john-doe" }
     phone { "555-555-5555" }
+    email_confirmed { true }
 
     operator { Operator.find_by(name: "Cowork Tahoe") || association(:operator) }
     original_location { operator.locations.first }
