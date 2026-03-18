@@ -167,16 +167,16 @@ module Jellyswitch
 
     def this_month_revenue
       return 0 unless location
-      invoice_rev = location_invoices.paid.where(billable_type: "User")
+      invoice_rev = location_invoices.paid
         .where(due_date: Time.current.beginning_of_month..Time.current.end_of_month)
         .sum(:amount_due).to_f / 100.0
-      lease_rev = lease_revenue_for_month(Date.today)
+      lease_rev = lease_supplement_for_month(Date.today)
       invoice_rev + lease_rev
     end
 
     def revenue_by_month
-      # Non-lease invoice revenue (memberships, day passes, etc.)
-      invoice_data = location_invoices.paid.where(billable_type: "User")
+      # All invoice revenue (memberships, day passes, and lease orgs that pay via Stripe)
+      invoice_data = location_invoices.paid
         .where(due_date: 12.months.ago..)
         .group_by_month(:due_date).sum(:amount_due)
 
@@ -186,12 +186,12 @@ module Jellyswitch
         combined[key.to_date.beginning_of_month] += amt.to_f / 100.0
       end
 
-      # Add lease revenue per month
+      # Add lease revenue only for orgs that DON'T have invoices that month
       start_month = 12.months.ago.to_date.beginning_of_month
       current_month = Date.today.beginning_of_month
       month = start_month
       while month <= current_month
-        combined[month] += lease_revenue_for_month(month)
+        combined[month] += lease_supplement_for_month(month)
         month = month.next_month
       end
 
@@ -334,19 +334,43 @@ module Jellyswitch
       sorted.size.odd? ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2.0
     end
 
-    # Calculate total lease revenue for a given month based on active leases
-    # For monthly plans: full plan amount if lease is active during the month
-    # For annual plans: plan amount / 12 (amortized monthly)
-    def lease_revenue_for_month(date)
+    # Add lease revenue only for orgs that don't already have invoices that month.
+    # Orgs paying via Stripe already show up in invoice revenue; this fills in
+    # out-of-band (check) payers so all lease revenue is accounted for.
+    def lease_supplement_for_month(date)
       month_start = date.to_date.beginning_of_month
       month_end = date.to_date.end_of_month
-      total = 0.0
 
-      office_leases.includes(subscription: :plan).find_each do |lease|
+      # Find org IDs that already have invoices this month
+      month_invoices = location_invoices.paid
+        .where(due_date: month_start.beginning_of_day..month_end.end_of_day)
+      orgs_with_invoices = Set.new
+
+      # Orgs billed directly as Organization
+      orgs_with_invoices.merge(month_invoices.where(billable_type: "Organization").pluck(:billable_id))
+
+      # Orgs whose billing contact or owner has User invoices
+      lease_org_ids = office_leases.where("start_date <= ? AND end_date >= ?", month_end, month_start)
+                                   .pluck(:organization_id).uniq
+      if lease_org_ids.any?
+        contact_map = Organization.where(id: lease_org_ids)
+                                  .pluck(:id, :billing_contact_id, :owner_id)
+        contact_map.each do |org_id, contact_id, owner_id|
+          user_ids = [contact_id, owner_id].compact
+          next if user_ids.empty?
+          if month_invoices.where(billable_type: "User", billable_id: user_ids).exists?
+            orgs_with_invoices << org_id
+          end
+        end
+      end
+
+      # Only add revenue for orgs WITHOUT invoices
+      total = 0.0
+      office_leases.includes(subscription: :plan).each do |lease|
         plan = lease.subscription&.plan
         next unless plan
-        # Lease must overlap with this month
         next if lease.end_date < month_start || lease.start_date > month_end
+        next if orgs_with_invoices.include?(lease.organization_id)
 
         monthly_amount = case plan.interval
                          when "monthly" then plan.amount_in_cents
