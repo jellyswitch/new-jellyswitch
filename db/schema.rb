@@ -11,6 +11,7 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -373,6 +374,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.boolean "credits_enabled", default: false, null: false
     t.boolean "childcare_enabled", default: true, null: false
     t.boolean "crm_enabled", default: true, null: false
+    t.string "sender_email"
+    t.string "google_reviews_url"
+    t.integer "renewal_reminder_days"
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"
@@ -493,6 +497,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.string "bundle_id"
     t.string "firebase_project_id"
     t.string "sender_email"
+    t.string "google_reviews_url"
+    t.integer "renewal_reminder_days", default: 7
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -542,6 +548,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.integer "childcare_reservations", default: 0, null: false
     t.integer "plan_category_id"
     t.integer "location_id"
+    t.integer "included_meeting_room_minutes"
+    t.integer "overage_rate_in_cents", default: 0
     t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
@@ -560,6 +568,37 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["location_id"], name: "index_posts_on_location_id"
+  end
+
+  create_table "product_email_sends", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "user_id", null: false
+    t.string "sendable_type", null: false
+    t.bigint "sendable_id", null: false
+    t.string "email_type", null: false
+    t.string "status", default: "sent"
+    t.text "error_message"
+    t.datetime "sent_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id"], name: "index_product_email_sends_on_operator_id"
+    t.index ["sendable_type", "sendable_id", "email_type"], name: "idx_product_email_sends_unique", unique: true
+    t.index ["user_id"], name: "index_product_email_sends_on_user_id"
+  end
+
+  create_table "product_email_templates", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "product_type", null: false
+    t.string "email_type", null: false
+    t.string "subject", null: false
+    t.boolean "enabled", default: false
+    t.integer "follow_up_delay_days"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "location_id"
+    t.index ["location_id"], name: "index_product_email_templates_on_location_id"
+    t.index ["operator_id", "location_id", "product_type", "email_type"], name: "idx_pet_operator_location_product_email", unique: true
+    t.index ["operator_id"], name: "index_product_email_templates_on_operator_id"
   end
 
   create_table "refunds", force: :cascade do |t|
@@ -647,6 +686,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.integer "position", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "always_on", default: false, null: false
     t.index ["location_id"], name: "index_tracking_pixels_on_location_id"
     t.index ["operator_id"], name: "index_tracking_pixels_on_operator_id"
     t.index ["position"], name: "index_tracking_pixels_on_position"
@@ -701,6 +741,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.boolean "email_confirmed", default: false, null: false
     t.string "confirmation_token"
     t.datetime "confirmation_sent_at"
+    t.boolean "marketing_consent", default: false, null: false
+    t.datetime "terms_accepted_at"
     t.index ["operator_id"], name: "index_users_on_operator_id"
   end
 
@@ -718,12 +760,12 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "feedback_replies", "member_feedbacks"
-  add_foreign_key "feedback_replies", "users"
   add_foreign_key "amenities", "rooms"
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
   add_foreign_key "doors", "locations"
+  add_foreign_key "feedback_replies", "member_feedbacks"
+  add_foreign_key "feedback_replies", "users"
   add_foreign_key "location_managements", "locations"
   add_foreign_key "location_managements", "users"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
@@ -732,6 +774,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
   add_foreign_key "office_leases", "organizations", on_delete: :nullify
   add_foreign_key "office_leases", "subscriptions", on_delete: :nullify
   add_foreign_key "offices", "locations", on_delete: :nullify
+  add_foreign_key "product_email_sends", "operators"
+  add_foreign_key "product_email_sends", "users"
+  add_foreign_key "product_email_templates", "locations"
+  add_foreign_key "product_email_templates", "operators"
   add_foreign_key "refunds", "invoices", on_delete: :nullify
   add_foreign_key "rooms", "locations"
   add_foreign_key "tracking_pixels", "locations"
