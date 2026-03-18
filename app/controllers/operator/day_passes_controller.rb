@@ -62,7 +62,8 @@ class Operator::DayPassesController < Operator::BaseController
   def redeem_code
     result = Billing::DayPasses::RedeemCode.call(
       code: params[:code],
-      operator: current_tenant
+      operator: current_tenant,
+      location: current_location
     )
 
     if result.success?
