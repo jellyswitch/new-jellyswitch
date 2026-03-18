@@ -30,7 +30,7 @@ class Operator::SearchResultsController < Operator::BaseController
         :announcement],
       models: [FeedItem, User, Organization, Room, Door, Location, Announcement],
       where: { operator_id: current_tenant.id },
-      order: { _score: :desc, created_at: :desc },
+      order: { created_at: :desc },
       operator: "or"
     )
     render :create, status: 200
