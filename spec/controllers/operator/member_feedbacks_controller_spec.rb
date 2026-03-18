@@ -129,9 +129,22 @@ RSpec.describe Operator::MemberFeedbacksController, type: :controller do
       end
     end
 
-    context "when user is not admin" do
+    context "when user is the feedback owner" do
       before do
         allow(controller).to receive(:current_user).and_return(regular_user)
+        get :show, params: { id: member_feedback.id }
+      end
+
+      it "allows access to their own feedback" do
+        expect(response).to be_successful
+      end
+    end
+
+    context "when user is not admin and not the owner" do
+      let(:other_user) { create(:user, operator: operator, original_location: location) }
+
+      before do
+        allow(controller).to receive(:current_user).and_return(other_user)
         get :show, params: { id: member_feedback.id }
       end
 

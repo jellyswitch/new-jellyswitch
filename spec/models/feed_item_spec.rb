@@ -65,7 +65,7 @@ RSpec.describe FeedItem, type: :model do
         expect(feed_item.action_text).to eq('posted an announcement')
 
         feed_item.blob = { type: 'feedback' }
-        expect(feed_item.action_text).to eq('left feedback')
+        expect(feed_item.action_text).to eq('sent a message')
       end
     end
 
