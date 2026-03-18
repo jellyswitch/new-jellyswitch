@@ -153,6 +153,8 @@ class User < ApplicationRecord
            :admin_of_location?,
            :currently_at_location?,
            :day_pass_reservation_charge_info,
+           :subscription_reservation_charge_info,
+           :active_subscription_for_location,
            to: :user_permissions
 
   # Roles
