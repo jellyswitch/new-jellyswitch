@@ -72,6 +72,16 @@
     </p>
   <%- end %>
 
+  <%- if reservation.part_of_series? && reservation.recurring_reservation.present? %>
+    <p class="font-weight-bold">
+      <i class="fas fa-sync-alt text-primary"></i> Recurring:
+      <span class="font-weight-normal">
+        <%= link_to reservation.recurring_reservation.title, recurring_reservation_path(reservation.recurring_reservation) %>
+        (<%= reservation.recurring_reservation.pattern_description %>)
+      </span>
+    </p>
+  <%- end %>
+
   <%- if !policy(reservation).destroy? && reservation.future? %>
     <p class="font-weight-bold text-sm">Note: <span class="font-weight-normal font-italic">If you want to cancel this paid reservation room, please contact our workspace admin for assistance.</span></p>
   <%- end %>

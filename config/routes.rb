@@ -340,6 +340,15 @@ Rails.application.routes.draw do
       get :ltv
     end
   end
+  resources :recurring_reservations, controller: "operator/recurring_reservations", only: [:new, :create, :show, :index] do
+    collection do
+      post :check_conflicts
+    end
+    member do
+      put :cancel_series
+      put :cancel_occurrence
+    end
+  end
   resources :reservations, controller: "operator/reservations", except: [:index, :new] do
     collection do
       get :choose_day, to: "operator/reservations#choose_day"

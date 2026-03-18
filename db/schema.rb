@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
+ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
@@ -610,6 +610,27 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.index ["invoice_id"], name: "index_refunds_on_invoice_id"
   end
 
+  create_table "recurring_reservations", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "room_id", null: false
+    t.string "title", null: false
+    t.string "recurrence_pattern", null: false
+    t.integer "duration_minutes", null: false
+    t.time "time_of_day", null: false
+    t.integer "day_of_week"
+    t.integer "day_of_month"
+    t.date "start_date", null: false
+    t.date "end_date", null: false
+    t.boolean "cancelled", default: false, null: false
+    t.integer "operator_id", null: false
+    t.bigint "location_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id"], name: "index_recurring_reservations_on_operator_id"
+    t.index ["room_id"], name: "index_recurring_reservations_on_room_id"
+    t.index ["user_id"], name: "index_recurring_reservations_on_user_id"
+  end
+
   create_table "reservations", force: :cascade do |t|
     t.integer "user_id", null: false
     t.datetime "datetime_in", precision: nil, null: false
@@ -623,6 +644,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_17_000005) do
     t.boolean "ended_early", default: false
     t.boolean "paid"
     t.text "note"
+    t.bigint "recurring_reservation_id"
+    t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
   end
 
   create_table "rooms", force: :cascade do |t|

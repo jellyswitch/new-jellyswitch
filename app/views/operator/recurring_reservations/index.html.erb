@@ -1,0 +1,57 @@
+<% title "Recurring Meetings" %>
+
+<%= list_wrapper do %>
+  <%= list_item do %>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h4 class="mb-0">Recurring Meetings</h4>
+      <%= link_to new_recurring_reservation_path, class: "btn btn-dark" do %>
+        <i class="fas fa-plus"></i> Schedule Recurring Meeting
+      <% end %>
+    </div>
+
+    <% if @recurring_reservations.any? %>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Room</th>
+              <th>Pattern</th>
+              <th>Time</th>
+              <th>Duration</th>
+              <th>Period</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recurring_reservations.each do |rr| %>
+              <tr>
+                <td>
+                  <%= link_to rr.title, recurring_reservation_path(rr) %>
+                </td>
+                <td><%= rr.room.name %></td>
+                <td><%= rr.pattern_description %></td>
+                <td><%= rr.time_description %></td>
+                <td><%= rr.duration_description %></td>
+                <td>
+                  <small class="text-muted">
+                    <%= rr.start_date.strftime("%b %d") %> - <%= rr.end_date.strftime("%b %d, %Y") %>
+                  </small>
+                </td>
+                <td class="text-right">
+                  <%= link_to recurring_reservation_path(rr), class: "btn btn-outline-dark btn-sm" do %>
+                    <i class="fas fa-eye"></i> View
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="text-center py-4">
+        <p class="text-muted mb-0">No recurring meetings scheduled yet.</p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>

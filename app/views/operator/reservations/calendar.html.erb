@@ -7,13 +7,20 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="mb-0">Reservation Date</h2>
 
-      <div class="room-filter-container">
-        <select id="room-filter" class="form-control">
-          <option value="">All Rooms</option>
-          <% current_location.rooms.visible.order(:name).each do |room| %>
-            <option value="<%= room.id %>"><%= room.name %></option>
+      <div class="d-flex align-items-center">
+        <% if current_user&.admin_or_manager?(current_location) %>
+          <%= link_to new_recurring_reservation_path, class: "btn btn-outline-dark btn-sm mr-2" do %>
+            <i class="fas fa-sync-alt"></i> Recurring
           <% end %>
-        </select>
+        <% end %>
+        <div class="room-filter-container">
+          <select id="room-filter" class="form-control">
+            <option value="">All Rooms</option>
+            <% current_location.rooms.visible.order(:name).each do |room| %>
+              <option value="<%= room.id %>"><%= room.name %></option>
+            <% end %>
+          </select>
+        </div>
       </div>
     </div>
 

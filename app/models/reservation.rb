@@ -19,6 +19,7 @@ class Reservation < ApplicationRecord
   # Relationships
   belongs_to :room
   belongs_to :user
+  belongs_to :recurring_reservation, optional: true
   has_and_belongs_to_many :amenities
 
   validates_with ReservationValidator
@@ -114,5 +115,9 @@ class Reservation < ApplicationRecord
 
   def amenity_names
     amenities.pluck(:name).join(", ")
+  end
+
+  def part_of_series?
+    recurring_reservation_id.present?
   end
 end

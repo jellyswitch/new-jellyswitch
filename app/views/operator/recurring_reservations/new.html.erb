@@ -1,0 +1,186 @@
+<% title "Schedule Recurring Meeting" %>
+
+<%= list_wrapper do %>
+  <%= list_item do %>
+    <%= form_tag recurring_reservations_path, method: :post, id: "recurring-reservation-form" do %>
+
+      <div class="form-group">
+        <label for="title">Meeting Title <span class="text-danger">*</span></label>
+        <input type="text" name="title" id="title" class="form-control" placeholder="e.g. Team Standup" required
+               value="<%= params[:title] %>">
+      </div>
+
+      <div class="form-group">
+        <label for="room_id">Room <span class="text-danger">*</span></label>
+        <select name="room_id" id="room_id" class="form-control" required>
+          <option value="">Select a room</option>
+          <% @rooms.each do |room| %>
+            <option value="<%= room.id %>"><%= room.name %> (Capacity: <%= room.capacity %>)</option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="user_id">Booked For <span class="text-danger">*</span></label>
+        <select name="user_id" id="user_id" class="form-control" required>
+          <option value="<%= current_user.id %>"><%= current_user.name %> (Me)</option>
+          <% @members.each do |name, id| %>
+            <% next if id == current_user.id %>
+            <option value="<%= id %>"><%= name %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Recurrence Pattern <span class="text-danger">*</span></label>
+        <div class="btn-group-toggle d-flex flex-wrap" data-toggle="buttons">
+          <% RecurringReservation::PATTERN_OPTIONS.each do |label, value| %>
+            <label class="btn btn-outline-dark mr-2 mb-2 <%= 'active' if params[:recurrence_pattern] == value %>">
+              <input type="radio" name="recurrence_pattern" value="<%= value %>"
+                     <%= 'checked' if params[:recurrence_pattern] == value %>
+                     onchange="togglePatternFields(this.value)"> <%= label %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="form-group" id="day-of-week-group" style="display: none;">
+        <label for="day_of_week">Day of Week</label>
+        <select name="day_of_week" id="day_of_week" class="form-control">
+          <% Date::DAYNAMES.each_with_index do |day, i| %>
+            <option value="<%= i %>"><%= day %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="form-group" id="day-of-month-group" style="display: none;">
+        <label for="day_of_month">Day of Month</label>
+        <select name="day_of_month" id="day_of_month" class="form-control">
+          <% (1..28).each do |d| %>
+            <option value="<%= d %>"><%= d.ordinalize %></option>
+          <% end %>
+        </select>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group">
+            <label for="time_of_day">Time <span class="text-danger">*</span></label>
+            <input type="time" name="time_of_day" id="time_of_day" class="form-control" required
+                   value="<%= params[:time_of_day] || '09:00' %>">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label for="duration_minutes">Duration <span class="text-danger">*</span></label>
+            <select name="duration_minutes" id="duration_minutes" class="form-control" required>
+              <option value="30">30 minutes</option>
+              <option value="60" selected>1 hour</option>
+              <option value="90">1.5 hours</option>
+              <option value="120">2 hours</option>
+              <option value="180">3 hours</option>
+              <option value="240">4 hours</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-6">
+          <div class="form-group">
+            <label for="start_date">Start Date <span class="text-danger">*</span></label>
+            <input type="date" name="start_date" id="start_date" class="form-control" required
+                   value="<%= params[:start_date] || Date.today.to_s %>">
+          </div>
+        </div>
+        <div class="col-6">
+          <div class="form-group">
+            <label for="period_months">Period <span class="text-danger">*</span></label>
+            <select name="period_months" id="period_months" class="form-control" required>
+              <% RecurringReservation::PERIOD_OPTIONS.each do |label, months| %>
+                <option value="<%= months %>"><%= label %></option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-2 mb-3">
+        <button type="button" class="btn btn-outline-primary btn-block" id="preview-dates-btn" onclick="previewDates()">
+          <i class="fas fa-calendar-alt"></i> Preview Dates & Check Conflicts
+        </button>
+      </div>
+
+      <div id="conflict-results" class="mb-3"></div>
+
+      <div class="form-group">
+        <button type="submit" class="btn btn-dark btn-block" id="submit-btn">
+          <i class="fas fa-calendar-check"></i> Create Recurring Meeting
+        </button>
+      </div>
+
+    <% end %>
+
+    <% if @conflicts.present? %>
+      <div class="alert alert-danger mt-3">
+        <h5><i class="fas fa-exclamation-triangle"></i> Scheduling Conflicts Found</h5>
+        <p>The following dates have conflicts with existing reservations:</p>
+        <ul>
+          <% @conflicts.each do |conflict| %>
+            <li><strong><%= conflict[:date].strftime("%A, %B %d, %Y") %></strong> at <%= conflict[:time].strftime("%l:%M %p").strip %></li>
+          <% end %>
+        </ul>
+        <p class="mb-0">Please choose a different time, room, or adjust the schedule.</p>
+      </div>
+    <% end %>
+  <% end %>
+<% end %>
+
+<script>
+function togglePatternFields(pattern) {
+  var weekGroup = document.getElementById('day-of-week-group');
+  var monthGroup = document.getElementById('day-of-month-group');
+
+  weekGroup.style.display = 'none';
+  monthGroup.style.display = 'none';
+
+  if (pattern === 'weekly' || pattern === 'biweekly') {
+    weekGroup.style.display = 'block';
+  } else if (pattern === 'monthly') {
+    monthGroup.style.display = 'block';
+  }
+}
+
+function previewDates() {
+  var form = document.getElementById('recurring-reservation-form');
+  var formData = new FormData(form);
+  var params = new URLSearchParams(formData);
+
+  var resultsDiv = document.getElementById('conflict-results');
+  resultsDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Checking availability...</div>';
+
+  fetch('<%= check_conflicts_recurring_reservations_path %>', {
+    method: 'POST',
+    headers: {
+      'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params.toString()
+  })
+  .then(function(response) { return response.text(); })
+  .then(function(html) {
+    resultsDiv.innerHTML = html;
+  })
+  .catch(function(error) {
+    resultsDiv.innerHTML = '<div class="alert alert-danger">Error checking conflicts. Please try again.</div>';
+  });
+}
+
+// Initialize pattern fields based on current selection
+document.addEventListener('DOMContentLoaded', function() {
+  var checked = document.querySelector('input[name="recurrence_pattern"]:checked');
+  if (checked) {
+    togglePatternFields(checked.value);
+  }
+});
+</script>
