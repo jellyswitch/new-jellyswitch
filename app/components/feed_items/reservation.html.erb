@@ -27,6 +27,15 @@
     <%= feed_item.reservation.minutes %> <%= quantize(feed_item.reservation.minutes, "minute") %>
   </dd>
 
+  <% if feed_item.reservation.paid? %>
+    <dt class="col-6">
+      Amount
+    </dt>
+    <dd class="col">
+      <%= number_to_currency(feed_item.reservation.charge_amount.to_f / 100.0) %>
+    </dd>
+  <% end %>
+
   <% if credits_enabled? %>
     <dt class="col-6">
       Credits Used

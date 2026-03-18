@@ -3,7 +3,7 @@ module Notifiable
     private
 
     def create_feed_item
-      blob = {type: "paid-room-reservation", reservation_id: id}
+      blob = {type: "paid-room-reservation", reservation_id: id, charge_amount_in_cents: charge_amount}
       FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
 
@@ -16,7 +16,8 @@ module Notifiable
     end
 
     def message
-      "#{user.name} has booked a paid meeting room"
+      amount = charge_amount.to_f / 100.0
+      "#{user.name} has booked #{room.name} for #{'$%.2f' % amount}"
     end
 
     def recipients
