@@ -15,7 +15,7 @@
         <select name="room_id" id="room_id" class="form-control" required>
           <option value="">Select a room</option>
           <% @rooms.each do |room| %>
-            <option value="<%= room.id %>"><%= room.name %> (Capacity: <%= room.capacity %>)</option>
+            <option value="<%= room.id %>" <%= 'selected' if params[:room_id].to_s == room.id.to_s %>><%= room.name %> (Capacity: <%= room.capacity %>)</option>
           <% end %>
         </select>
       </div>
