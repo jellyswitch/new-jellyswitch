@@ -3,7 +3,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   before_action :background_image, except: [:create, :update]
 
   def index
-    @office_leases = OfficeLease.order(created_at: :desc)
+    @office_leases = current_location.office_leases.order(created_at: :desc)
     authorize @office_leases
   end
 

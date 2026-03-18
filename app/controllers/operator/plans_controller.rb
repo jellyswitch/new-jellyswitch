@@ -136,7 +136,7 @@ class Operator::PlansController < Operator::BaseController
   private
 
   def find_plans
-    @plans = Plan.individual.order(:name)
+    @plans = Plan.individual.for_location(current_location).order(:name)
   end
 
   def find_plan(key=:id)
