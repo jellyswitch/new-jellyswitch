@@ -31,7 +31,7 @@ class Operator::SearchResultsController < Operator::BaseController
       models: [FeedItem, User, Organization, Room, Door, Location, Announcement],
       where: { operator_id: current_tenant.id },
       operator: "or"
-    )
+    ).sort_by { |r| r.created_at || Time.at(0) }.reverse
     render :create, status: 200
   end
 end
