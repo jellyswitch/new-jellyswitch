@@ -63,7 +63,7 @@ cowork_tahoe_superadmin:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -95,7 +95,7 @@ cowork_tahoe_admin:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -127,7 +127,7 @@ other_location_admin:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -159,7 +159,7 @@ cowork_tahoe_member:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -191,7 +191,7 @@ cowork_tahoe_non_member:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil
@@ -223,7 +223,7 @@ cowork_tahoe_community_manager:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 10
   childcare_reservation_balance: 0
   android_token: nil
@@ -255,7 +255,7 @@ cowork_tahoe_general_manager:
   always_allow_building_access: false
   bill_to_organization: false
   archived: false
-  phone: nil
+  phone: "555-555-5555"
   credit_balance: 0
   childcare_reservation_balance: 0
   android_token: nil

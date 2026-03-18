@@ -135,7 +135,8 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
       "notification": {
         "title": @notifiable.send(:message),
         "body": @notifiable.send(:message)
-      }
+      },
+      "data" => @notifiable.send(:deep_link_data).transform_values(&:to_s)
     }).times(recipients.count)
     
     FCM.expects(:new).with('', instance_of(StringIO), "test-project-id").returns(fcm_mock).times(recipients.count)

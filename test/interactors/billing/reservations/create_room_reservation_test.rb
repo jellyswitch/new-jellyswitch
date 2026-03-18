@@ -10,6 +10,7 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,
       SendAdminNotificationForPaidRoom,
+      Billing::Reservations::ScheduleReservationEmails,
     ]
 
     assert_equal expected_organized, Billing::Reservations::CreateRoomReservation.organized

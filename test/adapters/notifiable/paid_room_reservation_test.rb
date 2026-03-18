@@ -11,7 +11,7 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
 
   test "create_feed_item creates a feed item with correct attributes" do
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
-    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "paid-room-reservation", reservation_id: @reservation.id)
+    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "paid-room-reservation", reservation_id: @reservation.id, charge_amount_in_cents: @reservation.charge_amount)
 
     notifiable.send(:create_feed_item)
   end
@@ -41,7 +41,8 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
 
   test "message returns the correct notification message" do
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
-    expected_message = "#{@user.name} has booked a paid meeting room"
+    amount = @reservation.charge_amount.to_f / 100.0
+    expected_message = "#{@user.name} has booked #{@room.name} for #{'$%.2f' % amount}"
 
     assert_equal expected_message, notifiable.send(:message)
   end

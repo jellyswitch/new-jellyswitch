@@ -18,7 +18,7 @@ class UserManager
         linkedin: nil,
         twitter: nil,
         website: nil,
-        phone: nil,
+        phone: "deleted",
         stripe_customer_id: nil, # May cause problems
         archived: true,
         card_added: false,

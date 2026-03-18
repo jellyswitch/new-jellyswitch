@@ -22,9 +22,10 @@ class UserManagerTest < ActiveSupport::TestCase
     assert @user.email != @old_user.email
 
 
-    [:bio, :linkedin, :twitter, :website, :phone, :stripe_customer_id, :organization_id].map do |attr|
-      assert @user.send(attr).blank?
+    [:bio, :linkedin, :twitter, :website, :stripe_customer_id, :organization_id].map do |attr|
+      assert @user.send(attr).blank?, "Expected #{attr} to be blank but was #{@user.send(attr).inspect}"
     end
+    assert_equal "deleted", @user.phone
   end
 
   test 'it removes all future reservations' do

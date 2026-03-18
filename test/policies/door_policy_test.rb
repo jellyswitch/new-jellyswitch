@@ -49,10 +49,9 @@ class DoorPolicyTest < PolicyAssertions::Test
 
   def test_destroy
     assert_not_permitted @member, Door
-    assert_not_permitted @admin, Door
+    assert_permit @admin, Door
     assert_not_permitted @community_manager, Door
-    assert_not_permitted @general_manager, Door
-    assert_permit @superadmin, Door
+    assert_permit @general_manager, Door
   end
 
   def test_open

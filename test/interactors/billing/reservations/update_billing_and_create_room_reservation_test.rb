@@ -8,7 +8,8 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
       Billing::Reservations::SaveStripeInvoice,
       Billing::Reservations::GrantFreeDayPass,
       CreateNotificationsAsync,
-      SendAdminNotificationForPaidRoom
+      SendAdminNotificationForPaidRoom,
+      Billing::Reservations::ScheduleReservationEmails
     ]
 
     assert_equal expected_organized, Billing::Reservations::UpdateBillingAndCreateRoomReservation.organized
