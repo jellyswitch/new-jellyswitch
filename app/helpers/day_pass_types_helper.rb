@@ -22,6 +22,8 @@ module DayPassTypesHelper
     # Convert dollars to cents for overage rate
     if p[:overage_rate_in_cents].present?
       p[:overage_rate_in_cents] = Money.from_amount(p[:overage_rate_in_cents].to_f, "USD").cents
+    else
+      p[:overage_rate_in_cents] = 0
     end
     p[:location_id] = current_location.id if current_location
     p
@@ -39,6 +41,8 @@ module DayPassTypesHelper
     # Convert dollars to cents for overage rate
     if p[:overage_rate_in_cents].present?
       p[:overage_rate_in_cents] = Money.from_amount(p[:overage_rate_in_cents].to_f, "USD").cents
+    else
+      p[:overage_rate_in_cents] = 0
     end
     p
   end

@@ -8,6 +8,11 @@ class Operator::LandingController < Operator::BaseController
   end
 
   def home
+    if current_location.blank?
+      redirect_to root_path
+      return
+    end
+
     find_doors
     @member_feedback = MemberFeedback.new
     find_upcoming_events

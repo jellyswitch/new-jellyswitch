@@ -205,6 +205,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:success] = "Updated organization."
       turbo_redirect(user_path(@user))
     else
+      @usage_report = Jellyswitch::UsageReport.new(@user)
       render :show, status: 422
     end
   rescue Exception => e
