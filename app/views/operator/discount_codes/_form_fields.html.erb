@@ -1,0 +1,93 @@
+<%= form_with(model: discount_code, url: url, method: local_assigns[:method] || :post, local: true) do |f| %>
+  <% if discount_code.errors.any? %>
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        <% discount_code.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="form-group mt-3">
+    <%= f.label :code, "Discount Code" %>
+    <%= f.text_field :code, class: "form-control", placeholder: "e.g. WELCOME20", style: "text-transform: uppercase" %>
+    <small class="form-text text-muted">The code members will enter to receive the discount.</small>
+  </div>
+
+  <div class="form-group mt-3">
+    <%= f.label :discount_type, "Discount Type" %>
+    <%= f.select :discount_type, [["Percentage Off", "percent_off"], ["Fixed Amount Off", "amount_off"]], {}, class: "form-control" %>
+  </div>
+
+  <div class="form-group mt-3">
+    <%= f.label :discount_value, "Discount Value" %>
+    <div class="input-group">
+      <span class="input-group-text" id="discount-prefix">%</span>
+      <%= f.number_field :discount_value,
+        class: "form-control",
+        step: discount_code.discount_type == "amount_off" ? "0.01" : "1",
+        min: 0,
+        value: discount_code.discount_type == "amount_off" && discount_code.discount_value.present? ? discount_code.discount_value / 100.0 : discount_code.discount_value,
+        placeholder: discount_code.discount_type == "amount_off" ? "10.00" : "20" %>
+    </div>
+    <small class="form-text text-muted">
+      For percentage: enter 1-100. For fixed amount: enter dollar amount (e.g. 10.00).
+    </small>
+  </div>
+
+  <div class="form-group mt-3">
+    <%= f.label :applies_to, "Applies To" %>
+    <%= f.select :applies_to, [
+      ["All Products", "all"],
+      ["Day Passes Only", "day_pass"],
+      ["Memberships Only", "membership"],
+      ["Meeting Rooms Only", "meeting_room"]
+    ], {}, class: "form-control" %>
+  </div>
+
+  <div class="form-group mt-3">
+    <%= f.label :max_redemptions, "Maximum Redemptions" %>
+    <%= f.number_field :max_redemptions, class: "form-control", min: 1, placeholder: "Leave blank for unlimited" %>
+  </div>
+
+  <div class="form-group mt-3">
+    <%= f.label :expires_at, "Expiration Date" %>
+    <%= f.datetime_local_field :expires_at, class: "form-control" %>
+    <small class="form-text text-muted">Leave blank for no expiration.</small>
+  </div>
+
+  <div class="form-check mt-3">
+    <%= f.check_box :active, class: "form-check-input" %>
+    <%= f.label :active, "Active", class: "form-check-label" %>
+  </div>
+
+  <div class="mt-4 mb-3">
+    <%= f.submit discount_code.persisted? ? "Update Discount Code" : "Create Discount Code", class: "btn btn-primary btn-block" %>
+  </div>
+<% end %>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var typeSelect = document.querySelector('#discount_code_discount_type');
+    var prefix = document.querySelector('#discount-prefix');
+    var valueField = document.querySelector('#discount_code_discount_value');
+
+    function updatePrefix() {
+      if (typeSelect.value === 'amount_off') {
+        prefix.textContent = '$';
+        valueField.step = '0.01';
+        valueField.placeholder = '10.00';
+      } else {
+        prefix.textContent = '%';
+        valueField.step = '1';
+        valueField.placeholder = '20';
+      }
+    }
+
+    if (typeSelect) {
+      typeSelect.addEventListener('change', updatePrefix);
+      updatePrefix();
+    }
+  });
+</script>

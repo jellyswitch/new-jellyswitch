@@ -1,0 +1,13 @@
+<% title "New Discount Code" %>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-2 pt-2">
+      <h4 class="display-4 text-center mt-4">New Discount Code</h4>
+      <%= render 'form_fields', discount_code: @discount_code, url: discount_codes_path %>
+      <%= link_to 'Back', discount_codes_path %>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>

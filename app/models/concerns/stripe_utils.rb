@@ -55,9 +55,11 @@ module StripeUtils
     stripe_request(stripe_refund, :retrieve, id: refund.stripe_refund_id)
   end
 
-  def create_stripe_subscription(subscription, lease: nil)
+  def create_stripe_subscription(subscription, lease: nil, coupon: nil)
     subscribable = StripeSubscriptionFactory.for(subscription, self, lease)
-    stripe_request(stripe_subscription, :create, subscribable.subscription_args)
+    args = subscribable.subscription_args
+    args[:coupon] = coupon if coupon.present?
+    stripe_request(stripe_subscription, :create, args)
   end
 
   def update_stripe_subscription_price(subscription, new_price_in_cents)

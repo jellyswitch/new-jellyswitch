@@ -40,6 +40,23 @@ class Operator::SubscriptionsController < Operator::BaseController
       interactor = Billing::Subscription::CreateSubscription
     end
 
+    # Validate discount code if provided
+    discount_code = nil
+    if params[:discount_code].present?
+      validate_result = Billing::DiscountCodes::ValidateCode.call(
+        code: params[:discount_code],
+        location: current_location,
+        product_type: "membership"
+      )
+      if validate_result.success?
+        discount_code = validate_result.discount_code
+      else
+        flash[:error] = validate_result.message
+        turbo_redirect(referrer_or_root)
+        return
+      end
+    end
+
     result = interactor.call(
       subscription: @subscription,
       token: token,
@@ -47,7 +64,8 @@ class Operator::SubscriptionsController < Operator::BaseController
       start_day: start_day,
       out_of_band: out_of_band,
       operator: current_tenant,
-      location: current_location
+      location: current_location,
+      discount_code: discount_code
     )
 
     if result.success?

@@ -5,10 +5,19 @@ class Billing::DayPasses::CreateStripeInvoice
   delegate :day_pass, :token, :operator, :location, :out_of_band, :params, :user_id, :user, to: :context
 
   def call
+    charge_amount = day_pass.day_pass_type.amount_in_cents
+    discount_code = context.discount_code
+
+    if discount_code.present?
+      discount_amount = discount_code.calculate_discount(charge_amount)
+      charge_amount -= discount_amount
+      context.discount_amount_in_cents = discount_amount
+    end
+
     @invoice_item = Stripe::InvoiceItem.create({
       customer: day_pass.billable.stripe_customer_id_for_location(location),
       currency: 'usd',
-      amount: day_pass.day_pass_type.amount_in_cents,
+      amount: charge_amount,
       description: day_pass.charge_description
     }, {
       api_key: location.stripe_secret_key,
@@ -36,5 +45,12 @@ class Billing::DayPasses::CreateStripeInvoice
 
     context.day_pass = day_pass
     context.notifiable = day_pass
+
+    # Record discount redemption if applicable
+    if discount_code.present?
+      context.discountable = day_pass
+      context.user = day_pass.user
+      Billing::DiscountCodes::ApplyDiscount.call(context)
+    end
   end
 end

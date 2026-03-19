@@ -414,6 +414,23 @@ class Operator::ReservationsController < Operator::BaseController
       subscription_charge_info = nil
     end
 
+    # Validate discount code if provided
+    discount_code = nil
+    if params[:discount_code].present?
+      validate_result = Billing::DiscountCodes::ValidateCode.call(
+        code: params[:discount_code],
+        location: current_location,
+        product_type: "meeting_room"
+      )
+      if validate_result.success?
+        discount_code = validate_result.discount_code
+      else
+        flash[:error] = validate_result.message
+        turbo_redirect(calendar_reservations_path, action: "replace")
+        return
+      end
+    end
+
     interactor = if token.present?
       Billing::Reservations::UpdateBillingAndCreateRoomReservation
     else
@@ -430,7 +447,8 @@ class Operator::ReservationsController < Operator::BaseController
                              }, user: current_user, location: current_location,
                              token: token, out_of_band: false,
                              day_pass_charge_info: day_pass_charge_info,
-                             subscription_charge_info: subscription_charge_info)
+                             subscription_charge_info: subscription_charge_info,
+                             discount_code: discount_code)
 
     @reservation = result.reservation
 

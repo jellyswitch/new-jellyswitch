@@ -21,6 +21,7 @@ class Reservation < ApplicationRecord
   belongs_to :user
   belongs_to :recurring_reservation, optional: true
   has_and_belongs_to_many :amenities
+  has_many :discount_redemptions, as: :discountable, dependent: :nullify
 
   validates_with ReservationValidator
 

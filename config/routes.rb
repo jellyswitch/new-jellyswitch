@@ -169,6 +169,7 @@ Rails.application.routes.draw do
       get :archived, to: "operator/day_pass_types#archived"
     end
   end
+  resources :discount_codes, controller: "operator/discount_codes"
   resources :doors, controller: "operator/doors" do
     get "open", to: "operator/doors#open"
     post :unarchive, to: "operator/doors#unarchive"

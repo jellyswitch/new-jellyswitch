@@ -1,0 +1,52 @@
+<%- title "Discount Codes" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Discount Codes</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center mt-4 mb-4">Discount Codes</h4>
+    <%= link_to "Create New Discount Code", new_discount_code_path, class: "btn btn-primary btn-block" %>
+  <% end %>
+
+  <% if @discount_codes.none? %>
+    <%= list_item do %>
+      <i>No discount codes yet. Create one to offer discounts on day passes, memberships, or meeting rooms.</i>
+    <% end %>
+  <% else %>
+    <div class="list-group list-group-flush mt-4">
+      <% @discount_codes.each do |code| %>
+        <%= link_to edit_discount_code_path(code), class: "list-group-item list-group-item-action" do %>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <h5 class="mb-1">
+                <code><%= code.code %></code>
+                <% unless code.active? %>
+                  <span class="badge bg-secondary">Inactive</span>
+                <% end %>
+                <% if code.expired? %>
+                  <span class="badge bg-warning">Expired</span>
+                <% end %>
+              </h5>
+              <p class="mb-1">
+                <strong><%= code.discount_display %></strong> &mdash; <%= code.applies_to_display %>
+              </p>
+              <small class="text-muted">
+                Used <%= code.redemption_count %> time<%= code.redemption_count == 1 ? '' : 's' %>
+                <% if code.max_redemptions.present? %>
+                  / <%= code.max_redemptions %> max
+                <% end %>
+                <% if code.expires_at.present? %>
+                  &middot; Expires <%= code.expires_at.strftime("%b %d, %Y") %>
+                <% end %>
+              </small>
+            </div>
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

@@ -20,6 +20,14 @@ class Billing::Reservations::SaveStripeInvoice
       reservation.charge_description
     end
 
+    # Apply discount code if present
+    discount_code = context.discount_code
+    if discount_code.present? && charge_amount.positive?
+      discount_amount = discount_code.calculate_discount(charge_amount)
+      charge_amount -= discount_amount
+      context.discount_amount_in_cents = discount_amount
+    end
+
     if charge_amount.positive?
       @invoice_item = Stripe::InvoiceItem.create({
         customer: reservation.user.stripe_customer_id_for_location(location),
@@ -46,6 +54,16 @@ class Billing::Reservations::SaveStripeInvoice
       end
 
       context.invoice = @invoice
+    end
+
+    # Record discount redemption if applicable
+    if discount_code.present? && context.discount_amount_in_cents.to_i > 0
+      Billing::DiscountCodes::ApplyDiscount.call(
+        discount_code: discount_code,
+        user: reservation.user,
+        discountable: reservation,
+        discount_amount_in_cents: context.discount_amount_in_cents
+      )
     end
   end
 end

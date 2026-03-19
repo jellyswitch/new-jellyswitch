@@ -21,13 +21,31 @@ class Operator::DayPassesController < Operator::BaseController
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
 
+    # Validate discount code if provided
+    discount_code = nil
+    if params[:discount_code].present?
+      validate_result = Billing::DiscountCodes::ValidateCode.call(
+        code: params[:discount_code],
+        location: current_location,
+        product_type: "day_pass"
+      )
+      if validate_result.success?
+        discount_code = validate_result.discount_code
+      else
+        flash[:error] = validate_result.message
+        turbo_redirect(new_day_pass_path)
+        return
+      end
+    end
+
     result = DayPassInteractorFactory.for(token, current_tenant).call(
       params: day_pass_params,
       user_id: current_user.id,
       token: token,
       operator: current_tenant,
       out_of_band: out_of_band,
-      location: current_location
+      location: current_location,
+      discount_code: discount_code
     )
     @day_pass = result.day_pass
 

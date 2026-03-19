@@ -32,6 +32,7 @@ class Subscription < ApplicationRecord
   belongs_to :billable, polymorphic: true
   belongs_to :subscribable, polymorphic: true
   has_many :office_leases
+  has_many :discount_redemptions, as: :discountable, dependent: :nullify
 
   # Scopes
   scope :active, -> { where(active: true) }

@@ -32,5 +32,15 @@
 
       <%= link_to "View Day Pass Types", day_pass_types_path, class: "btn btn-block btn-primary" %>
     <% end %>
+
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Discount Codes</h4>
+
+      <p>
+        Create and manage discount codes for day passes, memberships, and meeting room reservations.
+      </p>
+
+      <%= link_to "Manage Discount Codes", discount_codes_path, class: "btn btn-block btn-primary" %>
+    <% end %>
   <% end %>
 <% end %>

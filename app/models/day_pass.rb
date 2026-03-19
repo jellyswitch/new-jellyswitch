@@ -32,6 +32,7 @@ class DayPass < ApplicationRecord
   belongs_to :user
   belongs_to :operator
   acts_as_tenant :operator
+  has_many :discount_redemptions, as: :discountable, dependent: :nullify
 
   # Scopes
   scope :today, -> { where(day: Time.current) }
