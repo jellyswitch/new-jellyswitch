@@ -7,8 +7,7 @@ class Operator::OrganizationMembersController < Operator::BaseController
 
     ids = user_params[:ids]&.reject(&:blank?)
     if ids.present?
-      users = User.where(id: ids).where.not(organization_id: organization.id)
-      count = users.update_all(organization_id: organization.id)
+      count = User.where(id: ids).update_all(organization_id: organization.id)
     else
       count = 0
     end
@@ -16,8 +15,7 @@ class Operator::OrganizationMembersController < Operator::BaseController
     if count > 0
       flash[:success] = "Successfully added #{count} #{'member'.pluralize(count)}."
     else
-      raw_ids = params.dig(:user, :ids)
-      flash[:error] = "No members were added. (debug: raw_ids=#{raw_ids.inspect}, filtered=#{ids.inspect}, org=#{organization.id})"
+      flash[:error] = "No members were added. Please select at least one member."
     end
 
     redirect_to organization_members_path(organization)
