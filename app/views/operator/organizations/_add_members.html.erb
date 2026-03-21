@@ -9,13 +9,13 @@
 <% end %>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  (function() {
     var searchInput = document.getElementById("member-search");
     var select = document.querySelector(".add-members-select");
     if (!searchInput || !select) return;
 
     var allOptions = Array.from(select.options).map(function(opt) {
-      return { text: opt.text, value: opt.value, element: opt };
+      return { text: opt.text, value: opt.value, selected: false };
     });
 
     searchInput.addEventListener("input", function() {
@@ -23,9 +23,17 @@
       select.innerHTML = "";
       allOptions.forEach(function(opt) {
         if (opt.text.toLowerCase().indexOf(query) !== -1) {
-          select.appendChild(opt.element);
+          var option = new Option(opt.text, opt.value, false, opt.selected);
+          select.appendChild(option);
         }
       });
     });
-  });
+
+    select.addEventListener("change", function() {
+      var selectedValues = Array.from(select.selectedOptions).map(function(o) { return o.value; });
+      allOptions.forEach(function(opt) {
+        opt.selected = selectedValues.indexOf(opt.value) !== -1;
+      });
+    });
+  })();
 </script>
