@@ -5,16 +5,21 @@ class Operator::OrganizationMembersController < Operator::BaseController
   def create
     organization = Organization.friendly.find(params[:organization_id])
 
-    users = User.where(id: user_params[:ids]).where.not(organization_id: organization.id)
-    count = users.update_all(organization_id: organization.id)
+    ids = user_params[:ids]&.reject(&:blank?)
+    if ids.present?
+      users = User.where(id: ids).where.not(organization_id: organization.id)
+      count = users.update_all(organization_id: organization.id)
+    else
+      count = 0
+    end
 
     if count > 0
       flash[:success] = "Successfully added #{count} #{'member'.pluralize(count)}."
     else
-      flash[:error] = "No members were added."
+      flash[:error] = "No members were added. Please select at least one member."
     end
 
-    turbo_redirect(organization_members_path(organization))
+    redirect_to organization_members_path(organization)
   end
 
   private

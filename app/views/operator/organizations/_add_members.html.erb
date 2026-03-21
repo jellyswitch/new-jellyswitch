@@ -1,8 +1,31 @@
-<%= form_for(:user, url: organization_add_member_path(organization), remote: true, html: { class: 'form' }) do |f| %>
+<%= form_for(:user, url: organization_add_member_path(organization), html: { class: 'form' }) do |f| %>
   <div class="form-group">
-    <%= f.select :ids, add_member_options(organization), {}, { multiple: true, class: "form-control add-members-select" } %>
+    <input type="text" id="member-search" class="form-control mb-2" placeholder="Search by name or email..." autocomplete="off">
+    <%= f.select :ids, add_member_options(organization), {}, { multiple: true, class: "form-control add-members-select", size: 10 } %>
   </div>
   <div class="form-group">
     <%= f.submit "Add selected members", class: "form-control btn btn-primary" %>
   </div>
 <% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var searchInput = document.getElementById("member-search");
+    var select = document.querySelector(".add-members-select");
+    if (!searchInput || !select) return;
+
+    var allOptions = Array.from(select.options).map(function(opt) {
+      return { text: opt.text, value: opt.value, element: opt };
+    });
+
+    searchInput.addEventListener("input", function() {
+      var query = this.value.toLowerCase();
+      select.innerHTML = "";
+      allOptions.forEach(function(opt) {
+        if (opt.text.toLowerCase().indexOf(query) !== -1) {
+          select.appendChild(opt.element);
+        }
+      });
+    });
+  });
+</script>
