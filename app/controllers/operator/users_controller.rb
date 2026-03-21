@@ -274,22 +274,16 @@ class Operator::UsersController < Operator::BaseController
 
   def approve
     find_user(:user_id)
-    if @user.update(approved: true)
-      SendNotificationsJob.perform_later(@user, "Approval")
-      flash[:success] = "User approved."
-    else
-      flash[:error] = "Couldn't approve user."
-    end
+    @user.update_column(:approved, true)
+    SendNotificationsJob.perform_later(@user, "Approval")
+    flash[:success] = "User approved."
     turbo_redirect(approval_redirect_path)
   end
 
   def unapprove
     find_user(:user_id)
-    if @user.update(approved: false)
-      flash[:success] = "User unapproved."
-    else
-      flash[:error] = "Couldn't unapprove user."
-    end
+    @user.update_column(:approved, false)
+    flash[:success] = "User unapproved."
     turbo_redirect(approval_redirect_path)
   end
 
@@ -300,11 +294,8 @@ class Operator::UsersController < Operator::BaseController
     if @user.member_at_operator?(current_tenant)
       flash[:error] = "Cannot archive an active member."
     else
-      if @user.update(archived: true, approved: false)
-        flash[:success] = "User archived (and unapproved)."
-      else
-        flash[:error] = "Couldn't archive user."
-      end
+      @user.update_columns(archived: true, approved: false)
+      flash[:success] = "User archived (and unapproved)."
     end
     turbo_redirect(user_path(@user))
   end
@@ -312,11 +303,8 @@ class Operator::UsersController < Operator::BaseController
   def unarchive
     find_user(:user_id)
     authorize @user
-    if @user.update(archived: false, approved: true)
-      flash[:success] = "User unarchived."
-    else
-      flash[:error] = "Couldn't unarchive user."
-    end
+    @user.update_columns(archived: false, approved: true)
+    flash[:success] = "User unarchived."
     turbo_redirect(user_path(@user))
   end
 
