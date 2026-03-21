@@ -16,7 +16,8 @@ class Operator::OrganizationMembersController < Operator::BaseController
     if count > 0
       flash[:success] = "Successfully added #{count} #{'member'.pluralize(count)}."
     else
-      flash[:error] = "No members were added. Please select at least one member."
+      raw_ids = params.dig(:user, :ids)
+      flash[:error] = "No members were added. (debug: raw_ids=#{raw_ids.inspect}, filtered=#{ids.inspect}, org=#{organization.id})"
     end
 
     redirect_to organization_members_path(organization)
