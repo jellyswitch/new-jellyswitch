@@ -218,7 +218,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    if @user.update(organization_id: nil)
+    if @user.update_column(:organization_id, nil)
       flash[:success] = "Removed from group."
     else
       flash[:error] = "Unable to remove from group."
