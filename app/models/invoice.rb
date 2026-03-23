@@ -62,7 +62,7 @@ class Invoice < ApplicationRecord
   end
 
   def stripe_invoice
-    if stripe_invoice_id.present?
+    if stripe_invoice_id.present? && location.present?
       @stripe_invoice ||= Stripe::Invoice.retrieve(stripe_invoice_id, {
         api_key: location.stripe_secret_key,
         stripe_account: location.stripe_user_id
