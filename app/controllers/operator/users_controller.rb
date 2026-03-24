@@ -295,6 +295,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = "Cannot archive an active member."
     else
       @user.update_columns(archived: true, approved: false)
+      @user.feed_items.where("blob->>'type' = ?", "new-user").destroy_all
       flash[:success] = "User archived (and unapproved)."
     end
     turbo_redirect(user_path(@user))
