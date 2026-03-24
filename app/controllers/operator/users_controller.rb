@@ -119,6 +119,14 @@ class Operator::UsersController < Operator::BaseController
 
   def create
     authorize User.new
+
+    # Honeypot: if this hidden field is filled, it's a bot
+    if params[:user][:website_url].present?
+      # Silently redirect as if signup succeeded — don't tip off the bot
+      turbo_redirect(confirmation_pending_users_path(email: params[:user][:email]), action: "replace")
+      return
+    end
+
     is_admin = admin?
     result = Users::Create.call(params: user_params, operator: current_tenant, admin_created: is_admin)
 
