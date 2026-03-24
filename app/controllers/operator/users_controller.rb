@@ -93,6 +93,7 @@ class Operator::UsersController < Operator::BaseController
 
   def new
     @user = User.new
+    @include_recaptcha = true
     authorize @user
 
     if logged_in? && !current_user.admin_of_location?(current_location)
@@ -125,6 +126,17 @@ class Operator::UsersController < Operator::BaseController
       # Silently redirect as if signup succeeded — don't tip off the bot
       turbo_redirect(confirmation_pending_users_path(email: params[:user][:email]), action: "replace")
       return
+    end
+
+    # reCAPTCHA v3: verify token for non-admin signups
+    unless admin?
+      if !verify_recaptcha(params[:user][:recaptcha_token])
+        flash[:error] = "Signup could not be verified. Please try again."
+        @user = User.new
+        @include_recaptcha = true
+        render :new, status: 422
+        return
+      end
     end
 
     is_admin = admin?
@@ -466,6 +478,22 @@ class Operator::UsersController < Operator::BaseController
   end
 
   private
+
+  def verify_recaptcha(token)
+    return true if ENV["RECAPTCHA_SECRET_KEY"].blank? # Skip if not configured
+    return false if token.blank?
+
+    response = HTTParty.post("https://www.google.com/recaptcha/api/siteverify", body: {
+      secret: ENV["RECAPTCHA_SECRET_KEY"],
+      response: token
+    })
+
+    result = JSON.parse(response.body)
+    result["success"] && result["score"].to_f >= 0.5
+  rescue StandardError => e
+    Rails.logger.error("reCAPTCHA verification failed: #{e.message}")
+    true # Allow signup if reCAPTCHA service is down — don't block real users
+  end
 
   def user_password_params
     params.require(:user).permit(:password, :password_confirmation)

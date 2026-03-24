@@ -77,9 +77,25 @@
   <div style="position: absolute; left: -9999px; top: -9999px;" aria-hidden="true">
     <%= f.text_field :website_url, tabindex: "-1", autocomplete: "off" %>
   </div>
+  <!-- reCAPTCHA v3 hidden token -->
+  <%= f.hidden_field :recaptcha_token, id: "recaptcha_token" %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit label, class: "form-control btn btn-primary col", data: { acc: 'register' } %>
+    <%= f.submit label, class: "form-control btn btn-primary col", id: "signup_submit", data: { acc: 'register' } %>
     <div class="col-1"></div>
   </div>
+  <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
+    <script>
+      document.getElementById('signup_submit').addEventListener('click', function(e) {
+        e.preventDefault();
+        var form = this.closest('form');
+        grecaptcha.ready(function() {
+          grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+            form.submit();
+          });
+        });
+      });
+    </script>
+  <% end %>
 <%- end %>
