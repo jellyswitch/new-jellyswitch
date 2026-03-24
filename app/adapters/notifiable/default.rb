@@ -29,7 +29,7 @@ class Notifiable::Default < SimpleDelegator
   end
 
   def ios
-    if operator.push_notification_certificate.attached? && operator.bundle_id.present?
+    if apns_configured? && operator.bundle_id.present?
       recipients.each do |user|
         puts "Pushing iOS notification to #{user.name}: #{message}"
 
@@ -49,8 +49,12 @@ class Notifiable::Default < SimpleDelegator
         end
       end
     else
-      puts "Operator #{operator.name} has no push notification certificate. Or bundle_id is missing"
+      puts "Operator #{operator.name} has no APNs configuration or bundle_id is missing"
     end
+  end
+
+  def apns_configured?
+    ENV["APNS_KEY_FILE"].present? && ENV["APNS_KEY_ID"].present? && ENV["APNS_TEAM_ID"].present?
   end
 
   def android
