@@ -244,9 +244,12 @@ GEM
       multi_xml (>= 0.5.2)
     i18n (1.14.8)
       concurrent-ruby (~> 1.0)
-    icalendar (2.8.0)
+    icalendar (2.12.2)
+      base64
       ice_cube (~> 0.16)
-    ice_cube (0.16.4)
+      logger
+      ostruct
+    ice_cube (0.17.0)
     image_processing (1.12.2)
       mini_magick (>= 4.9.5, < 5)
       ruby-vips (>= 2.0.17, < 3)
@@ -329,6 +332,7 @@ GEM
       faraday (>= 1.0, < 3)
       multi_json
     os (1.1.4)
+    ostruct (0.6.3)
     pagy (6.0.2)
     pg (1.4.5)
     policy-assertions (0.2.0)
