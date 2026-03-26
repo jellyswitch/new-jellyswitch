@@ -1,14 +1,19 @@
 <% if untethered_ios_request? %>
 
-  <nav class="navbar navbar-light bg-light" style="display: flex; flex-wrap: nowrap !important; align-items: center;">
-    <a class="navbar-brand" href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0; min-width: 0;" data-turbo-action="<%= restore_if_possible %>">
+  <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 8px 16px; background-color: #f8f9fa;">
+    <a href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 1.25rem; font-weight: 500; color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px;" data-turbo-action="<%= restore_if_possible %>">
       <%= image_tag current_tenant.logo_image, width: 30, height: 30 if current_tenant.logo_image.attached? %>
       <%= current_location.name %>
     </a>
-    <button class="navbar-toggler d-block" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" style="flex-shrink: 0; border: 1px solid rgba(0,0,0,.1);">
-      <span class="navbar-toggler-icon"></span>
+    <button onclick="document.getElementById('ios-nav-menu').style.display = document.getElementById('ios-nav-menu').style.display === 'none' ? 'block' : 'none'" style="flex-shrink: 0; padding: 4px 12px; background: none; border: 1px solid rgba(0,0,0,.1); border-radius: 4px; cursor: pointer;">
+      <span style="display: inline-block; width: 30px; height: 30px; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2730%27 height=%2730%27 viewBox=%270 0 30 30%27%3e%3cpath stroke=%27rgba%280, 0, 0, 0.5%29%27 stroke-linecap=%27round%27 stroke-miterlimit=%2710%27 stroke-width=%272%27 d=%27M4 7h22M4 15h22M4 23h22%27/%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: center; background-size: 100%;"></span>
     </button>
-  </nav>
+  </div>
+  <div id="ios-nav-menu" style="display: none; background-color: #f8f9fa; padding: 0 16px 8px;">
+    <% paths.each do |path| %>
+      <a href="<%= path[:path] %>" style="display: block; padding: 8px 0; color: rgba(0,0,0,.7); text-decoration: none;" data-turbo-action="<%= restore_if_possible %>"><%= path[:title] %></a>
+    <% end %>
+  </div>
 
 <% elsif !ios_request? %>
 
