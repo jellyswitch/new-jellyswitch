@@ -16,7 +16,7 @@
   </div>
   <div id="ios-admin-nav-menu" style="display: none; background-color: #f8f9fa; padding: 0 16px 8px;">
     <% paths.each do |path| %>
-      <a href="<%= path[:path] %>" style="display: block; padding: 8px 0; color: rgba(0,0,0,.7); text-decoration: none;" data-turbo-action="<%= restore_if_possible %>"><%= path[:title] %></a>
+      <a href="<%= path[:path] %>" onclick="document.getElementById('ios-admin-nav-menu').style.display='none'" style="display: block; padding: 8px 0; color: rgba(0,0,0,.7); text-decoration: none;" data-turbo-action="<%= restore_if_possible %>"><%= path[:title] %></a>
     <% end %>
   </div>
 <% else %>
