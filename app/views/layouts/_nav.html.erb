@@ -1,8 +1,8 @@
 <% if untethered_ios_request? %>
 
   <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 8px 16px; background-color: #f8f9fa;">
-    <a href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 1.25rem; font-weight: 500; color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px;" data-turbo-action="<%= restore_if_possible %>">
-      <%= image_tag current_tenant.logo_image, width: 30, height: 30 if current_tenant.logo_image.attached? %>
+    <a href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.9rem; font-weight: 500; color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px;" data-turbo-action="<%= restore_if_possible %>">
+      <%= image_tag current_tenant.logo_image, width: 25, height: 25 if current_tenant.logo_image.attached? %>
       <%= current_location.name %>
     </a>
     <button onclick="document.getElementById('ios-nav-menu').style.display = document.getElementById('ios-nav-menu').style.display === 'none' ? 'block' : 'none'" style="flex-shrink: 0; padding: 4px 12px; background: none; border: 1px solid rgba(0,0,0,.1); border-radius: 4px; cursor: pointer;">
