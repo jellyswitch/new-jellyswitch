@@ -1,11 +1,23 @@
-<% if untethered_ios_request? || !ios_request? %>
+<% if untethered_ios_request? %>
 
   <nav class="navbar navbar-light bg-light" style="display: flex; flex-wrap: nowrap !important; align-items: center;">
     <a class="navbar-brand" href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0; min-width: 0;" data-turbo-action="<%= restore_if_possible %>">
       <%= image_tag current_tenant.logo_image, width: 30, height: 30 if current_tenant.logo_image.attached? %>
       <%= current_location.name %>
     </a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" style="flex-shrink: 0;">
+    <button class="navbar-toggler d-block" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation" style="flex-shrink: 0; border: 1px solid rgba(0,0,0,.1);">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
+
+<% elsif !ios_request? %>
+
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="<%= root_path %>" data-turbo-action="<%= restore_if_possible %>">
+      <%= image_tag current_tenant.logo_image, width: 30, height: 30 if current_tenant.logo_image.attached? %>
+      <%= current_location.name %>
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
