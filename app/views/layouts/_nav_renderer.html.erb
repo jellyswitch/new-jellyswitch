@@ -1,8 +1,6 @@
-<% if untethered_ios_request? && controller_name != "door_access" %>
+<% if ios_request? && controller_name != "door_access" %>
   <%= render @navigation.web, paths: @navigation.paths %>
-<% elsif ios_request? %>
-  <%= render @navigation.ios, paths: @navigation.paths.to_json.html_safe %>
-<% elsif android_request? %>
+<% elsif android_request? || old_android_request? %>
   <%= render @navigation.android, paths: @navigation.paths.to_json.html_safe %>
 <% else %>
   <%= render @navigation.web, paths: @navigation.paths %>

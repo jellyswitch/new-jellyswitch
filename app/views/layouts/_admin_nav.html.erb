@@ -1,4 +1,4 @@
-<% if untethered_ios_request? %>
+<% if ios_request? %>
   <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 8px 16px; background-color: #f8f9fa;">
     <a href="<%= feed_items_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.9rem; font-weight: 500; color: inherit; text-decoration: none; display: flex; align-items: center; gap: 8px;" data-turbo-action="<%= restore_if_possible %>">
       <%- if current_tenant.logo_image.attached? %>
