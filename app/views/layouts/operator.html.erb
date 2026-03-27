@@ -55,7 +55,25 @@
       <%= yield %>
     </div>
 
-    <% if ios_request? %>
+    <% if ios_request? && logged_in? && @navigation.respond_to?(:tab_paths) %>
+      <div style="min-height: 80px;">&nbsp;</div>
+      <div style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #fff; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 1050;">
+        <% @navigation.tab_paths.each do |tab| %>
+          <% icon = case tab[:title]
+               when "Home" then "fas fa-home"
+               when "Building Access" then "fas fa-key"
+               when "Reserve a room" then "fas fa-calendar-alt"
+               when "My Account" then "fas fa-user"
+               when "Search" then "fas fa-search"
+               else "fas fa-circle"
+             end %>
+          <a href="<%= tab[:path] %>" style="display: flex; flex-direction: column; align-items: center; padding: 8px 12px; text-decoration: none; color: <%= request.path == tab[:path] ? '#007bff' : '#8e8e93' %>; font-size: 10px;" data-turbo-action="<%= restore_if_possible %>">
+            <i class="<%= icon %>" style="font-size: 20px; margin-bottom: 2px;"></i>
+            <%= tab[:title] %>
+          </a>
+        <% end %>
+      </div>
+    <% elsif ios_request? %>
       <div style="min-height: 6em;">&nbsp;</div>
     <% end %>
     <% if @body_pixels %>
