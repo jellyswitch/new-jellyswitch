@@ -1,4 +1,4 @@
-<% if !ios_request? %>
+<% if !mobile_app_request? %>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <a class="navbar-brand" href="<%= home_path %>" data-turbo-action="<%= restore_if_possible %>">
       <% if current_tenant.logo_image.attached? %>

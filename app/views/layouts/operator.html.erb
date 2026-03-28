@@ -55,7 +55,7 @@
       <%= yield %>
     </div>
 
-    <% if ios_request? && logged_in? && @navigation.respond_to?(:tab_paths) %>
+    <% if mobile_app_request? && logged_in? && @navigation.respond_to?(:tab_paths) %>
       <div style="min-height: 80px;">&nbsp;</div>
       <div style="position: fixed; bottom: 0; left: 0; right: 0; background-color: #fff; border-top: 1px solid #e0e0e0; display: flex; justify-content: space-around; align-items: center; padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 1050;">
         <% tabs = @navigation.tab_paths %>
@@ -79,7 +79,7 @@
           </a>
         <% end %>
       </div>
-    <% elsif ios_request? %>
+    <% elsif mobile_app_request? %>
       <div style="min-height: 6em;">&nbsp;</div>
     <% end %>
     <% if @body_pixels %>

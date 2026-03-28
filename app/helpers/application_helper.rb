@@ -97,6 +97,10 @@ module ApplicationHelper
     has_user_agent? && user_agent.match(/(Jellyswitch\/Android)/).present?
   end
 
+  def mobile_app_request?
+    ios_request? || android_request? || old_android_request?
+  end
+
   def days_option_for_current_month
     [*0..30].map do |i|
       day = Time.zone.now + i.days

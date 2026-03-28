@@ -42,7 +42,7 @@
 
     <div class="row mt-2">
       <div class="col-12">
-        <%- if !ios_request? %>
+        <%- if !mobile_app_request? %>
           <%= link_to "Cancel", room_path(@room), class: "btn btn-block btn-warning", data: {"turbo-action" => "replace"} %>
         <%- end %>
       </div>

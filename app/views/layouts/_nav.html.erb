@@ -1,4 +1,4 @@
-<% if ios_request? %>
+<% if mobile_app_request? %>
 
   <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 10px 16px; padding-top: calc(env(safe-area-inset-top, 0px) + 10px); background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08);">
     <a href="<%= root_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.95rem; font-weight: 600; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px;" data-turbo-action="<%= restore_if_possible %>">
