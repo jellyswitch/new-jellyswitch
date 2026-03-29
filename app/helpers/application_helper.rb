@@ -54,6 +54,27 @@ module ApplicationHelper
     end
   end
 
+  def brand_color(operator)
+    return "#007bff" unless operator.respond_to?(:subdomain)
+    case operator.subdomain
+    when "tml"                    then "#76B82A"  # Cowork Tahoe green
+    when "untethered"             then "#1B3A4B"  # Untethered Space navy
+    when "choosefolsomworkspace"  then "#4A5568"  # Choose Folsom slate
+    when "studio"                 then "#8B2252"  # The Studio burgundy
+    else "#007bff"  # default Bootstrap blue
+    end
+  end
+
+  def brand_color_hover(operator)
+    # Darken the brand color slightly for hover states
+    color = brand_color(operator)
+    # Simple darkening: reduce each hex component by ~15%
+    r = [(color[1..2].to_i(16) * 0.85).to_i, 0].max
+    g = [(color[3..4].to_i(16) * 0.85).to_i, 0].max
+    b = [(color[5..6].to_i(16) * 0.85).to_i, 0].max
+    "#%02x%02x%02x" % [r, g, b]
+  end
+
   def favicon(operator)
     if operator.logo_image.attached?
       url_for(operator.logo_image)

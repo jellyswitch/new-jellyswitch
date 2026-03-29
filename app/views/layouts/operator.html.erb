@@ -27,6 +27,31 @@
       <script src="https://www.google.com/recaptcha/api.js?render=<%= ENV['RECAPTCHA_SITE_KEY'] %>"></script>
     <% end %>
 
+    <style>
+      :root {
+        --brand-color: <%= brand_color(current_tenant) %>;
+        --brand-color-hover: <%= brand_color_hover(current_tenant) %>;
+      }
+      .btn-primary, .btn-primary:focus {
+        background-color: var(--brand-color) !important;
+        border-color: var(--brand-color) !important;
+      }
+      .btn-primary:hover, .btn-primary:active {
+        background-color: var(--brand-color-hover) !important;
+        border-color: var(--brand-color-hover) !important;
+      }
+      .btn-outline-primary {
+        color: var(--brand-color) !important;
+        border-color: var(--brand-color) !important;
+      }
+      .btn-outline-primary:hover, .btn-outline-primary:active {
+        background-color: var(--brand-color) !important;
+        color: #fff !important;
+      }
+      a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dropdown-item) {
+        color: var(--brand-color);
+      }
+    </style>
     <%= content_for?(:head) ? yield(:head) : '' %>
 
     <% title = yield(:title) %>
@@ -73,7 +98,7 @@
                else "fas fa-circle"
              end %>
           <% label = tab[:title] == "Building Access" ? "Keys" : tab[:title] %>
-          <a href="<%= tab[:path] %>" style="display: flex; flex-direction: column; align-items: center; padding: 8px 12px; text-decoration: none; color: <%= request.path == tab[:path] ? '#007bff' : '#8e8e93' %>; font-size: 10px;" data-turbo-action="<%= restore_if_possible %>">
+          <a href="<%= tab[:path] %>" style="display: flex; flex-direction: column; align-items: center; padding: 8px 12px; text-decoration: none; color: <%= request.path == tab[:path] ? brand_color(current_tenant) : '#8e8e93' %>; font-size: 10px;" data-turbo-action="<%= restore_if_possible %>">
             <i class="<%= icon %>" style="font-size: 20px; margin-bottom: 2px;"></i>
             <%= label %>
           </a>
