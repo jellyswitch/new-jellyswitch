@@ -15,12 +15,23 @@ class Operator::FeedItemCommentsController < Operator::BaseController
       # so the member sees the reply in their Messages thread and gets notified
       bridge_feedback_reply if @feed_item.type == "feedback"
 
-      flash[:success] = "Comment posted."
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.replace(
+            "comment-form-#{@feed_item.id}",
+            partial: "operator/feed_items/comment_form",
+            locals: { feed_item: @feed_item }
+          )
+        }
+        format.html {
+          flash[:success] = "Comment posted."
+          turbo_redirect(feed_item_path(@feed_item))
+        }
+      end
     else
       flash[:error] = result.message
+      turbo_redirect(feed_item_path(@feed_item))
     end
-
-    turbo_redirect(feed_item_path(@feed_item))
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
