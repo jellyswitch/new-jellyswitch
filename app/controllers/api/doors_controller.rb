@@ -4,12 +4,14 @@ class Api::DoorsController < ApplicationController
   before_action :authenticate_api_user
 
   def index
-    if current_location.nil?
+    location = current_location || current_user&.current_location || current_user&.original_location
+
+    if location.nil?
       render json: { error: "No location set" }, status: 400
       return
     end
 
-    doors = current_location.doors.available
+    doors = location.doors.available
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   rescue => e
     Rails.logger.error("[DoorsAPI] Error in index: #{e.class}: #{e.message}")
