@@ -32,11 +32,16 @@
         --brand-color: <%= brand_color(current_tenant) %>;
         --brand-color-hover: <%= brand_color_hover(current_tenant) %>;
       }
-      .btn-primary, .btn-primary:focus {
+      .btn-primary, .btn-primary:focus,
+      .btn-info, .btn-info:focus,
+      .btn-success, .btn-success:focus {
         background-color: var(--brand-color) !important;
         border-color: var(--brand-color) !important;
+        color: #fff !important;
       }
-      .btn-primary:hover, .btn-primary:active {
+      .btn-primary:hover, .btn-primary:active,
+      .btn-info:hover, .btn-info:active,
+      .btn-success:hover, .btn-success:active {
         background-color: var(--brand-color-hover) !important;
         border-color: var(--brand-color-hover) !important;
       }
@@ -47,9 +52,6 @@
       .btn-outline-primary:hover, .btn-outline-primary:active {
         background-color: var(--brand-color) !important;
         color: #fff !important;
-      }
-      a:not(.btn):not(.nav-link):not(.navbar-brand):not(.dropdown-item) {
-        color: var(--brand-color);
       }
     </style>
     <%= content_for?(:head) ? yield(:head) : '' %>
