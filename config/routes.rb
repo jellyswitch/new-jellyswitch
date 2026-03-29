@@ -5,6 +5,7 @@ Rails.application.routes.draw do
         post :unlock
       end
     end
+    resources :locations, only: [:index]
   end
 
   namespace :mobile do

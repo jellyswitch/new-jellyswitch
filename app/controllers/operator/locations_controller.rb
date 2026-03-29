@@ -146,7 +146,7 @@ class Operator::LocationsController < Operator::BaseController
   def location_params
     params.require(:location).permit(
       :name, :snippet, :wifi_name, :wifi_password, :building_address,
-      :city, :state, :zip, :contact_name, :contact_email, :contact_phone,
+      :city, :state, :zip, :latitude, :longitude, :contact_name, :contact_email, :contact_phone,
       :background_image, :square_footage, :time_zone, :visible,
       :flex_square_footage, :common_square_footage, :building_access_instructions,
       :allow_hourly, :hourly_rate_in_cents, :new_users_get_free_day_pass,

@@ -113,6 +113,18 @@
     <%= f.text_field :zip, class: "form-control" %>
   </div>
 
+  <div class="form-group row">
+    <div class="col">
+      <%= f.label :latitude, "Latitude (for proximity door access)" %>
+      <%= f.text_field :latitude, placeholder: "e.g. 38.6780", class: "form-control" %>
+    </div>
+    <div class="col">
+      <%= f.label :longitude %>
+      <%= f.text_field :longitude, placeholder: "e.g. -121.1761", class: "form-control" %>
+    </div>
+  </div>
+  <small class="form-text text-muted mb-3">Find coordinates at <a href="https://www.latlong.net/" target="_blank">latlong.net</a>. Used for automatic door unlock notifications when members approach the building.</small>
+
   <div class="form-group custom-file mb-3">
     <label class="custom-file-label" for="customFile">Choose background image</label>
     <%= f.file_field :background_image, placeholder: "Background Image File Path", class: "custom-file-input" %>
