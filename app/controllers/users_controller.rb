@@ -164,6 +164,33 @@ class UsersController < ApplicationController
     redirect_to user_path(@user)
   end
 
+  def destroy
+    find_user
+    authorize @user
+
+    if @user != current_user
+      flash[:error] = "You can only delete your own account."
+      redirect_to root_path
+      return
+    end
+
+    if @user.organization_owner?
+      flash[:error] = "You must leave your group before deleting your account: #{@user.owned_organization.name}"
+      redirect_to user_path(@user)
+      return
+    end
+
+    begin
+      UserManager.new(user: @user).ready
+      flash[:success] = "Your account has been deleted."
+      log_out
+      redirect_to root_path
+    rescue => e
+      flash[:error] = "Something went wrong: #{e.message}"
+      redirect_to user_path(@user)
+    end
+  end
+
   def edit_billing
     find_user(:user_id)
     background_image

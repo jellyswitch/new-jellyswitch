@@ -152,6 +152,10 @@ class UserPolicy < ApplicationPolicy
     has_admin_right?
   end
 
+  def destroy?
+    is_user? && user == record
+  end
+
   def archive?
     has_admin_right?
   end
