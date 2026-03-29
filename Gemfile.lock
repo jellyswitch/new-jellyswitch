@@ -235,7 +235,9 @@ GEM
       activesupport (>= 5.2)
     hashdiff (1.1.1)
     hashie (5.0.0)
-    honeybadger (5.0.2)
+    honeybadger (6.5.3)
+      logger
+      ostruct
     htmlentities (4.3.4)
     http-2 (0.11.0)
     httparty (0.24.2)
@@ -329,6 +331,7 @@ GEM
       faraday (>= 1.0, < 3)
       multi_json
     os (1.1.4)
+    ostruct (0.6.3)
     pagy (6.0.2)
     pg (1.4.5)
     policy-assertions (0.2.0)
