@@ -4,8 +4,16 @@ class Api::DoorsController < ApplicationController
   before_action :authenticate_api_user
 
   def index
+    if current_location.nil?
+      render json: { error: "No location set" }, status: 400
+      return
+    end
+
     doors = current_location.doors.available
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
+  rescue => e
+    Rails.logger.error("[DoorsAPI] Error in index: #{e.class}: #{e.message}")
+    render json: { error: e.message }, status: 500
   end
 
   def unlock
