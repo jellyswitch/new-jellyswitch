@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  namespace :api do
+    resources :doors, only: [:index] do
+      member do
+        post :unlock
+      end
+    end
+  end
+
   namespace :mobile do
     get "/door_access", to: "door_access#index"
     get "/building_access_permissions", to: "door_access#building_access_permissions"
