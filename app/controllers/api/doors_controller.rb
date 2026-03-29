@@ -1,6 +1,6 @@
 class Api::DoorsController < ApplicationController
   include DoorsHelper
-  protect_from_forgery with: :null_session
+  skip_forgery_protection
   before_action :authenticate_api_user
 
   def index
