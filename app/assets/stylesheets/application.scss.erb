@@ -287,3 +287,103 @@ button {
   flex: 1 1 auto;
   padding: 1rem;
 }
+
+// ── Dark Mode ──
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #1a1a2e !important;
+    color: #e0e0e0 !important;
+  }
+
+  .bg-light, .bg-white, .navbar {
+    background-color: #16213e !important;
+  }
+
+  .navbar {
+    border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+
+    .navbar-brand, .nav-link {
+      color: #e0e0e0 !important;
+    }
+  }
+
+  .card {
+    background-color: #16213e !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+    color: #e0e0e0 !important;
+  }
+
+  .card-body, .card-header, .card-footer {
+    background-color: #16213e !important;
+    color: #e0e0e0 !important;
+  }
+
+  .table {
+    color: #e0e0e0 !important;
+    background-color: #16213e !important;
+  }
+
+  .table-bordered th, .table-bordered td, .table th, .table td {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  .jumbotron {
+    background-color: #16213e !important;
+    color: #e0e0e0 !important;
+  }
+
+  .form-control, .form-control:focus {
+    background-color: #0f3460 !important;
+    color: #e0e0e0 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .modal-body {
+    background-color: #16213e !important;
+    color: #e0e0e0 !important;
+  }
+
+  .modal-content {
+    background-color: #16213e !important;
+  }
+
+  .modal-header, .modal-footer {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  a {
+    color: #64b5f6 !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #f0f0f0 !important;
+  }
+
+  .text-muted {
+    color: #9e9e9e !important;
+  }
+
+  .list-group-item {
+    background-color: #16213e !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+    color: #e0e0e0 !important;
+  }
+
+  hr {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .dropdown-menu {
+    background-color: #16213e !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .dropdown-item {
+    color: #e0e0e0 !important;
+    &:hover {
+      background-color: #0f3460 !important;
+    }
+  }
+}

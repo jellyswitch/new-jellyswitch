@@ -1,30 +1,43 @@
-<% if doors.count > 0 && untethered_ios %>
+<% if doors.count > 0 %>
 
-<div class="row mt-3">
-  <div class="col-sm-4"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-2 pt-2">
-      <script>
-        function displaySpinner(targetId) {
-          $(targetId).addClass("disabled").html("<div class=\"spinner-border spinner-border-sm text-light\" role=\"status\"><span class=\"sr-only\">Opening...</span></div>")
+<script>
+  function unlockDoor(doorId, doorName, button) {
+    button.disabled = true;
+    button.innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"></div> Unlocking...';
+    fetch('/api/doors/' + doorId + '/unlock', {method: 'POST', credentials: 'same-origin', headers: {'Content-Type': 'application/json'}})
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          button.innerHTML = '✓ ' + doorName + ' Unlocked!';
+          button.className = button.className.replace('btn-primary', 'btn-success').replace('btn-secondary', 'btn-success');
+          setTimeout(function() {
+            button.innerHTML = 'Open ' + doorName;
+            button.className = button.className.replace('btn-success', 'btn-primary');
+            button.disabled = false;
+          }, 3000);
+        } else {
+          button.innerHTML = 'Failed - Tap to retry';
+          button.disabled = false;
+          setTimeout(function() { button.innerHTML = 'Open ' + doorName; }, 3000);
         }
-      </script>
-      <% doors.each do |door| %>
-        <%= link_to "Open #{door.name}", door_open_path(door, format: :js), class: "btn btn-#{door.private? ? "secondary" : "info"} btn-lg w-100 mt-2 mb-2", id: "door-#{door.id}", remote: true, onclick: "displaySpinner('#door-#{door.id}')" %>
-      <% end %>
-    </div>
-  </div>
-  <div class="col-sm-4"></div>
-</div>
-
-<% elsif doors.count > 0 && !untethered_ios %>
+      })
+      .catch(function() {
+        button.innerHTML = 'Error - Tap to retry';
+        button.disabled = false;
+        setTimeout(function() { button.innerHTML = 'Open ' + doorName; }, 3000);
+      });
+    return false;
+  }
+</script>
 
 <div class="row mt-3">
   <div class="col-sm-4"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2 mb-0">
       <% doors.each do |door| %>
-        <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-#{door.private? ? "secondary" : "info"} btn-lg w-100 mt-2 mb-2", data: { "turbo-action" => restore_if_possible } %>
+        <button onclick="unlockDoor(<%= door.id %>, '<%= j door.name %>', this); return false;" class="btn btn-<%= door.private? ? "secondary" : "info" %> btn-lg w-100 mt-2 mb-2" id="door-<%= door.id %>">
+          Open <%= door.name %>
+        </button>
       <% end %>
     </div>
   </div>
@@ -37,7 +50,7 @@
   <div class="col-sm-4"></div>
   <div class="col-sm">
     <div class="jumbotron bg-white pb-2 pt-2">
-      <div class="btn btn-info btn-lg w-100 mt-2 mb-2 disabled">No Doors Available</div>
+      <div class="btn btn-primary btn-lg w-100 mt-2 mb-2 disabled">No Doors Available</div>
     </div>
   </div>
   <div class="col-sm-4"></div>
