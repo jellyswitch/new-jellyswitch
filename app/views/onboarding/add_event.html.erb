@@ -6,7 +6,7 @@
   footer_text: nil, 
   footer_link: nil,
   icon: :group)) do %>
-  <%= form_with(url: create_event_onboarding_index_path, method: :post, remote: true) do |f| %>
+  <%= form_with(url: create_event_onboarding_index_path, method: :post) do |f| %>
     <div class="form-group">
       <label>Event Name</label>
       <%= f.text_field :event_name, class: "form-control", value: "Wednesday afternoon coffee" %>

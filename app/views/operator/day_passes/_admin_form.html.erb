@@ -1,4 +1,4 @@
-<%= form_for(day_pass, class: "form", remote: true) do |f| %>
+<%= form_for(day_pass, class: "form") do |f| %>
   <div class="form-group row">
     <%= f.hidden_field :user_id, value: user.id %>
     <%= f.date_select :day, {default: Time.zone.today, order: [:month, :day, :year]}, class: "form-control col" %>

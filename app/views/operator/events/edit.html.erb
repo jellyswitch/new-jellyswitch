@@ -12,7 +12,7 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         <h4 class="display-4 text-center">Edit Event</h4>        
-        <%= form_with(model: @event, remote: true, html: {class: "form", multipart: true}, data: {type: :html}) do |f| %>
+        <%= form_with(model: @event, html: {class: "form", multipart: true}, data: {type: :html}) do |f| %>
           <%= render "form", event: @event, f: f %>
 
             <div class="form-group row m-0 p-0">

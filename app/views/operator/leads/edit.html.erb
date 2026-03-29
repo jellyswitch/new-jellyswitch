@@ -11,7 +11,7 @@
       </div>
 
 
-    <%= form_with(model: @lead, url: lead_path(@lead), remote: true) do |f| %>
+    <%= form_with(model: @lead, url: lead_path(@lead)) do |f| %>
       <div class="form-group">
         <%= f.label :status %>
         <%= f.select :status, Lead::STATUSES.values, {}, class: "form-control" %>

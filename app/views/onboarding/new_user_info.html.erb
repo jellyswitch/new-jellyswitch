@@ -6,7 +6,7 @@
   footer_text: nil, 
   footer_link: nil,
   icon: :group)) do %>
-  <%= form_with(url: create_user_and_locations_onboarding_index_path, method: :post, remote: true) do |f| %>
+  <%= form_with(url: create_user_and_locations_onboarding_index_path, method: :post) do |f| %>
     <div class="row mb-3">
       <%= f.text_field :operator_name, placeholder: "Your company name", class: "form-control col" %>
     </div>

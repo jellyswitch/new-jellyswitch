@@ -1,4 +1,4 @@
-<%= form_with(model: child_profile, url: child_profile_path(child_profile), html: {multipart: true}, remote: true, data: { type: :html }) do |f| %>
+<%= form_with(model: child_profile, url: child_profile_path(child_profile), html: {multipart: true}, data: { type: :html }) do |f| %>
   <%= render "form_fields", f: f, child_profile: child_profile %>
 
   <%= f.submit "Update profile", class: "btn btn-block btn-primary" %>

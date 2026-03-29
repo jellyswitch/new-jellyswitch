@@ -1,6 +1,6 @@
 <%= javascript_include_tag "stripe_handler.js" %>
 
-<%= form_for(day_pass, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
+<%= form_for(day_pass, html: { class: "form", id: "stripe-form"}) do |f| %>
   <div class="form-group row">
     <div class="col-1"></div>
     <%= f.date_select :day, {

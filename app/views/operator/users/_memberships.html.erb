@@ -130,7 +130,7 @@
                 <div class="modal-body">
                   <%= javascript_include_tag "stripe_handler.js" %>
 
-                  <%= form_for(subscription, remote: true, html: {id: "stripe-form" }) do |f| %>
+                  <%= form_for(subscription, html: {id: "stripe-form" }) do |f| %>
                     <%= render "shared/error_messages", model: subscription %>
                     <%= f.hidden_field :subscribable_id, value: user.id %>
 

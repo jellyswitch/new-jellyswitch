@@ -6,7 +6,7 @@
     Please enter your billing information below to activate your membership.
   </p>
 
-  <%= form_with(remote: true, url: activate_membership_path, html: {id: "stripe-form" }) do |f| %>
+  <%= form_with(url: activate_membership_path, html: {id: "stripe-form" }) do |f| %>
     <div class="form-group row">
       <div class="col-1"></div>
         <%= render "shared/billing" %>

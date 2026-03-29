@@ -13,7 +13,7 @@
 
 <div class="row mt-4">
   <div class="col">
-    <%= form_with(model: lead.lead_notes.new, url: lead_notes_path(lead_id: lead.id), method: :post, remote: true) do |f| %>
+    <%= form_with(model: lead.lead_notes.new, url: lead_notes_path(lead_id: lead.id), method: :post) do |f| %>
       <%= f.rich_text_area :content, placeholder: "Add a note...", class: "mb-3" %>
 
       <%= f.hidden_field :user_id, value: current_user.id %>

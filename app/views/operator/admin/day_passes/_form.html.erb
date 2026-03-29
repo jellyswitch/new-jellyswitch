@@ -1,4 +1,4 @@
-<%= form_with(model: day_pass, url: operator_admin_day_passes_path, html: { class: "form", id: "stripe-form"}, remote: true) do |f| %>
+<%= form_with(model: day_pass, url: operator_admin_day_passes_path, html: { class: "form", id: "stripe-form"}) do |f| %>
   <div class="form-group row">
     <div class="col-1"></div>
     <%= f.date_select :day, {
