@@ -226,7 +226,7 @@
             <% end %>
 
             <% if @user.has_active_subscription? %>
-              <%= link_to subscription_path(@user.subscriptions.active.first), method: :delete, remote: true, class: "list-group-item list-group-item-action" do %>
+              <%= link_to subscription_path(@user.subscriptions.active.first), data: { turbo_method: :delete }, class: "list-group-item list-group-item-action" do %>
                 <i class="fas fa-times"></i>
                 &nbsp;
                 Cancel membership

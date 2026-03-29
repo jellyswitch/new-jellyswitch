@@ -141,7 +141,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <%= link_to "Confirm", reservation_path(reservation), method: :delete, remote: true, class: "btn btn-dark" %>
+        <%= link_to "Confirm", reservation_path(reservation), data: { turbo_method: :delete }, class: "btn btn-dark" %>
       </div>
       </div>
     </div>

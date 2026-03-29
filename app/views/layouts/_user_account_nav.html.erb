@@ -14,7 +14,7 @@
       <%= link_to "My Reservations", user_reservations_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <%= link_to "My Invoices", user_invoices_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
       <%= link_to "Change Password", user_change_password_path(current_user), class: "dropdown-item", data: { "turbo-action" => restore_if_possible } %>
-      <%= link_to "Log out", logout_path, method: :delete, remote: true, class: "dropdown-item" %>
+      <%= link_to "Log out", logout_path, data: { turbo_method: :delete }, class: "dropdown-item" %>
     </div>
   </li>
 </ul>

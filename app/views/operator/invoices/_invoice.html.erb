@@ -39,7 +39,7 @@
       <% if invoice.paid?  %>
         <div class="clearfix mb-1"></div>
         <% if policy(:invoice).create? %>
-          <%= button_to invoice_refunds_path(invoice), remote: true, class: "btn btn-block btn-secondary" do %>
+          <%= button_to invoice_refunds_path(invoice), class: "btn btn-block btn-secondary" do %>
             <span class="show-when-enabled">
               Refund
             </span>
@@ -52,7 +52,7 @@
 
       <% if invoice.voidable?  %>
         <div class="clearfix mb-1"></div>
-        <%= button_to invoice_refunds_path(invoice), class: "btn btn-block btn-secondary", remote: true do  %>
+        <%= button_to invoice_refunds_path(invoice), class: "btn btn-block btn-secondary" do  %>
           <span class="show-when-enabled">
             Void
           </span>
@@ -64,7 +64,7 @@
 
       <% if invoice.open? %>
         <div class="clearfix mb-1"></div>
-        <%= button_to invoice_mark_paid_path(invoice), method: :get, class: "btn btn-block btn-success", remote: true do %>
+        <%= button_to invoice_mark_paid_path(invoice), method: :get, class: "btn btn-block btn-success" do %>
           <span class="show-when-enabled">
             Mark as paid
           </span>
@@ -75,7 +75,7 @@
 
         <% if policy(invoice).charge? %>
           <div class="clearfix mb-1"></div>
-          <%= button_to invoice_charge_path(invoice), method: :get, class: "btn btn-block btn-success", remote: true do %>
+          <%= button_to invoice_charge_path(invoice), method: :get, class: "btn btn-block btn-success" do %>
             <span class="show-when-enabled">
               Pay with card on file
             </span>

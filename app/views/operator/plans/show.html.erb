@@ -116,7 +116,7 @@
               &nbsp;
               Edit
             <% end %>
-            <%= link_to plan_path(@plan), method: :delete, remote: true, class: "btn btn-block btn-danger" do %>
+            <%= link_to plan_path(@plan), data: { turbo_method: :delete }, class: "btn btn-block btn-danger" do %>
               <i class="fas fa-archive"></i>
               &nbsp;
               Archive
@@ -126,7 +126,7 @@
               <small class="col">Archiving will make the plan unavailable for new members.</small>
             </div>
           <%- else %>
-            <%= link_to "Unarchive", plan_unarchive_path(@plan), method: :post, remote: true, class: "btn btn-block btn-warning" %>
+            <%= link_to "Unarchive", plan_unarchive_path(@plan), data: { turbo_method: :post }, class: "btn btn-block btn-warning" %>
           <%- end %>
         </div>
       </div>

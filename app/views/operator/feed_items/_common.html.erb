@@ -1,16 +1,16 @@
 <div class="row">
   <div class="col-2"></div>
   <div class="col d-flex justify-content-around">
-    <%= link_to feed_item_path(feed_item), method: :delete, remote: true, data: {"turbo-action" => restore_if_possible} do %>
+    <%= link_to feed_item_path(feed_item), data: { turbo_method: :delete }, data: {"turbo-action" => restore_if_possible} do %>
       <i class="far fa-trash-alt" style="opacity: 0.6;"></i>
     <% end %>
   
     <% if feed_item.expense? %>
-      <%= link_to unset_expense_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
+      <%= link_to unset_expense_status_feed_item_path(feed_item, comments: comments), data: { turbo_method: :post }, class: "ml-3" do %>
         <i class="fas fa-dollar-sign"></i>
       <% end %>
     <% else %>
-      <%= link_to set_expense_status_feed_item_path(feed_item, comments: comments), method: :post,remote: true, class: "ml-3" do %>
+      <%= link_to set_expense_status_feed_item_path(feed_item, comments: comments), data: { turbo_method: :post }, class: "ml-3" do %>
         <i class="fas fa-dollar-sign" style="opacity: 0.6;"></i>
       <% end %>
     <% end %>

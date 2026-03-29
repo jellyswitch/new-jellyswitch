@@ -5,7 +5,7 @@
   <% if policy(WeeklyUpdate).new? %>
     <div class="row mb-2">
       <div class="col">
-        <%= link_to "Create a new update for this week", weekly_updates_path, remote: true, method: :post, class: "btn btn-block btn-primary" %>
+        <%= link_to "Create a new update for this week", weekly_updates_path, data: { turbo_method: :post }, class: "btn btn-block btn-primary" %>
       </div>
     </div>
   <% end %>

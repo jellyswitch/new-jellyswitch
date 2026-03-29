@@ -1,9 +1,9 @@
 <% if user.archived? %>
-  <%= link_to "Unarchive", user_unarchive_path(user), class: "btn btn-block btn-sm btn-outline-danger", data: {acc: 'unarchive-member', remote: true} %>
+  <%= link_to "Unarchive", user_unarchive_path(user), class: "btn btn-block btn-sm btn-outline-danger", data: {acc: 'unarchive-member', turbo_method: :post} %>
 <% else %>
   <% if user.member_at_operator?(current_tenant) %>
     <%= link_to "Cannot archive an active member", "#", class: "btn btn-block btn-sm btn-outline-secondary disabled" %>
   <% else %>
-    <%= link_to "Archive", user_archive_path(user), class: "btn btn-block btn-sm btn-outline-success", data: {acc: 'archive-member', remote: true} %>
+    <%= link_to "Archive", user_archive_path(user), class: "btn btn-block btn-sm btn-outline-success", data: {acc: 'archive-member', turbo_method: :post} %>
   <% end %>
 <% end %>
