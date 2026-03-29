@@ -40,7 +40,7 @@ function doStripe() {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;
           var submitButton = document.getElementById('stripe-submit');
-          window.Rails.enableElement(submitButton);
+          submitButton.disabled = false;
         } else {
           stripeTokenHandler(result.token);
         }
@@ -59,7 +59,7 @@ function doStripe() {
     console.log("setting has_token=true")
     console.log(window.has_token);
 
-    window.Rails.fire(form, 'submit');
+    form.requestSubmit();
   };
 };
 

@@ -9,24 +9,28 @@
   <h4 class="display-4 text-center">Expenses</h4>
   <div class="row justify-content-end mb-1">
     <div class="col">
-      <%= select_tag "month", options_for_select(FeedItem::MONTHS), data: {remote: true,url: update_expenses_accounting_index_path }, class:'form-control'%>
+      <%= form_with(url: expenses_accounting_index_path, method: :get, data: { turbo_frame: "expenses-table" }) do %>
+        <%= select_tag "month", options_for_select(FeedItem::MONTHS, params[:month]), class: 'form-control', onchange: 'this.form.requestSubmit()' %>
+      <% end %>
     </div>
   </div>
-  <div class="expense-table">
-    <table class="table">
-      <%- @expenses.each do |expense| %>
+  <%= turbo_frame_tag "expenses-table" do %>
+    <div class="expense-table">
+      <table class="table">
+        <%- @expenses.each do |expense| %>
+          <tr>
+            <td><small><%= link_to expense.text, feed_item_path(expense), data: { turbo_frame: "_top" } %></small></td>
+            <td class="text-right"><%= number_to_currency(expense.amount.to_f / 100.0) %></td>
+          </tr>
+        <%- end %>
         <tr>
-          <td><small><%= link_to expense.text, feed_item_path(expense) %></small></td>
-          <td class="text-right"><%= number_to_currency(expense.amount.to_f / 100.0) %></td>
+          <td class="text-right"><strong>Total</strong></td>
+          <td class="text-right">
+            <%= number_to_currency(@expenses_total.to_f / 100.0) %>
+          </td>
         </tr>
-      <%- end %>
-      <tr>
-        <td class="text-right"><strong>Total</strong></td>
-        <td class="text-right">
-          <%= number_to_currency(@expenses_total.to_f / 100.0) %>
-        </td>
-      </tr>
-    </table>
-  </div>
-  <%== pagy_bootstrap_nav(@pagy) %>
+      </table>
+    </div>
+    <%== pagy_bootstrap_nav(@pagy) %>
+  <% end %>
 <%- end %>
