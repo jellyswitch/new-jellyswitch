@@ -1,5 +1,7 @@
 <%- title "Comment" %>
 
+<%= turbo_stream_from @feed_item %>
+
 <%= render Layout::FullWidth.new do %>
   <div id="feed-item-<%= @feed_item.id %>">
     <%= render(FeedItemComponent.new(feed_item: @feed_item, comments: true)) %>

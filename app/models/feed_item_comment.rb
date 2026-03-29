@@ -16,6 +16,9 @@ class FeedItemComment < ApplicationRecord
   belongs_to :user
   validates :comment, presence: true
 
+  # Real-time Turbo Streams - broadcast new comments to feed item show page
+  broadcasts_to :feed_item, inserts_by: :append, target: ->(comment) { "comments-#{comment.feed_item_id}" }
+
   after_commit :reindex_feed_item
 
   delegate :operator, :location, to: :feed_item

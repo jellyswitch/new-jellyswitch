@@ -28,6 +28,9 @@ class FeedItem < ApplicationRecord
   belongs_to :user
   has_many :feed_item_comments
 
+  # Real-time Turbo Streams - broadcast new feed items to all connected users
+  broadcasts_to ->(feed_item) { [feed_item.operator, "feed_items"] }, inserts_by: :prepend, target: "feed-items"
+
   has_rich_text :text
 
   validate :photo_files_accepted
