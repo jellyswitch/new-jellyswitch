@@ -3,7 +3,7 @@
 pin "application", preload: true
 pin "@rails/actiontext", to: "https://ga.jspm.io/npm:@rails/actiontext@7.0.3-1/app/javascript/actiontext/index.js"
 pin "@rails/activestorage", to: "https://ga.jspm.io/npm:@rails/activestorage@7.0.3-1/app/assets/javascripts/activestorage.esm.js"
-pin "@rails/ujs", to: "https://ga.jspm.io/npm:@rails/ujs@7.0.3-1/lib/assets/compiled/rails-ujs.js"
+# @rails/ujs removed — all forms and links now use Turbo natively
 pin "ahoy.js", to: "https://ga.jspm.io/npm:ahoy.js@0.3.4/dist/ahoy.js"
 pin "chartkick", to: "chartkick.js"
 pin "Chart.bundle", to: "Chart.bundle.js"
