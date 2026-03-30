@@ -30,6 +30,13 @@ class Operator::UsersController < Operator::BaseController
     authorize @users
   end
 
+  def search_archived
+    @query = params[:query]
+    @pagy, @users = find_archived_users_with_search(@query)
+    authorize @users
+    render :archived
+  end
+
   def show
     find_user
     authorize @user

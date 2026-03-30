@@ -404,6 +404,7 @@ Rails.application.routes.draw do
     collection do
       get "add_member", to: "operator/users#add_member"
       get :archived, to: "operator/users#archived"
+      get :search_archived, to: "operator/users#search_archived"
       get :unapproved, to: "operator/users#unapproved"
       get :search, to: "operator/users#search"
       get :confirmation_pending, to: "operator/users#confirmation_pending"

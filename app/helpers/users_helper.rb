@@ -48,6 +48,15 @@ module UsersHelper
     User.for_space(current_tenant).originally_at_location(current_location).archived.order("name")
   end
 
+  def find_archived_users_with_search(query = nil)
+    if query.present?
+      user_ids = User.search(query, fields: [:name, :email]).map(&:id)
+      pagy(User.where(id: user_ids).for_space(current_tenant).originally_at_location(current_location).archived.order("name"))
+    else
+      pagy(find_archived_users)
+    end
+  end
+
   def set_archived_users
     @pagy, @users = pagy(find_archived_users)
   end

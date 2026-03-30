@@ -13,8 +13,20 @@
       <%= list_item do %>
         <h4 class="display-4 text-center">Archived Members</h4>
       <% end %>
+      <%= form_with(url: search_archived_users_path, method: :get, local: true) do |f| %>
+        <div class="form-group mx-3 mb-2 mt-2">
+          <div class="input-group">
+            <%= f.text_field :query, value: @query, placeholder: "Search archived members...", class: "form-control" %>
+            <div class="input-group-append">
+              <%= button_tag(type: "submit", class: "btn btn-primary search-btn") do %>
+                <i class="fas fa-search"></i>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
       <% if @users.count < 1 %>
-          <p class="text-center text-muted mt-2">Your member archive is empty.</p>
+          <p class="text-center text-muted mt-2"><%= @query.present? ? "No archived members found for \"#{@query}\"." : "Your member archive is empty." %></p>
       <% else %>
         <% @users.each_with_index do |user, index| %>
           <%= render "list_item", user: user, index: index %>

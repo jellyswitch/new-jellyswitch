@@ -12,6 +12,10 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def search_archived?
+    admin?
+  end
+
   def search?
     has_admin_right?
   end
