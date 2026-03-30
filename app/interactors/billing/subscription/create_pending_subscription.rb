@@ -12,7 +12,8 @@ class Billing::Subscription::CreatePendingSubscription
       subscription.active = false
     end
 
-    if user.subscriptions.pending.count > 0
+    # Only block if there's a truly pending subscription (not one that was canceled/deactivated)
+    if user.subscriptions.where(pending: true).where.not(id: subscription.id).count > 0
       context.fail!(message: "Can't add more than one pending memberships. Cancel any existing pending memberships first, and try again.")
     end
 
