@@ -655,7 +655,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def staff
-    current_user.admin_of_location?(current_location) || current_user.general_manager_of_location?(current_location) || current_user.community_manager_of_location?(location)
+    current_user.admin_of_location?(current_location) || current_user.general_manager_of_location?(current_location) || current_user.community_manager_of_location?(current_location)
   end
 
   def create_reservation_params
