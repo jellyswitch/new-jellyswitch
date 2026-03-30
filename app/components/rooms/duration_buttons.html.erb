@@ -60,7 +60,7 @@
   </style>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    function initDurationSlider() {
       var slider = document.getElementById("step-duration-slider");
       var label = document.getElementById("step-duration-label");
       var confirmLink = document.getElementById("step-duration-confirm");
@@ -95,7 +95,10 @@
       });
 
       updateSlider();
-    });
+    }
+    document.addEventListener("DOMContentLoaded", initDurationSlider);
+    document.addEventListener("turbo:load", initDurationSlider);
+    if (document.readyState !== "loading") initDurationSlider();
   </script>
 <% else %>
   <p class="text-center text-muted">No available durations for this time slot.</p>
