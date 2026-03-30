@@ -102,7 +102,7 @@
       </dl>
     <% end %>
 
-    <% if !subscription.has_stripe_subscription? %>
+    <% if !subscription.has_stripe_subscription? && subscription.plan.amount_in_cents.to_i > 0 %>
       <div class="row">
         <div class="col">
           <span class="text-danger">
@@ -112,9 +112,6 @@
           </span>
         </div>
       </div>
-    
-
-
     <% else %>
       <hr />
       <h3 class="text-center mt-1">Change Membership</h3>
