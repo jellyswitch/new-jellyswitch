@@ -29,7 +29,7 @@ class FeedItem < ApplicationRecord
   has_many :feed_item_comments
 
   # Real-time Turbo Streams - broadcast new feed items to all connected users
-  broadcasts_to ->(feed_item) { [feed_item.operator, "feed_items"] }, inserts_by: :prepend, target: "feed-items"
+  broadcasts_to ->(feed_item) { [feed_item.operator, "feed_items"] }, inserts_by: :prepend, target: "feed-items", partial: "operator/feed_items/feed_item"
 
   has_rich_text :text
 
