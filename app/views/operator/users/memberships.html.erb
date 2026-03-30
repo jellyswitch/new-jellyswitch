@@ -10,6 +10,16 @@
     <h4 class="display-4 text-center">My Membership</h4>
   <% end %>
 
+  <% active_subs = @user.subscriptions.for_operator(current_tenant).active %>
+  <% if active_subs.empty? %>
+    <%= list_item do %>
+      <p class="text-center text-muted">No active membership.</p>
+      <% if current_user.admin_or_manager?(current_location) %>
+        <%= link_to "Add membership", new_operator_admin_subscription_path(user_id: @user.id), class: "btn btn-block btn-primary" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <% @user.subscriptions.order('created_at DESC').each do |subscription| %>
     <%= list_item do %>
       <%= render "operator/subscriptions/membership_card", subscription: subscription %>
