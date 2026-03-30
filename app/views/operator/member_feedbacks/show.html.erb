@@ -12,41 +12,32 @@
     <h4 class="display-4 text-center">Conversation</h4>
 
     <div class="feedback-chat" id="feedback-chat">
-      <%# Original feedback message %>
-      <div class="chat-bubble chat-bubble-member">
+      <%# Original feedback message (always from the member) %>
+      <% is_admin = current_user.admin_or_manager?(current_location) %>
+      <div class="chat-bubble <%= is_admin ? 'chat-bubble-other' : 'chat-bubble-mine' %>">
         <div class="chat-body"><%= simple_format(@member_feedback.comment) %></div>
         <div class="chat-meta">
-          <% if current_user.admin_or_manager?(current_location) %>
-            Member
-          <% else %>
-            You
-          <% end %>
+          <%= is_admin ? "Member" : "You" %>
           &middot; <%= time_ago_in_words(@member_feedback.created_at) %> ago
         </div>
       </div>
 
       <%# Replies %>
       <% @feedback_replies.each do |reply| %>
-        <% if reply.from_admin? %>
-          <div class="chat-bubble chat-bubble-admin">
-            <div class="chat-body"><%= simple_format(reply.body) %></div>
-            <div class="chat-meta">
-              <%= reply.user.name %> &middot; <%= time_ago_in_words(reply.created_at) %> ago
-            </div>
+        <% is_mine = (reply.from_admin? && is_admin) || (!reply.from_admin? && !is_admin) %>
+        <div class="chat-bubble <%= is_mine ? 'chat-bubble-mine' : 'chat-bubble-other' %>">
+          <div class="chat-body"><%= simple_format(reply.body) %></div>
+          <div class="chat-meta">
+            <% if is_mine %>
+              You
+            <% elsif reply.from_admin? %>
+              <%= reply.user.name %>
+            <% else %>
+              Member
+            <% end %>
+            &middot; <%= time_ago_in_words(reply.created_at) %> ago
           </div>
-        <% else %>
-          <div class="chat-bubble chat-bubble-member">
-            <div class="chat-body"><%= simple_format(reply.body) %></div>
-            <div class="chat-meta">
-              <% if current_user.admin_or_manager?(current_location) %>
-                Member
-              <% else %>
-                You
-              <% end %>
-              &middot; <%= time_ago_in_words(reply.created_at) %> ago
-            </div>
-          </div>
-        <% end %>
+        </div>
       <% end %>
     </div>
 
@@ -81,13 +72,13 @@
   .chat-bubble p {
     margin-bottom: 0;
   }
-  .chat-bubble-admin {
-    background: #007bff;
+  .chat-bubble-mine {
+    background: var(--brand-color, #76B82A);
     color: #fff;
     align-self: flex-end;
     border-bottom-right-radius: 4px;
   }
-  .chat-bubble-member {
+  .chat-bubble-other {
     background: #f1f1f1;
     color: #333;
     align-self: flex-start;
@@ -98,7 +89,7 @@
     margin-top: 4px;
     opacity: 0.7;
   }
-  .chat-bubble-admin .chat-meta {
+  .chat-bubble-mine .chat-meta {
     color: rgba(255,255,255,0.8);
   }
   .feedback-reply-form {
