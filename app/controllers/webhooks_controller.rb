@@ -28,12 +28,27 @@ class WebhooksController < ApplicationController
       if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
         update_status(@event.data.object)
 
-        # Send payment failed recovery email
+        # Send payment failed recovery email and notify admins
         begin
           invoice = Invoice.find_by(stripe_invoice_id: @event.data.object.id)
-          SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id) if invoice
+          if invoice
+            SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id)
+
+            # Create feed item to alert admins
+            user = invoice.billable.is_a?(User) ? invoice.billable : invoice.billable.try(:owner)
+            if user
+              amount = ActionController::Base.helpers.number_to_currency(invoice.amount_due / 100.0)
+              FeedItemCreator.create_feed_item(
+                invoice.operator,
+                invoice.location,
+                user,
+                { text: "Payment failed for #{amount} invoice.", type: "payment_failed" }
+              )
+            end
+          end
         rescue => e
-          Rails.logger.error("Payment failed email schedule error: #{e.class}: #{e.message}")
+          Rails.logger.error("Payment failed notification error: #{e.class}: #{e.message}")
+          Honeybadger.notify(e)
         end
       end
     when "customer.subscription.deleted"

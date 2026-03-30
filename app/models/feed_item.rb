@@ -103,6 +103,10 @@ class FeedItem < ApplicationRecord
       "signed up"
     when "weekly-update"
       "Your weekly update has been posted"
+    when "payment_failed"
+      "had a payment failure"
+    when "lease_renewal"
+      "has a lease renewal proposal"
     end
   end
 
