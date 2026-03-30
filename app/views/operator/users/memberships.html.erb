@@ -20,6 +20,16 @@
     <% end %>
   <% end %>
 
+  <% pending_subs = @user.subscriptions.for_operator(current_tenant).where(pending: true) %>
+  <% if pending_subs.any? && current_user.admin_or_manager?(current_location) %>
+    <%= list_item do %>
+      <p class="text-muted text-center">You have a stuck pending membership blocking new signups.</p>
+      <% pending_subs.each do |sub| %>
+        <%= link_to "Remove pending #{sub.plan&.name || 'membership'}", operator_admin_subscription_path(sub), data: { turbo_method: :delete, confirm: "Remove this stuck pending membership?" }, class: "btn btn-block btn-outline-danger mb-2" %>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <% @user.subscriptions.order('created_at DESC').each do |subscription| %>
     <%= list_item do %>
       <%= render "operator/subscriptions/membership_card", subscription: subscription %>
