@@ -82,14 +82,6 @@ class UserMailer < ApplicationMailer
     mail to: recipient.email, subject: "Announcement from #{@location&.name || @operator.name}", from: from_address, reply_to: reply_to
   end
 
-  def onboarding_email(user, operator, password)
-    @user = user
-    @operator = operator
-    @password = password
-    @host = ENV['ASSET_HOST']
-    mail to: user.email, subject: "Welcome to #{@operator.name}!", from: @operator.sender_from_address, reply_to: @operator.contact_email
-  end
-
   def childcare_confirmation_email(childcare_reservation, user)
     @reservation = childcare_reservation
     @user = user

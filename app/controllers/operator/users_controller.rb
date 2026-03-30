@@ -254,19 +254,6 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
-  def set_password_and_send_email
-    find_user(:user_id)
-    authorize @user
-
-    result = Onboarding::SetPasswordAndSendEmail.call(user: @user)
-
-    if result.success?
-      flash[:success] = "Password and onboarding email sent."
-    else
-      flash[:error] = result.message
-    end
-    turbo_redirect(user_path(@user), action: "replace")
-  end
 
   def memberships
     find_user(:user_id)

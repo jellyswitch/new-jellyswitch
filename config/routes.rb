@@ -435,7 +435,6 @@ Rails.application.routes.draw do
     get :payment_method, to: "operator/users#payment_method"
     get :remove_from_organization, to: "operator/users#remove_from_organization"
     get :reservations, to: "operator/users#reservations"
-    get :set_password_and_send_email, to: "operator/users#set_password_and_send_email"
     get :unapprove, to: "operator/users#unapprove"
     get :unarchive, to: "operator/users#unarchive"
     get :usage, to: "operator/users#usage"

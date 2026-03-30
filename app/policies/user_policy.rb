@@ -152,9 +152,6 @@ class UserPolicy < ApplicationPolicy
     has_right_over_user?
   end
 
-  def set_password_and_send_email?
-    has_admin_right?
-  end
 
   def destroy?
     is_user? && user == record
