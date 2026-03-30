@@ -1,83 +1,102 @@
-<% if room.allow_shorter_reservation_duration? %>
-  <% if room.available_at?(datetime_in) %>
-    <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 30) %>
+<% if max_duration >= min_duration %>
+  <div class="duration-slider-section">
+    <div class="duration-slider-container">
+      <div class="duration-display">
+        <span class="duration-value" id="step-duration-label"><%= default_duration %> minutes</span>
+      </div>
+      <input type="range" id="step-duration-slider" class="duration-slider"
+        min="<%= min_duration %>" max="<%= max_duration %>" step="15" value="<%= default_duration %>">
+      <div class="duration-range-labels">
+        <span><%= min_duration %> min</span>
+        <span><%= max_duration >= 60 ? "#{max_duration / 60} hrs" : "#{max_duration} min" %></span>
+      </div>
+    </div>
 
-    <% if room.available_at?(datetime_in + 30.minutes) %>
-      <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 60) %>
-
-      <% if room.available_at?(datetime_in + 60.minutes) %>
-        <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 90) %>
-
-        <% if room.available_at?(datetime_in + 90.minutes) %>
-          <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 120) %>
-
-          <% if room.available_at?(datetime_in + 120.minutes) %>
-            <% if room.available_at?(datetime_in + 150.minutes) %>
-              <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 180) %>
-
-              <% if room.available_at?(datetime_in + 180.minutes) %>
-                <% if room.available_at?(datetime_in + 210.minutes) %>
-                  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 240) %>
-
-                  <% if room.available_at?(datetime_in + 240.minutes) %>
-                    <% if room.available_at?(datetime_in + 270.minutes) %>
-                      <% if room.available_at?(datetime_in + 300.minutes) %>
-                        <% if room.available_at?(datetime_in + 330.minutes) %>
-                          <% if room.available_at?(datetime_in + 360.minutes) %>
-                            <% if room.available_at?(datetime_in + 390.minutes) %>
-                              <% if room.available_at?(datetime_in + 420.minutes) %>
-                                <% if room.available_at?(datetime_in + 450.minutes) %>
-                                  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 480) %>
-                                <% end %>
-                              <% end %>
-                            <% end %>
-                          <% end %>
-                        <% end %>
-                      <% end %>
-                    <% end %>
-                  <% end %>
-                <% end %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
+    <div class="duration-quick-picks mt-2">
+      <% [30, 60, 120, 240].each do |d| %>
+        <% next if d < min_duration %>
+        <div class="duration-quick-pick <%= 'disabled' if d > max_duration %>" data-duration="<%= d %>">
+          <%= d < 60 ? "#{d} min" : "#{d / 60} hr#{d / 60 > 1 ? 's' : ''}" %>
+        </div>
       <% end %>
-    <% end %>
-  <% end %>
+    </div>
+
+    <div class="mt-3">
+      <a href="<%= confirm_path_template %>" id="step-duration-confirm" class="btn btn-block btn-primary">
+        Continue
+      </a>
+    </div>
+  </div>
+
+  <style>
+    .duration-slider-section .duration-slider-container { padding: 8px 0; }
+    .duration-slider-section .duration-display { text-align: center; margin-bottom: 8px; }
+    .duration-slider-section .duration-value { font-size: 18px; font-weight: 600; }
+    .duration-slider-section .duration-slider {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px;
+      border-radius: 3px; background: #e0e0e0; outline: none;
+    }
+    .duration-slider-section .duration-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none; width: 28px; height: 28px;
+      border-radius: 50%; background: var(--brand-color, #2f2f2f);
+      cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .duration-slider-section .duration-slider::-moz-range-thumb {
+      width: 28px; height: 28px; border-radius: 50%; background: var(--brand-color, #2f2f2f);
+      cursor: pointer; border: 2px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .duration-slider-section .duration-range-labels {
+      display: flex; justify-content: space-between; font-size: 12px; color: #888; margin-top: 4px;
+    }
+    .duration-slider-section .duration-quick-picks { display: flex; flex-wrap: wrap; gap: 8px; }
+    .duration-slider-section .duration-quick-pick {
+      border: 1px solid #ccc; padding: 6px 14px; border-radius: 20px; cursor: pointer;
+      font-size: 13px; min-height: 36px; display: flex; align-items: center;
+      justify-content: center; transition: all 0.2s ease;
+    }
+    .duration-slider-section .duration-quick-pick:hover,
+    .duration-slider-section .duration-quick-pick.selected { background: #2f2f2f; color: white; border-color: #2f2f2f; }
+    .duration-slider-section .duration-quick-pick.disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+  </style>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      var slider = document.getElementById("step-duration-slider");
+      var label = document.getElementById("step-duration-label");
+      var confirmLink = document.getElementById("step-duration-confirm");
+      var pathTemplate = "<%= j confirm_path_template %>";
+
+      function formatDuration(mins) {
+        var h = Math.floor(mins / 60), m = mins % 60;
+        if (h > 0 && m > 0) return h + " hr " + m + " min";
+        if (h > 0) return h === 1 ? "1 hour" : h + " hours";
+        return m + " minutes";
+      }
+
+      function updateSlider() {
+        var val = parseInt(slider.value);
+        label.textContent = formatDuration(val);
+        confirmLink.href = pathTemplate.replace("DURATION_PLACEHOLDER", val);
+        document.querySelectorAll(".duration-quick-pick").forEach(function(chip) {
+          chip.classList.toggle("selected", parseInt(chip.dataset.duration) === val);
+        });
+      }
+
+      slider.addEventListener("input", updateSlider);
+
+      document.querySelectorAll(".duration-quick-pick").forEach(function(chip) {
+        chip.addEventListener("click", function() {
+          var d = parseInt(this.dataset.duration);
+          if (d <= parseInt(slider.max)) {
+            slider.value = d;
+            updateSlider();
+          }
+        });
+      });
+
+      updateSlider();
+    });
+  </script>
 <% else %>
-  <% if room.available_at?(datetime_in) %>
-    <% if room.available_at?(datetime_in + 30.minutes) %>
-      <% if room.available_at?(datetime_in + 60.minutes) %>
-        <% if room.available_at?(datetime_in + 90.minutes) %>
-          <% if room.available_at?(datetime_in + 120.minutes) %>
-            <% if room.available_at?(datetime_in + 150.minutes) %>
-              <% if room.available_at?(datetime_in + 180.minutes) %>
-                <% if room.available_at?(datetime_in + 210.minutes) %>
-                  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 240) %>
-
-                  <% if room.available_at?(datetime_in + 240.minutes) %>
-                    <% if room.available_at?(datetime_in + 270.minutes) %>
-                      <% if room.available_at?(datetime_in + 300.minutes) %>
-                        <% if room.available_at?(datetime_in + 330.minutes) %>
-                          <% if room.available_at?(datetime_in + 360.minutes) %>
-                            <% if room.available_at?(datetime_in + 390.minutes) %>
-                              <% if room.available_at?(datetime_in + 420.minutes) %>
-                                <% if room.available_at?(datetime_in + 450.minutes) %>
-                                  <%= render Rooms::DurationButton.new(room: room, day: day, hour: hour, user: user, duration: 480) %>
-                                <% end %>
-                              <% end %>
-                            <% end %>
-                          <% end %>
-                        <% end %>
-                      <% end %>
-                    <% end %>
-                  <% end %>
-                <% end %>
-              <% end %>
-            <% end %>
-          <% end %>
-        <% end %>
-      <% end %>
-    <% end %>
-  <% end %>
+  <p class="text-center text-muted">No available durations for this time slot.</p>
 <% end %>
