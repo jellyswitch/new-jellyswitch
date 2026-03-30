@@ -1684,7 +1684,7 @@
   @media (max-width: 768px) {
     .bottom-sheet-modal .modal-dialog {
       position: fixed;
-      bottom: 0;
+      bottom: 60px;
       left: 0;
       right: 0;
       margin: 0;
@@ -1699,7 +1699,7 @@
 
     .bottom-sheet-modal .modal-content {
       border-radius: 16px 16px 0 0;
-      max-height: 85vh;
+      max-height: calc(100vh - 130px);
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
     }
