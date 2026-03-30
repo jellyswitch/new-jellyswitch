@@ -92,7 +92,7 @@
       </div>
     </div>
   <% end %>
-  <% if !subscription.has_stripe_subscription? %>
+  <% if !subscription.has_stripe_subscription? && subscription.plan.amount_in_cents.to_i > 0 %>
     <div class="row">
       <div class="col">
         <span class="text-danger">
