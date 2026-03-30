@@ -14,7 +14,7 @@ export default class extends Controller {
     this.card = null;
     this.isModalOpen = false;
     this.pendingAjax = [];
-    this._durationClickLock = false;
+    this._durationDebounceTimer = null;
     this._timeSlotClickLock = false;
 
     this.initializeCalendar();
@@ -38,7 +38,8 @@ export default class extends Controller {
   disconnect() {
     // Clean up all event handlers when Stimulus disconnects
     $("#reservation-fullcalendar").off("click.mobiletap");
-    $("#duration-slots-container").off("click.duration touchend.duration");
+    $("#duration-slider").off("input.duration change.duration");
+    $(".duration-quick-picks").off("click.quickpick");
     $("#time-slots-container").off("click.timeslot touchend.timeslot");
     $("#rooms-select").off("change");
     $("#add-reservation").off("submit");
@@ -264,34 +265,114 @@ export default class extends Controller {
   }
 
   handleDurationChange() {
-    $("#duration-slots-container").off("click.duration touchend.duration");
-    $("#duration-slots-container").on("click.duration touchend.duration", ".duration-slot", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+    const slider = $("#duration-slider");
+    const durationInput = $('input[name="duration"]');
 
-      // Debounce guard: ignore rapid duplicate fires (touch + click)
-      if (this._durationClickLock) return;
-      this._durationClickLock = true;
-      setTimeout(() => { this._durationClickLock = false; }, 400);
+    // Slider input (live dragging)
+    slider.off("input.duration").on("input.duration", () => {
+      const val = parseInt(slider.val());
+      this.updateDurationDisplay(val);
+      this.updateQuickPickHighlight(val);
+    });
 
-      const slot = $(event.currentTarget);
-      const duration = slot.data("duration");
-
-      // Remove selection from ALL duration slots, then select this one
-      $("#duration-slots-container .duration-slot").removeClass("selected-time");
-      slot.addClass("selected-time");
-      $('input[name="duration"]').val(duration);
+    // Slider change (released / final value)
+    slider.off("change.duration").on("change.duration", () => {
+      const val = parseInt(slider.val());
+      durationInput.val(val);
       this.hideOverageAlert();
-      this.fetchAvailableRooms();
 
-      // Auto-scroll to room selection
-      setTimeout(() => {
-        const roomGroup = document.querySelector(".available-room-group");
-        if (roomGroup) {
-          roomGroup.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+      clearTimeout(this._durationDebounceTimer);
+      this._durationDebounceTimer = setTimeout(() => {
+        this.fetchAvailableRooms();
+        setTimeout(() => {
+          const roomGroup = document.querySelector(".available-room-group");
+          if (roomGroup) {
+            roomGroup.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 300);
       }, 300);
     });
+
+    // Quick-pick chips
+    $(".duration-quick-picks").off("click.quickpick").on("click.quickpick", ".duration-quick-pick", (event) => {
+      const chip = $(event.currentTarget);
+      const duration = parseInt(chip.data("duration"));
+      const max = parseInt(slider.attr("max"));
+
+      if (duration > max) return;
+
+      slider.val(duration).trigger("input").trigger("change");
+    });
+  }
+
+  updateDurationDisplay(minutes) {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    let text = "";
+    if (hours > 0 && mins > 0) {
+      text = `${hours} hr ${mins} min`;
+    } else if (hours > 0) {
+      text = hours === 1 ? "1 hour" : `${hours} hours`;
+    } else {
+      text = `${mins} minutes`;
+    }
+    $(".duration-value").text(text);
+  }
+
+  updateQuickPickHighlight(value) {
+    const max = parseInt($("#duration-slider").attr("max"));
+    $(".duration-quick-pick").each(function() {
+      const d = parseInt($(this).data("duration"));
+      $(this).toggleClass("selected-time", d === value);
+      $(this).toggleClass("disabled", d > max);
+    });
+  }
+
+  fetchMaxAvailableDuration(callback) {
+    const date = $('input[name="date"]').val();
+    const time = $('input[name="time"]').val();
+    const dayOrNight = $('input[name="day_or_night"]').val();
+
+    if (!date || !time) return;
+
+    const xhr = $.ajax({
+      url: "/reservations/max_available_duration",
+      method: "GET",
+      data: { date: date, time: time, day_or_night: dayOrNight },
+      success: (response) => {
+        const maxDuration = response.max_duration || 15;
+        const slider = $("#duration-slider");
+        slider.attr("max", maxDuration);
+
+        // Set default to 30 min or max if less
+        const defaultVal = Math.min(30, maxDuration);
+        slider.val(defaultVal);
+        $('input[name="duration"]').val(defaultVal);
+        this.updateDurationDisplay(defaultVal);
+        this.updateQuickPickHighlight(defaultVal);
+
+        // Update max label
+        const maxHours = Math.floor(maxDuration / 60);
+        const maxMins = maxDuration % 60;
+        let maxLabel = "";
+        if (maxHours > 0 && maxMins > 0) {
+          maxLabel = `${maxHours} hr ${maxMins} min`;
+        } else if (maxHours > 0) {
+          maxLabel = `${maxHours} hrs`;
+        } else {
+          maxLabel = `${maxMins} min`;
+        }
+        $(".duration-max-label").text(maxLabel);
+
+        if (callback) callback();
+      },
+      error: (xhr, status, error) => {
+        if (status !== "abort") {
+          console.error("Error fetching max duration:", error);
+        }
+      }
+    });
+    this.pendingAjax.push(xhr);
   }
 
   handleRoomSelectionChange() {
@@ -383,16 +464,19 @@ export default class extends Controller {
     const isPM = /PM$/i.test(time);
     $('input[name="day_or_night"]').val(isPM ? "night" : "day");
 
-    $(".duration-group").removeClass("d-none");
-    this.fetchAvailableRooms();
+    // Fetch max duration then show slider and rooms
+    this.fetchMaxAvailableDuration(() => {
+      $(".duration-group").removeClass("d-none");
+      this.fetchAvailableRooms();
 
-    // Auto-scroll to duration section
-    setTimeout(() => {
-      const durationGroup = document.querySelector(".duration-group");
-      if (durationGroup) {
-        durationGroup.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    }, 100);
+      // Auto-scroll to duration section
+      setTimeout(() => {
+        const durationGroup = document.querySelector(".duration-group");
+        if (durationGroup) {
+          durationGroup.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 100);
+    });
   }
 
   handleModalClose() {
@@ -633,7 +717,10 @@ export default class extends Controller {
     $(".duration-group").addClass("d-none");
     $(".available-room-group").addClass("d-none");
 
-    $(".duration-slot").removeClass("selected-time");
+    $("#duration-slider").val(30).attr("max", 480);
+    $(".duration-value").text("30 minutes");
+    $(".duration-max-label").text("8 hrs");
+    $(".duration-quick-pick").removeClass("selected-time disabled");
     $('input[name="duration"]').val("");
 
     // Default AM/PM based on current time

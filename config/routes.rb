@@ -265,6 +265,7 @@ Rails.application.routes.draw do
       get :memberships
       get :posts
       get :reservations
+      get :paid_room_reservations
       get :refunds
       get :signups
     end
@@ -297,10 +298,22 @@ Rails.application.routes.draw do
       get :archived, to: "operator/offices#archived"
     end
   end
+  resources :lease_renewal_requests, controller: "operator/lease_renewal_requests", only: [:index, :show] do
+    member do
+      post :accept
+      post :request_modification
+      get :admin_review
+      post :admin_approve
+      post :admin_decline
+      post :admin_force_approve
+    end
+  end
+
   resources :office_leases, controller: "operator/office_leases" do
     get :renewal, to: "operator/office_leases#renewal"
     get :edit_price, to: "operator/office_leases#edit_price"
     patch :update_price, to: "operator/office_leases#update_price"
+    post :convert_to_organization, to: "operator/office_leases#convert_to_organization"
   end
   delete "destroy_office_lease_now/:id", to: "operator/office_leases#destroy_office_lease_now", as: "destroy_office_lease_now"
   resources :organizations, controller: "operator/organizations" do
@@ -374,6 +387,7 @@ Rails.application.routes.draw do
       get :calendar, to: "operator/reservations#calendar"
       get :available_time_slots, to: "operator/reservations#available_time_slots"
       get :available_rooms, to: "operator/reservations#available_rooms"
+      get :max_available_duration, to: "operator/reservations#max_available_duration"
       get :room_price_and_details, to: "operator/reservations#room_price_and_details"
       get :needs_billing, to: "operator/reservations#needs_billing"
 

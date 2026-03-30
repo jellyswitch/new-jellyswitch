@@ -72,14 +72,22 @@
 
             <div class="form-group duration-group d-none">
               <label>Meeting Duration</label>
-              <div id="duration-slots-container">
-                <div class="duration-slot" data-duration="30">30 minutes</div>
-                <div class="duration-slot" data-duration="60">1 hour</div>
-                <div class="duration-slot" data-duration="90">1.5 hours</div>
-                <div class="duration-slot" data-duration="120">2 hours</div>
-                <div class="duration-slot" data-duration="180">3 hours</div>
-                <div class="duration-slot" data-duration="240">4 hours</div>
-                <div class="duration-slot" data-duration="480">8 hours</div>
+              <div class="duration-slider-container">
+                <div class="duration-display">
+                  <span class="duration-value">30 minutes</span>
+                </div>
+                <input type="range" id="duration-slider" class="duration-slider"
+                  min="15" max="480" step="15" value="30">
+                <div class="duration-range-labels">
+                  <span>15 min</span>
+                  <span class="duration-max-label">8 hrs</span>
+                </div>
+              </div>
+              <div class="duration-quick-picks mt-2">
+                <div class="duration-quick-pick" data-duration="30">30 min</div>
+                <div class="duration-quick-pick" data-duration="60">1 hr</div>
+                <div class="duration-quick-pick" data-duration="120">2 hrs</div>
+                <div class="duration-quick-pick" data-duration="240">4 hrs</div>
               </div>
               <input type='text' class="form-control" name="duration" hidden>
             </div>

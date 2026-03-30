@@ -93,6 +93,15 @@ class Room < ApplicationRecord
     available_durations
   end
 
+  def calculate_max_continuous_duration(start_time:, max_minutes: 480, step: 15)
+    duration = 0
+    while duration + step <= max_minutes
+      break unless available?(start_time: start_time, duration: duration + step)
+      duration += step
+    end
+    duration
+  end
+
   def has_photo?
     photo.attached?
   end

@@ -293,6 +293,31 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  def max_available_duration
+    if params[:date].present? && params[:time].present? && params[:day_or_night].present?
+      date = params[:date]
+      day_or_night = params[:day_or_night]
+      time = params[:time]
+      time += " pm" if day_or_night == "night"
+
+      parsed_date = Date.parse(date)
+      parsed_time = Time.zone.parse("#{date} #{time}")
+
+      rooms = current_location.rooms.visible
+      rooms = rooms.rentable unless current_user.can_see_all_rooms?(current_location, parsed_date)
+
+      max_duration = 0
+      rooms.each do |room|
+        durations = room.calculate_max_continuous_duration(start_time: parsed_time)
+        max_duration = [max_duration, durations].max
+      end
+
+      render json: { max_duration: [max_duration, 480].min }
+    else
+      render json: { error: "Invalid parameters" }, status: :unprocessable_entity
+    end
+  end
+
   def room_price_and_details
     if params[:room_id].present? && params[:duration].present? && params[:date].present?
       room = Room.find(params[:room_id])
