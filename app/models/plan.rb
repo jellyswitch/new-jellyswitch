@@ -44,7 +44,7 @@ class Plan < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
-  validates :amount_in_cents, numericality: { greater_than: 0 }
+  validates :amount_in_cents, numericality: { greater_than_or_equal_to: 0 }
 
   # Scopes
   scope :available, -> { where(available: true) }
