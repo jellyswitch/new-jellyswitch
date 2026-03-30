@@ -33,7 +33,9 @@ class Operator::Admin::SubscriptionsController < Operator::BaseController
     start_day = compute_start_day
     out_of_band = params[:out_of_band] || @subscription.subscribable.out_of_band
 
-    interactor = if @subscription.subscribable.bill_to_organization
+    interactor = if @subscription.plan.amount_in_cents.to_i == 0
+      Billing::Subscription::CreateSubscription
+    elsif @subscription.subscribable.bill_to_organization
       Billing::Subscription::CreateSubscription
     else
       if out_of_band

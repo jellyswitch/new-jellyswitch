@@ -6,6 +6,13 @@ class Billing::Subscription::CreateStripeSubscription
   def call
     user = subscription.subscribable
 
+    # Skip Stripe for $0 plans — no payment needed
+    if subscription.plan.amount_in_cents.to_i == 0
+      subscription.update(active: true)
+      context.notifiable = subscription
+      return
+    end
+
     # Create Stripe coupon if discount code provided
     if context.discount_code.present?
       coupon_result = Billing::DiscountCodes::CreateStripeCoupon.call(
