@@ -10,6 +10,9 @@ class Billing::Subscription::SetStripeSubscriptionForCancellation
       context.fail!(message: "Unable to set subscription for cancellation.")
     end
 
+    # Skip Stripe for $0 plans with no Stripe subscription
+    return unless subscription.stripe_subscription_id.present?
+
     begin
       if subscription.stripe_subscription.status == "canceled"
         Honeybadger.notify("Warning: SetStripeSubscriptionForCancellation called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")

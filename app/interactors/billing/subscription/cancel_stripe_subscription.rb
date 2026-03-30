@@ -10,6 +10,9 @@ class Billing::Subscription::CancelStripeSubscription
       context.fail!(message: "Unable to cancel subscription.")
     end
 
+    # Skip Stripe for $0 plans with no Stripe subscription
+    return unless subscription.stripe_subscription_id.present?
+
     begin
       unless subscription.stripe_subscription.status == "canceled"
         subscription.cancel_stripe!
