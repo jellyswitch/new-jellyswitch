@@ -1,0 +1,81 @@
+<% title "Lease Renewal" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
+  <li class="breadcrumb-item"><%= link_to @request.office_lease.office.name, office_path(@request.office_lease.office) %></li>
+  <li class="breadcrumb-item active">Renewal Proposal</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center">Lease Renewal Proposal</h4>
+
+    <div class="text-center mb-3">
+      <% if @request.approved? %>
+        <span class="badge badge-success p-2">Approved</span>
+      <% elsif @request.declined? %>
+        <span class="badge badge-danger p-2">Declined</span>
+      <% elsif @request.expired? %>
+        <span class="badge badge-secondary p-2">Expired</span>
+      <% elsif @request.pending_admin? %>
+        <span class="badge badge-warning p-2">Pending Admin Review</span>
+      <% else %>
+        <span class="badge badge-info p-2">Awaiting Your Response</span>
+      <% end %>
+    </div>
+
+    <dl class="row">
+      <dt class="col-sm-4">Office</dt>
+      <dd class="col-sm-8"><%= @request.office_lease.office.name %></dd>
+
+      <dt class="col-sm-4">Leasee</dt>
+      <dd class="col-sm-8"><%= @request.leasee_name %></dd>
+
+      <dt class="col-sm-4">Current Price</dt>
+      <dd class="col-sm-8"><%= @request.current_price_formatted %></dd>
+
+      <dt class="col-sm-4">Proposed New Price</dt>
+      <dd class="col-sm-8"><strong><%= @request.proposed_price_formatted %></strong></dd>
+
+      <% if @request.price_increase_formatted %>
+        <dt class="col-sm-4">Increase</dt>
+        <dd class="col-sm-8"><%= @request.price_increase_formatted %> (<%= @request.escalation_applied %>)</dd>
+      <% end %>
+
+      <dt class="col-sm-4">New Lease Period</dt>
+      <dd class="col-sm-8"><%= short_date(@request.proposed_start_date) %> — <%= short_date(@request.proposed_end_date) %></dd>
+
+      <% if @request.expires_at %>
+        <dt class="col-sm-4">Response Deadline</dt>
+        <dd class="col-sm-8"><%= short_date(@request.expires_at) %></dd>
+      <% end %>
+    </dl>
+
+    <% if @request.leasee_notes.present? %>
+      <div class="alert alert-light mt-2">
+        <strong>Leasee Notes:</strong> <%= @request.leasee_notes %>
+      </div>
+    <% end %>
+
+    <% if @request.admin_notes.present? %>
+      <div class="alert alert-light mt-2">
+        <strong>Admin Notes:</strong> <%= @request.admin_notes %>
+      </div>
+    <% end %>
+
+    <% if policy(@request).accept? %>
+      <hr>
+      <h5>Your Response</h5>
+      <%= form_with url: accept_lease_renewal_request_path(@request), method: :post, local: true do |f| %>
+        <%= f.submit "Accept Renewal Terms", class: "btn btn-block btn-primary mb-2", data: { confirm: "Accept the renewal at #{@request.proposed_price_formatted}?" } %>
+      <% end %>
+
+      <%= form_with url: request_modification_lease_renewal_request_path(@request), method: :post, local: true do |f| %>
+        <div class="form-group">
+          <%= f.text_area :notes, placeholder: "Describe the changes you'd like to request (note: price can only be modified by admin)...", class: "form-control", rows: 3, required: true %>
+        </div>
+        <%= f.submit "Request Modification", class: "btn btn-block btn-outline-primary" %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

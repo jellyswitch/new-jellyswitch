@@ -1,0 +1,74 @@
+<% title "Lease Renewals" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
+  <li class="breadcrumb-item active">Lease Renewals</li>
+<% end %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Lease Renewals</h4>
+      <p class="text-muted text-center">Manage upcoming lease renewal proposals.</p>
+    <% end %>
+
+    <% if @pending_requests.any? %>
+      <%= list_item do %>
+        <h5>Pending Requests (<%= @pending_requests.count %>)</h5>
+      <% end %>
+
+      <% @pending_requests.each do |request| %>
+        <%= link_to admin_review_lease_renewal_request_path(request), class: "list-group-item list-group-item-action" do %>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><%= request.leasee_name %></strong> — <%= request.office_lease.office.name %>
+              <br>
+              <small class="text-muted">
+                <%= request.current_price_formatted %> → <%= request.proposed_price_formatted %>
+                (<%= request.escalation_applied %>)
+              </small>
+            </div>
+            <div>
+              <% if request.pending_admin? %>
+                <span class="badge badge-warning">Needs Review</span>
+              <% else %>
+                <span class="badge badge-info">Awaiting Leasee</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% else %>
+      <%= list_item do %>
+        <p class="text-center text-muted">No pending renewal requests.</p>
+      <% end %>
+    <% end %>
+
+    <% if @resolved_requests.any? %>
+      <%= list_item do %>
+        <h5>Recent History</h5>
+      <% end %>
+
+      <% @resolved_requests.each do |request| %>
+        <%= link_to lease_renewal_request_path(request), class: "list-group-item list-group-item-action" do %>
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><%= request.leasee_name %></strong> — <%= request.office_lease.office.name %>
+              <br>
+              <small class="text-muted"><%= request.current_price_formatted %> → <%= request.proposed_price_formatted %></small>
+            </div>
+            <div>
+              <% if request.approved? %>
+                <span class="badge badge-success">Approved</span>
+              <% elsif request.declined? %>
+                <span class="badge badge-danger">Declined</span>
+              <% else %>
+                <span class="badge badge-secondary">Expired</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

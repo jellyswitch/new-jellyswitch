@@ -135,6 +135,16 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Your membership renews soon", from: from_address, reply_to: operator.contact_email
   end
 
+  def lease_renewal_proposal_email(user, operator, renewal_request, location = nil)
+    @user = user
+    @operator = operator
+    @request = renewal_request
+    @location = location
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Your office lease renewal for #{renewal_request.office_lease.office.name}", from: from_address, reply_to: operator.contact_email
+  end
+
   def signup_nudge_email(user, operator, template, location = nil)
     @user = user
     @operator = operator
