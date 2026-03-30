@@ -1,1 +1,1 @@
-$('#feed-item-<%= @feed_item.id %>').html("<%=j render partial: "feed_item", locals: { feed_item: @feed_item, comments: @comments } %>");
+$('#feed-item-<%= @feed_item.id %>').html("<%=j render partial: "operator/feed_items/feed_item", locals: { feed_item: @feed_item, comments: @comments } %>");
