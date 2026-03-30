@@ -16,12 +16,12 @@ class Operator::AccountingController < Operator::BaseController
 
   def expenses
     background_image
-    expenses_scope = FeedItem.for_operator(current_tenant).expenses.order("created_at DESC")
+    expenses_scope = FeedItem.for_operator(current_tenant).for_location(current_location).expenses.order("created_at DESC")
     @expenses_total = expenses_scope.sum(:amount)
     @pagy, @expenses = pagy(expenses_scope)
   end
 
   def update_expenses
-    @expenses = FeedItem.where("extract(month from created_at) = ? and expense = ? ", params[:month], true)
+    @expenses = FeedItem.for_operator(current_tenant).for_location(current_location).where("extract(month from created_at) = ? and expense = ? ", params[:month], true)
   end
 end
