@@ -23,6 +23,10 @@ class NotificationPolicy < ApplicationPolicy
     operator.checkin_notifications?
   end
 
+  def paid_room_reservations?
+    operator.paid_room_reservation_notifications?
+  end
+
   def refunds?
     operator.refund_notifications?
   end

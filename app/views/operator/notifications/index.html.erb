@@ -27,6 +27,14 @@
 
       <div class="row">
         <div class="col">
+          <%= render(OnOffSwitch.new(predicate: policy(:notification).paid_room_reservations?, path: paid_room_reservations_notifications_path)) do %>
+            Paid room reservations
+          <% end %>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col">
           <%= render(OnOffSwitch.new(predicate: policy(:notification).memberships?, path: memberships_notifications_path)) do %>
             Memberships
           <% end %>

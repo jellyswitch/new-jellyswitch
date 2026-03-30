@@ -12,7 +12,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      room.paid_room?
+      room.paid_room? && operator.paid_room_reservation_notifications?
     end
 
     def message

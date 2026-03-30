@@ -25,7 +25,7 @@ class FeedItemComponent < ApplicationComponent
     when "childcare-reservation"
       true
     when "paid-room-reservation"
-      true
+      feed_item.operator.paid_room_reservation_notifications?
     when "day-pass"
       feed_item.operator.day_pass_notifications?
     when "feedback"
@@ -47,6 +47,10 @@ class FeedItemComponent < ApplicationComponent
     when "membership_unpaused"
       true
     when "membership_updated"
+      true
+    when "payment_failed"
+      true
+    when "lease_renewal"
       true
     else
       false
@@ -73,6 +77,8 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::MembershipUnpaused
     when "membership_updated"
       FeedItems::MembershipUpdated
+    when "payment_failed", "lease_renewal"
+      FeedItems::MembershipCancellation # reuses feed_item_text partial
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"
     end

@@ -25,6 +25,10 @@ class Operator::NotificationsController < Operator::BaseController
     setting(:checkin_notifications)
   end
 
+  def paid_room_reservations
+    setting(:paid_room_reservation_notifications)
+  end
+
   def refunds
     setting(:refund_notifications)
   end
