@@ -12,6 +12,7 @@ class Billing::Leasing::InitializeRenewalOfficeLease
 
     office_lease.office = active_lease.office
     office_lease.organization = active_lease.organization
+    office_lease.user = active_lease.user
     office_lease.location = active_lease.location
     office_lease.subscription.plan.amount_in_cents = active_lease.subscription.plan.amount_in_cents
 

@@ -2,8 +2,27 @@
   <%= render "shared/error_messages" , model: office_lease %>
 
   <div class="form-group">
+    <label>Lease type</label>
+    <div class="btn-group btn-group-toggle d-flex" data-toggle="buttons">
+      <label class="btn btn-outline-primary <%= 'active' if office_lease.user_id.present? || office_lease.organization_id.blank? %>" id="lease-type-individual-label">
+        <input type="radio" name="lease_type" value="individual" id="lease-type-individual"
+          <%= 'checked' if office_lease.user_id.present? || office_lease.organization_id.blank? %>> Individual
+      </label>
+      <label class="btn btn-outline-primary <%= 'active' if office_lease.organization_id.present? %>" id="lease-type-org-label">
+        <input type="radio" name="lease_type" value="organization" id="lease-type-org"
+          <%= 'checked' if office_lease.organization_id.present? %>> Organization
+      </label>
+    </div>
+  </div>
+
+  <div class="form-group" id="individual-select" style="<%= 'display:none' if office_lease.organization_id.present? %>">
+    <%= f.label :user, "Member on lease" %>
+    <%= f.collection_select :user_id, @users || [], :id, :name, { prompt: '', include_blank: true }, { class: "form-control" } %>
+  </div>
+
+  <div class="form-group" id="organization-select" style="<%= 'display:none' unless office_lease.organization_id.present? %>">
     <%= f.label :organization, "Group on lease" %>
-    <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: '' }, { class: "form-control"} %>
+    <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: '', include_blank: true }, { class: "form-control"} %>
   </div>
 
   <div class="form-group">
@@ -22,12 +41,72 @@
       </div>
 
       <div class="form-group">
-        <%= fff.label :amount_in_cents, "Lease payment amount (in cents)" %>
-        <%= fff.number_field :amount_in_cents, class: "form-control" %>
+        <%= fff.label :amount_in_cents, "Lease payment amount" %>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">$</span>
+          </div>
+          <%= fff.number_field :amount_in_cents, class: "form-control", id: "lease-amount-dollars", step: "0.01", min: "0",
+              value: fff.object.amount_in_cents.to_i > 0 ? ("%.2f" % (fff.object.amount_in_cents / 100.0)) : nil,
+              placeholder: "0.00" %>
+        </div>
       </div>
 
     <% end %>
   <% end %>
+
+  <div class="form-group">
+    <%= f.label :deposit_amount_in_cents, "Deposit / Setup Fee (optional)" %>
+    <div class="input-group">
+      <div class="input-group-prepend">
+        <span class="input-group-text">$</span>
+      </div>
+      <%= f.number_field :deposit_amount_in_cents, class: "form-control", id: "deposit-amount-dollars", step: "0.01", min: "0",
+          value: office_lease.deposit_amount_in_cents.to_i > 0 ? ("%.2f" % (office_lease.deposit_amount_in_cents / 100.0)) : nil,
+          placeholder: "0.00" %>
+    </div>
+  </div>
+
+  <hr>
+  <h5>Renewal Settings</h5>
+
+  <div class="form-check mb-3">
+    <%= f.check_box :auto_renew, class: "form-check-input" %>
+    <%= f.label :auto_renew, "Enable auto-renewal", class: "form-check-label" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :renewal_notice_days, "Renewal notice (days before end)" %>
+    <%= f.number_field :renewal_notice_days, class: "form-control", min: 14, max: 180, value: office_lease.renewal_notice_days || 60 %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :escalation_type, "Price escalation method" %>
+    <%= f.select :escalation_type,
+        [["No Escalation", ""], ["CPI Index", "cpi_index"], ["Percentage", "percentage"], ["Fixed Dollar Amount", "fixed_amount"]],
+        {}, { class: "form-control", id: "escalation-type-select" } %>
+  </div>
+
+  <div class="form-group d-none" id="cpi-index-group">
+    <%= f.label :cpi_index_series_id, "CPI Index" %>
+    <%= f.select :cpi_index_series_id, CpiCalculator.options_for_select,
+        { include_blank: "Select CPI Index" }, { class: "form-control" } %>
+  </div>
+
+  <div class="form-group d-none" id="escalation-value-group">
+    <%= f.label :escalation_value, "Escalation amount", id: "escalation-value-label" %>
+    <div class="input-group">
+      <div class="input-group-prepend" id="escalation-prefix" style="display:none;">
+        <span class="input-group-text">$</span>
+      </div>
+      <%= f.number_field :escalation_value, class: "form-control", step: "0.01", min: "0", placeholder: "e.g., 3.0" %>
+      <div class="input-group-append" id="escalation-suffix" style="display:none;">
+        <span class="input-group-text">%</span>
+      </div>
+    </div>
+  </div>
+
+  <hr>
 
   <div class="form-group">
     <%= f.label :start_date, "Lease Start Date" %>
@@ -51,3 +130,75 @@
 
   <%= f.submit label, class: "form-control btn btn-primary mb-2" %>
 <%- end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    var individualRadio = document.getElementById("lease-type-individual");
+    var orgRadio = document.getElementById("lease-type-org");
+    var individualSelect = document.getElementById("individual-select");
+    var orgSelect = document.getElementById("organization-select");
+
+    function toggleLeaseType() {
+      if (individualRadio.checked) {
+        individualSelect.style.display = "";
+        orgSelect.style.display = "none";
+        orgSelect.querySelector("select").value = "";
+      } else {
+        individualSelect.style.display = "none";
+        orgSelect.style.display = "";
+        individualSelect.querySelector("select").value = "";
+      }
+    }
+
+    if (individualRadio) individualRadio.addEventListener("change", toggleLeaseType);
+    if (orgRadio) orgRadio.addEventListener("change", toggleLeaseType);
+
+    // Escalation type toggle
+    var escalationSelect = document.getElementById("escalation-type-select");
+    var cpiGroup = document.getElementById("cpi-index-group");
+    var valueGroup = document.getElementById("escalation-value-group");
+    var valueLabel = document.getElementById("escalation-value-label");
+    var prefix = document.getElementById("escalation-prefix");
+    var suffix = document.getElementById("escalation-suffix");
+
+    function toggleEscalation() {
+      var type = escalationSelect.value;
+      cpiGroup.classList.add("d-none");
+      valueGroup.classList.add("d-none");
+      prefix.style.display = "none";
+      suffix.style.display = "none";
+
+      if (type === "cpi_index") {
+        cpiGroup.classList.remove("d-none");
+      } else if (type === "percentage") {
+        valueGroup.classList.remove("d-none");
+        valueLabel.textContent = "Percentage increase";
+        suffix.style.display = "";
+      } else if (type === "fixed_amount") {
+        valueGroup.classList.remove("d-none");
+        valueLabel.textContent = "Dollar increase per period";
+        prefix.style.display = "";
+      }
+    }
+
+    if (escalationSelect) {
+      escalationSelect.addEventListener("change", toggleEscalation);
+      toggleEscalation(); // initialize on load
+    }
+
+    // Convert dollar inputs to cents on form submit
+    var form = document.querySelector("form");
+    if (form) {
+      form.addEventListener("submit", function() {
+        var amountField = document.getElementById("lease-amount-dollars");
+        if (amountField && amountField.value) {
+          amountField.value = Math.round(parseFloat(amountField.value) * 100);
+        }
+        var depositField = document.getElementById("deposit-amount-dollars");
+        if (depositField && depositField.value) {
+          depositField.value = Math.round(parseFloat(depositField.value) * 100);
+        }
+      });
+    }
+  });
+</script>

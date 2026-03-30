@@ -7,8 +7,8 @@
       <dt class="col-sm-4">Office:</dt>
       <dd class="col-sm-8"><%= @office_lease.office.name %></dd>
       
-      <dt class="col-sm-4">Organization:</dt>
-      <dd class="col-sm-8"><%= @office_lease.organization.name %></dd>
+      <dt class="col-sm-4"><%= @office_lease.individual_lease? ? "Member" : "Organization" %>:</dt>
+      <dd class="col-sm-8"><%= @office_lease.leasee_name %></dd>
       
       <dt class="col-sm-4">Current Price:</dt>
       <dd class="col-sm-8"><%= number_to_currency(@office_lease.subscription.plan.amount_in_cents / 100.0) %> per <%= @display_interval %></dd>

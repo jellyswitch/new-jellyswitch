@@ -12,9 +12,13 @@
     <h4 class="display-4 text-center">Lease for <%= @office_lease.office.name %></h4>
 
     <dl class="row">
-      <dt class="col-sm-3">Group</dt>
+      <dt class="col-sm-3"><%= @office_lease.individual_lease? ? "Member" : "Group" %></dt>
       <dd class="col-sm">
-        <%= link_to @office_lease.group_name, organization_path(@office_lease.organization) %>
+        <% if @office_lease.individual_lease? %>
+          <%= link_to @office_lease.user.name, user_path(@office_lease.user) %>
+        <% else %>
+          <%= link_to @office_lease.organization.name, organization_path(@office_lease.organization) %>
+        <% end %>
       </dd>
     </dl>
 
@@ -57,10 +61,27 @@
       </dd>
     </dl>
 
+    <% if @office_lease.deposit_amount_in_cents.to_i > 0 %>
+      <dl class="row">
+        <dt class="col-sm-3">Deposit / Setup Fee</dt>
+        <dd class="col-sm"><%= number_to_currency(@office_lease.deposit_amount_in_cents / 100.0) %></dd>
+      </dl>
+    <% end %>
+
     <dl class="row">
       <dt class="col-sm-3">Always allow building access?</dt>
       <dd class="col-sm"><%= boolean_to_yesno(@office_lease.always_allow_building_access?) %></dd>
     </dl>
+
+    <% if @office_lease.individual_lease? && @office_lease.active? %>
+      <%= link_to "Convert to Organization (add members)", convert_to_organization_office_lease_path(@office_lease), class: "btn btn-block btn-outline-primary mb-2", data: { confirm: "This will create an organization for this lease so you can add additional members. Continue?" } %>
+    <% end %>
+
+    <% if @office_lease.individual_lease? %>
+      <%= link_to "View Invoices", user_invoices_path(@office_lease.user), class: "btn btn-block btn-outline-primary mb-2" %>
+    <% elsif @office_lease.organization.present? %>
+      <%= link_to "View Invoices", organization_invoices_path(@office_lease.organization), class: "btn btn-block btn-outline-primary mb-2" %>
+    <% end %>
 
     <% if @office_lease.has_lease? %>
       <%= link_to "Download Lease", rails_blob_path(@office_lease.lease_agreement, disposition: "attachment"), class: "btn btn-block btn-primary" %>
@@ -70,8 +91,36 @@
       <%= link_to "Update Lease Pricing", office_lease_edit_price_path(@office_lease), class: "btn btn-block btn-primary" %>
     <% end %>
 
-    <% if @office_lease.eligible_for_renewal? %>
+    <% if @office_lease.has_pending_renewal? %>
+      <% renewal = @office_lease.pending_renewal_request %>
+      <div class="alert alert-info mt-2">
+        <strong>Renewal In Progress</strong>
+        <br>
+        <small>
+          <%= renewal.current_price_formatted %> → <%= renewal.proposed_price_formatted %>
+          (<%= renewal.escalation_applied %>)
+          — Status: <%= renewal.status.humanize %>
+        </small>
+        <br>
+        <% if current_user.admin_or_manager?(current_location) %>
+          <%= link_to "Review Renewal", admin_review_lease_renewal_request_path(renewal), class: "btn btn-sm btn-outline-primary mt-1" %>
+        <% else %>
+          <%= link_to "View Renewal", lease_renewal_request_path(renewal), class: "btn btn-sm btn-outline-primary mt-1" %>
+        <% end %>
+      </div>
+    <% elsif @office_lease.eligible_for_renewal? %>
       <%= link_to "Setup Renewal Lease", office_lease_renewal_path(@office_lease), class: "btn btn-block btn-primary" %>
+    <% end %>
+
+    <% if @office_lease.auto_renew? %>
+      <div class="mt-2">
+        <small class="text-muted">
+          <i class="fas fa-sync-alt"></i> Auto-renewal enabled
+          <% if @office_lease.escalation_type.present? %>
+            — <%= @office_lease.escalation_description %>
+          <% end %>
+        </small>
+      </div>
     <% end %>
 
     <% if @office_lease.subscription_active? %>

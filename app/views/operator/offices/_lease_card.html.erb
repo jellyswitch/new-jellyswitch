@@ -1,6 +1,10 @@
 <div class="row">
     <div class="col">
-    Leased by <%= link_to lease.group_name, organization_path(lease.organization) %>
+    Leased by <% if lease.individual_lease? %>
+      <%= link_to lease.user.name, user_path(lease.user) %>
+    <% else %>
+      <%= link_to lease.organization.name, organization_path(lease.organization) %>
+    <% end %>
     </div>
 </div>
 <div class="row">

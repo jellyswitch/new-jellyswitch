@@ -34,13 +34,17 @@
 
 class OfficeLease < ApplicationRecord
   belongs_to :operator
-  belongs_to :organization
+  belongs_to :organization, optional: true
+  belongs_to :user, optional: true
   belongs_to :office
   belongs_to :subscription, dependent: :destroy
   belongs_to :location
 
+  validate :must_have_leasee
+
   acts_as_scopable :operator, :location
 
+  has_many :lease_renewal_requests, dependent: :destroy
   has_one_attached :lease_agreement
 
   accepts_nested_attributes_for :subscription
@@ -67,8 +71,20 @@ class OfficeLease < ApplicationRecord
     end_date.between?(Date.today, Date.today + RENEWAL_WINDOW_DAYS.days) && active?
   end
 
+  def leasee
+    organization || user
+  end
+
+  def leasee_name
+    organization&.name || user&.name
+  end
+
+  def individual_lease?
+    user_id.present? && organization_id.blank?
+  end
+
   def group_name
-    organization.name
+    leasee_name
   end
 
   def office_name
@@ -83,7 +99,52 @@ class OfficeLease < ApplicationRecord
     end_date.strftime("%m/%d/%Y")
   end
 
+  def pending_renewal_request
+    lease_renewal_requests.pending.order(created_at: :desc).first
+  end
+
+  def has_pending_renewal?
+    lease_renewal_requests.pending.exists?
+  end
+
+  def calculate_renewal_price
+    current_price = subscription.plan.amount_in_cents
+    case escalation_type
+    when "cpi_index"
+      rate = CpiCalculator.annual_rate(cpi_index_series_id || "CUSR0000SA0")
+      (current_price * (1 + rate / 100.0)).round
+    when "percentage"
+      (current_price * (1 + (escalation_value || 0) / 100.0)).round
+    when "fixed_amount"
+      current_price + ((escalation_value || 0) * 100).to_i
+    else
+      current_price
+    end
+  end
+
+  def escalation_description
+    case escalation_type
+    when "cpi_index"
+      rate = CpiCalculator.annual_rate(cpi_index_series_id || "CUSR0000SA0")
+      "CPI #{cpi_index_series_id || 'CPI-U'} #{rate}%"
+    when "percentage"
+      "#{escalation_value}% increase"
+    when "fixed_amount"
+      "#{ActionController::Base.helpers.number_to_currency(escalation_value)} increase"
+    else
+      "No escalation"
+    end
+  end
+
   def current_period_end
     subscription.stripe_subscription.current_period_end
+  end
+
+  private
+
+  def must_have_leasee
+    if organization_id.blank? && user_id.blank?
+      errors.add(:base, "Must have either an organization or a user")
+    end
   end
 end

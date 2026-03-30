@@ -134,14 +134,33 @@ module Permissions
   end
 
   def has_active_lease?(location = nil)
-    organization.present? && organization.has_active_lease?(location)
+    has_active_org_lease?(location) || has_active_individual_lease?(location)
   end
 
   def has_building_access_lease?
-    has_active_lease? && organization.active_leases.any? do |lease|
-      lease.always_allow_building_access?
-    end
+    active_leases_for_access.any? { |lease| lease.always_allow_building_access? }
   end
+
+  private
+
+  def has_active_org_lease?(location = nil)
+    organization.present? && organization.has_active_lease?(location)
+  end
+
+  def has_active_individual_lease?(location = nil)
+    scope = OfficeLease.where(user_id: id).active
+    scope = scope.where(location: location) if location.present?
+    scope.exists?
+  end
+
+  def active_leases_for_access
+    leases = []
+    leases += organization.active_leases.to_a if organization.present?
+    leases += OfficeLease.where(user_id: id).active.to_a
+    leases
+  end
+
+  public
 
   def organization_owner?
     owned_organization.present?

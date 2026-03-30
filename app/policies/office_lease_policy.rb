@@ -39,9 +39,13 @@ class OfficeLeasePolicy < ApplicationPolicy
     enabled? && (admin? || general_manager?) && record.active? && record.subscription_active?
   end
 
+  def convert_to_organization?
+    enabled? && (admin? || general_manager?) && record.individual_lease? && record.active?
+  end
+
   private
 
   def owner?
-    record.organization.owner == user
+    record.organization.present? && record.organization.owner == user
   end
 end

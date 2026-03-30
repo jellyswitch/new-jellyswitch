@@ -1,6 +1,9 @@
 <% if office.has_active_lease? %>
-  <h6 class="text-info col">
-    <%= office.active_lease.group_name %>
+  <h6 class="col mb-0">
+    <span class="text-info"><%= office.active_lease.leasee_name %></span>
+    <% if office.active_lease.eligible_for_renewal? %>
+      <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Expiring <%= short_date(office.active_lease.end_date) %></small>
+    <% end %>
   </h6>
 <% else %>
   <h6 class="text-success col">Available</h6>
