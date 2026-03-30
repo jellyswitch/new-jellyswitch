@@ -50,12 +50,7 @@ class Operator::ProductEmailTemplatesController < Operator::BaseController
   private
 
   def set_location
-    @locations = current_tenant.locations.order(:name)
-    @location = if params[:location_id].present?
-      @locations.find_by(id: params[:location_id])
-    else
-      @locations.first
-    end
+    @location = current_location
   end
 
   def template_params
