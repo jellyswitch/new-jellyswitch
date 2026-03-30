@@ -94,7 +94,7 @@ class FeedItem < ApplicationRecord
     when "checkin"
       "checked in"
     when "membership_cancellation"
-      "cancelled their membership"
+      "canceled their membership"
     when "membership_updated"
       "updated their membership"
     when "account_deletion"

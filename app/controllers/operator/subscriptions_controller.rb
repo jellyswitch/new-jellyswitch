@@ -124,7 +124,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     plan = @subscription.plan
     result = SetSubscriptionForCancellation.call(
       subscription: @subscription,
-      blob: { text: "cancelled their #{plan.name} membership (#{plan.pretty_amount}/#{plan.interval}).", type: "membership_cancellation" },
+      blob: { text: "canceled their #{plan.name} membership (#{plan.pretty_amount}/#{plan.interval}).", type: "membership_cancellation" },
       user: @subscription.subscribable,
       operator: current_tenant,
       location: current_location,
@@ -152,7 +152,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     plan = @subscription.plan
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: @subscription,
-      blob: { text: "cancelled their #{plan.name} membership (#{plan.pretty_amount}/#{plan.interval}).", type: "membership_cancellation" },
+      blob: { text: "canceled their #{plan.name} membership (#{plan.pretty_amount}/#{plan.interval}).", type: "membership_cancellation" },
       user: @subscription.subscribable,
       operator: current_tenant,
       location: current_location,
