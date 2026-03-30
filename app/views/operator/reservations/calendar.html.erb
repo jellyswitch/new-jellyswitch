@@ -32,8 +32,8 @@
   </div>
 
   <div id="modal-view-event-add" class="modal modal-top fade calendar-modal bottom-sheet-modal">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-height: calc(100vh - 120px);">
+      <div class="modal-content" style="max-height: calc(100vh - 120px);">
         <div class="bottom-sheet-handle"><span></span></div>
         <form id="add-reservation" method="post" data-turbo="false">
           <div class="modal-body">
@@ -140,7 +140,7 @@
             </div>
           </div>
 
-          <div class="modal-footer" style="position: sticky; bottom: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6;">
+          <div class="modal-footer" style="position: sticky; bottom: 0; background: white; z-index: 10; border-top: 1px solid #dee2e6; padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));">
             <button type="button" class="btn btn-dark cancel-btn"
               data-dismiss="modal">Close</button>
             <button type="submit" class="btn btn-dark" disabled>Confirm</button>
