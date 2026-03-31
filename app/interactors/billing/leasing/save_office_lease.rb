@@ -24,6 +24,8 @@ class Billing::Leasing::SaveOfficeLease
       office_lease.end_date = office_lease.start_date + 1.year
     end
 
+    office_lease.deposit_amount_in_cents ||= 0
+
     if office_lease.save
       context.office_lease = office_lease
     else

@@ -74,7 +74,7 @@
     </dl>
 
     <% if @office_lease.individual_lease? && @office_lease.active? %>
-      <%= link_to "Convert to Organization (add members)", convert_to_organization_office_lease_path(@office_lease), class: "btn btn-block btn-outline-primary mb-2", data: { confirm: "This will create an organization for this lease so you can add additional members. Continue?" } %>
+      <%= link_to "Convert to Organization (add members)", office_lease_convert_to_organization_path(@office_lease), class: "btn btn-block btn-outline-primary mb-2", data: { turbo_method: :post, confirm: "This will create an organization for this lease so you can add additional members. Continue?" } %>
     <% end %>
 
     <% if @office_lease.individual_lease? %>
