@@ -198,7 +198,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def find_organizations
-    @organizations = current_location.organizations.where(
+    @organizations = current_location.organizations.visible.where(
       "stripe_customer_id IS NOT NULL AND stripe_customer_id != '' OR out_of_band = ?", true
     )
   end

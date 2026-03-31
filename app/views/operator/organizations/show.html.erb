@@ -154,6 +154,18 @@
         <% end %>
       <% end %>
 
+      <%= list_item do %>
+        <%= link_to edit_organization_path(@organization), class: "btn btn-block btn-outline-primary" do %>
+          <i class="fas fa-edit"></i> Edit Group
+        <% end %>
+        <% if @organization.visible? %>
+          <%= link_to "Archive Group", edit_organization_path(@organization, organization: { visible: false }), data: { turbo_method: :patch, confirm: "Archive this group? It will be hidden from lists." }, class: "btn btn-block btn-outline-danger mt-2" %>
+        <% else %>
+          <span class="badge badge-warning d-block p-2 mb-2">This group is archived</span>
+          <%= link_to "Unarchive Group", edit_organization_path(@organization, organization: { visible: true }), data: { turbo_method: :patch, confirm: "Unarchive this group?" }, class: "btn btn-block btn-outline-success" %>
+        <% end %>
+      <% end %>
+
     <% end %>
   </div>
   <div class="col-lg-3"></div>

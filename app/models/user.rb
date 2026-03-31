@@ -330,7 +330,7 @@ class User < ApplicationRecord
   end
 
   def self.lease_options_for_select(operator, location)
-    User.for_space(operator).originally_at_location(location).non_superadmins.order(:name).all.map do |user|
+    User.for_space(operator).originally_at_location(location).non_superadmins.approved.visible.order(:name).all.map do |user|
       option_helper(user)
     end
   end
