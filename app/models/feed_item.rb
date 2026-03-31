@@ -29,7 +29,13 @@ class FeedItem < ApplicationRecord
   has_many :feed_item_comments
 
   # Real-time Turbo Streams - broadcast new feed items to all connected users
-  broadcasts_to ->(feed_item) { [feed_item.operator, "feed_items"] }, inserts_by: :prepend, target: "feed-items", partial: "operator/feed_items/feed_item"
+  after_create_commit :broadcast_to_feed
+
+  def broadcast_to_feed
+    broadcast_prepend_to [operator, "feed_items"], target: "feed-items", partial: "operator/feed_items/feed_item", locals: { feed_item: self }
+  rescue => e
+    Rails.logger.warn("FeedItem broadcast failed (expected in background): #{e.class}: #{e.message}")
+  end
 
   has_rich_text :text
 

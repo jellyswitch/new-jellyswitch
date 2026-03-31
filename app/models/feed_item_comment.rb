@@ -17,7 +17,13 @@ class FeedItemComment < ApplicationRecord
   validates :comment, presence: true
 
   # Real-time Turbo Streams - broadcast new comments to feed item show page
-  broadcasts_to :feed_item, inserts_by: :append, target: ->(comment) { "comments-#{comment.feed_item_id}" }, partial: "operator/feed_item_comments/feed_item_comment"
+  after_create_commit :broadcast_to_feed_item
+
+  def broadcast_to_feed_item
+    broadcast_append_to feed_item, target: "comments-#{feed_item_id}", partial: "operator/feed_item_comments/feed_item_comment", locals: { feed_item_comment: self }
+  rescue => e
+    Rails.logger.warn("FeedItemComment broadcast failed (expected in background): #{e.class}: #{e.message}")
+  end
 
   after_commit :reindex_feed_item
 
