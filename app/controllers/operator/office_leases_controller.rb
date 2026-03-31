@@ -204,7 +204,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def find_users
-    @users = User.for_space(current_tenant).originally_at_location(current_location).non_superadmins.order(:name)
+    @users = User.for_space(current_tenant).originally_at_location(current_location).non_superadmins.approved.visible.order(:name)
   end
 
   def find_offices

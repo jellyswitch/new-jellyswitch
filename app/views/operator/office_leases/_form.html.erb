@@ -17,12 +17,15 @@
 
   <div class="form-group" id="individual-select" style="<%= 'display:none' if office_lease.organization_id.present? %>">
     <%= f.label :user, "Member on lease" %>
-    <%= f.collection_select :user_id, @users || [], :id, :name, { prompt: '', include_blank: true }, { class: "form-control" } %>
+    <input type="text" id="member-search" class="form-control mb-1" placeholder="Search members...">
+    <%= f.collection_select :user_id, @users || [], :id, :name, { prompt: 'Select a member', include_blank: true }, { class: "form-control", id: "member-select" } %>
   </div>
 
   <div class="form-group" id="organization-select" style="<%= 'display:none' unless office_lease.organization_id.present? %>">
     <%= f.label :organization, "Group on lease" %>
-    <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: '', include_blank: true }, { class: "form-control"} %>
+    <input type="text" id="org-search" class="form-control mb-1" placeholder="Search organizations...">
+    <%= f.collection_select :organization_id, @organizations, :id, :name, { prompt: 'Select an organization', include_blank: true }, { class: "form-control", id: "org-select" } %>
+    <%= link_to "Create new organization", new_organization_path, class: "small mt-1 d-inline-block" %>
   </div>
 
   <div class="form-group">
@@ -132,7 +135,7 @@
 <%- end %>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function() {
+  (function() {
     var individualRadio = document.getElementById("lease-type-individual");
     var orgRadio = document.getElementById("lease-type-org");
     var individualSelect = document.getElementById("individual-select");
@@ -152,6 +155,27 @@
 
     if (individualRadio) individualRadio.addEventListener("change", toggleLeaseType);
     if (orgRadio) orgRadio.addEventListener("change", toggleLeaseType);
+
+    // Search filtering for dropdowns
+    function setupSearch(searchId, selectId) {
+      var search = document.getElementById(searchId);
+      var select = document.getElementById(selectId);
+      if (!search || !select) return;
+
+      var options = Array.from(select.options);
+      search.addEventListener("input", function() {
+        var query = this.value.toLowerCase();
+        select.innerHTML = "";
+        options.forEach(function(opt) {
+          if (opt.value === "" || opt.text.toLowerCase().includes(query)) {
+            select.appendChild(opt.cloneNode(true));
+          }
+        });
+      });
+    }
+
+    setupSearch("member-search", "member-select");
+    setupSearch("org-search", "org-select");
 
     // Escalation type toggle
     var escalationSelect = document.getElementById("escalation-type-select");
@@ -200,5 +224,5 @@
         }
       });
     }
-  });
+  })();
 </script>
