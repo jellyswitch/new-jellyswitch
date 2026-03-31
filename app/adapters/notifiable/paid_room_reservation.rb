@@ -3,6 +3,7 @@ module Notifiable
     private
 
     def create_feed_item
+      return unless charge_amount.to_i > 0
       blob = {type: "paid-room-reservation", reservation_id: id, charge_amount_in_cents: charge_amount}
       FeedItemCreator.create_feed_item(operator, location, user, blob)
     end
@@ -12,7 +13,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      room.paid_room? && operator.paid_room_reservation_notifications?
+      operator.paid_room_reservation_notifications? && charge_amount.to_i > 0
     end
 
     def message
