@@ -206,7 +206,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-        <%= link_to "Confirm", end_now_reservation_path(reservation), method: :put, class: "btn btn-primary", data: { turbo: false } %>
+        <%= link_to "Confirm", end_now_reservation_path(reservation), class: "btn btn-primary", data: { turbo_method: :put } %>
       </div>
     </div>
   </div>
