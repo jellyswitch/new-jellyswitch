@@ -118,7 +118,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
     user = @office_lease.user
     unless @office_lease.individual_lease?
       flash[:error] = "This lease is already linked to an organization."
-      turbo_redirect(office_lease_path(@office_lease))
+      redirect_to office_lease_path(@office_lease)
       return
     end
 
@@ -139,11 +139,15 @@ class Operator::OfficeLeasesController < Operator::BaseController
       @office_lease.update(organization: organization, user_id: nil)
 
       flash[:success] = "Organization '#{organization.name}' created. You can now add members."
-      turbo_redirect(organization_path(organization))
+      redirect_to organization_path(organization)
     else
       flash[:error] = "Could not create organization: #{organization.errors.full_messages.join(', ')}"
-      turbo_redirect(office_lease_path(@office_lease))
+      redirect_to office_lease_path(@office_lease)
     end
+  rescue => e
+    Honeybadger.notify(e)
+    flash[:error] = "Error: #{e.message}"
+    redirect_to office_lease_path(@office_lease)
   end
 
   def destroy_office_lease_now
