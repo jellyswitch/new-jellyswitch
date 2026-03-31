@@ -94,12 +94,9 @@ class Operator::MemberFeedbacksController < Operator::BaseController
 
         NotifiableFactory.for(reply_record).notify
         Rails.logger.info("[FeedbackReply] Notification sent successfully")
-        flash[:success] = "Reply sent. [#{diag}]"
       rescue => e
         Rails.logger.error("FeedbackReply notification error: #{e.class}: #{e.message}")
-        Rails.logger.error(e.backtrace&.first(5)&.join("\n"))
         Honeybadger.notify(e)
-        flash[:success] = "Reply sent (ERROR: #{e.class}: #{e.message})"
       end
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     else
