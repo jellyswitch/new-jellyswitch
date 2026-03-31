@@ -1,3 +1,5 @@
+<% users = User.lease_options_for_select(current_tenant, current_location) %>
+
 <%= form_for(@organization) do |f| %>
   <%= render "shared/error_messages" , model: @organization %>
 
@@ -10,25 +12,38 @@
     <%= f.label :website %>
     <%= f.text_field :website, class: "form-control" %>
   </div>
+
   <div class="form-group">
     <%= f.label :owner %>
-    <%= f.select :owner_id, User.lease_options_for_select(current_tenant, current_location), {}, { class: "form-control" } %>
+    <input type="text" class="form-control" list="owner-options" id="owner-input"
+      placeholder="Type to search members..."
+      value="<%= users.find { |name, id| id == @organization.owner_id }&.first %>">
+    <datalist id="owner-options">
+      <% users.each do |name, id| %>
+        <option value="<%= name %>" data-id="<%= id %>">
+      <% end %>
+    </datalist>
+    <%= f.hidden_field :owner_id, id: "owner-hidden-id" %>
   </div>
 
   <div class="form-group">
     <%= f.label :billing_contact %>
     <% if @organization.can_change_billing_contact? %>
-
-      <%= f.select :billing_contact_id, User.lease_options_for_select(current_tenant, current_location), {}, { class: "form-control" } %>
-
+      <input type="text" class="form-control" list="billing-contact-options" id="billing-contact-input"
+        placeholder="Type to search members..."
+        value="<%= users.find { |name, id| id == @organization.billing_contact_id }&.first %>">
+      <datalist id="billing-contact-options">
+        <% users.each do |name, id| %>
+          <option value="<%= name %>" data-id="<%= id %>">
+        <% end %>
+      </datalist>
+      <%= f.hidden_field :billing_contact_id, id: "billing-contact-hidden-id" %>
     <% else %>
       <div class="form-group">
-        <div class="row-12">
-          <span>
-            <i class="fas fa-exclamation-triangle"></i>
-            <%= f.select :billing_contact_id, ["disabled"], {}, { disabled: true, class: "form-control fas fa-exclamation-triangle" } %>
-          </span>
-        </div>
+        <span>
+          <i class="fas fa-exclamation-triangle"></i>
+          <input type="text" class="form-control" disabled value="Cannot change while active subscriptions/leases exist">
+        </span>
       </div>
 
       <div class="form-group mt-3 col-6">
@@ -41,9 +56,7 @@
         <% @organization.active_leases.each do |office_lease| %>
           <li><%= link_to "#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}", office_lease_path(office_lease) %></li>
         <% end %>
-
     <% end %>
-
   </div>
 
   <div class="form-check mb-3">
@@ -53,3 +66,26 @@
 
   <%= f.submit label, class: "form-control btn btn-primary mb-2" %>
 <% end %>
+
+<script>
+  (function() {
+    function setupDatalistSync(inputId, datalistId, hiddenId) {
+      var input = document.getElementById(inputId);
+      var hidden = document.getElementById(hiddenId);
+      if (!input || !hidden) return;
+
+      input.addEventListener("input", function() {
+        var opts = document.querySelectorAll("#" + datalistId + " option");
+        hidden.value = "";
+        opts.forEach(function(opt) {
+          if (opt.value === input.value) {
+            hidden.value = opt.dataset.id;
+          }
+        });
+      });
+    }
+
+    setupDatalistSync("owner-input", "owner-options", "owner-hidden-id");
+    setupDatalistSync("billing-contact-input", "billing-contact-options", "billing-contact-hidden-id");
+  })();
+</script>
