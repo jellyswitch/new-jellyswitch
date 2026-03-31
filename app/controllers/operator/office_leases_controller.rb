@@ -112,7 +112,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def convert_to_organization
-    find_office_lease
+    find_office_lease(:office_lease_id)
     authorize @office_lease
 
     user = @office_lease.user
