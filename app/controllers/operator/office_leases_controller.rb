@@ -122,32 +122,27 @@ class Operator::OfficeLeasesController < Operator::BaseController
       return
     end
 
-    organization = Organization.new(
-      name: "#{user.name}'s Office",
-      owner: user,
-      billing_contact: user,
-      operator: current_tenant,
-      location: current_location
-    )
+    ActiveRecord::Base.transaction do
+      organization = Organization.create!(
+        name: "#{user.name}'s Office",
+        owner: user,
+        billing_contact: user,
+        operator: current_tenant,
+        location: current_location
+      )
 
-    if organization.save
-      # Create Stripe customer for the org using the user's email
       Billing::Payment::CreateStripeCustomer.call(billable: organization, operator: current_tenant, location: current_location)
 
-      # Move the lease from user to organization
-      user.update(organization: organization)
-      @office_lease.update(organization: organization, user_id: nil)
+      user.update!(organization: organization)
+      @office_lease.update!(organization: organization, user_id: nil)
 
       flash[:success] = "Organization '#{organization.name}' created. You can now add members."
-      redirect_to organization_path(organization)
-    else
-      flash[:error] = "Could not create organization: #{organization.errors.full_messages.join(', ')}"
-      redirect_to office_lease_path(@office_lease)
+      redirect_to organization_path(organization) and return
     end
   rescue => e
     Honeybadger.notify(e)
-    flash[:error] = "Error: #{e.message}"
-    redirect_to office_lease_path(@office_lease)
+    flash[:error] = "Error converting to organization: #{e.message}"
+    redirect_to offices_path
   end
 
   def destroy_office_lease_now
