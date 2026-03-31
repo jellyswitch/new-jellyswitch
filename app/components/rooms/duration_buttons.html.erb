@@ -60,8 +60,11 @@
   </style>
 
   <script>
-    function initDurationSlider() {
+    (function() {
       var slider = document.getElementById("step-duration-slider");
+      if (!slider || slider.dataset.initialized) return;
+      slider.dataset.initialized = "true";
+
       var label = document.getElementById("step-duration-label");
       var confirmLink = document.getElementById("step-duration-confirm");
       var pathTemplate = "<%= j confirm_path_template %>";
@@ -95,10 +98,7 @@
       });
 
       updateSlider();
-    }
-    document.addEventListener("DOMContentLoaded", initDurationSlider);
-    document.addEventListener("turbo:load", initDurationSlider);
-    if (document.readyState !== "loading") initDurationSlider();
+    })();
   </script>
 <% else %>
   <p class="text-center text-muted">No available durations for this time slot.</p>
