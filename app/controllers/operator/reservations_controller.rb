@@ -655,6 +655,7 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   def staff
+    return false unless current_user.present?
     current_user.admin_of_location?(current_location) || current_user.general_manager_of_location?(current_location) || current_user.community_manager_of_location?(current_location)
   end
 
