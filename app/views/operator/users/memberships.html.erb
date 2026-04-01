@@ -1,9 +1,6 @@
 <% title "My Membership" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "My Account", user_path(@user) %></li>
-  <li class="breadcrumb-item">My Membership</li>
-<% end %>
+<%= render "shared/back_bar", back_path: user_path(@user), back_label: "My Account", page_title: "My Membership" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

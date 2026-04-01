@@ -59,6 +59,34 @@
       a:not(.btn):not(.nav-link):not(.list-group-item):not(.navbar-brand):not(.dropdown-item):hover {
         color: var(--brand-color-hover) !important;
       }
+      .back-bar {
+        background: white;
+        padding: 10px 16px;
+        border-bottom: 1px solid #eee;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+      }
+      .back-bar-link {
+        color: var(--brand-color) !important;
+        text-decoration: none !important;
+        font-size: 15px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .back-bar-link i { margin-right: 6px; font-size: 13px; }
+      .back-bar-title {
+        flex: 1;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+        color: #333;
+        margin-right: 40px;
+      }
     </style>
     <%= content_for?(:head) ? yield(:head) : '' %>
 

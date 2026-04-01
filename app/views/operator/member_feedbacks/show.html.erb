@@ -1,10 +1,9 @@
 <% title "Conversation" %>
 
-<%= breadcrumb do %>
-  <% if current_user.admin_or_manager?(current_location) %>
-    <li class="breadcrumb-item"><%= link_to "Messages", member_feedbacks_path %></li>
-  <% end %>
-  <li class="breadcrumb-item active">Conversation</li>
+<% if current_user.admin_or_manager?(current_location) %>
+  <%= render "shared/back_bar", back_path: member_feedbacks_path, back_label: "Messages", page_title: "Conversation" %>
+<% else %>
+  <%= render "shared/back_bar", back_path: root_path, back_label: "Home", page_title: "Conversation" %>
 <% end %>
 
 <%= render Layout::FullWidth.new do %>
