@@ -3,10 +3,6 @@
 <%= render "shared/back_bar", back_path: user_path(@user), back_label: "My Account", page_title: "My Membership" %>
 
 <%= render Layout::FullWidth.new do %>
-  <%= list_item do %>
-    <h4 class="display-4 text-center">My Membership</h4>
-  <% end %>
-
   <% active_subs = @user.subscriptions.for_operator(current_tenant).active %>
   <% if active_subs.empty? %>
     <%= list_item do %>

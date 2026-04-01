@@ -3,7 +3,6 @@
 <%= render "shared/back_bar", back_path: user_path(@user), back_label: "My Account", page_title: "My Invoices" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center" >My Invoices</h4>
   <ul class="list-group list-group-flush">
     <% @invoices.each do |invoice| %>
       <%= render "invoice", invoice: invoice %>

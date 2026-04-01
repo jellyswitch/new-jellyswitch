@@ -8,8 +8,6 @@
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center">Conversation</h4>
-
     <div class="feedback-chat" id="feedback-chat">
       <%# Original feedback message (always from the member) %>
       <% is_admin = current_user.admin_or_manager?(current_location) %>

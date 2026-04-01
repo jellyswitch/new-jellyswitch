@@ -3,10 +3,6 @@
 <%= render "shared/back_bar", back_path: user_path(@user), back_label: "My Account", page_title: "My Reservations" %>
 
 <%= render Layout::FullWidth.new do %>
-  <%= list_item do %>
-    <h4 class="display-4 text-center">My Reservations</h4>
-  <% end %>
-
   <%= link_to user_past_reservations_path(@user), class: "list-group-item list-group-item-action d-flx m-0" do %>
     <div class="row">
       <div class="col-11">
