@@ -33,7 +33,7 @@ class ApplicationController < ActionController::Base
     response.headers["Turbo-Location"] = path
     respond_to do |format|
       format.turbo_stream do
-        render "shared/turbo_redirect"
+        redirect_to path, status: :see_other, allow_other_host: true
       end
       format.js do
         render "shared/turbo_redirect"
