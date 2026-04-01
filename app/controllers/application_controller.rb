@@ -32,6 +32,9 @@ class ApplicationController < ActionController::Base
     flash.keep
     response.headers["Turbo-Location"] = path
     respond_to do |format|
+      format.turbo_stream do
+        redirect_to path, allow_other_host: true
+      end
       format.js do
         render "shared/turbo_redirect"
       end
