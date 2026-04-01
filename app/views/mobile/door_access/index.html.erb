@@ -1,6 +1,8 @@
 <% title "Building Access" %>
 
-<div style="margin-top: 3em;">
+<%= render "shared/back_bar", back_path: root_path, back_label: "Home", page_title: "Building Access" %>
+
+<div>
 
 <% if policy(:door).enabled? %>
   <%= list_item do %>
