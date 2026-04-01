@@ -14,9 +14,9 @@
   <% end %>
 
   <% if user.out_of_band? && !user.bill_to_organization? %>
-    <li class="list-group-item active">Via cash or check</li>
+    <li class="list-group-item active">Out of band</li>
   <% else %>
-    <li class="list-group-item disabled">Via cash or check (ask a staff member)</li>
+    <li class="list-group-item disabled">Out of band (ask a staff member)</li>
   <% end %>
 
   <% if user.member_of_organization? %>

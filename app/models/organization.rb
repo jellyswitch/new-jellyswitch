@@ -87,7 +87,7 @@ class Organization < ApplicationRecord
   end
 
   def has_billing_for_location?(location)
-    has_stripe_customer_for_location?(location) && card_added?
+    out_of_band? || (has_stripe_customer_for_location?(location) && card_added?)
   end
 
   def card_added
@@ -140,7 +140,7 @@ class Organization < ApplicationRecord
       "Credit card on file"
     else
       if out_of_band?
-        "Via cash or check"
+        "Out of band"
       else
         "None"
       end

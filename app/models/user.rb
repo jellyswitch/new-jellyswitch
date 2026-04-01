@@ -435,7 +435,7 @@ class User < ApplicationRecord
       "Bill to Group"
     else
       if out_of_band?
-        "Via cash or check"
+        "Out of band"
       else
         if card_added?
           "Credit card on file"

@@ -24,9 +24,9 @@
   <% end %>
 
   <% if cash_or_check? && !bill_to_group? %>
-    <li class="list-group-item active">Via cash or check</li>
+    <li class="list-group-item active">Out of band</li>
   <% else %>
-    <%= link_to "Via cash or check", cash_or_check_path, class: "list-group-item" %>
+    <%= link_to "Out of band", cash_or_check_path, class: "list-group-item" %>
   <% end %>
 
   <% if billable_to_group? %>

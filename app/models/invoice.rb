@@ -106,7 +106,7 @@ class Invoice < ApplicationRecord
 
   def payment_method
     if stripe_invoice
-      stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Cash or check"
+      stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Out of band"
     else
       "error"
     end
