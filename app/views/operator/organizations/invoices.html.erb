@@ -1,9 +1,6 @@
 <% title "Invoices" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @organization.name, organization_path(@organization) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Invoices</li>
-<% end %>
+<%= render "shared/back_bar", back_path: organization_path(@organization), back_label: @organization.name, page_title: "Invoices" %>
 
 <div class="row mt-0 mb-0">
   <div class="col-lg-3"></div>
@@ -11,7 +8,6 @@
     <%= list_wrapper do %>
       <%= list_item do %>
 
-        <h4 class="display-4 text-center mt-4">Invoices</h4>
           <div class="card-body list-group list-group-flush p-0">
             <% if @organization.has_billing_for_location?(current_location) || @organization.out_of_band? %>
               <%= link_to new_invoice_path(organization_id: @organization.id), class: "btn btn-block btn-primary" do %>

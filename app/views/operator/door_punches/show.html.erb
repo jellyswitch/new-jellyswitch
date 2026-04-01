@@ -1,10 +1,6 @@
 <% title "Door Punches" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Doors", doors_path %></li>
-  <li class="breadcrumb-item"><%= link_to @door_punch.door.name, door_path(@door_punch.door) %></li>
-  <li class="breadcrumb-item active">Details</li>
-<% end %>
+<%= render "shared/back_bar", back_path: doors_path, back_label: "Doors", page_title: "Access Details" %>
 
 <%= render(Layout::FullWidth.new) do %>
   <%= list_item do %>

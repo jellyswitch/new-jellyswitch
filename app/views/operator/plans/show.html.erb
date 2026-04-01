@@ -1,9 +1,6 @@
 <%- title @plan.name %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Plans", plans_path %></li>
-  <li class="breadcrumb-item active" aria-current="page"><%= @plan.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: plans_path, back_label: "Plans", page_title: "Plan Details" %>
 
 <%= render(Layout::FullWidth.new) do %>
   <%= list_wrapper do %>

@@ -1,9 +1,6 @@
 <% title "LTV" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
-  <li class="breadcrumb-item active" aria-current="page">LTV</li>
-<% end %>
+<%= render "shared/back_bar", back_path: user_path(@user), back_label: @user.name, page_title: "Lifetime Value" %>
 
 <div class="row mt-0 mb-0">
   <div class="col-lg-3"></div>

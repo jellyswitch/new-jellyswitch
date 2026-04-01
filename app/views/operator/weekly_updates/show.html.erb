@@ -1,9 +1,6 @@
 <% title "Weekly Update" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Weekly Updates", weekly_updates_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Weekly Update</li>
-<% end %>
+<%= render "shared/back_bar", back_path: weekly_updates_path, back_label: "Weekly Updates", page_title: "Weekly Update" %>
 
 <div class="row mt-1 mb-0 p-0">
   <div class="col m-0 p-0">

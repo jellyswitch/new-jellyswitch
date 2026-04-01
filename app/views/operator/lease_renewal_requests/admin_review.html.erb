@@ -1,10 +1,6 @@
 <% title "Review Renewal" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
-  <li class="breadcrumb-item"><%= link_to "Renewals", lease_renewal_requests_path %></li>
-  <li class="breadcrumb-item active">Review</li>
-<% end %>
+<%= render "shared/back_bar", back_path: lease_renewal_requests_path, back_label: "Renewals", page_title: "Review" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

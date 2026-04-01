@@ -1,9 +1,6 @@
 <% title @post.title %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Bulletin Board", posts_path %></li>
-  <li class="breadcrumb-item active" aria-current="page"><%= @post.title %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: posts_path, back_label: "Bulletin Board", page_title: "Post" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= render Posts::Post.new(post: @post) %>

@@ -2,17 +2,13 @@
 <% title "Today's Reservations" %>
 
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Home", feed_items_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Today's Reservations</li>
-<% end %>
+<%= render "shared/back_bar", back_path: feed_items_path, back_label: "Home", page_title: "Today's Reservations" %>
 
 <div class="row mt-1 mb-0 p-0">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <h4 class="display-4 text-center">Today's Reservations</h4>
       <% end %>
 
       <% @rooms.each do |room| %>

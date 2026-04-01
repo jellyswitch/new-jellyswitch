@@ -1,16 +1,12 @@
 <% title "Available Offices" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Available</li>
-<% end %>
+<%= render "shared/back_bar", back_path: offices_path, back_label: "Offices", page_title: "Available Offices" %>
 
 <div class="row mt-1 mb-0 p-0">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <h4 class="display-4 text-center">Available Offices</h4>
 
         <div class="text-center">
           <small>

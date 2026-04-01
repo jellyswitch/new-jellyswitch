@@ -1,10 +1,6 @@
 <%- title "Edit #{@room.name}" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Rooms", rooms_path %></li>
-  <li class="breadcrumb-item"><%= link_to @room.name, room_path(@room) %></li>
-  <li class="breadcrumb-item active">Edit</li>
-<% end %>
+<%= render "shared/back_bar", back_path: rooms_path, back_label: "Rooms", page_title: "Edit Room" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

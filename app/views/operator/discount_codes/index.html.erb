@@ -1,13 +1,9 @@
 <%- title "Discount Codes" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Discount Codes</li>
-<% end %>
+<%= render "shared/back_bar", back_path: plans_day_passes_path, back_label: "Plans & Day Passes", page_title: "Discount Codes" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center mt-4 mb-4">Discount Codes</h4>
     <%= link_to "Create New Discount Code", new_discount_code_path, class: "btn btn-primary btn-block" %>
   <% end %>
 

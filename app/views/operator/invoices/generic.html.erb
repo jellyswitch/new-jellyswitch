@@ -1,12 +1,8 @@
 <% title @title %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Invoices & Expenses", accounting_index_path %></li>
-  <li class="breadcrumb-item active" aria-current="page"><%= @title %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: accounting_index_path, back_label: "Invoices & Expenses", page_title: @title %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center"><%= @title %></h4>
   <%= render "operator/invoices/nav" %>
   <ul class="list-group list-group-flush">
     <%= render partial: "operator/invoices/invoice", collection: @invoices, as: :invoice %>

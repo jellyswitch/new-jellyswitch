@@ -1,14 +1,10 @@
 <% title "Lease Renewals" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
-  <li class="breadcrumb-item active">Lease Renewals</li>
-<% end %>
+<%= render "shared/back_bar", back_path: offices_path, back_label: "Offices", page_title: "Lease Renewals" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_wrapper do %>
     <%= list_item do %>
-      <h4 class="display-4 text-center">Lease Renewals</h4>
       <p class="text-muted text-center">Manage upcoming lease renewal proposals.</p>
     <% end %>
 

@@ -1,9 +1,6 @@
 <% title "Payment Method" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @organization.name, organization_path(@organization) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Payment Method</li>
-<% end %>
+<%= render "shared/back_bar", back_path: organization_path(@organization), back_label: @organization.name, page_title: "Payment Method" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

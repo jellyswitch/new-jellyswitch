@@ -1,9 +1,6 @@
 <% title "Day Passes" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Day Passes</li>
-<% end %>
+<%= render "shared/back_bar", back_path: user_path(@user), back_label: @user.name, page_title: "Day Passes" %>
 
 <div class="row mt-0 mb-0">
   <div class="col-lg-3"></div>
@@ -11,7 +8,6 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         
-        <h4 class="display-4 text-center mt-4">Day Passes</h4>
         <%= render "day_passes", user: @user %>
         
       <% end %>

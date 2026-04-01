@@ -1,15 +1,10 @@
 <% title "Lease" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
-  <li class="breadcrumb-item"><%= link_to @office_lease.office.name, office_path(@office_lease.office) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Lease for <%= @office_lease.office.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: offices_path, back_label: "Offices", page_title: "Lease for #{@office_lease.office.name}" %>
 
 <%= render Layout::FullWidth.new do %>
 
   <%= list_item do %>
-    <h4 class="display-4 text-center">Lease for <%= @office_lease.office.name %></h4>
 
     <dl class="row">
       <dt class="col-sm-3"><%= @office_lease.individual_lease? ? "Member" : "Group" %></dt>

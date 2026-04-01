@@ -1,9 +1,6 @@
 <%- title @day_pass_type.name %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Day Passes", day_pass_types_path %></li>
-  <li class="breadcrumb-item active" aria-current="page"><%= @day_pass_type.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: day_pass_types_path, back_label: "Day Passes", page_title: "Day Pass Details" %>
 
 <%= render Layout::FullWidth.new do %>
   <div class="list-group list-group-flush">

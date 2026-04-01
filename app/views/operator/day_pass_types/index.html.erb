@@ -1,9 +1,6 @@
 <%- title "Day Pass Types" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Plans & Day Passes", plans_day_passes_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Day Passes</li>
-<% end %>
+<%= render "shared/back_bar", back_path: plans_day_passes_path, back_label: "Plans & Day Passes", page_title: "Day Passes" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

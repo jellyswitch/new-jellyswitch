@@ -1,9 +1,6 @@
 <% title "Locations" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Customization", customization_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">Location Settings</li>
-<% end %>
+<%= render "shared/back_bar", back_path: customization_path, back_label: "Customization", page_title: "Location Settings" %>
 
 <div class="row mt-0 mb-0">
   <div class="col-lg-3"></div>

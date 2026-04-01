@@ -1,13 +1,9 @@
 <% title "Credits" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Credits</li>
-<% end %>
+<%= render "shared/back_bar", back_path: user_path(@user), back_label: @user.name, page_title: "Credits" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center">Credits</h4>
 
     <div class="row">
       <div class="col">

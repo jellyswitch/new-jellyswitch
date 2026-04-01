@@ -1,13 +1,6 @@
 <% title @event.title %>
 
-<%= breadcrumb do %>
-  <% if current_location.present? %>
-    <li class="breadcrumb-item"><%= link_to "What's Happening?", events_path %></li>
-  <% else %>
-    <li class="breadcrumb-item"><%= link_to "What's Happening?", events_path(location_id: @event.location.id) %></li>
-  <% end %>
-  <li class="breadcrumb-item active" aria-current="page"><%= @event.title %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: events_path, back_label: "Events", page_title: "Event" %>
 
 <%= content_for :head do %>
   <meta name="description" content="<%= @event.description.slice(0, 155) %>" />

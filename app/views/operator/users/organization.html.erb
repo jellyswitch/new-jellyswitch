@@ -1,9 +1,6 @@
 <% title "Group" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to @user.name, user_path(@user) %></li>
-  <li class="breadcrumb-item active" aria-current="page">Group</li>
-<% end %>
+<%= render "shared/back_bar", back_path: user_path(@user), back_label: @user.name, page_title: "Group" %>
 
 <div class="row mt-0 mb-0">
   <div class="col-lg-3"></div>
@@ -11,7 +8,6 @@
     <%= list_wrapper do %>
       <%= list_item do %>
         
-        <h4 class="display-4 text-center mt-2">Group</h4>
         <p>Select the correct group from the dropdown list to update this member's group.</p>
         <%= render "organization_form", user: @user %>
         

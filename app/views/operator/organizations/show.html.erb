@@ -1,10 +1,6 @@
 <% title @organization.name %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Members & Groups", members_groups_path %></li>
-  <li class="breadcrumb-item"><%= link_to "Groups", organizations_path %></li>
-  <li class="breadcrumb-item active" aria-current="page"><%= @organization.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: organizations_path, back_label: "Groups", page_title: @organization.name %>
 
 
 <div class="row mt-0 mb-0">
@@ -12,7 +8,6 @@
   <div class="col-lg-6 m-0 pl-0 pr-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <h4 class="display-4 text-center"><%= @organization.name %></h4>
 
         <dl class="row">
           <dt class="col-sm-3">Owner</dt>

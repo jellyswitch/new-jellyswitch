@@ -1,9 +1,6 @@
 <%- title @room.name %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Rooms", rooms_path %></li>
-  <li class="breadcrumb-item"><%= @room.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: rooms_path, back_label: "Rooms", page_title: @room.name %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>

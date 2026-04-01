@@ -1,13 +1,9 @@
 <% title "New Post" %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Bulletin Board", posts_path %></li>
-  <li class="breadcrumb-item active" aria-current="page">New Post</li>
-<% end %>
+<%= render "shared/back_bar", back_path: posts_path, back_label: "Bulletin Board", page_title: "New Post" %>
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center">New Post</h4>
 
     <%= form_with(model: @post, url: posts_path, local: true) do |f| %>
       <div class="form-group">

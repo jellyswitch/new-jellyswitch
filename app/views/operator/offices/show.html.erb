@@ -1,12 +1,6 @@
 <% title @office.name %>
 
-<%= breadcrumb do %>
-  <li class="breadcrumb-item"><%= link_to "Offices", offices_path %></li>
-  <% if @office.available? %>
-    <li class="breadcrumb-item"><%= link_to "Available", available_offices_path %></li>
-  <% end %>
-  <li class="breadcrumb-item active" aria-current="page"><%= @office.name %></li>
-<% end %>
+<%= render "shared/back_bar", back_path: offices_path, back_label: "Offices", page_title: @office.name %>
 
 <div class="row mt-1 mb-0 p-0">
   <div class="col-lg-3"></div>
