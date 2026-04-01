@@ -68,6 +68,11 @@
         z-index: 100;
         display: flex;
         align-items: center;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      @media (max-width: 768px) {
+        .back-bar { max-width: 100%; }
       }
       .back-bar-link {
         color: var(--brand-color) !important;
