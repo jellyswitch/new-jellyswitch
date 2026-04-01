@@ -16,8 +16,16 @@ class FeedItemComment < ApplicationRecord
   belongs_to :user
   validates :comment, presence: true
 
-  # Real-time Turbo Streams disabled — partials require session context
-  # which is unavailable in Sidekiq broadcast jobs.
+  # Real-time Turbo Streams - broadcast new comments
+  after_create_commit :broadcast_to_feed_item
+
+  def broadcast_to_feed_item
+    ActsAsTenant.with_tenant(feed_item.operator) do
+      broadcast_append_to feed_item, target: "comments-#{feed_item_id}", partial: "operator/feed_item_comments/feed_item_comment", locals: { feed_item_comment: self }
+    end
+  rescue => e
+    Rails.logger.warn("FeedItemComment broadcast failed: #{e.class}: #{e.message}")
+  end
 
   after_commit :reindex_feed_item
 

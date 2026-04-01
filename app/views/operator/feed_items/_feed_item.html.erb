@@ -1,7 +1,7 @@
 <div id="feed-item-<%= feed_item.id %>" class='feed-item'>
   <% comments = local_assigns.fetch(:comments, false) %>
   <% if feed_item.type == "reservation" %>
-    <% if !respond_to?(:current_user) || current_user.nil? || policy(:notification).reservations? %>
+    <% if feed_item.operator.reservation_notifications? %>
       <%= render(FeedItemComponent.new(feed_item: feed_item, comments: comments)) %>
     <% end %>
   <% elsif feed_item.type == "new-user" %>
