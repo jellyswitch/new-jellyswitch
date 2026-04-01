@@ -7,7 +7,7 @@
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <%= render @room %>
+    <%= render partial: "operator/rooms/room", locals: { room: @room } %>
   <% end %>
 <% end %>
 

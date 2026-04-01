@@ -17,7 +17,7 @@
         <i>All plans are available.</i>
       <% else %>
         <div class="list-group list-group-flush mt-4">
-          <%= render @plans.unavailable %>
+          <%= render partial: "operator/plans/plan", collection: @plans.unavailable, as: :plan %>
         </div>
       <% end %>
     <% end %>

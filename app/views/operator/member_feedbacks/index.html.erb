@@ -9,6 +9,6 @@
   <h4 class="display-4 text-center mt-4">Member Feedback</h4>
 
   <div class="list-group list-group-flush mt-4">
-    <%= render @member_feedbacks %>
+    <%= render partial: "operator/member_feedbacks/member_feedback", collection: @member_feedbacks, as: :member_feedback %>
   </div>
 <% end %>

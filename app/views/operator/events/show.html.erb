@@ -40,7 +40,7 @@
 
 <% end %>
 
-<%= render @event %>
+<%= render partial: "operator/events/event", locals: { event: @event } %>
 
 <% if !logged_in? %>
   <div class="row mt-1 mb-0 p-0">

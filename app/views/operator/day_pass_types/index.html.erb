@@ -31,7 +31,7 @@
     <% end %>
   <% else %>
     <div class="list-group list-group-flush mt-4">
-      <%= render @day_pass_types, view: true %>
+      <%= render partial: "operator/day_pass_types/day_pass_type", collection: @day_pass_types, as: :day_pass_type, locals: { view: true } %>
     </div>
   <% end %>
 <% end %>

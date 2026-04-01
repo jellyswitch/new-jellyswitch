@@ -25,7 +25,7 @@
                 <small>Set a payment method to create a new invoice</small>
               </div>
             <% end %>
-            <%= render @organization.invoices %>
+            <%= render partial: "operator/invoices/invoice", collection: @organization.invoices, as: :invoice %>
           </div>
 
       <% end %>

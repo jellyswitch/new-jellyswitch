@@ -14,7 +14,7 @@
     <%= list_item do %>
       <h4 class="display-4 text-center"><%= @plan_category.name %></h4>
     <% end %>    
-    <%= render @plan_category %>
+    <%= render partial: "operator/admin/plan_categories/plan_category", locals: { plan_category: @plan_category } %>
 
   <% end %>
 <% end %>

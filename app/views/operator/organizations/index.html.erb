@@ -19,12 +19,12 @@
       
       <% end %>
 
-      <%= render @organizations, view: true %>
+      <%= render partial: "operator/organizations/organization", collection: @organizations, as: :organization, locals: { view: true } %>
 
       <div class="mt-4 mb-4">
         <%= list_item do %>
           <h4 class="display-4 text-center">Archived</h4>
-          <%= render @archived_organizations, view: true %>    
+          <%= render partial: "operator/organizations/organization", collection: @archived_organizations, as: :organization, locals: { view: true } %>    
         <% end %>
       </div>
 

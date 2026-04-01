@@ -7,7 +7,7 @@
 
 <%= render Layout::FullWidth.new do %>
   <div class="list-group list-group-flush">
-    <%= render @day_pass_type, view: false %>
+    <%= render partial: "operator/day_pass_types/day_pass_type", locals: { day_pass_type: @day_pass_type, view: false } %>
   </div>
 
   <% if @day_pass_type.available? %>

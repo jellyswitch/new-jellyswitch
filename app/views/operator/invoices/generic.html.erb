@@ -9,7 +9,7 @@
   <h4 class="display-4 text-center"><%= @title %></h4>
   <%= render "operator/invoices/nav" %>
   <ul class="list-group list-group-flush">
-    <%= render @invoices %>
+    <%= render partial: "operator/invoices/invoice", collection: @invoices, as: :invoice %>
   </ul>
   <div class="mt-2">
     <%== pagy_bootstrap_nav(@pagy) %>

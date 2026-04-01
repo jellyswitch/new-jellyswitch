@@ -9,7 +9,7 @@
   <div class="col m-0 p-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <%= render @weekly_update %>
+        <%= render partial: "operator/weekly_updates/weekly_update", locals: { weekly_update: @weekly_update } %>
       <% end %>
     <% end %>
   </div>

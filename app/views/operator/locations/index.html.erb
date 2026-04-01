@@ -16,7 +16,7 @@
         <% end %>
       <% end %>
 
-      <%= render @locations, label: "Switch to" %>
+      <%= render partial: "operator/locations/location", collection: @locations, as: :location, locals: { label: "Switch to" } %>
     <% end %>
   </div>
   <div class="col-lg-3"></div>

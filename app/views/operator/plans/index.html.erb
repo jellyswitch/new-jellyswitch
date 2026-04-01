@@ -34,7 +34,7 @@
         <i>There are no plans available.</i>
       <% end %>
     <% else %>
-        <%= render @plans.available %>
+        <%= render partial: "operator/plans/plan", collection: @plans.available, as: :plan %>
     <% end %>
 
   <% end %>
