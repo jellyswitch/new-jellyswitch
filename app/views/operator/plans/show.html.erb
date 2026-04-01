@@ -7,8 +7,6 @@
 
     <%= list_item do %>
 
-      <h4 class="display-4 text-center"><%= @plan.name %></h4>
-
       <%= render "operator/plans/price", plan: @plan %>
 
       <% if policy(:credit).enabled? %>

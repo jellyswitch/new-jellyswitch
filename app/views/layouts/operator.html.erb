@@ -72,20 +72,21 @@
       .back-bar-link {
         color: var(--brand-color) !important;
         text-decoration: none !important;
-        font-size: 15px;
-        font-weight: 500;
         display: flex;
         align-items: center;
-        white-space: nowrap;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        flex-shrink: 0;
       }
-      .back-bar-link i { margin-right: 6px; font-size: 13px; }
+      .back-bar-link i { font-size: 16px; }
       .back-bar-title {
         flex: 1;
         text-align: center;
         font-weight: 600;
-        font-size: 15px;
+        font-size: 16px;
         color: #333;
-        margin-right: 40px;
+        margin-right: 32px;
       }
     </style>
     <%= content_for?(:head) ? yield(:head) : '' %>

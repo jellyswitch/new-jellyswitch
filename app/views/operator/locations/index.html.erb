@@ -7,7 +7,6 @@
   <div class="col-lg-6 m-0 pl-0 pr-0">
     <%= list_wrapper do %>
       <%= list_item do %>
-        <h4 class="display-4 text-center">Locations</h4>
         <% if policy(:location).new? %>
           <%= link_to "Add a location", new_location_path, class: "btn btn-block btn-primary" %>
         <% end %>

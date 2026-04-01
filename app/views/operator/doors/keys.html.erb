@@ -1,3 +1,5 @@
 <% title "Building Access" %>
 
+<%= render "shared/back_bar", back_path: root_path, back_label: "Home", page_title: "Building Access" %>
+
 <%= render "keys", doors: @doors, untethered_ios: untethered_ios_request? %>

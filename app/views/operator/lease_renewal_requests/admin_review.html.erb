@@ -4,8 +4,6 @@
 
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <h4 class="display-4 text-center">Review Renewal Request</h4>
-
     <div class="text-center mb-3">
       <% if @request.pending_admin? %>
         <span class="badge badge-warning p-2">Leasee Requested Modifications</span>
