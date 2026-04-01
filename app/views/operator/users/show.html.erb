@@ -86,4 +86,10 @@
     <hr />
     <%= link_to "Update payment information", user_billing_path(current_user), class: "btn btn-block btn-primary" %>
   <% end %>
+
+  <%= list_item do %>
+    <h4 class="display-4 text-center text-danger">Delete Account</h4>
+    <p class="text-muted text-center">Permanently delete your account and all associated data. This action cannot be undone. Any active memberships will be cancelled.</p>
+    <%= link_to "Delete My Account", user_path(@user), method: :delete, class: "btn btn-block btn-outline-danger", data: { confirm: "Are you sure you want to delete your account? This will cancel any active memberships and cannot be undone. Type DELETE to confirm.", turbo_method: :delete, turbo_confirm: "Are you sure you want to delete your account? This will cancel any active memberships and cannot be undone." } %>
+  <% end %>
 <% end %>
