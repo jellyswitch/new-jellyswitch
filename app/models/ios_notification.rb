@@ -21,6 +21,15 @@ class IosNotification
     notification.custom_payload = data if data.present?
     response = connection.push(notification)
     connection.close
+
+    if response && !response.ok?
+      Rails.logger.error "[APNs] Push failed for #{user.operator.bundle_id}: status=#{response.status} body=#{response.body}"
+    elsif response
+      Rails.logger.info "[APNs] Push sent for #{user.operator.bundle_id}: status=#{response.status}"
+    else
+      Rails.logger.error "[APNs] Push returned nil response for #{user.operator.bundle_id}"
+    end
+
     response
   end
 
