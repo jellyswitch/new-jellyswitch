@@ -74,7 +74,7 @@ class Invoice < ApplicationRecord
 
   def pdf_url
     if stripe_invoice_id.present? && !void?
-      stripe_invoice.invoice_pdf
+      stripe_invoice&.invoice_pdf
     else
       nil
     end
@@ -113,6 +113,6 @@ class Invoice < ApplicationRecord
   end
 
   def description
-    stripe_invoice.lines.data.map(&:description).join("\n")
+    stripe_invoice&.lines&.data&.map(&:description)&.join("\n") || "Invoice ##{number}"
   end
 end
