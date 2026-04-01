@@ -62,15 +62,18 @@
       .back-bar {
         background: white;
         padding: 10px 16px;
-        border-bottom: 1px solid #eee;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.06);
         position: sticky;
         top: 0;
         z-index: 100;
         display: flex;
         align-items: center;
+        margin: 0 -15px;
+        padding-left: 31px;
+        padding-right: 31px;
       }
       .back-bar + .row,
-      .back-bar + div { margin-top: 0 !important; }
+      .back-bar + div { margin-top: 0 !important; padding-top: 0 !important; }
       .back-bar-link {
         color: var(--brand-color) !important;
         text-decoration: none !important;
