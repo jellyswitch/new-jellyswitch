@@ -28,6 +28,11 @@ class FeedItem < ApplicationRecord
   belongs_to :user
   has_many :feed_item_comments
 
+  # Override partial path so Turbo broadcasts find the namespaced partial
+  def to_partial_path
+    "operator/feed_items/feed_item"
+  end
+
   # Real-time Turbo Streams - broadcast new feed items to all connected users
   after_create_commit :broadcast_to_feed
 

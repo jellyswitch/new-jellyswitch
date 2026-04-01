@@ -16,6 +16,11 @@ class FeedItemComment < ApplicationRecord
   belongs_to :user
   validates :comment, presence: true
 
+  # Override partial path so Turbo broadcasts find the namespaced partial
+  def to_partial_path
+    "operator/feed_item_comments/feed_item_comment"
+  end
+
   # Real-time Turbo Streams - broadcast new comments
   after_create_commit :broadcast_to_feed_item
 
