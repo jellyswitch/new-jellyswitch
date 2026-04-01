@@ -28,14 +28,9 @@ class FeedItem < ApplicationRecord
   belongs_to :user
   has_many :feed_item_comments
 
-  # Real-time Turbo Streams - broadcast new feed items to all connected users
-  after_create_commit :broadcast_to_feed
-
-  def broadcast_to_feed
-    broadcast_prepend_to [operator, "feed_items"], target: "feed-items", partial: "operator/feed_items/feed_item", locals: { feed_item: self }
-  rescue => e
-    Rails.logger.warn("FeedItem broadcast failed (expected in background): #{e.class}: #{e.message}")
-  end
+  # Real-time Turbo Streams disabled — partials require session context
+  # (current_user/current_location) which is unavailable in Sidekiq broadcast jobs.
+  # Users see new feed items on page refresh. Push notifications handle real-time alerts.
 
   has_rich_text :text
 

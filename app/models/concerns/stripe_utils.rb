@@ -179,7 +179,10 @@ module StripeUtils
 
     stripe_invoice.pay(options)
   rescue Stripe::InvalidRequestError => e
-    Honeybadger.notify(e)
+    # Don't report expected errors to Honeybadger
+    unless e.message.include?('already paid') || e.message.include?('void')
+      Honeybadger.notify(e)
+    end
     false
   end
 
