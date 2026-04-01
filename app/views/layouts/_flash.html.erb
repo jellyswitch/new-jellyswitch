@@ -1,6 +1,6 @@
 <div class="flash">
   <%- if flash[:success] %>
-    <p class="alert alert-success" role="alert">
+    <p class="alert alert-success flash-auto-dismiss" role="alert">
       <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
       <%= flash[:success] %>
     </p>
@@ -12,7 +12,7 @@
     </p>
   <%- end %>
   <%- if flash[:notice] %>
-    <p class="alert alert-info" role="alert">
+    <p class="alert alert-info flash-auto-dismiss" role="alert">
       <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
       <%= flash[:notice] %>
     </p>
@@ -24,3 +24,14 @@
     </p>
   <%- end %>
 </div>
+<script>
+  (function() {
+    document.querySelectorAll('.flash-auto-dismiss').forEach(function(el) {
+      setTimeout(function() {
+        el.style.transition = 'opacity 0.5s ease';
+        el.style.opacity = '0';
+        setTimeout(function() { el.remove(); }, 500);
+      }, 5000);
+    });
+  })();
+</script>
