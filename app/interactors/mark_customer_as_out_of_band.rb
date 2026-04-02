@@ -6,10 +6,11 @@ class MarkCustomerAsOutOfBand
     user = context.user
     
     user.subscriptions.active.each do |subscription|
-      stripe_subscription = subscription.stripe_subscription
-      stripe_subscription.billing = "send_invoice"
-      stripe_subscription.days_until_due = 30
-      stripe_subscription.save
+      stripe_sub = subscription.stripe_subscription
+      next unless stripe_sub
+      stripe_sub.billing = "send_invoice"
+      stripe_sub.days_until_due = 30
+      stripe_sub.save
     end
 
     user.out_of_band = true

@@ -1,6 +1,7 @@
 class SubscriptionDeletedFactory
   def self.for(subscription)
-    if subscription.active? == false && subscription.stripe_subscription.status == "canceled"
+    sub = subscription.stripe_subscription
+    if subscription.active? == false && sub&.status == "canceled"
       SubscriptionDeleted::AlreadyCancelled
     else
       if subscription.office_leases.count > 0

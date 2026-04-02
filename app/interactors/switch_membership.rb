@@ -19,13 +19,19 @@ class SwitchMembership
       new_subscription.save!
       old_subscription.save!
 
+      stripe_sub = new_subscription.stripe_subscription
+      unless stripe_sub
+        context.fail!(message: "Cannot switch membership: no active Stripe subscription found.")
+        return
+      end
+
       Stripe::Subscription.update(
         new_subscription.stripe_subscription_id,
         {
           cancel_at_period_end: false,
           items: [
             {
-              id: new_subscription.stripe_subscription.items.data[0].id,
+              id: stripe_sub.items.data[0].id,
               plan: new_subscription.plan.stripe_plan_id
             }
           ],

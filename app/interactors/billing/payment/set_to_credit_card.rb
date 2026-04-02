@@ -6,9 +6,10 @@ class Billing::Payment::SetToCreditCard
   def call
     if (payment_profile = user.payment_profile_for_location(location))
       user.subscriptions_billable.active.each do |subscription|
-        stripe_subscription = subscription.stripe_subscription
-        stripe_subscription.billing = "charge_automatically"
-        stripe_subscription.save
+        stripe_sub = subscription.stripe_subscription
+        next unless stripe_sub
+        stripe_sub.billing = "charge_automatically"
+        stripe_sub.save
       end
 
       payment_profile.update card_added: true

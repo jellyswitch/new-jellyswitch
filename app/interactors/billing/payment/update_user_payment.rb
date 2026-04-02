@@ -10,9 +10,10 @@ class Billing::Payment::UpdateUserPayment
     else
       if token
         user.subscriptions_billable.active.each do |subscription|
-          stripe_subscription = subscription.stripe_subscription
-          stripe_subscription.billing = "charge_automatically"
-          stripe_subscription.save
+          stripe_sub = subscription.stripe_subscription
+          next unless stripe_sub
+          stripe_sub.billing = "charge_automatically"
+          stripe_sub.save
         end
 
         if location.create_or_update_customer_payment(user, token)

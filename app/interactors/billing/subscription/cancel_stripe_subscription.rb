@@ -14,7 +14,8 @@ class Billing::Subscription::CancelStripeSubscription
     return unless subscription.stripe_subscription_id.present?
 
     begin
-      unless subscription.stripe_subscription.status == "canceled"
+      sub = subscription.stripe_subscription
+      unless sub.nil? || sub.status == "canceled"
         subscription.cancel_stripe!
       end
     rescue Exception => e

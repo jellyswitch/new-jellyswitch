@@ -67,7 +67,7 @@ class Subscription < ApplicationRecord
   end
 
   def stripe_subscription
-    if pending?
+    if pending? || stripe_subscription_id.blank?
       nil
     else
       Stripe::Subscription.retrieve(self.stripe_subscription_id, {
@@ -75,6 +75,9 @@ class Subscription < ApplicationRecord
         stripe_account: plan.location.stripe_user_id,
       })
     end
+  rescue Stripe::InvalidRequestError => e
+    Honeybadger.notify(e)
+    nil
   end
 
   def pretty_datetime

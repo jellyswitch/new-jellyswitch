@@ -14,7 +14,10 @@ class Billing::Subscription::SetStripeSubscriptionForCancellation
     return unless subscription.stripe_subscription_id.present?
 
     begin
-      if subscription.stripe_subscription.status == "canceled"
+      sub = subscription.stripe_subscription
+      if sub.nil?
+        # Pending subscription with no Stripe record yet, nothing to cancel
+      elsif sub.status == "canceled"
         Honeybadger.notify("Warning: SetStripeSubscriptionForCancellation called with Subscription: #{subscription.id} / #{subscription.stripe_subscription_id}")
       else
         subscription.set_stripe_to_cancel!
