@@ -6,6 +6,7 @@ class Billing::DayPasses::UpdatePaymentAndCreateDayPassAndCheckin
     Billing::DayPasses::SaveDayPass,
     Billing::Payment::UpdateUserPayment,
     Billing::DayPasses::CreateStripeInvoice,
+    Billing::DayPasses::ChargeDayPassInvoice,
     Checkins::AutoCheckin,
     CreateNotifications,
     Billing::DayPasses::ScheduleDayPassEmails

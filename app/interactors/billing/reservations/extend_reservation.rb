@@ -5,5 +5,6 @@ class Billing::Reservations::ExtendReservation
     Billing::Reservations::UpdateReservationDuration,
     Billing::Reservations::ChargeCredits,
     Billing::Reservations::SaveStripeInvoice,
+    Billing::Reservations::ChargeReservationInvoice,
   )
 end
