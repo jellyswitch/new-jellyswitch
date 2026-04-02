@@ -49,11 +49,15 @@ class Subscription < ApplicationRecord
 
   # Instance methods
   def cancel_stripe!
-    stripe_subscription.delete
+    sub = stripe_subscription
+    return unless sub
+    sub.delete
   end
 
   def set_stripe_to_cancel!
-    stripe_subscription.save(cancel_at_period_end: true)
+    sub = stripe_subscription
+    return unless sub
+    sub.save(cancel_at_period_end: true)
   end
 
   def has_stripe_subscription?
@@ -111,38 +115,50 @@ class Subscription < ApplicationRecord
   end
 
   def has_end_date?
-    has_stripe_subscription? && stripe_subscription.cancel_at.present?
+    sub = stripe_subscription
+    sub.present? && sub.cancel_at.present?
   rescue StandardError => e
     false
   end
 
   def end_date
-    Time.at(stripe_subscription.cancel_at)
+    sub = stripe_subscription
+    return nil unless sub&.cancel_at
+    Time.at(sub.cancel_at)
   end
 
   def set_end_date!(date)
     s = stripe_subscription
+    return unless s
     s.cancel_at = date.to_i
     s.save
   end
 
   def has_canceled_at?
-    has_stripe_subscription? && stripe_subscription.canceled_at.present?
+    sub = stripe_subscription
+    sub.present? && sub.canceled_at.present?
   end
 
   def has_period_end?
-    has_stripe_subscription? && stripe_subscription.current_period_end.present?
+    sub = stripe_subscription
+    sub.present? && sub.current_period_end.present?
   end
 
   def current_period_end
-    Time.at(stripe_subscription.current_period_end)
+    sub = stripe_subscription
+    return nil unless sub&.current_period_end
+    Time.at(sub.current_period_end)
   end
 
   def canceled_at
-    Time.at(stripe_subscription.canceled_at)
+    sub = stripe_subscription
+    return nil unless sub&.canceled_at
+    Time.at(sub.canceled_at)
   end
 
   def ended_at
-    Time.at(stripe_subscription.ended_at)
+    sub = stripe_subscription
+    return nil unless sub&.ended_at
+    Time.at(sub.ended_at)
   end
 end

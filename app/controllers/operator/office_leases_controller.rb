@@ -45,7 +45,8 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     authorize @office_lease, :edit_price?
 
-    @next_billing_cycle = Time.at(@office_lease.current_period_end)
+    period_end = @office_lease.current_period_end
+    @next_billing_cycle = period_end ? Time.at(period_end) : @office_lease.end_date
   end
 
   def update_price

@@ -137,7 +137,7 @@ class OfficeLease < ApplicationRecord
   end
 
   def current_period_end
-    subscription.stripe_subscription.current_period_end
+    subscription.stripe_subscription&.current_period_end
   end
 
   private
