@@ -1,5 +1,5 @@
 class Operator::ReservationsController < Operator::BaseController
-  before_action :background_image
+  before_action :background_image, except: [:reserve_now, :reserve_now_price]
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
 
   include ActionView::Helpers::NumberHelper
@@ -662,8 +662,8 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
-    puts "[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}"
-    Rails.logger.warn("[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}")
+    $stdout.puts "[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id}"
+    $stdout.flush
 
     unless current_location
       flash[:error] = "Please select a location first."
