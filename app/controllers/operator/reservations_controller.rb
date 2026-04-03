@@ -662,6 +662,8 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
+    Rails.logger.info("[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}")
+
     include_stripe
     background_image
 
@@ -685,6 +687,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Find available rooms right now for the preferred duration
     all_visible = current_location.rooms.visible
+    Rails.logger.info("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date.to_s} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
     available = current_location.rooms.available(
       date: @start_time.to_date.to_s,
       time: @start_time.strftime("%H:%M"),
