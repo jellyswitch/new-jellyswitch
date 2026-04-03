@@ -662,76 +662,17 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
-    unless current_location
-      flash[:error] = "Please select a location first."
-      redirect_to home_path
-      return
-    end
-
-    zone = ActiveSupport::TimeZone[current_location.time_zone] || Time.zone
-    now = Time.current.in_time_zone(zone)
-
-    # Round up to next 15-minute mark
-    remainder = now.min % 15
-    @start_time = remainder == 0 ? now : now + (15 - remainder).minutes
-    @start_time = @start_time.change(sec: 0)
-
-    @duration = current_user.preferred_meeting_duration.to_i
-    @duration = 60 if @duration <= 0
+    @room = current_location.rooms.visible.first
+    @start_time = Time.current.in_time_zone(current_location.time_zone)
+    @duration = 60
+    @max_duration = 240
     @day_or_night = @start_time.hour >= 12 ? "night" : "day"
-
-    # Query available rooms directly — find rooms with no overlapping reservations
-    end_time = @start_time + @duration.minutes
-    booked_room_ids = Reservation.where(room: current_location.rooms.visible)
-      .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, @start_time)
-      .where(cancelled: false)
-      .pluck(:room_id)
-      .uniq
-
-    available = current_location.rooms.visible.where.not(id: booked_room_ids)
-
-    if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
-      available = available.rentable
-    end
-
-    available_rooms_list = available.to_a
-
-    if available_rooms_list.empty?
-      # Track demand miss
-      RoomDemandMiss.create!(
-        user: current_user,
-        operator: current_tenant,
-        location: current_location,
-        missed_at: now,
-        day_of_week: now.wday,
-        hour_of_day: now.hour
-      )
-
-      @rooms_with_free_times = current_location.rooms.visible.map do |room|
-        current_booking = room.reservations.ongoing.first
-        overlap = room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first unless current_booking
-        free_at = current_booking&.datetime_out || overlap&.datetime_out
-        { room: room, free_at: free_at }
-      end.sort_by { |r| r[:free_at] || Time.current }
-
-      background_image
-      render :no_rooms_available
-      return
-    end
-
-    # Pick the best room
-    preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
-    @room = preferred || available_rooms_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_rooms_list.first
-    available_ids = available_rooms_list.map(&:id)
-    @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
-    @unavailable_rooms = current_location.rooms.visible.where.not(id: available_ids)
-
-    # Calculate pricing
-    compute_reserve_now_pricing
-
-    # Max duration for slider
-    @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time), 240].min
-
+    @available_rooms = current_location.rooms.visible.where.not(id: @room.id).to_a
+    @unavailable_rooms = []
+    @should_charge = false
+    @total_price = 0
+    @included_in_plan = true
+    @included_minutes_remaining = 120
     include_stripe
     background_image
   end
