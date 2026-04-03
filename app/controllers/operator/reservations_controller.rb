@@ -662,9 +662,6 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
-    $stdout.puts "[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id}"
-    $stdout.flush
-
     unless current_location
       flash[:error] = "Please select a location first."
       redirect_to home_path
@@ -683,23 +680,21 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = 60 if @duration <= 0
     @day_or_night = @start_time.hour >= 12 ? "night" : "day"
 
-    # Find available rooms right now for the preferred duration
-    all_visible = current_location.rooms.visible
-    Rails.logger.warn("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
+    # Use same time format as calendar's available_rooms action (12-hour with am/pm)
+    time_str = @start_time.strftime("%-I:%M")
+    time_str += " pm" if @day_or_night == "night"
 
     available = current_location.rooms.available(
       date: @start_time.to_date.to_s,
-      time: @start_time.strftime("%H:%M"),
+      time: time_str,
       duration: @duration
     )
 
-    can_see_all = current_user.can_see_all_rooms?(current_location, @start_time.to_date)
-    if !can_see_all
+    if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
       available = available.rentable
     end
 
     available_rooms_list = available.to_a
-    Rails.logger.warn("[ReserveNow] RESULTS available=#{available_rooms_list.count} can_see_all=#{can_see_all} admin=#{current_user.admin?}")
 
     if available_rooms_list.empty?
       # Track demand miss
@@ -727,8 +722,6 @@ class Operator::ReservationsController < Operator::BaseController
     # Pick the best room
     preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
     @room = preferred || available_rooms_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_rooms_list.first
-    Rails.logger.warn("[ReserveNow] ROOM selected=#{@room&.id} name=#{@room&.name}")
-
     available_ids = available_rooms_list.map(&:id)
     @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
     @unavailable_rooms = current_location.rooms.visible.where.not(id: available_ids)
