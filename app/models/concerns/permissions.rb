@@ -21,7 +21,7 @@ module Permissions
   def should_charge_for_reservation?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
       # now adding community manager per https://github.com/jellyswitch/new-jellyswitch/commit/a3418b6a9f89562dba398f7920e7c7a7cede02a7 probably missed this
-      !(member?(location) || has_active_day_pass?(day) || has_active_lease? || admin_of_location?(location) || superadmin? || general_manager_of_location?(location) || community_manager_of_location?(location))
+      !(member?(location) || has_purchased_day_pass?(day) || has_active_lease? || admin_of_location?(location) || superadmin? || general_manager_of_location?(location) || community_manager_of_location?(location))
     else
       false
     end
@@ -121,6 +121,10 @@ module Permissions
 
   def has_active_day_pass?(day = Time.current)
     day_passes.for_day(day).count > 0
+  end
+
+  def has_purchased_day_pass?(day = Time.current)
+    day_passes.for_day(day).purchased.count > 0
   end
 
   def has_active_day_pass_at_location?(location, day = Time.current)

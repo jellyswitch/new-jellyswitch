@@ -13,7 +13,7 @@ class Billing::Reservations::GrantFreeDayPass
         free_day_pass_type = free_day_passes.first
         invoice = Invoice.find_by(stripe_invoice_id: context.invoice&.id)
 
-        day_pass = DayPass.new(user: user, day: reservation_day, day_pass_type: free_day_pass_type, operator: location.operator, billable_type: "User", billable_id: user.id, invoice: invoice)
+        day_pass = DayPass.new(user: user, day: reservation_day, day_pass_type: free_day_pass_type, operator: location.operator, billable_type: "User", billable_id: user.id, invoice: invoice, complimentary: true)
         if day_pass.save
           Rails.logger.info "Granted a free day pass to #{user.email} for reservation #{reservation.id}"
         else

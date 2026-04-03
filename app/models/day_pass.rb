@@ -5,6 +5,7 @@
 #
 #  id               :bigint(8)        not null, primary key
 #  billable_type    :string
+#  complimentary    :boolean          default(FALSE), not null
 #  day              :date             not null
 #  created_at       :datetime         not null
 #  updated_at       :datetime         not null
@@ -37,6 +38,8 @@ class DayPass < ApplicationRecord
   # Scopes
   scope :today, -> { where(day: Time.current) }
   scope :for_day, -> (date) { where(day: date) }
+  scope :purchased, -> { where(complimentary: [false, nil]) }
+  scope :complimentary, -> { where(complimentary: true) }
   scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
