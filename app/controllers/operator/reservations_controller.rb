@@ -737,6 +737,10 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Max duration for slider
     @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time), 240].min
+  rescue => e
+    Honeybadger.notify(e)
+    flash[:error] = "Unable to load Reserve Now: #{e.message}"
+    redirect_to calendar_reservations_path
   end
 
   def reserve_now_price
