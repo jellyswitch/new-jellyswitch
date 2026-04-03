@@ -2,10 +2,22 @@
 
 <%= render "shared/back_bar", back_path: home_path, back_label: "Home", page_title: "Reserve Now" %>
 
+<% if @room.nil? %>
+  <div class="row mt-0 mb-0 p-0">
+    <div class="col-lg-3"></div>
+    <div class="col-lg-6 m-0 p-0 text-center mt-5">
+      <h5>No rooms available right now</h5>
+      <p class="text-muted">Try booking from the calendar instead.</p>
+      <%= link_to "Use Calendar", calendar_reservations_path, class: "btn btn-primary" %>
+    </div>
+    <div class="col-lg-3"></div>
+  </div>
+<% else %>
+
 <div class="row mt-0 mb-0 p-0">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0" data-controller="reserve-now"
-       data-reserve-now-room-id-value="<%= @room&.id %>"
+       data-reserve-now-room-id-value="<%= @room.id %>"
        data-reserve-now-duration-value="<%= @duration || 60 %>"
        data-reserve-now-max-duration-value="<%= @max_duration || 240 %>"
        data-reserve-now-start-time-value="<%= @start_time&.iso8601 %>"
@@ -68,7 +80,7 @@
       <div class="mx-3 p-3 rounded" style="background: #f8f9fa;" data-reserve-now-target="priceBox">
         <div class="d-flex justify-content-between align-items-center">
           <span class="text-muted">Total</span>
-          <strong class="text-success" style="font-size: 24px;" data-reserve-now-target="priceAmount"><%= number_to_currency(@total_price) %></strong>
+          <strong class="text-success" style="font-size: 24px;" data-reserve-now-target="priceAmount"><%= number_to_currency(@total_price || 0) %></strong>
         </div>
       </div>
     <% end %>
@@ -89,12 +101,12 @@
     </div>
 
     <%# Other Available Rooms %>
-    <% if @available_rooms.any? || @unavailable_rooms.any? %>
+    <% if @available_rooms&.any? || @unavailable_rooms&.any? %>
       <div class="mx-3 mt-4 mb-2">
         <small class="text-muted text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">Other rooms available now</small>
       </div>
 
-      <% @available_rooms.each do |room| %>
+      <% @available_rooms&.each do |room| %>
         <div class="mx-3 mb-2">
           <div class="card border cursor-pointer" style="cursor: pointer;"
                data-action="click->reserve-now#selectRoom"
@@ -114,7 +126,7 @@
         </div>
       <% end %>
 
-      <% @unavailable_rooms.each do |room| %>
+      <% @unavailable_rooms&.each do |room| %>
         <% current_booking = room.reservations.ongoing.first || room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first %>
         <div class="mx-3 mb-2">
           <div class="card border" style="opacity: 0.5;">
@@ -141,3 +153,5 @@
   </div>
   <div class="col-lg-3"></div>
 </div>
+
+<% end %>
