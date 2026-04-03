@@ -662,9 +662,8 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
-    @room = current_location.rooms.visible.first
-    @start_time = Time.current.in_time_zone(current_location.time_zone)
-    @duration = 60
+    room = current_location&.rooms&.visible&.first
+    render html: "Room: #{room&.name || 'NIL'} | Location: #{current_location&.name || 'NIL'} | User: #{current_user&.id || 'NIL'} | Rooms count: #{current_location&.rooms&.visible&.count || 0}".html_safe, layout: false
   end
 
   def reserve_now_price
