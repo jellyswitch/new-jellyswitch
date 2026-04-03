@@ -664,9 +664,6 @@ class Operator::ReservationsController < Operator::BaseController
   def reserve_now
     Rails.logger.info("[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}")
 
-    include_stripe
-    background_image
-
     unless current_location
       flash[:error] = "Please select a location first."
       redirect_to home_path
@@ -687,7 +684,8 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Find available rooms right now for the preferred duration
     all_visible = current_location.rooms.visible
-    Rails.logger.info("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date.to_s} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
+    Rails.logger.info("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
+
     available = current_location.rooms.available(
       date: @start_time.to_date.to_s,
       time: @start_time.strftime("%H:%M"),
@@ -695,16 +693,12 @@ class Operator::ReservationsController < Operator::BaseController
     )
 
     can_see_all = current_user.can_see_all_rooms?(current_location, @start_time.to_date)
-
-    # Filter to rooms the user can see
     if !can_see_all
       available = available.rentable
     end
 
-    # Force query evaluation so empty? check is accurate after filtering
     available_rooms_list = available.to_a
-
-    Rails.logger.info("[ReserveNow] visible=#{all_visible.count} available=#{available_rooms_list.count} can_see_all=#{can_see_all} time=#{@start_time} duration=#{@duration} user=#{current_user.id} admin=#{current_user.admin?}")
+    Rails.logger.info("[ReserveNow] RESULTS available=#{available_rooms_list.count} can_see_all=#{can_see_all} admin=#{current_user.admin?}")
 
     if available_rooms_list.empty?
       # Track demand miss
@@ -716,21 +710,15 @@ class Operator::ReservationsController < Operator::BaseController
         day_of_week: now.wday,
         hour_of_day: now.hour
       )
-      SendNotificationsJob.perform_later(RoomDemandMiss.last)
 
-      # Get all rooms with their next free time for display
       @rooms_with_free_times = current_location.rooms.visible.map do |room|
         current_booking = room.reservations.ongoing.first
-        next_booking_end = if current_booking
-          current_booking.datetime_out
-        else
-          # Room might be booked starting now — find the current overlapping reservation
-          overlap = room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first
-          overlap&.datetime_out
-        end
-        { room: room, free_at: next_booking_end }
+        overlap = room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first unless current_booking
+        free_at = current_booking&.datetime_out || overlap&.datetime_out
+        { room: room, free_at: free_at }
       end.sort_by { |r| r[:free_at] || Time.current }
 
+      background_image
       render :no_rooms_available
       return
     end
@@ -738,12 +726,7 @@ class Operator::ReservationsController < Operator::BaseController
     # Pick the best room
     preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
     @room = preferred || available_rooms_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_rooms_list.first
-
-    unless @room
-      flash[:error] = "No rooms available right now."
-      redirect_to calendar_reservations_path
-      return
-    end
+    Rails.logger.info("[ReserveNow] ROOM selected=#{@room&.id} name=#{@room&.name}")
 
     available_ids = available_rooms_list.map(&:id)
     @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
@@ -754,7 +737,11 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Max duration for slider
     @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time), 240].min
+
+    include_stripe
+    background_image
   rescue => e
+    Rails.logger.error("[ReserveNow] ERROR #{e.class}: #{e.message}")
     Honeybadger.notify(e)
     flash[:error] = "Unable to load Reserve Now: #{e.message}"
     redirect_to calendar_reservations_path
