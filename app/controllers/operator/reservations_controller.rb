@@ -665,7 +665,13 @@ class Operator::ReservationsController < Operator::BaseController
     include_stripe
     background_image
 
-    zone = ActiveSupport::TimeZone[current_location&.time_zone] || Time.zone
+    unless current_location
+      flash[:error] = "Please select a location first."
+      redirect_to home_path
+      return
+    end
+
+    zone = ActiveSupport::TimeZone[current_location.time_zone] || Time.zone
     now = Time.current.in_time_zone(zone)
 
     # Round up to next 15-minute mark
@@ -673,23 +679,29 @@ class Operator::ReservationsController < Operator::BaseController
     @start_time = remainder == 0 ? now : now + (15 - remainder).minutes
     @start_time = @start_time.change(sec: 0)
 
-    @duration = current_user.preferred_meeting_duration.presence || 60
+    @duration = current_user.preferred_meeting_duration.to_i
+    @duration = 60 if @duration <= 0
     @day_or_night = @start_time.hour >= 12 ? "night" : "day"
 
     # Find available rooms right now for the preferred duration
+    all_visible = current_location.rooms.visible
     available = current_location.rooms.available(
       date: @start_time.to_date.to_s,
       time: @start_time.strftime("%H:%M"),
       duration: @duration
     )
 
+    can_see_all = current_user.can_see_all_rooms?(current_location, @start_time.to_date)
+
     # Filter to rooms the user can see
-    if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
+    if !can_see_all
       available = available.rentable
     end
 
     # Force query evaluation so empty? check is accurate after filtering
     available_rooms_list = available.to_a
+
+    Rails.logger.info("[ReserveNow] visible=#{all_visible.count} available=#{available_rooms_list.count} can_see_all=#{can_see_all} time=#{@start_time} duration=#{@duration} user=#{current_user.id} admin=#{current_user.admin?}")
 
     if available_rooms_list.empty?
       # Track demand miss
