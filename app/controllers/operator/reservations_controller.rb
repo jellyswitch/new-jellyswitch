@@ -665,16 +665,6 @@ class Operator::ReservationsController < Operator::BaseController
     @room = current_location.rooms.visible.first
     @start_time = Time.current.in_time_zone(current_location.time_zone)
     @duration = 60
-    @max_duration = 240
-    @day_or_night = @start_time.hour >= 12 ? "night" : "day"
-    @available_rooms = current_location.rooms.visible.where.not(id: @room.id).to_a
-    @unavailable_rooms = []
-    @should_charge = false
-    @total_price = 0
-    @included_in_plan = true
-    @included_minutes_remaining = 120
-    include_stripe
-    background_image
   end
 
   def reserve_now_price
