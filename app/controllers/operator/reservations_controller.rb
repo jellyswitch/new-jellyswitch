@@ -688,7 +688,10 @@ class Operator::ReservationsController < Operator::BaseController
       available = available.rentable
     end
 
-    if available.empty?
+    # Force query evaluation so empty? check is accurate after filtering
+    available_rooms_list = available.to_a
+
+    if available_rooms_list.empty?
       # Track demand miss
       RoomDemandMiss.create!(
         user: current_user,
@@ -718,14 +721,16 @@ class Operator::ReservationsController < Operator::BaseController
     end
 
     # Pick the best room
-    if current_user.preferred_room_id && available.exists?(id: current_user.preferred_room_id)
-      @room = available.find(current_user.preferred_room_id)
+    preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
+    if preferred
+      @room = preferred
     else
-      @room = available.order(:hourly_rate_in_cents).first
+      @room = available_rooms_list.min_by(&:hourly_rate_in_cents)
     end
 
-    @available_rooms = available.where.not(id: @room.id).order(:hourly_rate_in_cents)
-    @unavailable_rooms = current_location.rooms.visible.where.not(id: available.pluck(:id))
+    available_ids = available_rooms_list.map(&:id)
+    @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by(&:hourly_rate_in_cents)
+    @unavailable_rooms = current_location.rooms.visible.where.not(id: available_ids)
 
     # Calculate pricing
     compute_reserve_now_pricing

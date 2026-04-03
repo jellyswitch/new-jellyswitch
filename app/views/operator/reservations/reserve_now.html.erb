@@ -5,7 +5,7 @@
 <div class="row mt-0 mb-0 p-0">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0" data-controller="reserve-now"
-       data-reserve-now-room-id-value="<%= @room.id %>"
+       data-reserve-now-room-id-value="<%= @room&.id %>"
        data-reserve-now-duration-value="<%= @duration %>"
        data-reserve-now-max-duration-value="<%= @max_duration %>"
        data-reserve-now-start-time-value="<%= @start_time.iso8601 %>"
