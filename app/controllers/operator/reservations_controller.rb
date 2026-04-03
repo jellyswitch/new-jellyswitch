@@ -722,14 +722,16 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Pick the best room
     preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
-    if preferred
-      @room = preferred
-    else
-      @room = available_rooms_list.min_by(&:hourly_rate_in_cents)
+    @room = preferred || available_rooms_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_rooms_list.first
+
+    unless @room
+      flash[:error] = "No rooms available right now."
+      redirect_to calendar_reservations_path
+      return
     end
 
     available_ids = available_rooms_list.map(&:id)
-    @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by(&:hourly_rate_in_cents)
+    @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
     @unavailable_rooms = current_location.rooms.visible.where.not(id: available_ids)
 
     # Calculate pricing
