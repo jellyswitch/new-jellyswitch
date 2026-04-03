@@ -1,6 +1,6 @@
 <%= render "shared/back_bar", back_path: home_path, back_label: "Home", page_title: "Reserve Now" %>
 
-<div class="row mt-0 mb-0 p-0">
+<div class="row mt-0 mb-0 p-0" style="background: #fff; min-height: 100vh;">
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0">
 
@@ -16,7 +16,7 @@
           <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
             <div>
               <strong style="font-size: 14px;"><%= entry[:room].name %></strong>
-              <div class="text-muted" style="font-size: 11px;"><%= entry[:room].capacity %> people · <%= entry[:room].amenities.pluck(:name).join(", ") %></div>
+              <div class="text-muted" style="font-size: 11px;"><%= pluralize(entry[:room].capacity, "person") %> · <%= entry[:room].amenities.pluck(:name).join(", ") %></div>
             </div>
             <div class="text-right">
               <% if entry[:free_at] %>

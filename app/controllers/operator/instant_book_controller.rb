@@ -51,7 +51,7 @@ class Operator::InstantBookController < Operator::BaseController
         { room: room, free_at: free_at }
       end.sort_by { |r| r[:free_at] || Time.current }
 
-      background_image
+      # No background image — white background
       render :no_rooms_available
       return
     end
