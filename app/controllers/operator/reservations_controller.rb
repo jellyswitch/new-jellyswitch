@@ -662,8 +662,12 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
+    instant_book
+  end
+
+  def instant_book
     room = current_location&.rooms&.visible&.first
-    render html: "Room: #{room&.name || 'NIL'} | Location: #{current_location&.name || 'NIL'} | User: #{current_user&.id || 'NIL'} | Rooms count: #{current_location&.rooms&.visible&.count || 0}".html_safe, layout: false
+    render html: "INSTANT BOOK v2 - Room: #{room&.name || 'NIL'} | Location: #{current_location&.name || 'NIL'} | User: #{current_user&.id || 'NIL'} | Rooms count: #{current_location&.rooms&.visible&.count || 0}".html_safe, layout: false
   end
 
   def reserve_now_price
