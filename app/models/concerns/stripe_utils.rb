@@ -80,7 +80,7 @@ module StripeUtils
           },
         },
       ],
-      proration_behavior: "none",
+      proration_behavior: "create_prorations",
     }
 
     Rails.logger.info("Updating subscription price to #{new_price_in_cents}")
