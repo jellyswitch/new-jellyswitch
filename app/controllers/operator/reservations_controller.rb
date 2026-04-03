@@ -734,11 +734,6 @@ class Operator::ReservationsController < Operator::BaseController
 
     include_stripe
     background_image
-  rescue => e
-    Rails.logger.warn("[ReserveNow] ERROR #{e.class}: #{e.message}")
-    Honeybadger.notify(e)
-    flash[:error] = "Unable to load Reserve Now: #{e.message}"
-    redirect_to calendar_reservations_path
   end
 
   def reserve_now_price
