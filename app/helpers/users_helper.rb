@@ -7,7 +7,8 @@ module UsersHelper
       :bio, :linkedin, :twitter, :website, :profile_photo,
       :approved, :admin, :add_member, :add_member_and_create_another,
       :always_allow_building_access, :role, :original_location_id, :current_location_id,
-      :marketing_consent, :terms_accepted, managed_location_ids: []
+      :marketing_consent, :terms_accepted, :preferred_room_id, :preferred_meeting_duration,
+      managed_location_ids: []
     )
     result[:original_location_id] = current_location.id if current_location && result[:original_location_id].blank?
     result

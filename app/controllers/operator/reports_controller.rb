@@ -52,6 +52,18 @@ class Operator::ReportsController < Operator::BaseController
     @ltv_all = @report.ltv_for_timeframe(since: nil)
   end
 
+  def room_demand
+    authorize :report, :revenue?
+    @demand_misses = RoomDemandMiss.for_location(current_location)
+    @total_misses_30d = @demand_misses.last_30_days.count
+    @heatmap_data = @demand_misses.last_30_days.group(:day_of_week, :hour_of_day).count
+    @peak_times = RoomDemandMiss.peak_times(current_location)
+    @estimated_missed_revenue = RoomDemandMiss.estimated_missed_revenue(current_location)
+    @misses_by_week = @demand_misses.where("missed_at >= ?", 12.weeks.ago)
+                                     .group_by_week(:missed_at)
+                                     .count
+  end
+
   def monetization
     @location = Location.find(params[:location_id])
     authorize :report, :monetization?

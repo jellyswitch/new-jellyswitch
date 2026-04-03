@@ -1,0 +1,83 @@
+<% title "Room Demand" %>
+
+<%= wide_card do %>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <h4 class="display-4 text-center">Room Demand</h4>
+  <p class="text-center text-muted">Times members tried to book but couldn't find an available room</p>
+
+  <div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h2 class="font-weight-bold text-danger"><%= @total_misses_30d %></h2>
+        <small class="text-muted">Missed bookings (30 days)</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h2 class="font-weight-bold text-warning">
+          <% if @peak_times.any? %>
+            <% day_names = %w[Sun Mon Tue Wed Thu Fri Sat] %>
+            <% peak = @peak_times.first %>
+            <%= day_names[peak[0][0]] %> <%= peak[0][1] > 12 ? "#{peak[0][1] - 12}PM" : "#{peak[0][1]}AM" %>
+          <% else %>
+            --
+          <% end %>
+        </h2>
+        <small class="text-muted">Peak unmet demand</small>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm text-center p-3">
+        <h2 class="font-weight-bold text-success"><%= number_to_currency(@estimated_missed_revenue) %></h2>
+        <small class="text-muted">Est. missed revenue (30 days)</small>
+      </div>
+    </div>
+  </div>
+
+  <h5 class="mt-5 mb-3">Missed Bookings by Week</h5>
+  <%= column_chart @misses_by_week,
+        colors: ["#e15759"],
+        height: "250px",
+        library: {
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { display: false } }
+        } %>
+
+  <% if @peak_times.any? %>
+    <h5 class="mt-5 mb-3">Top Unmet Demand Times</h5>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Hour</th>
+          <th>Missed Bookings</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% day_names = %w[Sunday Monday Tuesday Wednesday Thursday Friday Saturday] %>
+        <% @peak_times.each do |keys, count| %>
+          <tr>
+            <td><%= day_names[keys[0]] %></td>
+            <td><%= keys[1] > 12 ? "#{keys[1] - 12}:00 PM" : "#{keys[1]}:00 AM" %></td>
+            <td><strong class="text-danger"><%= count %></strong></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <div class="alert alert-info mt-4">
+    <strong>Recommendation:</strong>
+    <% if @total_misses_30d > 10 %>
+      Members were turned away <strong><%= @total_misses_30d %> times</strong> in the last 30 days.
+      Consider adding a meeting room to capture an estimated <strong><%= number_to_currency(@estimated_missed_revenue) %>/month</strong> in additional bookings.
+    <% elsif @total_misses_30d > 0 %>
+      There were <strong><%= @total_misses_30d %></strong> missed bookings in the last 30 days. Monitor this trend.
+    <% else %>
+      No missed bookings in the last 30 days. Room supply is meeting demand.
+    <% end %>
+  </div>
+<% end %>

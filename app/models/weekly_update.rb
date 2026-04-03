@@ -22,7 +22,8 @@ class WeeklyUpdate < ApplicationRecord
   store_accessor :blob, :day_passes, :checkins, :new_active_members, :new_free_members,
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations,
     :active_member_count, :free_member_count, :active_lease_member_count,
-    :management_notes, :questions, :unanswered_questions, :admins
+    :management_notes, :questions, :unanswered_questions, :admins,
+    :room_demand_misses
 
   [:day_passes, :checkins, :new_active_members, :new_free_members,
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations,
@@ -74,6 +75,8 @@ class WeeklyUpdate < ApplicationRecord
     w.revenue = report.revenue
 
     w.admins = report.admins.map(&:id)
+
+    w.room_demand_misses = report.room_demand_misses
 
     w
   end

@@ -39,6 +39,8 @@ class NotifiableFactory
       Notifiable::ReservationReminder
     when "Approval"
       Notifiable::Approval
+    when "RoomDemandMiss"
+      Notifiable::DemandMiss
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)

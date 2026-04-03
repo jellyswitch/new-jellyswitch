@@ -1,6 +1,6 @@
 class Jellyswitch::WeeklyReport
   include ActionView::Helpers::NumberHelper
-  attr_reader :week_start, :week_end, :report, :operator, :location, :day_passes, :checkins, :new_active_members, :new_free_members, :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, :management_notes, :questions, :unanswered_questions, :admins
+  attr_reader :week_start, :week_end, :report, :operator, :location, :day_passes, :checkins, :new_active_members, :new_free_members, :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, :management_notes, :questions, :unanswered_questions, :admins, :room_demand_misses
 
   delegate :active_member_count, :free_member_count, :active_lease_member_count, to: :report
 
@@ -47,5 +47,7 @@ class Jellyswitch::WeeklyReport
     @unanswered_questions = @questions.unanswered
 
     @admins = User.relevant_admins_of_location(location).admins
+
+    @room_demand_misses = RoomDemandMiss.for_location(location).for_week(@week_start, @week_end).count
   end
 end

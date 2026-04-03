@@ -75,6 +75,8 @@ class User < ApplicationRecord
   has_many :managed_locations, through: :location_managements, source: :location
 
   has_many :user_payment_profiles, dependent: :destroy
+  has_many :room_demand_misses
+  belongs_to :preferred_room, class_name: "Room", optional: true
 
   alias :location :current_location
 

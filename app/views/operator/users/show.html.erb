@@ -16,9 +16,38 @@
     <% if current_user.organization_owner? %>
       <%= link_to "View my group", organization_path(current_user.owned_organization), class: "btn btn-block btn-primary" %>
     <% end %>
+    <% if policy(:room).enabled? && current_location.rooms.visible.count > 0 %>
+      <%= link_to "Meeting Room Preferences", "#meeting-prefs", class: "btn btn-block btn-primary", data: { toggle: "collapse" } %>
+    <% end %>
     <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
     <%= link_to "Change My Account", user_change_account_path(current_user), class: "btn btn-block btn-warning" %>
     <%= link_to "Log out", logout_path, data: { turbo_method: :delete }, class: "btn btn-block btn-warning" %>
+  <% end %>
+
+  <% if policy(:room).enabled? && current_location.rooms.visible.count > 0 %>
+    <%= list_item do %>
+      <div class="collapse" id="meeting-prefs">
+        <h5 class="font-weight-bold mb-3">Meeting Room Preferences</h5>
+        <p class="text-muted" style="font-size: 13px;">These preferences are used when you tap "Reserve Now" to pre-select your room and duration.</p>
+        <%= form_with(model: current_user, url: user_path(current_user), method: :patch, local: true) do |f| %>
+          <div class="form-group">
+            <%= f.label :preferred_room_id, "Favorite Room", class: "font-weight-bold" %>
+            <%= f.select :preferred_room_id,
+                  current_location.rooms.visible.order(:name).map { |r| ["#{r.name} (#{r.capacity} people)", r.id] },
+                  { include_blank: "No preference", selected: current_user.preferred_room_id },
+                  class: "form-control" %>
+          </div>
+          <div class="form-group">
+            <%= f.label :preferred_meeting_duration, "Usual Meeting Length", class: "font-weight-bold" %>
+            <%= f.select :preferred_meeting_duration,
+                  [["15 minutes", 15], ["30 minutes", 30], ["45 minutes", 45], ["1 hour", 60], ["1.5 hours", 90], ["2 hours", 120]],
+                  { selected: current_user.preferred_meeting_duration || 60 },
+                  class: "form-control" %>
+          </div>
+          <%= f.submit "Save Preferences", class: "btn btn-success btn-block" %>
+        <% end %>
+      </div>
+    <% end %>
   <% end %>
 
   <%= list_item do %>

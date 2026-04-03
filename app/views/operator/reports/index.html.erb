@@ -212,6 +212,13 @@
           <%= link_to ltv_reports_path, class: "list-group-item list-group-item-action" do %>
             Customer Lifetime Value
           <% end %>
+          <%= link_to room_demand_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
+            Room Demand
+            <% demand_count = RoomDemandMiss.for_location(current_location).last_30_days.count %>
+            <% if demand_count > 0 %>
+              <span class="badge badge-danger badge-pill"><%= demand_count %></span>
+            <% end %>
+          <% end %>
         <% end %>
       </div>
     </div>

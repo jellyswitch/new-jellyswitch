@@ -659,6 +659,157 @@ class Operator::ReservationsController < Operator::BaseController
     current_user.admin_of_location?(current_location) || current_user.general_manager_of_location?(current_location) || current_user.community_manager_of_location?(current_location)
   end
 
+  # Reserve Now — instant booking flow
+
+  def reserve_now
+    include_stripe
+    background_image
+
+    zone = ActiveSupport::TimeZone[current_location.time_zone]
+    now = Time.current.in_time_zone(zone)
+
+    # Round up to next 15-minute mark
+    remainder = now.min % 15
+    @start_time = remainder == 0 ? now : now + (15 - remainder).minutes
+    @start_time = @start_time.change(sec: 0)
+
+    @duration = current_user.preferred_meeting_duration.presence || 60
+    @day_or_night = @start_time.hour >= 12 ? "night" : "day"
+
+    # Find available rooms right now for the preferred duration
+    available = current_location.rooms.available(
+      date: @start_time.to_date.to_s,
+      time: @start_time.strftime("%H:%M"),
+      duration: @duration
+    )
+
+    # Filter to rooms the user can see
+    if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
+      available = available.rentable
+    end
+
+    if available.empty?
+      # Track demand miss
+      RoomDemandMiss.create!(
+        user: current_user,
+        operator: current_tenant,
+        location: current_location,
+        missed_at: now,
+        day_of_week: now.wday,
+        hour_of_day: now.hour
+      )
+      SendNotificationsJob.perform_later(RoomDemandMiss.last)
+
+      # Get all rooms with their next free time for display
+      @rooms_with_free_times = current_location.rooms.visible.map do |room|
+        current_booking = room.reservations.ongoing.first
+        next_booking_end = if current_booking
+          current_booking.datetime_out
+        else
+          # Room might be booked starting now — find the current overlapping reservation
+          overlap = room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first
+          overlap&.datetime_out
+        end
+        { room: room, free_at: next_booking_end }
+      end.sort_by { |r| r[:free_at] || Time.current }
+
+      render :no_rooms_available
+      return
+    end
+
+    # Pick the best room
+    if current_user.preferred_room_id && available.exists?(id: current_user.preferred_room_id)
+      @room = available.find(current_user.preferred_room_id)
+    else
+      @room = available.order(:hourly_rate_in_cents).first
+    end
+
+    @available_rooms = available.where.not(id: @room.id).order(:hourly_rate_in_cents)
+    @unavailable_rooms = current_location.rooms.visible.where.not(id: available.pluck(:id))
+
+    # Calculate pricing
+    compute_reserve_now_pricing
+
+    # Max duration for slider
+    @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time), 240].min
+  end
+
+  def reserve_now_price
+    room = current_location.rooms.find(params[:room_id])
+    duration = params[:duration].to_i
+    date = Time.zone.parse(params[:date])
+
+    should_charge = current_user.should_charge_for_reservation?(current_location, date)
+    hourly_price = room.hourly_rate_in_cents / 100.0
+    total_price = hourly_price * (duration / 60.0)
+
+    # Check subscription overage
+    begin
+      sub_info = current_user.subscription_reservation_charge_info(current_location, duration)
+    rescue => e
+      sub_info = nil
+    end
+
+    # Check day pass overage
+    begin
+      dp_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
+    rescue => e
+      dp_info = nil
+    end
+
+    included = !should_charge && room.hourly_rate_in_cents > 0
+    if sub_info && sub_info[:charge_type] == :partial_overage
+      included = false
+      total_price = sub_info[:overage_amount_in_cents] / 100.0
+    end
+    if dp_info && dp_info[:charge_type] == :partial_overage
+      included = false
+      total_price = dp_info[:overage_amount_in_cents] / 100.0
+    end
+
+    render json: {
+      should_charge: should_charge || (sub_info&.dig(:charge_type) == :partial_overage) || (dp_info&.dig(:charge_type) == :partial_overage),
+      included: included,
+      total_price: total_price,
+      hourly_price: hourly_price,
+      included_minutes_remaining: sub_info&.dig(:included_minutes_remaining) || dp_info&.dig(:included_minutes_remaining),
+    }
+  end
+
+  private
+
+  def compute_reserve_now_pricing
+    @should_charge = current_user.should_charge_for_reservation?(current_location, @start_time.to_date)
+    @hourly_price = @room.hourly_rate_in_cents / 100.0
+    @total_price = @hourly_price * (@duration / 60.0)
+
+    begin
+      @subscription_charge_info = current_user.subscription_reservation_charge_info(current_location, @duration)
+    rescue => e
+      @subscription_charge_info = nil
+    end
+
+    begin
+      @day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, @start_time.to_date, @duration)
+    rescue => e
+      @day_pass_charge_info = nil
+    end
+
+    @included_in_plan = !@should_charge && @room.hourly_rate_in_cents > 0
+    if @subscription_charge_info && @subscription_charge_info[:charge_type] == :partial_overage
+      @included_in_plan = false
+      @total_price = @subscription_charge_info[:overage_amount_in_cents] / 100.0
+    end
+    if @day_pass_charge_info && @day_pass_charge_info[:charge_type] == :partial_overage
+      @included_in_plan = false
+      @total_price = @day_pass_charge_info[:overage_amount_in_cents] / 100.0
+    end
+
+    @included_minutes_remaining = @subscription_charge_info&.dig(:included_minutes_remaining) || @day_pass_charge_info&.dig(:included_minutes_remaining)
+  end
+
+  public
+
   def create_reservation_params
     params.permit(:room_id, :date, :time, :duration, :day_or_night, :note)
   end
