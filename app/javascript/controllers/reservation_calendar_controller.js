@@ -670,6 +670,10 @@ export default class extends Controller {
       url: "/reservations",
       method: "POST",
       data: data,
+      dataType: "script",
+      success: () => {
+        // turbo_redirect response handles navigation via Turbo.visit()
+      },
       error: (xhr, status, error) => {
         console.error("Error creating reservation:", error);
         alert(
