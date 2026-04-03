@@ -13,8 +13,7 @@ class Billing::Payment::SetToCreditCard
       end
 
       payment_profile.update card_added: true
-      user.assign_attributes(out_of_band: false, bill_to_organization: false, card_added: true)
-      if !user.save(context: :payment_method)
+      if !user.update(out_of_band: false, bill_to_organization: false, card_added: true)
         context.fail!(message: "Unable to update payment method: #{user.errors.full_messages.join(', ')}")
       end
     else

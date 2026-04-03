@@ -90,7 +90,7 @@ class User < ApplicationRecord
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
   validates :name, presence: true
-  validates :phone, presence: true, unless: :admin_created, on: [:create, :update]
+  validates :phone, presence: true, unless: :admin_created, on: :create
   validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
   validate :terms_must_be_accepted, on: :create
   has_secure_password

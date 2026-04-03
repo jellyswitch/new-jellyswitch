@@ -13,7 +13,7 @@ class UnmarkCustomerAsOutOfBand
     end
 
     user.out_of_band = false
-    if !user.save(context: :payment_method)
+    if !user.save
       context.fail!(message: "Unable to update payment method: #{user.errors.full_messages.join(', ')}")
     end
   end
