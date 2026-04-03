@@ -662,7 +662,8 @@ class Operator::ReservationsController < Operator::BaseController
   # Reserve Now — instant booking flow
 
   def reserve_now
-    Rails.logger.info("[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}")
+    puts "[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}"
+    Rails.logger.warn("[ReserveNow] START user=#{current_user&.id} location=#{current_location&.id} location_tz=#{current_location&.time_zone}")
 
     unless current_location
       flash[:error] = "Please select a location first."
@@ -684,7 +685,7 @@ class Operator::ReservationsController < Operator::BaseController
 
     # Find available rooms right now for the preferred duration
     all_visible = current_location.rooms.visible
-    Rails.logger.info("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
+    Rails.logger.warn("[ReserveNow] QUERY visible_count=#{all_visible.count} start=#{@start_time.to_date} time=#{@start_time.strftime('%H:%M')} dur=#{@duration}")
 
     available = current_location.rooms.available(
       date: @start_time.to_date.to_s,
@@ -698,7 +699,7 @@ class Operator::ReservationsController < Operator::BaseController
     end
 
     available_rooms_list = available.to_a
-    Rails.logger.info("[ReserveNow] RESULTS available=#{available_rooms_list.count} can_see_all=#{can_see_all} admin=#{current_user.admin?}")
+    Rails.logger.warn("[ReserveNow] RESULTS available=#{available_rooms_list.count} can_see_all=#{can_see_all} admin=#{current_user.admin?}")
 
     if available_rooms_list.empty?
       # Track demand miss
@@ -726,7 +727,7 @@ class Operator::ReservationsController < Operator::BaseController
     # Pick the best room
     preferred = available_rooms_list.find { |r| r.id == current_user.preferred_room_id }
     @room = preferred || available_rooms_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_rooms_list.first
-    Rails.logger.info("[ReserveNow] ROOM selected=#{@room&.id} name=#{@room&.name}")
+    Rails.logger.warn("[ReserveNow] ROOM selected=#{@room&.id} name=#{@room&.name}")
 
     available_ids = available_rooms_list.map(&:id)
     @available_rooms = available_rooms_list.reject { |r| r.id == @room.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
@@ -741,7 +742,7 @@ class Operator::ReservationsController < Operator::BaseController
     include_stripe
     background_image
   rescue => e
-    Rails.logger.error("[ReserveNow] ERROR #{e.class}: #{e.message}")
+    Rails.logger.warn("[ReserveNow] ERROR #{e.class}: #{e.message}")
     Honeybadger.notify(e)
     flash[:error] = "Unable to load Reserve Now: #{e.message}"
     redirect_to calendar_reservations_path
