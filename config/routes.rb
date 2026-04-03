@@ -395,9 +395,9 @@ Rails.application.routes.draw do
       get :daily_counts, to: "operator/reservations#daily_counts"
       get :daily_details, to: "operator/reservations#daily_details"
 
-      get :reserve_now, to: "operator/reservations#reserve_now"
+      get :reserve_now, to: "operator/instant_book#index"
       get :instant_book, to: "operator/instant_book#index"
-      get :reserve_now_price, to: "operator/reservations#reserve_now_price"
+      get :instant_book_price, to: "operator/instant_book#price"
     end
 
     member do

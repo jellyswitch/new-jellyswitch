@@ -1,0 +1,143 @@
+<%= javascript_include_tag "stripe_handler.js" %>
+
+<%= render "shared/back_bar", back_path: home_path, back_label: "Home", page_title: "Reserve Now" %>
+
+<div class="row mt-0 mb-0 p-0">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0" data-controller="reserve-now"
+       data-reserve-now-room-id-value="<%= @room.id %>"
+       data-reserve-now-duration-value="<%= @duration %>"
+       data-reserve-now-max-duration-value="<%= @max_duration %>"
+       data-reserve-now-start-time-value="<%= @start_time.iso8601 %>"
+       data-reserve-now-date-value="<%= @start_time.to_date %>"
+       data-reserve-now-day-or-night-value="<%= @day_or_night %>"
+       data-reserve-now-price-url-value="<%= instant_book_price_path %>"
+       data-reserve-now-create-url-value="<%= reservations_path %>">
+
+    <%# Room Hero Card %>
+    <div class="card m-3 border-0 shadow-sm">
+      <div class="card-body text-center text-white rounded-top" style="background: linear-gradient(135deg, #7ab648, #5a8a30);">
+        <span class="badge badge-light text-success mb-2" style="font-size: 11px;">Available Now</span>
+        <h4 class="mb-1 font-weight-bold" data-reserve-now-target="roomName"><%= @room.name %></h4>
+        <small data-reserve-now-target="roomDetails"><%= @room.capacity %> people · <%= @room.amenities.pluck(:name).join(", ") %></small>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between py-2 border-bottom">
+          <span class="text-muted">Starting</span>
+          <strong>Now (<%= @start_time.strftime("%-I:%M %p") %>)</strong>
+        </div>
+        <div class="d-flex justify-content-between py-2">
+          <span class="text-muted">Until</span>
+          <strong data-reserve-now-target="endTime"><%= (@start_time + @duration.minutes).strftime("%-I:%M %p") %></strong>
+        </div>
+      </div>
+    </div>
+
+    <%# Duration Slider %>
+    <div class="mx-3 mb-2">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="text-muted" style="font-size: 13px;">Duration</span>
+        <strong class="text-success" style="font-size: 18px;" data-reserve-now-target="durationLabel"><%= @duration >= 60 ? "#{@duration / 60} hr#{'s' if @duration > 60}" : "#{@duration} min" %></strong>
+      </div>
+      <input type="range" class="custom-range" id="durationSlider"
+             min="15" max="<%= @max_duration %>" step="15" value="<%= @duration %>"
+             data-action="input->reserve-now#onDurationChange"
+             data-reserve-now-target="slider">
+      <div class="d-flex justify-content-between" style="font-size: 10px; color: #bbb;">
+        <span>15m</span>
+        <span>1h</span>
+        <span>2h</span>
+        <span>3h</span>
+        <span>4h</span>
+      </div>
+    </div>
+
+    <%# Price Display %>
+    <% if @included_in_plan %>
+      <div class="mx-3 p-3 rounded border border-success" style="background: #e8f5e0;" data-reserve-now-target="priceBox">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-success">Included in your plan</span>
+          <strong class="text-success" data-reserve-now-target="includedRemaining">
+            <% if @included_minutes_remaining %>
+              <%= @included_minutes_remaining >= 60 ? "#{@included_minutes_remaining / 60} hrs" : "#{@included_minutes_remaining} min" %> remaining
+            <% end %>
+          </strong>
+        </div>
+      </div>
+    <% else %>
+      <div class="mx-3 p-3 rounded" style="background: #f8f9fa;" data-reserve-now-target="priceBox">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted">Total</span>
+          <strong class="text-success" style="font-size: 24px;" data-reserve-now-target="priceAmount"><%= number_to_currency(@total_price || 0) %></strong>
+        </div>
+      </div>
+    <% end %>
+
+    <%# Stripe billing (hidden unless needed) %>
+    <div class="mx-3 mt-2" data-reserve-now-target="billingSection" style="display: none;">
+      <%= render "shared/billing" %>
+    </div>
+
+    <%# Confirm Button %>
+    <div class="mx-3 mt-3">
+      <button class="btn btn-success btn-block btn-lg font-weight-bold"
+              data-action="click->reserve-now#confirmBooking"
+              data-reserve-now-target="confirmBtn"
+              data-disable-with="Booking...">
+        Confirm Booking
+      </button>
+    </div>
+
+    <%# Other Available Rooms %>
+    <% if @available_rooms&.any? || @unavailable_rooms&.any? %>
+      <div class="mx-3 mt-4 mb-2">
+        <small class="text-muted text-uppercase font-weight-bold" style="letter-spacing: 0.5px;">Other rooms available now</small>
+      </div>
+
+      <% @available_rooms&.each do |room| %>
+        <div class="mx-3 mb-2">
+          <div class="card border" style="cursor: pointer;"
+               data-action="click->reserve-now#selectRoom"
+               data-room-id="<%= room.id %>"
+               data-room-name="<%= room.name %>"
+               data-room-capacity="<%= room.capacity %>"
+               data-room-amenities="<%= room.amenities.pluck(:name).join(', ') %>"
+               data-room-rate="<%= room.hourly_rate_in_cents %>">
+            <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+              <div>
+                <strong style="font-size: 14px;"><%= room.name %></strong>
+                <div class="text-muted" style="font-size: 11px;"><%= room.capacity %> people · <%= room.amenities.pluck(:name).join(", ") %></div>
+              </div>
+              <span class="text-success font-weight-bold"><%= number_to_currency(room.hourly_rate_in_cents / 100.0) %>/hr</span>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% @unavailable_rooms&.each do |room| %>
+        <% current_booking = room.reservations.ongoing.first || room.reservations.overlapping(@start_time, @start_time + @duration.minutes).order(:datetime_in).first %>
+        <div class="mx-3 mb-2">
+          <div class="card border" style="opacity: 0.5;">
+            <div class="card-body py-2 px-3 d-flex justify-content-between align-items-center">
+              <div>
+                <strong style="font-size: 14px;"><%= room.name %></strong>
+                <div class="text-muted" style="font-size: 11px;"><%= room.capacity %> people · <%= room.amenities.pluck(:name).join(", ") %></div>
+              </div>
+              <% if current_booking %>
+                <span class="text-danger" style="font-size: 12px;">Until <%= current_booking.datetime_out.strftime("%-I:%M %p") %></span>
+              <% else %>
+                <span class="text-danger" style="font-size: 12px;">Unavailable</span>
+              <% end %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <div class="mx-3 mt-3 mb-4 text-center">
+      <%= link_to "Use Calendar to Book Ahead", calendar_reservations_path, class: "btn btn-outline-secondary btn-block" %>
+    </div>
+
+  </div>
+  <div class="col-lg-3"></div>
+</div>
