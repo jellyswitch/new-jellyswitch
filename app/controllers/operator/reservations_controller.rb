@@ -665,7 +665,7 @@ class Operator::ReservationsController < Operator::BaseController
     include_stripe
     background_image
 
-    zone = ActiveSupport::TimeZone[current_location.time_zone]
+    zone = ActiveSupport::TimeZone[current_location&.time_zone] || Time.zone
     now = Time.current.in_time_zone(zone)
 
     # Round up to next 15-minute mark

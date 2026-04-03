@@ -6,11 +6,11 @@
   <div class="col-lg-3"></div>
   <div class="col-lg-6 m-0 p-0" data-controller="reserve-now"
        data-reserve-now-room-id-value="<%= @room&.id %>"
-       data-reserve-now-duration-value="<%= @duration %>"
-       data-reserve-now-max-duration-value="<%= @max_duration %>"
-       data-reserve-now-start-time-value="<%= @start_time.iso8601 %>"
-       data-reserve-now-date-value="<%= @start_time.to_date %>"
-       data-reserve-now-day-or-night-value="<%= @day_or_night %>"
+       data-reserve-now-duration-value="<%= @duration || 60 %>"
+       data-reserve-now-max-duration-value="<%= @max_duration || 240 %>"
+       data-reserve-now-start-time-value="<%= @start_time&.iso8601 %>"
+       data-reserve-now-date-value="<%= @start_time&.to_date %>"
+       data-reserve-now-day-or-night-value="<%= @day_or_night || 'day' %>"
        data-reserve-now-price-url-value="<%= reserve_now_price_reservations_path %>"
        data-reserve-now-create-url-value="<%= reservations_path %>">
 
