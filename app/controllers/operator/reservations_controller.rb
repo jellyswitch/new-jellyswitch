@@ -680,15 +680,15 @@ class Operator::ReservationsController < Operator::BaseController
     @duration = 60 if @duration <= 0
     @day_or_night = @start_time.hour >= 12 ? "night" : "day"
 
-    # Use same time format as calendar's available_rooms action (12-hour with am/pm)
-    time_str = @start_time.strftime("%-I:%M")
-    time_str += " pm" if @day_or_night == "night"
+    # Query available rooms directly — find rooms with no overlapping reservations
+    end_time = @start_time + @duration.minutes
+    booked_room_ids = Reservation.where(room: current_location.rooms.visible)
+      .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, @start_time)
+      .where(cancelled: false)
+      .pluck(:room_id)
+      .uniq
 
-    available = current_location.rooms.available(
-      date: @start_time.to_date.to_s,
-      time: time_str,
-      duration: @duration
-    )
+    available = current_location.rooms.visible.where.not(id: booked_room_ids)
 
     if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
       available = available.rentable
