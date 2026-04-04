@@ -2,7 +2,9 @@ class Operator::EmailConfirmationsController < Operator::BaseController
   before_action :background_image
 
   def show
-    @user = User.find_by_operator(email: params[:email]&.downcase, operator_id: current_tenant.id)
+    # Handle + in emails being decoded as spaces in URL query params
+    email = params[:email]&.downcase&.gsub(' ', '+')
+    @user = User.find_by_operator(email: email, operator_id: current_tenant.id)
 
     if @user.nil?
       flash[:error] = "Could not find an account with that email address."
@@ -28,7 +30,8 @@ class Operator::EmailConfirmationsController < Operator::BaseController
   end
 
   def resend
-    @user = User.find_by_operator(email: params[:email]&.downcase, operator_id: current_tenant.id)
+    email = params[:email]&.downcase&.gsub(' ', '+')
+    @user = User.find_by_operator(email: email, operator_id: current_tenant.id)
 
     if @user.present? && !@user.email_confirmed?
       @user.generate_confirmation_token
