@@ -7,6 +7,7 @@ class Billing::Reservations::ChargeReservationInvoice
   def call
     return unless invoice
     return if reservation.user.out_of_band?
+    return if context.token.present?  # New card just added — Stripe auto-charges
 
     local_invoice = Invoice.find_by(stripe_invoice_id: invoice.id)
     return unless local_invoice

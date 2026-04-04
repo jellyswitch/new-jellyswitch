@@ -7,6 +7,7 @@ class Billing::DayPasses::ChargeDayPassInvoice
   def call
     return if day_pass.day_pass_type.free?
     return if day_pass.billable.out_of_band?
+    return if context.token.present?  # New card just added — Stripe auto-charges
 
     invoice = day_pass.invoice
     return unless invoice
