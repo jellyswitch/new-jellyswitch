@@ -114,7 +114,13 @@ class Operator::LandingController < Operator::BaseController
       return
     end
 
-    if (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking") || (current_user.member?(current_location) && approved?) || admin?
+    if (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking") || admin?
+      redirect_to home_path
+      return
+    end
+
+    # Approved members with active access go to home — they don't need to choose
+    if current_user.member?(current_location) && approved? && current_user.allowed_in?(current_location)
       redirect_to home_path
       return
     end

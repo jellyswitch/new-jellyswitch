@@ -16,12 +16,14 @@ module LandingHelper
               redirect_to home_path
             end
           else
+            # Unapproved but has access — show wait page with progress
             redirect_to wait_path
           end
         else
           if pending?
             redirect_to activate_path
           else
+            # Both unapproved new signups AND approved non-members land here
             redirect_to choose_path
           end
         end
@@ -32,7 +34,14 @@ module LandingHelper
   def home_redirect
     if current_location.present? && (current_user&.allowed_in?(current_location) || (!policy(:payment).enabled? && current_tenant.subdomain != "southlakecoworking"))
       if !approved? && !admin?
-        redirect_to wait_path
+        # Unapproved users with pending subscription → wait for approval
+        # Unapproved users without → let them choose a plan
+        if current_user.subscriptions.pending.any?
+          redirect_to wait_path
+        else
+          redirect_to choose_path
+        end
+        return
       else
         if !admin? && !always_has_access? && current_tenant.checkin_required? && !current_user.checked_in?(current_location)
           redirect_to required_checkins_path

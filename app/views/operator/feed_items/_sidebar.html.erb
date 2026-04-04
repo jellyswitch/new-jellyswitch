@@ -75,6 +75,27 @@
       </div>
     <% end %>
 
+    <% @users.first(5).each do |user| %>
+      <% pending_sub = user.subscriptions.pending.first %>
+      <% has_billing = user.has_billing_for_location?(current_location) %>
+      <%= link_to user_path(user), class: "list-group-item list-group-item-action m-0 py-2", style: "border-top: 0px;" do %>
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong style="font-size: 13px;"><%= user.name %></strong>
+            <div style="font-size: 11px;" class="text-muted">
+              <% if pending_sub %>
+                <span class="text-success"><%= pending_sub.plan.name %></span>
+                · <%= has_billing ? "card on file" : "no payment yet" %>
+              <% else %>
+                Browsing options
+              <% end %>
+            </div>
+          </div>
+          <%= link_to "Approve", user_approve_path(user), class: "btn btn-sm btn-success", data: { turbo_method: :get } %>
+        </div>
+      <% end %>
+    <% end %>
+
   <% end %>
 
   <% if policy(:childcare).enabled? %>

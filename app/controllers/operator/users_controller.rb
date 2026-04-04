@@ -289,8 +289,28 @@ class Operator::UsersController < Operator::BaseController
   def approve
     find_user(:user_id)
     @user.update_column(:approved, true)
+
+    # Auto-activate pending subscription if user already selected a plan
+    pending_sub = @user.subscriptions.pending.first
+    if pending_sub
+      location = @user.original_location || current_location
+      result = Billing::Subscription::ActivatePendingSubscription.call(
+        subscription: pending_sub,
+        user: @user,
+        operator: current_tenant,
+        location: location,
+        start_day: nil
+      )
+      if result.success?
+        flash[:success] = "User approved and membership activated."
+      else
+        flash[:success] = "User approved. Membership activation failed: #{result.message}"
+      end
+    else
+      flash[:success] = "User approved."
+    end
+
     SendNotificationsJob.perform_later(@user, "Approval")
-    flash[:success] = "User approved."
     turbo_redirect(approval_redirect_path)
   end
 
