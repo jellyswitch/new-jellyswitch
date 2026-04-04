@@ -8,6 +8,7 @@ class AutomatedWorkflowsJob < ApplicationJob
 
         ActsAsTenant.with_tenant(operator) do
           Time.use_zone(location.time_zone) do
+            next if quiet_hours?
             process_workflows(operator, location)
           end
         end
@@ -16,6 +17,11 @@ class AutomatedWorkflowsJob < ApplicationJob
   end
 
   private
+
+  def quiet_hours?
+    hour = Time.current.hour
+    hour >= 21 || hour < 9 # 9pm to 9am
+  end
 
   def process_workflows(operator, location)
     workflows = AutomatedWorkflow.where(operator: operator, location: location, enabled: true)

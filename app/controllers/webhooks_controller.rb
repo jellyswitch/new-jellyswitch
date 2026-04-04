@@ -1,6 +1,6 @@
 
 class WebhooksController < ApplicationController
-  protect_from_forgery except: :stripe
+  protect_from_forgery except: [:stripe, :sendgrid_events]
 
   def stripe
     payload = JSON.parse(request.body.read, symbolize_names: true)
@@ -110,5 +110,33 @@ class WebhooksController < ApplicationController
     else
       Honeybadger.notify(msg, method: meth)
     end
+  end
+
+  # SendGrid Event Webhook — handles bounces and engagement tracking
+  # Configure in SendGrid: Settings > Mail Settings > Event Webhook
+  def sendgrid_events
+    events = JSON.parse(request.body.read)
+    events.each do |event|
+      email = event["email"]&.downcase
+      next unless email.present?
+
+      case event["event"]
+      when "bounce", "dropped"
+        User.where("lower(email) = ?", email).update_all(email_bounced: true)
+      when "open"
+        # Track opens for campaign sends
+        CampaignSend.where(user: User.where("lower(email) = ?", email))
+          .where(opened: false)
+          .update_all(opened: true, opened_at: Time.current)
+      when "click"
+        CampaignSend.where(user: User.where("lower(email) = ?", email))
+          .where(clicked: false)
+          .update_all(clicked: true, clicked_at: Time.current)
+      end
+    rescue => e
+      Rails.logger.warn("SendGrid event processing error: #{e.message}")
+    end
+
+    head :ok
   end
 end

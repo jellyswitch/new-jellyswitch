@@ -5,6 +5,27 @@
 <%= render(Layout::FullWidth.new) do %>
   <%= list_wrapper do %>
     <%= list_item do %>
+      <h5 class="mb-3">Start from a template</h5>
+      <div class="row mb-4">
+        <% [
+          { name: "Summer Promo", desc: "Bring back seasonal visitors", icon: "sun", subject: "Summer is coming — have you booked your trip?", body: "Hi {{first_name}},\n\nSummer is just around the corner and we'd love to see you back at {{space_name}}! Book a day pass or reserve a room for your next visit." },
+          { name: "Re-engagement", desc: "Win back inactive members", icon: "heart", subject: "We miss you at {{space_name}}!", body: "Hi {{first_name}},\n\nIt's been a while since we've seen you at {{space_name}}. We'd love to hear how things are going — and we've made some exciting improvements we think you'll enjoy.\n\nCome check them out!" },
+          { name: "Welcome Back", desc: "Returning visitors", icon: "door-open", subject: "Welcome back to {{space_name}}", body: "Hi {{first_name}},\n\nThanks for being part of the {{space_name}} community! We hope you had a great experience and we'd love to see you again soon." },
+          { name: "Holiday Hours", desc: "Announce schedule changes", icon: "calendar", subject: "Holiday hours at {{space_name}}", body: "Hi {{first_name}},\n\nJust a heads up — our hours will be adjusted for the upcoming holiday. Here's what you need to know:\n\n[Add your holiday schedule here]\n\nHappy holidays from {{space_name}}!" }
+        ].each do |t| %>
+          <div class="col-sm-6 mb-2">
+            <div class="card h-100" style="cursor: pointer;" onclick="document.getElementById('campaign_name').value='<%= t[:name] %>';document.querySelector('[name*=subject]').value='<%= j t[:subject] %>';document.querySelector('[name*=body]').value='<%= j t[:body] %>';">
+              <div class="card-body py-2 px-3">
+                <strong><i class="fas fa-<%= t[:icon] %> mr-1"></i> <%= t[:name] %></strong>
+                <br/><small class="text-muted"><%= t[:desc] %></small>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+      <hr class="mb-4"/>
+
       <%= render "form", campaign: @campaign %>
     <% end %>
   <% end %>

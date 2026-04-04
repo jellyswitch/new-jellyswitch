@@ -186,6 +186,11 @@ class UserMailer < ApplicationMailer
     @host = ENV['ASSET_HOST']
     @unsubscribe_url = unsubscribe_url(user)
     from_address = location&.sender_from_address || operator.sender_from_address
+
+    # Attach .ics calendar file
+    ics = generate_ics(reservation, operator)
+    attachments["reservation.ics"] = { mime_type: "text/calendar", content: ics }
+
     mail to: user.email, subject: "Reminder: Your room reservation tomorrow", from: from_address, reply_to: operator.contact_email
   end
 
@@ -209,6 +214,29 @@ class UserMailer < ApplicationMailer
   def unsubscribe_url(user)
     token = Rails.application.message_verifier(:unsubscribe).generate(user.id, expires_in: 1.year)
     "#{ENV['ASSET_HOST']}/unsubscribe/#{token}"
+  end
+
+  def generate_ics(reservation, operator)
+    dtstart = reservation.datetime_in.utc.strftime("%Y%m%dT%H%M%SZ")
+    dtend = reservation.datetime_out.utc.strftime("%Y%m%dT%H%M%SZ")
+    uid = "reservation-#{reservation.id}@#{operator.subdomain}.jellyswitch.com"
+    summary = "#{reservation.room.name} — #{operator.name}"
+    location_text = operator.building_address.presence || operator.name
+
+    <<~ICS
+      BEGIN:VCALENDAR
+      VERSION:2.0
+      PRODID:-//Jellyswitch//Reservation//EN
+      BEGIN:VEVENT
+      UID:#{uid}
+      DTSTART:#{dtstart}
+      DTEND:#{dtend}
+      SUMMARY:#{summary}
+      LOCATION:#{location_text}
+      DESCRIPTION:Meeting room reservation at #{operator.name}
+      END:VEVENT
+      END:VCALENDAR
+    ICS
   end
 
   def process_merge_tags(template, user, operator, sendable = nil, location = nil)

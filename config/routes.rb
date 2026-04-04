@@ -66,6 +66,7 @@ Rails.application.routes.draw do
     resources :webhooks do
       collection do
         post :stripe, to: "webhooks#stripe"
+        post :sendgrid_events, to: "webhooks#sendgrid_events"
       end
     end
     resources :users
