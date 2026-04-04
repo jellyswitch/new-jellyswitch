@@ -269,7 +269,12 @@ Rails.application.routes.draw do
       get :refunds
       get :signups
     end
+    member do
+      get :toggle_workflow
+    end
   end
+  resources :unsubscribes, controller: "operator/unsubscribes", only: [:show]
+  resources :campaigns, controller: "operator/admin/campaigns"
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
       get :new_membership_plan

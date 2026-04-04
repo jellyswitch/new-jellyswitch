@@ -1,0 +1,6 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+  <div style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    <%= @processed_body.html_safe %>
+  </div>
+<% end %>

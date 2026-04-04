@@ -156,7 +156,60 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: template.subject, from: from_address, reply_to: operator.contact_email
   end
 
+  def re_engagement_email(user, operator, template, location = nil)
+    @user = user
+    @operator = operator
+    @location = location
+    @host = ENV['ASSET_HOST']
+    @processed_body = process_merge_tags(template, user, operator, nil, location)
+    @unsubscribe_url = unsubscribe_url(user)
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: template.subject, from: from_address, reply_to: operator.contact_email
+  end
+
+  def past_due_followup_email(user, operator, invoice, location = nil)
+    @user = user
+    @operator = operator
+    @invoice = invoice
+    @location = location
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(user)
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Reminder: Payment past due", from: from_address, reply_to: operator.contact_email
+  end
+
+  def booking_reminder_email(user, operator, reservation, location = nil)
+    @user = user
+    @operator = operator
+    @reservation = reservation
+    @location = location
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(user)
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Reminder: Your room reservation tomorrow", from: from_address, reply_to: operator.contact_email
+  end
+
+  def campaign_email(user, operator, campaign_step, location = nil)
+    @user = user
+    @operator = operator
+    @campaign_step = campaign_step
+    @location = location
+    @host = ENV['ASSET_HOST']
+    @body = campaign_step.body
+      .gsub("{{first_name}}", user.name.split.first)
+      .gsub("{{full_name}}", user.name)
+      .gsub("{{space_name}}", operator.name)
+    @unsubscribe_url = unsubscribe_url(user)
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: campaign_step.subject, from: from_address, reply_to: operator.contact_email
+  end
+
   private
+
+  def unsubscribe_url(user)
+    token = Rails.application.message_verifier(:unsubscribe).generate(user.id, expires_in: 1.year)
+    "#{ENV['ASSET_HOST']}/unsubscribe/#{token}"
+  end
 
   def process_merge_tags(template, user, operator, sendable = nil, location = nil)
     return "" if template.body.blank?

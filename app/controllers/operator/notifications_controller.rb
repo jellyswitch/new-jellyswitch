@@ -3,6 +3,11 @@ class Operator::NotificationsController < Operator::BaseController
   before_action :background_image
 
   def index
+    @workflows = AutomatedWorkflow.where(operator: current_tenant, location: current_location)
+    if @workflows.empty?
+      AutomatedWorkflow.seed_defaults_for(current_tenant, location: current_location)
+      @workflows = AutomatedWorkflow.where(operator: current_tenant, location: current_location)
+    end
   end
 
   def reservations
@@ -39,6 +44,12 @@ class Operator::NotificationsController < Operator::BaseController
 
   def feedback
     setting(:member_feedback_notifications)
+  end
+
+  def toggle_workflow
+    workflow = AutomatedWorkflow.find(params[:id])
+    workflow.update!(enabled: !workflow.enabled)
+    turbo_redirect(notifications_path, action: "replace")
   end
 
   private

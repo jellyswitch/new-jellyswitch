@@ -87,5 +87,28 @@
 
     <% end %>
 
+    <%= list_item do %>
+      <div class="row mb-3 mt-2">
+        <div class="col">
+          <h5>Automations</h5>
+          <small class="text-muted">
+            Automated emails sent to members based on their activity and status.
+          </small>
+        </div>
+      </div>
+
+      <% @workflows.each do |workflow| %>
+        <div class="row mb-2">
+          <div class="col">
+            <%= render(OnOffSwitch.new(predicate: workflow.enabled?, path: toggle_workflow_notification_path(workflow))) do %>
+              <strong><%= workflow.human_name %></strong>
+              <br/>
+              <small class="text-muted"><%= workflow.description %></small>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
   <% end %>
 <% end %>
