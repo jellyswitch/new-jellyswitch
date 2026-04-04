@@ -66,6 +66,7 @@ class Navigation::Default < SimpleDelegator
     end
 
     items << {title: "Automated Emails", path: product_email_templates_path}
+    items << {title: "Campaigns", path: campaigns_path}
 
     [
       {title: "Data", path: reports_path},

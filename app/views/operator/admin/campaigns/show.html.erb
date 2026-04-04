@@ -1,0 +1,123 @@
+<% title @campaign.name %>
+
+<%= render "shared/back_bar", back_path: campaigns_path, back_label: "Campaigns", page_title: @campaign.name %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+
+      <%# Status & actions %>
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <% color = case @campaign.status; when "draft" then "warning"; when "active" then "success"; when "paused" then "secondary"; when "completed" then "primary"; else "dark"; end %>
+          <span class="badge badge-<%= color %> mr-2" style="font-size: 14px;"><%= @campaign.status.capitalize %></span>
+          <span class="badge badge-<%= @campaign.drip? ? 'info' : 'secondary' %>"><%= @campaign.campaign_type.capitalize %></span>
+        </div>
+        <div>
+          <% if @campaign.draft? || @campaign.status == "paused" %>
+            <%= link_to "Edit", edit_campaign_path(@campaign), class: "btn btn-outline-primary btn-sm mr-1" %>
+            <%= link_to "Test Send", test_send_campaign_path(@campaign), class: "btn btn-outline-secondary btn-sm mr-1", data: { turbo_method: :post } %>
+            <%= link_to "Send Now", send_campaign_campaign_path(@campaign), class: "btn btn-success btn-sm", data: { turbo_method: :post, turbo_confirm: "Send this campaign to #{@recipient_count} recipients?" } %>
+          <% end %>
+          <% if @campaign.active? && @campaign.drip? %>
+            <%= link_to "Pause", pause_campaign_path(@campaign), class: "btn btn-outline-warning btn-sm", data: { turbo_method: :post } %>
+          <% end %>
+          <%= link_to "Clone", clone_campaign_path(@campaign), class: "btn btn-outline-secondary btn-sm ml-1", data: { turbo_method: :post } %>
+        </div>
+      </div>
+
+      <%# Audience info %>
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6>Audience</h6>
+          <div class="row">
+            <div class="col-sm-4">
+              <small class="text-muted">Customer Types</small><br/>
+              <% if @campaign.segment_customer_types.any? %>
+                <% @campaign.segment_customer_types.each do |t| %>
+                  <span class="badge badge-light"><%= t.titleize %></span>
+                <% end %>
+              <% else %>
+                <span class="text-muted">All users</span>
+              <% end %>
+            </div>
+            <div class="col-sm-4">
+              <small class="text-muted">Status</small><br/>
+              <%= @campaign.segment_status_filter.titleize %>
+            </div>
+            <div class="col-sm-4">
+              <small class="text-muted">Recipients</small><br/>
+              <strong><%= @recipient_count %></strong> users
+            </div>
+          </div>
+          <% if @campaign.segment_date_range %>
+            <div class="mt-2">
+              <small class="text-muted">Date Range:</small>
+              <%= @campaign.segment_date_range.first.strftime("%b %e, %Y") %> — <%= @campaign.segment_date_range.last.strftime("%b %e, %Y") %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Campaign steps %>
+      <h6 class="mt-4 mb-3">Email Steps</h6>
+      <% @campaign.campaign_steps.each_with_index do |step, i| %>
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="d-flex justify-content-between">
+              <h6>Step <%= i + 1 %><% if step.delay_days > 0 %> <small class="text-muted">(+<%= step.delay_days %> days)</small><% end %></h6>
+              <% if step.sent_count > 0 %>
+                <small class="text-muted"><%= step.sent_count %> sent</small>
+              <% end %>
+            </div>
+            <p class="mb-1"><strong>Subject:</strong> <%= step.subject %></p>
+            <div class="mt-2 p-3 bg-light rounded" style="font-size: 13px;">
+              <%= simple_format(step.body) %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Stats %>
+      <% if @campaign.campaign_sends.any? %>
+        <h6 class="mt-4 mb-3">Stats</h6>
+        <div class="row text-center">
+          <div class="col">
+            <h4><%= @campaign.campaign_sends.sent.count %></h4>
+            <small class="text-muted">Sent</small>
+          </div>
+          <div class="col">
+            <h4><%= @campaign.campaign_sends.opened.count %></h4>
+            <small class="text-muted">Opened</small>
+          </div>
+          <div class="col">
+            <h4><%= @campaign.campaign_sends.clicked.count %></h4>
+            <small class="text-muted">Clicked</small>
+          </div>
+          <div class="col">
+            <h4><%= @campaign.campaign_sends.failed.count %></h4>
+            <small class="text-muted">Failed</small>
+          </div>
+        </div>
+      <% end %>
+
+      <%# Recipient preview %>
+      <h6 class="mt-4 mb-3">Recipient Preview <small class="text-muted">(first 20)</small></h6>
+      <div class="list-group">
+        <% @recipients.each do |user| %>
+          <div class="list-group-item py-1 px-2">
+            <small><strong><%= user.name %></strong> — <%= user.email %></small>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Danger zone %>
+      <% if @campaign.draft? %>
+        <div class="mt-4 pt-3 border-top">
+          <%= link_to "Delete Campaign", campaign_path(@campaign), class: "btn btn-outline-danger btn-sm", data: { turbo_method: :delete, turbo_confirm: "Delete this campaign?" } %>
+        </div>
+      <% end %>
+
+    <% end %>
+  <% end %>
+<% end %>

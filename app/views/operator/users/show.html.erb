@@ -116,6 +116,49 @@
     <%= link_to "Update payment information", user_billing_path(current_user), class: "btn btn-block btn-primary" %>
   <% end %>
 
+  <% if current_user.admin? %>
+    <%= list_item do %>
+      <h4 class="display-4 text-center">Email History</h4>
+      <% email_sends = ProductEmailSend.where(sendable: @user).order(created_at: :desc).limit(20) %>
+      <% campaign_sends = CampaignSend.where(user: @user).includes(campaign_step: :campaign).order(created_at: :desc).limit(20) %>
+
+      <% if email_sends.any? || campaign_sends.any? %>
+        <table class="table table-sm" style="font-size: 13px;">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <% campaign_sends.each do |cs| %>
+              <tr>
+                <td><%= cs.sent_at&.strftime("%b %e, %Y %l:%M%P") %></td>
+                <td>
+                  Campaign: <%= cs.campaign_step&.campaign&.name %>
+                  <br/><small class="text-muted"><%= cs.campaign_step&.subject %></small>
+                </td>
+                <td><span class="badge badge-<%= cs.status == 'sent' ? 'success' : 'danger' %>"><%= cs.status %></span></td>
+              </tr>
+            <% end %>
+            <% email_sends.each do |es| %>
+              <tr>
+                <td><%= es.created_at.strftime("%b %e, %Y %l:%M%P") %></td>
+                <td><%= es.product_type.titleize %> — <%= es.email_type.titleize %></td>
+                <td><span class="badge badge-<%= es.status == 'sent' ? 'success' : 'danger' %>"><%= es.status %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-center text-muted">No emails sent to this user yet.</p>
+      <% end %>
+
+      <% if @user.email_opted_out? %>
+        <div class="alert alert-warning mt-2">
+          <i class="fas fa-ban"></i> This user has unsubscribed from marketing emails.
+        </div>
+      <% end %>
+    <% end %>
+  <% end %>
+
   <%= list_item do %>
     <h4 class="display-4 text-center text-danger">Delete Account</h4>
     <p class="text-muted text-center">Permanently delete your account and all associated data. This action cannot be undone. Any active memberships will be cancelled.</p>

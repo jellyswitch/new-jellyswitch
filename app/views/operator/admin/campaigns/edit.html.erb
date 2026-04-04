@@ -1,0 +1,11 @@
+<% title "Edit Campaign" %>
+
+<%= render "shared/back_bar", back_path: campaign_path(@campaign), back_label: @campaign.name, page_title: "Edit Campaign" %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+      <%= render "form", campaign: @campaign %>
+    <% end %>
+  <% end %>
+<% end %>

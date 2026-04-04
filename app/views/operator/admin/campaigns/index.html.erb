@@ -1,0 +1,44 @@
+<% title "Campaigns" %>
+
+<%= render "shared/back_bar", back_path: feed_items_path, back_label: "Home", page_title: "Campaigns" %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <small class="text-muted">Send targeted emails to customer segments.</small>
+        <%= link_to "New Campaign", new_campaign_path, class: "btn btn-primary btn-sm" %>
+      </div>
+
+      <% if @campaigns.any? %>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Recipients</th>
+              <th>Sent</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @campaigns.each do |campaign| %>
+              <tr>
+                <td><%= link_to campaign.name, campaign_path(campaign) %></td>
+                <td><span class="badge badge-<%= campaign.drip? ? 'info' : 'secondary' %>"><%= campaign.campaign_type.capitalize %></span></td>
+                <td>
+                  <% color = case campaign.status; when "draft" then "warning"; when "active" then "success"; when "paused" then "secondary"; when "completed" then "primary"; else "dark"; end %>
+                  <span class="badge badge-<%= color %>"><%= campaign.status.capitalize %></span>
+                </td>
+                <td><%= campaign.recipient_count %></td>
+                <td><%= campaign.sent_at&.strftime("%b %e, %Y") || "—" %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-center text-muted mt-4 mb-4">No campaigns yet. Create your first one!</p>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

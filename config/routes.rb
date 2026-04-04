@@ -274,7 +274,16 @@ Rails.application.routes.draw do
     end
   end
   resources :unsubscribes, controller: "operator/unsubscribes", only: [:show]
-  resources :campaigns, controller: "operator/admin/campaigns"
+  resources :campaigns, controller: "operator/admin/campaigns" do
+    member do
+      post :send_campaign
+      post :pause
+      post :resume
+      post :clone
+      get :preview
+      post :test_send
+    end
+  end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
       get :new_membership_plan

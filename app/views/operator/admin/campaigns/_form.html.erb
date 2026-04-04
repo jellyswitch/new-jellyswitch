@@ -1,0 +1,106 @@
+<%= form_with(model: campaign, url: campaign.persisted? ? campaign_path(campaign) : campaigns_path, method: campaign.persisted? ? :patch : :post) do |f| %>
+
+  <h5 class="mb-3">Campaign Details</h5>
+
+  <div class="form-group">
+    <%= f.label :name, "Campaign Name" %>
+    <%= f.text_field :name, class: "form-control", placeholder: "e.g., Summer Day Pass Promo" %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :campaign_type, "Type" %>
+    <%= f.select :campaign_type, [["Single Send", "single"], ["Drip Sequence", "drip"]], {}, class: "form-control" %>
+  </div>
+
+  <hr class="my-4"/>
+
+  <h5 class="mb-3">Audience</h5>
+
+  <div class="form-group">
+    <label>Customer Types</label>
+    <div class="d-flex flex-wrap">
+      <% Campaign::CUSTOMER_TYPES.each do |type| %>
+        <div class="form-check mr-3 mb-2">
+          <%= check_box_tag "campaign[segment][customer_types][]", type,
+              campaign.segment_customer_types.include?(type),
+              class: "form-check-input", id: "customer_type_#{type}" %>
+          <%= label_tag "customer_type_#{type}", type.titleize.gsub("_", " "), class: "form-check-label" %>
+        </div>
+      <% end %>
+    </div>
+    <small class="form-text text-muted">Leave all unchecked to send to everyone.</small>
+  </div>
+
+  <div class="form-group">
+    <label>Status Filter</label>
+    <%= select_tag "campaign[segment][status_filter]",
+        options_for_select([["All (active + past)", "all"], ["Active only", "active"], ["Past only (no longer active)", "past"]], campaign.segment_status_filter),
+        class: "form-control" %>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col">
+      <label>Date Range (optional)</label>
+      <%= date_field_tag "campaign[segment][date_range][from]",
+          campaign.segment.dig("date_range", "from"),
+          class: "form-control", placeholder: "From" %>
+    </div>
+    <div class="form-group col">
+      <label>&nbsp;</label>
+      <%= date_field_tag "campaign[segment][date_range][to]",
+          campaign.segment.dig("date_range", "to"),
+          class: "form-control", placeholder: "To" %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :suppression_days, "Contact Suppression (days)" %>
+    <%= f.number_field :suppression_days, class: "form-control", min: 0, max: 90 %>
+    <small class="form-text text-muted">Skip users who received a campaign email within this many days.</small>
+  </div>
+
+  <hr class="my-4"/>
+
+  <h5 class="mb-3">Email Steps</h5>
+
+  <%= f.fields_for :campaign_steps do |step_f| %>
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0">Step <%= step_f.index + 1 %></h6>
+          <% if campaign.drip? && step_f.index > 0 %>
+            <div class="form-inline">
+              <label class="mr-2 small">Delay:</label>
+              <%= step_f.number_field :delay_days, class: "form-control form-control-sm", style: "width: 70px;", min: 0 %>
+              <span class="ml-1 small">days</span>
+            </div>
+          <% end %>
+        </div>
+
+        <%= step_f.hidden_field :position, value: step_f.index %>
+
+        <div class="form-group">
+          <%= step_f.label :subject, "Subject Line" %>
+          <%= step_f.text_field :subject, class: "form-control", placeholder: "e.g., We'd love to see you this summer!" %>
+        </div>
+
+        <div class="form-group" data-controller="merge-tags">
+          <%= step_f.label :body, "Email Body" %>
+          <div class="mb-2">
+            <small class="text-muted d-block mb-1"><strong>Merge tags:</strong></small>
+            <% [["First Name", "{{first_name}}"], ["Full Name", "{{full_name}}"], ["Space Name", "{{space_name}}"]].each do |label, tag| %>
+              <button type="button" class="btn btn-outline-secondary btn-sm mr-1 mb-1" data-action="merge-tags#insert" data-tag="<%= tag %>">
+                <%= label %>
+              </button>
+            <% end %>
+          </div>
+          <%= step_f.text_area :body, class: "form-control", rows: 8, placeholder: "Write your email content here..." %>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-group mt-4">
+    <%= f.submit campaign.persisted? ? "Update Campaign" : "Create Campaign", class: "form-control btn btn-primary" %>
+  </div>
+<% end %>
