@@ -87,22 +87,17 @@
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
     <script>
       (function() {
-        var form = document.getElementById('signup_submit')?.closest('form');
-        if (!form || form.dataset.recaptchaBound) return;
-        form.dataset.recaptchaBound = 'true';
-
-        form.addEventListener('submit', function(e) {
-          var tokenField = document.getElementById('recaptcha_token');
-          // If token already set, allow submit to proceed
-          if (tokenField && tokenField.value.length > 0) return;
-
-          // Otherwise, block submit, get token, then resubmit
+        var btn = document.getElementById('signup_submit');
+        if (!btn) return;
+        btn.addEventListener('click', function(e) {
           e.preventDefault();
+          var form = btn.closest('form');
+          var tokenField = document.getElementById('recaptcha_token');
 
           grecaptcha.ready(function() {
             grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
               tokenField.value = token;
-              form.requestSubmit();
+              form.submit();
             });
           });
         });
