@@ -163,6 +163,7 @@ class Operator::UsersController < Operator::BaseController
       end
     else
       @user = result.user
+      @include_recaptcha = true
 
       if admin? # Admin is creating a user
         render :add_member, status: 422
