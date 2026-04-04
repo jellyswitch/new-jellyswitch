@@ -86,16 +86,25 @@
   </div>
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
     <script>
-      document.getElementById('signup_submit').addEventListener('click', function(e) {
-        e.preventDefault();
-        var form = this.closest('form');
-        grecaptcha.ready(function() {
-          grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
-            document.getElementById('recaptcha_token').value = token;
-            form.submit();
+      (function() {
+        var btn = document.getElementById('signup_submit');
+        if (!btn) return;
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          var form = this.closest('form');
+          this.disabled = true;
+          this.value = 'Processing...';
+          grecaptcha.ready(function() {
+            grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
+              document.getElementById('recaptcha_token').value = token;
+              form.requestSubmit();
+            }).catch(function() {
+              btn.disabled = false;
+              btn.value = '<%= label %>';
+            });
           });
         });
-      });
+      })();
     </script>
   <% end %>
 <%- end %>
