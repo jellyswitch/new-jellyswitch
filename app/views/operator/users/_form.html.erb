@@ -86,21 +86,21 @@
   </div>
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
     <script>
-      // Pre-load reCAPTCHA token so form can submit normally
-      (function() {
-        function refreshToken() {
-          grecaptcha.ready(function() {
-            grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
-              var field = document.getElementById('recaptcha_token');
-              if (field) field.value = token;
-            });
+      document.getElementById('signup_submit').addEventListener('click', function(e) {
+        // Let HTML5 validation run first
+        var form = this.closest('form');
+        if (!form.checkValidity()) return;  // Browser shows validation errors
+
+        e.preventDefault();
+        var btn = this;
+
+        grecaptcha.ready(function() {
+          grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
+            document.getElementById('recaptcha_token').value = token;
+            form.submit();
           });
-        }
-        // Get token immediately
-        refreshToken();
-        // Refresh token every 90 seconds (tokens expire after 2 minutes)
-        setInterval(refreshToken, 90000);
-      })();
+        });
+      });
     </script>
   <% end %>
 <%- end %>
