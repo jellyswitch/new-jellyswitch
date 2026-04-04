@@ -29,6 +29,16 @@
             <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
             <span>Plan selected: <strong><%= pending_sub.plan.name %></strong></span>
           </div>
+        <% elsif current_user.day_passes.any? %>
+          <div class="d-flex align-items-center mb-2">
+            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+            <span>Day pass purchased</span>
+          </div>
+        <% elsif current_user.reservations.any? %>
+          <div class="d-flex align-items-center mb-2">
+            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+            <span>Room reserved</span>
+          </div>
         <% else %>
           <div class="d-flex align-items-center mb-2">
             <span class="text-muted mr-2" style="font-size: 18px;">&#9675;</span>

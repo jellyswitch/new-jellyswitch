@@ -75,7 +75,8 @@
       </div>
     <% end %>
 
-    <% @users.first(5).each do |user| %>
+    <% active_users = @users.select { |u| u.subscriptions.pending.any? || u.day_passes.any? || (u.last_active_at.present? && u.last_active_at > 15.minutes.ago) } %>
+    <% active_users.first(5).each do |user| %>
       <% pending_sub = user.subscriptions.pending.first %>
       <% has_billing = user.has_billing_for_location?(current_location) %>
       <%= link_to user_path(user), class: "list-group-item list-group-item-action m-0 py-2", style: "border-top: 0px;" do %>
@@ -86,6 +87,8 @@
               <% if pending_sub %>
                 <span class="text-success"><%= pending_sub.plan.name %></span>
                 · <%= has_billing ? "card on file" : "no payment yet" %>
+              <% elsif user.day_passes.any? %>
+                <span class="text-success">Purchased a day pass</span>
               <% else %>
                 Browsing options
               <% end %>

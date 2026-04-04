@@ -9,6 +9,7 @@ class Operator::BaseController < ApplicationController
   before_action :reset_location
   before_action :require_complete_profile
   before_action :set_navigation
+  before_action :touch_last_active, if: :logged_in?
 
   layout "operator"
 
@@ -96,6 +97,13 @@ class Operator::BaseController < ApplicationController
 
       flash[:error] = "You must be logged in to access this page."
       turbo_redirect(login_path, action: :replace)
+    end
+  end
+
+  def touch_last_active
+    return unless current_user
+    if current_user.last_active_at.nil? || current_user.last_active_at < 5.minutes.ago
+      current_user.update_column(:last_active_at, Time.current)
     end
   end
 
