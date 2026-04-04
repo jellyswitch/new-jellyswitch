@@ -2,6 +2,6 @@
   <div class="form-group row">
     <%= f.hidden_field :user_id, value: user.id %>
     <%= f.date_select :day, {default: Time.zone.today, order: [:month, :day, :year]}, class: "form-control col" %>
-    <%= f.submit "Add day pass", class: "btn btn-sm btn-info" %>
+    <%= f.submit "Add day pass", class: "btn btn-sm btn-info", data: { disable_with: "Adding..." } %>
   </div>
 <%- end %>  

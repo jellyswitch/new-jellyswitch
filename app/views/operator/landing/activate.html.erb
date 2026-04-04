@@ -14,7 +14,7 @@
     </div>
     <div class="form-group row">
       <div class="col-1"></div>
-        <%= f.submit "Activate my membership", id: 'stripe-submit', class: "form-control btn btn-primary col" %>
+        <%= f.submit "Activate my membership", id: 'stripe-submit', class: "form-control btn btn-primary col", data: { disable_with: "Processing..." } %>
       <div class="col-1"></div>
     </div>
   <%- end %>

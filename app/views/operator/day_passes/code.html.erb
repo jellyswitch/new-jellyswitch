@@ -9,7 +9,7 @@
       <%= f.text_field :code, class: "form-control" %>
     </div>
 
-    <%= f.submit "Redeem", class: "btn btn-block btn-primary" %>
+    <%= f.submit "Redeem", class: "btn btn-block btn-primary", data: { disable_with: "Redeeming..." } %>
   <% end %>
 
   <p class="text-muted">

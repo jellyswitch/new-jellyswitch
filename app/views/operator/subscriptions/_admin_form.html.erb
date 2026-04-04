@@ -13,7 +13,7 @@
   <div class="form-group row">
     <div class="col-1"></div>
     <div class="col">
-      <%= f.submit "Next", id: 'stripe-submit', class: "form-control btn btn-primary btn-block", data: { acc: 'add-payment' } %>
+      <%= f.submit "Next", id: 'stripe-submit', class: "form-control btn btn-primary btn-block", data: { acc: 'add-payment', disable_with: "Processing..." } %>
     </div>
     <div class="col-1"></div>
   </div>
