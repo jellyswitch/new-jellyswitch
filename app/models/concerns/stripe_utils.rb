@@ -158,10 +158,25 @@ module StripeUtils
     options = {}
     if stripe_customer.sources.data.count > 0
       options[:source] = stripe_customer.sources.data.first.id
+    elsif stripe_customer.invoice_settings&.default_payment_method
+      options[:payment_method] = stripe_customer.invoice_settings.default_payment_method
+    else
+      # Look up payment methods directly
+      operator_creds = { api_key: stripe_secret_key, stripe_account: stripe_user_id }
+      payment_methods = Stripe::PaymentMethod.list(
+        { customer: stripe_customer.id, type: "card" },
+        operator_creds
+      )
+      if payment_methods.data.count > 0
+        options[:payment_method] = payment_methods.data.first.id
+      else
+        Rails.logger.warn("charge_invoice: No payment method for #{invoice.billable_type} ##{invoice.billable_id}")
+        return false
+      end
     end
 
     stripe_invoice.pay(options)
-  rescue Stripe::InvalidRequestError => e
+  rescue Stripe::InvalidRequestError, Stripe::CardError => e
     Honeybadger.notify(e)
     false
   end
