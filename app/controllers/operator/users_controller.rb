@@ -139,7 +139,7 @@ class Operator::UsersController < Operator::BaseController
     unless admin?
       if !verify_recaptcha(params[:user][:recaptcha_token])
         flash[:error] = "Signup could not be verified. Please try again."
-        @user = User.new
+        @user = User.new(user_params.except(:password, :password_confirmation))
         @include_recaptcha = true
         render :new, status: 422
         return

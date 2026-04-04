@@ -81,7 +81,7 @@
   <%= f.hidden_field :recaptcha_token, id: "recaptcha_token" %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.submit label, class: "form-control btn btn-primary col", id: "signup_submit", data: { acc: 'register', disable_with: 'Processing...' } %>
+    <%= f.submit label, class: "form-control btn btn-primary col", id: "signup_submit", data: { acc: 'register' } %>
     <div class="col-1"></div>
   </div>
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
