@@ -98,15 +98,11 @@
 
           // Otherwise, block submit, get token, then resubmit
           e.preventDefault();
-          var btn = document.getElementById('signup_submit');
-          if (btn) { btn.disabled = true; btn.value = 'Processing...'; }
 
           grecaptcha.ready(function() {
             grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
               tokenField.value = token;
               form.requestSubmit();
-            }).catch(function() {
-              if (btn) { btn.disabled = false; btn.value = '<%= label %>'; }
             });
           });
         });
