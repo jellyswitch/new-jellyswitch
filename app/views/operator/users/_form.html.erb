@@ -86,21 +86,31 @@
   </div>
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
     <script>
-      document.addEventListener('turbo:load', function() {
-        var btn = document.getElementById('signup_submit');
-        if (!btn || btn.dataset.recaptchaBound) return;
-        btn.dataset.recaptchaBound = 'true';
-        btn.addEventListener('click', function(e) {
+      (function() {
+        var form = document.getElementById('signup_submit')?.closest('form');
+        if (!form || form.dataset.recaptchaBound) return;
+        form.dataset.recaptchaBound = 'true';
+
+        form.addEventListener('submit', function(e) {
+          var tokenField = document.getElementById('recaptcha_token');
+          // If token already set, allow submit to proceed
+          if (tokenField && tokenField.value.length > 0) return;
+
+          // Otherwise, block submit, get token, then resubmit
           e.preventDefault();
-          var form = this.closest('form');
+          var btn = document.getElementById('signup_submit');
+          if (btn) { btn.disabled = true; btn.value = 'Processing...'; }
+
           grecaptcha.ready(function() {
             grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
-              document.getElementById('recaptcha_token').value = token;
+              tokenField.value = token;
               form.requestSubmit();
+            }).catch(function() {
+              if (btn) { btn.disabled = false; btn.value = '<%= label %>'; }
             });
           });
         });
-      });
+      })();
     </script>
   <% end %>
 <%- end %>
