@@ -54,6 +54,8 @@ class FeedItemComponent < ApplicationComponent
       true
     when "demand-miss"
       true
+    when "daily-digest"
+      true
     else
       false
     end
@@ -79,7 +81,7 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::MembershipUnpaused
     when "membership_updated"
       FeedItems::MembershipUpdated
-    when "payment_failed", "lease_renewal", "demand-miss"
+    when "payment_failed", "lease_renewal", "demand-miss", "daily-digest"
       FeedItems::MembershipCancellation # reuses feed_item_text partial
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"

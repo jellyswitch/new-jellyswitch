@@ -364,6 +364,8 @@ Rails.application.routes.draw do
       get :room_demand
     end
   end
+  resources :todays_activity, controller: "operator/todays_activity", only: [:index]
+
   resources :recurring_reservations, controller: "operator/recurring_reservations", only: [:new, :create, :show, :index] do
     collection do
       post :check_conflicts

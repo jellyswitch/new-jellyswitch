@@ -1,0 +1,157 @@
+<%= render "shared/back_bar", back_path: feed_items_path, back_label: "Dashboard", page_title: "Who's Coming Today" %>
+
+<div class="row mt-0 mb-0 p-0" style="background: #fff; min-height: 100vh;">
+  <div class="col-lg-3"></div>
+  <div class="col-lg-6 m-0 p-0">
+
+    <%# Header %>
+    <div class="px-3 pt-3 pb-2">
+      <h5 class="font-weight-bold mb-1">Who's Coming Today</h5>
+      <p class="text-muted mb-0" style="font-size: 13px;">
+        <%= Date.current.strftime("%A, %B %-d") %> &middot;
+        <%= @total_visitors %> <%= @total_visitors == 1 ? "visitor" : "visitors" %> expected
+        <% if @paid_reservation_revenue + @day_pass_revenue > 0 %>
+          &middot; <span class="text-success font-weight-bold"><%= number_to_currency(@paid_reservation_revenue + @day_pass_revenue) %> in bookings</span>
+        <% end %>
+      </p>
+    </div>
+
+    <%# Paid Room Bookings %>
+    <% if @paid_reservations.any? %>
+      <div class="px-3 pt-3 pb-1">
+        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #5a8a30;">
+          <i class="fas fa-dollar-sign"></i> Paid Bookings (<%= @paid_reservations.count %>)
+        </small>
+      </div>
+      <% @paid_reservations.each do |reservation| %>
+        <div class="mx-3 mb-2">
+          <div class="card border-success" style="border-left: 4px solid #7ab648 !important;">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <% if @first_timer_ids.include?(reservation.user_id) %>
+                    <span class="badge badge-warning" style="font-size: 10px;">NEW VISITOR</span>
+                  <% end %>
+                  <div class="text-muted" style="font-size: 12px;">
+                    <%= reservation.room.name %> &middot;
+                    <%= reservation.datetime_in.strftime("%-I:%M %p") %> - <%= reservation.datetime_out.strftime("%-I:%M %p") %>
+                  </div>
+                  <% if reservation.user.organization.present? %>
+                    <div class="text-muted" style="font-size: 11px;"><%= reservation.user.organization.name %></div>
+                  <% end %>
+                </div>
+                <span class="text-success font-weight-bold" style="font-size: 15px;">
+                  <%= number_to_currency(reservation.room.hourly_rate_in_cents * (reservation.minutes / 60.0) / 100.0) %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Day Passes %>
+    <% if @day_passes.any? %>
+      <div class="px-3 pt-3 pb-1">
+        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #e67e22;">
+          <i class="fas fa-ticket-alt"></i> Day Passes (<%= @day_passes.count %>)
+        </small>
+      </div>
+      <% @day_passes.each do |day_pass| %>
+        <div class="mx-3 mb-2">
+          <div class="card" style="border-left: 4px solid #e67e22 !important;">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <%= link_to day_pass.user.name, user_path(day_pass.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <% if @first_timer_ids.include?(day_pass.user_id) %>
+                    <span class="badge badge-warning" style="font-size: 10px;">NEW VISITOR</span>
+                  <% end %>
+                  <div class="text-muted" style="font-size: 12px;">
+                    <%= day_pass.day_pass_type_name %>
+                  </div>
+                  <% if day_pass.user.organization.present? %>
+                    <div class="text-muted" style="font-size: 11px;"><%= day_pass.user.organization.name %></div>
+                  <% end %>
+                </div>
+                <% amount = day_pass.day_pass_type&.amount_in_cents.to_i %>
+                <span class="<%= amount > 0 ? 'text-success' : 'text-muted' %> font-weight-bold" style="font-size: 15px;">
+                  <%= amount > 0 ? number_to_currency(amount / 100.0) : "Free" %>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Member Room Bookings (included in plan) %>
+    <% if @free_reservations.any? %>
+      <div class="px-3 pt-3 pb-1">
+        <small class="text-uppercase font-weight-bold text-muted" style="letter-spacing: 0.5px;">
+          <i class="far fa-calendar-alt"></i> Member Bookings (<%= @free_reservations.count %>)
+        </small>
+      </div>
+      <% @free_reservations.each do |reservation| %>
+        <div class="mx-3 mb-2">
+          <div class="card" style="border-left: 4px solid #dee2e6 !important;">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <div class="text-muted" style="font-size: 12px;">
+                    <%= reservation.room.name %> &middot;
+                    <%= reservation.datetime_in.strftime("%-I:%M %p") %> - <%= reservation.datetime_out.strftime("%-I:%M %p") %>
+                  </div>
+                </div>
+                <span class="text-muted" style="font-size: 12px;">Included</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# New Members %>
+    <% if @new_members.any? %>
+      <div class="px-3 pt-3 pb-1">
+        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #3498db;">
+          <i class="fas fa-user-plus"></i> New Members (<%= @new_members.count %>)
+        </small>
+      </div>
+      <% @new_members.each do |member| %>
+        <div class="mx-3 mb-2">
+          <div class="card" style="border-left: 4px solid #3498db !important;">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <%= link_to member.name, user_path(member), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <span class="badge badge-info" style="font-size: 10px;">NEW MEMBER</span>
+                  <div class="text-muted" style="font-size: 12px;">
+                    Joined <%= time_ago_in_words(member.created_at) %> ago
+                    <% if member.subscriptions.active.first %>
+                      &middot; <%= member.subscriptions.active.first.plan.name %>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
+    <%# Empty state %>
+    <% if @paid_reservations.empty? && @day_passes.empty? && @free_reservations.empty? && @new_members.empty? %>
+      <div class="text-center mt-5 px-3">
+        <div style="font-size: 48px;">&#128524;</div>
+        <h5 class="font-weight-bold mt-2">Quiet Day</h5>
+        <p class="text-muted">No day passes, reservations, or new members scheduled for today.</p>
+      </div>
+    <% end %>
+
+    <div class="pb-4"></div>
+  </div>
+  <div class="col-lg-3"></div>
+</div>
