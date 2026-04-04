@@ -153,16 +153,12 @@ module StripeUtils
       return false
     end
 
-    if stripe_customer.sources.data.count == 0
-      Rails.logger.warn("charge_invoice: No card on file for #{invoice.billable_type} ##{invoice.billable_id}")
-      return false
-    end
-
     stripe_invoice = retrieve_stripe_invoice(invoice)
 
-    options = {
-      source: stripe_customer.sources.data.first.id,
-    }
+    options = {}
+    if stripe_customer.sources.data.count > 0
+      options[:source] = stripe_customer.sources.data.first.id
+    end
 
     stripe_invoice.pay(options)
   rescue Stripe::InvalidRequestError => e
