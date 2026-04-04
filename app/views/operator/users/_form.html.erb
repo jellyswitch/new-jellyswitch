@@ -2,27 +2,27 @@
   <%= render "shared/error_messages" , model: @user %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.text_field :name, placeholder: "Name", class: "form-control col" %>
+    <%= f.text_field :name, placeholder: "Name *", class: "form-control col", required: true %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.email_field :email, placeholder: "Email", class: "form-control col" %>
+    <%= f.email_field :email, placeholder: "Email *", class: "form-control col", required: true %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.telephone_field :phone, placeholder: "Phone Number", class: "form-control col" %>
+    <%= f.telephone_field :phone, placeholder: "Phone Number *", class: "form-control col", required: true %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.password_field :password, placeholder: "Password", class: "form-control col" %>
+    <%= f.password_field :password, placeholder: "Password (min 6 characters) *", class: "form-control col", required: true, minlength: 6 %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.password_field :password_confirmation, placeholder: "Confirm password", class: "form-control col" %>
+    <%= f.password_field :password_confirmation, placeholder: "Confirm password *", class: "form-control col", required: true %>
     <div class="col-1"></div>
   </div>
   <div class="form-group row mb-0">
@@ -86,21 +86,20 @@
   </div>
   <% if ENV['RECAPTCHA_SITE_KEY'].present? %>
     <script>
+      // Pre-load reCAPTCHA token so form can submit normally
       (function() {
-        var btn = document.getElementById('signup_submit');
-        if (!btn) return;
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          var form = btn.closest('form');
-          var tokenField = document.getElementById('recaptcha_token');
-
+        function refreshToken() {
           grecaptcha.ready(function() {
             grecaptcha.execute('<%= ENV["RECAPTCHA_SITE_KEY"] %>', {action: 'signup'}).then(function(token) {
-              tokenField.value = token;
-              form.submit();
+              var field = document.getElementById('recaptcha_token');
+              if (field) field.value = token;
             });
           });
-        });
+        }
+        // Get token immediately
+        refreshToken();
+        // Refresh token every 90 seconds (tokens expire after 2 minutes)
+        setInterval(refreshToken, 90000);
       })();
     </script>
   <% end %>
