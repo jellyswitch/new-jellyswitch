@@ -23,6 +23,8 @@ class WebhooksController < ApplicationController
     when "invoice.payment_succeeded", "invoice.voided", "invoice.marked_uncollectible"
       if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
         update_status(@event.data.object)
+      else
+        ok
       end
     when "invoice.payment_failed"
       if Invoice.exists?(stripe_invoice_id: @event.data.object.id)
@@ -50,6 +52,8 @@ class WebhooksController < ApplicationController
           Rails.logger.error("Payment failed notification error: #{e.class}: #{e.message}")
           Honeybadger.notify(e)
         end
+      else
+        ok
       end
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)
@@ -68,7 +72,8 @@ class WebhooksController < ApplicationController
         error(result.message)
       end
     else
-      error("Unrecognized webhook type: #{@event.type}")
+      # Acknowledge unhandled event types so Stripe doesn't retry them
+      ok
     end
   rescue Exception => e
     report_error(e, __method__)
