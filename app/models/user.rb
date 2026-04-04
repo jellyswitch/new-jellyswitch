@@ -95,6 +95,8 @@ class User < ApplicationRecord
   validate :terms_must_be_accepted, on: :create
   has_secure_password
 
+  after_commit :sync_to_mailchimp, if: -> { operator.mailchimp_api_key.present? && saved_change_to_approved? }
+
   # Scopes
   scope :approved, -> { where(approved: true) }
   scope :unapproved, -> { where(approved: false) }
@@ -524,5 +526,9 @@ class User < ApplicationRecord
     return if terms_accepted == "1" || terms_accepted == true
 
     errors.add(:terms_accepted, "must be accepted to create an account")
+  end
+
+  def sync_to_mailchimp
+    MailchimpSyncJob.perform_later(id)
   end
 end
