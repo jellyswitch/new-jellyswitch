@@ -146,17 +146,11 @@ module StripeUtils
   end
 
   def charge_invoice(invoice)
-    case invoice.billable_type
-    when "User"
-      if !invoice.billable.card_added_for_location?(invoice.location)
-        raise "No card on file."
-      end
-    when "Organization"
-      if !invoice.billable.has_billing_for_location?(invoice.location)
-        raise "No card on file."
-      end
-    end
     stripe_customer = invoice.billable.stripe_customer_for_location(invoice.location)
+
+    unless stripe_customer
+      raise "No Stripe customer found."
+    end
 
     if stripe_customer.sources.data.count == 0
       raise "No card on file."
