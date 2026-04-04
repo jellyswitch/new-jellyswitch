@@ -42,15 +42,16 @@ class DailyActivityDigestJob < ApplicationJob
     }
 
     ActsAsTenant.with_tenant(operator) do
+      admin_user = User.relevant_admins_of_location(location).first
+      return unless admin_user
+
       feed_item = FeedItem.create!(
         operator: operator,
         location: location,
+        user: admin_user,
         blob: blob,
         created_at: Time.current
       )
-
-      # Notify admins
-      SendNotificationsJob.perform_later(feed_item)
     end
   end
 end
