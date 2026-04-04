@@ -149,11 +149,13 @@ module StripeUtils
     stripe_customer = invoice.billable.stripe_customer_for_location(invoice.location)
 
     unless stripe_customer
-      raise "No Stripe customer found."
+      Rails.logger.warn("charge_invoice: No Stripe customer for #{invoice.billable_type} ##{invoice.billable_id}")
+      return false
     end
 
     if stripe_customer.sources.data.count == 0
-      raise "No card on file."
+      Rails.logger.warn("charge_invoice: No card on file for #{invoice.billable_type} ##{invoice.billable_id}")
+      return false
     end
 
     stripe_invoice = retrieve_stripe_invoice(invoice)
