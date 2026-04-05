@@ -448,10 +448,12 @@ module Jellyswitch
       return 0 unless location
       visitor_days = DoorPunch.where(door: location.doors)
         .where("created_at > ?", period_days.days.ago)
-        .select("DISTINCT DATE(created_at), user_id")
-        .count
+        .count("DISTINCT (DATE(created_at), user_id)")
       days = [period_days, 1].max
       (visitor_days.to_f / days).round(1)
+    rescue => e
+      Rails.logger.warn("avg_daily_visitors error: #{e.message}")
+      0
     end
 
     def avg_visits_per_member_per_month(period_days = 30)
@@ -459,14 +461,15 @@ module Jellyswitch
       member_count = active_member_count + active_lease_member_count
       return 0 if member_count == 0
 
-      # Count unique visit-days per user (one punch per day per user)
       total_visit_days = DoorPunch.where(door: location.doors)
         .where("created_at > ?", period_days.days.ago)
-        .select("DISTINCT DATE(created_at), user_id")
-        .count
+        .count("DISTINCT (DATE(created_at), user_id)")
 
       months = [period_days / 30.0, 1].max
       ((total_visit_days.to_f / member_count) / months).round(1)
+    rescue => e
+      Rails.logger.warn("avg_visits_per_member_per_month error: #{e.message}")
+      0
     end
 
     def new_members_count(period_days = 30)

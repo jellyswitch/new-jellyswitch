@@ -16,7 +16,7 @@ class Operator::ReportsController < Operator::BaseController
                    end
     @location_events = LocationEvent.where(operator: current_tenant, location: current_location)
                                     .order(date: :desc).limit(10) if current_location
-    @insights = @report.insights if current_location
+    @insights = current_location ? (@report.insights rescue []) : []
   end
 
   def create_location_event
