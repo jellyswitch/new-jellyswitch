@@ -20,25 +20,13 @@ class Operator::ReportsController < Operator::BaseController
 
     if current_location
       @mrr_value = @report.mrr rescue 0
-      @mrr_trends = @report.trends_for(:mrr, @mrr_value) rescue {}
-      @churn_value = @report.churn_rate rescue 0
-      @churn_by_period = {
-        "30d" => @report.churned_members_count(30),
-        "90d" => @report.churned_members_count(90),
-        "1yr" => @report.churned_members_count(365),
-        "all" => @report.churned_members_count(3650)
-      } rescue {}
-      @growth_by_period = {
-        "30d" => @report.net_member_growth(30),
-        "90d" => @report.net_member_growth(90),
-        "1yr" => @report.net_member_growth(365),
-        "all" => @report.net_member_growth(3650)
-      } rescue {}
-      @util_value = @report.room_utilization rescue 0
-      @util_trends = @report.trends_for(:room_utilization, @util_value) rescue {}
-      @visits_value = @report.avg_visits_per_member_per_month rescue 0
-      @visits_trends = @report.trends_for(:visits_per_member, @visits_value) rescue {}
-      @daily_visitors = @report.avg_daily_visitors rescue 0
+      @churn_value = (@report.churned_members_count(@period_days).to_f / [(@report.active_member_count + @report.churned_members_count(@period_days)), 1].max * 100).round(1) rescue 0
+      @churned_count = @report.churned_members_count(@period_days) rescue 0
+      @growth_value = @report.net_member_growth(@period_days) rescue 0
+      @new_count = @report.new_members_count(@period_days) rescue 0
+      @util_value = @report.room_utilization(@period_days) rescue 0
+      @visits_value = @report.avg_visits_per_member_per_month(@period_days) rescue 0
+      @daily_visitors = @report.avg_daily_visitors(@period_days) rescue 0
     end
   end
 

@@ -4,59 +4,54 @@
   <h4 class="display-4 mb-1 text-center"><%= current_location ? "#{current_location.name} Dashboard" : "Dashboard" %></h4>
   <p class="text-center text-muted mb-4">Change to another location for its data</p>
 
-  <%# ── KPIs with Multi-Timeframe Trends ── %>
   <% if current_location %>
+    <%# ── Period Selector ── %>
+    <% period_label = case @period; when "30d" then "30 Days"; when "90d" then "90 Days"; when "1yr", "12m" then "1 Year"; when "all" then "All Time"; when "ytd" then "YTD"; else "30 Days"; end %>
+    <div class="text-center mb-3" data-controller="period-toggle">
+      <small class="text-muted d-block mb-1">Showing data for:</small>
+      <div class="btn-group" role="group">
+        <% %w[30d 90d 12m all].each do |p| %>
+          <% label = case p; when "30d" then "30 Days"; when "90d" then "90 Days"; when "12m" then "1 Year"; when "all" then "All Time"; end %>
+          <button class="btn btn-sm <%= @period == p ? 'btn-primary' : 'btn-outline-secondary' %>"
+                  data-period-toggle-target="button"
+                  data-period="<%= p %>"
+                  data-action="period-toggle#select">
+            <%= label %>
+          </button>
+        <% end %>
+      </div>
+    </div>
+
+    <%# ── KPI Cards ── %>
     <div class="row text-center mb-3">
-      <%# MRR %>
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
           <div class="font-weight-bold text-primary" style="font-size: 1.4rem; white-space: nowrap;"><%= number_to_currency(@mrr_value, precision: 0) %></div>
-          <div class="text-muted small">MRR</div>
-          <div class="mt-1" style="font-size: 11px;">
-            <% @mrr_trends.each do |period, change| %>
-              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
-            <% end %>
-          </div>
+          <div class="text-muted small">MRR (current)</div>
         </div>
       </div>
 
-      <%# Churn %>
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
           <div class="font-weight-bold <%= @churn_value > 5 ? 'text-danger' : 'text-warning' %>" style="font-size: 1.4rem;"><%= @churn_value %>%</div>
-          <div class="text-muted small">Churn Rate</div>
-          <div class="mt-1" style="font-size: 11px;">
-            <% @churn_by_period.each do |period, count| %>
-              <span class="text-muted mr-1"><%= period %>: <%= count %></span>
-            <% end %>
-          </div>
+          <div class="text-muted small">Churn Rate (<%= period_label %>)</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted"><%= @churned_count %> cancelled</span></div>
         </div>
       </div>
 
-      <%# Room Utilization %>
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
           <div class="font-weight-bold text-info" style="font-size: 1.4rem;"><%= @util_value %>%</div>
-          <div class="text-muted small">Room Utilization</div>
-          <div class="mt-1" style="font-size: 11px;">
-            <% @util_trends.each do |period, change| %>
-              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
-            <% end %>
-          </div>
+          <div class="text-muted small">Room Utilization (<%= period_label %>)</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted">8am–6pm hours booked</span></div>
         </div>
       </div>
 
-      <%# Visits per Member %>
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
           <div class="font-weight-bold text-success" style="font-size: 1.4rem;"><%= @visits_value %></div>
           <div class="text-muted small">Visits / Member / Mo</div>
-          <div class="mt-1" style="font-size: 11px;">
-            <span class="text-muted"><%= @daily_visitors %> avg daily</span>
-            <% @visits_trends.each do |period, change| %>
-              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> ml-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
-            <% end %>
-          </div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted"><%= @daily_visitors %> avg daily visitors</span></div>
         </div>
       </div>
     </div>
@@ -76,14 +71,9 @@
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <% growth = @report.net_member_growth(30) %>
-          <div class="h4 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>"><%= growth >= 0 ? '+' : '' %><%= growth %></div>
-          <div class="text-muted small">Net Member Growth</div>
-          <div class="mt-1" style="font-size: 11px;">
-            <% @growth_by_period.each do |period, val| %>
-              <span class="<%= val >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= val >= 0 ? '+' : '' %><%= val %></span>
-            <% end %>
-          </div>
+          <div class="h4 mb-0 font-weight-bold <%= @growth_value >= 0 ? 'text-success' : 'text-danger' %>"><%= @growth_value >= 0 ? '+' : '' %><%= @growth_value %></div>
+          <div class="text-muted small">Net Growth (<%= period_label %>)</div>
+          <div style="font-size: 10px;" class="text-muted"><%= @new_count %> new subs · <%= @churned_count %> cancelled</div>
         </div>
       </div>
 
@@ -141,22 +131,9 @@
   <% end %>
 <% end %>
 
-<%# ── Period Toggle ── %>
+<%# ── Charts ── %>
 <% if current_location %>
   <%= super_wide_card do %>
-    <div class="text-center mb-3" data-controller="period-toggle">
-      <div class="btn-group" role="group">
-        <% %w[30d 90d 12m ytd all].each do |p| %>
-          <button class="btn btn-sm <%= @period == p ? 'btn-primary' : 'btn-outline-secondary' %>"
-                  data-period-toggle-target="button"
-                  data-period="<%= p %>"
-                  data-action="period-toggle#select">
-            <%= p == "ytd" ? "YTD" : p.upcase %>
-          </button>
-        <% end %>
-      </div>
-    </div>
-
     <%# ── MRR Trend ── %>
     <h5 class="text-center mb-3">MRR Trend</h5>
     <div class="text-center mb-2">
