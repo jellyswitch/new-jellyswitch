@@ -37,7 +37,7 @@ class FeedItem < ApplicationRecord
   after_create_commit :broadcast_to_feed
 
   def broadcast_to_feed
-    return if type == "new-user"
+    return if type.in?(%w[new-user daily-digest])
 
     ActsAsTenant.with_tenant(operator) do
       broadcast_prepend_to [operator, "feed_items"], target: "feed-items", partial: "operator/feed_items/feed_item", locals: { feed_item: self, comments: false }
@@ -122,6 +122,14 @@ class FeedItem < ApplicationRecord
       "had a payment failure"
     when "lease_renewal"
       "has a lease renewal proposal"
+    when "membership_paused"
+      "paused their membership"
+    when "membership_unpaused"
+      "resumed their membership"
+    when "demand-miss"
+      "couldn't find an available room"
+    when "daily-digest"
+      "Daily activity summary"
     end
   end
 
