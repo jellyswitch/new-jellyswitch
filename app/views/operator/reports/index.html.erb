@@ -38,9 +38,9 @@
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.attendance_rate(@period_days) %>%</div>
-          <div class="text-muted small mt-1">Attendance</div>
-          <small class="text-muted">Members visiting (door punches)</small>
+          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.avg_daily_visitors(@period_days) %></div>
+          <div class="text-muted small mt-1">Avg Daily Visitors</div>
+          <small class="text-muted">Unique door punches/day</small>
         </div>
       </div>
     </div>
@@ -68,7 +68,7 @@
           <%= growth >= 0 ? '+' : '' %><%= growth %>
         </div>
         <div class="text-muted small mt-1">Net Member Growth</div>
-        <small class="text-muted"><%= @report.new_members_count(@period_days) %> joined · <%= @report.churned_members_count(@period_days) %> cancelled</small>
+        <small class="text-muted"><%= @report.new_members_count(@period_days) %> new subscriptions · <%= @report.churned_members_count(@period_days) %> cancelled</small>
       </div>
     </div>
 

@@ -444,21 +444,27 @@ module Jellyswitch
       ((booked_minutes / 60.0) / available_hours * 100).round(1)
     end
 
-    def attendance_rate(period_days = 30)
+    def avg_daily_visitors(period_days = 30)
       return 0 unless location
-      # Total members = active subs + lease members + active day passers
-      total_with_access = active_member_count + active_lease_member_count
-      return 0 if total_with_access == 0
-
-      # Count unique users who visited (one punch per day per user)
-      unique_visitors = DoorPunch.where(door: location.doors)
+      # Count unique user-days (each user counted once per day)
+      visitor_days = DoorPunch.where(door: location.doors)
         .where("created_at > ?", period_days.days.ago)
-        .select("DISTINCT user_id").count
-
-      [((unique_visitors.to_f / total_with_access) * 100).round(1), 100.0].min
+        .select("DISTINCT DATE(created_at), user_id")
+        .count
+      days = [period_days, 1].max
+      (visitor_days.to_f / days).round(1)
     end
 
     def new_members_count(period_days = 30)
+      # Only count users who got a subscription (actual members, not day passers)
+      Subscription.joins(:plan)
+        .where(plans: { operator_id: operator.id })
+        .where("subscriptions.created_at > ?", period_days.days.ago)
+        .where(subscribable_type: "User")
+        .distinct.count(:subscribable_id)
+    end
+
+    def new_signups_count(period_days = 30)
       User.for_space(operator)
         .originally_at_location(location)
         .approved.visible
@@ -596,10 +602,18 @@ module Jellyswitch
 
     def inactive_member_count
       return 0 unless location
-      active_members.select do |user|
-        user.door_punches.where("created_at > ?", 30.days.ago).none? &&
-        user.reservations.where("created_at > ?", 30.days.ago).none?
-      end.count
+      cutoff = 30.days.ago
+
+      active_ids = active_members.pluck(:id)
+      return 0 if active_ids.empty?
+
+      door_active_ids = DoorPunch.where(user_id: active_ids)
+        .where("created_at > ?", cutoff).distinct.pluck(:user_id)
+      reservation_active_ids = Reservation.where(user_id: active_ids)
+        .where("created_at > ?", cutoff).distinct.pluck(:user_id)
+
+      visited_ids = (door_active_ids + reservation_active_ids).uniq
+      active_ids.count - visited_ids.count
     end
 
     def peak_busiest_day(period_days = 30)
