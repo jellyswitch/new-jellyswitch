@@ -60,9 +60,10 @@ module Jellyswitch
 
     def active_members
       # Combine subscribed + out-of-band members via ID union
+      # Exclude archived and unapproved users
       subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
       oob_ids = out_of_band_members.select(:id)
-      User.where(id: subscribed_ids).or(User.where(id: oob_ids))
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).visible.approved
     end
 
     def active_member_count
