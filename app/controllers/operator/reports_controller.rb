@@ -81,6 +81,15 @@ class Operator::ReportsController < Operator::BaseController
     turbo_redirect(suppressed_members_reports_path)
   end
 
+  def toggle_email_opt_out
+    authorize :report, :index?
+    user = User.find(params[:user_id])
+    user.update!(email_opted_out: !user.email_opted_out?)
+    status = user.email_opted_out? ? "unsubscribed from" : "re-subscribed to"
+    flash[:notice] = "#{user.name} #{status} marketing emails."
+    turbo_redirect(user_path(user))
+  end
+
   def dismiss_inactive
     authorize :report, :index?
     user = User.find(params[:user_id])
