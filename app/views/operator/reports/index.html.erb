@@ -38,9 +38,9 @@
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.avg_daily_visitors(@period_days) %></div>
-          <div class="text-muted small mt-1">Avg Daily Visitors</div>
-          <small class="text-muted">Unique door punches/day</small>
+          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.avg_visits_per_member_per_month(@period_days) %></div>
+          <div class="text-muted small mt-1">Visits / Member / Mo</div>
+          <small class="text-muted"><%= @report.avg_daily_visitors(@period_days) %> avg daily visitors</small>
         </div>
       </div>
     </div>
@@ -67,8 +67,9 @@
         <div class="h3 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>">
           <%= growth >= 0 ? '+' : '' %><%= growth %>
         </div>
-        <div class="text-muted small mt-1">Net Member Growth</div>
-        <small class="text-muted"><%= @report.new_members_count(@period_days) %> new subscriptions · <%= @report.churned_members_count(@period_days) %> cancelled</small>
+        <% period_label = case @period; when "30d" then "30 days"; when "90d" then "90 days"; when "12m" then "12 months"; when "ytd" then "YTD"; when "all" then "all time"; else @period; end %>
+        <div class="text-muted small mt-1">Net Member Growth (<%= period_label %>)</div>
+        <small class="text-muted"><%= @report.new_members_count(@period_days) %> new · <%= @report.churned_members_count(@period_days) %> cancelled</small>
       </div>
     </div>
 
