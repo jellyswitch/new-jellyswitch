@@ -8,11 +8,13 @@
       <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
           <h5 class="mb-0">Members with no visits in 30+ days</h5>
-          <small class="text-muted"><%= @inactive_members.count %> members — no door punches or room bookings in the last 30 days</small>
+          <small class="text-muted"><%= @inactive_members.count %> members</small>
         </div>
-        <%= link_to new_campaign_path, class: "btn btn-primary btn-sm" do %>
-          <i class="fas fa-envelope"></i> Send Re-engagement Campaign
-        <% end %>
+        <div>
+          <%= link_to new_campaign_path, class: "btn btn-primary btn-sm" do %>
+            <i class="fas fa-envelope"></i> Send Campaign to This List
+          <% end %>
+        </div>
       </div>
 
       <% if @inactive_members.any? %>
@@ -23,7 +25,7 @@
               <th>Email</th>
               <th>Member Since</th>
               <th>Last Visit</th>
-              <th></th>
+              <th class="text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -31,7 +33,7 @@
               <% last_punch = user.door_punches.order(created_at: :desc).first %>
               <% last_reservation = user.reservations.order(created_at: :desc).first %>
               <% last_activity = [last_punch&.created_at, last_reservation&.created_at].compact.max %>
-              <tr>
+              <tr id="inactive-user-<%= user.id %>">
                 <td><%= link_to user.name, user_path(user) %></td>
                 <td><%= user.email %></td>
                 <td><%= user.created_at.strftime("%b %Y") %></td>
@@ -42,9 +44,18 @@
                     <span class="text-muted">Never</span>
                   <% end %>
                 </td>
-                <td>
-                  <%= link_to user_path(user), class: "btn btn-outline-secondary btn-sm" do %>
-                    View
+                <td class="text-right" style="white-space: nowrap;">
+                  <%= link_to suppress_marketing_reports_path(user_id: user.id),
+                      class: "btn btn-outline-danger btn-sm",
+                      data: { turbo_method: :post, turbo_confirm: "Suppress #{user.name} from all marketing? They won't receive any campaigns or automated emails." },
+                      title: "Remove from all marketing" do %>
+                    <i class="fas fa-ban"></i> Suppress
+                  <% end %>
+                  <%= link_to dismiss_inactive_reports_path(user_id: user.id),
+                      class: "btn btn-outline-secondary btn-sm ml-1",
+                      data: { turbo_method: :post },
+                      title: "Dismiss from this list" do %>
+                    <i class="fas fa-check"></i> Dismiss
                   <% end %>
                 </td>
               </tr>
@@ -53,6 +64,14 @@
         </table>
       <% else %>
         <p class="text-center text-muted mt-4">All members have been active in the last 30 days!</p>
+      <% end %>
+
+      <% if @suppressed_count && @suppressed_count > 0 %>
+        <div class="mt-3 pt-3 border-top">
+          <small class="text-muted"><%= @suppressed_count %> members are suppressed from marketing.
+            <%= link_to "View suppressed list", suppressed_members_reports_path %>
+          </small>
+        </div>
       <% end %>
     <% end %>
   <% end %>

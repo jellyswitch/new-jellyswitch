@@ -91,8 +91,8 @@ class Campaign < ApplicationRecord
       users = users.where(id: user_ids)
     end
 
-    # Exclude opted-out and bounced
-    users = users.where(email_opted_out: false, email_bounced: false)
+    # Exclude opted-out, bounced, and marketing-suppressed
+    users = users.where(email_opted_out: false, email_bounced: false, marketing_suppressed: false)
 
     users
   end

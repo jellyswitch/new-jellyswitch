@@ -52,6 +52,41 @@ class Operator::ReportsController < Operator::BaseController
   def inactive_members
     authorize :report, :index?
     @inactive_members = @report.inactive_members
+      .where(marketing_suppressed: false)
+      .where("inactive_dismissed_at IS NULL OR inactive_dismissed_at < ?", 30.days.ago)
+    @suppressed_count = User.for_space(current_tenant).where(marketing_suppressed: true).count
+  end
+
+  def suppressed_members
+    authorize :report, :index?
+    @suppressed_members = User.for_space(current_tenant)
+      .originally_at_location(current_location)
+      .where(marketing_suppressed: true)
+      .order(:name)
+  end
+
+  def suppress_marketing
+    authorize :report, :index?
+    user = User.find(params[:user_id])
+    user.update!(marketing_suppressed: true, marketing_suppressed_reason: "Suppressed by admin")
+    flash[:notice] = "#{user.name} suppressed from all marketing."
+    turbo_redirect(inactive_members_reports_path)
+  end
+
+  def unsuppress_marketing
+    authorize :report, :index?
+    user = User.find(params[:user_id])
+    user.update!(marketing_suppressed: false, marketing_suppressed_reason: nil)
+    flash[:notice] = "#{user.name} restored to marketing lists."
+    turbo_redirect(suppressed_members_reports_path)
+  end
+
+  def dismiss_inactive
+    authorize :report, :index?
+    user = User.find(params[:user_id])
+    user.update_column(:inactive_dismissed_at, Time.current)
+    flash[:notice] = "#{user.name} dismissed. Will reappear if still inactive in 30 days."
+    turbo_redirect(inactive_members_reports_path)
   end
 
   def member_csv

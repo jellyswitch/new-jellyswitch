@@ -1,0 +1,43 @@
+<% title "Suppressed Members" %>
+
+<%= render "shared/back_bar", back_path: inactive_members_reports_path, back_label: "Inactive Members", page_title: "Suppressed from Marketing" %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+      <h5 class="mb-3">Members suppressed from all marketing</h5>
+      <small class="text-muted d-block mb-3">These members won't receive any campaigns or automated marketing emails.</small>
+
+      <% if @suppressed_members.any? %>
+        <table class="table table-sm" style="font-size: 13px;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Reason</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @suppressed_members.each do |user| %>
+              <tr>
+                <td><%= link_to user.name, user_path(user) %></td>
+                <td><%= user.email %></td>
+                <td><small class="text-muted"><%= user.marketing_suppressed_reason || "No reason given" %></small></td>
+                <td class="text-right">
+                  <%= link_to unsuppress_marketing_reports_path(user_id: user.id),
+                      class: "btn btn-outline-success btn-sm",
+                      data: { turbo_method: :post } do %>
+                    <i class="fas fa-undo"></i> Restore
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-center text-muted mt-4">No suppressed members.</p>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

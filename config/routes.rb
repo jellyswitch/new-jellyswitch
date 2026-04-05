@@ -378,6 +378,10 @@ Rails.application.routes.draw do
       get :ltv
       get :room_demand
       get :inactive_members
+      get :suppressed_members
+      post :suppress_marketing
+      post :unsuppress_marketing
+      post :dismiss_inactive
       post :create_location_event
       delete :delete_location_event
     end

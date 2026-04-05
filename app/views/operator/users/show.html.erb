@@ -156,6 +156,16 @@
           <i class="fas fa-ban"></i> This user has unsubscribed from marketing emails.
         </div>
       <% end %>
+      <% if @user.marketing_suppressed? %>
+        <div class="alert alert-danger mt-2">
+          <i class="fas fa-ban"></i> Suppressed from all marketing
+          <% if @user.marketing_suppressed_reason.present? %>
+            — <%= @user.marketing_suppressed_reason %>
+          <% end %>
+          <br/>
+          <%= link_to "Restore to marketing", unsuppress_marketing_reports_path(user_id: @user.id), class: "btn btn-outline-success btn-sm mt-1", data: { turbo_method: :post } %>
+        </div>
+      <% end %>
     <% end %>
   <% end %>
 
