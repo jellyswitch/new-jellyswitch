@@ -319,30 +319,94 @@ module Jellyswitch
 
     # ── Analytics Dashboard Metrics ──
 
-    def mrr
+    def mrr(product_filter: "all")
       return 0 unless location
       total = 0.0
-      Subscription.where(plan: plans.individual.nonzero, active: true).includes(:plan).find_each do |sub|
-        total += normalize_to_monthly(sub.plan)
+
+      # Membership MRR
+      if %w[all memberships].include?(product_filter)
+        Subscription.where(plan: plans.individual.nonzero, active: true).includes(:plan).find_each do |sub|
+          total += normalize_to_monthly(sub.plan)
+        end
       end
-      # Add lease MRR
-      office_leases.active.includes(subscription: :plan).each do |lease|
-        total += normalize_to_monthly(lease.subscription&.plan) if lease.subscription&.plan
+
+      # Office lease MRR
+      if %w[all offices].include?(product_filter)
+        office_leases.active.includes(subscription: :plan).each do |lease|
+          total += normalize_to_monthly(lease.subscription&.plan) if lease.subscription&.plan
+        end
+        # Out-of-band leases (paid by check, no Stripe subscription with plan amount)
+        office_leases.active.includes(subscription: :plan).each do |lease|
+          plan = lease.subscription&.plan
+          next if plan && plan.amount_in_cents > 0
+          # Use the office's monthly rate if the plan has no amount
+          total += (lease.office&.monthly_rate_in_cents || 0).to_f / 100.0 if lease.office.respond_to?(:monthly_rate_in_cents)
+        end
       end
-      total
+
+      # Day pass MRR (average monthly day pass revenue)
+      if %w[all day_passes].include?(product_filter)
+        dp_rev = day_passes.joins(:day_pass_type)
+          .where("day_passes.created_at > ?", 3.months.ago)
+          .sum("day_pass_types.amount_in_cents").to_f / 100.0
+        total += dp_rev / 3.0 # Average over 3 months
+      end
+
+      # Meeting room MRR (average monthly room revenue)
+      if %w[all meeting_rooms].include?(product_filter)
+        room_ids = location.rooms.rentable.pluck(:id)
+        if room_ids.any?
+          room_rev = Reservation.where(room_id: room_ids, cancelled: false, paid: true)
+            .where("datetime_in > ?", 3.months.ago)
+            .joins(:room)
+            .sum("(rooms.hourly_rate_in_cents / 60.0) * reservations.minutes").to_f / 100.0
+          total += room_rev / 3.0
+        end
+      end
+
+      total.round(0)
     end
 
-    def mrr_by_month(months = 12)
+    def mrr_by_month(months = 12, product_filter: "all")
       result = {}
       months.times do |i|
         date = i.months.ago.beginning_of_month
+        month_end = date.end_of_month
         label = date.strftime("%b %Y")
-        # Count subscriptions active at that point
-        sub_mrr = Subscription.where(plan: plans.individual.nonzero, active: true)
-          .where("subscriptions.created_at <= ?", date.end_of_month)
-          .includes(:plan)
-          .sum { |s| normalize_to_monthly(s.plan) }
-        result[label] = sub_mrr
+        total = 0.0
+
+        if %w[all memberships].include?(product_filter)
+          total += Subscription.where(plan: plans.individual.nonzero, active: true)
+            .where("subscriptions.created_at <= ?", month_end)
+            .includes(:plan)
+            .sum { |s| normalize_to_monthly(s.plan) }
+        end
+
+        if %w[all offices].include?(product_filter)
+          office_leases.where("start_date <= ? AND end_date >= ?", month_end, date)
+            .includes(subscription: :plan).each do |lease|
+              total += normalize_to_monthly(lease.subscription&.plan) if lease.subscription&.plan
+            end
+        end
+
+        # Day pass + meeting room: use actual revenue for that month
+        if %w[all day_passes].include?(product_filter)
+          total += day_passes.joins(:day_pass_type)
+            .where(created_at: date..month_end)
+            .sum("day_pass_types.amount_in_cents").to_f / 100.0
+        end
+
+        if %w[all meeting_rooms].include?(product_filter)
+          room_ids = location.rooms.rentable.pluck(:id)
+          if room_ids.any?
+            total += Reservation.where(room_id: room_ids, cancelled: false, paid: true)
+              .where(datetime_in: date..month_end)
+              .joins(:room)
+              .sum("(rooms.hourly_rate_in_cents / 60.0) * reservations.minutes").to_f / 100.0
+          end
+        end
+
+        result[label] = total.round(0)
       end
       result.reverse_each.to_h
     end
@@ -382,24 +446,28 @@ module Jellyswitch
 
     def attendance_rate(period_days = 30)
       return 0 unless location
-      member_count = active_member_count
-      return 0 if member_count == 0
+      # Total members = active subs + lease members + active day passers
+      total_with_access = active_member_count + active_lease_member_count
+      return 0 if total_with_access == 0
 
+      # Count unique users who visited (one punch per day per user)
       unique_visitors = DoorPunch.where(door: location.doors)
         .where("created_at > ?", period_days.days.ago)
-        .distinct.count(:user_id)
+        .select("DISTINCT user_id").count
 
-      (unique_visitors.to_f / member_count * 100).round(1)
+      [((unique_visitors.to_f / total_with_access) * 100).round(1), 100.0].min
     end
 
-    def net_member_growth(period_days = 30)
-      new_members = User.for_space(operator)
+    def new_members_count(period_days = 30)
+      User.for_space(operator)
         .originally_at_location(location)
         .approved.visible
         .where("users.created_at > ?", period_days.days.ago)
         .count
-      cancelled = churned_members_count(period_days)
-      new_members - cancelled
+    end
+
+    def net_member_growth(period_days = 30)
+      new_members_count(period_days) - churned_members_count(period_days)
     end
 
     def revenue_per_member

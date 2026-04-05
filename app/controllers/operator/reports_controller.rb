@@ -11,6 +11,7 @@ class Operator::ReportsController < Operator::BaseController
                    when "90d" then 90
                    when "12m" then 365
                    when "ytd" then (Date.today - Date.today.beginning_of_year).to_i
+                   when "all" then 3650
                    else 365
                    end
     @location_events = LocationEvent.where(operator: current_tenant, location: current_location)
