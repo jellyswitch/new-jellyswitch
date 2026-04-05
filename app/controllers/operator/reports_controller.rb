@@ -16,7 +16,18 @@ class Operator::ReportsController < Operator::BaseController
                    end
     @location_events = LocationEvent.where(operator: current_tenant, location: current_location)
                                     .order(date: :desc).limit(10) if current_location
-    @insights = current_location ? (@report.insights rescue []) : []
+    @insights = current_location ? (@report.actionable_insights rescue []) : []
+
+    if current_location
+      @mrr_value = @report.mrr rescue 0
+      @mrr_trends = @report.trends_for(:mrr, @mrr_value) rescue {}
+      @churn_value = @report.churn_rate rescue 0
+      @util_value = @report.room_utilization rescue 0
+      @util_trends = @report.trends_for(:room_utilization, @util_value) rescue {}
+      @visits_value = @report.avg_visits_per_member_per_month rescue 0
+      @visits_trends = @report.trends_for(:visits_per_member, @visits_value) rescue {}
+      @daily_visitors = @report.avg_daily_visitors rescue 0
+    end
   end
 
   def create_location_event

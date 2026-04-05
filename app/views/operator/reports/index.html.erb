@@ -4,100 +4,133 @@
   <h4 class="display-4 mb-1 text-center"><%= current_location ? "#{current_location.name} Dashboard" : "Dashboard" %></h4>
   <p class="text-center text-muted mb-4">Change to another location for its data</p>
 
-  <%# ── Primary KPIs ── %>
+  <%# ── KPIs with Multi-Timeframe Trends ── %>
   <% if current_location %>
     <div class="row text-center mb-3">
+      <%# MRR %>
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="mb-0 font-weight-bold text-primary" style="font-size: 1.5rem; white-space: nowrap;"><%= number_to_currency(@report.mrr, precision: 0) %></div>
-          <div class="text-muted small mt-1">MRR</div>
-          <% mom = @report.mrr_mom_change %>
-          <% if mom %>
-            <small class="<%= mom >= 0 ? 'text-success' : 'text-danger' %>">
-              <%= mom >= 0 ? '+' : '' %><%= mom %>% vs last month
-            </small>
-          <% end %>
+          <div class="font-weight-bold text-primary" style="font-size: 1.4rem; white-space: nowrap;"><%= number_to_currency(@mrr_value, precision: 0) %></div>
+          <div class="text-muted small">MRR</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <% @mrr_trends.each do |period, change| %>
+              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Churn %>
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold <%= @churn_value > 5 ? 'text-danger' : 'text-warning' %>" style="font-size: 1.4rem;"><%= @churn_value %>%</div>
+          <div class="text-muted small">Churn Rate</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted"><%= @report.churned_members_count %> cancelled (30d)</span>
+          </div>
+        </div>
+      </div>
+
+      <%# Room Utilization %>
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-info" style="font-size: 1.4rem;"><%= @util_value %>%</div>
+          <div class="text-muted small">Room Utilization</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <% @util_trends.each do |period, change| %>
+              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <%# Visits per Member %>
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-success" style="font-size: 1.4rem;"><%= @visits_value %></div>
+          <div class="text-muted small">Visits / Member / Mo</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted"><%= @daily_visitors %> avg daily</span>
+            <% @visits_trends.each do |period, change| %>
+              <span class="<%= change >= 0 ? 'text-success' : 'text-danger' %> ml-1"><%= period %>: <%= change >= 0 ? '+' : '' %><%= change %>%</span>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%# ── Secondary KPIs ── %>
+    <% breakdown = @report.active_member_breakdown %>
+    <div class="row text-center mb-2">
+      <div class="col-6 col-lg-3 mb-3">
+        <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
+          <div class="border rounded p-3 h-100">
+            <div class="h4 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
+            <div class="text-muted small">Active Members</div>
+            <div style="font-size: 10px;" class="text-muted"><%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> oob<% end %></div>
+          </div>
+        <% end %>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <% growth = @report.net_member_growth(30) %>
+          <div class="h4 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>"><%= growth >= 0 ? '+' : '' %><%= growth %></div>
+          <div class="text-muted small">Net Growth (30d)</div>
+          <div style="font-size: 10px;" class="text-muted"><%= @report.new_members_count(30) %> new · <%= @report.churned_members_count(30) %> cancelled</div>
         </div>
       </div>
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h2 mb-0 font-weight-bold text-warning"><%= @report.churn_rate %>%</div>
-          <div class="text-muted small mt-1">Churn Rate</div>
-          <small class="text-muted"><%= @report.churned_members_count %> cancelled (30d)</small>
+          <div class="h4 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_member, precision: 0) %></div>
+          <div class="text-muted small">Rev / Member / Mo</div>
         </div>
       </div>
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h2 mb-0 font-weight-bold text-info"><%= @report.room_utilization(@period_days) %>%</div>
-          <div class="text-muted small mt-1">Room Utilization</div>
-          <small class="text-muted">8am–6pm hours booked</small>
+          <div class="h4 mb-0 font-weight-bold"><%= @report.average_member_tenure %> mo</div>
+          <div class="text-muted small">Avg Member Tenure</div>
         </div>
       </div>
-
-      <div class="col-6 col-lg-3 mb-3">
+    </div>
+  <% else %>
+    <% breakdown = @report.active_member_breakdown %>
+    <div class="row text-center mb-2">
+      <div class="col-6 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.avg_visits_per_member_per_month(@period_days) %></div>
-          <div class="text-muted small mt-1">Visits / Member / Mo</div>
-          <small class="text-muted"><%= @report.avg_daily_visitors(@period_days) %> avg daily visitors</small>
+          <div class="h3 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
+          <div class="text-muted small">Active Members</div>
+        </div>
+      </div>
+      <div class="col-6 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h3 mb-0 font-weight-bold"><%= @report.active_lease_count %></div>
+          <div class="text-muted small">Active Leases</div>
         </div>
       </div>
     </div>
   <% end %>
 
-  <%# ── Secondary KPIs ── %>
-  <% breakdown = @report.active_member_breakdown %>
-  <div class="row text-center mb-2">
-    <div class="col-6 col-lg-3 mb-3">
-      <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100">
-          <div class="h3 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
-          <div class="text-muted small mt-1">Active Members</div>
-          <small class="text-muted" style="font-size: 0.7rem;">
-            <%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> oob<% end %>
-          </small>
-        </div>
-      <% end %>
-    </div>
-
-    <div class="col-6 col-lg-3 mb-3">
-      <div class="border rounded p-3 h-100">
-        <% growth = @report.net_member_growth(@period_days) %>
-        <div class="h3 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>">
-          <%= growth >= 0 ? '+' : '' %><%= growth %>
-        </div>
-        <% period_label = case @period; when "30d" then "30 days"; when "90d" then "90 days"; when "12m" then "12 months"; when "ytd" then "YTD"; when "all" then "all time"; else @period; end %>
-        <div class="text-muted small mt-1">Net Member Growth (<%= period_label %>)</div>
-        <small class="text-muted"><%= @report.new_members_count(@period_days) %> new · <%= @report.churned_members_count(@period_days) %> cancelled</small>
-      </div>
-    </div>
-
-    <div class="col-6 col-lg-3 mb-3">
-      <div class="border rounded p-3 h-100">
-        <div class="h3 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_member, precision: 0) %></div>
-        <div class="text-muted small mt-1">Rev / Member</div>
-        <small class="text-muted">this month</small>
-      </div>
-    </div>
-
-    <div class="col-6 col-lg-3 mb-3">
-      <div class="border rounded p-3 h-100">
-        <div class="h3 mb-0 font-weight-bold"><%= @report.average_member_tenure %></div>
-        <div class="text-muted small mt-1">Avg Tenure (mo)</div>
-      </div>
-    </div>
-  </div>
-
-  <%# ── Smart Insights ── %>
+  <%# ── Actionable Insights ── %>
   <% if @insights.present? && @insights.any? %>
-    <div class="alert alert-light border mb-3" style="font-size: 13px;">
-      <strong><i class="fas fa-lightbulb text-warning"></i> Insights</strong>
-      <ul class="mb-0 mt-1 pl-3">
+    <div class="card border-0 mb-3" style="background: #f8f9fa;">
+      <div class="card-body py-3">
+        <h6 class="mb-2"><i class="fas fa-bolt text-warning"></i> Actions Needed</h6>
         <% @insights.each do |insight| %>
-          <li><%= insight %></li>
+          <div class="d-flex justify-content-between align-items-center mb-2 py-1 border-bottom" style="font-size: 13px;">
+            <div>
+              <% color = case insight[:urgency]; when :high then "danger"; when :medium then "warning"; else "secondary"; end %>
+              <span class="badge badge-<%= color %> mr-1" style="font-size: 9px;"><%= insight[:urgency] == :info ? "INFO" : insight[:urgency].to_s.upcase %></span>
+              <%= insight[:text] %>
+            </div>
+            <% if insight[:action] && insight[:path] %>
+              <%= link_to insight[:action], send(insight[:path]), class: "btn btn-outline-primary btn-sm ml-2", style: "white-space: nowrap; font-size: 11px;" %>
+            <% end %>
+          </div>
         <% end %>
-      </ul>
+      </div>
     </div>
   <% end %>
 <% end %>

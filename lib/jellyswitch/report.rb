@@ -317,6 +317,139 @@ module Jellyswitch
       build_ltv_result("Meeting Rooms", user_totals.values)
     end
 
+    # ── Multi-Timeframe Trends ──
+
+    TREND_PERIODS = { "30d" => 30, "90d" => 90, "1yr" => 365 }.freeze
+
+    def trends_for(metric, current_value = nil)
+      results = {}
+      TREND_PERIODS.each do |label, days|
+        prev_value = historical_value(metric, days)
+        if prev_value && prev_value > 0
+          change = ((current_value.to_f - prev_value) / prev_value * 100).round(1)
+          results[label] = change
+        end
+      end
+      results
+    end
+
+    def historical_value(metric, days_ago)
+      case metric
+      when :mrr
+        # Approximate past MRR from invoice revenue for that month
+        target_month = days_ago.days.ago.beginning_of_month
+        location_invoices.paid
+          .where(due_date: target_month..target_month.end_of_month)
+          .sum(:amount_due).to_f / 100.0
+      when :active_members
+        # Count users who had active subs at that time
+        Subscription.where(plan: plans.individual.nonzero, active: true)
+          .where("subscriptions.created_at <= ?", days_ago.days.ago)
+          .distinct.count(:subscribable_id)
+      when :room_utilization
+        room_utilization(days_ago)
+      when :visits_per_member
+        avg_visits_per_member_per_month(days_ago)
+      when :churn
+        churned_members_count(days_ago).to_f / [(active_member_count + churned_members_count(days_ago)), 1].max * 100
+      else
+        nil
+      end
+    rescue => e
+      nil
+    end
+
+    # ── Actionable Insights ──
+
+    def actionable_insights
+      results = []
+
+      # Inactive members → re-engagement
+      inactive = inactive_member_count
+      if inactive > 0
+        results << {
+          text: "#{inactive} members haven't visited in 30+ days.",
+          action: "Send re-engagement campaign",
+          path: :campaigns_path,
+          urgency: inactive > 10 ? :high : :medium
+        }
+      end
+
+      # Churn alert
+      churn = churn_rate
+      if churn > 5
+        results << {
+          text: "Churn rate is #{churn}% — above the 3-5% industry average.",
+          action: "Review cancelled members",
+          path: :total_members_reports_path,
+          urgency: :high
+        }
+      end
+
+      # Room demand misses
+      if location
+        misses = RoomDemandMiss.for_location(location).where("missed_at > ?", 30.days.ago).count
+        if misses > 5
+          results << {
+            text: "#{misses} members couldn't find a room this month.",
+            action: "View room demand report",
+            path: :room_demand_reports_path,
+            urgency: misses > 20 ? :high : :medium
+          }
+        end
+      end
+
+      # Expiring leases
+      if location
+        expiring = office_leases.where("end_date BETWEEN ? AND ?", Date.today, 60.days.from_now).count
+        if expiring > 0
+          results << {
+            text: "#{expiring} lease#{expiring > 1 ? 's' : ''} expire#{expiring == 1 ? 's' : ''} in the next 60 days.",
+            action: "View active leases",
+            path: :active_leases_reports_path,
+            urgency: :high
+          }
+        end
+      end
+
+      # Day pass conversion opportunity
+      conv = day_pass_conversion_rate
+      if conv < 5 && last_30_day_pass_count > 5
+        results << {
+          text: "Only #{conv}% of day pass buyers become members. #{last_30_day_pass_count} day passes sold in 30 days.",
+          action: "Create a nurture campaign for day passers",
+          path: :new_campaign_path,
+          urgency: :medium
+        }
+      end
+
+      # Low utilization
+      util = room_utilization
+      if util < 20 && util > 0
+        results << {
+          text: "Room utilization is only #{util}%. Rooms are underused.",
+          action: "Consider promotions or events to drive bookings",
+          path: :rooms_path,
+          urgency: :low
+        }
+      end
+
+      # Revenue forecast
+      projected = mrr
+      if projected > 0
+        results << {
+          text: "Projected next month revenue: #{ActionController::Base.helpers.number_to_currency(projected, precision: 0)} based on current subscriptions + leases.",
+          action: nil,
+          urgency: :info
+        }
+      end
+
+      results.sort_by { |r| { high: 0, medium: 1, low: 2, info: 3 }[r[:urgency]] }.first(6)
+    rescue => e
+      Rails.logger.warn("actionable_insights error: #{e.message}")
+      []
+    end
+
     # ── Analytics Dashboard Metrics ──
 
     def mrr(product_filter: "all")
