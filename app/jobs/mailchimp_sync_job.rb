@@ -1,3 +1,7 @@
+require "net/http"
+require "json"
+require "digest"
+
 class MailchimpSyncJob < ApplicationJob
   queue_as :default
 
@@ -40,29 +44,65 @@ class MailchimpSyncJob < ApplicationJob
   end
 
   def upsert_to_mailchimp(user, operator)
-    gibbon = Gibbon::Request.new(api_key: operator.mailchimp_api_key)
+    api_key = operator.mailchimp_api_key
+    audience_id = operator.mailchimp_audience_id
+    dc = api_key.split("-").last # e.g., "us21"
     subscriber_hash = Digest::MD5.hexdigest(user.email.downcase)
 
-    merge_fields = {
-      FNAME: user.name.to_s.split.first,
-      LNAME: user.name.to_s.split[1..].join(" "),
-      LOCATION: user.original_location&.name,
+    url = "https://#{dc}.api.mailchimp.com/3.0/lists/#{audience_id}/members/#{subscriber_hash}"
+
+    active_sub = user.subscriptions.active.first
+
+    body = {
+      email_address: user.email,
+      status_if_new: "subscribed",
+      merge_fields: {
+        FNAME: user.name.to_s.split.first,
+        LNAME: user.name.to_s.split[1..].join(" "),
+        LOCATION: user.original_location&.name || "",
+        PLAN: active_sub&.plan&.name || ""
+      }
     }
 
-    # Build plan name
-    active_sub = user.subscriptions.active.first
-    merge_fields[:PLAN] = active_sub&.plan&.name || ""
+    uri = URI(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
 
-    gibbon.lists(operator.mailchimp_audience_id)
-      .members(subscriber_hash)
-      .upsert(
-        body: {
-          email_address: user.email,
-          status_if_new: "subscribed",
-          merge_fields: merge_fields,
-          tags: build_tags(user)
-        }
-      )
+    request = Net::HTTP::Put.new(uri.path, {
+      "Content-Type" => "application/json",
+      "Authorization" => "Basic #{Base64.strict_encode64("anystring:#{api_key}")}"
+    })
+    request.body = body.to_json
+
+    response = http.request(request)
+
+    unless response.is_a?(Net::HTTPSuccess)
+      Rails.logger.warn("Mailchimp upsert failed for #{user.email}: #{response.code} #{response.body}")
+    end
+
+    # Sync tags separately (Mailchimp v3 requires separate endpoint)
+    sync_tags(user, operator, api_key, dc, audience_id, subscriber_hash)
+  end
+
+  def sync_tags(user, operator, api_key, dc, audience_id, subscriber_hash)
+    url = "https://#{dc}.api.mailchimp.com/3.0/lists/#{audience_id}/members/#{subscriber_hash}/tags"
+
+    desired_tags = build_tags(user)
+    tag_body = {
+      tags: desired_tags.map { |t| { name: t, status: "active" } }
+    }
+
+    uri = URI(url)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+
+    request = Net::HTTP::Post.new(uri.path, {
+      "Content-Type" => "application/json",
+      "Authorization" => "Basic #{Base64.strict_encode64("anystring:#{api_key}")}"
+    })
+    request.body = tag_body.to_json
+
+    http.request(request)
   end
 
   def build_tags(user)
