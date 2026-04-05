@@ -6,6 +6,40 @@ Rails.application.routes.draw do
       end
     end
     resources :locations, only: [:index]
+
+    namespace :v1 do
+      post 'auth/login', to: 'auth#login'
+      post 'auth/refresh', to: 'auth#refresh'
+
+      get 'me', to: 'users#me'
+      patch 'me', to: 'users#update'
+      post 'me/push_token', to: 'users#register_push_token'
+
+      get 'dashboard', to: 'dashboard#show'
+      get 'onboarding_status', to: 'dashboard#onboarding_status'
+
+      resources :doors, only: [:index] do
+        member do
+          post :unlock
+        end
+      end
+
+      resources :rooms, only: [:index] do
+        member do
+          get :availability
+          get :time_slots
+        end
+      end
+      get 'reserve_now', to: 'rooms#reserve_now'
+
+      resources :reservations, only: [:index, :create, :destroy]
+
+      resources :events, only: [:index] do
+        member do
+          post :rsvp
+        end
+      end
+    end
   end
 
   namespace :mobile do
