@@ -544,19 +544,25 @@ module Jellyswitch
       result.reverse_each.to_h
     end
 
-    def churn_rate
+    def churn_rate(period_days = 30)
       return 0 unless location
-      churned = churned_members_count
-      total = active_member_count + churned
-      return 0 if total == 0
-      (churned.to_f / total * 100).round(1)
+      churned = churned_members_count(period_days)
+      # Members at start of period ≈ current active + those who cancelled
+      starting_members = active_member_count + churned
+      return 0 if starting_members == 0
+
+      months = [period_days / 30.0, 1].max
+      # Monthly churn rate: (cancellations per month) / starting members
+      monthly_cancellations = churned.to_f / months
+      (monthly_cancellations / starting_members * 100).round(1)
     end
 
     def churned_members_count(period_days = 30)
-      FeedItem.where(operator: operator)
-        .where("blob->>'type' = ?", "membership_cancellation")
-        .where("created_at > ?", period_days.days.ago)
-        .count
+      # Use actual subscription data: individual subscriptions that became inactive in the period
+      Subscription.where(plan: plans.individual.nonzero, active: false)
+        .where("subscriptions.updated_at > ?", period_days.days.ago)
+        .where(subscribable_type: "User")
+        .distinct.count(:subscribable_id)
     end
 
     def room_utilization(period_days = 30)

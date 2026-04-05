@@ -20,7 +20,7 @@ class Operator::ReportsController < Operator::BaseController
 
     if current_location
       @mrr_value = @report.mrr rescue 0
-      @churn_value = (@report.churned_members_count(@period_days).to_f / [(@report.active_member_count + @report.churned_members_count(@period_days)), 1].max * 100).round(1) rescue 0
+      @churn_value = @report.churn_rate(@period_days) rescue 0
       @churned_count = @report.churned_members_count(@period_days) rescue 0
       @growth_value = @report.net_member_growth(@period_days) rescue 0
       @new_count = @report.new_members_count(@period_days) rescue 0
