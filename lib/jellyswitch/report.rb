@@ -590,7 +590,7 @@ module Jellyswitch
         results << "MRR is up #{mom_mrr}% from last month."
       end
 
-      if attendance_rate > 0
+      if avg_daily_visitors > 0
         busiest = peak_busiest_day
         results << "Your busiest day this month was #{busiest[:day]} (#{busiest[:count]} door punches)." if busiest
       end
