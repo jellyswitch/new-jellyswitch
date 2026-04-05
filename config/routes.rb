@@ -283,6 +283,7 @@ Rails.application.routes.draw do
       post :clone
       get :preview
       post :test_send
+      post :exclude_recipient
     end
   end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do

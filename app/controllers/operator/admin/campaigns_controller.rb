@@ -28,7 +28,7 @@ class Operator::Admin::CampaignsController < Operator::BaseController
 
   def show
     @recipient_count = @campaign.recipient_count_for(current_location)
-    @recipients = @campaign.build_recipient_query(current_location).limit(20)
+    @recipients = @campaign.build_recipient_query(current_location).limit(50)
   end
 
   def edit
@@ -90,6 +90,12 @@ class Operator::Admin::CampaignsController < Operator::BaseController
     @recipient_count = @campaign.recipient_count_for(current_location)
     @recipients = @campaign.build_recipient_query(current_location).limit(50)
     render layout: false
+  end
+
+  def exclude_recipient
+    @campaign.exclude_user!(params[:user_id].to_i)
+    flash[:notice] = "Removed from this campaign."
+    turbo_redirect(campaign_path(@campaign))
   end
 
   def test_send

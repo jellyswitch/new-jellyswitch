@@ -36,6 +36,23 @@ class Campaign < ApplicationRecord
     status == "active"
   end
 
+  def excluded_user_ids
+    segment["excluded_user_ids"] || []
+  end
+
+  def exclude_user!(user_id)
+    ids = excluded_user_ids
+    ids << user_id unless ids.include?(user_id)
+    self.segment = segment.merge("excluded_user_ids" => ids)
+    save!
+  end
+
+  def include_user!(user_id)
+    ids = excluded_user_ids - [user_id]
+    self.segment = segment.merge("excluded_user_ids" => ids)
+    save!
+  end
+
   def segment_customer_types
     segment["customer_types"] || []
   end
@@ -93,6 +110,10 @@ class Campaign < ApplicationRecord
 
     # Exclude opted-out, bounced, and marketing-suppressed
     users = users.where(email_opted_out: false, email_bounced: false, marketing_suppressed: false)
+
+    # Exclude per-campaign exclusions
+    excluded = excluded_user_ids
+    users = users.where.not(id: excluded) if excluded.any?
 
     users
   end
