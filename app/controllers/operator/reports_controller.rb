@@ -5,6 +5,36 @@ class Operator::ReportsController < Operator::BaseController
 
   def index
     authorize :report, :index?
+    @period = params[:period] || "12m"
+    @period_days = case @period
+                   when "30d" then 30
+                   when "90d" then 90
+                   when "12m" then 365
+                   when "ytd" then (Date.today - Date.today.beginning_of_year).to_i
+                   else 365
+                   end
+    @location_events = LocationEvent.where(operator: current_tenant, location: current_location)
+                                    .order(date: :desc).limit(10) if current_location
+    @insights = @report.insights if current_location
+  end
+
+  def create_location_event
+    authorize :report, :index?
+    LocationEvent.create!(
+      operator: current_tenant,
+      location: current_location,
+      name: params[:location_event][:name],
+      date: params[:location_event][:date]
+    )
+    flash[:notice] = "Event added."
+    turbo_redirect(reports_path)
+  end
+
+  def delete_location_event
+    authorize :report, :index?
+    LocationEvent.find(params[:id]).destroy
+    flash[:notice] = "Event removed."
+    turbo_redirect(reports_path)
   end
 
   def member_csv

@@ -1,91 +1,232 @@
 <% title "Data" %>
 
 <%= super_wide_card do %>
-  <h4 class="display-4 mb-1 text-center"><%= current_location ? "#{current_location.name} Data" : "Data" %></h4>
-  <p class="text-center text-muted mb-4">
-    Change to another location for its data
-  </p>
+  <h4 class="display-4 mb-1 text-center"><%= current_location ? "#{current_location.name} Dashboard" : "Dashboard" %></h4>
+  <p class="text-center text-muted mb-4">Change to another location for its data</p>
 
-  <%# ── Key Metrics ── %>
+  <%# ── Primary KPIs ── %>
+  <% if current_location %>
+    <div class="row text-center mb-3">
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h2 mb-0 font-weight-bold text-primary"><%= number_to_currency(@report.mrr, precision: 0) %></div>
+          <div class="text-muted small mt-1">MRR</div>
+          <% mom = @report.mrr_mom_change %>
+          <% if mom %>
+            <small class="<%= mom >= 0 ? 'text-success' : 'text-danger' %>">
+              <%= mom >= 0 ? '+' : '' %><%= mom %>% vs last month
+            </small>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h2 mb-0 font-weight-bold text-warning"><%= @report.churn_rate %>%</div>
+          <div class="text-muted small mt-1">Churn Rate</div>
+          <small class="text-muted"><%= @report.churned_members_count %> cancelled (30d)</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h2 mb-0 font-weight-bold text-info"><%= @report.room_utilization(@period_days) %>%</div>
+          <div class="text-muted small mt-1">Room Utilization</div>
+          <small class="text-muted">8am–6pm hours booked</small>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h2 mb-0 font-weight-bold text-success"><%= @report.attendance_rate(@period_days) %>%</div>
+          <div class="text-muted small mt-1">Attendance</div>
+          <small class="text-muted">Members visiting (door punches)</small>
+        </div>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ── Secondary KPIs ── %>
   <% breakdown = @report.active_member_breakdown %>
-  <div class="row text-center mb-3">
-    <div class="col-6 mb-3">
+  <div class="row text-center mb-2">
+    <div class="col-6 col-lg-3 mb-3">
       <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-          <div class="h1 mb-0 font-weight-bold text-primary"><%= @report.active_member_count %></div>
+        <div class="border rounded p-3 h-100">
+          <div class="h3 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
           <div class="text-muted small mt-1">Active Members</div>
           <small class="text-muted" style="font-size: 0.7rem;">
-            <%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> out-of-band<% end %>
+            <%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> oob<% end %>
           </small>
         </div>
       <% end %>
     </div>
 
-    <div class="col-6 mb-3">
-      <%= link_to active_leases_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-          <div class="h1 mb-0 font-weight-bold text-success"><%= @report.active_lease_count %></div>
-          <div class="text-muted small mt-1">Active Leases</div>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <% growth = @report.net_member_growth(@period_days) %>
+        <div class="h3 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>">
+          <%= growth >= 0 ? '+' : '' %><%= growth %>
         </div>
-      <% end %>
+        <div class="text-muted small mt-1">Net Growth</div>
+        <small class="text-muted">new - cancelled</small>
+      </div>
     </div>
 
-    <div class="col-6 mb-3">
-      <%= link_to active_lease_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-          <div class="h1 mb-0 font-weight-bold text-info"><%= @report.active_lease_member_count %></div>
-          <div class="text-muted small mt-1">Lease Members</div>
-        </div>
-      <% end %>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="h3 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_member, precision: 0) %></div>
+        <div class="text-muted small mt-1">Rev / Member</div>
+        <small class="text-muted">this month</small>
+      </div>
     </div>
 
-    <div class="col-6 mb-3">
-      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-        <% if current_location %>
-          <div class="mb-0 font-weight-bold text-warning" style="font-size: 1.4rem;"><%= number_to_currency(@report.this_month_revenue, precision: 0) %></div>
-          <div class="text-muted small mt-1">Revenue This Month</div>
-        <% else %>
-          <div class="h2 mb-0 font-weight-bold text-muted">--</div>
-          <div class="text-muted small mt-1">Revenue This Month</div>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="h3 mb-0 font-weight-bold"><%= @report.average_member_tenure %></div>
+        <div class="text-muted small mt-1">Avg Tenure (mo)</div>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Smart Insights ── %>
+  <% if @insights.present? && @insights.any? %>
+    <div class="alert alert-light border mb-3" style="font-size: 13px;">
+      <strong><i class="fas fa-lightbulb text-warning"></i> Insights</strong>
+      <ul class="mb-0 mt-1 pl-3">
+        <% @insights.each do |insight| %>
+          <li><%= insight %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── Period Toggle ── %>
+<% if current_location %>
+  <%= super_wide_card do %>
+    <div class="text-center mb-3" data-controller="period-toggle">
+      <div class="btn-group" role="group">
+        <% %w[30d 90d 12m ytd].each do |p| %>
+          <button class="btn btn-sm <%= @period == p ? 'btn-primary' : 'btn-outline-secondary' %>"
+                  data-period-toggle-target="button"
+                  data-period="<%= p %>"
+                  data-action="period-toggle#select">
+            <%= p == "ytd" ? "YTD" : p.upcase %>
+          </button>
         <% end %>
       </div>
     </div>
-  </div>
 
-  <%# ── Secondary Stats ── %>
-  <div class="row text-center mb-2">
-    <div class="col-6 mb-3">
-      <%= link_to total_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-          <div class="h3 mb-0 font-weight-bold"><%= @report.all_member_count %></div>
-          <div class="text-muted small">Total Members</div>
+    <%# ── MRR Trend ── %>
+    <h5 class="text-center mb-3">MRR Trend</h5>
+    <%= line_chart @report.mrr_by_month([@period_days / 30, 3].max),
+          prefix: "$", thousands: ",",
+          colors: ["#4e79a7"],
+          height: "250px",
+          library: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } %>
+  <% end %>
+
+  <%# ── Revenue by Month ── %>
+  <% if policy(:report).revenue? %>
+    <%= super_wide_card do %>
+      <h5 class="text-center mb-3">Revenue — Last 12 Months</h5>
+      <p class="text-center text-muted small mb-3">Invoices + lease supplements</p>
+      <%= column_chart @report.revenue_by_month,
+            prefix: "$", thousands: ",",
+            colors: ["#4e79a7"],
+            height: "300px",
+            library: { scales: { y: { beginAtZero: true } }, plugins: { legend: { display: false } } } %>
+
+      <%# Location Events ── %>
+      <% if @location_events.present? && @location_events.any? %>
+        <div class="mt-3">
+          <small class="text-muted"><strong>Events:</strong></small>
+          <% @location_events.each do |event| %>
+            <span class="badge badge-light border mr-1">
+              <%= event.date.strftime("%b %e") %> — <%= event.name %>
+              <%= link_to "×", delete_location_event_reports_path(id: event.id), data: { turbo_method: :delete }, class: "text-danger ml-1", style: "text-decoration: none;" %>
+            </span>
+          <% end %>
         </div>
       <% end %>
-    </div>
 
-    <div class="col-6 mb-3">
-      <%= link_to last_30_day_passes_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
-        <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-          <div class="h3 mb-0 font-weight-bold"><%= @report.last_30_day_pass_count %></div>
-          <div class="text-muted small">Day Passes (30d)</div>
-        </div>
-      <% end %>
-    </div>
+      <div class="mt-2">
+        <%= form_with url: create_location_event_reports_path, method: :post, local: true, class: "form-inline" do |f| %>
+          <input type="date" name="location_event[date]" class="form-control form-control-sm mr-1" value="<%= Date.today %>" required>
+          <input type="text" name="location_event[name]" class="form-control form-control-sm mr-1" placeholder="Event name (e.g., Summer starts)" required style="min-width: 200px;">
+          <button class="btn btn-outline-secondary btn-sm" type="submit"><i class="fas fa-plus"></i> Add</button>
+        <% end %>
+      </div>
 
-    <div class="col-6 mb-3">
-      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-        <div class="h3 mb-0 font-weight-bold"><%= @report.free_member_count %></div>
-        <div class="text-muted small">Free Members</div>
+      <div class="text-center mt-3">
+        <%= link_to "Detailed Revenue", revenue_reports_path, class: "btn btn-outline-primary btn-sm" %>
+      </div>
+    <% end %>
+  <% end %>
+
+  <%# ── Revenue by Product ── %>
+  <%= super_wide_card do %>
+    <h5 class="text-center mb-3">Revenue by Product</h5>
+    <div class="row">
+      <div class="col-md-8 mx-auto">
+        <%= pie_chart @report.revenue_by_product(@period_days),
+              donut: true, prefix: "$",
+              legend: "bottom",
+              colors: ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2"],
+              height: "280px" %>
       </div>
     </div>
+  <% end %>
 
-    <div class="col-6 mb-3">
-      <div class="border rounded p-3 h-100 d-flex flex-column justify-content-center">
-        <div class="h3 mb-0 font-weight-bold"><%= @report.checkins_last_30_days_count %></div>
-        <div class="text-muted small">Check-ins (30d)</div>
+  <%# ── Day Pass Conversion ── %>
+  <%= super_wide_card do %>
+    <h5 class="text-center mb-3">Day Pass → Member Conversion</h5>
+    <div class="row text-center">
+      <div class="col">
+        <div class="h2 font-weight-bold"><%= @report.day_pass_conversion_rate %>%</div>
+        <div class="text-muted">of day pass buyers became members</div>
+      </div>
+      <div class="col">
+        <div class="h2 font-weight-bold"><%= @report.last_30_day_pass_count %></div>
+        <div class="text-muted">day passes (30d)</div>
       </div>
     </div>
-  </div>
+  <% end %>
+
+  <%# ── Peak Hours Heatmap ── %>
+  <% heatmap = @report.peak_hours_heatmap(@period_days) %>
+  <% if heatmap.values.any? { |v| v.any? } %>
+    <%= super_wide_card do %>
+      <h5 class="text-center mb-3">Peak Hours (Door Punches)</h5>
+      <div class="table-responsive">
+        <table class="table table-sm text-center" style="font-size: 12px;">
+          <thead>
+            <tr>
+              <th></th>
+              <% (8..17).each do |h| %>
+                <th><%= h > 12 ? "#{h-12}p" : h == 12 ? "12p" : "#{h}a" %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% max_val = heatmap.values.flat_map { |v| v.values }.max || 1 %>
+            <% %w[Mon Tue Wed Thu Fri].each do |day| %>
+              <tr>
+                <td class="font-weight-bold text-left"><%= day %></td>
+                <% (8..17).each do |h| %>
+                  <% count = heatmap.dig(day, h) || 0 %>
+                  <% intensity = max_val > 0 ? (count.to_f / max_val * 255).round : 0 %>
+                  <td style="background-color: rgba(78, 121, 167, <%= intensity / 255.0 %>); color: <%= intensity > 127 ? '#fff' : '#333' %>;">
+                    <%= count > 0 ? count : '' %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  <% end %>
 <% end %>
 
 <%# ── Membership Breakdown ── %>
@@ -104,26 +245,6 @@
   <div class="text-center mt-3">
     <%= link_to "View Details", membership_breakdown_reports_path, class: "btn btn-outline-primary btn-sm" %>
   </div>
-<% end %>
-
-<%# ── Revenue Trend ── %>
-<% if policy(:report).revenue? && current_location %>
-  <%= super_wide_card do %>
-    <h5 class="text-center mb-3">Revenue — Last 12 Months</h5>
-    <p class="text-center text-muted small mb-3">Based on paid invoices</p>
-    <%= column_chart @report.revenue_by_month,
-          prefix: "$",
-          thousands: ",",
-          colors: ["#4e79a7"],
-          height: "300px",
-          library: {
-            scales: { y: { beginAtZero: true } },
-            plugins: { legend: { display: false } }
-          } %>
-    <div class="text-center mt-3">
-      <%= link_to "Detailed Revenue", revenue_reports_path, class: "btn btn-outline-primary btn-sm" %>
-    </div>
-  <% end %>
 <% end %>
 
 <%# ── Lifetime Value ── %>
@@ -180,44 +301,37 @@
           Active Leases
           <span class="badge badge-primary badge-pill"><%= @report.active_lease_count %></span>
         <% end %>
-        <%= link_to active_lease_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
-          Lease Members
-          <span class="badge badge-primary badge-pill"><%= @report.active_lease_member_count %></span>
-        <% end %>
         <%= link_to total_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
           Total Members
           <span class="badge badge-primary badge-pill"><%= @report.all_member_count %></span>
+        <% end %>
+        <%= link_to checkins_reports_path, class: "list-group-item list-group-item-action" do %>
+          Check-ins
         <% end %>
       </div>
     </div>
 
     <div class="col-md-6">
       <div class="list-group list-group-flush">
-        <%= link_to membership_breakdown_reports_path, class: "list-group-item list-group-item-action" do %>
-          Membership Breakdown
-        <% end %>
         <% if policy(:report).revenue? %>
           <%= link_to revenue_reports_path, class: "list-group-item list-group-item-action" do %>
             Revenue
           <% end %>
         <% end %>
-        <%= link_to checkins_reports_path, class: "list-group-item list-group-item-action" do %>
-          Check-ins
-        <% end %>
         <%= link_to last_30_day_passes_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
-          Day Passes (30 days)
+          Day Passes (30d)
           <span class="badge badge-primary badge-pill"><%= @report.last_30_day_pass_count %></span>
         <% end %>
         <% if current_location %>
-          <%= link_to ltv_reports_path, class: "list-group-item list-group-item-action" do %>
-            Customer Lifetime Value
-          <% end %>
           <%= link_to room_demand_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
             Room Demand
             <% demand_count = RoomDemandMiss.for_location(current_location).last_30_days.count %>
             <% if demand_count > 0 %>
               <span class="badge badge-danger badge-pill"><%= demand_count %></span>
             <% end %>
+          <% end %>
+          <%= link_to monetization_reports_path(location_id: current_location.id), class: "list-group-item list-group-item-action" do %>
+            Monetization
           <% end %>
         <% end %>
       </div>
@@ -236,14 +350,4 @@
       <% end %>
     </div>
   </div>
-<% end %>
-
-<%# ── Monetization ── %>
-<% if current_location %>
-  <%= wide_card do %>
-    <h5 class="text-center mb-3">Monetization</h5>
-    <%= link_to monetization_reports_path(location_id: current_location.id), class: "btn btn-primary btn-block" do %>
-      View Monetization — <%= current_location.name %>
-    <% end %>
-  <% end %>
 <% end %>

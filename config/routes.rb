@@ -377,6 +377,8 @@ Rails.application.routes.draw do
       get :checkins
       get :ltv
       get :room_demand
+      post :create_location_event
+      delete :delete_location_event
     end
   end
   resources :todays_activity, controller: "operator/todays_activity", only: [:index]

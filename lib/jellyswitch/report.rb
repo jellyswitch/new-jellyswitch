@@ -317,7 +317,251 @@ module Jellyswitch
       build_ltv_result("Meeting Rooms", user_totals.values)
     end
 
+    # ── Analytics Dashboard Metrics ──
+
+    def mrr
+      return 0 unless location
+      total = 0.0
+      Subscription.where(plan: plans.individual.nonzero, active: true).includes(:plan).find_each do |sub|
+        total += normalize_to_monthly(sub.plan)
+      end
+      # Add lease MRR
+      office_leases.active.includes(subscription: :plan).each do |lease|
+        total += normalize_to_monthly(lease.subscription&.plan) if lease.subscription&.plan
+      end
+      total
+    end
+
+    def mrr_by_month(months = 12)
+      result = {}
+      months.times do |i|
+        date = i.months.ago.beginning_of_month
+        label = date.strftime("%b %Y")
+        # Count subscriptions active at that point
+        sub_mrr = Subscription.where(plan: plans.individual.nonzero, active: true)
+          .where("subscriptions.created_at <= ?", date.end_of_month)
+          .includes(:plan)
+          .sum { |s| normalize_to_monthly(s.plan) }
+        result[label] = sub_mrr
+      end
+      result.reverse_each.to_h
+    end
+
+    def churn_rate
+      return 0 unless location
+      churned = churned_members_count
+      total = active_member_count + churned
+      return 0 if total == 0
+      (churned.to_f / total * 100).round(1)
+    end
+
+    def churned_members_count(period_days = 30)
+      FeedItem.where(operator: operator)
+        .where("blob->>'type' = ?", "membership_cancellation")
+        .where("created_at > ?", period_days.days.ago)
+        .count
+    end
+
+    def room_utilization(period_days = 30)
+      return 0 unless location
+      rooms = location.rooms.visible
+      return 0 if rooms.count == 0
+
+      business_hours_per_day = 10.0 # 8am-6pm
+      business_days = (period_days * 5.0 / 7).round # approximate weekdays
+      available_hours = rooms.count * business_hours_per_day * business_days
+
+      booked_minutes = Reservation.where(room: rooms, cancelled: false)
+        .where("datetime_in > ?", period_days.days.ago)
+        .where("EXTRACT(HOUR FROM datetime_in) >= 8 AND EXTRACT(HOUR FROM datetime_in) < 18")
+        .sum(:minutes)
+
+      return 0 if available_hours == 0
+      ((booked_minutes / 60.0) / available_hours * 100).round(1)
+    end
+
+    def attendance_rate(period_days = 30)
+      return 0 unless location
+      member_count = active_member_count
+      return 0 if member_count == 0
+
+      unique_visitors = DoorPunch.where(door: location.doors)
+        .where("created_at > ?", period_days.days.ago)
+        .distinct.count(:user_id)
+
+      (unique_visitors.to_f / member_count * 100).round(1)
+    end
+
+    def net_member_growth(period_days = 30)
+      new_members = User.for_space(operator)
+        .originally_at_location(location)
+        .approved.visible
+        .where("users.created_at > ?", period_days.days.ago)
+        .count
+      cancelled = churned_members_count(period_days)
+      new_members - cancelled
+    end
+
+    def revenue_per_member
+      member_count = active_member_count
+      return 0 if member_count == 0
+      (this_month_revenue / member_count).round(2)
+    end
+
+    def average_member_tenure
+      members = active_members
+      return 0 if members.count == 0
+      total_months = members.sum { |u| ((Time.current - u.created_at) / 1.month).round(1) }
+      (total_months / members.count).round(1)
+    end
+
+    def day_pass_conversion_rate
+      return 0 unless location
+      dp_users = day_passes.distinct.count(:user_id)
+      return 0 if dp_users == 0
+
+      converted = day_passes.joins("INNER JOIN subscriptions ON subscriptions.subscribable_id = day_passes.user_id AND subscriptions.subscribable_type = 'User'")
+        .where("subscriptions.created_at > day_passes.created_at")
+        .distinct.count("day_passes.user_id")
+
+      (converted.to_f / dp_users * 100).round(1)
+    end
+
+    def revenue_by_product(period_days = 365)
+      result = {}
+      cutoff = period_days.days.ago
+
+      # Membership revenue
+      result["Memberships"] = location_invoices.paid
+        .where(billable_type: "User")
+        .where("due_date > ?", cutoff)
+        .sum(:amount_due).to_f / 100.0
+
+      # Day pass revenue
+      result["Day Passes"] = day_passes.joins(:day_pass_type)
+        .where("day_passes.created_at > ?", cutoff)
+        .sum("day_pass_types.amount_in_cents").to_f / 100.0
+
+      # Meeting room revenue
+      room_ids = (location&.rooms&.rentable&.pluck(:id) || [])
+      if room_ids.any?
+        result["Meeting Rooms"] = Reservation.where(room_id: room_ids, cancelled: false, paid: true)
+          .where("datetime_in > ?", cutoff)
+          .joins(:room)
+          .sum("(rooms.hourly_rate_in_cents / 60.0) * reservations.minutes").to_f / 100.0
+      end
+
+      # Office lease revenue
+      result["Office Leases"] = location_invoices.paid
+        .where(billable_type: "Organization")
+        .where("due_date > ?", cutoff)
+        .sum(:amount_due).to_f / 100.0
+
+      result.reject { |_, v| v <= 0 }
+    end
+
+    def peak_hours_heatmap(period_days = 30)
+      return {} unless location
+      punches = DoorPunch.where(door: location.doors)
+        .where("created_at > ?", period_days.days.ago)
+
+      heatmap = {}
+      %w[Mon Tue Wed Thu Fri Sat Sun].each { |d| heatmap[d] = {} }
+
+      punches.find_each do |punch|
+        day = punch.created_at.strftime("%a")
+        hour = punch.created_at.hour
+        next if hour < 8 || hour >= 18
+        heatmap[day] ||= {}
+        heatmap[day][hour] ||= 0
+        heatmap[day][hour] += 1
+      end
+
+      heatmap
+    end
+
+    # ── Seasonal Intelligence ──
+
+    def yoy_change(current_value, metric_method)
+      last_year_value = calculate_last_year(metric_method)
+      return nil if last_year_value.nil? || last_year_value == 0
+      ((current_value - last_year_value).to_f / last_year_value * 100).round(1)
+    end
+
+    def insights
+      results = []
+      mom_mrr = mrr_mom_change
+      yoy_mrr = yoy_change(mrr, :mrr)
+
+      if mom_mrr && mom_mrr < 0 && yoy_mrr && yoy_mrr >= 0
+        results << "MRR is down #{mom_mrr.abs}% from last month, but up #{yoy_mrr}% vs #{Date.today.prev_year.strftime('%B %Y')} — seasonal pattern typical for #{Date.today.strftime('%B')}."
+      elsif mom_mrr && mom_mrr > 0
+        results << "MRR is up #{mom_mrr}% from last month."
+      end
+
+      if attendance_rate > 0
+        busiest = peak_busiest_day
+        results << "Your busiest day this month was #{busiest[:day]} (#{busiest[:count]} door punches)." if busiest
+      end
+
+      inactive_count = inactive_member_count
+      results << "#{inactive_count} members haven't visited in 30+ days." if inactive_count > 0
+
+      conv = day_pass_conversion_rate
+      results << "#{conv}% of day pass buyers eventually became members." if conv > 0
+
+      util = room_utilization
+      results << "Room utilization is at #{util}% of available hours." if util > 0
+
+      results.first(5)
+    end
+
+    def mrr_mom_change
+      current = mrr
+      # Rough last month MRR from the trend
+      last_month_invoices = location_invoices.paid
+        .where(due_date: 1.month.ago.beginning_of_month..1.month.ago.end_of_month)
+        .sum(:amount_due).to_f / 100.0
+      return nil if last_month_invoices == 0
+      ((current - last_month_invoices) / last_month_invoices * 100).round(1)
+    end
+
+    def inactive_member_count
+      return 0 unless location
+      active_members.select do |user|
+        user.door_punches.where("created_at > ?", 30.days.ago).none? &&
+        user.reservations.where("created_at > ?", 30.days.ago).none?
+      end.count
+    end
+
+    def peak_busiest_day(period_days = 30)
+      return nil unless location
+      counts = DoorPunch.where(door: location.doors)
+        .where("created_at > ?", period_days.days.ago)
+        .group("DATE(created_at)")
+        .count
+      return nil if counts.empty?
+      busiest = counts.max_by { |_, v| v }
+      { day: busiest[0].strftime("%A, %B %e"), count: busiest[1] }
+    end
+
     private
+
+    def normalize_to_monthly(plan)
+      return 0.0 unless plan
+      amount = plan.amount_in_cents.to_f / 100.0
+      case plan.interval
+      when "monthly" then amount
+      when "quarterly" then amount / 3.0
+      when "biannually" then amount / 6.0
+      when "annually" then amount / 12.0
+      else amount
+      end
+    end
+
+    def calculate_last_year(metric_method)
+      nil # Would require historical data snapshots; placeholder for now
+    end
 
     def build_ltv_result(product, values)
       values = values.reject { |v| v <= 0 }
