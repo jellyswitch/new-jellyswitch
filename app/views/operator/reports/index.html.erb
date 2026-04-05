@@ -26,7 +26,9 @@
           <div class="font-weight-bold <%= @churn_value > 5 ? 'text-danger' : 'text-warning' %>" style="font-size: 1.4rem;"><%= @churn_value %>%</div>
           <div class="text-muted small">Churn Rate</div>
           <div class="mt-1" style="font-size: 11px;">
-            <span class="text-muted"><%= @report.churned_members_count %> cancelled (30d)</span>
+            <% @churn_by_period.each do |period, count| %>
+              <span class="text-muted mr-1"><%= period %>: <%= count %></span>
+            <% end %>
           </div>
         </div>
       </div>
@@ -76,8 +78,12 @@
         <div class="border rounded p-3 h-100">
           <% growth = @report.net_member_growth(30) %>
           <div class="h4 mb-0 font-weight-bold <%= growth >= 0 ? 'text-success' : 'text-danger' %>"><%= growth >= 0 ? '+' : '' %><%= growth %></div>
-          <div class="text-muted small">Net Growth (30d)</div>
-          <div style="font-size: 10px;" class="text-muted"><%= @report.new_members_count(30) %> new · <%= @report.churned_members_count(30) %> cancelled</div>
+          <div class="text-muted small">Net Member Growth</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <% @growth_by_period.each do |period, val| %>
+              <span class="<%= val >= 0 ? 'text-success' : 'text-danger' %> mr-1"><%= period %>: <%= val >= 0 ? '+' : '' %><%= val %></span>
+            <% end %>
+          </div>
         </div>
       </div>
 

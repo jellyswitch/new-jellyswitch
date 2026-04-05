@@ -22,6 +22,18 @@ class Operator::ReportsController < Operator::BaseController
       @mrr_value = @report.mrr rescue 0
       @mrr_trends = @report.trends_for(:mrr, @mrr_value) rescue {}
       @churn_value = @report.churn_rate rescue 0
+      @churn_by_period = {
+        "30d" => @report.churned_members_count(30),
+        "90d" => @report.churned_members_count(90),
+        "1yr" => @report.churned_members_count(365),
+        "all" => @report.churned_members_count(3650)
+      } rescue {}
+      @growth_by_period = {
+        "30d" => @report.net_member_growth(30),
+        "90d" => @report.net_member_growth(90),
+        "1yr" => @report.net_member_growth(365),
+        "all" => @report.net_member_growth(3650)
+      } rescue {}
       @util_value = @report.room_utilization rescue 0
       @util_trends = @report.trends_for(:room_utilization, @util_value) rescue {}
       @visits_value = @report.avg_visits_per_member_per_month rescue 0
