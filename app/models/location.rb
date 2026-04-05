@@ -211,7 +211,9 @@ class Location < ApplicationRecord
   end
 
   def effective_google_reviews_url
-    google_reviews_url.presence || operator.google_reviews_url
+    url = google_reviews_url.presence || operator.google_reviews_url
+    return nil unless url.present?
+    url.start_with?("http") ? url : "https://#{url}"
   end
 
   def effective_renewal_reminder_days
