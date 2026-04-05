@@ -492,6 +492,16 @@ class Operator::UsersController < Operator::BaseController
     end
   end
 
+  def toggle_email_preferences
+    type = params[:type]
+    if type == "marketing"
+      current_user.update!(email_opted_out: !current_user.email_opted_out?)
+      status = current_user.email_opted_out? ? "unsubscribed from" : "subscribed to"
+      flash[:notice] = "You've been #{status} marketing emails."
+    end
+    turbo_redirect(user_path(current_user))
+  end
+
   private
 
   def verify_recaptcha(token)
