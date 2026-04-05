@@ -49,6 +49,11 @@ class Operator::ReportsController < Operator::BaseController
     turbo_redirect(reports_path)
   end
 
+  def inactive_members
+    authorize :report, :index?
+    @inactive_members = @report.inactive_members
+  end
+
   def member_csv
     authorize :report, :member_csv?
     MemberCsvExportJob.perform_later(current_tenant.id, current_location&.id, current_user.email)

@@ -1,0 +1,59 @@
+<% title "Inactive Members" %>
+
+<%= render "shared/back_bar", back_path: reports_path, back_label: "Dashboard", page_title: "Inactive Members" %>
+
+<%= render(Layout::FullWidth.new) do %>
+  <%= list_wrapper do %>
+    <%= list_item do %>
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h5 class="mb-0">Members with no visits in 30+ days</h5>
+          <small class="text-muted"><%= @inactive_members.count %> members — no door punches or room bookings in the last 30 days</small>
+        </div>
+        <%= link_to new_campaign_path, class: "btn btn-primary btn-sm" do %>
+          <i class="fas fa-envelope"></i> Send Re-engagement Campaign
+        <% end %>
+      </div>
+
+      <% if @inactive_members.any? %>
+        <table class="table table-sm" style="font-size: 13px;">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Member Since</th>
+              <th>Last Visit</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @inactive_members.each do |user| %>
+              <% last_punch = user.door_punches.order(created_at: :desc).first %>
+              <% last_reservation = user.reservations.order(created_at: :desc).first %>
+              <% last_activity = [last_punch&.created_at, last_reservation&.created_at].compact.max %>
+              <tr>
+                <td><%= link_to user.name, user_path(user) %></td>
+                <td><%= user.email %></td>
+                <td><%= user.created_at.strftime("%b %Y") %></td>
+                <td>
+                  <% if last_activity %>
+                    <span class="text-danger"><%= time_ago_in_words(last_activity) %> ago</span>
+                  <% else %>
+                    <span class="text-muted">Never</span>
+                  <% end %>
+                </td>
+                <td>
+                  <%= link_to user_path(user), class: "btn btn-outline-secondary btn-sm" do %>
+                    View
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-center text-muted mt-4">All members have been active in the last 30 days!</p>
+      <% end %>
+    <% end %>
+  <% end %>
+<% end %>

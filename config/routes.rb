@@ -377,6 +377,7 @@ Rails.application.routes.draw do
       get :checkins
       get :ltv
       get :room_demand
+      get :inactive_members
       post :create_location_event
       delete :delete_location_event
     end

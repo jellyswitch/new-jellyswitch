@@ -369,8 +369,8 @@ module Jellyswitch
       if inactive > 0
         results << {
           text: "#{inactive} members haven't visited in 30+ days.",
-          action: "Send re-engagement campaign",
-          path: :campaigns_path,
+          action: "View inactive members",
+          path: :inactive_members_reports_path,
           urgency: inactive > 10 ? :high : :medium
         }
       end
@@ -756,12 +756,12 @@ module Jellyswitch
       ((current - last_month_invoices) / last_month_invoices * 100).round(1)
     end
 
-    def inactive_member_count
-      return 0 unless location
+    def inactive_member_ids
+      return [] unless location
       cutoff = 30.days.ago
 
       active_ids = active_members.pluck(:id)
-      return 0 if active_ids.empty?
+      return [] if active_ids.empty?
 
       door_active_ids = DoorPunch.where(user_id: active_ids)
         .where("created_at > ?", cutoff).distinct.pluck(:user_id)
@@ -769,7 +769,15 @@ module Jellyswitch
         .where("created_at > ?", cutoff).distinct.pluck(:user_id)
 
       visited_ids = (door_active_ids + reservation_active_ids).uniq
-      active_ids.count - visited_ids.count
+      active_ids - visited_ids
+    end
+
+    def inactive_members
+      User.where(id: inactive_member_ids).order(:name)
+    end
+
+    def inactive_member_count
+      inactive_member_ids.count
     end
 
     def peak_busiest_day(period_days = 30)
