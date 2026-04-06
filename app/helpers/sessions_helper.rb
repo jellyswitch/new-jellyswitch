@@ -60,6 +60,7 @@ module SessionsHelper
       loc = Location.unscoped.find_by(id: session[:location_id])
 
       if loc && loc.operator != current_tenant
+        Rails.logger.warn "[LOCATION DEBUG] Cross-tenant unset: loc.operator_id=#{loc.operator_id} current_tenant.id=#{current_tenant&.id} session_loc=#{session[:location_id]}"
         unset_location
       end
     end
@@ -74,6 +75,7 @@ module SessionsHelper
 
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
+      Rails.logger.warn "[LOCATION DEBUG] Session lookup: location_id=#{location_id} found=#{@current_location&.id} tenant=#{current_tenant&.id}" unless @current_location
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
       found_location = current_tenant.locations.find_by(id: location_id)
       if found_location
@@ -89,6 +91,7 @@ module SessionsHelper
     elsif current_tenant && current_user
       # Multi-location operator with no location selected yet — this is expected.
       # The user will be redirected to select a location by reset_location in BaseController.
+      Rails.logger.warn "[LOCATION DEBUG] No location resolved: session=#{session[:location_id]} cookie=#{cookies.signed[:location_id]} tenant=#{current_tenant&.id} user=#{current_user&.id} loc_count=#{current_tenant&.locations&.count}"
       nil
     end
   end
