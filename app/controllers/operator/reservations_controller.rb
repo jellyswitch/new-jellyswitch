@@ -219,7 +219,7 @@ class Operator::ReservationsController < Operator::BaseController
 
   def destroy
     find_reservation
-    authorize @reservation
+    authorize @reservation, :cancel?
 
     result = CancelReservation.call(reservation: @reservation)
 
