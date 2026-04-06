@@ -73,7 +73,9 @@ module SessionsHelper
     end
 
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
-      @current_location ||= current_tenant.locations.find_by(id: location_id)
+      found = current_tenant.locations.find_by(id: location_id)
+      Rails.logger.warn "[CL] find_by inside current_location: loc_id=#{location_id} found=#{found&.id} tenant=#{current_tenant&.id} AaT=#{ActsAsTenant.current_tenant&.id} caller=#{caller.first(3).join(' | ')}" unless found
+      @current_location ||= found
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
       found_location = current_tenant.locations.find_by(id: location_id)
       if found_location
