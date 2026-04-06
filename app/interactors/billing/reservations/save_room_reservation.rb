@@ -30,7 +30,7 @@ class Billing::Reservations::SaveRoomReservation
     context.notifiable = reservation
 
     if !reservation.save
-      context.fail!(message: "Unable to create reservation, please try again.")
+      context.fail!(message: reservation.errors.full_messages.first || "Unable to create reservation, please try again.")
     end
   end
 
