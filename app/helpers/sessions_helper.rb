@@ -13,6 +13,7 @@ module SessionsHelper
 
   def set_location(location)
     session[:location_id] = location.id
+    cookies.signed[:location_id] = { value: location.id, expires: 1.year.from_now }
     @current_location = location
   end
 
