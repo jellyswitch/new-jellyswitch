@@ -55,7 +55,7 @@ class FeedItemComponent < ApplicationComponent
     when "demand-miss"
       true
     when "daily-digest"
-      true
+      false
     else
       false
     end

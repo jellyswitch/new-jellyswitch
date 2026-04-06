@@ -2,15 +2,7 @@ class DailyActivityDigestJob < ApplicationJob
   queue_as :default
 
   def perform
-    Operator.where(billing_state: "production").find_each do |operator|
-      operator.locations.each do |location|
-        next unless location.visible?
-
-        Time.use_zone(location.time_zone) do
-          generate_digest(operator, location)
-        end
-      end
-    end
+    # Disabled: daily digest feed items had no useful display content
   end
 
   private
