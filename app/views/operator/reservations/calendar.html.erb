@@ -2,7 +2,7 @@
 
 <% title "Reservation" %>
 
-<div id="reservation-calendar-container" data-controller="reservation-calendar" data-location-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_location.time_zone] %>" data-is-manager="<%= current_user.role != User::UNASSIGNED %>">
+<div id="reservation-calendar-container" data-controller="reservation-calendar" data-location-timezone="<%= ActiveSupport::TimeZone::MAPPING[current_location.time_zone] %>" data-is-manager="<%= current_user&.role != User::UNASSIGNED %>">
   <div class="full-calendar-container">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2 class="mb-0">Reservation Date</h2>

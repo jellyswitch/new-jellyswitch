@@ -66,6 +66,11 @@ module SessionsHelper
     # if I already have a current location set, return it
     return @current_location if @current_location
 
+    if !respond_to?(:session) || !respond_to?(:cookies)
+      # No request context (e.g., background job or Turbo broadcast)
+      return nil
+    end
+
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
