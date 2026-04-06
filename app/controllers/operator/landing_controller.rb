@@ -4,12 +4,6 @@ class Operator::LandingController < Operator::BaseController
   include EventHelper
 
   def index
-    loc_id = session[:location_id]
-    if loc_id && current_location.nil?
-      scoped = current_tenant.locations.find_by(id: loc_id)
-      unscoped = Location.unscoped.find_by(id: loc_id)
-      Rails.logger.warn "[LANDING] BUG: session has #{loc_id} but current_location nil. scoped_find=#{scoped&.id} unscoped_find=#{unscoped&.id} unscoped_operator=#{unscoped&.operator_id} tenant=#{current_tenant&.id} ActsAsTenant=#{ActsAsTenant.current_tenant&.id}"
-    end
     landing_redirect
   end
 

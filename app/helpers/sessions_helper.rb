@@ -50,7 +50,6 @@ module SessionsHelper
 
   def current_location
     if !defined?(current_tenant)
-      Rails.logger.warn "[CL] EXIT1: current_tenant not defined" if session[:location_id]
       return nil
     end
 
@@ -59,24 +58,20 @@ module SessionsHelper
       loc = Location.unscoped.find_by(id: session[:location_id])
 
       if loc && loc.operator != current_tenant
-        Rails.logger.warn "[CL] EXIT2: cross-tenant unset loc=#{loc.operator_id} tenant=#{current_tenant&.id}"
         unset_location
       end
     end
 
     # if I already have a current location set, return it
-    if @current_location
-      return @current_location
-    end
+    return @current_location if @current_location
 
-    if !respond_to?(:session) || !respond_to?(:cookies)
-      Rails.logger.warn "[CL] EXIT4: no session/cookies. session=#{respond_to?(:session)} cookies=#{respond_to?(:cookies)}" if session[:location_id] rescue nil
+    if !respond_to?(:session, true) || !respond_to?(:cookies, true)
+      # No request context (e.g., background job or Turbo broadcast)
       return nil
     end
 
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
-      Rails.logger.warn "[CL] EXIT5: find_by result=#{@current_location&.id} for loc=#{location_id}" unless @current_location
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
       found_location = current_tenant.locations.find_by(id: location_id)
       if found_location

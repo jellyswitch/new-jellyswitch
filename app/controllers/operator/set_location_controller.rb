@@ -10,7 +10,6 @@ class Operator::SetLocationController < Operator::BaseController
     location = Location.find(location_params[:id])
     update_location(location)
 
-    Rails.logger.warn "[SET_LOCATION] after update: session_loc=#{session[:location_id]} cookie_loc=#{cookies.signed[:location_id]} location=#{location.id}"
     turbo_redirect(root_path)
   rescue ActiveRecord::RecordNotFound => e
     Honeybadger.notify(e)
