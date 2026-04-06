@@ -4,6 +4,7 @@ class Operator::LandingController < Operator::BaseController
   include EventHelper
 
   def index
+    Rails.logger.warn "[LANDING] index: session_loc=#{session[:location_id]} cookie_loc=#{cookies.signed[:location_id]} current_location=#{current_location&.id} logged_in=#{logged_in?} tenant=#{current_tenant&.id}"
     landing_redirect
   end
 
