@@ -182,12 +182,12 @@
         <% if @user.email_opted_out? %>
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span><i class="fas fa-envelope-open text-warning"></i> Unsubscribed from marketing emails</span>
-            <%= link_to "Re-subscribe", toggle_email_opt_out_path(user_id: @user.id), class: "btn btn-outline-success btn-sm", data: { turbo_method: :post } %>
+            <%= link_to "Re-subscribe", toggle_email_opt_out_reports_path(user_id: @user.id), class: "btn btn-outline-success btn-sm", data: { turbo_method: :post } %>
           </div>
         <% else %>
           <div class="d-flex justify-content-between align-items-center mb-2">
             <span><i class="fas fa-envelope text-success"></i> Receiving marketing emails</span>
-            <%= link_to "Unsubscribe", toggle_email_opt_out_path(user_id: @user.id), class: "btn btn-outline-warning btn-sm", data: { turbo_method: :post, turbo_confirm: "Unsubscribe #{@user.name} from marketing emails?" } %>
+            <%= link_to "Unsubscribe", toggle_email_opt_out_reports_path(user_id: @user.id), class: "btn btn-outline-warning btn-sm", data: { turbo_method: :post, turbo_confirm: "Unsubscribe #{@user.name} from marketing emails?" } %>
           </div>
         <% end %>
         <% if @user.marketing_suppressed? %>
