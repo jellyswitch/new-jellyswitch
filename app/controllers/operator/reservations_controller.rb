@@ -1,4 +1,5 @@
 class Operator::ReservationsController < Operator::BaseController
+  before_action :require_authentication
   before_action :background_image, except: [:reserve_now, :reserve_now_price]
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
 
