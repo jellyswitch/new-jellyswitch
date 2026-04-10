@@ -1,4 +1,5 @@
 class Operator::EmailConfirmationsController < Operator::BaseController
+  skip_before_action :reset_location
   before_action :background_image
 
   def show
