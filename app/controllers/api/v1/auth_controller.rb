@@ -58,8 +58,12 @@ class Api::V1::AuthController < Api::V1::BaseController
     user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
 
     if user
-      user.create_reset_digest
-      user.send_password_reset_email
+      begin
+        user.create_reset_digest
+        user.send_password_reset_email
+      rescue => e
+        Rails.logger.error("Password reset email failed: #{e.message}")
+      end
     end
 
     # Always return success to prevent email enumeration

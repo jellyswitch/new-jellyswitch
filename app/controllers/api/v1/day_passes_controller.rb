@@ -3,14 +3,13 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     types = DayPassType.where(operator: current_tenant)
       .where(location: current_location)
       .where(available: true)
-      .order(:price_in_cents)
+      .order(:amount_in_cents)
 
     render json: types.map { |t|
       {
         id: t.id,
         name: t.name,
-        price: t.price_in_cents,
-        description: t.try(:description),
+        price: t.amount_in_cents,
         included_meeting_minutes: t.try(:included_meeting_room_minutes),
       }
     }
@@ -19,16 +18,16 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def index
     passes = current_api_user.day_passes
       .where(operator: current_tenant)
-      .order(date: :desc)
+      .order(day: :desc)
       .limit(20)
 
     render json: passes.map { |dp|
       {
         id: dp.id,
-        date: dp.date&.strftime("%B %e, %Y"),
+        date: dp.day&.strftime("%B %e, %Y"),
         type_name: dp.day_pass_type&.name,
-        paid: dp.paid?,
-        complimentary: dp.complimentary?,
+        paid: dp.stripe_charge_id.present?,
+        complimentary: dp.complimentary,
       }
     }
   end
@@ -40,13 +39,13 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     day_pass = DayPass.new(
       user: current_api_user,
       day_pass_type: day_pass_type,
-      date: date,
+      day: date,
       operator: current_tenant,
       location: current_location,
     )
 
     # If paid type and user provides a new card token, update payment first
-    if day_pass_type.price_in_cents > 0 && params[:stripe_token].present?
+    if day_pass_type.amount_in_cents > 0 && params[:stripe_token].present?
       Billing::Payment::UpdateUserPayment.call(
         user: current_api_user,
         token: params[:stripe_token],
@@ -57,7 +56,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     if day_pass.save
       # Charge via Stripe if paid type
-      if day_pass_type.price_in_cents > 0
+      if day_pass_type.amount_in_cents > 0
         begin
           Billing::DayPasses::ChargeDayPass.call(
             day_pass: day_pass,
@@ -70,7 +69,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
           return render_error("Payment failed: #{e.message}")
         end
       end
-      render json: { success: true, id: day_pass.id, date: day_pass.date.strftime("%B %e, %Y") }, status: :created
+      render json: { success: true, id: day_pass.id, date: day_pass.day.strftime("%B %e, %Y") }, status: :created
     else
       render_error(day_pass.errors.full_messages.first)
     end
@@ -87,7 +86,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     day_pass = DayPass.create(
       user: current_api_user,
       day_pass_type: day_pass_code.day_pass_type,
-      date: Date.current,
+      day: Date.current,
       operator: current_tenant,
       location: current_location,
       complimentary: true,

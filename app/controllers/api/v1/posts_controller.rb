@@ -24,12 +24,11 @@ class Api::V1::PostsController < Api::V1::BaseController
 
   def create
     post = Post.new(
-      body: params[:body],
-      subject: params[:subject],
+      title: params[:subject],
       user: current_api_user,
-      operator: current_tenant,
       location: current_location,
     )
+    post.content = params[:body] if params[:body].present?
 
     if post.save
       render json: post_json(post), status: :created
@@ -43,8 +42,8 @@ class Api::V1::PostsController < Api::V1::BaseController
   def post_json(post)
     {
       id: post.id,
-      body: post.body,
-      subject: post.try(:subject),
+      body: post.content&.to_plain_text,
+      subject: post.title,
       author: post.user&.name,
       reply_count: post.post_replies.count,
       created_at: post.created_at.strftime("%B %e, %Y"),

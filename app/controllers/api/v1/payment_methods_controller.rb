@@ -29,17 +29,21 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
     token = params[:stripe_token]
     return render_error('Payment token required') if token.blank?
 
-    result = Billing::Payment::UpdateUserPayment.call(
-      user: current_api_user,
-      token: token,
-      operator: current_tenant,
-      location: current_location,
-    )
+    begin
+      result = Billing::Payment::UpdateUserPayment.call(
+        user: current_api_user,
+        token: token,
+        operator: current_tenant,
+        location: current_location,
+      )
 
-    if result.success?
-      render json: { success: true }
-    else
-      render_error(result.message || 'Unable to update payment method')
+      if result.success?
+        render json: { success: true }
+      else
+        render_error(result.message || 'Unable to update payment method')
+      end
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      render_error("Payment error: #{e.message}")
     end
   end
 end

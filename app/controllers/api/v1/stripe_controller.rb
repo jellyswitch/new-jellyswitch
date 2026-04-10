@@ -12,21 +12,29 @@ class Api::V1::StripeController < Api::V1::BaseController
     user = current_api_user
 
     # Ensure user has a Stripe customer on this location's connected account
-    result = CreateStripeCustomer.call(user: user, location: location)
+    begin
+      result = CreateStripeCustomer.call(user: user, location: location)
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      return render_error("Stripe error: #{e.message}")
+    end
     customer_id = user.stripe_customer_id_for_location(location)
 
     return render_error('Unable to create customer') unless customer_id
 
     # Create SetupIntent on the connected account
-    setup_intent = Stripe::SetupIntent.create(
-      { customer: customer_id, payment_method_types: ['card'] },
-      { stripe_account: location.stripe_user_id },
-    )
+    begin
+      setup_intent = Stripe::SetupIntent.create(
+        { customer: customer_id, payment_method_types: ['card'] },
+        { stripe_account: location.stripe_user_id },
+      )
 
-    render json: {
-      client_secret: setup_intent.client_secret,
-      setup_intent_id: setup_intent.id,
-    }
+      render json: {
+        client_secret: setup_intent.client_secret,
+        setup_intent_id: setup_intent.id,
+      }
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      render_error("Stripe error: #{e.message}")
+    end
   end
 
   def validate_discount_code

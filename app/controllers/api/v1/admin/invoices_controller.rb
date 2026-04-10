@@ -38,15 +38,19 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
   def charge
     invoice = Invoice.find(params[:id])
 
-    result = Billing::Invoices::ChargeInvoice.call(
-      invoice: invoice,
-      operator: invoice.operator,
-    )
+    begin
+      result = Billing::Invoices::ChargeInvoice.call(
+        invoice: invoice,
+        operator: invoice.operator,
+      )
 
-    if result.success?
-      render json: { success: true }
-    else
-      render_error(result.message)
+      if result.success?
+        render json: { success: true }
+      else
+        render_error(result.message)
+      end
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      render_error("Payment processing error: #{e.message}")
     end
   end
 
@@ -60,16 +64,20 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
     invoice = Invoice.find(params[:id])
     refundable = RefundableFactory.for(invoice)
 
-    result = Billing::Invoices::Refunds::Create.call(
-      operator: current_tenant,
-      invoice: refundable,
-      location: current_location,
-    )
+    begin
+      result = Billing::Invoices::Refunds::Create.call(
+        operator: current_tenant,
+        invoice: refundable,
+        location: current_location,
+      )
 
-    if result.success?
-      render json: { success: true, message: 'Refund issued successfully.' }
-    else
-      render_error(result.message || 'Unable to issue refund')
+      if result.success?
+        render json: { success: true, message: 'Refund issued successfully.' }
+      else
+        render_error(result.message || 'Unable to issue refund')
+      end
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      render_error("Refund processing error: #{e.message}")
     end
   end
 

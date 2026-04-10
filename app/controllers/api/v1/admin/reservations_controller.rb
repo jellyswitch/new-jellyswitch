@@ -26,8 +26,8 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
       {
         id: r.id,
         room_id: r.room_id,
-        room_name: r.room.name,
-        user_name: r.user.name,
+        room_name: r.room&.name,
+        user_name: r.user&.name,
         start: r.datetime_in,
         end: r.datetime_out
       }
@@ -107,8 +107,8 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   def reservation_json(r)
     {
       id: r.id,
-      room_name: r.room.name,
-      user_name: r.user.name,
+      room_name: r.room&.name,
+      user_name: r.user&.name,
       date: r.datetime_in.strftime("%B %e, %Y"),
       time: r.datetime_in.strftime("%l:%M %p").strip,
       duration: "#{r.minutes} min",

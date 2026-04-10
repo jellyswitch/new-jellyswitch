@@ -36,7 +36,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   private
 
   def room_params
-    params.require(:room).permit(:name, :capacity, :hourly_rate_in_cents, :av, :whiteboard, :visible, :rentable, :description)
+    params.require(:room).permit(:name, :capacity, :hourly_rate_in_cents, :visible, :rentable, :description)
   end
 
   def room_json(room)
@@ -45,8 +45,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       name: room.name,
       capacity: room.capacity,
       hourly_rate: room.hourly_rate_in_cents,
-      av: room.av,
-      whiteboard: room.whiteboard,
+      description: room.description,
       visible: room.visible,
       rentable: room.rentable,
     }

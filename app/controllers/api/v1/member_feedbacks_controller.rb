@@ -20,14 +20,14 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
       }
     }
 
-    feedback.update(read_by_member: true) unless feedback.read_by_member?
+    feedback.update(last_read_at: Time.current) if feedback.last_read_at.nil?
 
     render json: feedback_json(feedback).merge(replies: replies)
   end
 
   def create
     feedback = MemberFeedback.new(
-      body: params[:body],
+      comment: params[:body],
       rating: params[:rating],
       user: current_api_user,
       operator: current_tenant,
@@ -67,11 +67,11 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
   def feedback_json(f)
     {
       id: f.id,
-      body: f.body,
+      body: f.comment,
       rating: f.rating,
-      status: f.try(:status) || (f.feedback_replies.any? ? 'replied' : 'open'),
+      status: f.feedback_replies.any? ? 'replied' : 'open',
       reply_count: f.feedback_replies.count,
-      unread: !f.read_by_member?,
+      unread: f.last_read_at.nil?,
       created_at: f.created_at.strftime("%B %e, %Y"),
     }
   end
