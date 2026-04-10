@@ -1,10 +1,14 @@
 class Api::V1::StripeController < Api::V1::BaseController
   def config
-    location = current_location
-    render json: {
-      publishable_key: location&.stripe_publishable_key,
-      account_id: location&.stripe_user_id,
-    }
+    begin
+      location = current_location
+      render json: {
+        publishable_key: location&.stripe_publishable_key,
+        account_id: location&.stripe_user_id,
+      }
+    rescue => e
+      render json: { publishable_key: nil, account_id: nil, error: e.message }
+    end
   end
 
   def setup_intent

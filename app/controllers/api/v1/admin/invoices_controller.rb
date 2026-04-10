@@ -13,7 +13,15 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
 
     invoices = invoices.order(created_at: :desc).limit(params[:limit] || 50)
 
-    render json: invoices.map { |inv| invoice_json(inv) }
+    render json: invoices.map { |inv|
+      begin
+        invoice_json(inv)
+      rescue => e
+        { id: inv.id, amount_due: inv.amount_due, status: inv.status, error: e.message }
+      end
+    }
+  rescue => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
 
   def create

@@ -17,8 +17,8 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
             exp_year: source.exp_year,
           }
         end
-      rescue Stripe::InvalidRequestError
-        # No valid customer
+      rescue Stripe::InvalidRequestError, Stripe::AuthenticationError, Stripe::APIConnectionError, Stripe::StripeError => e
+        Rails.logger.warn("PaymentMethod Stripe error: #{e.message}")
       end
     end
 
