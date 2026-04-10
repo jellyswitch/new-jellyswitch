@@ -16,6 +16,10 @@ class Api::V1::UsersController < Api::V1::BaseController
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
       credit_balance: user.credit_balance,
+      location_id: user.current_location_id || user.original_location_id,
+      operator_subdomain: user.operator.subdomain,
+      features: location_features(user),
+      locations: user.operator.locations.map { |l| { id: l.id, name: l.name } },
     }
   end
 
@@ -25,6 +29,52 @@ class Api::V1::UsersController < Api::V1::BaseController
     else
       render_error(current_api_user.errors.full_messages.first)
     end
+  end
+
+  def change_password
+    user = current_api_user
+    unless user.authenticate(params[:current_password])
+      return render_error('Current password is incorrect')
+    end
+
+    if params[:new_password].length < 6
+      return render_error('New password must be at least 6 characters')
+    end
+
+    user.password = params[:new_password]
+    if user.save
+      render json: { success: true }
+    else
+      render_error(user.errors.full_messages.first)
+    end
+  end
+
+  def upload_profile_photo
+    if params[:photo].blank?
+      return render_error('No photo provided')
+    end
+
+    current_api_user.profile_photo.attach(params[:photo])
+    render json: { success: true, has_profile_photo: true }
+  end
+
+  def switch_location
+    location = current_tenant.locations.find(params[:location_id])
+    current_api_user.update(current_location: location)
+    render json: { success: true, location: location.name }
+  rescue ActiveRecord::RecordNotFound
+    render_error('Location not found', status: :not_found)
+  end
+
+  def destroy_account
+    user = current_api_user
+    # Cancel active subscriptions
+    user.subscriptions.where(active: true).each do |sub|
+      sub.update(active: false, cancelling_at_end_of_billing_period: true)
+    end
+    # Soft-delete: archive and remove access
+    user.update(approved: false, archived: true)
+    render json: { success: true }
   end
 
   def register_push_token
@@ -44,5 +94,20 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   def user_params
     params.require(:user).permit(:name, :phone, :bio, :linkedin, :twitter, :website, :preferred_room_id, :preferred_meeting_duration)
+  end
+
+  def location_features(user)
+    loc = user.current_location || user.original_location
+    return {} unless loc
+    {
+      rooms_enabled: loc.rooms_enabled?,
+      door_integration_enabled: loc.door_integration_enabled?,
+      events_enabled: loc.events_enabled?,
+      bulletin_board_enabled: loc.bulletin_board_enabled?,
+      credits_enabled: loc.credits_enabled?,
+      offices_enabled: loc.offices_enabled?,
+      day_passes_enabled: loc.day_passes_enabled?,
+      announcements_enabled: loc.announcements_enabled?,
+    }
   end
 end

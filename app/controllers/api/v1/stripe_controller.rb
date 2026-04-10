@@ -1,0 +1,54 @@
+class Api::V1::StripeController < Api::V1::BaseController
+  def config
+    location = current_location
+    render json: {
+      publishable_key: location&.stripe_publishable_key,
+      account_id: location&.stripe_user_id,
+    }
+  end
+
+  def setup_intent
+    location = current_location
+    user = current_api_user
+
+    # Ensure user has a Stripe customer on this location's connected account
+    result = CreateStripeCustomer.call(user: user, location: location)
+    customer_id = user.stripe_customer_id_for_location(location)
+
+    return render_error('Unable to create customer') unless customer_id
+
+    # Create SetupIntent on the connected account
+    setup_intent = Stripe::SetupIntent.create(
+      { customer: customer_id, payment_method_types: ['card'] },
+      { stripe_account: location.stripe_user_id },
+    )
+
+    render json: {
+      client_secret: setup_intent.client_secret,
+      setup_intent_id: setup_intent.id,
+    }
+  end
+
+  def validate_discount_code
+    code = params[:code]&.strip
+    return render_error('Please enter a code') if code.blank?
+
+    result = Billing::DiscountCodes::ValidateCode.call(
+      code: code,
+      operator: current_tenant,
+    )
+
+    if result.success?
+      dc = result.discount_code
+      render json: {
+        valid: true,
+        code: dc.code,
+        discount_type: dc.discount_type,
+        discount_value: dc.discount_value,
+        description: dc.try(:description),
+      }
+    else
+      render json: { valid: false, error: result.message || 'Invalid code' }
+    end
+  end
+end

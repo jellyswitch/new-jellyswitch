@@ -1,7 +1,12 @@
 class Api::V1::BaseController < ApplicationController
-  skip_before_action :verify_authenticity_token
+  skip_before_action :verify_authenticity_token, raise: false
   before_action :authenticate_api_v1
   before_action :set_tenant_from_header
+  around_action :disable_search_indexing
+
+  def disable_search_indexing
+    Searchkick.callbacks(false) { yield }
+  end
 
   private
 
@@ -25,10 +30,18 @@ class Api::V1::BaseController < ApplicationController
     subdomain = request.headers['X-Operator-Subdomain']
     if subdomain.present?
       operator = Operator.find_by(subdomain: subdomain.downcase)
-      set_current_tenant(operator) if operator
+      ActsAsTenant.current_tenant = operator if operator
     elsif current_api_user
-      set_current_tenant(current_api_user.operator)
+      ActsAsTenant.current_tenant = current_api_user.operator
     end
+  end
+
+  def current_tenant
+    ActsAsTenant.current_tenant
+  end
+
+  def set_current_tenant(tenant)
+    ActsAsTenant.current_tenant = tenant
   end
 
   def current_location

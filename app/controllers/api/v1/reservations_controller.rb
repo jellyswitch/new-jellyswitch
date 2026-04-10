@@ -14,20 +14,28 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     room = Room.find(params[:reservation][:room_id])
     datetime_in = Time.parse(params[:reservation][:datetime_in])
     minutes = params[:reservation][:minutes].to_i
+    date = datetime_in.to_date
 
-    reservation = Reservation.new(
-      room: room,
+    day_pass_charge_info = current_api_user.day_pass_reservation_charge_info(current_location, date, minutes)
+    subscription_charge_info = current_api_user.subscription_reservation_charge_info(current_location, minutes)
+
+    result = Billing::Reservations::CreateRoomReservation.call(
+      reservation_params: {
+        datetime_in: datetime_in,
+        hours: minutes / 60.0,
+        minutes: minutes,
+        room: room,
+      },
       user: current_api_user,
-      datetime_in: datetime_in,
-      minutes: minutes,
-      hours: minutes / 60.0,
+      location: current_location,
+      day_pass_charge_info: day_pass_charge_info,
+      subscription_charge_info: subscription_charge_info,
     )
 
-    if reservation.save
-      # Schedule reminders
-      render json: reservation_json(reservation), status: :created
+    if result.success?
+      render json: reservation_json(result.reservation), status: :created
     else
-      render_error(reservation.errors.full_messages.first)
+      render_error(result.error || 'Booking failed')
     end
   end
 

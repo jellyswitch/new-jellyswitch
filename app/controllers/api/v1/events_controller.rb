@@ -16,6 +16,21 @@ class Api::V1::EventsController < Api::V1::BaseController
     }}
   end
 
+  def show
+    event = Event.find(params[:id])
+    render json: {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      date: event.starts_at.strftime("%B %e, %Y"),
+      time: event.starts_at.strftime("%l:%M %p").strip,
+      end_time: event.ends_at&.strftime("%l:%M %p")&.strip,
+      location: event.location_string,
+      rsvped: current_api_user.rsvps.exists?(event: event),
+      rsvp_count: event.rsvps.count,
+    }
+  end
+
   def rsvp
     event = Event.find(params[:id])
     existing = current_api_user.rsvps.find_by(event: event)

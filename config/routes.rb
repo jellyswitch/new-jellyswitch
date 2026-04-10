@@ -9,6 +9,9 @@ Rails.application.routes.draw do
 
     namespace :v1 do
       post 'auth/login', to: 'auth#login'
+      post 'auth/signup', to: 'auth#signup'
+      post 'auth/forgot_password', to: 'auth#forgot_password'
+      post 'auth/reset_password', to: 'auth#reset_password'
       post 'auth/refresh', to: 'auth#refresh'
 
       get 'me', to: 'users#me'
@@ -34,10 +37,212 @@ Rails.application.routes.draw do
 
       resources :reservations, only: [:index, :create, :destroy]
 
-      resources :events, only: [:index] do
+      resources :events, only: [:index, :show] do
         member do
           post :rsvp
         end
+      end
+
+      # Memberships / Subscriptions
+      get 'plans', to: 'subscriptions#plans'
+      get 'my_subscription', to: 'subscriptions#my_subscription'
+      resources :subscriptions, only: [:create, :destroy] do
+        member do
+          post :pause
+          post :unpause
+          patch :upgrade
+        end
+      end
+
+      # Day Passes
+      get 'day_pass_types', to: 'day_passes#types'
+      get 'my_day_passes', to: 'day_passes#index'
+      resources :day_passes, only: [:create] do
+        collection do
+          post :redeem
+        end
+      end
+
+      # Bulletin Board / Posts
+      resources :posts, only: [:index, :show, :create] do
+        resources :replies, only: [:create], controller: 'post_replies'
+      end
+
+      # Member Feedback / Messages
+      resources :member_feedbacks, only: [:index, :show, :create] do
+        member do
+          post :reply
+        end
+      end
+
+      # Invoices
+      resources :invoices, only: [:index]
+
+      # Payment Method
+      get 'payment_method', to: 'payment_methods#show'
+      post 'payment_method', to: 'payment_methods#update'
+
+      # Profile enhancements
+      patch 'me/password', to: 'users#change_password'
+      post 'me/profile_photo', to: 'users#upload_profile_photo'
+      patch 'me/location', to: 'users#switch_location'
+      delete 'me', to: 'users#destroy_account'
+
+      # Announcements
+      resources :announcements, only: [:index]
+
+      # Check-in
+      get 'checkins/current', to: 'checkins#current'
+      resources :checkins, only: [:create, :destroy]
+
+      # Stripe
+      get 'stripe_config', to: 'stripe#config'
+      post 'setup_intent', to: 'stripe#setup_intent'
+      post 'validate_discount_code', to: 'stripe#validate_discount_code'
+
+      # Organizations
+      get 'my_organization', to: 'organizations#show'
+
+      # Admin namespace
+      namespace :admin do
+        # Feed
+        get 'feed', to: 'feed#index'
+        post 'feed', to: 'feed#create'
+        post 'feed/:id/comments', to: 'feed#comment'
+        delete 'feed/:id', to: 'feed#destroy'
+
+        # Today's Activity
+        get 'todays_activity', to: 'todays_activity#index'
+
+        # Members
+        get 'members', to: 'members#index'
+        get 'members/unapproved', to: 'members#unapproved'
+        get 'members/archived', to: 'members#archived'
+        post 'members', to: 'members#create'
+        get 'members/:id', to: 'members#show'
+        patch 'members/:id', to: 'members#update'
+        post 'members/:id/approve', to: 'members#approve'
+        post 'members/:id/unapprove', to: 'members#unapprove'
+        post 'members/:id/archive', to: 'members#archive'
+        post 'members/:id/unarchive', to: 'members#unarchive'
+        post 'members/:id/add_credits', to: 'members#add_credits'
+        post 'members/:id/change_payment', to: 'members#change_payment'
+
+        # Reservations
+        get 'reservations', to: 'reservations#index'
+        get 'reservations/calendar', to: 'reservations#calendar'
+        post 'reservations', to: 'reservations#create'
+        patch 'reservations/:id/extend', to: 'reservations#extend'
+        delete 'reservations/:id', to: 'reservations#destroy'
+
+        # Rooms
+        resources :rooms, only: [:index, :create, :update, :destroy]
+
+        # Announcements
+        get 'announcements', to: 'announcements#index'
+        post 'announcements', to: 'announcements#create'
+
+        # Events
+        resources :events, only: [:index, :create, :update, :destroy]
+
+        # Plans
+        resources :plans, only: [:index, :create, :update] do
+          member do
+            post :toggle_visibility
+            post :toggle_availability
+          end
+        end
+
+        # Day Pass Types
+        resources :day_pass_types, only: [:index, :create, :update]
+        get 'day_passes', to: 'day_passes#index'
+
+        # Invoices
+        get 'invoices', to: 'invoices#index'
+        post 'invoices', to: 'invoices#create'
+        post 'invoices/:id/refund', to: 'invoices#refund'
+        post 'invoices/:id/charge', to: 'invoices#charge'
+        post 'invoices/:id/mark_paid', to: 'invoices#mark_paid'
+        get 'accounting', to: 'invoices#accounting'
+
+        # Offices & Leases
+        resources :offices, only: [:index, :create, :update, :destroy]
+        get 'office_leases', to: 'office_leases#index'
+        get 'office_leases/renewals', to: 'office_leases#renewals'
+        post 'office_leases', to: 'office_leases#create'
+
+        # Organizations
+        resources :organizations, only: [:index, :show, :create, :update]
+
+        # Leads
+        resources :leads, only: [:index, :show, :update] do
+          resources :notes, only: [:create], controller: 'lead_notes'
+        end
+
+        # Doors
+        get 'doors', to: 'doors#index'
+        post 'doors/:id/open', to: 'doors#open'
+        get 'doors/:id/punches', to: 'doors#punches'
+
+        # Reports
+        get 'reports', to: 'reports#index'
+        get 'reports/revenue', to: 'reports#revenue'
+        get 'reports/room_demand', to: 'reports#room_demand'
+        get 'reports/members', to: 'reports#members'
+        get 'reports/checkins', to: 'reports#checkins'
+        get 'reports/ltv', to: 'reports#ltv'
+        post 'reports/member_csv', to: 'reports#member_csv'
+
+        # Feedback
+        get 'feedbacks', to: 'feedbacks#index'
+        get 'feedbacks/:id', to: 'feedbacks#show'
+        post 'feedbacks/:id/reply', to: 'feedbacks#reply'
+        post 'feedbacks/:id/dismiss', to: 'feedbacks#dismiss'
+
+        # Email Templates
+        resources :email_templates, only: [:index, :update] do
+          member do
+            post :toggle
+            get :send_log
+          end
+        end
+
+        # Campaigns
+        resources :campaigns, only: [:index, :create, :update, :destroy] do
+          member do
+            post :send_campaign
+            post :pause
+            post :resume
+            post :test_send
+          end
+        end
+
+        # Discount Codes
+        resources :discount_codes, only: [:index, :create, :update, :destroy]
+
+        # Settings
+        get 'settings', to: 'settings#show'
+        patch 'settings', to: 'settings#update'
+        get 'modules', to: 'settings#modules'
+        patch 'modules', to: 'settings#update_modules'
+        get 'notifications_config', to: 'settings#notifications'
+        patch 'notifications_config', to: 'settings#update_notifications'
+
+        # Posts (moderation)
+        get 'posts', to: 'posts#index'
+        delete 'posts/:id', to: 'posts#destroy'
+
+        # Checkins
+        get 'checkins', to: 'checkins#index'
+        post 'checkins', to: 'checkins#create'
+
+        # Recurring Reservations
+        resources :recurring_reservations, only: [:index, :create, :destroy] do
+          delete 'occurrences/:date', to: 'recurring_reservations#cancel_occurrence', on: :member
+        end
+
+        # Search
+        get 'search', to: 'search#index'
       end
     end
   end

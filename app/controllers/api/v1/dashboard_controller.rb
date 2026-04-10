@@ -32,6 +32,17 @@ class Api::V1::DashboardController < Api::V1::BaseController
         date: e.starts_at.strftime("%b %e at %l:%M %p").strip,
         rsvped: user_rsvp_ids.include?(e.id),
       } },
+      location_info: location ? {
+        name: location.name,
+        address: [location.building_address, location.city, location.state, location.zip].compact.reject(&:blank?).join(', '),
+        wifi_name: location.wifi_name,
+        wifi_password: location.wifi_password,
+        building_access_instructions: location.building_access_instructions,
+        contact_name: location.contact_name,
+        contact_phone: location.contact_phone,
+        contact_email: location.contact_email,
+        hours: "#{location.working_day_start} - #{location.working_day_end}",
+      } : nil,
     }
   end
 
