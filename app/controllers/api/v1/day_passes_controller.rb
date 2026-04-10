@@ -35,44 +35,30 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def create
     day_pass_type = DayPassType.find(params[:day_pass_type_id])
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    token = params[:stripe_token]
 
-    day_pass = DayPass.new(
-      user: current_api_user,
-      billable: current_api_user,
-      day_pass_type: day_pass_type,
-      day: date,
+    # Use the same interactor chain as the web app
+    interactor = token.present? ?
+      Billing::DayPasses::UpdatePaymentAndCreateDayPass :
+      Billing::DayPasses::CreateDayPass
+
+    result = interactor.call(
+      user_id: current_api_user.id,
+      token: token,
       operator: current_tenant,
       location: current_location,
+      params: {
+        day_pass_type: day_pass_type.id.to_s,
+        day: date,
+        operator_id: current_tenant.id,
+      },
     )
 
-    # If paid type and user provides a new card token, update payment first
-    if day_pass_type.amount_in_cents > 0 && params[:stripe_token].present?
-      Billing::Payment::UpdateUserPayment.call(
-        user: current_api_user,
-        token: params[:stripe_token],
-        operator: current_tenant,
-        location: current_location,
-      )
-    end
-
-    if day_pass.save
-      # Charge via Stripe if paid type
-      if day_pass_type.amount_in_cents > 0
-        begin
-          Billing::DayPasses::ChargeDayPass.call(
-            day_pass: day_pass,
-            user: current_api_user,
-            location: current_location,
-            operator: current_tenant,
-          )
-        rescue => e
-          day_pass.destroy
-          return render_error("Payment failed: #{e.message}")
-        end
-      end
-      render json: { success: true, id: day_pass.id, date: day_pass.day.strftime("%B %e, %Y") }, status: :created
+    if result.success?
+      dp = result.day_pass || DayPass.where(user: current_api_user).order(created_at: :desc).first
+      render json: { success: true, id: dp&.id, date: date.strftime("%B %e, %Y") }, status: :created
     else
-      render_error(day_pass.errors.full_messages.first)
+      render_error(result.message || 'Unable to create day pass')
     end
   end
 
