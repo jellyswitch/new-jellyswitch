@@ -1,5 +1,5 @@
 class Api::V1::StripeController < Api::V1::BaseController
-  def config
+  def show_config
     begin
       loc = current_api_user&.current_location || current_api_user&.original_location
       render json: {

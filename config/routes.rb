@@ -96,7 +96,7 @@ Rails.application.routes.draw do
       resources :checkins, only: [:create, :destroy]
 
       # Stripe
-      get 'stripe_config', to: 'stripe#config'
+      get 'stripe_config', to: 'stripe#show_config'
       post 'setup_intent', to: 'stripe#setup_intent'
       post 'validate_discount_code', to: 'stripe#validate_discount_code'
 
