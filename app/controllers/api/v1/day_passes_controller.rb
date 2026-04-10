@@ -2,7 +2,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def types
     types = DayPassType.where(operator: current_tenant)
       .where(location: current_location)
-      .where(available: true)
+      .where(available: true, visible: true)
       .order(:amount_in_cents)
 
     render json: types.map { |t|

@@ -1,7 +1,7 @@
 class Api::V1::SubscriptionsController < Api::V1::BaseController
   def plans
     categories = PlanCategory.where(operator: current_tenant).order(:name)
-    plans = Plan.where(operator: current_tenant, available: true, visible: true)
+    plans = Plan.where(operator: current_tenant, available: true, visible: true, plan_type: 'individual')
       .where(location: current_location)
       .order(:amount_in_cents)
 
