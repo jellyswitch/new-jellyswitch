@@ -38,6 +38,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     day_pass = DayPass.new(
       user: current_api_user,
+      billable: current_api_user,
       day_pass_type: day_pass_type,
       day: date,
       operator: current_tenant,
@@ -85,6 +86,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     day_pass = DayPass.create(
       user: current_api_user,
+      billable: current_api_user,
       day_pass_type: day_pass_code.day_pass_type,
       day: Date.current,
       operator: current_tenant,
