@@ -1,13 +1,13 @@
 class Api::V1::StripeController < Api::V1::BaseController
   def config
     begin
-      location = current_location
+      loc = current_api_user&.current_location || current_api_user&.original_location
       render json: {
-        publishable_key: location&.stripe_publishable_key,
-        account_id: location&.stripe_user_id,
+        publishable_key: loc&.stripe_publishable_key,
+        account_id: loc&.stripe_user_id,
       }
     rescue => e
-      render json: { publishable_key: nil, account_id: nil, error: e.message }
+      render json: { publishable_key: nil, account_id: nil }
     end
   end
 
