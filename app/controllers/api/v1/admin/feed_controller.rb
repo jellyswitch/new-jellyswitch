@@ -12,12 +12,16 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   end
 
   def create
+    body = params[:body]
     feed_item = FeedItem.create!(
-      blob: { 'type' => 'post', 'body' => params[:body], 'user_name' => current_api_user.name },
+      blob: { 'type' => 'post', 'body' => body, 'user_name' => current_api_user.name },
       operator: current_tenant,
       location: current_location,
       user: current_api_user
     )
+
+    # Send push notifications to @mentioned users
+    notify_mentioned_users(body, feed_item, current_api_user)
 
     render json: feed_item_json(feed_item), status: :created
   rescue ActiveRecord::RecordInvalid => e
@@ -26,11 +30,15 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
 
   def comment
     feed_item = FeedItem.find(params[:id])
+    body = params[:body]
 
     comment = feed_item.feed_item_comments.create!(
-      comment: params[:body],
+      comment: body,
       user: current_api_user
     )
+
+    # Send push notifications to @mentioned users
+    notify_mentioned_users(body, feed_item, current_api_user)
 
     render json: {
       id: comment.id,
@@ -171,5 +179,45 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     end
   rescue => e
     base.merge(action_text: type, body: fi.blob['text'] || fi.blob['body'])
+  end
+
+  def notify_mentioned_users(text, feed_item, sender)
+    return if text.blank?
+
+    # Extract @mentions — matches "@First Last" or "@First"
+    mentioned_names = text.scan(/@([A-Z][a-z]+ ?[A-Z]?[a-z]*)/).flatten
+    return if mentioned_names.empty?
+
+    mentioned_names.each do |name|
+      user = current_tenant.users.where("name ILIKE ?", name.strip).first
+      next unless user
+      next if user.id == sender.id # Don't notify yourself
+
+      # Send push notification
+      begin
+        if user.ios_token.present?
+          ios_notification = IosNotification.new(
+            token: user.ios_token,
+            bundle_id: user.operator.bundle_id,
+            message: "#{sender.name} mentioned you: #{text.truncate(100)}",
+            data: { screen: 'Feed' }
+          )
+          ios_notification.send_notification
+        end
+
+        if user.android_token.present?
+          # Android FCM push
+          Notifiable::Default.new(nil).send_android_notification(
+            user,
+            "#{sender.name} mentioned you",
+            text.truncate(100)
+          ) rescue nil
+        end
+      rescue => e
+        Rails.logger.error("Mention notification failed for #{user.email}: #{e.message}")
+      end
+    end
+  rescue => e
+    Rails.logger.error("notify_mentioned_users error: #{e.message}")
   end
 end
