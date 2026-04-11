@@ -1,6 +1,7 @@
 class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   def index
     items = FeedItem.where(operator: current_tenant)
+                    .includes(:user, :feed_item_comments)
                     .order(created_at: :desc)
 
     items = apply_filter(items, params[:filter]) if params[:filter].present?
@@ -66,15 +67,109 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   end
 
   def feed_item_json(fi)
-    {
+    type = fi.blob['type']
+    user = fi.user
+    base = {
       id: fi.id,
-      type: fi.blob['type'],
-      body: fi.blob['body'] || fi.blob['subject'],
-      user_name: fi.blob['user_name'],
-      amount: fi.blob['amount'],
+      type: type,
+      user_id: user&.id,
+      user_name: fi.blob['user_name'] || user&.name,
+      user_approved: user&.approved?,
       created_at: fi.created_at,
       expense: fi.expense,
-      comment_count: fi.feed_item_comments.count
+      comment_count: fi.feed_item_comments.size,
     }
+
+    case type
+    when 'subscription'
+      sub = Subscription.find_by(id: fi.blob['subscription_id'])
+      base.merge(
+        action_text: 'became a member',
+        plan_name: sub&.plan&.name,
+        amount: sub&.plan&.amount_in_cents,
+        requires_approval: true,
+      )
+    when 'day-pass', 'day_pass'
+      dp = DayPass.find_by(id: fi.blob['day_pass_id'])
+      base.merge(
+        action_text: 'bought a day pass',
+        day_pass_type: dp&.day_pass_type&.name,
+        amount: dp&.day_pass_type&.amount_in_cents,
+        day: dp&.day&.strftime("%B %e, %Y"),
+        requires_approval: true,
+      )
+    when 'reservation'
+      res = Reservation.find_by(id: fi.blob['reservation_id'])
+      base.merge(
+        action_text: 'reserved a room',
+        room_name: res&.room&.name,
+        when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
+        duration: res ? "#{res.minutes} min" : nil,
+        amount: res&.paid? ? (res.hours * res.room.hourly_rate_in_cents).round : nil,
+      )
+    when 'paid-room-reservation', 'paid_room_reservation'
+      res = Reservation.find_by(id: fi.blob['reservation_id'])
+      base.merge(
+        action_text: 'booked a paid meeting room',
+        room_name: res&.room&.name,
+        when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
+        duration: res ? "#{res.minutes} min" : nil,
+        amount: fi.blob['charge_amount_in_cents'] || (res&.hours.to_f * res&.room&.hourly_rate_in_cents.to_i).round,
+        requires_approval: true,
+      )
+    when 'feedback'
+      fb = MemberFeedback.find_by(id: fi.blob['member_feedback_id'])
+      base.merge(
+        action_text: 'sent a message',
+        body: fb&.comment,
+        feedback_id: fb&.id,
+        rating: fb&.rating,
+      )
+    when 'checkin'
+      checkin = Checkin.find_by(id: fi.blob['checkin_id'])
+      base.merge(
+        action_text: 'checked in',
+        location_name: checkin&.location&.name,
+        requires_approval: true,
+      )
+    when 'refund'
+      inv = Invoice.find_by(id: fi.blob['invoice_id'])
+      base.merge(
+        action_text: 'was issued a refund',
+        amount: inv&.amount_due,
+        description: inv&.try(:description),
+      )
+    when 'post'
+      base.merge(
+        action_text: fi.expense? ? 'posted an expense' : 'posted a note',
+        body: fi.blob['body'] || fi.blob['text'],
+        amount: fi.expense? ? fi.blob['amount'] : nil,
+      )
+    when 'membership_cancellation'
+      base.merge(action_text: 'canceled their membership', body: fi.blob['text'])
+    when 'membership_paused'
+      base.merge(action_text: 'paused their membership', body: fi.blob['text'])
+    when 'membership_unpaused'
+      base.merge(action_text: 'resumed their membership', body: fi.blob['text'])
+    when 'membership_updated'
+      base.merge(action_text: 'updated their membership', body: fi.blob['text'])
+    when 'payment_failed'
+      base.merge(action_text: 'had a payment failure', body: fi.blob['text'])
+    when 'account_deletion'
+      base.merge(action_text: 'deleted their account', body: fi.blob['text'])
+    when 'demand-miss', 'demand_miss'
+      base.merge(action_text: "couldn't find an available room", body: fi.blob['text'])
+    when 'new-user', 'new_user'
+      base.merge(action_text: 'signed up', requires_approval: true)
+    when 'lease_renewal'
+      base.merge(action_text: 'has a lease renewal proposal', body: fi.blob['text'])
+    else
+      base.merge(
+        action_text: type&.gsub('-', ' ')&.gsub('_', ' '),
+        body: fi.blob['body'] || fi.blob['text'] || fi.blob['subject'],
+      )
+    end
+  rescue => e
+    base.merge(action_text: type, body: fi.blob['text'] || fi.blob['body'])
   end
 end
