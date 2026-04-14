@@ -17,5 +17,12 @@ class Reservations::ScheduleUpcomingReservationReminder
     if booker_reminder_time > Time.current
       SendReservationReminderJob.set(wait_until: booker_reminder_time).perform_later(reservation.id)
     end
+
+    # Send a smart "meeting ending" push 10 minutes before the reservation ends
+    # Checks if room is free (offer to extend) or booked (wrap up)
+    meeting_ending_time = reservation.datetime_out - SendMeetingEndingReminderJob::REMINDER_MINUTES_BEFORE_END.minutes
+    if meeting_ending_time > Time.current
+      SendMeetingEndingReminderJob.set(wait_until: meeting_ending_time).perform_later(reservation.id)
+    end
   end
 end
