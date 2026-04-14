@@ -11,6 +11,7 @@ class Operator::DayPassesController < Operator::BaseController
   def new
     @day_pass = DayPass.new
     find_day_pass_type
+    return if performed?
     authorize @day_pass
     include_stripe
   end
