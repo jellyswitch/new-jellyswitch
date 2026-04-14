@@ -13,6 +13,7 @@ module SessionsHelper
 
   def set_location(location)
     session[:location_id] = location.id
+    cookies.signed[:location_id] = { value: location.id, expires: 1.year.from_now }
     @current_location = location
   end
 
@@ -52,8 +53,6 @@ module SessionsHelper
       return nil
     end
 
-    # this will only return nil if there is more than one location to choose and one has NOT been selected already
-
     # In case I"m a superadmin and my location is set to a different operator
     if session[:location_id]
       loc = Location.unscoped.find_by(id: session[:location_id])
@@ -65,6 +64,11 @@ module SessionsHelper
 
     # if I already have a current location set, return it
     return @current_location if @current_location
+
+    if !respond_to?(:session, true) || !respond_to?(:cookies, true)
+      # No request context (e.g., background job or Turbo broadcast)
+      return nil
+    end
 
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)

@@ -11,6 +11,7 @@ class Operator::DayPassesController < Operator::BaseController
   def new
     @day_pass = DayPass.new
     find_day_pass_type
+    return if performed?
     authorize @day_pass
     include_stripe
   end
@@ -148,6 +149,10 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   def find_day_pass_type(key=:day_pass_type_id)
+    if current_location.nil?
+      redirect_to root_path
+      return
+    end
     @day_pass_type = current_location.day_pass_types.find(params[key])
   end
 end

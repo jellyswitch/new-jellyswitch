@@ -19,8 +19,14 @@ module Notifiable
     end
 
     def recipients
-      operator.users.all.select do |user|
-        user.admin_of_location?(location) || (user.superadmin? && user.currently_at_location?(location)) || user.member_at_location?(location)
+      operator.users.visible.select do |user|
+        next false if user.email_opted_out? || user.marketing_suppressed?
+        next true if user.admin_of_location?(location) || user.superadmin?
+        next false unless user.member_at_location?(location)
+
+        user.subscriptions.active.any? ||
+          user.day_passes.where(day: Date.current).any? ||
+          user.organization&.office_leases&.active&.any?
       end
     end
   end

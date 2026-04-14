@@ -19,6 +19,7 @@
     <% if policy(:room).enabled? && current_location.rooms.visible.count > 0 %>
       <%= link_to "Meeting Room Preferences", "#meeting-prefs", class: "btn btn-block btn-primary", data: { toggle: "collapse" } %>
     <% end %>
+    <%= link_to "Email Preferences", "#email-prefs", class: "btn btn-block btn-primary", data: { toggle: "collapse" } %>
     <%= link_to "Change my password", user_change_password_path(current_user), class: "btn btn-block btn-info" %>
     <%= link_to "Change My Account", user_change_account_path(current_user), class: "btn btn-block btn-warning" %>
     <%= link_to "Log out", logout_path, data: { turbo_method: :delete }, class: "btn btn-block btn-warning" %>
@@ -48,6 +49,31 @@
         <% end %>
       </div>
     <% end %>
+  <% end %>
+
+  <%= list_item do %>
+    <div class="collapse" id="email-prefs">
+      <h5 class="font-weight-bold mb-3">Email Preferences</h5>
+      <p class="text-muted" style="font-size: 13px;">Choose which emails you'd like to receive from <%= current_tenant.name %>.</p>
+
+      <div class="list-group mb-3">
+        <div class="list-group-item d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Marketing & Announcements</strong>
+            <br/><small class="text-muted">Promotions, announcements, and community updates</small>
+          </div>
+          <%= link_to member_toggle_email_path(type: "marketing"),
+              class: "btn btn-sm #{current_user.email_opted_out? ? 'btn-outline-success' : 'btn-success'}",
+              data: { turbo_method: :post } do %>
+            <%= current_user.email_opted_out? ? "Turn On" : "On" %>
+          <% end %>
+        </div>
+      </div>
+
+      <small class="text-muted">
+        You'll always receive essential emails like booking confirmations, payment receipts, and password resets regardless of these settings.
+      </small>
+    </div>
   <% end %>
 
   <%= list_item do %>
@@ -151,21 +177,26 @@
         <p class="text-center text-muted">No emails sent to this user yet.</p>
       <% end %>
 
-      <% if @user.email_opted_out? %>
-        <div class="alert alert-warning mt-2">
-          <i class="fas fa-ban"></i> This user has unsubscribed from marketing emails.
-        </div>
-      <% end %>
-      <% if @user.marketing_suppressed? %>
-        <div class="alert alert-danger mt-2">
-          <i class="fas fa-ban"></i> Suppressed from all marketing
-          <% if @user.marketing_suppressed_reason.present? %>
-            — <%= @user.marketing_suppressed_reason %>
-          <% end %>
-          <br/>
-          <%= link_to "Restore to marketing", unsuppress_marketing_reports_path(user_id: @user.id), class: "btn btn-outline-success btn-sm mt-1", data: { turbo_method: :post } %>
-        </div>
-      <% end %>
+      <div class="mt-3 pt-2 border-top">
+        <h6>Email Preferences</h6>
+        <% if @user.email_opted_out? %>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span><i class="fas fa-envelope-open text-warning"></i> Unsubscribed from marketing emails</span>
+            <%= link_to "Re-subscribe", toggle_email_opt_out_reports_path(user_id: @user.id), class: "btn btn-outline-success btn-sm", data: { turbo_method: :post } %>
+          </div>
+        <% else %>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span><i class="fas fa-envelope text-success"></i> Receiving marketing emails</span>
+            <%= link_to "Unsubscribe", toggle_email_opt_out_reports_path(user_id: @user.id), class: "btn btn-outline-warning btn-sm", data: { turbo_method: :post, turbo_confirm: "Unsubscribe #{@user.name} from marketing emails?" } %>
+          </div>
+        <% end %>
+        <% if @user.marketing_suppressed? %>
+          <div class="d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-ban text-danger"></i> Suppressed from all marketing<%= " — #{@user.marketing_suppressed_reason}" if @user.marketing_suppressed_reason.present? %></span>
+            <%= link_to "Restore", unsuppress_marketing_reports_path(user_id: @user.id), class: "btn btn-outline-success btn-sm", data: { turbo_method: :post } %>
+          </div>
+        <% end %>
+      </div>
     <% end %>
   <% end %>
 

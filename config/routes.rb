@@ -514,6 +514,7 @@ Rails.application.routes.draw do
     end
   end
   resources :unsubscribes, controller: "operator/unsubscribes", only: [:show]
+  post "email_preferences", to: "operator/users#toggle_email_preferences", as: :member_toggle_email
   resources :campaigns, controller: "operator/admin/campaigns" do
     member do
       post :send_campaign
@@ -621,6 +622,7 @@ Rails.application.routes.draw do
       get :suppressed_members
       post :suppress_marketing
       post :unsuppress_marketing
+      post :toggle_email_opt_out
       post :dismiss_inactive
       post :create_location_event
       delete :delete_location_event
