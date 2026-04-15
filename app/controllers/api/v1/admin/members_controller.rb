@@ -158,18 +158,25 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     plan = Plan.find(params[:plan_id])
 
     subscription = Subscription.new(plan: plan, subscribable: user)
-    result = Billing::Subscription::CreateSubscription.call(
-      subscription: subscription,
-      user: user,
-      start_day: Date.current,
-      operator: current_tenant,
-      location: current_location,
-    )
 
-    if result.success?
-      render json: { success: true, plan_name: plan.name }
-    else
-      render_error(result.message || 'Could not assign plan')
+    begin
+      result = Billing::Subscription::CreateSubscription.call(
+        subscription: subscription,
+        user: user,
+        start_day: Date.current,
+        operator: current_tenant,
+        location: current_location,
+      )
+
+      if result.success?
+        render json: { success: true, plan_name: plan.name }
+      else
+        render_error(result.message || 'Could not assign plan')
+      end
+    rescue Stripe::InvalidRequestError => e
+      render_error("Stripe error: #{e.message}")
+    rescue => e
+      render_error(e.message)
     end
   end
 
