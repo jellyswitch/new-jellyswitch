@@ -152,6 +152,10 @@ Rails.application.routes.draw do
         post 'members/:id/cancel_subscription', to: 'members#cancel_subscription'
         post 'members/:id/cancel_subscription_now', to: 'members#cancel_subscription_now'
         post 'members/:id/reset_password', to: 'members#reset_password'
+        get 'members/:id/invoices', to: 'members#invoices'
+        get 'members/:id/reservations', to: 'members#reservations'
+        get 'members/:id/checkins', to: 'members#checkins'
+        get 'members/:id/usage', to: 'members#usage'
 
         # Reservations
         get 'reservations', to: 'reservations#index'

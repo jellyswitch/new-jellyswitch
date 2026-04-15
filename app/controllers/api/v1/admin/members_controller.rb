@@ -341,6 +341,48 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     render json: { success: true }
   end
 
+  def invoices
+    user = current_tenant.users.find(params[:id])
+    invoices = Invoice.where(billable: user, operator: current_tenant).order(created_at: :desc).limit(30)
+    render json: invoices.map { |inv| {
+      id: inv.id, amount_due: inv.amount_due, status: inv.status,
+      description: inv.try(:description), pdf_url: inv.try(:pdf_url),
+      created_at: inv.created_at.strftime("%B %e, %Y"),
+    }}
+  end
+
+  def reservations
+    user = current_tenant.users.find(params[:id])
+    reservations = user.reservations.where(cancelled: false).order(datetime_in: :desc).limit(30)
+    render json: reservations.map { |r| {
+      id: r.id, room_name: r.room&.name, date: r.datetime_in.strftime("%B %e, %Y"),
+      time: r.datetime_in.strftime("%l:%M %p").strip, minutes: r.minutes,
+      cancelled: r.cancelled,
+    }}
+  end
+
+  def checkins
+    user = current_tenant.users.find(params[:id])
+    checkins = user.checkins.order(created_at: :desc).limit(30)
+    render json: checkins.map { |c| {
+      id: c.id, date: c.created_at.strftime("%B %e, %Y"),
+      time: c.created_at.strftime("%l:%M %p").strip,
+      duration_minutes: c.try(:duration_minutes),
+    }}
+  end
+
+  def usage
+    user = current_tenant.users.find(params[:id])
+    period_start = Time.current.beginning_of_month
+    render json: {
+      reservation_count: user.reservations.where(cancelled: false).where("datetime_in >= ?", period_start).count,
+      reservation_minutes: user.reservations.where(cancelled: false).where("datetime_in >= ?", period_start).sum(:minutes),
+      checkin_count: user.checkins.where("created_at >= ?", period_start).count,
+      day_pass_count: user.day_passes.where("day >= ?", period_start.to_date).count,
+      period: Time.current.strftime("%B %Y"),
+    }
+  end
+
   private
 
   def search_users(scope)
