@@ -46,15 +46,25 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       email: user.email,
       phone: user.phone,
       bio: user.bio,
+      linkedin: user.try(:linkedin),
+      twitter: user.try(:twitter),
+      website: user.try(:website),
       role: user.role,
       approved: user.approved,
       plan_name: active_sub&.plan&.name,
       credit_balance: user.credit_balance,
       has_profile_photo: user.has_profile_photo?,
-      ltv: user.invoices.sum(:amount_paid),
+      ltv: Invoice.where(billable: user, operator: current_tenant).sum(:amount_paid),
       last_checkin: last_checkin&.datetime_in,
       member_since: user.created_at,
-      payment_method: user.payment_method
+      payment_method: user.try(:payment_method) || 'None',
+      day_pass_count: user.day_passes.where(operator: current_tenant).count,
+      reservation_count: user.reservations.where(cancelled: false).count,
+      invoice_count: Invoice.where(billable: user, operator: current_tenant).count,
+      organization_name: user.try(:organization)&.try(:name),
+      day_passes: user.day_passes.where(operator: current_tenant).order(day: :desc).limit(10).map { |dp|
+        { id: dp.id, date: dp.day&.strftime("%B %e, %Y"), type_name: dp.day_pass_type&.name }
+      },
     }
   end
 
