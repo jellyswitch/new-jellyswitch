@@ -2,8 +2,10 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
   def show
     loc = current_location
     return render_error("No location found", status: :not_found) unless loc
+    op = current_tenant
 
     render json: {
+      # Location settings
       id: loc.id,
       name: loc.name,
       building_address: loc.building_address,
@@ -27,17 +29,34 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       open_saturday: loc.open_saturday,
       open_sunday: loc.open_sunday,
       modules: module_flags(loc),
+      # Operator settings
+      operator_name: op.name,
+      operator_subdomain: op.subdomain,
+      snippet: op.try(:snippet),
+      membership_text: op.try(:membership_text),
+      approval_required: op.try(:approval_required?) || false,
+      checkin_required: op.try(:checkin_required?) || false,
+      ios_url: op.try(:ios_url),
+      android_url: op.try(:android_url),
+      bundle_id: op.try(:bundle_id),
+      has_logo: op.try(:logo_image)&.attached? || false,
+      has_terms: op.try(:terms_of_service)&.attached? || false,
     }
   end
 
   def update
     loc = current_location
+    op = current_tenant
 
-    if loc.update(settings_params)
-      render json: { success: true }
-    else
-      render_error(loc.errors.full_messages.join(', '))
-    end
+    # Update location settings
+    loc_params = settings_params
+    loc.update(loc_params) if loc_params.keys.any?
+
+    # Update operator settings
+    op_data = operator_params
+    op.update(op_data) if op_data.keys.any?
+
+    render json: { success: true }
   end
 
   def modules
@@ -85,6 +104,14 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       :building_access_instructions, :time_zone,
       :open_monday, :open_tuesday, :open_wednesday,
       :open_thursday, :open_friday, :open_saturday, :open_sunday
+    )
+  end
+
+  def operator_params
+    params.permit(
+      :name, :snippet, :membership_text,
+      :approval_required, :checkin_required,
+      :ios_url, :android_url, :bundle_id
     )
   end
 
