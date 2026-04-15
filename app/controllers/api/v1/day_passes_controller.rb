@@ -36,13 +36,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     day_pass_type = DayPassType.find(params[:day_pass_type_id])
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
     token = params[:stripe_token]
+    discount_code = params[:discount_code]
 
     # Use the same interactor chain as the web app
     interactor = token.present? ?
       Billing::DayPasses::UpdatePaymentAndCreateDayPass :
       Billing::DayPasses::CreateDayPass
 
-    result = interactor.call(
+    interactor_params = {
       user_id: current_api_user.id,
       token: token,
       operator: current_tenant,
@@ -52,7 +53,15 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         day: date,
         operator_id: current_tenant.id,
       },
-    )
+    }
+
+    # Apply discount code if provided
+    if discount_code.present?
+      dc = DiscountCode.find_by(code: discount_code, operator: current_tenant)
+      interactor_params[:discount_code] = dc if dc&.active?
+    end
+
+    result = interactor.call(**interactor_params)
 
     if result.success?
       dp = result.day_pass || DayPass.where(user: current_api_user).order(created_at: :desc).first

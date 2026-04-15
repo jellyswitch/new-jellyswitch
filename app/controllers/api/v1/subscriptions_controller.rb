@@ -130,6 +130,26 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     render_error('Subscription or plan not found', status: :not_found)
   end
 
+  def cancel_now
+    sub = current_api_user.subscriptions.find(params[:id])
+    result = Billing::Subscription::CancelSubscriptionNow.call(
+      subscription: sub,
+      blob: "Cancelled immediately via mobile app",
+      user: current_api_user,
+      operator: current_tenant,
+      location: current_location,
+      notifiable: sub,
+    )
+
+    if result.success?
+      render json: { success: true, message: 'Membership cancelled immediately.' }
+    else
+      render_error(result.message || 'Unable to cancel immediately')
+    end
+  rescue ActiveRecord::RecordNotFound
+    render_error('Subscription not found', status: :not_found)
+  end
+
   def destroy
     sub = current_api_user.subscriptions.find(params[:id])
     result = SetSubscriptionForCancellation.call(
@@ -164,15 +184,24 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
   end
 
   def subscription_json(sub)
+    plan = sub.plan
+    period_start, period_end = sub.try(:current_billing_period) || [nil, nil]
+
     {
       id: sub.id,
-      plan_name: sub.plan.name,
-      amount: sub.plan.amount_in_cents,
-      interval: sub.plan.interval,
+      plan_name: plan.name,
+      amount: plan.amount_in_cents,
+      interval: plan.interval,
       start_date: sub.start_date&.strftime("%B %e, %Y"),
+      end_date: sub.try(:end_date)&.strftime("%B %e, %Y"),
+      period_end_date: period_end&.strftime("%B %e, %Y"),
       active: sub.active?,
       pending: sub.pending?,
+      paused: sub.try(:paused?) || false,
       cancelling: sub.cancelling_at_end_of_billing_period?,
+      days_left: plan.try(:has_day_limit?) ? sub.try(:days_left) : nil,
+      included_meeting_minutes: plan.try(:included_meeting_room_minutes),
+      billed_to: sub.subscribable_type == 'Organization' ? 'organization' : 'user',
     }
   end
 end

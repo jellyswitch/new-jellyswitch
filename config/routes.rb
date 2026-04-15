@@ -31,6 +31,7 @@ Rails.application.routes.draw do
         member do
           get :availability
           get :time_slots
+          get :pricing
         end
       end
       get 'reserve_now', to: 'rooms#reserve_now'
@@ -51,6 +52,7 @@ Rails.application.routes.draw do
           post :pause
           post :unpause
           patch :upgrade
+          post :cancel_now
         end
       end
 
@@ -76,7 +78,11 @@ Rails.application.routes.draw do
       end
 
       # Invoices
-      resources :invoices, only: [:index]
+      resources :invoices, only: [:index] do
+        member do
+          post :charge
+        end
+      end
 
       # Payment Method
       get 'payment_method', to: 'payment_methods#show'

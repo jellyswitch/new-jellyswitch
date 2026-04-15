@@ -54,6 +54,54 @@ class Api::V1::RoomsController < Api::V1::BaseController
     render json: { room: room_json(room), date: date.to_s, slots: slots }
   end
 
+  def pricing
+    room = Room.find(params[:id])
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    minutes = (params[:minutes] || 60).to_i
+
+    user = current_api_user
+    location = current_location
+
+    sub_info = user.subscription_reservation_charge_info(location, minutes)
+    dp_info = user.day_pass_reservation_charge_info(location, date, minutes)
+
+    if sub_info
+      render json: {
+        included_in_plan: sub_info[:charge_type] == :free,
+        charge_type: sub_info[:charge_type].to_s,
+        estimated_cost: sub_info[:overage_amount_in_cents] || 0,
+        plan_minutes_remaining: sub_info[:remaining_free],
+        plan_minutes_total: sub_info[:included_minutes],
+        used_minutes: sub_info[:used_minutes],
+        overage_rate: sub_info[:overage_rate_in_cents],
+        source: 'subscription',
+      }
+    elsif dp_info
+      render json: {
+        included_in_plan: dp_info[:charge_type] == :free,
+        charge_type: dp_info[:charge_type].to_s,
+        estimated_cost: dp_info[:overage_amount_in_cents] || 0,
+        plan_minutes_remaining: dp_info[:remaining_free],
+        plan_minutes_total: nil,
+        overage_rate: dp_info[:overage_rate_in_cents],
+        source: 'day_pass',
+      }
+    else
+      # No subscription or day pass — full hourly charge
+      hourly_rate = room.hourly_rate_in_cents || 0
+      estimated = (hourly_rate * minutes / 60.0).round
+      render json: {
+        included_in_plan: false,
+        charge_type: hourly_rate > 0 ? 'full' : 'free',
+        estimated_cost: estimated,
+        plan_minutes_remaining: nil,
+        plan_minutes_total: nil,
+        overage_rate: nil,
+        source: 'hourly',
+      }
+    end
+  end
+
   def reserve_now
     location = current_location
     return render json: { rooms: [] } unless location
