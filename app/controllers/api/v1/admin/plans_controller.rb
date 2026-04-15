@@ -1,6 +1,6 @@
 class Api::V1::Admin::PlansController < Api::V1::Admin::BaseController
   def index
-    plans = Plan.where(operator: current_tenant).order(:amount_in_cents)
+    plans = Plan.where(operator: current_tenant, plan_type: 'individual').order(:amount_in_cents)
     plans = plans.where(available: true) unless params[:include_archived]
 
     render json: plans.map { |p| plan_json(p) }
