@@ -197,6 +197,9 @@ Rails.application.routes.draw do
         get 'office_leases', to: 'office_leases#index'
         get 'office_leases/renewals', to: 'office_leases#renewals'
         post 'office_leases', to: 'office_leases#create'
+        get 'office_leases/:id', to: 'office_leases#show'
+        patch 'office_leases/:id/price', to: 'office_leases#update_price'
+        post 'office_leases/:id/terminate', to: 'office_leases#terminate'
 
         # Organizations
         resources :organizations, only: [:index, :show, :create, :update]

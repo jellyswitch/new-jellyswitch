@@ -16,6 +16,38 @@ class Api::V1::Admin::OfficeLeasesController < Api::V1::Admin::BaseController
     end
   end
 
+  def show
+    lease = OfficeLease.find(params[:id])
+    render json: lease_json(lease)
+  rescue ActiveRecord::RecordNotFound
+    render_error('Lease not found', status: :not_found)
+  end
+
+  def update_price
+    lease = OfficeLease.find(params[:id])
+    new_amount = params[:amount_in_cents].to_i
+
+    if lease.subscription&.plan
+      lease.subscription.plan.update(amount_in_cents: new_amount)
+      render json: { success: true, lease: lease_json(lease.reload) }
+    else
+      render_error('No subscription plan found for this lease')
+    end
+  rescue ActiveRecord::RecordNotFound
+    render_error('Lease not found', status: :not_found)
+  end
+
+  def terminate
+    lease = OfficeLease.find(params[:id])
+    lease.update(end_date: Date.current)
+    if lease.subscription
+      lease.subscription.update(active: false)
+    end
+    render json: { success: true, message: 'Lease terminated.' }
+  rescue ActiveRecord::RecordNotFound
+    render_error('Lease not found', status: :not_found)
+  end
+
   def renewals
     leases = OfficeLease.where(operator: current_tenant)
       .where("end_date >= ? AND end_date <= ?", Date.current, Date.current + 60.days)
