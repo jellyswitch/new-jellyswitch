@@ -153,6 +153,161 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     render json: { success: true, payment_method: user.payment_method }
   end
 
+  def assign_subscription
+    user = current_tenant.users.find(params[:id])
+    plan = Plan.find(params[:plan_id])
+
+    subscription = Subscription.new(plan: plan, subscribable: user, operator: current_tenant)
+    result = Billing::Subscription::CreateSubscription.call(
+      subscription: subscription,
+      user: user,
+      start_day: Date.current,
+      operator: current_tenant,
+      location: current_location,
+    )
+
+    if result.success?
+      render json: { success: true, plan_name: plan.name }
+    else
+      render_error(result.message || 'Could not assign plan')
+    end
+  end
+
+  def create_day_pass
+    user = current_tenant.users.find(params[:id])
+    day_pass_type = DayPassType.find(params[:day_pass_type_id])
+
+    result = Billing::DayPasses::CreateDayPass.call(
+      user_id: user.id,
+      operator: current_tenant,
+      location: current_location,
+      params: {
+        day_pass_type: day_pass_type.id.to_s,
+        day: params[:date] || Date.current,
+        operator_id: current_tenant.id,
+      },
+    )
+
+    if result.success?
+      render json: { success: true, day_pass_type: day_pass_type.name }, status: :created
+    else
+      render_error(result.message || 'Could not create day pass')
+    end
+  end
+
+  def create_reservation
+    user = current_tenant.users.find(params[:id])
+    room = Room.find(params[:room_id])
+    datetime_in = Time.parse(params[:datetime_in])
+    minutes = params[:minutes].to_i
+
+    result = Billing::Reservations::CreateRoomReservation.call(
+      reservation_params: {
+        datetime_in: datetime_in,
+        hours: minutes / 60.0,
+        minutes: minutes,
+        room: room,
+      },
+      user: user,
+      location: current_location,
+    )
+
+    if result.success?
+      render json: { success: true, room_name: room.name, time: datetime_in.strftime("%l:%M %p").strip }, status: :created
+    else
+      render_error(result.message || 'Could not create reservation')
+    end
+  end
+
+  def edit_profile
+    user = current_tenant.users.find(params[:id])
+    permitted = params.permit(:name, :phone, :email, :bio, :linkedin, :twitter, :website)
+
+    Searchkick.callbacks(false) do
+      if user.update(permitted)
+        render json: { success: true }
+      else
+        render_error(user.errors.full_messages.first)
+      end
+    end
+  end
+
+  def create_invoice
+    user = current_tenant.users.find(params[:id])
+    amount_in_cents = (params[:amount].to_f * 100).round
+    description = params[:description]
+
+    begin
+      # Create Stripe invoice
+      customer_id = user.stripe_customer_id_for_location(current_location)
+      unless customer_id
+        result = CreateStripeCustomer.call(user: user, location: current_location)
+        customer_id = user.stripe_customer_id_for_location(current_location)
+      end
+
+      Stripe::InvoiceItem.create(
+        { customer: customer_id, amount: amount_in_cents, currency: 'usd', description: description },
+        { stripe_account: current_location.stripe_user_id }
+      )
+      stripe_invoice = Stripe::Invoice.create(
+        { customer: customer_id },
+        { stripe_account: current_location.stripe_user_id }
+      )
+
+      invoice = Invoice.create!(
+        stripe_invoice_id: stripe_invoice.id,
+        amount_due: amount_in_cents,
+        status: 'open',
+        billable: user,
+        operator: current_tenant,
+        location: current_location,
+      )
+
+      render json: { success: true, invoice_id: invoice.id }, status: :created
+    rescue Stripe::StripeError => e
+      render_error("Stripe error: #{e.message}")
+    rescue => e
+      render_error(e.message)
+    end
+  end
+
+  def cancel_subscription
+    user = current_tenant.users.find(params[:id])
+    subscription = user.subscriptions.where(active: true).first
+    return render_error('No active subscription') unless subscription
+
+    result = SetSubscriptionForCancellation.call(
+      subscription: subscription,
+      blob: { text: "Admin cancelled #{user.name}'s #{subscription.plan.name} membership.", type: "membership_cancellation" },
+      user: current_api_user,
+      operator: current_tenant,
+      location: current_location,
+      notifiable: current_tenant.users.admins,
+    )
+
+    if result.success?
+      render json: { success: true }
+    else
+      render_error(result.message || 'Could not cancel subscription')
+    end
+  end
+
+  def reset_password
+    user = current_tenant.users.find(params[:id])
+    new_password = params[:new_password]
+
+    if new_password.length < 6
+      return render_error('Password must be at least 6 characters')
+    end
+
+    Searchkick.callbacks(false) do
+      user.password = new_password
+      user.save!(validate: false)
+    end
+
+    render json: { success: true }
+  end
+
   private
 
   def search_users(scope)

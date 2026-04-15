@@ -69,13 +69,16 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
                              .where(rooms: { operator_id: current_tenant.id })
                              .find(params[:id])
 
-    new_minutes = params[:minutes].present? ? params[:minutes].to_i : (params[:hours].to_f * 60).to_i
+    additional_minutes = params[:additional_minutes].to_i
+    new_minutes = reservation.minutes + additional_minutes
 
-    if reservation.update(minutes: new_minutes)
-      render json: reservation_json(reservation)
-    else
-      render_error(reservation.errors.full_messages.join(', '))
+    Searchkick.callbacks(false) do
+      reservation.update!(minutes: new_minutes, hours: new_minutes / 60.0)
     end
+
+    render json: { success: true, new_duration: new_minutes }
+  rescue => e
+    render_error(e.message)
   end
 
   def destroy

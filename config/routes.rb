@@ -127,6 +127,13 @@ Rails.application.routes.draw do
         post 'members/:id/unarchive', to: 'members#unarchive'
         post 'members/:id/add_credits', to: 'members#add_credits'
         post 'members/:id/change_payment', to: 'members#change_payment'
+        post 'members/:id/assign_subscription', to: 'members#assign_subscription'
+        post 'members/:id/create_day_pass', to: 'members#create_day_pass'
+        post 'members/:id/create_reservation', to: 'members#create_reservation'
+        patch 'members/:id/edit_profile', to: 'members#edit_profile'
+        post 'members/:id/create_invoice', to: 'members#create_invoice'
+        post 'members/:id/cancel_subscription', to: 'members#cancel_subscription'
+        post 'members/:id/reset_password', to: 'members#reset_password'
 
         # Reservations
         get 'reservations', to: 'reservations#index'
@@ -141,6 +148,8 @@ Rails.application.routes.draw do
         # Announcements
         get 'announcements', to: 'announcements#index'
         post 'announcements', to: 'announcements#create'
+        patch 'announcements/:id', to: 'announcements#update'
+        delete 'announcements/:id', to: 'announcements#destroy'
 
         # Events
         resources :events, only: [:index, :create, :update, :destroy]

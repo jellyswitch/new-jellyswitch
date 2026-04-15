@@ -23,6 +23,22 @@ class Api::V1::Admin::AnnouncementsController < Api::V1::Admin::BaseController
     end
   end
 
+  def update
+    announcement = Announcement.where(operator: current_tenant).find(params[:id])
+
+    if announcement.update(body: params[:body])
+      render json: announcement_json(announcement)
+    else
+      render_error(announcement.errors.full_messages.join(', '))
+    end
+  end
+
+  def destroy
+    announcement = Announcement.where(operator: current_tenant).find(params[:id])
+    announcement.destroy
+    render json: { success: true }
+  end
+
   private
 
   def announcement_json(a)
