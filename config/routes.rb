@@ -110,6 +110,11 @@ Rails.application.routes.draw do
 
       # Organizations
       get 'my_organization', to: 'organizations#show'
+      patch 'my_organization', to: 'organizations#update'
+      post 'my_organization/add_member', to: 'organizations#add_member'
+      post 'my_organization/remove_member', to: 'organizations#remove_member'
+      get 'my_organization/invoices', to: 'organizations#invoices'
+      get 'my_organization/payment_method', to: 'organizations#payment_method'
 
       # Admin namespace
       namespace :admin do
