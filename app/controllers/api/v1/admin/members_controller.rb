@@ -299,6 +299,32 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
   end
 
+  def cancel_subscription_now
+    user = current_tenant.users.find(params[:id])
+    subscription = user.subscriptions.where(active: true).first
+    return render_error('No active subscription') unless subscription
+
+    begin
+      result = Billing::Subscription::CancelSubscriptionNow.call(
+        subscription: subscription,
+        blob: { text: "Admin immediately cancelled #{user.name}'s #{subscription.plan.name} membership.", type: "membership_cancellation" },
+        user: current_api_user,
+        operator: current_tenant,
+        location: current_location,
+        notifiable: current_tenant.users.admins,
+        creditable: user,
+      )
+
+      if result.success?
+        render json: { success: true }
+      else
+        render_error(result.message || 'Could not cancel subscription')
+      end
+    rescue => e
+      render_error(e.message)
+    end
+  end
+
   def reset_password
     user = current_tenant.users.find(params[:id])
     new_password = params[:new_password]

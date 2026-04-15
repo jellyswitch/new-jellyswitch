@@ -133,6 +133,7 @@ Rails.application.routes.draw do
         patch 'members/:id/edit_profile', to: 'members#edit_profile'
         post 'members/:id/create_invoice', to: 'members#create_invoice'
         post 'members/:id/cancel_subscription', to: 'members#cancel_subscription'
+        post 'members/:id/cancel_subscription_now', to: 'members#cancel_subscription_now'
         post 'members/:id/reset_password', to: 'members#reset_password'
 
         # Reservations
