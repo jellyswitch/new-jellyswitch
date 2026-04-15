@@ -54,7 +54,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       plan_name: active_sub&.plan&.name,
       credit_balance: user.credit_balance,
       has_profile_photo: user.has_profile_photo?,
-      ltv: Invoice.where(billable: user, operator: current_tenant).sum(:amount_paid),
+      ltv: Invoice.where(billable: user, operator: current_tenant).sum("GREATEST(amount_paid, amount_due)"),
       last_checkin: last_checkin&.datetime_in,
       member_since: user.created_at,
       payment_method: user.try(:payment_method) || 'None',
