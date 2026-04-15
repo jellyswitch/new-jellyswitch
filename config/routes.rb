@@ -24,6 +24,7 @@ Rails.application.routes.draw do
       resources :doors, only: [:index] do
         member do
           post :unlock
+          get :punches
         end
       end
 
@@ -96,6 +97,7 @@ Rails.application.routes.draw do
       patch 'me/email_preferences', to: 'users#update_email_preferences'
       post 'me/purchase_credits', to: 'users#purchase_credits'
       get 'me/credit_info', to: 'users#credit_info'
+      get 'me/usage', to: 'users#usage'
       delete 'me', to: 'users#destroy_account'
 
       # Announcements

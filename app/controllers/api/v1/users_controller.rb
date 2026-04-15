@@ -84,6 +84,36 @@ class Api::V1::UsersController < Api::V1::BaseController
     render json: { success: true }
   end
 
+  def usage
+    user = current_api_user
+    location = current_location
+    now = Time.current
+    period_start = now.beginning_of_month
+
+    # Reservation minutes this month
+    reservation_minutes = user.reservations.where(cancelled: false)
+      .where("datetime_in >= ?", period_start)
+      .sum(:minutes)
+
+    # Check-in count this month
+    checkin_count = user.try(:checkins)&.where("created_at >= ?", period_start)&.count || 0
+
+    # Day pass count this month
+    day_pass_count = user.day_passes.where("day >= ?", period_start.to_date).count
+
+    # Total reservations this month
+    reservation_count = user.reservations.where(cancelled: false)
+      .where("datetime_in >= ?", period_start).count
+
+    render json: {
+      period: now.strftime("%B %Y"),
+      reservation_minutes: reservation_minutes,
+      reservation_count: reservation_count,
+      checkin_count: checkin_count,
+      day_pass_count: day_pass_count,
+    }
+  end
+
   def purchase_credits
     amount = params[:amount].to_i
     return render_error('Amount must be greater than 0') unless amount > 0

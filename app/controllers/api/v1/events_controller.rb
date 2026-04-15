@@ -11,6 +11,8 @@ class Api::V1::EventsController < Api::V1::BaseController
       date: e.starts_at.strftime("%B %e, %Y"),
       time: e.starts_at.strftime("%l:%M %p").strip,
       location: e.location_string,
+      image_url: e.image.attached? ? Rails.application.routes.url_helpers.rails_blob_url(e.image, only_path: false) : nil,
+      hosted_by: e.user&.name,
       rsvped: user_rsvp_ids.include?(e.id),
       rsvp_count: e.rsvps.count,
     }}
@@ -26,6 +28,8 @@ class Api::V1::EventsController < Api::V1::BaseController
       time: event.starts_at.strftime("%l:%M %p").strip,
       end_time: event.ends_at&.strftime("%l:%M %p")&.strip,
       location: event.location_string,
+      image_url: event.image.attached? ? Rails.application.routes.url_helpers.rails_blob_url(event.image, only_path: false) : nil,
+      hosted_by: event.user&.name,
       rsvped: current_api_user.rsvps.exists?(event: event),
       rsvp_count: event.rsvps.count,
     }
