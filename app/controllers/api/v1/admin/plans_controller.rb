@@ -1,6 +1,7 @@
 class Api::V1::Admin::PlansController < Api::V1::Admin::BaseController
   def index
     plans = Plan.where(operator: current_tenant, plan_type: 'individual').order(:amount_in_cents)
+    # Show all individual plans (including hidden/not-visible), but exclude archived (unavailable) unless requested
     plans = plans.where(available: true) unless params[:include_archived]
 
     render json: plans.map { |p| plan_json(p) }
