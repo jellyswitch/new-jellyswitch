@@ -84,6 +84,39 @@ class Api::V1::UsersController < Api::V1::BaseController
     render json: { success: true }
   end
 
+  def purchase_credits
+    amount = params[:amount].to_i
+    return render_error('Amount must be greater than 0') unless amount > 0
+
+    location = current_location
+    return render_error('Credits are not enabled') unless location.try(:credits_enabled?)
+
+    result = Billing::Credits::PurchaseCredits.call(
+      location: location,
+      amount: amount,
+      user: current_api_user,
+    )
+
+    if result.success?
+      render json: {
+        success: true,
+        credit_balance: current_api_user.reload.credit_balance,
+        amount_charged: amount * (location.credit_cost_in_cents || 0),
+      }
+    else
+      render_error(result.message || 'Unable to purchase credits')
+    end
+  end
+
+  def credit_info
+    location = current_location
+    render json: {
+      credits_enabled: location.try(:credits_enabled?) || false,
+      credit_balance: current_api_user.credit_balance,
+      credit_cost_cents: location.try(:credit_cost_in_cents) || 0,
+    }
+  end
+
   def accept_terms
     current_api_user.update(terms_accepted_at: Time.current)
     render json: { success: true }

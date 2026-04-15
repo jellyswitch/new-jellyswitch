@@ -62,11 +62,26 @@ class Api::V1::RoomsController < Api::V1::BaseController
     user = current_api_user
     location = current_location
 
+    # Credit info (if credits enabled)
+    credit_info = nil
+    if location.try(:credits_enabled?)
+      credit_cost = room.try(:credit_cost) || 0
+      credit_charge = credit_cost > 0 ? ((credit_cost / 60.0) * minutes).ceil : 0
+      credit_info = {
+        credits_enabled: true,
+        credit_cost_per_hour: credit_cost,
+        credit_charge: credit_charge,
+        credit_balance: user.credit_balance,
+        sufficient_credits: user.credit_balance >= credit_charge,
+        credit_price_cents: location.try(:credit_cost_in_cents) || 0,
+      }
+    end
+
     sub_info = user.subscription_reservation_charge_info(location, minutes)
     dp_info = user.day_pass_reservation_charge_info(location, date, minutes)
 
-    if sub_info
-      render json: {
+    base = if sub_info
+      {
         included_in_plan: sub_info[:charge_type] == :free,
         charge_type: sub_info[:charge_type].to_s,
         estimated_cost: sub_info[:overage_amount_in_cents] || 0,
@@ -77,7 +92,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         source: 'subscription',
       }
     elsif dp_info
-      render json: {
+      {
         included_in_plan: dp_info[:charge_type] == :free,
         charge_type: dp_info[:charge_type].to_s,
         estimated_cost: dp_info[:overage_amount_in_cents] || 0,
@@ -87,10 +102,9 @@ class Api::V1::RoomsController < Api::V1::BaseController
         source: 'day_pass',
       }
     else
-      # No subscription or day pass — full hourly charge
       hourly_rate = room.hourly_rate_in_cents || 0
       estimated = (hourly_rate * minutes / 60.0).round
-      render json: {
+      {
         included_in_plan: false,
         charge_type: hourly_rate > 0 ? 'full' : 'free',
         estimated_cost: estimated,
@@ -100,6 +114,9 @@ class Api::V1::RoomsController < Api::V1::BaseController
         source: 'hourly',
       }
     end
+
+    base[:credits] = credit_info if credit_info
+    render json: base
   end
 
   def reserve_now
