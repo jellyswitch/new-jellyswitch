@@ -157,7 +157,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     user = current_tenant.users.find(params[:id])
     plan = Plan.find(params[:plan_id])
 
-    subscription = Subscription.new(plan: plan, subscribable: user, operator: current_tenant)
+    subscription = Subscription.new(plan: plan, subscribable: user)
     result = Billing::Subscription::CreateSubscription.call(
       subscription: subscription,
       user: user,
