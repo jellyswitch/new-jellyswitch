@@ -20,6 +20,13 @@ class Api::V1::UsersController < Api::V1::BaseController
       operator_subdomain: user.operator.subdomain,
       features: location_features(user),
       locations: user.operator.locations.map { |l| { id: l.id, name: l.name } },
+      terms_accepted: user.terms_accepted_at.present?,
+      has_terms_of_service: user.operator.terms_of_service.attached?,
+      terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, only_path: false) : nil,
+      preferred_room_id: user.preferred_room_id,
+      preferred_meeting_duration: user.preferred_meeting_duration,
+      marketing_opt_in: user.try(:marketing_opt_in),
+      organization_id: user.try(:organization_id),
     }
   end
 
@@ -75,6 +82,17 @@ class Api::V1::UsersController < Api::V1::BaseController
     # Soft-delete: archive and remove access
     user.update(approved: false, archived: true)
     render json: { success: true }
+  end
+
+  def accept_terms
+    current_api_user.update(terms_accepted_at: Time.current)
+    render json: { success: true }
+  end
+
+  def update_email_preferences
+    opt_in = params[:marketing_opt_in]
+    current_api_user.update(marketing_opt_in: opt_in)
+    render json: { success: true, marketing_opt_in: opt_in }
   end
 
   def register_push_token

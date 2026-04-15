@@ -92,6 +92,8 @@ Rails.application.routes.draw do
       patch 'me/password', to: 'users#change_password'
       post 'me/profile_photo', to: 'users#upload_profile_photo'
       patch 'me/location', to: 'users#switch_location'
+      post 'me/accept_terms', to: 'users#accept_terms'
+      patch 'me/email_preferences', to: 'users#update_email_preferences'
       delete 'me', to: 'users#destroy_account'
 
       # Announcements

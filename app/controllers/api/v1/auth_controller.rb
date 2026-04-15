@@ -28,14 +28,17 @@ class Api::V1::AuthController < Api::V1::BaseController
     set_current_tenant(operator)
 
     # Use the same interactor chain as web signup
+    location_id = params[:location_id].present? ? params[:location_id] : operator.locations.first&.id
+
     result = Users::Create.call(
       params: {
         name: params[:name],
         email: params[:email],
         password: params[:password],
         phone: params[:phone],
-        original_location_id: operator.locations.first&.id,
+        original_location_id: location_id,
         terms_accepted: "1",
+        marketing_opt_in: params[:marketing_opt_in] != false ? "1" : "0",
       },
       operator: operator,
       admin_created: false,
@@ -43,7 +46,7 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     if result.success?
       token = generate_token(result.user)
-      render json: { token: token, user: user_json(result.user) }, status: :created
+      render json: { token: token, user: user_json(result.user), locations: operator.locations.visible.map { |l| { id: l.id, name: l.name } } }, status: :created
     else
       render_error(result.message, status: :unprocessable_entity)
     end
