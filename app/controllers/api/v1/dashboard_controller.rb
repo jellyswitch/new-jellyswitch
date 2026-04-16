@@ -14,9 +14,11 @@ class Api::V1::DashboardController < Api::V1::BaseController
     events = Event.where(location: location).future.order(:starts_at).limit(5)
     user_rsvp_ids = user.rsvps.pluck(:event_id)
 
-    # Doors for unlock buttons
+    # Doors for unlock buttons — sorted by user's most-used first
     doors = location ? location.doors.where(available: true) : []
     doors = doors.where(private: false) unless user.admin?
+    door_usage = DoorPunch.where(user: user, door: doors).group(:door_id).count
+    doors = doors.sort_by { |d| -(door_usage[d.id] || 0) }
 
     # Open feedback tickets
     open_tickets = user.member_feedbacks.where(status: ['open', nil]).count rescue 0
