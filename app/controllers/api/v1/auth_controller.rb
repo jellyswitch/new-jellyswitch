@@ -1,5 +1,5 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password]
+  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators]
 
   def login
     subdomain = params[:subdomain]&.downcase
@@ -98,6 +98,22 @@ class Api::V1::AuthController < Api::V1::BaseController
     else
       render_error(user.errors.full_messages.join(', '), status: :unprocessable_entity)
     end
+  end
+
+  def lookup_operators
+    email = params[:email]&.downcase&.strip
+    return render json: { operators: [] } if email.blank?
+
+    users = User.where("lower(email) = ?", email).where(archived: [false, nil])
+    operators = users.map(&:operator).uniq.compact
+
+    # Don't reveal if email exists when there are no results — return empty
+    render json: {
+      operators: operators.map { |op|
+        { name: op.name, subdomain: op.subdomain }
+      },
+      multiple: operators.length > 1,
+    }
   end
 
   def refresh

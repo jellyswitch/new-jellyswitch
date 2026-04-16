@@ -13,6 +13,7 @@ Rails.application.routes.draw do
       post 'auth/forgot_password', to: 'auth#forgot_password'
       post 'auth/reset_password', to: 'auth#reset_password'
       post 'auth/refresh', to: 'auth#refresh'
+      post 'auth/lookup_operators', to: 'auth#lookup_operators'
 
       get 'me', to: 'users#me'
       patch 'me', to: 'users#update'
