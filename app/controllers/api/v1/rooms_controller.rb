@@ -34,8 +34,13 @@ class Api::V1::RoomsController < Api::V1::BaseController
     location = current_location
 
     # Generate 15-min slots from open to close
-    start_hour = location&.working_day_start || 8
-    end_hour = location&.working_day_end || 18
+    # working_day_start/end may be stored as strings like "06:00" or integers
+    parse_hour = ->(val, default) {
+      return default if val.nil?
+      val.is_a?(String) ? val.split(':').first.to_i : val.to_i
+    }
+    start_hour = parse_hour.call(location&.working_day_start, 8)
+    end_hour = parse_hour.call(location&.working_day_end, 18)
 
     slots = []
     current_time = date.in_time_zone(location&.time_zone || 'UTC').change(hour: start_hour)
@@ -124,38 +129,120 @@ class Api::V1::RoomsController < Api::V1::BaseController
     return render json: { rooms: [] } unless location
 
     user = current_api_user
-    rooms = location.rooms.visible.order(:name)
-    preferred_room_id = user.preferred_room_id
-    preferred_duration = user.preferred_meeting_duration || 60
+    zone = ActiveSupport::TimeZone[location.time_zone] || Time.zone
+    now = Time.current.in_time_zone(zone)
 
-    room_data = rooms.map do |room|
-      available = room.available_now? rescue false
-      next_available = nil
-      unless available
-        # Find when room is next free
-        next_res = room.reservations.where(cancelled: false)
-          .where("datetime_out > ?", Time.current)
-          .order(:datetime_out).first
-        next_available = next_res&.datetime_out&.strftime("%l:%M %p")&.strip
-      end
+    # Round up to next 15-min mark
+    remainder = now.min % 15
+    start_time = remainder == 0 ? now : now + (15 - remainder).minutes
+    start_time = start_time.change(sec: 0)
 
-      {
-        id: room.id,
-        name: room.name,
-        capacity: room.capacity,
-        description: room.description,
-        hourly_rate: room.hourly_rate_in_cents,
-        amenities: room.amenities.pluck(:name),
-        available: available,
-        available_at: next_available,
-        preferred: room.id == preferred_room_id,
+    duration = user.preferred_meeting_duration.to_i
+    duration = 60 if duration <= 0
+
+    # Find available rooms
+    end_time = start_time + duration.minutes
+    booked_room_ids = Reservation.where(room: location.rooms.visible)
+      .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
+      .where(cancelled: false)
+      .pluck(:room_id).uniq
+
+    available_rooms = location.rooms.visible.where.not(id: booked_room_ids)
+    available_rooms = available_rooms.rentable unless user.can_see_all_rooms?(location, start_time.to_date) rescue available_rooms
+
+    available_list = available_rooms.to_a
+
+    if available_list.empty?
+      # No rooms — return unavailable list with free times
+      all_rooms = location.rooms.visible.map do |room|
+        current_booking = room.reservations.where(cancelled: false)
+          .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?", Time.current, Time.current)
+          .first
+        overlap = room.reservations.where(cancelled: false)
+          .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
+          .order(:datetime_in).first unless current_booking
+        free_at = current_booking&.datetime_out || overlap&.datetime_out
+        {
+          id: room.id, name: room.name, capacity: room.capacity,
+          hourly_rate: room.hourly_rate_in_cents,
+          amenities: room.amenities.pluck(:name),
+          available: false,
+          available_at: free_at&.in_time_zone(zone)&.strftime("%l:%M %p")&.strip,
+        }
+      end.sort_by { |r| r[:available_at] || '' }
+
+      return render json: {
+        rooms: all_rooms,
+        no_rooms_available: true,
+        start_time: start_time.iso8601,
+        preferred_duration: duration,
       }
     end
 
-    # Sort: preferred first, then available, then by name
-    room_data.sort_by! { |r| [r[:preferred] ? 0 : 1, r[:available] ? 0 : 1, r[:name]] }
+    # Pick the hero room — preferred, then cheapest, then first
+    preferred = available_list.find { |r| r.id == user.preferred_room_id }
+    hero = preferred || available_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_list.first
 
-    render json: { rooms: room_data, preferred_duration: preferred_duration }
+    max_duration = [(hero.calculate_max_continuous_duration(start_time: start_time) rescue 240), 240].min
+
+    # Pricing for hero room
+    sub_info = user.subscription_reservation_charge_info(location, duration) rescue nil
+    dp_info = user.day_pass_reservation_charge_info(location, start_time.to_date, duration) rescue nil
+
+    should_charge = user.should_charge_for_reservation?(location, start_time.to_date) rescue true
+    hourly = hero.hourly_rate_in_cents / 100.0
+    total_price = hourly * (duration / 60.0)
+    included = !should_charge && hero.hourly_rate_in_cents > 0
+
+    if sub_info && sub_info[:charge_type] == :partial_overage
+      included = false
+      total_price = sub_info[:overage_amount_in_cents] / 100.0
+    end
+    if dp_info && dp_info[:charge_type] == :partial_overage
+      included = false
+      total_price = dp_info[:overage_amount_in_cents] / 100.0
+    end
+
+    included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
+
+    room_json = ->(r, is_available, available_at = nil) {
+      {
+        id: r.id, name: r.name, capacity: r.capacity,
+        description: r.description,
+        hourly_rate: r.hourly_rate_in_cents,
+        amenities: r.amenities.pluck(:name),
+        available: is_available,
+        available_at: available_at,
+        preferred: r.id == user.preferred_room_id,
+      }
+    }
+
+    other_available = available_list.reject { |r| r.id == hero.id }.sort_by { |r| r.hourly_rate_in_cents.to_i }
+    unavailable_ids = location.rooms.visible.where.not(id: available_list.map(&:id)).pluck(:id)
+    unavailable = location.rooms.visible.where(id: unavailable_ids).map do |r|
+      current_booking = r.reservations.where(cancelled: false)
+        .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?", Time.current, Time.current)
+        .first
+      overlap = r.reservations.where(cancelled: false)
+        .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
+        .order(:datetime_in).first unless current_booking
+      free_at = current_booking&.datetime_out || overlap&.datetime_out
+      room_json.call(r, false, free_at&.in_time_zone(zone)&.strftime("%l:%M %p")&.strip)
+    end
+
+    render json: {
+      hero_room: room_json.call(hero, true),
+      available_rooms: other_available.map { |r| room_json.call(r, true) },
+      unavailable_rooms: unavailable,
+      start_time: start_time.iso8601,
+      start_time_label: start_time.strftime("%-l:%M %p"),
+      preferred_duration: duration,
+      max_duration: max_duration,
+      total_price: total_price,
+      included_in_plan: included,
+      included_minutes_remaining: included_minutes_remaining,
+      should_charge: should_charge || (sub_info&.dig(:charge_type) == :partial_overage) || (dp_info&.dig(:charge_type) == :partial_overage),
+    }
   end
 
   private
