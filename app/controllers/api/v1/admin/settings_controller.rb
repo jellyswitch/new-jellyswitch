@@ -120,7 +120,7 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       :announcements_enabled, :events_enabled,
       :door_integration_enabled, :rooms_enabled,
       :offices_enabled, :bulletin_board_enabled,
-      :credits_enabled, :childcare_enabled, :crm_enabled
+      :credits_enabled, :crm_enabled
     )
   end
 
@@ -140,7 +140,7 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       offices_enabled: loc.offices_enabled,
       bulletin_board_enabled: loc.bulletin_board_enabled,
       credits_enabled: loc.credits_enabled,
-      childcare_enabled: loc.childcare_enabled,
+      # childcare removed from mobile app
       crm_enabled: loc.crm_enabled,
     }
   end
