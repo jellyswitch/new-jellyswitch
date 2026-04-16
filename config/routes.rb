@@ -215,7 +215,11 @@ Rails.application.routes.draw do
 
         # Doors
         get 'doors', to: 'doors#index'
+        post 'doors', to: 'doors#create'
+        patch 'doors/:id', to: 'doors#update'
         post 'doors/:id/open', to: 'doors#open'
+        post 'doors/:id/archive', to: 'doors#archive'
+        post 'doors/:id/unarchive', to: 'doors#unarchive'
         get 'doors/:id/punches', to: 'doors#punches'
 
         # Reports

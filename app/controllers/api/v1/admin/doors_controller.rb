@@ -2,15 +2,40 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
   def index
     doors = Door.where(operator: current_tenant).order(:name)
 
-    render json: doors.map { |d|
-      {
-        id: d.id,
-        name: d.name,
-        kisi_id: d.kisi_id,
-        private: d.private,
-        available: d.available,
-      }
-    }
+    render json: doors.map { |d| door_json(d) }
+  end
+
+  def create
+    door = Door.new(door_params)
+    door.operator = current_tenant
+    door.location = current_location
+
+    if door.save
+      render json: door_json(door), status: :created
+    else
+      render_error(door.errors.full_messages.join(', '))
+    end
+  end
+
+  def update
+    door = Door.find(params[:id])
+    if door.update(door_params)
+      render json: door_json(door)
+    else
+      render_error(door.errors.full_messages.join(', '))
+    end
+  end
+
+  def archive
+    door = Door.find(params[:id])
+    door.update(available: false)
+    render json: { success: true }
+  end
+
+  def unarchive
+    door = Door.find(params[:id])
+    door.update(available: true)
+    render json: { success: true }
   end
 
   def open
@@ -38,6 +63,17 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
   end
 
   private
+
+  def door_params
+    params.permit(:name, :kisi_id, :slug, :private, :available)
+  end
+
+  def door_json(d)
+    {
+      id: d.id, name: d.name, kisi_id: d.kisi_id,
+      slug: d.try(:slug), private: d.private, available: d.available,
+    }
+  end
 
   def unlock_door(door)
     url = "https://api.kisi.io/locks/#{door.kisi_id}/unlock"
