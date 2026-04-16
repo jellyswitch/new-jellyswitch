@@ -27,7 +27,6 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     subscription = Subscription.new(
       plan: plan,
       subscribable: current_api_user,
-      operator: current_tenant,
     )
 
     # Choose interactor based on whether user has payment method
