@@ -32,6 +32,9 @@ class Api::V1::EventsController < Api::V1::BaseController
       hosted_by: event.user&.name,
       rsvped: current_api_user.rsvps.exists?(event: event),
       rsvp_count: event.rsvps.count,
+      attendees: event.rsvps.includes(:user).map { |r|
+        { id: r.user&.id, name: r.user&.name }
+      },
     }
   end
 
