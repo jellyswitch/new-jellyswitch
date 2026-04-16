@@ -145,6 +145,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         capacity: room.capacity,
         description: room.description,
         hourly_rate: room.hourly_rate_in_cents,
+        amenities: room.amenities.pluck(:name),
         available: available,
         available_at: next_available,
         preferred: room.id == preferred_room_id,
@@ -166,6 +167,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       capacity: room.capacity,
       description: room.description,
       hourly_rate: room.hourly_rate_in_cents,
+      amenities: room.amenities.pluck(:name),
       rentable: room.rentable?,
       available: (room.available_now? rescue false),
     }

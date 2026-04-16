@@ -42,7 +42,7 @@ class Api::V1::Admin::EventsController < Api::V1::Admin::BaseController
   private
 
   def event_params
-    params.require(:event).permit(:title, :description, :starts_at, :ends_at, :location_string)
+    params.require(:event).permit(:title, :description, :starts_at, :ends_at, :location_string, :image)
   end
 
   def event_json(e)

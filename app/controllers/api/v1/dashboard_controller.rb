@@ -14,8 +14,17 @@ class Api::V1::DashboardController < Api::V1::BaseController
     events = Event.where(location: location).future.order(:starts_at).limit(5)
     user_rsvp_ids = user.rsvps.pluck(:event_id)
 
+    # Doors for unlock buttons
+    doors = location ? location.doors.where(available: true) : []
+    doors = doors.where(private: false) unless user.admin?
+
+    # Open feedback tickets
+    open_tickets = user.member_feedbacks.where(status: ['open', nil]).count rescue 0
+
     render json: {
       reservations_today: today_reservations.count,
+      open_ticket_count: open_tickets,
+      doors: doors.map { |d| { id: d.id, name: d.name } },
       visitors_today: location ? DoorPunch.where(door: location.doors).where("created_at::date = ?", Date.current).distinct.count(:user_id) : 0,
       day_passes_today: location ? location.day_passes.where(day: Date.current).count : 0,
       next_reservation: next_reservation ? {
