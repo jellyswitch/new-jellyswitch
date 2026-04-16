@@ -209,8 +209,11 @@ Rails.application.routes.draw do
         resources :organizations, only: [:index, :show, :create, :update]
 
         # Leads
-        resources :leads, only: [:index, :show, :update] do
+        resources :leads, only: [:index, :show, :create, :update, :destroy] do
           resources :notes, only: [:create], controller: 'lead_notes'
+          member do
+            post :convert_to_member
+          end
         end
 
         # Doors
