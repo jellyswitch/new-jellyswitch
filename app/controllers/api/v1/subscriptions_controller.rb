@@ -107,7 +107,6 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     new_sub = Subscription.new(
       plan: new_plan,
       subscribable: current_api_user,
-      operator: current_tenant,
     )
 
     result = UpdateMembership.call(
