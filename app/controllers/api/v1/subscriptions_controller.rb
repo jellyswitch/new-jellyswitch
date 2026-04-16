@@ -132,11 +132,12 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     sub = current_api_user.subscriptions.find(params[:id])
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: sub,
-      blob: "Cancelled immediately via mobile app",
+      blob: { text: "Cancelled #{sub.plan.name} membership immediately via mobile app.", type: "membership_cancellation" },
       user: current_api_user,
       operator: current_tenant,
       location: current_location,
       notifiable: sub,
+      creditable: current_api_user,
     )
 
     if result.success?
