@@ -216,6 +216,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         available: is_available,
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
+        photo_url: (r.photo.attached? ? url_for(r.photo) : nil rescue nil),
       }
     }
 
@@ -266,6 +267,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       amenities: room.amenities.pluck(:name),
       rentable: room.rentable?,
       available: (room.available_now? rescue false),
+      photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }
   end
 end

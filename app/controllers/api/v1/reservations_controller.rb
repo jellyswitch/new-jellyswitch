@@ -184,6 +184,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       room_id: r.room_id,
       room_name: r.room.name,
       room_hourly_rate_in_cents: r.room.hourly_rate_in_cents,
+      room_photo_url: (r.room.photo.attached? ? url_for(r.room.photo) : nil rescue nil),
       date: r.datetime_in.strftime("%B %e, %Y"),
       time: r.datetime_in.strftime("%l:%M %p").strip,
       datetime_in: r.datetime_in.iso8601,

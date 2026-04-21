@@ -48,6 +48,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       description: room.description,
       visible: room.visible,
       rentable: room.rentable,
+      photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }
   end
 end
