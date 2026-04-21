@@ -22,7 +22,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       locations: user.operator.locations.map { |l| { id: l.id, name: l.name } },
       terms_accepted: user.terms_accepted_at.present?,
       has_terms_of_service: user.operator.terms_of_service.attached?,
-      terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, only_path: false) : nil,
+      terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, host: request.host_with_port) : nil,
       preferred_room_id: user.preferred_room_id,
       preferred_meeting_duration: user.preferred_meeting_duration,
       marketing_opt_in: user.try(:marketing_opt_in),
