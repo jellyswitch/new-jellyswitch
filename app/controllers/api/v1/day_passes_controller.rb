@@ -72,28 +72,73 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   end
 
   def redeem
+    apply_code_action(require_pass_code: true)
+  end
+
+  # POST /api/v1/day_passes/apply_code
+  # Unified code entry: tries a DayPassCode (comp pass) first, then a
+  # DiscountCode (% or $ off at purchase). Returns a shape the client
+  # uses to either celebrate + stop, or to carry the discount into
+  # the next purchase call.
+  def apply_code
+    apply_code_action(require_pass_code: false)
+  end
+
+  private
+
+  def apply_code_action(require_pass_code:)
     code = params[:code]&.strip
     return render_error('Please enter a code') if code.blank?
 
+    # 1) Try single-use day pass code (grants a free pass).
     day_pass_code = DayPassCode.find_by(code: code, operator: current_tenant)
-    return render_error('Invalid code') unless day_pass_code
-    return render_error('This code has already been used') if day_pass_code.redeemed?
+    if day_pass_code
+      return render_error('This code has already been used') if day_pass_code.redeemed?
 
-    day_pass = DayPass.create(
-      user: current_api_user,
-      billable: current_api_user,
-      day_pass_type: day_pass_code.day_pass_type,
-      day: Date.current,
+      day_pass = DayPass.create(
+        user: current_api_user,
+        billable: current_api_user,
+        day_pass_type: day_pass_code.day_pass_type,
+        day: Date.current,
+        operator: current_tenant,
+        location: current_location,
+        complimentary: true,
+      )
+
+      if day_pass.persisted?
+        day_pass_code.update(redeemed: true, redeemed_by: current_api_user)
+        return render json: {
+          type: 'redeemed',
+          success: true,
+          message: 'Day pass redeemed!',
+          day_pass: { id: day_pass.id, day: day_pass.day, type_name: day_pass_code.day_pass_type&.name },
+        }, status: :created
+      else
+        return render_error(day_pass.errors.full_messages.first)
+      end
+    end
+
+    return render_error('Invalid code') if require_pass_code
+
+    # 2) Try a discount code (percentage / amount off at purchase).
+    result = Billing::DiscountCodes::ValidateCode.call(
+      code: code,
       operator: current_tenant,
-      location: current_location,
-      complimentary: true,
     )
 
-    if day_pass.persisted?
-      day_pass_code.update(redeemed: true, redeemed_by: current_api_user)
-      render json: { success: true, message: "Day pass redeemed!" }, status: :created
+    if result.success?
+      dc = result.discount_code
+      render json: {
+        type: 'discount',
+        valid: true,
+        code: dc.code,
+        discount_type: dc.discount_type,
+        discount_value: dc.discount_value,
+        description: dc.try(:description),
+        message: 'Discount applied — it\'ll be used at purchase.',
+      }
     else
-      render_error(day_pass.errors.full_messages.first)
+      render json: { type: 'invalid', valid: false, error: result.message || 'Invalid code' }, status: :unprocessable_entity
     end
   end
 end

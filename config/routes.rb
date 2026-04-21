@@ -73,6 +73,7 @@ Rails.application.routes.draw do
       resources :day_passes, only: [:create] do
         collection do
           post :redeem
+          post :apply_code
         end
       end
 
