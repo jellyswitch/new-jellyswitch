@@ -205,7 +205,30 @@ class Api::V1::RoomsController < Api::V1::BaseController
 
     included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
 
+    # Shared pricing calculator for the "other rooms" list. Returns
+    # the user's effective cost for booking this room for `duration` minutes.
+    effective_price = ->(room) {
+      # Prefer day pass / subscription overage rates when the user has
+      # an active plan — they override per-room hourly rate.
+      if sub_info
+        return { effective_price_cents: 0, label: 'Included in plan' } if sub_info[:charge_type] == :free
+        if sub_info[:charge_type] == :partial_overage
+          return { effective_price_cents: sub_info[:overage_amount_in_cents], label: 'Overage applies' }
+        end
+      end
+      if dp_info
+        return { effective_price_cents: 0, label: 'Included with day pass' } if dp_info[:charge_type] == :free
+        if dp_info[:charge_type] == :partial_overage
+          return { effective_price_cents: dp_info[:overage_amount_in_cents], label: 'Overage applies' }
+        end
+      end
+      # No plan/day pass — use the room's hourly rate
+      cents = ((room.hourly_rate_in_cents || 0) * (duration / 60.0)).round
+      { effective_price_cents: cents, label: cents == 0 ? 'Free' : nil }
+    }
+
     room_json = ->(r, is_available, available_at = nil) {
+      pricing = effective_price.call(r)
       {
         id: r.id, name: r.name, capacity: r.capacity,
         description: r.description,
@@ -214,6 +237,8 @@ class Api::V1::RoomsController < Api::V1::BaseController
         available: is_available,
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
+        effective_price_cents: pricing[:effective_price_cents],
+        price_label: pricing[:label],
       }
     }
 
