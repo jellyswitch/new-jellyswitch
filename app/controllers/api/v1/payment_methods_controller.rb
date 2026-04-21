@@ -7,15 +7,19 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
     # top-level stripe_customer_id.
     stripe_customer_id = user.stripe_customer_id_for_location(location) if location
 
+    # Stripe.api_key is never set globally in this app — every call
+    # must pass it explicitly (see StripeUtils#stripe_request).
+    stripe_creds = { api_key: ENV['STRIPE_SECRET_KEY'], stripe_account: stripe_account }
+
     if stripe_customer_id.present? && stripe_account.present?
       begin
-        customer = Stripe::Customer.retrieve(stripe_customer_id, stripe_account: stripe_account)
+        customer = Stripe::Customer.retrieve(stripe_customer_id, stripe_creds)
 
         # Try default_source first (legacy Card/Source on customer.default_source)
         ds = customer.try(:default_source)
         if ds.present?
           source = ds.is_a?(String) ?
-            Stripe::Customer.retrieve_source(stripe_customer_id, ds, stripe_account: stripe_account) :
+            Stripe::Customer.retrieve_source(stripe_customer_id, ds, stripe_creds) :
             ds
           return render json: {
             brand: source.try(:brand),
@@ -29,7 +33,7 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
         pm_id = customer.try(:invoice_settings)&.try(:default_payment_method)
         if pm_id.present?
           pm = pm_id.is_a?(String) ?
-            Stripe::PaymentMethod.retrieve(pm_id, stripe_account: stripe_account) :
+            Stripe::PaymentMethod.retrieve(pm_id, stripe_creds) :
             pm_id
           card = pm.try(:card)
           if card
@@ -45,7 +49,7 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
         # Last-resort fallback: list payment methods on this customer.
         pms = Stripe::PaymentMethod.list(
           { customer: stripe_customer_id, type: 'card', limit: 1 },
-          { stripe_account: stripe_account },
+          stripe_creds,
         )
         if pms.data.any?
           card = pms.data.first.card
@@ -57,7 +61,7 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
           }
         end
       rescue Stripe::InvalidRequestError, Stripe::AuthenticationError, Stripe::APIConnectionError, Stripe::StripeError => e
-        Rails.logger.warn("PaymentMethod Stripe error: #{e.message}")
+        Rails.logger.warn("PaymentMethod Stripe error: #{e.class}: #{e.message}")
       end
     end
 
