@@ -136,7 +136,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
     # Coverage check: if the user has no active subscription, no day pass
     # for this date, and no active lease, they need a day pass to book.
     needs_cov = !user.has_active_subscription? &&
-                !user.has_active_day_pass_at_location?(location, date) &&
+                !user.has_active_day_pass?(date) &&
                 !user.has_active_lease?(location) &&
                 !user.admin_or_manager?(location) &&
                 !user.superadmin?

@@ -44,7 +44,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     user = current_api_user
     location = current_location
     needs_cov = !user.has_active_subscription? &&
-                !user.has_active_day_pass_at_location?(location, date) &&
+                !user.has_active_day_pass?(date) &&
                 !user.has_active_lease?(location) &&
                 !user.admin_or_manager?(location) &&
                 !user.superadmin?
