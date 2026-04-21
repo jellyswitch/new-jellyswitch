@@ -106,9 +106,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         discount_value: dc.discount_value,
         description: dc.try(:description),
         display: dc.discount_display,
-        message: is_free
-          ? 'This code covers a day pass — pick one below to redeem.'
-          : 'Discount applied — it\'ll be used at purchase.',
+        message: (is_free ? 'This code covers a day pass — pick one below to redeem.' : 'Discount applied — it\'ll be used at purchase.'),
       }
     else
       render json: { type: 'invalid', valid: false, error: result.message || 'Invalid code' }, status: :unprocessable_entity
