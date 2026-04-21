@@ -229,8 +229,8 @@ module Permissions
       }
     else
       overage_minutes = requested_minutes - remaining_free
-      # Round up to nearest 30-minute increment
-      overage_minutes_rounded = (overage_minutes / 30.0).ceil * 30
+      # Round up to nearest 15-minute increment (matches booking slider granularity)
+      overage_minutes_rounded = (overage_minutes / 15.0).ceil * 15
       overage_amount = (plan.overage_rate_per_minute_in_cents * overage_minutes_rounded).to_i
 
       {
@@ -281,8 +281,8 @@ module Permissions
       }
     else
       overage_minutes = requested_minutes - remaining_free
-      # Round up to nearest 30-minute increment
-      overage_minutes_rounded = (overage_minutes / 30.0).ceil * 30
+      # Round up to nearest 15-minute increment (matches booking slider granularity)
+      overage_minutes_rounded = (overage_minutes / 15.0).ceil * 15
       overage_amount = (day_pass_type.overage_rate_per_minute_in_cents * overage_minutes_rounded).to_i
 
       {
