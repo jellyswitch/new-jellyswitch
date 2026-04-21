@@ -79,6 +79,7 @@ Rails.application.routes.draw do
       # Bulletin Board / Posts
       resources :posts, only: [:index, :show, :create] do
         resources :replies, only: [:create], controller: 'post_replies'
+        resources :reactions, only: [:create], controller: 'post_reactions'
       end
 
       # Member Feedback / Messages

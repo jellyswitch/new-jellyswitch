@@ -13,10 +13,12 @@ class Api::V1::PostsController < Api::V1::BaseController
     replies = post.post_replies.order(:created_at).includes(user: { profile_photo_attachment: :blob }).map { |r|
       {
         id: r.id,
-        body: r.body,
+        body: r.content&.to_plain_text,
+        html_body: r.content&.to_s,
         author: r.user&.name,
         author_photo_url: r.user&.profile_photo&.attached? ? url_for(r.user.profile_photo) : nil,
-        created_at: r.created_at.strftime("%B %e, %Y at %l:%M %p"),
+        created_at: r.created_at.iso8601,
+        created_at_label: r.created_at.strftime("%B %e at %l:%M %p"),
       }
     }
 
@@ -41,15 +43,20 @@ class Api::V1::PostsController < Api::V1::BaseController
   private
 
   def post_json(post)
+    reactions = post.post_reactions.group(:emoji).count
+    my_emojis = post.post_reactions.where(user_id: current_api_user.id).pluck(:emoji)
     {
       id: post.id,
       body: post.content&.to_plain_text,
       html_body: post.content&.to_s,
       subject: post.title,
       author: post.user&.name,
+      author_id: post.user&.id,
       author_photo_url: post.user&.profile_photo&.attached? ? url_for(post.user.profile_photo) : nil,
       reply_count: post.post_replies.count,
-      created_at: post.created_at.strftime("%B %e, %Y"),
+      created_at: post.created_at.iso8601,
+      created_at_label: post.created_at.strftime("%B %e, %Y"),
+      reactions: reactions.map { |emoji, count| { emoji: emoji, count: count, reacted: my_emojis.include?(emoji) } },
     }
   end
 end
