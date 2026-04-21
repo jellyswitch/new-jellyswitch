@@ -150,8 +150,36 @@ class Api::V1::RoomsController < Api::V1::BaseController
           name: suggested.name,
           amount_in_cents: suggested.amount_in_cents,
           included_meeting_room_minutes: suggested.included_meeting_room_minutes,
+          overage_rate_in_cents: suggested.overage_rate_in_cents,
           date: date.to_s,
         }
+
+        # Project the same overage logic as if this day pass were already
+        # purchased, so the summary can warn about overages up front.
+        # Priced rooms never count against day pass allowance.
+        if room.hourly_rate_in_cents.to_i == 0
+          included = suggested.included_meeting_room_minutes
+          if included.present? && minutes > included
+            over_min = minutes - included
+            over_min_rounded = (over_min / 15.0).ceil * 15
+            over_rate_per_min = (suggested.overage_rate_in_cents || 0) / 60.0
+            over_cents = (over_rate_per_min * over_min_rounded).to_i
+            base[:charge_type] = 'partial_overage'
+            base[:estimated_cost] = over_cents
+            base[:plan_minutes_remaining] = included
+            base[:plan_minutes_total] = included
+            base[:overage_rate] = suggested.overage_rate_in_cents
+            base[:source] = 'projected_day_pass'
+            base[:included_in_plan] = false
+          elsif included.present?
+            base[:charge_type] = 'free'
+            base[:estimated_cost] = 0
+            base[:plan_minutes_remaining] = included - minutes
+            base[:plan_minutes_total] = included
+            base[:source] = 'projected_day_pass'
+            base[:included_in_plan] = true
+          end
+        end
       else
         base[:needs_day_pass] = true
         base[:day_pass] = nil
