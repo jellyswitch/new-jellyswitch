@@ -96,7 +96,24 @@ class Api::V1::RoomsController < Api::V1::BaseController
     sub_info = user.subscription_reservation_charge_info(location, minutes, room: room)
     dp_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
 
-    base = if sub_info
+    # Active subscriber on a plan with no meeting-room limit → rooms are
+    # free (unlimited). subscription_reservation_charge_info returns nil
+    # in that case, so we'd otherwise fall through to full hourly rate.
+    subscriber_unlimited = sub_info.nil? &&
+                           user.has_active_subscription? &&
+                           user.has_active_subscription_at_location?(location)
+
+    base = if subscriber_unlimited
+      {
+        included_in_plan: true,
+        charge_type: 'free',
+        estimated_cost: 0,
+        plan_minutes_remaining: nil,
+        plan_minutes_total: nil,
+        overage_rate: nil,
+        source: 'subscription_unlimited',
+      }
+    elsif sub_info
       {
         included_in_plan: sub_info[:charge_type] == :free,
         charge_type: sub_info[:charge_type].to_s,

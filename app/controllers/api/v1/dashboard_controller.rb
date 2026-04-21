@@ -58,7 +58,19 @@ class Api::V1::DashboardController < Api::V1::BaseController
         contact_name: location.contact_name,
         contact_phone: location.contact_phone,
         contact_email: location.contact_email,
-        hours: "#{location.working_day_start} - #{location.working_day_end}",
+        hours: begin
+          fmt = ->(v) {
+            return nil if v.nil?
+            h = v.is_a?(String) ? v.split(':').first.to_i : v.to_i
+            suffix = h >= 12 ? 'PM' : 'AM'
+            h12 = h % 12
+            h12 = 12 if h12 == 0
+            "#{h12} #{suffix}"
+          }
+          s = fmt.call(location.working_day_start)
+          e = fmt.call(location.working_day_end)
+          (s && e) ? "#{s} – #{e}" : nil
+        end,
       } : nil,
     }
   end
