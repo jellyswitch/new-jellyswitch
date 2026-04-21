@@ -1,17 +1,21 @@
 class Api::V1::PaymentMethodsController < Api::V1::BaseController
   def show
     user = current_api_user
-    stripe_account = current_location&.stripe_user_id
+    location = current_location
+    stripe_account = location&.stripe_user_id
+    # Cards are attached per-location via PaymentProfile, not to a single
+    # top-level stripe_customer_id.
+    stripe_customer_id = stripe_customer_id_for_location(location) if location
 
-    if user.stripe_customer_id.present? && stripe_account.present?
+    if stripe_customer_id.present? && stripe_account.present?
       begin
-        customer = Stripe::Customer.retrieve(user.stripe_customer_id, stripe_account: stripe_account)
+        customer = Stripe::Customer.retrieve(stripe_customer_id, stripe_account: stripe_account)
 
         # Try default_source first (legacy Card/Source on customer.default_source)
         ds = customer.try(:default_source)
         if ds.present?
           source = ds.is_a?(String) ?
-            Stripe::Customer.retrieve_source(user.stripe_customer_id, ds, stripe_account: stripe_account) :
+            Stripe::Customer.retrieve_source(stripe_customer_id, ds, stripe_account: stripe_account) :
             ds
           return render json: {
             brand: source.try(:brand),
@@ -40,7 +44,7 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
 
         # Last-resort fallback: list payment methods on this customer.
         pms = Stripe::PaymentMethod.list(
-          { customer: user.stripe_customer_id, type: 'card', limit: 1 },
+          { customer: stripe_customer_id, type: 'card', limit: 1 },
           { stripe_account: stripe_account },
         )
         if pms.data.any?
