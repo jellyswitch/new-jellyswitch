@@ -5,7 +5,7 @@ class Api::V1::PaymentMethodsController < Api::V1::BaseController
     stripe_account = location&.stripe_user_id
     # Cards are attached per-location via PaymentProfile, not to a single
     # top-level stripe_customer_id.
-    stripe_customer_id = stripe_customer_id_for_location(location) if location
+    stripe_customer_id = user.stripe_customer_id_for_location(location) if location
 
     if stripe_customer_id.present? && stripe_account.present?
       begin
