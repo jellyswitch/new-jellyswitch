@@ -38,7 +38,13 @@ Rails.application.routes.draw do
       end
       get 'reserve_now', to: 'rooms#reserve_now'
 
-      resources :reservations, only: [:index, :create, :destroy]
+      resources :reservations, only: [:index, :create, :destroy] do
+        member do
+          get :extension_options
+          patch :extend_time
+          patch :end_now
+        end
+      end
 
       resources :events, only: [:index, :show] do
         member do
