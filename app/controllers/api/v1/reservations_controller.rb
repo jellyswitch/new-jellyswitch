@@ -16,6 +16,22 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     minutes = params[:reservation][:minutes].to_i
     date = datetime_in.to_date
 
+    # If a stripe_token is provided, save the card to the user first
+    # so it's stored for future one-tap bookings.
+    stripe_token = params[:stripe_token] || params.dig(:reservation, :stripe_token)
+    if stripe_token.present?
+      begin
+        Billing::Payment::UpdateUserPayment.call(
+          user: current_api_user,
+          location: current_location,
+          token: stripe_token,
+          out_of_band: false,
+        )
+      rescue => e
+        Rails.logger.error("Failed to save payment method: #{e.message}")
+      end
+    end
+
     day_pass_charge_info = current_api_user.day_pass_reservation_charge_info(current_location, date, minutes)
     subscription_charge_info = current_api_user.subscription_reservation_charge_info(current_location, minutes)
 
