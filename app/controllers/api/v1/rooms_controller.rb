@@ -132,6 +132,40 @@ class Api::V1::RoomsController < Api::V1::BaseController
     end
 
     base[:credits] = credit_info if credit_info
+
+    # Coverage check: if the user has no active subscription, no day pass
+    # for this date, and no active lease, they need a day pass to book.
+    needs_cov = !user.has_active_subscription? &&
+                !user.has_active_day_pass_at_location?(location, date) &&
+                !user.has_active_lease?(location) &&
+                !user.admin_or_manager?(location) &&
+                !user.superadmin?
+
+    if needs_cov
+      suggested = DayPassType
+        .where(operator_id: location.operator_id)
+        .where("location_id = ? OR location_id IS NULL", location.id)
+        .where("amount_in_cents > 0")
+        .where.not("name ILIKE ?", "%office%")
+        .order(:amount_in_cents)
+        .first
+      if suggested
+        base[:needs_day_pass] = true
+        base[:day_pass] = {
+          type_id: suggested.id,
+          name: suggested.name,
+          amount_in_cents: suggested.amount_in_cents,
+          included_meeting_room_minutes: suggested.included_meeting_room_minutes,
+          date: date.to_s,
+        }
+      else
+        base[:needs_day_pass] = true
+        base[:day_pass] = nil
+      end
+    else
+      base[:needs_day_pass] = false
+    end
+
     render json: base
   end
 

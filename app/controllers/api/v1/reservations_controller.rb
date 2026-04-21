@@ -38,8 +38,47 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       end
     end
 
-    day_pass_charge_info = current_api_user.day_pass_reservation_charge_info(current_location, date, minutes, room: room)
-    subscription_charge_info = current_api_user.subscription_reservation_charge_info(current_location, minutes, room: room)
+    # Coverage check: auto-purchase a day pass for the reservation date
+    # if the user has no active subscription, day pass, or lease. Keeps
+    # the "you booked for free without a day pass" gap closed.
+    user = current_api_user
+    location = current_location
+    needs_cov = !user.has_active_subscription? &&
+                !user.has_active_day_pass_at_location?(location, date) &&
+                !user.has_active_lease?(location) &&
+                !user.admin_or_manager?(location) &&
+                !user.superadmin?
+    if needs_cov
+      suggested = DayPassType
+        .where(operator_id: location.operator_id)
+        .where("location_id = ? OR location_id IS NULL", location.id)
+        .where("amount_in_cents > 0")
+        .where.not("name ILIKE ?", "%office%")
+        .order(:amount_in_cents)
+        .first
+      if suggested.nil?
+        return render_error("You need a day pass to book for #{date.strftime('%b %-d')}, but none are available. Please contact the operator.")
+      end
+
+      # Require a card on file (or a fresh token in this request).
+      unless user.card_added_for_location?(location) || stripe_token.present?
+        return render_error("A payment method is required to book a room without a day pass or membership.")
+      end
+
+      dp_result = Billing::DayPasses::CreateDayPass.call(
+        params: { day: date, day_pass_type: suggested.id, operator: location.operator },
+        operator: location.operator,
+        location: location,
+        user_id: user.id,
+        out_of_band: false,
+      )
+      unless dp_result.success?
+        return render_error("Couldn't purchase day pass: #{dp_result.message}")
+      end
+    end
+
+    day_pass_charge_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
+    subscription_charge_info = user.subscription_reservation_charge_info(location, minutes, room: room)
 
     result = Billing::Reservations::CreateRoomReservation.call(
       reservation_params: {
