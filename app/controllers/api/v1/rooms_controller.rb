@@ -42,14 +42,25 @@ class Api::V1::RoomsController < Api::V1::BaseController
     start_hour = parse_hour.call(location&.working_day_start, 8)
     end_hour = parse_hour.call(location&.working_day_end, 18)
 
+    zone = location&.time_zone || 'UTC'
     slots = []
-    current_time = date.in_time_zone(location&.time_zone || 'UTC').change(hour: start_hour)
-    end_time = date.in_time_zone(location&.time_zone || 'UTC').change(hour: end_hour)
+    current_time = date.in_time_zone(zone).change(hour: start_hour)
+    end_time = date.in_time_zone(zone).change(hour: end_hour)
+
+    # If this is today, skip past slots. Round up to the next 15-min mark
+    # so the user can't pick a start time that's already gone by.
+    now_in_zone = Time.current.in_time_zone(zone)
+    if date == now_in_zone.to_date
+      floor = now_in_zone.change(min: (now_in_zone.min / 15).floor * 15, sec: 0)
+      min_start = floor + 15.minutes
+      current_time = min_start if current_time < min_start
+    end
 
     while current_time < end_time
       available = room.available?(start_time: current_time, duration: 15)
       slots << {
         time: current_time.strftime("%H:%M"),
+        hour: current_time.hour,
         label: current_time.strftime("%l:%M %p").strip,
         available: available,
       }
