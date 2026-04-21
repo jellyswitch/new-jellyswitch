@@ -87,6 +87,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     result = Billing::DiscountCodes::ValidateCode.call(
       code: code,
       operator: current_tenant,
+      location: current_location,
+      product_type: 'day_pass',
     )
 
     if result.success?
