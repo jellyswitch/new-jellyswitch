@@ -70,6 +70,8 @@ module SessionsHelper
       return nil
     end
 
+    return nil unless current_tenant
+
     if (location_id = session[:location_id]) # if there is a current location in the session, use it
       @current_location ||= current_tenant.locations.find_by(id: location_id)
     elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
@@ -81,10 +83,10 @@ module SessionsHelper
         cookies.delete(:location_id)
         nil
       end
-    elsif current_tenant && current_tenant.locations.count == 1 # if I only have one location, use it automatically
+    elsif current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
-    elsif current_tenant && current_user
+    elsif current_user
       # Multi-location operator with no location selected yet — this is expected.
       # The user will be redirected to select a location by reset_location in BaseController.
       nil
