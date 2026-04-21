@@ -15,6 +15,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
+      profile_photo_url: (user.profile_photo.attached? ? url_for(user.profile_photo) : nil rescue nil),
       credit_balance: user.credit_balance,
       location_id: user.current_location_id || user.original_location_id,
       operator_subdomain: user.operator.subdomain,
