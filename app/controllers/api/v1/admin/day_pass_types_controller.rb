@@ -20,17 +20,32 @@ class Api::V1::Admin::DayPassTypesController < Api::V1::Admin::BaseController
   def update
     type = DayPassType.find(params[:id])
 
-    if type.update(type_params)
-      render json: type_json(type)
-    else
-      render_error(type.errors.full_messages.join(', '))
+    DayPassType.transaction do
+      if params.dig(:day_pass_type, :default_for_room_booking).to_s == 'true'
+        # Only one default per operator/location pair.
+        DayPassType
+          .where(operator_id: type.operator_id, location_id: type.location_id)
+          .where.not(id: type.id)
+          .update_all(default_for_room_booking: false)
+      end
+
+      if type.update(type_params)
+        render json: type_json(type)
+      else
+        render_error(type.errors.full_messages.join(', '))
+        raise ActiveRecord::Rollback
+      end
     end
   end
 
   private
 
   def type_params
-    params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :description)
+    params.require(:day_pass_type).permit(
+      :name, :amount_in_cents, :available, :visible, :description,
+      :included_meeting_room_minutes, :overage_rate_in_cents,
+      :default_for_room_booking,
+    )
   end
 
   def type_json(t)
@@ -41,6 +56,8 @@ class Api::V1::Admin::DayPassTypesController < Api::V1::Admin::BaseController
       available: t.available,
       description: t.description.to_s,
       included_meeting_room_minutes: t.try(:included_meeting_room_minutes),
+      overage_rate_in_cents: t.try(:overage_rate_in_cents),
+      default_for_room_booking: t.try(:default_for_room_booking),
     }
   end
 end

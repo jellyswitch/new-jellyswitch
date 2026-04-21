@@ -142,13 +142,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
                 !user.superadmin?
 
     if needs_cov
-      suggested = DayPassType
-        .where(operator_id: location.operator_id)
-        .where("location_id = ? OR location_id IS NULL", location.id)
-        .where("amount_in_cents > 0")
-        .where.not("name ILIKE ?", "%office%")
-        .order(:amount_in_cents)
-        .first
+      suggested = pick_default_room_booking_day_pass_type(location)
       if suggested
         base[:needs_day_pass] = true
         base[:day_pass] = {
@@ -301,6 +295,21 @@ class Api::V1::RoomsController < Api::V1::BaseController
   end
 
   private
+
+  # Prefer the day pass type explicitly marked as the default for room
+  # bookings. Fall back to cheapest non-free, non-Day-Office type.
+  def pick_default_room_booking_day_pass_type(location)
+    scope = DayPassType
+      .where(operator_id: location.operator_id)
+      .where("location_id = ? OR location_id IS NULL", location.id)
+      .available
+      .where(visible: true)
+      .where("amount_in_cents > 0")
+      .where.not("name ILIKE ?", "%office%")
+
+    scope.where(default_for_room_booking: true).first ||
+      scope.order(:amount_in_cents).first
+  end
 
   def room_json(room)
     {

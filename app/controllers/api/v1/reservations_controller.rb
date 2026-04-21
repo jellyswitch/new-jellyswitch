@@ -49,13 +49,15 @@ class Api::V1::ReservationsController < Api::V1::BaseController
                 !user.admin_or_manager?(location) &&
                 !user.superadmin?
     if needs_cov
-      suggested = DayPassType
+      scope = DayPassType
         .where(operator_id: location.operator_id)
         .where("location_id = ? OR location_id IS NULL", location.id)
+        .available
+        .where(visible: true)
         .where("amount_in_cents > 0")
         .where.not("name ILIKE ?", "%office%")
-        .order(:amount_in_cents)
-        .first
+      suggested = scope.where(default_for_room_booking: true).first ||
+                  scope.order(:amount_in_cents).first
       if suggested.nil?
         return render_error("You need a day pass to book for #{date.strftime('%b %-d')}, but none are available. Please contact the operator.")
       end
