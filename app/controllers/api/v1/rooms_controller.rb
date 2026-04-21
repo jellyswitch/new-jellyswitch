@@ -334,6 +334,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         has_plan: has_plan,
         minutes_remaining: included_minutes_remaining.to_i,
         overage_rate_per_hour_cents: overage_rate_per_hour_cents.to_i,
+        subscriber_unlimited: user.has_active_subscription_at_location?(location) && sub_info.nil?,
         plan_label: sub_info ? 'plan' : (dp_info ? 'day pass' : nil),
       },
     }
