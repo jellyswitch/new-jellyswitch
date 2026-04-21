@@ -198,7 +198,7 @@ module Permissions
   # Returns charge info for subscription members booking meeting rooms.
   # Returns nil if user has no active subscription or plan has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.
-  def subscription_reservation_charge_info(location, requested_minutes)
+  def subscription_reservation_charge_info(location, requested_minutes, room: nil)
     subscription = active_subscription_for_location(location)
     return nil unless subscription
 
@@ -249,7 +249,10 @@ module Permissions
   # Returns charge info for day pass users booking meeting rooms.
   # Returns nil if user is not a day pass holder or day pass has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.
-  def day_pass_reservation_charge_info(location, day, requested_minutes)
+  def day_pass_reservation_charge_info(location, day, requested_minutes, room: nil)
+    # Priced rooms (hourly_rate > 0) don't count toward day pass allowance.
+    return nil if room && room.hourly_rate_in_cents.to_i > 0
+
     day = day.to_date if day.respond_to?(:to_date)
     return nil unless has_active_day_pass?(day)
 
@@ -264,8 +267,10 @@ module Permissions
     return nil unless day_pass_type.has_meeting_room_limit?
 
     # Calculate cumulative usage: sum of minutes from non-cancelled reservations for this user on this day
-    used_minutes = Reservation.where(user_id: id, cancelled: false)
+    # Priced rooms don't count toward day pass allowance
+    used_minutes = Reservation.joins(:room).where(user_id: id, cancelled: false)
                               .where(datetime_in: day.beginning_of_day..day.end_of_day)
+                              .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
                               .sum(:minutes)
 
     remaining_free = [day_pass_type.included_meeting_room_minutes - used_minutes, 0].max

@@ -32,8 +32,8 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       end
     end
 
-    day_pass_charge_info = current_api_user.day_pass_reservation_charge_info(current_location, date, minutes)
-    subscription_charge_info = current_api_user.subscription_reservation_charge_info(current_location, minutes)
+    day_pass_charge_info = current_api_user.day_pass_reservation_charge_info(current_location, date, minutes, room: room)
+    subscription_charge_info = current_api_user.subscription_reservation_charge_info(current_location, minutes, room: room)
 
     result = Billing::Reservations::CreateRoomReservation.call(
       reservation_params: {
