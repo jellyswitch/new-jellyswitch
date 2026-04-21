@@ -43,6 +43,12 @@ class Api::V1::DashboardController < Api::V1::BaseController
         date: e.starts_at.strftime("%b %e at %l:%M %p").strip,
         rsvped: user_rsvp_ids.include?(e.id),
       } },
+      has_active_subscription: user.has_active_subscription?,
+      active_day_pass: (today_pass = user.day_passes.for_day(Date.current).first) ? {
+        id: today_pass.id,
+        day: today_pass.day,
+        type_name: today_pass.day_pass_type&.name,
+      } : nil,
       location_info: location ? {
         name: location.name,
         address: [location.building_address, location.city, location.state, location.zip].compact.reject(&:blank?).join(', '),
