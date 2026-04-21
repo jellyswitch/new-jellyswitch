@@ -27,6 +27,13 @@ class Api::V1::UsersController < Api::V1::BaseController
       preferred_meeting_duration: user.preferred_meeting_duration,
       marketing_opt_in: user.try(:marketing_opt_in),
       organization_id: user.try(:organization_id),
+      can_submit_events: (
+        loc = user.current_location || user.original_location
+        user.has_active_subscription? ||
+          (loc.present? && user.has_active_lease?(loc)) ||
+          user.admin_or_manager?(loc) ||
+          user.superadmin?
+      ),
     }
   end
 

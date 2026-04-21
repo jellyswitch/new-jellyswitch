@@ -46,7 +46,10 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :events, only: [:index, :show] do
+      resources :events, only: [:index, :show, :create] do
+        collection do
+          get :my_submissions
+        end
         member do
           post :rsvp
         end
@@ -181,7 +184,12 @@ Rails.application.routes.draw do
         delete 'announcements/:id', to: 'announcements#destroy'
 
         # Events
-        resources :events, only: [:index, :create, :update, :destroy]
+        resources :events, only: [:index, :create, :update, :destroy] do
+          member do
+            patch :approve
+            patch :reject
+          end
+        end
 
         # Plans
         resources :plans, only: [:index, :create, :update] do

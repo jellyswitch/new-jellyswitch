@@ -15,7 +15,7 @@ class Api::V1::PostsController < Api::V1::BaseController
         id: r.id,
         body: r.body,
         author: r.user&.name,
-        author_photo_url: r.user&.profile_photo&.attached? ? Rails.application.routes.url_helpers.rails_blob_url(r.user.profile_photo, only_path: false) : nil,
+        author_photo_url: r.user&.profile_photo&.attached? ? url_for(r.user.profile_photo) : nil,
         created_at: r.created_at.strftime("%B %e, %Y at %l:%M %p"),
       }
     }
@@ -47,7 +47,7 @@ class Api::V1::PostsController < Api::V1::BaseController
       html_body: post.content&.to_s,
       subject: post.title,
       author: post.user&.name,
-      author_photo_url: post.user&.profile_photo&.attached? ? Rails.application.routes.url_helpers.rails_blob_url(post.user.profile_photo, only_path: false) : nil,
+      author_photo_url: post.user&.profile_photo&.attached? ? url_for(post.user.profile_photo) : nil,
       reply_count: post.post_replies.count,
       created_at: post.created_at.strftime("%B %e, %Y"),
     }
