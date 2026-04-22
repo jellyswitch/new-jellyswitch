@@ -6,6 +6,20 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
 
     items = apply_filter(items, params[:filter]) if params[:filter].present?
 
+    # Per-operator toggles — hide types the operator has muted.
+    op = current_tenant
+    hidden_types = []
+    hidden_types << 'reservation' unless op.try(:reservation_notifications)
+    hidden_types << 'paid-room-reservation' unless op.try(:paid_room_reservation_notifications)
+    hidden_types << 'day-pass' unless op.try(:day_pass_notifications)
+    hidden_types << 'subscription' unless op.try(:membership_notifications)
+    hidden_types << 'new-user' unless op.try(:signup_notifications)
+    hidden_types << 'checkin' unless op.try(:checkin_notifications)
+    hidden_types << 'feedback' unless op.try(:member_feedback_notifications)
+    hidden_types << 'refund' unless op.try(:refund_notifications)
+    hidden_types << 'post' unless op.try(:post_notifications)
+    items = items.where.not("blob->>'type' IN (?)", hidden_types) if hidden_types.any?
+
     items = items.offset(params[:offset].to_i).limit(30)
 
     render json: items.map { |fi| feed_item_json(fi) }

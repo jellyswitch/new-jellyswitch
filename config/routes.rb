@@ -140,6 +140,10 @@ Rails.application.routes.draw do
         post 'feed/:id/comments', to: 'feed#comment'
         delete 'feed/:id', to: 'feed#destroy'
 
+        # Notification preferences (operator-level toggles)
+        get 'notification_preferences', to: 'notification_preferences#show'
+        patch 'notification_preferences', to: 'notification_preferences#update'
+
         # Today's Activity
         get 'todays_activity', to: 'todays_activity#index'
 
