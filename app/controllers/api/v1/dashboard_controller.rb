@@ -44,11 +44,18 @@ class Api::V1::DashboardController < Api::V1::BaseController
         rsvped: user_rsvp_ids.include?(e.id),
       } },
       has_active_subscription: user.has_active_subscription?,
-      active_day_pass: (today_pass = user.day_passes.for_day(Date.current).first) ? {
-        id: today_pass.id,
-        day: today_pass.day,
-        type_name: today_pass.day_pass_type&.name,
-      } : nil,
+      active_day_pass: begin
+        zone = location&.time_zone.presence || 'UTC'
+        local_today = Time.current.in_time_zone(zone).to_date
+        # A day-passer "today" = any pass for local today OR upcoming in the next week.
+        pass = user.day_passes.where(day: local_today..(local_today + 7)).order(:day).first
+        pass ? {
+          id: pass.id,
+          day: pass.day,
+          type_name: pass.day_pass_type&.name,
+          is_today: pass.day == local_today,
+        } : nil
+      end,
       location_info: location ? {
         name: location.name,
         address: [location.building_address, location.city, location.state, location.zip].compact.reject(&:blank?).join(', '),
