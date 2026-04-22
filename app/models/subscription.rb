@@ -48,10 +48,10 @@ class Subscription < ApplicationRecord
   delegate :operator, :location, to: :subscribable
 
   # Instance methods
-  def cancel_stripe!
+  def cancel_stripe!(prorate: true)
     sub = stripe_subscription
     return unless sub
-    sub.delete
+    sub.delete(prorate: prorate)
   end
 
   def set_stripe_to_cancel!

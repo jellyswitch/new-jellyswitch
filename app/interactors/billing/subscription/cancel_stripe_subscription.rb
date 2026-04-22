@@ -16,7 +16,7 @@ class Billing::Subscription::CancelStripeSubscription
     begin
       sub = subscription.stripe_subscription
       unless sub.nil? || sub.status == "canceled"
-        subscription.cancel_stripe!
+        subscription.cancel_stripe!(prorate: context.prorate.nil? ? true : context.prorate)
       end
     rescue Exception => e
       undo_deactivate(subscription)
