@@ -35,6 +35,16 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.admin_or_manager?(loc) ||
           user.superadmin?
       ),
+      has_active_coverage: begin
+        loc = user.current_location || user.original_location
+        zone = loc&.time_zone.presence || 'UTC'
+        today = Time.current.in_time_zone(zone).to_date
+        user.has_active_subscription? ||
+          user.day_passes.where(day: today..(today + 7)).any? ||
+          (loc.present? && user.has_active_lease?(loc)) ||
+          user.admin_or_manager?(loc) ||
+          user.superadmin?
+      end,
     }
   end
 
