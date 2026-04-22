@@ -35,6 +35,7 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.admin_or_manager?(loc) ||
           user.superadmin?
       ),
+      has_active_subscription: user.has_active_subscription?,
       has_day_pass: user.day_passes.any?,
       # Dates where the user has a day pass — lets mobile filter rooms
       # per-date (premium-only when no coverage on selected date).
