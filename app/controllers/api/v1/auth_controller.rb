@@ -38,7 +38,7 @@ class Api::V1::AuthController < Api::V1::BaseController
         phone: params[:phone],
         original_location_id: location_id,
         terms_accepted: "1",
-        marketing_opt_in: params[:marketing_opt_in] != false ? "1" : "0",
+        marketing_consent: params[:marketing_opt_in] != false,
       },
       operator: operator,
       admin_created: false,

@@ -26,7 +26,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, host: request.host_with_port) : nil,
       preferred_room_id: user.preferred_room_id,
       preferred_meeting_duration: user.preferred_meeting_duration,
-      marketing_opt_in: user.try(:marketing_opt_in),
+      marketing_opt_in: user.try(:marketing_consent),
       organization_id: user.try(:organization_id),
       can_submit_events: (
         loc = user.current_location || user.original_location
@@ -161,8 +161,8 @@ class Api::V1::UsersController < Api::V1::BaseController
   end
 
   def update_email_preferences
-    opt_in = params[:marketing_opt_in]
-    current_api_user.update(marketing_opt_in: opt_in)
+    opt_in = params[:marketing_opt_in].to_s == 'true' || params[:marketing_opt_in] == true
+    current_api_user.update(marketing_consent: opt_in)
     render json: { success: true, marketing_opt_in: opt_in }
   end
 
