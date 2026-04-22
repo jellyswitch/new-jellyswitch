@@ -11,7 +11,7 @@ class Api::V1::DashboardController < Api::V1::BaseController
       .order(created_at: :desc)
       .limit(3)
 
-    events = Event.where(location: location).future.order(:starts_at).limit(5)
+    events = Event.where(location: location).approved.future.order(:starts_at).limit(5)
     user_rsvp_ids = user.rsvps.pluck(:event_id)
 
     # Doors for unlock buttons — sorted by user's most-used first
