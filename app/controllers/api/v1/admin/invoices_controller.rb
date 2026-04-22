@@ -9,6 +9,8 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
       invoices = invoices.delinquent
     when 'open'
       invoices = invoices.open
+    when 'paid'
+      invoices = invoices.where(status: 'paid')
     end
 
     invoices = invoices.order(created_at: :desc).limit(params[:limit] || 50)
