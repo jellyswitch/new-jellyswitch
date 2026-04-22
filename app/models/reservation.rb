@@ -112,6 +112,19 @@ class Reservation < ApplicationRecord
   def end_now!
     actual_duration = [(Time.current - datetime_in) / 60, minutes].min.floor
     update(minutes: actual_duration, ended_early: true)
+
+    # If authorized via PaymentIntent hold, settle the hold on the
+    # actual minutes used. SettleReservationJob at datetime_out will
+    # short-circuit once captured_at is set here.
+    if stripe_payment_intent_id.present? && captured_at.blank?
+      begin
+        Billing::Reservations::CaptureHold.call(reservation: self, actual_minutes: actual_duration)
+      rescue => e
+        Rails.logger.error("CaptureHold on end_now! failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
+    end
+    true
   end
 
   def amenity_names
