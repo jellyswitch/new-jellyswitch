@@ -41,6 +41,26 @@ class Billing::Reservations::CaptureHold
     )
     reservation.update!(captured_amount_in_cents: capture_cents, captured_at: Time.current)
     context.payment_intent = intent
+
+    # Create a local Invoice record so the captured charge shows up in
+    # the member's Invoices screen and admin reports, and so refunds
+    # can be issued against it.
+    begin
+      Invoice.create!(
+        billable: reservation.user,
+        operator: location.operator,
+        location: location,
+        amount_due: capture_cents,
+        amount_paid: capture_cents,
+        status: 'paid',
+        date: Time.current,
+        stripe_payment_intent_id: reservation.stripe_payment_intent_id,
+        description: reservation.charge_description,
+      )
+    rescue => e
+      Rails.logger.error("CaptureHold invoice creation failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e, context: { reservation_id: reservation.id })
+    end
   rescue Stripe::InvalidRequestError => e
     Rails.logger.warn("CaptureHold error on reservation #{reservation.id}: #{e.message}")
     Honeybadger.notify(e, context: { reservation_id: reservation.id })
