@@ -37,6 +37,15 @@ class Api::V1::UsersController < Api::V1::BaseController
       ),
       has_active_subscription: user.has_active_subscription?,
       has_day_pass: user.day_passes.any?,
+      location_hours: begin
+        loc = user.current_location || user.original_location
+        parse = ->(v) { v.is_a?(String) ? v.split(':').first.to_i : v.to_i }
+        {
+          start_hour: parse.call(loc&.working_day_start),
+          end_hour: parse.call(loc&.working_day_end),
+          time_zone: loc&.time_zone,
+        }
+      end,
       # Dates where the user has a day pass — lets mobile filter rooms
       # per-date (premium-only when no coverage on selected date).
       day_pass_days: user.day_passes.where("day >= ?", Date.current - 1).pluck(:day).map(&:to_s),
