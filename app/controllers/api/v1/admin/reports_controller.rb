@@ -1,21 +1,62 @@
 class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
+  # Mirrors the prod web Operator::ReportsController#index analytics dashboard:
+  # all the KPIs, multi-timeframe trends, and actionable insights — surfaced
+  # as JSON so the mobile admin reports screen can render the same view.
   def index
-    period_start = period_start_date
+    period_days = period_days_for(params[:period])
+    report = Jellyswitch::Report.new(current_tenant, current_location)
+
+    mrr_value = safe(0) { report.mrr }
+    churn_rate_value = safe(0) { report.churn_rate(period_days) }
+    churn_count_value = safe(0) { report.churned_members_count(period_days) }
+    growth_value = safe(0) { report.net_member_growth(period_days) }
+    new_count_value = safe(0) { report.new_members_count(period_days) }
+    util_value = safe(0) { report.room_utilization(period_days) }
+    visits_value = safe(0) { report.avg_visits_per_member_per_month(period_days) }
+    daily_visitors_value = safe(0) { report.avg_daily_visitors(period_days) }
+    avg_revenue_value = safe(0) { avg_monthly_revenue(period_days) }
+    rev_per_member = safe(0) { report.revenue_per_member }
+    avg_tenure = safe(0) { report.average_member_tenure }
+    dp_conv = safe(0) { report.day_pass_conversion_rate }
+
+    revenue_total = safe(0) { Invoice.where(operator: current_tenant)
+      .where("date >= ?", period_days.days.ago).sum(:amount_paid) }
 
     render json: {
-      current_mrr: current_mrr,
-      avg_monthly_revenue: avg_monthly_revenue(period_start),
-      active_members: current_tenant.users.where(approved: true, archived: false).count,
-      revenue: Invoice.where(operator: current_tenant)
-        .where("date >= ?", period_start).sum(:amount_paid),
-      churn_count: Subscription.joins(:plan)
-        .where(plans: { operator_id: current_tenant.id })
-        .where(active: false)
-        .where("subscriptions.updated_at >= ?", period_start).count,
-      room_utilization: calculate_room_utilization(period_start),
-      daily_visitors: Checkin.where(location: current_location)
-        .where(datetime_in: Date.current.all_day).count,
       period: params[:period] || '30',
+      period_days: period_days,
+      # Primary KPIs
+      current_mrr: (mrr_value * 100).to_i, # cents — mobile divides by 100
+      avg_monthly_revenue: avg_revenue_value, # already cents
+      revenue: revenue_total, # cents
+      active_members: safe(0) { report.active_member_count },
+      churn_rate: churn_rate_value,
+      churn_count: churn_count_value,
+      net_growth: growth_value,
+      new_members: new_count_value,
+      room_utilization: util_value,
+      avg_visits_per_member: visits_value,
+      daily_visitors: daily_visitors_value,
+      revenue_per_member: (rev_per_member * 100).to_i, # cents
+      avg_tenure_months: avg_tenure,
+      day_pass_count: safe(0) { report.last_30_day_pass_count },
+      checkin_count: safe(0) { report.checkins_last_30_days_count },
+      day_pass_conversion_rate: dp_conv,
+
+      # Multi-timeframe trends — % change vs 30/90/365 days ago, per metric.
+      # Mirrors the prod web KPI cards which render "30d: +5%  90d: +12%".
+      trends: {
+        mrr: safe({}) { report.trends_for(:mrr, mrr_value) },
+        churn: safe({}) { report.trends_for(:churn, churn_rate_value) },
+        room_utilization: safe({}) { report.trends_for(:room_utilization, util_value) },
+        visits_per_member: safe({}) { report.trends_for(:visits_per_member, visits_value) },
+        active_members: safe({}) { report.trends_for(:active_members, report.active_member_count) },
+      },
+
+      # Actionable insights — same source the web dashboard renders.
+      # Each: { text, action, urgency, screen, route } — `screen` and
+      # `route` are mobile-friendly mappings of the web `path` symbol.
+      insights: safe([]) { report.actionable_insights }.map { |i| insight_to_json(i) },
     }
   end
 
@@ -38,7 +79,8 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   end
 
   def room_demand
-    period_start = period_start_date
+    period_days = period_days_for(params[:period])
+    period_start = period_days.days.ago
 
     rooms = Room.where(operator: current_tenant)
     data = rooms.map { |room|
@@ -62,14 +104,41 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   def members
     plans = Plan.where(operator: current_tenant)
 
-    data = plans.map { |plan|
+    breakdown = plans.map { |plan|
       {
         plan_name: plan.name,
         count: plan.subscriptions.where(active: true).count,
       }
     }
 
-    render json: data
+    render json: { breakdown: breakdown }
+  end
+
+  # All members who haven't visited in 30+ days. Excludes
+  # marketing-suppressed users and dismissed-in-the-last-30-days.
+  def inactive_members
+    report = Jellyswitch::Report.new(current_tenant, current_location)
+    users = report.inactive_members
+      .where(marketing_suppressed: false)
+      .where("inactive_dismissed_at IS NULL OR inactive_dismissed_at < ?", 30.days.ago)
+
+    render json: {
+      members: users.map { |u| inactive_member_json(u) },
+      suppressed_count: User.for_space(current_tenant).where(marketing_suppressed: true).count,
+    }
+  end
+
+  # All members suppressed from marketing.
+  def suppressed_members
+    users = User.for_space(current_tenant).where(marketing_suppressed: true).order(:name)
+    render json: {
+      members: users.map { |u| {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        marketing_suppressed_reason: u.marketing_suppressed_reason,
+      } },
+    }
   end
 
   def checkins
@@ -79,16 +148,13 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
         .where(datetime_in: date.all_day).count
       { date: date.iso8601, count: count }
     }
-
     render json: data.reverse
   end
 
   def ltv
     active_count = current_tenant.users.where(approved: true, archived: false).count
     total_paid = Invoice.where(operator: current_tenant).sum(:amount_paid)
-
     avg_ltv = active_count > 0 ? (total_paid.to_f / active_count).round : 0
-
     render json: { average_ltv: avg_ltv, active_members: active_count }
   end
 
@@ -99,44 +165,74 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
 
   private
 
-  def period_start_date
-    case params[:period]
-    when '7' then 7.days.ago
-    when '30' then 30.days.ago
-    when '90' then 90.days.ago
-    when '12' then 12.months.ago
-    when 'ytd' then Time.current.beginning_of_year
-    when 'all' then Time.at(0)
-    else 30.days.ago
+  def safe(default)
+    yield
+  rescue => e
+    Rails.logger.warn("ReportsController metric error: #{e.class}: #{e.message}")
+    default
+  end
+
+  def period_days_for(period)
+    case period
+    when '7' then 7
+    when '30' then 30
+    when '90' then 90
+    when '12', '12m' then 365
+    when 'ytd' then [(Date.current - Date.current.beginning_of_year).to_i, 1].max
+    when 'all' then 3650
+    else 30
     end
   end
 
-  def current_mrr
-    Subscription.joins(:plan)
-      .where(plans: { operator_id: current_tenant.id })
-      .where(active: true)
-      .sum("plans.amount_in_cents")
+  # Web uses Rails route helpers (:inactive_members_reports_path etc.). For
+  # mobile we map those symbols to React Navigation screen names + params
+  # so the InsightCard "View ..." button can deep-link.
+  # Maps the web path symbol Jellyswitch::Report uses to the mobile
+  # navigator address. `tab` is set when the screen lives in a different
+  # bottom-tab stack than AdminReports (which is in MoreTab), so the
+  # InsightCard handler can do cross-tab navigation properly.
+  WEB_TO_MOBILE_ROUTE = {
+    inactive_members_reports_path: { screen: "AdminInactiveMembers" },
+    total_members_reports_path: { tab: "MembersTab", screen: "Members" },
+    room_demand_reports_path: { screen: "AdminReports" }, # no dedicated mobile screen
+    active_leases_reports_path: { screen: "AdminOffices" },
+    new_campaign_path: { screen: "AdminCampaigns" },
+    rooms_path: { tab: "RoomsTab", screen: "AdminRooms" },
+  }.freeze
+
+  def insight_to_json(insight)
+    mapped = WEB_TO_MOBILE_ROUTE[insight[:path]] || {}
+    {
+      text: insight[:text],
+      action: insight[:action],
+      urgency: insight[:urgency].to_s,
+      tab: mapped[:tab],
+      screen: mapped[:screen],
+      params: mapped[:params],
+    }
   end
 
-  def avg_monthly_revenue(period_start)
-    months_in_period = [(Date.current.year * 12 + Date.current.month) - (period_start.to_date.year * 12 + period_start.to_date.month), 1].max
+  def inactive_member_json(user)
+    last_door = DoorPunch.where(user: user).order(created_at: :desc).limit(1).pick(:created_at)
+    last_res = Reservation.where(user: user).order(created_at: :desc).limit(1).pick(:created_at)
+    last_visit = [last_door, last_res].compact.max
+    {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      member_since: user.created_at.iso8601,
+      last_visit: last_visit&.iso8601,
+      days_since_visit: last_visit ? ((Time.current - last_visit) / 1.day).floor : nil,
+      inactive_dismissed_at: user.inactive_dismissed_at&.iso8601,
+      marketing_suppressed: user.marketing_suppressed,
+    }
+  end
+
+  def avg_monthly_revenue(period_days)
+    months_in_period = [(period_days / 30.0).round, 1].max
     total_revenue = Invoice.where(operator: current_tenant)
-      .where("date >= ?", period_start)
+      .where("date >= ?", period_days.days.ago)
       .sum(:amount_paid)
     (total_revenue.to_f / months_in_period).round
-  end
-
-  def calculate_room_utilization(period_start = Time.current.beginning_of_day)
-    rooms_count = Room.where(operator: current_tenant).count
-    return 0 if rooms_count == 0
-
-    reservations = Reservation.joins(:room)
-      .where(rooms: { operator_id: current_tenant.id })
-      .where("datetime_in >= ?", period_start)
-      .where(cancelled: false).count
-
-    days_in_period = [(Date.current - period_start.to_date).to_i, 1].max
-    slots_available = rooms_count * days_in_period
-    ((reservations.to_f / slots_available) * 100).round(1)
   end
 end

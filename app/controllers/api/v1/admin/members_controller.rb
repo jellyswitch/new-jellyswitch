@@ -65,7 +65,29 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       day_passes: user.day_passes.where(operator: current_tenant).order(day: :desc).limit(10).map { |dp|
         { id: dp.id, date: dp.day&.strftime("%B %e, %Y"), type_name: dp.day_pass_type&.name }
       },
+      marketing_suppressed: user.marketing_suppressed,
+      marketing_suppressed_reason: user.marketing_suppressed_reason,
+      inactive_dismissed_at: user.inactive_dismissed_at&.iso8601,
     }
+  end
+
+  def suppress
+    user = current_tenant.users.find(params[:id])
+    reason = params[:reason].presence || "Suppressed by admin"
+    user.update!(marketing_suppressed: true, marketing_suppressed_reason: reason)
+    render json: { success: true, marketing_suppressed: true }
+  end
+
+  def unsuppress
+    user = current_tenant.users.find(params[:id])
+    user.update!(marketing_suppressed: false, marketing_suppressed_reason: nil)
+    render json: { success: true, marketing_suppressed: false }
+  end
+
+  def dismiss_inactive
+    user = current_tenant.users.find(params[:id])
+    user.update_column(:inactive_dismissed_at, Time.current)
+    render json: { success: true, inactive_dismissed_at: user.inactive_dismissed_at.iso8601 }
   end
 
   def create
@@ -400,7 +422,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       role: user.role,
       approved: user.approved,
       plan_name: active_sub&.plan&.name,
-      has_profile_photo: user.has_profile_photo?
+      has_profile_photo: user.has_profile_photo?,
+      marketing_suppressed: user.marketing_suppressed,
     }
   end
 
