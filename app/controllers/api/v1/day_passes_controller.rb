@@ -38,6 +38,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     token = params[:stripe_token]
     discount_code = params[:discount_code]
 
+    # Guardrails — only allow self-serve purchase of customer-facing,
+    # paid day pass types. Free types (comp passes, discount-grants) are
+    # created by the server (via GrantFreeDayPass / DayPassCode-style
+    # flows) or by an admin through the admin endpoint, not by members
+    # directly.
+    return render_error('This day pass is not available.') unless day_pass_type.available && day_pass_type.visible
+    return render_error('Free day passes cannot be purchased directly.') if day_pass_type.amount_in_cents.to_i <= 0
+
     # Use the same interactor chain as the web app
     interactor = token.present? ?
       Billing::DayPasses::UpdatePaymentAndCreateDayPass :
