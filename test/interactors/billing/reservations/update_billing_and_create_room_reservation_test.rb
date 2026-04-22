@@ -5,8 +5,9 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
     expected_organized = [
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
-      Billing::Reservations::SaveStripeInvoice,
+      Billing::Reservations::AuthorizeHold,
       Billing::Reservations::GrantFreeDayPass,
+      Reservations::ScheduleSettleReservation,
       CreateNotificationsAsync,
       SendAdminNotificationForPaidRoom,
       Billing::Reservations::ScheduleReservationEmails

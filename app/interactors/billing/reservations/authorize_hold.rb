@@ -3,19 +3,26 @@
 # settles the actual amount based on minutes used and releases the
 # rest of the hold.
 #
-# Runs in the CreateRoomReservation organizer in place of the old
-# SaveStripeInvoice + ChargeReservationInvoice steps when the booking
-# would otherwise be charged to the user's card.
+# Used in two places:
+#   - CreateRoomReservation (initial booking)
+#   - ExtendReservation (when extending an in-progress reservation;
+#     the prior PI is cancelled and a fresh one is authorized for the
+#     new total max charge)
 class Billing::Reservations::AuthorizeHold
   include Interactor
 
   delegate :user, :reservation, :is_extend, :additional_duration, to: :context
 
   def call
-    return if is_extend # extensions still use the legacy invoice path
     return if user.out_of_band?
 
     location = reservation.room.location
+    creds = stripe_creds(location)
+
+    if is_extend
+      cancel_prior_hold(creds) if reservation.stripe_payment_intent_id.present? && reservation.captured_at.blank?
+    end
+
     amount = expected_max_charge
     return unless amount.positive?
 
@@ -46,16 +53,13 @@ class Billing::Reservations::AuthorizeHold
           expected_max_amount: amount,
         },
       },
-      {
-        api_key: location.stripe_secret_key,
-        stripe_account: location.stripe_user_id,
-      },
+      creds,
     )
 
     reservation.update!(
       stripe_payment_intent_id: intent.id,
       authorized_amount_in_cents: amount,
-      paid: true, # marks as billed; settled amount set on capture
+      paid: true,
     )
     context.payment_intent = intent
   rescue Stripe::CardError => e
@@ -68,9 +72,15 @@ class Billing::Reservations::AuthorizeHold
   private
 
   def expected_max_charge
-    # Same calc as SaveStripeInvoice — what would have been charged
-    # up-front. CaptureHold will compute the real amount from actual
-    # minutes used.
+    if is_extend
+      # On extensions, reservation.minutes is already the new total. Use
+      # the same calculator CaptureHold uses so the hold matches what
+      # we'd actually capture for the new total at end time.
+      return Billing::Reservations::ChargeCalculator.call(
+        reservation: reservation, minutes: reservation.minutes
+      )
+    end
+
     base = context.overage_charge_amount || reservation.charge_amount
 
     discount_code = context.discount_code
@@ -82,8 +92,20 @@ class Billing::Reservations::AuthorizeHold
     [base, 0].max.to_i
   end
 
+  def cancel_prior_hold(creds)
+    Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
+  rescue Stripe::InvalidRequestError => e
+    Rails.logger.warn("AuthorizeHold: could not cancel prior PI #{reservation.stripe_payment_intent_id}: #{e.message}")
+  ensure
+    reservation.update!(stripe_payment_intent_id: nil, authorized_amount_in_cents: nil)
+  end
+
+  def stripe_creds(location)
+    { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+  end
+
   def default_payment_method(customer_id, location)
-    creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+    creds = stripe_creds(location)
     customer = Stripe::Customer.retrieve(customer_id, creds)
     ds = customer.try(:default_source)
     return ds if ds.is_a?(String) && ds.present?
