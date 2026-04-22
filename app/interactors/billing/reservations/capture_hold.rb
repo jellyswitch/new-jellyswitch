@@ -94,8 +94,11 @@ class Billing::Reservations::CaptureHold
 
   private
 
-  # Mirrors the pricing logic used at booking-time, applied to the
-  # minutes the user actually sat in the room.
+  # Compute what this reservation should actually cost based on the
+  # minutes the user really used. Unlike the pricing endpoint, the
+  # "already used" total must EXCLUDE this reservation itself (we're
+  # settling it right now — counting it against itself would double
+  # up the overage).
   def compute_actual_charge(actual_minutes)
     user = reservation.user
     room = reservation.room
@@ -107,16 +110,49 @@ class Billing::Reservations::CaptureHold
       return ((room.hourly_rate_in_cents * actual_minutes) / 60.0).round
     end
 
-    # Free rooms: run the same charge_info methods with actual_minutes.
-    sub_info = user.subscription_reservation_charge_info(location, actual_minutes, room: room) rescue nil
-    dp_info = user.day_pass_reservation_charge_info(location, date, actual_minutes, room: room) rescue nil
-
-    if sub_info
-      return sub_info[:overage_amount_in_cents].to_i
-    elsif dp_info
-      return dp_info[:overage_amount_in_cents].to_i
-    else
-      return 0
+    # Day pass overage
+    day_pass = user.day_passes.where(day: date).first
+    if day_pass && day_pass.day_pass_type&.has_meeting_room_limit?
+      return day_pass_overage_cents(actual_minutes, day_pass)
     end
+
+    # Subscription overage
+    sub = user.active_subscription_for_location(location)
+    if sub && sub.plan&.has_meeting_room_limit?
+      return subscription_overage_cents(actual_minutes, sub)
+    end
+
+    0
+  end
+
+  def day_pass_overage_cents(actual_minutes, day_pass)
+    allotment = day_pass.day_pass_type.included_meeting_room_minutes.to_i
+    other_used = Reservation.joins(:room).where(user_id: reservation.user_id, cancelled: false)
+                            .where(datetime_in: reservation.datetime_in.to_date.beginning_of_day..reservation.datetime_in.to_date.end_of_day)
+                            .where('rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL')
+                            .where.not(id: reservation.id)
+                            .sum(:minutes)
+    free_remaining = [allotment - other_used, 0].max
+    over = [actual_minutes - free_remaining, 0].max
+    return 0 if over <= 0
+    over_rounded = (over / 15.0).ceil * 15
+    rate_per_min = day_pass.day_pass_type.overage_rate_in_cents.to_f / 60.0
+    (rate_per_min * over_rounded).round
+  end
+
+  def subscription_overage_cents(actual_minutes, sub)
+    allotment = sub.plan.included_meeting_room_minutes.to_i
+    period_start, period_end = sub.current_billing_period
+    return 0 unless period_start
+    other_used = Reservation.where(user_id: reservation.user_id, cancelled: false)
+                            .where(datetime_in: period_start..period_end)
+                            .where.not(id: reservation.id)
+                            .sum(:minutes)
+    free_remaining = [allotment - other_used, 0].max
+    over = [actual_minutes - free_remaining, 0].max
+    return 0 if over <= 0
+    over_rounded = (over / 15.0).ceil * 15
+    rate_per_min = sub.plan.overage_rate_in_cents.to_f / 60.0
+    (rate_per_min * over_rounded).round
   end
 end
