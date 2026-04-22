@@ -65,6 +65,11 @@ class Api::V1::DoorsController < Api::V1::BaseController
     return true if user.has_active_subscription?
     return true if user.day_passes.where(day: today).any?
     return true if location && user.has_active_lease?(location)
+    # Anyone with a room reservation today (active or upcoming) gets in.
+    day_start = today.in_time_zone(zone).beginning_of_day
+    day_end = today.in_time_zone(zone).end_of_day
+    return true if user.reservations.where(cancelled: false)
+                      .where(datetime_in: day_start..day_end).any?
     false
   end
 
