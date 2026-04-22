@@ -18,7 +18,19 @@ class Api::V1::ReservationsController < Api::V1::BaseController
 
   def create
     room = Room.find(params[:reservation][:room_id])
-    datetime_in = Time.parse(params[:reservation][:datetime_in])
+    # Parse the incoming datetime in the room/location's local time zone
+    # unless the string already carries an explicit offset (ISO w/ Z or
+    # +HH:MM). Mobile clients that send "2026-04-22T07:15:00" without a
+    # zone would otherwise be interpreted as UTC and the booking would
+    # land 7 hours off in Pacific time.
+    raw_dt = params[:reservation][:datetime_in].to_s
+    has_explicit_zone = raw_dt =~ /(Z|[+\-]\d\d:?\d\d)$/
+    tz = room.location&.time_zone.presence || 'UTC'
+    datetime_in = if has_explicit_zone
+      Time.parse(raw_dt)
+    else
+      ActiveSupport::TimeZone[tz].parse(raw_dt)
+    end
     minutes = params[:reservation][:minutes].to_i
     date = datetime_in.to_date
 
