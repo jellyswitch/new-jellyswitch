@@ -50,6 +50,22 @@ class Checkin < ApplicationRecord
     location.hourly_rate_in_cents
   end
 
+  # datetime_in/out are `timestamp with time zone` UTC instants; by default
+  # Rails renders in Time.zone (UTC on Heroku), making .strftime and .to_date
+  # return UTC wall-clock. Auto-convert to the location zone so display and
+  # day-math in callers work without threading the zone through.
+  def datetime_in
+    raw = super
+    return raw if raw.nil?
+    raw.in_time_zone(location&.time_zone.presence || 'UTC')
+  end
+
+  def datetime_out
+    raw = super
+    return raw if raw.nil?
+    raw.in_time_zone(location&.time_zone.presence || 'UTC')
+  end
+
   def seconds
     (datetime_out - datetime_in).to_i
   end

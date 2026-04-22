@@ -49,6 +49,18 @@ class Reservation < ApplicationRecord
     datetime_in.strftime("%m/%d/%Y at %l:%M%P")
   end
 
+  # datetime_in is a `timestamp with time zone` UTC instant; by default Rails
+  # renders it in Time.zone (UTC on Heroku), which makes every .strftime and
+  # .to_date elsewhere return UTC wall-clock — wrong for display. Auto-convert
+  # to the reservation's location zone so callers don't have to thread it.
+  # Comparisons and arithmetic still work because the underlying UTC instant
+  # is preserved across the in_time_zone call.
+  def datetime_in
+    raw = super
+    return raw if raw.nil?
+    raw.in_time_zone(room&.location&.time_zone.presence || 'UTC')
+  end
+
   def self.for_time(time)
     select do |reservation|
       !reservation.cancelled && (reservation.datetime_in <= time) && (reservation.datetime_in + reservation.minutes.minutes > time)
