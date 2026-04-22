@@ -35,6 +35,11 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.admin_or_manager?(loc) ||
           user.superadmin?
       ),
+      has_day_pass: user.day_passes.any?,
+      has_billing: begin
+        loc = user.current_location || user.original_location
+        loc.present? && user.card_added_for_location?(loc)
+      end,
       has_active_coverage: begin
         loc = user.current_location || user.original_location
         zone = loc&.time_zone.presence || 'UTC'
