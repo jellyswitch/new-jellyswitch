@@ -45,8 +45,9 @@ class Billing::Reservations::CaptureHold
     # Create a local Invoice record so the captured charge shows up in
     # the member's Invoices screen and admin reports, and so refunds
     # can be issued against it.
+    invoice_record = nil
     begin
-      Invoice.create!(
+      invoice_record = Invoice.create!(
         billable: reservation.user,
         operator: location.operator,
         location: location,
@@ -59,6 +60,29 @@ class Billing::Reservations::CaptureHold
       )
     rescue => e
       Rails.logger.error("CaptureHold invoice creation failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e, context: { reservation_id: reservation.id })
+    end
+
+    # Post a feed item so the admin sees the actual charge in the
+    # management feed (the booking-time feed only fires for up-front
+    # paid rooms; day-pass overages happen here at capture time).
+    begin
+      FeedItem.create!(
+        operator: location.operator,
+        location: location,
+        user: reservation.user,
+        blob: {
+          'type' => 'paid-room-reservation',
+          'user_name' => reservation.user.name,
+          'reservation_id' => reservation.id,
+          'invoice_id' => invoice_record&.id,
+          'charge_amount_in_cents' => capture_cents,
+          'room_name' => reservation.room.name,
+          'minutes' => reservation.minutes,
+        },
+      )
+    rescue => e
+      Rails.logger.error("CaptureHold feed item failed: #{e.class}: #{e.message}")
       Honeybadger.notify(e, context: { reservation_id: reservation.id })
     end
   rescue Stripe::InvalidRequestError => e
