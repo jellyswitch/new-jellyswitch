@@ -36,6 +36,9 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.superadmin?
       ),
       has_day_pass: user.day_passes.any?,
+      # Dates where the user has a day pass — lets mobile filter rooms
+      # per-date (premium-only when no coverage on selected date).
+      day_pass_days: user.day_passes.where("day >= ?", Date.current - 1).pluck(:day).map(&:to_s),
       has_billing: begin
         loc = user.current_location || user.original_location
         loc.present? && user.card_added_for_location?(loc)

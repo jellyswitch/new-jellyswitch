@@ -152,7 +152,10 @@ class Api::V1::RoomsController < Api::V1::BaseController
 
     # Coverage check: if the user has no active subscription, no day pass
     # for this date, and no active lease, they need a day pass to book.
-    needs_cov = !user.has_active_subscription? &&
+    # Exception: priced rooms — the hourly rate covers access.
+    is_priced_room = room.hourly_rate_in_cents.to_i > 0
+    needs_cov = !is_priced_room &&
+                !user.has_active_subscription? &&
                 !user.has_active_day_pass?(date) &&
                 !user.has_active_lease?(location) &&
                 !user.admin_or_manager?(location) &&

@@ -55,7 +55,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # the "you booked for free without a day pass" gap closed.
     user = current_api_user
     location = current_location
-    needs_cov = !user.has_active_subscription? &&
+    # Paid rooms already charge an hourly rate that covers access —
+    # don't bundle a day pass on top.
+    is_priced_room = room.hourly_rate_in_cents.to_i > 0
+    needs_cov = !is_priced_room &&
+                !user.has_active_subscription? &&
                 !user.has_active_day_pass?(date) &&
                 !user.has_active_lease?(location) &&
                 !user.admin_or_manager?(location) &&
