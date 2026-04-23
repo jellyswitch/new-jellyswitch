@@ -42,7 +42,10 @@ class Operator::BaseController < ApplicationController
       match = request.user_agent.match(/.*deviceToken: (.*)/)
       return if match.nil? || match[1].blank?
       token = match[1]
-      current_user.update(ios_token: token)
+      # update_columns bypasses AR callbacks (including searchkick reindex).
+      # The push token isn't a searchable field, so skipping the index call
+      # avoids a hard dependency on Bonsai/OpenSearch for every page load.
+      current_user.update_columns(ios_token: token) if current_user.ios_token != token
     end
   end
 
@@ -51,7 +54,7 @@ class Operator::BaseController < ApplicationController
       match = request.user_agent.match(/.*token: (.*)/)
       return if match.nil? || match[1].blank?
       token = match[1]
-      current_user.update(android_token: token)
+      current_user.update_columns(android_token: token) if current_user.android_token != token
     end
   end
 
