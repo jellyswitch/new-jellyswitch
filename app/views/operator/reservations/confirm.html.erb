@@ -68,12 +68,12 @@
 
     <% if current_user.should_charge_for_reservation?(current_location, @day) %>
       <% if current_user.has_billing_for_location?(current_location) %>
-        <%= button_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), method: :post, class: "btn btn-block btn-primary", form_class: "d-block", data: { turbo_submits_with: "Reserving..." } %>
+        <%= button_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), method: :post, class: "btn btn-block btn-primary", form_class: "d-block", form: { data: { turbo: false } }, data: { disable_with: "Reserving..." } %>
       <% else %>
         <%= render "billing" %>
       <% end %>
     <% else %>
-      <%= button_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), method: :post, class: "btn btn-block btn-primary", form_class: "d-block", data: { turbo_submits_with: "Reserving..." } %>
+      <%= button_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), method: :post, class: "btn btn-block btn-primary", form_class: "d-block", form: { data: { turbo: false } }, data: { disable_with: "Reserving..." } %>
     <% end %>
   <% end %>
 <% end %>
