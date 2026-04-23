@@ -600,7 +600,7 @@ class Operator::ReservationsController < Operator::BaseController
     pg_timezone = ActiveSupport::TimeZone::MAPPING[current_location.time_zone]
 
     counts = reservations.group(
-      "DATE(datetime_in AT TIME ZONE 'UTC' AT TIME ZONE '#{pg_timezone}')"
+      "DATE(datetime_in AT TIME ZONE '#{pg_timezone}')"
     ).count
 
     formatted_counts = {}
