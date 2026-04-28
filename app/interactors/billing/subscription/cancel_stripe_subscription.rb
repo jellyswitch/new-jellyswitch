@@ -16,7 +16,11 @@ class Billing::Subscription::CancelStripeSubscription
     begin
       sub = subscription.stripe_subscription
       unless sub.nil? || sub.status == "canceled"
-        subscription.cancel_stripe!(prorate: context.prorate.nil? ? true : context.prorate)
+        # Default to no-prorate per ops policy: once a member or lease-holder
+        # has paid for a billing period, that money stays — they lose access
+        # but we don't refund unused days. Callers can override by setting
+        # context.prorate = true if a refund is intended.
+        subscription.cancel_stripe!(prorate: context.prorate == true)
       end
     rescue Exception => e
       undo_deactivate(subscription)

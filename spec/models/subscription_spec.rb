@@ -72,14 +72,14 @@ RSpec.describe Subscription, type: :model do
     end
 
     describe '#cancel_stripe!' do
-      it 'deletes the stripe subscription with prorate true by default' do
-        expect(stripe_subscription_mock).to receive(:delete).with(prorate: true)
+      it 'deletes the stripe subscription with prorate false by default (no refund per ops policy)' do
+        expect(stripe_subscription_mock).to receive(:delete).with(prorate: false)
         subscription.cancel_stripe!
       end
 
-      it 'forwards prorate: false when passed' do
-        expect(stripe_subscription_mock).to receive(:delete).with(prorate: false)
-        subscription.cancel_stripe!(prorate: false)
+      it 'forwards prorate: true when explicitly requested' do
+        expect(stripe_subscription_mock).to receive(:delete).with(prorate: true)
+        subscription.cancel_stripe!(prorate: true)
       end
     end
 
