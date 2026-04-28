@@ -55,6 +55,20 @@ class WebhooksController < ApplicationController
       else
         ok
       end
+    when "payment_intent.canceled", "payment_intent.payment_failed"
+      # Reservations use manual-capture PaymentIntents. Stripe can
+      # auto-cancel them after ~7 days, fraud holds, etc. Mark the
+      # reservation payment_failed so the operator sees it and the
+      # member gets a heads-up.
+      pi_id = @event.data.object.id
+      reservation = Reservation.unscoped.find_by(stripe_payment_intent_id: pi_id)
+      if reservation && reservation.payment_failed_at.blank? && reservation.captured_at.blank? && !reservation.cancelled?
+        reason = @event.data.object.try(:last_payment_error)&.try(:message) ||
+                 @event.data.object.try(:cancellation_reason) ||
+                 @event.type
+        Reservations::MarkPaymentFailed.call(reservation: reservation, reason: reason.to_s) rescue nil
+      end
+      ok
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)
 

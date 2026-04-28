@@ -178,6 +178,29 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Reminder: Payment past due", from: from_address, reply_to: operator.contact_email
   end
 
+  # Sent by Reservations::MarkPaymentFailed when an authorize-hold or
+  # capture step on a reservation fails. Lets the member know their
+  # card didn't go through and prompts them to update payment info
+  # or contact the operator.
+  def reservation_payment_failed(reservation_id, reason = nil)
+    reservation = Reservation.unscoped.find_by(id: reservation_id)
+    return if reservation.nil?
+
+    @user = reservation.user
+    @reservation = reservation
+    @location = reservation.room.location
+    @operator = @location.operator
+    @reason = reason.to_s.first(200)
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+
+    mail to: @user.email,
+         subject: "Action needed: payment for your meeting room booking",
+         from: from_address,
+         reply_to: @operator.contact_email
+  end
+
   # Sent by Billing::Reservations::CaptureHold and ChargeExtensionDelta
   # right after a successful capture, so the member has a paper trail
   # of the actual charge. `kind` is :capture (default) or :extension —

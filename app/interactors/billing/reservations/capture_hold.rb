@@ -106,11 +106,14 @@ class Billing::Reservations::CaptureHold
       Rails.logger.error("CaptureHold receipt email failed: #{e.class}: #{e.message}")
       Honeybadger.notify(e, context: { reservation_id: reservation.id })
     end
-  rescue Stripe::InvalidRequestError => e
+  rescue Stripe::InvalidRequestError, Stripe::CardError => e
     Rails.logger.warn("CaptureHold error on reservation #{reservation.id}: #{e.message}")
     Honeybadger.notify(e, context: { reservation_id: reservation.id })
-    # Don't re-raise — we don't want end_now/settle to fail for the user.
+    # Don't re-raise — settle job mustn't 500. Stamp captured_at so the
+    # job is idempotent on retry, and route the failure through
+    # MarkPaymentFailed so admins + member see it.
     reservation.update!(captured_at: Time.current)
+    Reservations::MarkPaymentFailed.call(reservation: reservation, reason: e.message) rescue nil
   end
 
 end

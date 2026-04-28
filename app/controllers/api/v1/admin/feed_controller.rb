@@ -177,6 +177,15 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
       base.merge(action_text: 'updated their membership', body: fi.blob['text'])
     when 'payment_failed'
       base.merge(action_text: 'had a payment failure', body: fi.blob['text'])
+    when 'payment_failed_room_reservation'
+      res = Reservation.unscoped.find_by(id: fi.blob['reservation_id'])
+      base.merge(
+        action_text: 'had a payment failure on a meeting room booking',
+        room_name: fi.blob['room_name'] || res&.room&.name,
+        when: fi.blob['when'] || res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
+        body: fi.blob['reason'],
+        requires_approval: true,
+      )
     when 'account_deletion'
       base.merge(action_text: 'deleted their account', body: fi.blob['text'])
     when 'demand-miss', 'demand_miss'

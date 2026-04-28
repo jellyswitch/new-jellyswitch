@@ -25,7 +25,10 @@ class Billing::Reservations::ExtendReservation
     if context.reservation.captured_at.present?
       Billing::Reservations::ChargeExtensionDelta.call(context)
     else
-      Billing::Reservations::AuthorizeHold.call(context)
+      # Pre-start extensions go through AuthorizeHoldOrSchedule so a
+      # far-future booking whose hold is still deferred stays deferred —
+      # re-authorizing now would burn the 7-day Stripe window.
+      Billing::Reservations::AuthorizeHoldOrSchedule.call(context)
     end
   end
 end

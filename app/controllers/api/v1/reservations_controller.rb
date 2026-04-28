@@ -287,6 +287,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       minutes_remaining: minutes_remaining,
       paid: r.paid,
       cancelled: r.cancelled,
+      payment_failed: r.payment_failed_at.present?,
       ongoing: ongoing,
       future: future,
       can_extend: (ongoing || future) && !r.cancelled,
