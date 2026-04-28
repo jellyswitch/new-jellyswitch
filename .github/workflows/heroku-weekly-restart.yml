@@ -1,0 +1,19 @@
+name: Heroku weekly restart
+
+on:
+  schedule:
+    - cron: "0 10 * * 0"
+  workflow_dispatch:
+
+jobs:
+  restart:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Restart production dynos
+        env:
+          HEROKU_API_TOKEN: ${{ secrets.HEROKU_API_TOKEN }}
+        run: |
+          curl -fsS -X DELETE \
+            -H "Accept: application/vnd.heroku+json; version=3" \
+            -H "Authorization: Bearer $HEROKU_API_TOKEN" \
+            https://api.heroku.com/apps/jellyswitch-production/dynos

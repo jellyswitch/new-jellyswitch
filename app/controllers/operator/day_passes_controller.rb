@@ -19,6 +19,33 @@ class Operator::DayPassesController < Operator::BaseController
   def create
     authorize DayPass.new
 
+    # Duplicate-purchase guard: when the member already has a day pass for
+    # the same date at this location, render an interstitial confirm page
+    # rather than silently charging again. They may legitimately be buying
+    # a second pass for a guest — the confirm step keeps that intentional
+    # while still catching the accidental double-submits that previously
+    # accumulated extra Stripe invoices and decline attempts.
+    #
+    # Parse the date directly from the multi-parameter form fields rather
+    # than building a DayPass — DayPass.new would coerce the day_pass_type
+    # string into the association and raise AssociationTypeMismatch.
+    prospective_day = begin
+      Date.new(
+        params.dig(:day_pass, :"day(1i)").to_i,
+        params.dig(:day_pass, :"day(2i)").to_i,
+        params.dig(:day_pass, :"day(3i)").to_i,
+      )
+    rescue ArgumentError, TypeError
+      nil
+    end
+    if prospective_day &&
+       params[:confirm_duplicate].to_s != "1" &&
+       DayPass.where(user_id: current_user.id, day: prospective_day, location_id: current_location.id).exists?
+      @prospective_day = prospective_day
+      @day_pass_type_id = params.dig(:day_pass, :day_pass_type)
+      render :confirm_duplicate and return
+    end
+
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
 

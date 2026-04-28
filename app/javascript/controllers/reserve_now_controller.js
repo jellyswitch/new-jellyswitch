@@ -118,6 +118,13 @@ export default class extends Controller {
   }
 
   async confirmBooking() {
+    // Guard against double-invocation: a mobile touch can fire this handler
+    // twice before button.disabled propagates, causing duplicate POSTs that
+    // race each other and surface as a "time slot conflicts" error on the
+    // second one even though the first succeeded.
+    if (this._booking) return
+    this._booking = true
+
     const btn = this.confirmBtnTarget
     btn.disabled = true
     btn.textContent = "Booking..."
@@ -166,12 +173,14 @@ export default class extends Controller {
         } else {
           btn.disabled = false
           btn.textContent = "Confirm Booking"
+          this._booking = false
         }
       }
     } catch (e) {
       console.error("Booking error:", e)
       btn.disabled = false
       btn.textContent = "Confirm Booking"
+      this._booking = false
     }
   }
 }

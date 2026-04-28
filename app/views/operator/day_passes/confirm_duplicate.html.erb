@@ -1,0 +1,29 @@
+<% title "Confirm Duplicate Day Pass" %>
+
+<%= render Layout::FullWidth.new do %>
+  <%= list_item do %>
+    <h4 class="display-4 text-center mt-4">You already have a day pass</h4>
+
+    <p class="lead text-center mt-3">
+      You already purchased a day pass for <strong><%= short_date(@prospective_day) %></strong>.
+    </p>
+
+    <p class="text-center text-muted">
+      If you're buying a second pass for a guest or coworker, confirm below.
+      Otherwise, head back home — we don't want to charge you twice by accident.
+    </p>
+
+    <%= form_with url: day_passes_path, method: :post, local: true, class: "mt-4" do %>
+      <%= hidden_field_tag :confirm_duplicate, "1" %>
+      <%= hidden_field_tag "day_pass[day_pass_type]", @day_pass_type_id %>
+      <%= hidden_field_tag "day_pass[day(1i)]", @prospective_day.year %>
+      <%= hidden_field_tag "day_pass[day(2i)]", @prospective_day.month %>
+      <%= hidden_field_tag "day_pass[day(3i)]", @prospective_day.day %>
+      <%= submit_tag "Yes, buy another for a guest", class: "btn btn-block btn-primary", data: { disable_with: "Purchasing..." } %>
+    <% end %>
+
+    <div class="mt-3">
+      <%= link_to "Cancel — I already have one", home_path, class: "btn btn-block btn-secondary" %>
+    </div>
+  <% end %>
+<% end %>
