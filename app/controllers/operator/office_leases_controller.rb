@@ -153,6 +153,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
     result = Billing::Leasing::TerminateOfficeLease.call(
       office_lease: @office_lease,
       subscription: @office_lease.subscription,
+      prorate: false,
     )
 
     if result.success?

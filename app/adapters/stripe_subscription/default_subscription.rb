@@ -13,7 +13,7 @@ module StripeSubscription
       {
         customer: subscription.billable.stripe_customer_id_for_location(location),
         items: [{ plan: subscription.plan.stripe_plan_id }],
-        prorate: true,
+        prorate: false,
         billing_cycle_anchor: billing_cycle_anchor,
         cancel_at: cancel_at
       }
