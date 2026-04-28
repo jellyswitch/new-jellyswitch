@@ -70,6 +70,11 @@ class Invoice < ApplicationRecord
     else
       nil
     end
+  rescue Stripe::InvalidRequestError, Stripe::APIConnectionError
+    # Stripe-side invoice was deleted (e.g. drafts cancelled when terminating a
+    # subscription) or Stripe is unreachable — return nil so display callers
+    # like #description and #pdf_url fall back gracefully instead of 500ing.
+    nil
   end
 
   def pdf_url
