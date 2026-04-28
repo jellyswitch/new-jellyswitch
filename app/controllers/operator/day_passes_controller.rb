@@ -19,15 +19,16 @@ class Operator::DayPassesController < Operator::BaseController
   def create
     authorize DayPass.new
 
-    # Idempotency guard: if the member already has a day pass for the same
-    # date at this location, don't create another invoice. Otherwise a quick
-    # double-submit (or a confused retry on a slow charge) accumulates
-    # extra Stripe invoices and decline attempts against their card.
+    # Duplicate-purchase guard: when the member already has a day pass for
+    # the same date at this location, render an interstitial confirm page
+    # rather than silently charging again. They may legitimately be buying
+    # a second pass for a guest — the confirm step keeps that intentional
+    # while still catching the accidental double-submits that previously
+    # accumulated extra Stripe invoices and decline attempts.
     #
     # Parse the date directly from the multi-parameter form fields rather
-    # than building a DayPass — DayPass.new would also try to coerce the
-    # `day_pass_type` string into the association and raise
-    # ActiveRecord::AssociationTypeMismatch.
+    # than building a DayPass — DayPass.new would coerce the day_pass_type
+    # string into the association and raise AssociationTypeMismatch.
     prospective_day = begin
       Date.new(
         params.dig(:day_pass, :"day(1i)").to_i,
@@ -37,10 +38,12 @@ class Operator::DayPassesController < Operator::BaseController
     rescue ArgumentError, TypeError
       nil
     end
-    if prospective_day && DayPass.where(user_id: current_user.id, day: prospective_day, location_id: current_location.id).exists?
-      flash[:notice] = "You already have a day pass for #{short_date(prospective_day)}."
-      turbo_redirect(home_path)
-      return
+    if prospective_day &&
+       params[:confirm_duplicate].to_s != "1" &&
+       DayPass.where(user_id: current_user.id, day: prospective_day, location_id: current_location.id).exists?
+      @prospective_day = prospective_day
+      @day_pass_type_id = params.dig(:day_pass, :day_pass_type)
+      render :confirm_duplicate and return
     end
 
     token = params[:stripeToken]
