@@ -18,6 +18,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def index
     passes = current_api_user.day_passes
       .where(operator: current_tenant)
+      .includes(:day_pass_type, :invoice)
       .order(day: :desc)
       .limit(20)
 
@@ -26,7 +27,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         id: dp.id,
         date: dp.day&.strftime("%B %e, %Y"),
         type_name: dp.day_pass_type&.name,
-        paid: dp.stripe_charge_id.present?,
+        price: dp.day_pass_type&.amount_in_cents,
+        paid: dp.invoice&.paid? || false,
         complimentary: dp.complimentary,
       }
     }
