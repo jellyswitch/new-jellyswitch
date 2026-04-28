@@ -75,9 +75,30 @@ class Invoice < ApplicationRecord
   def pdf_url
     if stripe_invoice_id.present? && !void?
       stripe_invoice&.invoice_pdf
+    elsif stripe_payment_intent_id.present?
+      # PaymentIntent-backed invoice — surface the Stripe-hosted
+      # charge receipt. Safer than generating our own PDF for now.
+      stripe_charge_receipt_url
     else
       nil
     end
+  rescue
+    nil
+  end
+
+  def stripe_charge_receipt_url
+    return nil unless stripe_payment_intent_id.present? && location.present?
+    creds = {
+      api_key: location.stripe_secret_key,
+      stripe_account: location.stripe_user_id,
+    }
+    pi = Stripe::PaymentIntent.retrieve(stripe_payment_intent_id, creds)
+    charge_id = pi.latest_charge
+    return nil unless charge_id
+    charge = Stripe::Charge.retrieve(charge_id, creds)
+    charge.receipt_url
+  rescue
+    nil
   end
 
   def pretty_due_date
@@ -105,14 +126,29 @@ class Invoice < ApplicationRecord
   end
 
   def payment_method
+    # Prefer stored payment intent info (new hold-capture flow), then
+    # Stripe invoice billing mode. Never surface "error" — that used to
+    # leak to the UI for PI-backed invoices.
+    return "Credit Card" if stripe_payment_intent_id.present?
     if stripe_invoice
       stripe_invoice.billing == "charge_automatically" ? "Credit Card" : "Out of band"
     else
-      "error"
+      nil
     end
+  rescue
+    nil
   end
 
   def description
-    stripe_invoice&.lines&.data&.map(&:description)&.join("\n") || "Invoice ##{number}"
+    # Read self.description column first (hold-capture invoices store a
+    # readable description). Fall back to Stripe invoice lines, then a
+    # generic default.
+    stored = read_attribute(:description)
+    return stored if stored.present?
+    lines = stripe_invoice&.lines&.data&.map(&:description)&.join("\n")
+    return lines if lines.present?
+    number.present? ? "Invoice ##{number}" : "Invoice ##{id}"
+  rescue
+    number.present? ? "Invoice ##{number}" : "Invoice ##{id}"
   end
 end

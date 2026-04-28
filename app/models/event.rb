@@ -25,6 +25,20 @@ class Event < ApplicationRecord
   scope :future, -> () { where("starts_at >= ?", Time.current) }
   scope :past, -> () { where("starts_at < ?", Time.current) }
   scope :today, -> () { where(starts_at: Time.current.beginning_of_day..Time.current.end_of_day) }
+  scope :approved, -> () { where.not(approved_at: nil) }
+  scope :pending_approval, -> () { where(approved_at: nil, rejected_at: nil) }
+
+  def approved?
+    approved_at.present?
+  end
+
+  def pending_approval?
+    approved_at.nil? && rejected_at.nil?
+  end
+
+  def rejected?
+    rejected_at.present?
+  end
 
   def thumbnail
     image.variant(resize: "180x180", auto_orient: true)

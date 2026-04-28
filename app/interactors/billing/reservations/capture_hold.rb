@@ -1,0 +1,97 @@
+# Captures the actual charge on a reservation's authorization hold,
+# based on the minutes the user really used. Releases the rest of
+# the hold (i.e. Stripe only captures the amount you tell it; the
+# difference between authorized_amount and captured_amount is
+# returned to the card automatically by Stripe).
+#
+# Called from:
+#   - Reservation#end_now! path (user taps "End now")
+#   - Scheduled SettleReservationJob at datetime_out
+#
+# Idempotent — if already captured, does nothing.
+class Billing::Reservations::CaptureHold
+  include Interactor
+
+  delegate :reservation, :actual_minutes, to: :context
+
+  def call
+    return if reservation.stripe_payment_intent_id.blank?
+    return if reservation.captured_at.present?
+
+    location = reservation.room.location
+    creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+
+    minutes = actual_minutes || reservation.minutes
+    actual_charge_cents = Billing::Reservations::ChargeCalculator.call(
+      reservation: reservation, minutes: minutes
+    )
+
+    authorized = reservation.authorized_amount_in_cents.to_i
+    capture_cents = [actual_charge_cents, authorized].min
+
+    if capture_cents <= 0
+      # Nothing owed — cancel the hold entirely.
+      Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds) rescue nil
+      reservation.update!(captured_amount_in_cents: 0, captured_at: Time.current)
+      return
+    end
+
+    intent = Stripe::PaymentIntent.capture(
+      reservation.stripe_payment_intent_id,
+      { amount_to_capture: capture_cents },
+      creds,
+    )
+    reservation.update!(captured_amount_in_cents: capture_cents, captured_at: Time.current)
+    context.payment_intent = intent
+
+    # Create a local Invoice record so the captured charge shows up in
+    # the member's Invoices screen and admin reports, and so refunds
+    # can be issued against it.
+    invoice_record = nil
+    begin
+      invoice_record = Invoice.create!(
+        billable: reservation.user,
+        operator: location.operator,
+        location: location,
+        amount_due: capture_cents,
+        amount_paid: capture_cents,
+        status: 'paid',
+        date: Time.current,
+        stripe_payment_intent_id: reservation.stripe_payment_intent_id,
+        description: reservation.charge_description,
+      )
+    rescue => e
+      Rails.logger.error("CaptureHold invoice creation failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e, context: { reservation_id: reservation.id })
+    end
+
+    # Post a feed item so the admin sees the actual charge in the
+    # management feed (the booking-time feed only fires for up-front
+    # paid rooms; day-pass overages happen here at capture time).
+    begin
+      FeedItem.create!(
+        operator: location.operator,
+        location: location,
+        user: reservation.user,
+        blob: {
+          'type' => 'paid-room-reservation',
+          'user_name' => reservation.user.name,
+          'reservation_id' => reservation.id,
+          'invoice_id' => invoice_record&.id,
+          'charge_amount_in_cents' => capture_cents,
+          'room_name' => reservation.room.name,
+          'minutes' => reservation.minutes,
+        },
+      )
+    rescue => e
+      Rails.logger.error("CaptureHold feed item failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e, context: { reservation_id: reservation.id })
+    end
+  rescue Stripe::InvalidRequestError => e
+    Rails.logger.warn("CaptureHold error on reservation #{reservation.id}: #{e.message}")
+    Honeybadger.notify(e, context: { reservation_id: reservation.id })
+    # Don't re-raise — we don't want end_now/settle to fail for the user.
+    reservation.update!(captured_at: Time.current)
+  end
+
+end
