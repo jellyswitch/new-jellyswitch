@@ -23,9 +23,22 @@ class Operator::DayPassesController < Operator::BaseController
     # date at this location, don't create another invoice. Otherwise a quick
     # double-submit (or a confused retry on a slow charge) accumulates
     # extra Stripe invoices and decline attempts against their card.
-    prospective = DayPass.new(day_pass_params)
-    if prospective.day && DayPass.where(user_id: current_user.id, day: prospective.day, location_id: current_location.id).exists?
-      flash[:notice] = "You already have a day pass for #{short_date(prospective.day)}."
+    #
+    # Parse the date directly from the multi-parameter form fields rather
+    # than building a DayPass — DayPass.new would also try to coerce the
+    # `day_pass_type` string into the association and raise
+    # ActiveRecord::AssociationTypeMismatch.
+    prospective_day = begin
+      Date.new(
+        params.dig(:day_pass, :"day(1i)").to_i,
+        params.dig(:day_pass, :"day(2i)").to_i,
+        params.dig(:day_pass, :"day(3i)").to_i,
+      )
+    rescue ArgumentError, TypeError
+      nil
+    end
+    if prospective_day && DayPass.where(user_id: current_user.id, day: prospective_day, location_id: current_location.id).exists?
+      flash[:notice] = "You already have a day pass for #{short_date(prospective_day)}."
       turbo_redirect(home_path)
       return
     end
