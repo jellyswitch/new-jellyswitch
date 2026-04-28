@@ -217,18 +217,27 @@ class Api::V1::RoomsController < Api::V1::BaseController
 
     user = current_api_user
     zone = ActiveSupport::TimeZone[location.time_zone] || Time.zone
-    now = Time.current.in_time_zone(zone)
+    now = Time.current.in_time_zone(zone).change(sec: 0)
 
-    # Round up to next 15-min mark
+    # Reserve Now starts the booking RIGHT NOW. End-times still align
+    # to 15-minute marks (so the slider's 15/30/45/60 picks land on
+    # familiar times), and the lead-in minutes between now and the
+    # next 15-min mark roll into the booked total. Example: at 3:39
+    # PM with a 30-min slider pick, the booking is 3:39 → 4:15 PM
+    # (36 effective minutes billed).
+    start_time = now
     remainder = now.min % 15
-    start_time = remainder == 0 ? now : now + (15 - remainder).minutes
-    start_time = start_time.change(sec: 0)
+    next_quarter = remainder == 0 ? now : now + (15 - remainder).minutes
+    next_quarter = next_quarter.change(sec: 0)
+    lead_in_minutes = ((next_quarter - now) / 60).to_i
 
     duration = user.preferred_meeting_duration.to_i
     duration = 60 if duration <= 0
+    effective_minutes = duration + lead_in_minutes
 
-    # Find available rooms
-    end_time = start_time + duration.minutes
+    # Find available rooms — overlap is checked against the full
+    # effective window (now through end-of-slider-pick).
+    end_time = start_time + effective_minutes.minutes
     booked_room_ids = Reservation.where(room: location.rooms.visible)
       .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
       .where(cancelled: false)
@@ -272,13 +281,15 @@ class Api::V1::RoomsController < Api::V1::BaseController
 
     max_duration = [(hero.calculate_max_continuous_duration(start_time: start_time) rescue 240), 240].min
 
-    # Pricing for hero room
-    sub_info = user.subscription_reservation_charge_info(location, duration) rescue nil
-    dp_info = user.day_pass_reservation_charge_info(location, start_time.to_date, duration) rescue nil
+    # Pricing for hero room — uses the effective booked minutes
+    # (slider pick + lead-in) so the displayed cost matches what the
+    # member is actually billed at confirm.
+    sub_info = user.subscription_reservation_charge_info(location, effective_minutes) rescue nil
+    dp_info = user.day_pass_reservation_charge_info(location, start_time.to_date, effective_minutes) rescue nil
 
     should_charge = user.should_charge_for_reservation?(location, start_time.to_date) rescue true
     hourly = hero.hourly_rate_in_cents / 100.0
-    total_price = hourly * (duration / 60.0)
+    total_price = hourly * (effective_minutes / 60.0)
     included = !should_charge && hero.hourly_rate_in_cents > 0
 
     if sub_info && sub_info[:charge_type] == :partial_overage
@@ -326,6 +337,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       unavailable_rooms: unavailable,
       start_time: start_time.iso8601,
       start_time_label: start_time.strftime("%-l:%M %p"),
+      lead_in_minutes: lead_in_minutes,
       preferred_duration: duration,
       max_duration: max_duration,
       total_price: total_price,
