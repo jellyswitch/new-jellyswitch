@@ -48,7 +48,9 @@ class Subscription < ApplicationRecord
   delegate :operator, :location, to: :subscribable
 
   # Instance methods
-  def cancel_stripe!(prorate: true)
+  # Default `prorate: false` per ops policy: cancellations end access but
+  # do not refund unused days of the current billing period.
+  def cancel_stripe!(prorate: false)
     sub = stripe_subscription
     return unless sub
     sub.delete(prorate: prorate)
