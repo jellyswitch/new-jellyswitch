@@ -18,7 +18,7 @@ class Operator::RecurringReservationsController < Operator::BaseController
 
   def new
     authorize :recurring_reservation
-    @rooms = current_location.rooms.visible.order(:name)
+    @rooms = bookable_rooms_for_recurring
     @members = User.lease_options_for_select(current_tenant, current_location)
   end
 
@@ -55,7 +55,7 @@ class Operator::RecurringReservationsController < Operator::BaseController
     else
       flash[:alert] = result.message
       @conflicts = result.conflicts
-      @rooms = current_location.rooms.visible.order(:name)
+      @rooms = bookable_rooms_for_recurring
       @members = User.lease_options_for_select(current_tenant, current_location)
       render :new
     end
@@ -140,6 +140,15 @@ class Operator::RecurringReservationsController < Operator::BaseController
   end
 
   private
+
+  # Admins/managers can pick hidden rooms for recurring bookings (Coleen at
+  # Choose Folsom hides the Auditorium etc. from the public picker but still
+  # wants staff to schedule recurring meetings in them). Members only see
+  # rooms with visible = true.
+  def bookable_rooms_for_recurring
+    scope = current_user.admin_or_manager?(current_location) ? current_location.rooms : current_location.rooms.visible
+    scope.order(:name)
+  end
 
   def background_image
     @background_image = false
