@@ -1,0 +1,32 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+
+  <% if @kind == :extension %>
+    <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your meeting room extension was charged successfully.</p>
+  <% else %>
+    <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your meeting room reservation has started — your card was charged for the booking.</p>
+  <% end %>
+
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%; margin-bottom: 16px;">
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Room:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @reservation.room.name %></td>
+    </tr>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Date:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @reservation.datetime_in.strftime("%B %e, %Y") %></td>
+    </tr>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Time:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @reservation.datetime_in.strftime("%l:%M %p") %> &ndash; <%= @reservation.datetime_out.strftime("%l:%M %p") %></td>
+    </tr>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Amount:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;">$<%= format('%.2f', @amount_cents / 100.0) %></td>
+    </tr>
+  </table>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 13px; color: #666; margin: 0;">
+    A receipt has also been added to your invoice history in the app.
+  </p>
+<% end %>

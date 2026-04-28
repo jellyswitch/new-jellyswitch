@@ -178,6 +178,31 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Reminder: Payment past due", from: from_address, reply_to: operator.contact_email
   end
 
+  # Sent by Billing::Reservations::CaptureHold and ChargeExtensionDelta
+  # right after a successful capture, so the member has a paper trail
+  # of the actual charge. `kind` is :capture (default) or :extension —
+  # the only behavioral difference is the subject line.
+  def meeting_room_charged(reservation_id, amount_cents, kind: :capture)
+    reservation = Reservation.find_by(id: reservation_id)
+    return if reservation.nil?
+
+    @user = reservation.user
+    @operator = reservation.room.location.operator
+    @location = reservation.room.location
+    @reservation = reservation
+    @amount_cents = amount_cents.to_i
+    @kind = kind
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+
+    subject = kind == :extension ?
+      "Receipt: Meeting room extension — $#{format('%.2f', @amount_cents / 100.0)}" :
+      "Receipt: #{@reservation.room.name} — $#{format('%.2f', @amount_cents / 100.0)}"
+
+    mail to: @user.email, subject: subject, from: from_address, reply_to: @operator.contact_email
+  end
+
   def booking_reminder_email(user, operator, reservation, location = nil)
     @user = user
     @operator = operator

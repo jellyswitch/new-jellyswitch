@@ -118,9 +118,44 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     end
   end
 
+  CANCEL_CUTOFF = 1.minute
+
   def destroy
+    # Reservation has default_scope cancelled: false, so a re-cancel of
+    # an already-cancelled record raises RecordNotFound here — which we
+    # treat as success below.
     reservation = current_api_user.reservations.find(params[:id])
-    reservation.update(cancelled: true)
+
+    if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
+      return render_error('This reservation can no longer be cancelled — it starts within a minute.')
+    end
+
+    # Atomic cancel + hold-release: take the row lock so we don't race
+    # the SettleReservationJob firing at datetime_in. Re-check captured_at
+    # under the lock — if the capture beat us, the slot is committed and
+    # the user owes the charge.
+    reservation.with_lock do
+      Reservation.unscoped { reservation.reload }
+      if reservation.captured_at.present?
+        return render_error('This reservation can no longer be cancelled — it has already been charged.')
+      end
+
+      reservation.update!(cancelled: true)
+
+      if reservation.stripe_payment_intent_id.present?
+        location = reservation.room.location
+        creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+        begin
+          Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
+        rescue Stripe::InvalidRequestError => e
+          # PI may already be cancelled (e.g., dupe cancel) or in a state
+          # that disallows cancel. Log and continue — the reservation is
+          # cancelled locally regardless.
+          Rails.logger.warn("Cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
+        end
+      end
+    end
+
     render json: { success: true }
   rescue ActiveRecord::RecordNotFound
     render_error('Reservation not found', status: :not_found)
@@ -255,7 +290,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       ongoing: ongoing,
       future: future,
       can_extend: (ongoing || future) && !r.cancelled,
-      can_cancel: future && !r.cancelled,
+      can_cancel: future && !r.cancelled && r.datetime_in > Time.current + CANCEL_CUTOFF,
       can_end_now: ongoing && !r.cancelled,
     }
   end
