@@ -41,6 +41,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       :visible, :rentable, :description,
       :square_footage, :allow_shorter_reservation_duration, :credit_cost,
       :photo,
+      features: [],
     )
   end
 
@@ -56,6 +57,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       square_footage: room.square_footage,
       allow_shorter_reservation_duration: room.allow_shorter_reservation_duration,
       credit_cost: room.credit_cost,
+      features: room.features || [],
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }
   end

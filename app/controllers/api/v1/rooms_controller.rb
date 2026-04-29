@@ -262,6 +262,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
           id: room.id, name: room.name, capacity: room.capacity,
           hourly_rate: room.hourly_rate_in_cents,
           amenities: room.amenities.pluck(:name),
+          features: room.features || [],
           available: false,
           available_at: free_at&.in_time_zone(zone)&.strftime("%l:%M %p")&.strip,
         }
@@ -311,6 +312,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         description: r.description,
         hourly_rate: r.hourly_rate_in_cents,
         amenities: r.amenities.pluck(:name),
+        features: r.features || [],
         available: is_available,
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
@@ -380,6 +382,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       description: room.description,
       hourly_rate: room.hourly_rate_in_cents,
       amenities: room.amenities.pluck(:name),
+      features: room.features || [],
       rentable: room.rentable?,
       available: (room.available_now? rescue false),
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
