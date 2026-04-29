@@ -70,13 +70,31 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
                              .find(params[:id])
 
     additional_minutes = params[:additional_minutes].to_i
-    new_minutes = reservation.minutes + additional_minutes
+    return render_error('Invalid duration') if additional_minutes <= 0
 
-    Searchkick.callbacks(false) do
-      reservation.update!(minutes: new_minutes, hours: new_minutes / 60.0)
+    # Same conflict check the member-side extend runs — no booking may
+    # start in the extension window.
+    unless reservation.room.available?(start_time: reservation.datetime_out, duration: additional_minutes)
+      return render_error('Room is not available for that extension')
     end
 
-    render json: { success: true, new_duration: new_minutes }
+    # Route through the same interactor as the member-side endpoint so
+    # billing fires: post-start extensions hit ChargeExtensionDelta
+    # (auto-capture for the additional cost); pre-start extensions go
+    # through AuthorizeHoldOrSchedule (replaces the existing hold or
+    # stays deferred). Bypassing this previously gave members free time
+    # when an admin extended a captured booking.
+    result = Billing::Reservations::ExtendReservation.call(
+      reservation: reservation,
+      additional_duration: additional_minutes,
+      user: reservation.user,
+    )
+
+    if result.success?
+      render json: { success: true, new_duration: reservation.reload.minutes }
+    else
+      render_error(result.message || 'Could not extend reservation')
+    end
   rescue => e
     render_error(e.message)
   end
