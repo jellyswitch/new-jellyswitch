@@ -105,7 +105,46 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
                              .where(rooms: { operator_id: current_tenant.id })
                              .find(params[:id])
 
-    reservation.update!(cancelled: true)
+    return render json: { success: true } if reservation.cancelled?
+
+    location = reservation.room.location
+    creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+
+    reservation.with_lock do
+      Reservation.unscoped { reservation.reload }
+      return render json: { success: true } if reservation.cancelled?
+
+      reservation.update!(cancelled: true)
+
+      if reservation.stripe_payment_intent_id.present?
+        if reservation.captured_at.present?
+          # Already captured — find the local invoice and refund it
+          # via the existing refund pipeline. Admin can refund any
+          # extension-delta invoices separately from the invoices list.
+          invoice = Invoice.find_by(stripe_payment_intent_id: reservation.stripe_payment_intent_id)
+          if invoice && !invoice.refunded?
+            begin
+              Billing::Invoices::Refunds::Create.call(
+                operator: current_tenant,
+                invoice: RefundableFactory.for(invoice),
+                location: location,
+              )
+            rescue => e
+              Rails.logger.warn("Admin cancel: refund failed for invoice #{invoice.id}: #{e.class}: #{e.message}")
+              Honeybadger.notify(e, context: { reservation_id: reservation.id, invoice_id: invoice.id })
+            end
+          end
+        else
+          # Pre-capture — void the held PaymentIntent so the member's
+          # card isn't kept frozen until Stripe expires the auth.
+          begin
+            Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
+          rescue Stripe::InvalidRequestError => e
+            Rails.logger.warn("Admin cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
+          end
+        end
+      end
+    end
 
     render json: { success: true }
   end
