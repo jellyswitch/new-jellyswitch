@@ -198,6 +198,12 @@ module StripeUtils
     stripe_customer.source = token
     stripe_customer.save
   rescue Stripe::InvalidRequestError => e
+    # "token_already_used" means the customer's card was attached on a
+    # previous (successful) request and a duplicate POST raced behind it.
+    # Treat as success — the card is already on file. Don't notify
+    # Honeybadger because this is now an expected duplicate-submit race.
+    return stripe_customer if e.message.to_s.include?("more than once") || e.code == "token_already_used"
+
     Honeybadger.notify(e)
     false
   end

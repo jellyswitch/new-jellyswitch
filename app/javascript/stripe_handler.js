@@ -29,6 +29,20 @@ function doStripe() {
       return;
     }
 
+    var submitButton = document.getElementById('stripe-submit');
+
+    // Disable IMMEDIATELY (before async tokenize) so a quick double-tap on
+    // mobile can't fire two submits with the same Stripe token. Re-enable
+    // only on the tokenize-error path so the user can retry.
+    if (submitButton) {
+      if (submitButton.dataset.locked === 'true') {
+        event.preventDefault();
+        return;
+      }
+      submitButton.dataset.locked = 'true';
+      submitButton.disabled = true;
+    }
+
     if (window.has_token === false) {
       event.preventDefault();
 
@@ -36,8 +50,10 @@ function doStripe() {
         if (result.error) {
           var errorElement = document.getElementById('card-errors');
           errorElement.textContent = result.error.message;
-          var submitButton = document.getElementById('stripe-submit');
-          submitButton.disabled = false;
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.dataset.locked = 'false';
+          }
         } else {
           stripeTokenHandler(result.token);
         }
