@@ -12,14 +12,22 @@
         <dl class="row">
           <dt class="col-sm-3">Owner</dt>
           <dd class="col-sm">
-            <%= link_to @organization.owner.name, user_path(@organization.owner) %>
+            <% if @organization.owner %>
+              <%= link_to @organization.owner.name, user_path(@organization.owner) %>
+            <% else %>
+              <span class="text-muted">— none</span>
+            <% end %>
           </dd>
         </dl>
 
         <dl class="row">
           <dt class="col-sm-3">Billing Contact</dt>
           <dd class="col-sm">
-            <%= link_to @organization.billing_contact.name, user_path(@organization.billing_contact) %>
+            <% if @organization.billing_contact %>
+              <%= link_to @organization.billing_contact.name, user_path(@organization.billing_contact) %>
+            <% else %>
+              <span class="text-muted">— none</span>
+            <% end %>
           </dd>
         </dl>
 
