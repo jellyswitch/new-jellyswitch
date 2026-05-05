@@ -230,6 +230,14 @@ class Operator::ReservationsController < Operator::BaseController
       flash[:error] = result.message
       turbo_redirect(referrer_or_root)
     end
+  rescue Pundit::NotAuthorizedError
+    # Most common cause: a stale tab where the Cancel button was visible
+    # when the reservation was future, but the reservation has since started
+    # or ended (so policy.cancel? now returns false). Show a friendly
+    # message rather than the generic exception flash, and skip Honeybadger
+    # since this is an expected race, not a bug.
+    flash[:error] = "This reservation can no longer be cancelled — it may have already started or ended."
+    turbo_redirect(referrer_or_root)
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
