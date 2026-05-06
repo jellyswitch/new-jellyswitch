@@ -36,7 +36,10 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.superadmin?
       ),
       has_active_subscription: user.has_active_subscription?,
-      has_day_pass: user.day_passes.any?,
+      # "Has a usable pass" — today or any future date. Past-only passes
+      # don't count, otherwise the WelcomeScreen "Plan or Pass" stepper
+      # would tick green for a member whose passes are all expired.
+      has_day_pass: user.day_passes.where("day >= ?", Date.current).any?,
       location_hours: begin
         loc = user.current_location || user.original_location
         parse = ->(v) { v.is_a?(String) ? v.split(':').first.to_i : v.to_i }
