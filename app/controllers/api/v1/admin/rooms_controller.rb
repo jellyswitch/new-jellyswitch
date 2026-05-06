@@ -1,6 +1,14 @@
 class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   def index
-    rooms = Room.where(operator: current_tenant).order(:name)
+    rooms = Room.where(operator: current_tenant)
+    rooms = if params[:archived] == 'true'
+              rooms.archived
+            elsif params[:archived] == 'all'
+              rooms
+            else
+              rooms.active
+            end
+    rooms = rooms.order(:name)
 
     render json: rooms.map { |room| room_json(room) }
   end
@@ -28,9 +36,17 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   end
 
   def destroy
+    # "Delete" = soft archive so existing reservations / invoices that
+    # reference the room keep working. Use unarchive to bring back.
     room = Room.find(params[:id])
-    room.destroy
+    room.update!(archived: true)
     render json: { success: true }
+  end
+
+  def unarchive
+    room = Room.find(params[:id])
+    room.update!(archived: false)
+    render json: room_json(room)
   end
 
   private
@@ -58,6 +74,7 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       allow_shorter_reservation_duration: room.allow_shorter_reservation_duration,
       credit_cost: room.credit_cost,
       features: room.features || [],
+      archived: room.archived,
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }
   end

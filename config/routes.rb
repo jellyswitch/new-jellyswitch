@@ -186,7 +186,11 @@ Rails.application.routes.draw do
         delete 'reservations/:id', to: 'reservations#destroy'
 
         # Rooms
-        resources :rooms, only: [:index, :create, :update, :destroy]
+        resources :rooms, only: [:index, :create, :update, :destroy] do
+          member do
+            post :unarchive
+          end
+        end
 
         # Announcements
         get 'announcements', to: 'announcements#index'
