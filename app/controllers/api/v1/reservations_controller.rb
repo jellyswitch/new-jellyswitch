@@ -130,6 +130,13 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       return render_error('This reservation can no longer be cancelled — it starts within a minute.')
     end
 
+    # Operator's cancellation policy. Within window-hours-of-start the
+    # member forfeits the hold (we capture instead of voiding); outside
+    # the window the hold is voided as usual.
+    op = current_tenant
+    window_hours = op&.try(:cancellation_window_hours).to_i
+    inside_window = window_hours > 0 && (reservation.datetime_in - Time.current) < window_hours.hours
+
     # Atomic cancel + hold-release: take the row lock so we don't race
     # the SettleReservationJob firing at datetime_in. Re-check captured_at
     # under the lock — if the capture beat us, the slot is committed and
@@ -140,23 +147,33 @@ class Api::V1::ReservationsController < Api::V1::BaseController
         return render_error('This reservation can no longer be cancelled — it has already been charged.')
       end
 
-      reservation.update!(cancelled: true)
-
-      if reservation.stripe_payment_intent_id.present?
-        location = reservation.room.location
-        creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
-        begin
-          Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
-        rescue Stripe::InvalidRequestError => e
-          # PI may already be cancelled (e.g., dupe cancel) or in a state
-          # that disallows cancel. Log and continue — the reservation is
-          # cancelled locally regardless.
-          Rails.logger.warn("Cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
+      if inside_window && reservation.stripe_payment_intent_id.present?
+        # Late cancellation — capture the held amount per the operator's
+        # policy. Member still gets the booking marked cancelled (slot
+        # frees for someone else) but doesn't get their money back.
+        Billing::Reservations::CaptureHold.call(
+          reservation: reservation,
+          actual_minutes: reservation.minutes,
+        ) rescue nil
+        reservation.update!(cancelled: true)
+      else
+        reservation.update!(cancelled: true)
+        if reservation.stripe_payment_intent_id.present?
+          location = reservation.room.location
+          creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+          begin
+            Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
+          rescue Stripe::InvalidRequestError => e
+            # PI may already be cancelled (e.g., dupe cancel) or in a state
+            # that disallows cancel. Log and continue — the reservation is
+            # cancelled locally regardless.
+            Rails.logger.warn("Cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
+          end
         end
       end
     end
 
-    render json: { success: true }
+    render json: { success: true, late_cancellation: inside_window }
   rescue ActiveRecord::RecordNotFound
     render_error('Reservation not found', status: :not_found)
   end

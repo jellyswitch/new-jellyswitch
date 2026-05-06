@@ -42,6 +42,7 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       has_logo: op.try(:logo_image)&.attached? || false,
       has_terms: op.try(:terms_of_service)&.attached? || false,
       refund_fee_percent: op.try(:refund_fee_percent) || 0,
+      cancellation_window_hours: op.try(:cancellation_window_hours) || 0,
     }
   end
 
@@ -114,6 +115,7 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       :approval_required, :checkin_required,
       :ios_url, :android_url, :bundle_id,
       :refund_fee_percent,
+      :cancellation_window_hours,
     )
   end
 

@@ -36,6 +36,11 @@ class Api::V1::UsersController < Api::V1::BaseController
           user.superadmin?
       ),
       has_active_subscription: user.has_active_subscription?,
+      # Operator-set cancellation policy. Mobile uses these to show
+      # the right cancel-button copy ("full refund" vs "you'll forfeit
+      # the hold") before the member confirms.
+      cancellation_window_hours: user.operator&.try(:cancellation_window_hours) || 0,
+      refund_fee_percent: user.operator&.try(:refund_fee_percent) || 0,
       # "Has a usable pass" — today or any future date. Past-only passes
       # don't count, otherwise the WelcomeScreen "Plan or Pass" stepper
       # would tick green for a member whose passes are all expired.
