@@ -1,5 +1,29 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators]
+  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators]
+
+  # GET /api/v1/auth/operators
+  # Public catalog of bookable spaces for the signup-screen dropdown
+  # (members shouldn't have to know the subdomain; "Cowork Tahoe" is
+  # what they read on the door). Returns operators that have at least
+  # one visible location, with the primary location's city to
+  # disambiguate ones with similar names.
+  def operators
+    op_ids = Location.where(archived: [false, nil]).distinct.pluck(:operator_id)
+    operators = Operator.where(id: op_ids).order(:name)
+
+    render json: {
+      operators: operators.map { |op|
+        loc = op.locations.where(archived: [false, nil]).order(:id).first
+        {
+          subdomain: op.subdomain,
+          name: op.name,
+          location_name: loc&.name,
+          city: loc&.city,
+          state: loc&.state,
+        }
+      }
+    }
+  end
 
   def login
     subdomain = params[:subdomain]&.downcase
