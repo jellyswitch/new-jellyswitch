@@ -88,6 +88,7 @@ Rails.application.routes.draw do
       resources :member_feedbacks, only: [:index, :show, :create] do
         member do
           post :reply
+          patch :rate
         end
       end
 
