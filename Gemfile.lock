@@ -103,7 +103,7 @@ GEM
       tzinfo (~> 2.0)
     acts_as_tenant (1.0.1)
       rails (>= 6.0)
-    addressable (2.8.9)
+    addressable (2.9.0)
       public_suffix (>= 2.0.2, < 8.0)
     ahoy_matey (4.1.0)
       activesupport (>= 5.2)
@@ -174,7 +174,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    css_parser (1.21.1)
+    css_parser (1.22.0)
       addressable
     csv (3.3.5)
     dalli (3.2.3)
