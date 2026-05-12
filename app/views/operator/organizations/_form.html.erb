@@ -28,34 +28,31 @@
 
   <div class="form-group">
     <%= f.label :billing_contact %>
-    <% if @organization.can_change_billing_contact? %>
-      <input type="text" class="form-control" list="billing-contact-options" id="billing-contact-input"
-        placeholder="Type to search members..."
-        value="<%= users.find { |name, id| id == @organization.billing_contact_id }&.first %>">
-      <datalist id="billing-contact-options">
-        <% users.each do |name, id| %>
-          <option value="<%= name %>" data-id="<%= id %>">
-        <% end %>
-      </datalist>
-      <%= f.hidden_field :billing_contact_id, id: "billing-contact-hidden-id" %>
-    <% else %>
-      <div class="form-group">
-        <span>
-          <i class="fas fa-exclamation-triangle"></i>
-          <input type="text" class="form-control" disabled value="Cannot change while active subscriptions/leases exist">
-        </span>
+    <input type="text" class="form-control" list="billing-contact-options" id="billing-contact-input"
+      placeholder="Type to search members..."
+      value="<%= users.find { |name, id| id == @organization.billing_contact_id }&.first %>">
+    <datalist id="billing-contact-options">
+      <% users.each do |name, id| %>
+        <option value="<%= name %>" data-id="<%= id %>">
+      <% end %>
+    </datalist>
+    <%= f.hidden_field :billing_contact_id, id: "billing-contact-hidden-id" %>
+
+    <% active_subs = @organization.active_subscriptions %>
+    <% active_leases = @organization.active_leases %>
+    <% if active_subs.any? || active_leases.any? %>
+      <div class="mt-2 small text-muted">
+        <i class="fas fa-info-circle"></i>
+        Changing the billing contact will route future charges on the following to the new contact's card:
+        <ul class="mb-0 mt-1">
+          <% active_subs.each do |subscription| %>
+            <li><%= link_to "#{subscription.subscribable.name}'s #{subscription.plan.name} Membership", user_membership_path(user_id: subscription.subscribable) %></li>
+          <% end %>
+          <% active_leases.each do |office_lease| %>
+            <li><%= link_to "#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}", office_lease_path(office_lease) %></li>
+          <% end %>
+        </ul>
       </div>
-
-      <div class="form-group mt-3 col-6">
-        <strong>If you wish to designate a billing contact, the following must first be cancelled:</strong>
-
-        <% @organization.active_subscriptions.each do |subscription| %>
-          <li><%= link_to "#{subscription.subscribable.name}'s #{subscription.plan.name} Membership", user_membership_path(user_id: subscription.subscribable) %></li>
-        <% end %>
-
-        <% @organization.active_leases.each do |office_lease| %>
-          <li><%= link_to "#{office_lease.subscription.subscribable.name}'s Office Lease ending #{office_lease.pretty_date}", office_lease_path(office_lease) %></li>
-        <% end %>
     <% end %>
   </div>
 

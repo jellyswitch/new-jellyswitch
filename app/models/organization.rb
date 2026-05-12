@@ -151,10 +151,6 @@ class Organization < ApplicationRecord
     billing_contact.present?
   end
 
-  def can_change_billing_contact?
-    !has_active_subscriptions? && !has_active_lease?
-  end
-
   def has_active_subscriptions?
     active_subscriptions.count.positive?
   end
