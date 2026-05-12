@@ -27,7 +27,7 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "should_send_notification? returns true when operator allows it and reservation has a charge" do
-    @operator.stubs(:paid_room_reservation_notifications?).returns(true)
+    Operator.any_instance.stubs(:paid_room_reservation_notifications?).returns(true)
     @reservation.stubs(:charge_amount).returns(1500)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
 
@@ -35,7 +35,7 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "should_send_notification? returns false when operator has the setting disabled" do
-    @operator.stubs(:paid_room_reservation_notifications?).returns(false)
+    Operator.any_instance.stubs(:paid_room_reservation_notifications?).returns(false)
     @reservation.stubs(:charge_amount).returns(1500)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
 
@@ -43,7 +43,7 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "should_send_notification? returns false when reservation has no charge" do
-    @operator.stubs(:paid_room_reservation_notifications?).returns(true)
+    Operator.any_instance.stubs(:paid_room_reservation_notifications?).returns(true)
     @reservation.stubs(:charge_amount).returns(0)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
 
