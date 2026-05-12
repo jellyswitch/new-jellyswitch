@@ -39,7 +39,6 @@ class ActiveSupport::TestCase
     allow_localhost: true,
     allow: ['chromedriver.storage.googleapis.com', 'storage.googleapis.com', 'googlechromelabs.github.io', 'fcm.googleapis.com']
   )
-  NewRelic::Agent.manual_start(enabled: false)
 
   parallelize_setup do |worker|
     Searchkick.index_suffix = worker
