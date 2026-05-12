@@ -54,7 +54,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     Operator.any_instance.stubs(:bundle_id).returns("com.example.app")
 
     @user.stubs(:ios_token).returns("some_token")
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
 
     response_mock = mock
     response_mock.stubs(:ok?).returns(true)
@@ -70,7 +70,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
   test "ios notification is not sent when APNs is configured but operator has no bundle_id" do
     Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(true)
     Operator.any_instance.stubs(:bundle_id).returns(nil)
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
 
     IosNotification.expects(:new).never
 
@@ -80,7 +80,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
   test "ios notification is not sent when APNs is not configured even if operator has bundle_id" do
     Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(false)
     Operator.any_instance.stubs(:bundle_id).returns("com.example.app")
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
 
     IosNotification.expects(:new).never
 
@@ -90,7 +90,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
   test "ios notification is not sent when neither APNs is configured nor operator has bundle_id" do
     Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(false)
     Operator.any_instance.stubs(:bundle_id).returns(nil)
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
 
     IosNotification.expects(:new).never
 
@@ -133,7 +133,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never
@@ -148,7 +148,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never
@@ -163,7 +163,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never
