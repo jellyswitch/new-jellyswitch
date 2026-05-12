@@ -32,6 +32,30 @@
         </dl>
 
         <dl class="row">
+          <dt class="col-sm-3">Card on file</dt>
+          <dd class="col-sm">
+            <% summary = @organization.card_summary_for_location(current_location) %>
+            <% case summary[:status] %>
+            <% when :card %>
+              <i class="fas fa-credit-card text-success"></i>
+              Card ending in <strong><%= summary[:last4] %></strong>
+              <% if summary[:via] %>
+                <span class="text-muted">— billed to <%= link_to summary[:via].name, user_path(summary[:via]) %></span>
+              <% end %>
+            <% when :out_of_band %>
+              <i class="fas fa-money-bill-wave text-muted"></i>
+              <span class="text-muted">Out of band (cash / check / wire)</span>
+            <% when :none %>
+              <i class="fas fa-exclamation-triangle text-danger"></i>
+              <span class="text-danger">No card on file</span>
+              <% if summary[:via] %>
+                <span class="text-muted">— billing contact <%= link_to summary[:via].name, user_path(summary[:via]) %> has no card yet</span>
+              <% end %>
+            <% end %>
+          </dd>
+        </dl>
+
+        <dl class="row">
           <dt class="col-sm-3">Created</dt>
           <dd class="col-sm">
             <%= time_ago_in_words(@organization.created_at) %> ago
