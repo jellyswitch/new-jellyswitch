@@ -7,12 +7,45 @@ class PaymentMethodComponent < ApplicationComponent
 
   attr_reader :billable
 
+  # When the billable is an Org with a billing_contact, charges actually
+  # route to the contact (see OrganizationBillDecider). Display the card
+  # that money will come out of, not the org's empty Stripe customer.
+  def effective_billable
+    if billable.is_a?(Organization) && billable.has_billing_contact?
+      billable.billing_contact
+    else
+      billable
+    end
+  end
+
+  def billing_via_contact?
+    effective_billable != billable
+  end
+
   def card_added_for_location?(location)
-    billable.card_added_for_location?(location)
+    effective_billable.card_added_for_location?(location)
+  rescue StandardError
+    false
   end
 
   def last_4_digits(location)
-    billable.card_last_4_digits(location) # XXX extract this into a concern on the user / organization model
+    effective_billable.card_last_4_digits(location) # XXX extract this into a concern on the user / organization model
+  end
+
+  def update_card_path
+    if effective_billable.is_a?(User)
+      user_billing_path(effective_billable)
+    else
+      organization_billing_path(effective_billable)
+    end
+  end
+
+  def update_card_label
+    if billing_via_contact?
+      "Update #{effective_billable.name}'s card"
+    else
+      "Update credit card"
+    end
   end
 
   def credit_card_path

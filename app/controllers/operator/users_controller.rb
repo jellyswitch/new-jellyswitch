@@ -346,19 +346,23 @@ class Operator::UsersController < Operator::BaseController
 
   def edit_billing
     find_user(:user_id)
+    authorize @user, :edit_billing?
     include_stripe
   end
 
   def update_billing
     find_user(:user_id)
+    authorize @user, :update_billing?
     token = params[:stripeToken]
-    result = Billing::Payment::UpdateUserPayment.call(user: current_user, location: current_location, token: token)
+    # Use @user (the user from the URL), not current_user — otherwise an
+    # admin updating a billing contact's card silently updates their own.
+    result = Billing::Payment::UpdateUserPayment.call(user: @user, location: current_location, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
-      turbo_redirect(user_path(current_user))
+      turbo_redirect(user_path(@user))
     else
       flash[:error] = result.message
-      turbo_redirect(user_billing_path(current_user))
+      turbo_redirect(user_billing_path(@user))
     end
   end
 

@@ -15,12 +15,26 @@
         <% if cash_or_check? %>
           <%= link_to "Card ending in #{last_4_digits(helpers.current_location)}", credit_card_path, class: "list-group-item" %>
         <% else %>
-          <li class="list-group-item active">Card ending in <%= last_4_digits(helpers.current_location) %></li>
+          <li class="list-group-item active">
+            Card ending in <%= last_4_digits(helpers.current_location) %>
+            <% if billing_via_contact? %>
+              <div class="small text-white-50 mt-1">
+                Billed to <%= effective_billable.name %> (billing contact)
+              </div>
+            <% end %>
+          </li>
         <% end %>
       <% end %>
     <% end %>
   <% else %>
-    <li class="list-group-item disabled">No card on file</li>
+    <li class="list-group-item disabled">
+      No card on file
+      <% if billing_via_contact? %>
+        <div class="small text-muted mt-1">
+          Billing contact <%= effective_billable.name %> has not added a card yet.
+        </div>
+      <% end %>
+    </li>
   <% end %>
 
   <% if cash_or_check? && !bill_to_group? %>
@@ -43,6 +57,6 @@
       <li class="list-group-item disabled">Group billing unavailable (not a member of a group)</li>
     <% end %>
   <% else %>
-    <%= link_to "Update credit card", organization_billing_path(billable), class: "btn btn-block btn-primary mt-3" %>
+    <%= link_to update_card_label, update_card_path, class: "btn btn-block btn-primary mt-3" %>
   <% end %>
 </ul>
