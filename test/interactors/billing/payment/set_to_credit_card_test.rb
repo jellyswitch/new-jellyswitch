@@ -37,7 +37,7 @@ class Billing::Payment::SetToCreditCardTest < ActiveSupport::TestCase
       result = Billing::Payment::SetToCreditCard.call(user: @user)
 
       assert result.failure?
-      assert_equal "An error occurred.", result.message
+      assert_equal "Unable to update payment method: ", result.message
     end
   end
 end

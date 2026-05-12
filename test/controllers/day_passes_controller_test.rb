@@ -22,13 +22,9 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
 
   test "should create a new day pass for today" do
     @date = Time.zone.today
-    mock = Minitest::Mock.new
+    result = OpenStruct.new(success?: true, day_pass: OpenStruct.new(today?: true, day: @date))
 
-    mock.expect(:success?, true)
-    mock.expect(:day_pass, @user.day_passes.last)
-    mock.expect(:invoice, invoices(:paid_invoice))
-
-    CreateInvoice.stub :call, mock do
+    Billing::DayPasses::CreateDayPass.stub :call, result do
       post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
       assert_equal "Welcome to #{@user.operator.name}!", flash[:success]
       assert_redirected_to home_path
@@ -38,13 +34,9 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
   test "should create a new day pass for the future" do
     @date = Time.zone.today + 2.days
     @date_formatted = @date.strftime("%m/%d/%Y")
-    mock = Minitest::Mock.new
+    result = OpenStruct.new(success?: true, day_pass: OpenStruct.new(today?: false, day: @date))
 
-    mock.expect(:success?, true)
-    mock.expect(:day_pass, @user.day_passes.last)
-    mock.expect(:invoice, invoices(:paid_invoice))
-
-    CreateInvoice.stub :call, mock do
+    Billing::DayPasses::CreateDayPass.stub :call, result do
       post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
 
       assert_equal "Thanks! Your day pass will be available on #{ @date_formatted }.", flash[:success]

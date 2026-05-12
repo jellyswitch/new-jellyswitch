@@ -6,6 +6,7 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
       Billing::Reservations::SaveStripeInvoice,
+      Billing::Reservations::ChargeReservationInvoice,
       Billing::Reservations::GrantFreeDayPass,
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,

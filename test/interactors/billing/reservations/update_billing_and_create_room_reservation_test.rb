@@ -6,6 +6,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::SaveStripeInvoice,
+      Billing::Reservations::ChargeReservationInvoice,
       Billing::Reservations::GrantFreeDayPass,
       CreateNotificationsAsync,
       SendAdminNotificationForPaidRoom,

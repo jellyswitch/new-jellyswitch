@@ -10,8 +10,9 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "create_feed_item creates a feed item with correct attributes" do
+    @reservation.stubs(:charge_amount).returns(1500)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
-    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "paid-room-reservation", reservation_id: @reservation.id, charge_amount_in_cents: @reservation.charge_amount)
+    FeedItemCreator.expects(:create_feed_item).with(@operator, @location, @user, type: "paid-room-reservation", reservation_id: @reservation.id, charge_amount_in_cents: 1500)
 
     notifiable.send(:create_feed_item)
   end
@@ -25,15 +26,25 @@ class Notifiable::PaidRoomReservationTest < ActiveSupport::TestCase
     assert_equal "/reservations/#{@reservation.id}", data[:path]
   end
 
-  test "should_send_notification? returns true if room is a paid room" do
-    @room.stubs(:paid_room?).returns(true)
+  test "should_send_notification? returns true when operator allows it and reservation has a charge" do
+    @operator.stubs(:paid_room_reservation_notifications?).returns(true)
+    @reservation.stubs(:charge_amount).returns(1500)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
 
     assert notifiable.send(:should_send_notification?)
   end
 
-  test "should_send_notification? returns false if room is not a paid room" do
-    @room.stubs(:paid_room?).returns(false)
+  test "should_send_notification? returns false when operator has the setting disabled" do
+    @operator.stubs(:paid_room_reservation_notifications?).returns(false)
+    @reservation.stubs(:charge_amount).returns(1500)
+    notifiable = Notifiable::PaidRoomReservation.new(@reservation)
+
+    assert_not notifiable.send(:should_send_notification?)
+  end
+
+  test "should_send_notification? returns false when reservation has no charge" do
+    @operator.stubs(:paid_room_reservation_notifications?).returns(true)
+    @reservation.stubs(:charge_amount).returns(0)
     notifiable = Notifiable::PaidRoomReservation.new(@reservation)
 
     assert_not notifiable.send(:should_send_notification?)
