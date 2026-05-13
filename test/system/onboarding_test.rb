@@ -93,8 +93,12 @@ class OnboardingTest < ApplicationSystemTestCase
     click_on "Next"
 
     # for some reason the test is too fast and the location is not updated yet
+    # Use the operator's first location specifically rather than Location.last
+    # — with parallel tests + locations created in other tests, Location.last
+    # isn't necessarily the one this onboarding flow created.
+    onboarding_user = User.find_by(email: "new_operator@email.com")
     wait_for do
-      Location.last.kisi_api_key == "KISI1"
+      onboarding_user.reload.operator.locations.first.kisi_api_key == "KISI1"
     end
 
     # setup rooms
