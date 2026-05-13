@@ -24,7 +24,9 @@ RSpec.describe "Update Office Lease Price", type: :system do
       expect(page).to have_button("Update Pricing", disabled: false)
       click_on "Update Pricing"
 
-      assert_text "Please review the following information before confirming the price update:"
+      # The "Update Pricing" button toggles a Bootstrap modal via data-toggle;
+      # give the modal time to actually show before asserting its contents.
+      assert_text "Please review the following information before confirming the price update:", wait: 10
 
       assert_text "New Price:"
       assert_text "$150.00 per month"
