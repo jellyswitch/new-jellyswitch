@@ -41,8 +41,14 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       find(".navbar-toggler").click
       click_on "Change Location"
     end
-    page.find_button(location.name).click
-    wait_for_turbo
+    # When already at target, the only matching button is disabled
+    # ("You're at <location>") — no-op rather than failing.
+    begin
+      page.find_button(location.name).click
+      wait_for_turbo
+    rescue Capybara::ElementNotFound
+      # Already at this location; nothing to do.
+    end
   end
 
   def wait_for_turbo
