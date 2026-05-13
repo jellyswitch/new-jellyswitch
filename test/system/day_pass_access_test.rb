@@ -13,7 +13,6 @@ class DayPassAccessTest < ApplicationSystemTestCase
   end
 
   test "user accesses a location via its daypass" do
-    skip "Day pass purchase fails because StripeMock's customers.rb:127 get_customer receives a nil customer_id and raises 'undefined method [] for nil'. The user has a Stripe customer at their original_location (created in setup_stripe_no_subscription), but the controller's Stripe::InvoiceItem.create path is passing nil — likely a system-test process boundary issue between the test runner's StripeMock state and the Puma server. Not a production bug. Needs test infra investigation."
     log_in(users(:cowork_tahoe_non_member))
     operator = operators(:cowork_tahoe)
     other_location = create(:location, operator: operator)
@@ -38,7 +37,6 @@ class DayPassAccessTest < ApplicationSystemTestCase
   end
 
   test "user registers at one location then purchases daypass at another" do
-    skip "Same StripeMock issue as the previous test — purchase form hangs on 'Processing...'. System-test infra issue, not production."
     log_in(users(:cowork_tahoe_non_member))
     operator = operators(:cowork_tahoe)
     first_location = operator.locations.first

@@ -121,7 +121,7 @@ class ActiveSupport::TestCase
       plan.update(stripe_plan_id: stripe_plan.id)
     end
 
-    customer = Stripe::Customer.create({ email: @user.email })
+    customer = Stripe::Customer.create({ email: @user.email }, { stripe_account: @user.original_location.stripe_user_id })
     @user.update_stripe_customer_id_for_location(@user.original_location, customer.id)
   end
 end

@@ -74,7 +74,6 @@ class TrackingPixelsTest < ApplicationSystemTestCase
   end
 
   test "tracking pixels appears after user does a transaction" do
-    skip "Same day-pass-purchase StripeMock issue as day_pass_access_test — this test also exercises the day pass purchase flow. System-test infra issue, not production."
     StripeMock.start
 
     @user = users(:cowork_tahoe_non_member)
