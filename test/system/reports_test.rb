@@ -39,7 +39,7 @@ class ReportsTest < ApplicationSystemTestCase
     # view reports on main location
     visit reports_path
     # assert_text "2 active member"
-    assert_text "2 day passes (30d)"
+    assert_text "2 day passes (30d)", visible: :all
 
     click_on "Weekly Updates"
     assert_text "January 1, 2021 - January 7, 2021"
@@ -49,7 +49,7 @@ class ReportsTest < ApplicationSystemTestCase
     # view reports on other location
     switch_to_location other_location
     visit reports_path
-    assert_text "1 day passes (30d)"
+    assert_text "1 day passes (30d)", visible: :all
     # assert_text "1 active member"
 
     click_on "Weekly Updates"

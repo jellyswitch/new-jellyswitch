@@ -27,6 +27,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     setup_stripe
 
     click_on "Reserve Later"
+    wait_for_turbo
 
     assert_text "Reservation Date"
 

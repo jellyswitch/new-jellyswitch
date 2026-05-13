@@ -64,7 +64,7 @@ class ReservationTest < ApplicationSystemTestCase
 
     # Choose member for reservation step
     assert_text(@room.name)
-    select @user.name, from: "user_id"
+    find(".member-item", text: @user.name).click
     click_on "Next"
 
     assert_choose_duration_step()
