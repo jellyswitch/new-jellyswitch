@@ -92,11 +92,7 @@ class Operator::DayPassesController < Operator::BaseController
     end
   rescue => e
     Honeybadger.notify(e)
-    flash[:error] = if Rails.env.test?
-                      "An error occurred: #{e.message} :: #{Array(e.backtrace).first(3).join(' | ')}"
-                    else
-                      "An error occurred: #{e.message}"
-                    end
+    flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
   end
 
