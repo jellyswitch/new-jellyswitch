@@ -57,13 +57,17 @@ class CheckinTest < ApplicationSystemTestCase
       });
     JS
 
+    page.execute_script("window.__diagErrors = []; window.addEventListener('error', function(e) { window.__diagErrors.push(e.message + ' @ ' + e.filename + ':' + e.lineno); });")
+    page.execute_script("window.__diagFetches = []; var origFetch = window.fetch; window.fetch = function() { window.__diagFetches.push([String(arguments[0]), arguments[1] && arguments[1].method]); return origFetch.apply(this, arguments); };")
+
     find("#stripe-submit").click
 
     sleep 3
     puts "[diag] URL after click: #{current_url}"
-    puts "[diag] page text after click (truncated): #{page.text[0, 500]}"
-    puts "[diag] stripe-form has stripeToken? #{page.evaluate_script("!!document.querySelector('#stripe-form input[name=stripeToken]')")}"
-    puts "[diag] window.has_token: #{page.evaluate_script("window.has_token")}"
+    puts "[diag] form action+method: #{page.evaluate_script("var f=document.getElementById('stripe-form'); f && JSON.stringify({action: f.action, method: f.method, hasTurbo: f.dataset.turbo})")}"
+    puts "[diag] window.__diagErrors: #{page.evaluate_script("JSON.stringify(window.__diagErrors)")}"
+    puts "[diag] window.__diagFetches: #{page.evaluate_script("JSON.stringify(window.__diagFetches)")}"
+    puts "[diag] flash html: #{page.evaluate_script("var f=document.querySelector('.flash'); f && f.innerHTML")}"
 
     assert_text "You're checked in", wait: 10
 
