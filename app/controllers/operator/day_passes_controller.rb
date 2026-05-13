@@ -91,6 +91,7 @@ class Operator::DayPassesController < Operator::BaseController
       turbo_redirect(new_day_pass_path)
     end
   rescue => e
+    raise if Rails.env.test?
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
