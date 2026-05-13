@@ -33,9 +33,11 @@ RSpec.describe "Renewal Office Lease", type: :system do
     it "new lease will appear in the Upcoming Lease section of the office" do
       click_on "Manage active lease"
       wait_for_turbo
+      expect(page).to have_link("Setup Renewal Lease", wait: 10)
 
       click_on "Setup Renewal Lease"
       wait_for_turbo
+      expect(page).to have_field("office_lease[organization_id]", type: :hidden, wait: 10)
 
       pricing_field_name = "office_lease[subscription_attributes][plan_attributes][amount_in_cents]"
       # Assert the form is pre-populated with the current lease details
