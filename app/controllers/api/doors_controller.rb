@@ -26,13 +26,13 @@ class Api::DoorsController < ApplicationController
     ActsAsTenant.current_tenant = operator if ActsAsTenant.current_tenant.nil?
 
     # Log the door punch
-    DoorPunch.create!(user: current_user, door: @door, operator: operator)
+    punch = DoorPunch.create!(user: current_user, door: @door, operator: operator)
 
     # Call Kisi API to physically unlock the door
     begin
       kisi_url = url(@door)
       kisi_result = HTTParty.post(kisi_url, headers: headers(@door))
-      DoorPunch.create(user: current_user, door: @door, operator: operator, json: kisi_result.parsed_response)
+      punch.update(json: kisi_result.parsed_response)
       Rails.logger.info("[DoorOpen:API] #{@door.name} kisi_id=#{@door.kisi_id} => #{kisi_result.code}")
 
       if kisi_result.success?
