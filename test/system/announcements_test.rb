@@ -13,14 +13,16 @@ class AnnouncementsTest < ApplicationSystemTestCase
   end
 
   test "posting announcement note" do
-    skip "'Post announcement' button isn't visible after visit new_announcement_path — form likely renders behind a Turbo confirm prompt or the button has CSS visibility issues in CI. Newly flaky after unskipping changed test ordering. Was passing in prior green CI run."
     with_sidekiq_inline do
       log_in(users(:cowork_tahoe_admin))
       operator = operators(:cowork_tahoe)
       other_location = create(:location, operator: operator)
       visit new_announcement_path
       fill_in "text", with: "Test announcement"
-      click_on "Post announcement"
+      # Button has data-confirm; click_on by id and accept the Turbo confirm.
+      accept_confirm do
+        find("#submit").click
+      end
 
       assert_text "Test announcement"
 
