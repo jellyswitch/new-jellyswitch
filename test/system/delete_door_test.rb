@@ -27,8 +27,8 @@ class DeleteOfficeTest < ApplicationSystemTestCase
 
     wait_for_turbo
     assert_match doors_path, current_path
-    assert_text "#{@door.name} deleted."
-    assert_nil Door.find_by(id: @door.id)
+    assert_text "#{@door.name} archived."
+    assert_equal false, @door.reload.available
   end
 
   test "user should not be able to delete a door" do

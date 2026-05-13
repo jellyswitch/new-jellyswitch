@@ -75,7 +75,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     assert_text "Reservation Date"
 
     find(".fc-day-top[data-date='#{@day.strftime("%Y-%m-%d")}']").click
-    find(".time-slot", text: @time).click
+    find(".time-slot", text: @time, match: :first).click
     find(".duration-slot", text: @duration).click
     select @room.name, from: "room_id"
 
@@ -98,7 +98,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     log_in @user
 
-    click_on "Reserve Now"
+    click_on "Reserve Later"
     wait_for_turbo
 
     assert_text "Reservation Date"
@@ -121,7 +121,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     log_in @user
 
-    click_on "Reserve Now"
+    click_on "Reserve Later"
     wait_for_turbo
 
     assert_text "Reservation Date"

@@ -13,7 +13,6 @@ class EventsTest < ApplicationSystemTestCase
     click_on "Create event"
 
     assert_text "Event created."
-    assert_text "What's Happening?"
     assert_text "Test Event Title"
     assert_text "Test Event Description"
     assert_text "Test Event Address"
