@@ -59,6 +59,12 @@ class CheckinTest < ApplicationSystemTestCase
 
     find("#stripe-submit").click
 
+    sleep 3
+    puts "[diag] URL after click: #{current_url}"
+    puts "[diag] page text after click (truncated): #{page.text[0, 500]}"
+    puts "[diag] stripe-form has stripeToken? #{page.evaluate_script("!!document.querySelector('#stripe-form input[name=stripeToken]')")}"
+    puts "[diag] window.has_token: #{page.evaluate_script("window.has_token")}"
+
     assert_text "You're checked in", wait: 10
 
     # advances 2 hours
