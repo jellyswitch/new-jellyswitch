@@ -57,17 +57,35 @@ class CheckinTest < ApplicationSystemTestCase
       });
     JS
 
-    page.execute_script("window.__diagErrors = []; window.addEventListener('error', function(e) { window.__diagErrors.push(e.message + ' @ ' + e.filename + ':' + e.lineno); });")
-    page.execute_script("window.__diagFetches = []; var origFetch = window.fetch; window.fetch = function() { window.__diagFetches.push([String(arguments[0]), arguments[1] && arguments[1].method]); return origFetch.apply(this, arguments); };")
+    page.execute_script(<<~JS)
+      window.__diagErrors = [];
+      window.__diagFetches = [];
+      window.__diagSubmits = 0;
+      window.addEventListener('error', function(e) { window.__diagErrors.push(e.message + ' @ ' + e.filename + ':' + e.lineno); });
+      var origFetch = window.fetch;
+      window.fetch = function() {
+        var url = String(arguments[0]);
+        var method = arguments[1] && arguments[1].method;
+        window.__diagFetches.push([url, method, 'pending']);
+        var idx = window.__diagFetches.length - 1;
+        return origFetch.apply(this, arguments).then(function(r) {
+          window.__diagFetches[idx] = [url, method, r.status];
+          return r;
+        }).catch(function(e) {
+          window.__diagFetches[idx] = [url, method, 'err: ' + e.message];
+          throw e;
+        });
+      };
+      document.getElementById('stripe-form').addEventListener('submit', function() { window.__diagSubmits += 1; }, true);
+    JS
 
     find("#stripe-submit").click
 
     sleep 3
-    puts "[diag] URL after click: #{current_url}"
-    puts "[diag] form action+method: #{page.evaluate_script("(function(){var f=document.getElementById('stripe-form'); return f ? JSON.stringify({action: f.action, method: f.method, hasTurbo: f.dataset.turbo}) : 'no form';})()")}"
-    puts "[diag] window.__diagErrors: #{page.evaluate_script("JSON.stringify(window.__diagErrors || [])")}"
-    puts "[diag] window.__diagFetches: #{page.evaluate_script("JSON.stringify(window.__diagFetches || [])")}"
-    puts "[diag] flash html: #{page.evaluate_script("(function(){var f=document.querySelector('.flash'); return f ? f.innerHTML : 'no flash';})()")}"
+    puts "[diag] URL: #{current_url}"
+    puts "[diag] submit events: #{page.evaluate_script("window.__diagSubmits")}"
+    puts "[diag] errors: #{page.evaluate_script("JSON.stringify(window.__diagErrors || [])")}"
+    puts "[diag] fetches: #{page.evaluate_script("JSON.stringify(window.__diagFetches || [])")}"
 
     assert_text "You're checked in", wait: 10
 
