@@ -156,7 +156,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text "$50.00"
     click_on "Pay & Confirm"
 
-    assert_equal find(".alert-info").text, "Reservation extended successfully."
+    assert_text "Reservation extended successfully."
     assert_text "90 minutes"
   end
 

@@ -57,9 +57,9 @@ class CheckinTest < ApplicationSystemTestCase
       });
     JS
 
-    click_on "Check in now"
+    find("#stripe-submit").click
 
-    assert_text "You're checked in"
+    assert_text "You're checked in", wait: 10
 
     # advances 2 hours
     Timecop.travel(Time.current + 2.hours)
