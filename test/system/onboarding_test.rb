@@ -33,7 +33,6 @@ class OnboardingTest < ApplicationSystemTestCase
   end
 
   test "an operator signs up and goes through the whole flow" do
-    skip "Bug 1+2 fixes (admin_created flag + user_payment_profiles safe-nav) got the test past CreateAdmin/CreateDerivedLocation, but it now times out at line 96 waiting for Location.last.kisi_api_key to update after the Kisi-setup step. The Kisi form submit either isn't persisting or the test is racing it. Surfacing as a remaining gap in the onboarding flow."
     ENV['KISI_TEST_MODE'] = 'stub'
 
     visit operator_signup_path

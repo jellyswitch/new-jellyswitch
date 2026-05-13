@@ -7,8 +7,10 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     @time = "10:00"
 
-    @duration = "1.5 hours"
-    @duration_minutes = 90
+    # Calendar UI now uses duration quick-pick chips (30/60/120/240 min)
+    # plus a range slider for in-between values. Use 120 (2 hr) to match a
+    # quick-pick value directly.
+    @duration_minutes = 120
 
     operator = operators(:cowork_tahoe)
     location = operator.locations.first
