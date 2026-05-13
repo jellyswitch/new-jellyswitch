@@ -72,6 +72,10 @@ RSpec.describe Subscription, type: :model do
     end
 
     describe '#cancel_stripe!' do
+      before do
+        allow(subscription).to receive(:stripe_subscription).and_return(stripe_subscription_mock)
+      end
+
       it 'deletes the stripe subscription with prorate false by default (no refund per ops policy)' do
         expect(stripe_subscription_mock).to receive(:delete).with(prorate: false)
         subscription.cancel_stripe!
@@ -84,6 +88,10 @@ RSpec.describe Subscription, type: :model do
     end
 
     describe '#set_stripe_to_cancel!' do
+      before do
+        allow(subscription).to receive(:stripe_subscription).and_return(stripe_subscription_mock)
+      end
+
       it 'sets the stripe subscription to cancel at period end' do
         expect(stripe_subscription_mock).to receive(:save).with(cancel_at_period_end: true)
         subscription.set_stripe_to_cancel!

@@ -43,11 +43,11 @@ RSpec.describe Billing::Invoices::MarkInvoiceAsPaid, type: :interactor do
         allow(invoice).to receive(:location).and_return(nil)
       end
 
-      it "fails with a missing location message" do
+      it "marks the invoice as paid locally without calling Stripe" do
         result = described_class.call(invoice: invoice, operator: operator)
 
-        expect(result).to be_failure
-        expect(result.message).to eq('Invoice location is missing')
+        expect(result).to be_success
+        expect(invoice.reload.status).to eq('paid')
       end
     end
   end

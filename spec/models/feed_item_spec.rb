@@ -83,7 +83,7 @@ RSpec.describe FeedItem, type: :model do
       it 'extracts amount from text content' do
         feed_item = FeedItem.new(blob: {})
 
-        allow(feed_item).to receive(:text).and_return("The total expense was $123.45 for the event.")
+        allow(feed_item).to receive(:text).and_return(ActionText::Content.new("The total expense was $123.45 for the event."))
 
         feed_item.parse_amount
         expect(feed_item.blob['amount']).to eq(12345)

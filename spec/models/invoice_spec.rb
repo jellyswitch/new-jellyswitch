@@ -130,9 +130,9 @@ RSpec.describe Invoice, type: :model do
           expect(invoice.payment_method).to eq("Credit Card")
         end
 
-        it "returns Cash or check for manual billing" do
+        it "returns Out of band for manual billing" do
           allow(stripe_invoice_double).to receive(:billing).and_return("send_invoice")
-          expect(invoice.payment_method).to eq("Cash or check")
+          expect(invoice.payment_method).to eq("Out of band")
         end
       end
 

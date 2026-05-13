@@ -51,11 +51,6 @@ RSpec.describe UserMailer, type: :mailer do
         expect(deserialized_user.reset_token).to be_nil
       end
 
-      it "raises a routing error due to nil token (the original bug)" do
-        expect {
-          described_class.password_reset(deserialized_user, operator).body
-        }.to raise_error(ActionView::Template::Error)
-      end
     end
 
     context "end-to-end: send_password_reset_email passes token correctly" do

@@ -144,6 +144,7 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         )
         allow(Stripe::Invoice).to receive(:create).and_return(invoice)
         allow(Stripe::Invoice).to receive(:retrieve).and_return(invoice)
+        allow(Billing::Reservations::ChargeReservationInvoice).to receive(:call!) { |context| context }
       end
 
       it "creates a new reservation" do

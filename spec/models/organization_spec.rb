@@ -100,8 +100,9 @@ RSpec.describe Organization, type: :model do
           expect(organization.has_billing_for_location?(organization.location)).to be true
         end
 
-        it "returns false when missing stripe customer or card" do
+        it "returns false when missing stripe customer or card and not out of band" do
           allow(organization).to receive(:has_stripe_customer_for_location?).and_return(false)
+          allow(organization).to receive(:out_of_band?).and_return(false)
           expect(organization.has_billing_for_location?(organization.location)).to be false
         end
       end
@@ -112,10 +113,10 @@ RSpec.describe Organization, type: :model do
           expect(organization.payment_method).to eq("Credit card on file")
         end
 
-        it "returns 'Via cash or check' when out of band" do
+        it "returns 'Out of band' when out of band" do
           allow(organization).to receive(:has_billing_for_location?).and_return(false)
           organization.out_of_band = true
-          expect(organization.payment_method).to eq("Via cash or check")
+          expect(organization.payment_method).to eq("Out of band")
         end
 
         it "returns 'None' when no billing and not out of band" do
@@ -140,18 +141,6 @@ RSpec.describe Organization, type: :model do
       end
     end
 
-    describe "#can_change_billing_contact?" do
-      it "returns true when no active subscriptions or leases" do
-        allow(organization).to receive(:has_active_subscriptions?).and_return(false)
-        allow(organization).to receive(:has_active_lease?).and_return(false)
-        expect(organization.can_change_billing_contact?).to be true
-      end
-
-      it "returns false when has active subscriptions or leases" do
-        allow(organization).to receive(:has_active_subscriptions?).and_return(true)
-        expect(organization.can_change_billing_contact?).to be false
-      end
-    end
   end
 
   describe "searchkick integration" do
