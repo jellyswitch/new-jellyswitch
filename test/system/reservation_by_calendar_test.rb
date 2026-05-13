@@ -44,11 +44,23 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     # plus quick-pick chips at data-duration values 30/60/120/240.
     find(".duration-quick-pick[data-duration='#{@duration_minutes}']").click
 
-    # Room select id changed (#rooms-select) but the name attr is still room_id.
-    select @room.name, from: "room_id"
+    # Room select is populated by JS after time+duration are set — wait for
+    # the option to appear before selecting.
+    using_wait_time(10) do
+      page.has_select?("rooms-select", with_options: [@room.name])
+    end
+    select @room.name, from: "rooms-select"
 
+    using_wait_time(10) do
+      page.has_css?(".amenity-item")
+    end
     find(".amenity-item", text: "AV - $25.5").click
 
+    # Wait for Confirm to become enabled (form validation completes after room
+    # is selected and total computed).
+    using_wait_time(10) do
+      page.has_button?("Confirm", disabled: false)
+    end
     click_on "Confirm"
     wait_for_ajax
 
