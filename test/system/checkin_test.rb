@@ -64,10 +64,10 @@ class CheckinTest < ApplicationSystemTestCase
 
     sleep 3
     puts "[diag] URL after click: #{current_url}"
-    puts "[diag] form action+method: #{page.evaluate_script("var f=document.getElementById('stripe-form'); f && JSON.stringify({action: f.action, method: f.method, hasTurbo: f.dataset.turbo})")}"
-    puts "[diag] window.__diagErrors: #{page.evaluate_script("JSON.stringify(window.__diagErrors)")}"
-    puts "[diag] window.__diagFetches: #{page.evaluate_script("JSON.stringify(window.__diagFetches)")}"
-    puts "[diag] flash html: #{page.evaluate_script("var f=document.querySelector('.flash'); f && f.innerHTML")}"
+    puts "[diag] form action+method: #{page.evaluate_script("(function(){var f=document.getElementById('stripe-form'); return f ? JSON.stringify({action: f.action, method: f.method, hasTurbo: f.dataset.turbo}) : 'no form';})()")}"
+    puts "[diag] window.__diagErrors: #{page.evaluate_script("JSON.stringify(window.__diagErrors || [])")}"
+    puts "[diag] window.__diagFetches: #{page.evaluate_script("JSON.stringify(window.__diagFetches || [])")}"
+    puts "[diag] flash html: #{page.evaluate_script("(function(){var f=document.querySelector('.flash'); return f ? f.innerHTML : 'no flash';})()")}"
 
     assert_text "You're checked in", wait: 10
 
