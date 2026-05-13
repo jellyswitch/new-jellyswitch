@@ -46,10 +46,10 @@ class CheckinTest < ApplicationSystemTestCase
     page.execute_script(<<~JS)
       Object.defineProperty(window.stripe, 'createToken', {
         value: function(element) {
-          return Promise.resolve({
-            token: {
-              id: '#{mock_token}'
-            }
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              resolve({ token: { id: '#{mock_token}' } });
+            }, 50);
           });
         },
         writable: true,
