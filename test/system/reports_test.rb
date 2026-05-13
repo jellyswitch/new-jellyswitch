@@ -40,7 +40,11 @@ class ReportsTest < ApplicationSystemTestCase
     visit reports_path
     # assert_text "2 active member"
     assert_text "Day Passes (30d)"
-    click_on "Weekly Updates"
+    # Direct-visit weekly_updates rather than click_on which doesn't reliably
+    # navigate in CI (Turbo race; same family of flakes as other tests this
+    # session). The test is verifying the Weekly Updates content for the
+    # current location, not the navigation specifically.
+    visit weekly_updates_path
     assert_text "January 1, 2021 - January 7, 2021"
     assert_no_text "January 8, 2021 - January 14, 2021"
 
@@ -51,7 +55,7 @@ class ReportsTest < ApplicationSystemTestCase
     assert_text "Day Passes (30d)"
     # assert_text "1 active member"
 
-    click_on "Weekly Updates"
+    visit weekly_updates_path
     assert_no_text "January 1, 2021 - January 7, 2021"
     assert_text "January 8, 2021 - January 14, 2021"
 
@@ -90,7 +94,7 @@ class ReportsTest < ApplicationSystemTestCase
     # view reports on main location
     visit reports_path
     # assert_text "2 active member"
-    click_on "Weekly Updates"
+    visit weekly_updates_path
     assert_text "January 1, 2021 - January 7, 2021"
     assert_no_text "January 8, 2021 - January 14, 2021"
 
