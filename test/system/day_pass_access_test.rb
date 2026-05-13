@@ -13,7 +13,6 @@ class DayPassAccessTest < ApplicationSystemTestCase
   end
 
   test "user accesses a location via its daypass" do
-    skip "Past the previous setup_stripe_no_subscription bug — now hits ActiveRecord::RecordNotFound for DayPassType at day_passes_controller#new line 13. The 'Select Standard Day Pass' button on /day_passes index isn't being matched, or it links somewhere without day_pass_type_id. Suspected: home_path → landing renders the wrong day-pass partial (landing/upgrade has a render that doesn't pass `location:` — DayPass component requires it). Needs UI trace in real browser."
     log_in(users(:cowork_tahoe_non_member))
     operator = operators(:cowork_tahoe)
     other_location = create(:location, operator: operator)
@@ -38,7 +37,6 @@ class DayPassAccessTest < ApplicationSystemTestCase
   end
 
   test "user registers at one location then purchases daypass at another" do
-    skip "Past the previous setup_stripe_no_subscription bug — now hangs at 'Processing...' after Confirm and purchase. Likely a different downstream issue in the purchase flow (possibly the same Stripe stripe_account scoping in a different code path, or a JS submit chain). Needs reproduction."
     log_in(users(:cowork_tahoe_non_member))
     operator = operators(:cowork_tahoe)
     first_location = operator.locations.first
@@ -87,10 +85,10 @@ class DayPassAccessTest < ApplicationSystemTestCase
     page.execute_script(<<~JS)
       Object.defineProperty(window.stripe, 'createToken', {
         value: function(element) {
-          return Promise.resolve({
-            token: {
-              id: '#{mock_token}'
-            }
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              resolve({ token: { id: '#{mock_token}' } });
+            }, 50);
           });
         },
         writable: true,
