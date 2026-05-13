@@ -220,7 +220,6 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
   end
 
   test "modal shows chronologically ordered reservation details in collapsible view" do
-    skip "Calendar modal redesigned: #modal-view-event-add no longer exists. Needs rewrite."
     StripeMock.start
     @user = users(:cowork_tahoe_member)
     @room = rooms(:small_meeting_room)
