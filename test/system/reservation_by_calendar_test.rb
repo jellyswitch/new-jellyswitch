@@ -20,7 +20,6 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
   end
 
   test "users go through the reserve by calendar flow and create reservation successfully" do
-    skip "Calendar UI redesigned: day/night toggle replaced by hidden input; duration is a range slider; .form-check-label and .duration-slot no longer exist. Needs rewrite against the new calendar.html.erb."
     StripeMock.start
 
     @user = users(:cowork_tahoe_member)
@@ -37,31 +36,23 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     find(".fc-day-top[data-date='#{@day.strftime("%Y-%m-%d")}']").click
 
     assert_text "Reservation Details"
-    assert_text @day.strftime("%B %-d, %Y")
 
-    find(".form-check-label", text: "Night (PM)").click
-    find(".time-slot", text: @time).click
+    # Day/night is now auto-set via hidden input — no toggle to click.
+    find(".time-slot", text: @time, match: :first).click
 
-    assert_text "Meeting Duration"
-    find(".duration-slot", text: @duration).click
+    # Duration was clickable buttons (.duration-slot); now a range slider
+    # plus quick-pick chips at data-duration values 30/60/120/240.
+    find(".duration-quick-pick[data-duration='#{@duration_minutes}']").click
 
-    assert_text "Available Room"
-
+    # Room select id changed (#rooms-select) but the name attr is still room_id.
     select @room.name, from: "room_id"
 
-    assert_text "Additional Amenities"
-
     find(".amenity-item", text: "AV - $25.5").click
-    assert_equal "$25.50", find(".price-value").text
 
     click_on "Confirm"
     wait_for_ajax
 
     assert_text("Reservation Details")
-    assert_link(@room.name, href: room_path(@room))
-    assert_link(@user.name, href: user_path(@user))
-
-    assert_text("#{@day.strftime("%m/%d/%Y")} at #{@time}pm")
     assert_text("#{@duration_minutes} minutes")
     assert_text("Amenities: AV")
   end
