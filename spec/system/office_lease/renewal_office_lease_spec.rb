@@ -41,7 +41,7 @@ RSpec.describe "Renewal Office Lease", type: :system do
       # Assert the form is pre-populated with the current lease details
       expect(page).to have_field("office_lease[organization_id]", with: office_lease.organization_id, type: :hidden)
       expect(page).to have_field("office_lease[office_id]", with: office.id)
-      expect(page).to have_field(pricing_field_name, with: office_lease.subscription.plan.amount_in_cents)
+      expect(page).to have_field(pricing_field_name, with: "%.2f" % (office_lease.subscription.plan.amount_in_cents / 100.0))
 
       # Assert starting date matches the end date of the current lease
       expect(page).to have_field("office_lease[start_date(2i)]", with: office_lease.end_date.month)
