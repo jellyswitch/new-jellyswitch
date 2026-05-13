@@ -15,7 +15,6 @@ class CheckinTest < ApplicationSystemTestCase
   end
 
   test "user accesses a location via its checkin" do
-    skip "Checkin flow doesn't complete: form submit (Stripe-mocked token → form.requestSubmit) doesn't transition to /home with the 'You're checked in' state. Needs deeper investigation — either StripeMock isn't satisfying the Checkins::UpdatePaymentAndCreateCheckin chain, or the post-submit redirect is silently landing back on /checkins/new. Surfacing as a real bug to chase separately."
     operator = operators(:cowork_tahoe)
     other_location = create(:location, operator: operator, name: "Other Location", allow_hourly: true, hourly_rate_in_cents: 500, working_day_start: "00:00", working_day_end: "23:59", open_saturday: true, open_sunday: true)
     switch_to_location(other_location)

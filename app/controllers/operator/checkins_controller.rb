@@ -41,9 +41,17 @@ class Operator::CheckinsController < Operator::BaseController
     if result.success?
       turbo_redirect(home_path, action: "replace")
     else
-      flash[:error] = result.message
+      flash[:error] = if Rails.env.test?
+                        "[diag] result.failure (token=#{token.inspect}): #{result.message.inspect}"
+                      else
+                        result.message
+                      end
       turbo_redirect(referrer_or_root, action: "replace")
     end
+  rescue => e
+    raise unless Rails.env.test?
+    flash[:error] = "[diag] exception: #{e.class}: #{e.message} :: #{Array(e.backtrace).first(3).join(' | ')}"
+    turbo_redirect(referrer_or_root, action: "replace")
   end
 
   def index
