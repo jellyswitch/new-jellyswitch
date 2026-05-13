@@ -15,7 +15,6 @@ class CheckinTest < ApplicationSystemTestCase
   end
 
   test "user accesses a location via its checkin" do
-    skip "Diagnostic instrumentation surfaced the root cause: after the user's submit click is preventDefault'd by stripe_handler.js and createToken (mocked) resolves, stripeTokenHandler's form.requestSubmit() does NOT fire a submit event (window.__diagSubmits stayed at 1, no fetches went out, no JS errors). The synchronous Promise.resolve() in the mock keeps everything in the same microtask cycle, and Turbo's listener appears to drop the second submit. Real Stripe has network latency that gives the event loop time to drain — see if adding setTimeout(50) to the mock + a longer wait fixes it; or use direct fetch from the test. Not a production bug — the synchronous mock IS the trigger."
     operator = operators(:cowork_tahoe)
     other_location = create(:location, operator: operator, name: "Other Location", allow_hourly: true, hourly_rate_in_cents: 500, working_day_start: "00:00", working_day_end: "23:59", open_saturday: true, open_sunday: true)
     switch_to_location(other_location)
@@ -44,13 +43,18 @@ class CheckinTest < ApplicationSystemTestCase
     mock_token = StripeMock.generate_card_token(last4: "4242", exp_month: 12, exp_year: 34)
     p "Mock token: #{mock_token}"
 
+    # setTimeout(50) mimics real Stripe network latency so the event loop
+    # drains between the user-click submit (which preventDefault'd) and
+    # the followup form.requestSubmit(). With Promise.resolve()'s
+    # synchronous microtask resolution, Turbo's submit listener drops the
+    # programmatic second submit and the form never POSTs.
     page.execute_script(<<~JS)
       Object.defineProperty(window.stripe, 'createToken', {
         value: function(element) {
-          return Promise.resolve({
-            token: {
-              id: '#{mock_token}'
-            }
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              resolve({ token: { id: '#{mock_token}' } });
+            }, 50);
           });
         },
         writable: true,
@@ -60,7 +64,7 @@ class CheckinTest < ApplicationSystemTestCase
 
     find("#stripe-submit").click
 
-    assert_text "You're checked in", wait: 10
+    assert_text "You're checked in", wait: 15
 
     # advances 2 hours
     Timecop.travel(Time.current + 2.hours)

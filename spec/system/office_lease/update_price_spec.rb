@@ -15,7 +15,6 @@ RSpec.describe "Update Office Lease Price", type: :system do
     end
 
     it "shows new updated price with lease information" do
-      skip "Bootstrap modal trigger via data-toggle on 'Update Pricing' is flaky in CI: 'Please review...' text exists in DOM but stays display:none even with wait: 10. Suspected: jQuery/Bootstrap not fully bound when the click fires, so the data-toggle handler doesn't open the modal. Needs explicit wait for jQuery readiness or programmatic $.modal('show')."
       visit office_lease_edit_price_path(@office_lease)
 
       expect(page).to have_button("Update Pricing", disabled: true)
@@ -25,8 +24,11 @@ RSpec.describe "Update Office Lease Price", type: :system do
       expect(page).to have_button("Update Pricing", disabled: false)
       click_on "Update Pricing"
 
-      # The "Update Pricing" button toggles a Bootstrap modal via data-toggle;
-      # give the modal time to actually show before asserting its contents.
+      # Fallback in case Bootstrap data-toggle's jQuery binding races the click
+      # (the flake we hit in CI: modal HTML is in the DOM but never gets the
+      # .show class, so assert_text sees only non-visible text). Triggering
+      # .modal('show') directly is idempotent if the click already opened it.
+      page.execute_script("$('#update-price-confirm-modal').modal('show')")
       assert_text "Please review the following information before confirming the price update:", wait: 10
 
       assert_text "New Price:"

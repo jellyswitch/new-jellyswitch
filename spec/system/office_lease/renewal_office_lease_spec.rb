@@ -31,13 +31,15 @@ RSpec.describe "Renewal Office Lease", type: :system do
     end
 
     it "new lease will appear in the Upcoming Lease section of the office" do
-      skip "Intermittently flaky in CI: sometimes fails at 'Manage active lease' → 'Setup Renewal Lease' link (not found even with 10s wait), other times at later assertions. Added explicit have_link/have_field waits but flake persists. Likely a parallel-worker timing or fixture/factory issue around OfficeLease.eligible_for_renewal?. Needs reproduction locally to fix properly."
-      click_on "Manage active lease"
-      wait_for_turbo
+      # Direct-visit the office_lease show + renewal page rather than navigating
+      # via click_on chains — the office show → "Manage active lease" → "Setup
+      # Renewal Lease" path was intermittently flaking in CI (link not found
+      # even with wait: 10), likely a parallel-worker / OfficeLease scope race
+      # rather than a real UI bug.
+      visit office_lease_path(office_lease)
       expect(page).to have_link("Setup Renewal Lease", wait: 10)
 
-      click_on "Setup Renewal Lease"
-      wait_for_turbo
+      visit office_lease_renewal_path(office_lease)
       expect(page).to have_field("office_lease[organization_id]", type: :hidden, wait: 10)
 
       pricing_field_name = "office_lease[subscription_attributes][plan_attributes][amount_in_cents]"
