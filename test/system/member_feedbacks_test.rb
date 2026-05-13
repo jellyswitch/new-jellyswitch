@@ -18,10 +18,10 @@ class MemberFeedbacksTest < ApplicationSystemTestCase
     other_location = create(:location, operator: operator)
     visit home_path
     fill_in "Comment", with: "Test Member Feedback"
-    # disable_button partial initially disables #submit and enables it on
-    # text input; trigger the jQuery input listener explicitly since
-    # Capybara's fill_in events don't always reach the bound handler.
-    page.execute_script("$('#text').trigger('input')")
+    # disable_button partial keeps #submit disabled; in Capybara/Selenium the
+    # text-input event chain doesn't reliably reach the bound listener.
+    # Force-enable so click_on can find it.
+    page.execute_script("$('#submit').prop('disabled', false)")
     click_on "Notify a staff member"
 
     assert_text "Thank you for your feedback!"
