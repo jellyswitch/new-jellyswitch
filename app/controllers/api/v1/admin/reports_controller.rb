@@ -4,6 +4,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   # as JSON so the mobile admin reports screen can render the same view.
   def index
     period_days = period_days_for(params[:period])
+    period_start, period_end = period_window_for(params[:period])
     report = Jellyswitch::Report.new(current_tenant, current_location)
 
     mrr_value = safe(0) { report.mrr }
@@ -19,8 +20,10 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     avg_tenure = safe(0) { report.average_member_tenure }
     dp_conv = safe(0) { report.day_pass_conversion_rate }
 
+    # Revenue uses an explicit date window so "Last Month" returns the
+    # invoices dated within that month, not the trailing 30 days.
     revenue_total = safe(0) { Invoice.where(operator: current_tenant)
-      .where("date >= ?", period_days.days.ago).sum(:amount_paid) }
+      .where(date: period_start..period_end).sum(:amount_paid) }
 
     render json: {
       period: params[:period] || '30',
@@ -79,14 +82,15 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   end
 
   def room_demand
-    period_days = period_days_for(params[:period])
-    period_start = period_days.days.ago
+    period_start, period_end = period_window_for(params[:period])
+    days_in_period = [(period_end - period_start).to_i + 1, 1].max
 
     rooms = Room.where(operator: current_tenant)
     data = rooms.map { |room|
-      reservations = room.reservations.where("datetime_in >= ?", period_start).where(cancelled: false)
+      reservations = room.reservations
+        .where(datetime_in: period_start.beginning_of_day..period_end.end_of_day)
+        .where(cancelled: false)
       total_hours = reservations.sum(:minutes) / 60.0
-      days_in_period = [(Date.current - period_start.to_date).to_i, 1].max
       work_hours = days_in_period * 8.0
       utilization = work_hours > 0 ? ((total_hours / work_hours) * 100).round(1) : 0
 
@@ -174,6 +178,10 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
 
   def period_days_for(period)
     case period
+    when 'current_month' then (Date.current - Date.current.beginning_of_month).to_i + 1
+    when 'last_month'
+      last = Date.current.prev_month
+      (last.end_of_month - last.beginning_of_month).to_i + 1
     when '7' then 7
     when '30' then 30
     when '90' then 90
@@ -181,6 +189,26 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     when 'ytd' then [(Date.current - Date.current.beginning_of_year).to_i, 1].max
     when 'all' then 3650
     else 30
+    end
+  end
+
+  # Returns [start_date, end_date] for the requested period. Used by
+  # date-range queries (revenue) that need an explicit window — vs the
+  # period_days count Report methods consume.
+  def period_window_for(period)
+    today = Date.current
+    case period
+    when 'current_month'
+      [today.beginning_of_month, today]
+    when 'last_month'
+      last = today.prev_month
+      [last.beginning_of_month, last.end_of_month]
+    when 'ytd'
+      [today.beginning_of_year, today]
+    when 'all'
+      [Date.new(2000, 1, 1), today]
+    else
+      [period_days_for(period).days.ago.to_date, today]
     end
   end
 
