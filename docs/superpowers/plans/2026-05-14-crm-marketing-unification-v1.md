@@ -212,12 +212,20 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 3.3 — People list with stage filters (Rails)
 
-- [ ] Build `app/views/operator/people/index.html.erb` with chip filters at top: All · Members · Day-passers · Tour-takers · Past members · Quiet.
-- [ ] Each chip queries `User.in_stage(:label)`.
-- [ ] Result list shows: photo + name + stage badge + last activity timestamp + point-of-contact name.
-- [ ] Pagination at 50 per page.
-- [ ] Expose JSON API at `GET /operator/people.json?stage=<stage>&page=<n>` returning the same shape — consumed by mobile in 3.4.
-- [ ] **Commit:** "Add People list with lifecycle stage filters"
+- [x] Build `app/views/operator/people/index.html.erb` with chip filters at top: All · Members · Day-passers · Tour-takers · Past members · Quiet.
+- [x] Each chip queries `User.in_stage(:label)`.
+- [x] Result list shows: photo + name + stage badge + last activity timestamp + point-of-contact name.
+- [x] Pagination at 50 per page.
+- [x] Expose JSON API at `GET /operator/people.json?stage=<stage>&page=<n>` returning the same shape — consumed by mobile in 3.4.
+- [x] **Commit:** "Add People list with lifecycle stage filters"
+
+  *Implementation notes:*
+  - Route: `resources :people, controller: "operator/people", only: [:index]` → `GET /people`. Helper: `people_path(stage: …)`.
+  - Filter via `?stage=member|day_passer|tour_taker|past_member|quiet` query param. Unknown values fall back to `all`. Default sort: by name. Pagination 50/page via Pagy (matches existing operator list pattern).
+  - `point_of_contact_name` is rendered as `null` in JSON and omitted from the HTML for Phase 3.3. Phase 4.3 will wire it up (column doesn't exist yet — Phase 4.1 schema migration).
+  - Stage badges + labels are constants on `Operator::PeopleController` (`STAGE_LABELS`, `STAGE_BADGE_CLASSES`); `PeopleHelper#stage_badge` renders the Bootstrap pill.
+  - Pundit `PersonPolicy#index?` allows admin/community_manager/general_manager/superadmin.
+  - **No nav entry yet** — Phase 8.1 wires the People umbrella into `_admin_nav.html.erb`. Currently reachable only by visiting `/people` directly.
 
 ### 3.4 — People list with stage filters (Mobile native)
 
