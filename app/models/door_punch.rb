@@ -25,8 +25,20 @@ class DoorPunch < ApplicationRecord
 
   scope :this_month, -> () { where("created_at > ?", Time.current.beginning_of_month ) }
 
+  after_create :log_activity
+
   # View helpers
   def pretty_datetime
     created_at.strftime("%m/%d/%Y at %l:%M%P")
+  end
+
+  def log_activity
+    Activity.log(user: user, kind: :door_punch, subject: self, operator: operator)
+  end
+
+  def to_activity_payload
+    {
+      "door_name" => door&.name,
+    }
   end
 end
