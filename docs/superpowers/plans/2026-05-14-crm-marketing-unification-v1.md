@@ -258,10 +258,15 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 4.1 — Schema
 
-- [ ] Migration: `User.point_of_contact_id` references users. Indexed.
-- [ ] `User belongs_to :point_of_contact, class_name: 'User', optional: true`.
-- [ ] `User has_many :owned_people, class_name: 'User', foreign_key: :point_of_contact_id`.
-- [ ] **Commit:** "Add point_of_contact to User"
+- [x] Migration: `User.point_of_contact_id` references users. Indexed.
+- [x] `User belongs_to :point_of_contact, class_name: 'User', optional: true`.
+- [x] `User has_many :owned_people, class_name: 'User', foreign_key: :point_of_contact_id`.
+- [x] **Commit:** "Add point_of_contact to User"
+
+  *Notes:*
+  - Self-referential FK via `add_reference :users, :point_of_contact, foreign_key: { to_table: :users }`.
+  - `dependent: :nullify` on `owned_people` — if a staff member is deleted, their owned Persons stay but lose their owner. (Beats `restrict` which would block deletion, and `destroy` which would cascade-delete real members.)
+  - PoC display in JSON and HTML still returns `nil` until Phase 4.3 wires it up. Phase 4.2 will auto-assign on signup/tour/lead-create.
 
 ### 4.2 — Default assignment
 

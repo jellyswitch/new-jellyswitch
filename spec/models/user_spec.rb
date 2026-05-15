@@ -26,6 +26,28 @@ RSpec.describe User, type: :model do
     it { should have_many(:location_managements) }
     it { should have_many(:managed_locations).through(:location_managements) }
     it { should have_many(:user_payment_profiles) }
+    it { should belong_to(:point_of_contact).class_name('User').optional }
+    it { should have_many(:owned_people).class_name('User').with_foreign_key(:point_of_contact_id) }
+  end
+
+  describe "#point_of_contact / #owned_people" do
+    let(:operator) { create(:operator) }
+    let(:gm) { create(:user, operator: operator, role: "general-manager") }
+    let(:member) { create(:user, operator: operator, point_of_contact: gm) }
+
+    it "links a person to their owner" do
+      expect(member.point_of_contact).to eq(gm)
+    end
+
+    it "exposes owned_people from the owner" do
+      member  # trigger let
+      expect(gm.owned_people).to include(member)
+    end
+
+    it "allows a user with no point of contact" do
+      orphan = create(:user, operator: operator)
+      expect(orphan.point_of_contact).to be_nil
+    end
   end
 
   describe 'scopes' do

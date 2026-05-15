@@ -78,6 +78,11 @@ class User < ApplicationRecord
   has_many :room_demand_misses
   belongs_to :preferred_room, class_name: "Room", optional: true
 
+  # Point of Contact: a staff User who "owns" the relationship with this Person.
+  # Reassignable per-Person; survives lifecycle-stage transitions.
+  belongs_to :point_of_contact, class_name: "User", optional: true
+  has_many :owned_people, class_name: "User", foreign_key: :point_of_contact_id, dependent: :nullify
+
   alias :location :current_location
 
   # Slugs

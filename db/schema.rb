@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_15_000001) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_15_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -982,7 +982,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_15_000001) do
     t.boolean "marketing_suppressed", default: false, null: false
     t.string "marketing_suppressed_reason"
     t.datetime "inactive_dismissed_at"
+    t.bigint "point_of_contact_id"
     t.index ["operator_id"], name: "index_users_on_operator_id"
+    t.index ["point_of_contact_id"], name: "index_users_on_point_of_contact_id"
     t.index ["preferred_room_id"], name: "index_users_on_preferred_room_id"
   end
 
@@ -1040,4 +1042,5 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_15_000001) do
   add_foreign_key "tracking_pixels", "operators"
   add_foreign_key "user_payment_profiles", "locations"
   add_foreign_key "user_payment_profiles", "users"
+  add_foreign_key "users", "users", column: "point_of_contact_id"
 end
