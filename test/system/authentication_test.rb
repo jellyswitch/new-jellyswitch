@@ -16,7 +16,10 @@ class AuthenticationTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_member)
     setup_stripe
     log_in(@user)
-    click_on 'My Account'
+    # Navigate directly to the user profile page where Log out is a visible
+    # button (operator/users/show.html.erb); the nav dropdown's Log out item
+    # is hidden until the dropdown is opened.
+    visit user_path(@user)
 
     click_on 'Log out'
     assert_text operators(:cowork_tahoe).snippet

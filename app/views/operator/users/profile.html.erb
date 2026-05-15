@@ -33,6 +33,30 @@
           </div>
         </div>
 
+        <% if policy(@user).log_tour? %>
+          <div class="row mt-2">
+            <div class="col">
+              <button type="button" class="btn btn-block btn-outline-primary" data-toggle="modal" data-target="#logTourModal">
+                <i class="fas fa-walking"></i>
+                &nbsp;
+                Log a tour
+              </button>
+            </div>
+          </div>
+        <% end %>
+
+        <% if policy(@user).add_note? %>
+          <div class="row mt-2">
+            <div class="col">
+              <button type="button" class="btn btn-block btn-outline-primary" data-toggle="modal" data-target="#addNoteModal">
+                <i class="far fa-sticky-note"></i>
+                &nbsp;
+                Add note
+              </button>
+            </div>
+          </div>
+        <% end %>
+
         <% if @user.has_active_subscription? && !@user.has_active_lease? %>
           <div class="row mt-3">
             <div class="col">
@@ -46,6 +70,8 @@
         <% end %>
 
       <% end %>
+
+      <%= render "timeline", user: @user, active_tab: @active_tab %>
 
       <%= link_to user_about_path(@user), class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
@@ -258,3 +284,56 @@
     </div>
   </div>
 </div>
+
+<% if policy(@user).add_note? %>
+  <div class="modal fade" id="addNoteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <%= form_with url: user_add_note_path(@user), method: :post, local: true do |f| %>
+          <div class="modal-header">
+            <h5 class="modal-title">Add note for <%= @user.name %></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <%= f.fields_for :lead_note, LeadNote.new do |note_form| %>
+              <%= note_form.rich_text_area :content, placeholder: "Type a note about this person..." %>
+            <% end %>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <%= f.submit "Add note", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if policy(@user).log_tour? %>
+  <div class="modal fade" id="logTourModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <%= form_with url: user_log_tour_path(@user), method: :post, local: true do |f| %>
+          <div class="modal-header">
+            <h5 class="modal-title">Log a tour for <%= @user.name %></h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <%= f.label :notes, "Notes (optional)" %>
+              <%= f.text_area :notes, class: "form-control", rows: 4, placeholder: "Where did they come from, what did they ask about, etc." %>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <%= f.submit "Log", class: "btn btn-primary" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+<% end %>

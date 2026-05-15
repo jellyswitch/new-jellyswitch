@@ -31,17 +31,22 @@ RSpec.describe "Renewal Office Lease", type: :system do
     end
 
     it "new lease will appear in the Upcoming Lease section of the office" do
-      click_on "Manage active lease"
-      wait_for_turbo
+      # Direct-visit the office_lease show + renewal page rather than navigating
+      # via click_on chains — the office show → "Manage active lease" → "Setup
+      # Renewal Lease" path was intermittently flaking in CI (link not found
+      # even with wait: 10), likely a parallel-worker / OfficeLease scope race
+      # rather than a real UI bug.
+      visit office_lease_path(office_lease)
+      expect(page).to have_link("Setup Renewal Lease", wait: 10)
 
-      click_on "Setup Renewal Lease"
-      wait_for_turbo
+      visit office_lease_renewal_path(office_lease)
+      expect(page).to have_field("office_lease[organization_id]", type: :hidden, wait: 10)
 
       pricing_field_name = "office_lease[subscription_attributes][plan_attributes][amount_in_cents]"
       # Assert the form is pre-populated with the current lease details
-      expect(page).to have_field("office_lease[organization_id]", with: office_lease.organization_id)
+      expect(page).to have_field("office_lease[organization_id]", with: office_lease.organization_id, type: :hidden)
       expect(page).to have_field("office_lease[office_id]", with: office.id)
-      expect(page).to have_field(pricing_field_name, with: office_lease.subscription.plan.amount_in_cents)
+      expect(page).to have_field(pricing_field_name, with: "%.2f" % (office_lease.subscription.plan.amount_in_cents / 100.0))
 
       # Assert starting date matches the end date of the current lease
       expect(page).to have_field("office_lease[start_date(2i)]", with: office_lease.end_date.month)

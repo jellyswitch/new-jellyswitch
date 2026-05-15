@@ -79,6 +79,11 @@ class TrackingPixelsTest < ApplicationSystemTestCase
     @user = users(:cowork_tahoe_non_member)
     setup_stripe_no_subscription
 
+    # Test user has a Stripe customer but no attached payment method —
+    # stub the charge step so we exercise the post-purchase tracking-pixel
+    # logic rather than the (separately tested) charge flow.
+    Billing::DayPasses::ChargeDayPassInvoice.stubs(:call!) { |context| context }
+
     log_in(@user)
     operator = operators(:cowork_tahoe)
     tracking_pixel = create :tracking_pixel, operator: operator, location: operator.locations.first, script: "<script>console.log('UA-12345678-1');</script>", position: :body

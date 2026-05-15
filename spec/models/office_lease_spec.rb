@@ -3,7 +3,7 @@ require "rails_helper"
 RSpec.describe OfficeLease, type: :model do
   describe "associations" do
     it { should belong_to(:operator) }
-    it { should belong_to(:organization) }
+    it { should belong_to(:organization).optional }
     it { should belong_to(:office) }
     it { should belong_to(:subscription).dependent(:destroy) }
     it { should belong_to(:location) }

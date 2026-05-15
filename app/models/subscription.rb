@@ -26,6 +26,8 @@
 class Subscription < ApplicationRecord
   # Callbacks
   before_destroy :check_for_stripe_subscription
+  after_create :log_subscription_started
+  after_update :log_subscription_ended_if_deactivated
 
   # Relationships
   belongs_to :plan
@@ -165,5 +167,24 @@ class Subscription < ApplicationRecord
     sub = stripe_subscription
     return nil unless sub&.ended_at
     Time.at(sub.ended_at)
+  end
+
+  def log_subscription_started
+    return unless subscribable.is_a?(User)
+    Activity.log(user: subscribable, kind: :subscription_started, subject: self)
+  end
+
+  def log_subscription_ended_if_deactivated
+    return unless subscribable.is_a?(User)
+    return unless saved_change_to_active?(from: true, to: false)
+    Activity.log(user: subscribable, kind: :subscription_ended, subject: self)
+  end
+
+  def to_activity_payload
+    {
+      "plan_name" => plan&.pretty_name,
+      "start_date" => start_date&.iso8601,
+      "location_name" => plan&.location&.name,
+    }
   end
 end

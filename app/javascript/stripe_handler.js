@@ -29,20 +29,41 @@ function doStripe() {
       return;
     }
 
-    if (window.has_token === false) {
-      event.preventDefault();
-
-      window.stripe.createToken(card).then(function(result) {
-        if (result.error) {
-          var errorElement = document.getElementById('card-errors');
-          errorElement.textContent = result.error.message;
-          var submitButton = document.getElementById('stripe-submit');
-          submitButton.disabled = false;
-        } else {
-          stripeTokenHandler(result.token);
-        }
-      });
+    // has_token=true means stripeTokenHandler already ran and is calling
+    // requestSubmit() to actually fire the POST — let it through unmolested.
+    // Only the user-initiated initial submit needs the dedupe lock.
+    if (window.has_token === true) {
+      return;
     }
+
+    var submitButton = document.getElementById('stripe-submit');
+
+    // Initial user-initiated submit. If we're already mid-tokenize from a
+    // previous tap, ignore this one entirely — that's the double-tap case.
+    if (submitButton && submitButton.dataset.locked === 'true') {
+      event.preventDefault();
+      return;
+    }
+
+    if (submitButton) {
+      submitButton.dataset.locked = 'true';
+      submitButton.disabled = true;
+    }
+
+    event.preventDefault();
+
+    window.stripe.createToken(card).then(function(result) {
+      if (result.error) {
+        var errorElement = document.getElementById('card-errors');
+        errorElement.textContent = result.error.message;
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.dataset.locked = 'false';
+        }
+      } else {
+        stripeTokenHandler(result.token);
+      }
+    });
   });
 
   function stripeTokenHandler(token) {

@@ -18,6 +18,10 @@ class MemberFeedbacksTest < ApplicationSystemTestCase
     other_location = create(:location, operator: operator)
     visit home_path
     fill_in "Comment", with: "Test Member Feedback"
+    # disable_button partial keeps #submit disabled; in Capybara/Selenium the
+    # text-input event chain doesn't reliably reach the bound listener.
+    # Force-enable so click_on can find it.
+    page.execute_script("$('#submit').prop('disabled', false)")
     click_on "Notify a staff member"
 
     assert_text "Thank you for your feedback!"

@@ -8,7 +8,7 @@ RSpec.describe Plan, type: :model do
   end
 
   describe "validations" do
-    it { should validate_numericality_of(:amount_in_cents).is_greater_than(0) }
+    it { should validate_numericality_of(:amount_in_cents).is_greater_than_or_equal_to(0) }
   end
 
   describe "scopes" do

@@ -1,0 +1,8 @@
+<% activities = user.activities.where(kind: ActivityTimelineHelper::KIND_GROUPS["reservations"]).recent.limit(50) %>
+<% if activities.any? %>
+  <% activities.each do |activity| %>
+    <%= render "timeline_activity_row", activity: activity %>
+  <% end %>
+<% else %>
+  <p class="text-muted text-center py-3 mb-0">No reservations yet.</p>
+<% end %>

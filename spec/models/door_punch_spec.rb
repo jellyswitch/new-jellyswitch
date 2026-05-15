@@ -45,4 +45,23 @@ RSpec.describe DoorPunch, type: :model do
       expect(door_punch.reload.json).to eq(json_data)
     end
   end
+
+  describe "activity logging" do
+    it "creates exactly one :door_punch Activity on create" do
+      user # force creation outside the expect block
+      expect {
+        create(:door_punch, operator: operator, user: user, door: door)
+      }.to change(Activity.where(kind: "door_punch"), :count).by(1)
+
+      activity = Activity.where(kind: "door_punch").last
+      expect(activity.user).to eq(user)
+      expect(activity.operator).to eq(operator)
+      expect(activity.subject).to eq(DoorPunch.last)
+    end
+
+    it "denormalizes the door name into payload" do
+      door_punch = create(:door_punch, operator: operator, user: user, door: door)
+      expect(Activity.last.payload["door_name"]).to eq(door.name)
+    end
+  end
 end

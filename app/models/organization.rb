@@ -151,8 +151,37 @@ class Organization < ApplicationRecord
     billing_contact.present?
   end
 
-  def can_change_billing_contact?
-    !has_active_subscriptions? && !has_active_lease?
+  # Who Stripe actually charges when invoices on this org are paid.
+  # Mirrors OrganizationBillDecider so views can ask the org directly.
+  def effective_billable
+    billing_contact || self
+  end
+
+  # Returns a hash describing how charges on this org will be paid, for
+  # display in the admin UI. Keys: :status (:card / :out_of_band / :none),
+  # :last4 (String or nil), :via (User or nil — present when routed
+  # through a billing contact).
+  def card_summary_for_location(location)
+    target = effective_billable
+    via    = target == self ? nil : target
+
+    # card_added_for_location? on an Org with no stripe_customer_id (or a
+    # Stripe outage) can raise — fall through to :none rather than 500
+    # rendering the show page.
+    has_card = begin
+      target.card_added_for_location?(location)
+    rescue StandardError
+      false
+    end
+    last4 = has_card ? (target.card_last_4_digits(location) rescue nil) : nil
+
+    if has_card && last4.present?
+      { status: :card, last4: last4, via: via }
+    elsif out_of_band? && via.nil?
+      { status: :out_of_band, last4: nil, via: nil }
+    else
+      { status: :none, last4: nil, via: via }
+    end
   end
 
   def has_active_subscriptions?

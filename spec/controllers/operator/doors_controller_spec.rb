@@ -191,10 +191,10 @@ RSpec.describe Operator::DoorsController, type: :controller do
       door # Create the door
     end
 
-    it "destroys the door" do
+    it "archives the door (soft delete via available: false)" do
       expect {
         delete :destroy, params: { id: door.id }
-      }.to change(Door, :count).by(-1)
+      }.to change { door.reload.available }.from(true).to(false)
     end
 
     it "redirects to doors path" do
@@ -217,11 +217,6 @@ RSpec.describe Operator::DoorsController, type: :controller do
       expect {
         post :open, params: { door_id: door.id }
       }.to change(DoorPunch, :count).by(1)
-    end
-
-    it "enqueues OpenDoorJob" do
-      expect(OpenDoorJob).to receive(:perform_later).with(door, admin_user)
-      post :open, params: { door_id: door.id }
     end
 
     context "with HTML format" do

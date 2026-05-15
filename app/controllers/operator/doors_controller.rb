@@ -100,7 +100,7 @@ class Operator::DoorsController < Operator::BaseController
   def open
     find_door(:door_id)
     authorize @door
-    log_door_punch
+    punch = log_door_punch
 
     # Call Kisi API inline instead of via background job for reliability
     begin
@@ -111,7 +111,7 @@ class Operator::DoorsController < Operator::BaseController
         'Authorization' => "KISI-LOGIN #{@door.location.kisi_api_key}"
       }
       kisi_result = HTTParty.post(kisi_url, headers: kisi_headers)
-      DoorPunch.create(user: current_user, door: @door, operator: current_tenant, json: kisi_result.parsed_response)
+      punch.update(json: kisi_result.parsed_response)
       Rails.logger.info("[DoorOpen] #{@door.name} kisi_id=#{@door.kisi_id} => #{kisi_result.code}")
 
       if !kisi_result.success?

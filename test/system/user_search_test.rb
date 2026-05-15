@@ -9,6 +9,7 @@ class UserSearchTest < ApplicationSystemTestCase
 
     setup_stripe
     log_in(@admin)
+    User.reindex
     sleep 2
   end
 

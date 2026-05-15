@@ -73,7 +73,6 @@ group :test do
   gem "capybara"
   gem "ffi"
   gem "selenium-webdriver"
-  gem "webdrivers"
   gem "database_cleaner-active_record"
   gem "webmock"
   gem "shoulda-matchers"

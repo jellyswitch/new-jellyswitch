@@ -64,12 +64,13 @@ class ReservationTest < ApplicationSystemTestCase
 
     # Choose member for reservation step
     assert_text(@room.name)
-    select @user.name, from: "user_id"
+    find(".member-item", text: @user.name).click
     click_on "Next"
 
     assert_choose_duration_step()
 
-    click_on "2 hours"
+    find(".duration-quick-pick[data-duration='120']").click
+    click_on "Continue"
     @duration = "120 minutes"
 
     assert_confirmation_step()
@@ -138,6 +139,7 @@ class ReservationTest < ApplicationSystemTestCase
   end
 
   test "charging user for extra hours in the reservation when they book the reservation at first without membership" do
+    Billing::Reservations::ChargeReservationInvoice.stubs(:call!) { |context| context }
     # Setup
     @user = users(:cowork_tahoe_member)
     log_in @user
@@ -156,7 +158,7 @@ class ReservationTest < ApplicationSystemTestCase
     assert_text "$50.00"
     click_on "Pay & Confirm"
 
-    assert_equal find(".alert-info").text, "Reservation extended successfully."
+    assert_text "Reservation extended successfully."
     assert_text "90 minutes"
   end
 

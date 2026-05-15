@@ -19,7 +19,10 @@ class AnnouncementsTest < ApplicationSystemTestCase
       other_location = create(:location, operator: operator)
       visit new_announcement_path
       fill_in "text", with: "Test announcement"
-      click_on "Post announcement"
+      # data-confirm on the submit button is Rails UJS legacy; with Turbo
+      # it doesn't fire a confirm dialog in this app's configuration.
+      # Click directly by id.
+      find("#submit").click
 
       assert_text "Test announcement"
 

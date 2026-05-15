@@ -277,4 +277,28 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe "activity logging on signup" do
+    let(:logged_operator) { create(:operator) }
+
+    it "creates exactly one Activity of kind 'signup' on create" do
+      expect {
+        create(:user, operator: logged_operator, name: "New Person", email: "new@example.com")
+      }.to change(Activity, :count).by(1)
+
+      activity = Activity.last
+      expect(activity.kind).to eq("signup")
+      expect(activity.user).to eq(User.last)
+      expect(activity.operator).to eq(logged_operator)
+      expect(activity.subject).to eq(User.last)
+    end
+
+    it "denormalizes name and email into payload" do
+      user = create(:user, operator: logged_operator, name: "New Person", email: "new@example.com")
+      payload = Activity.where(subject: user).last.payload
+
+      expect(payload["name"]).to eq("New Person")
+      expect(payload["email"]).to eq("new@example.com")
+    end
+  end
 end

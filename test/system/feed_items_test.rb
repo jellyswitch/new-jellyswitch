@@ -11,6 +11,9 @@ class FeedItemsTest < ApplicationSystemTestCase
     log_in(users(:cowork_tahoe_admin))
 
     find('#new-management-note').click
+    # Bootstrap data-toggle modal races jQuery binding in CI — same flake as
+    # update_price_spec. Trigger via .modal('show') as an idempotent fallback.
+    page.execute_script("$('#newModal').modal('show')")
     click_on 'Post a management note'
     find('trix-editor').click.set('Test Note')
     find('#submit').click

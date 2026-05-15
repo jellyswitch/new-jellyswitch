@@ -103,11 +103,18 @@ module FeedItemsHelper
     @upcoming_childcare_reservations = current_tenant.childcare_reservations.upcoming.all
   end
 
-  def find_delinquent_invoices
+  def find_outstanding_invoices
+    # "Outstanding" = status=open (regardless of due date) — what ops thinks
+    # of as money still on the books. "Delinquent" = a strict subset that's
+    # past its due date — surfaced as an accent so it still pops when bad.
     if current_location.present?
-      @delinquent_invoices = current_location.invoices.delinquent.order('date DESC')
+      @outstanding_invoices = current_location.invoices.open.order('date DESC')
+      @outstanding_amount = @outstanding_invoices.sum(:amount_due) / 100.0
+      @delinquent_invoices = current_location.invoices.delinquent
       @delinquent_amount = @delinquent_invoices.sum(:amount_due) / 100.0
     else
+      @outstanding_invoices = Invoice.none
+      @outstanding_amount = 0
       @delinquent_invoices = Invoice.none
       @delinquent_amount = 0
     end

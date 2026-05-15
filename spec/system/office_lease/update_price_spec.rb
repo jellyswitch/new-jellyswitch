@@ -24,7 +24,12 @@ RSpec.describe "Update Office Lease Price", type: :system do
       expect(page).to have_button("Update Pricing", disabled: false)
       click_on "Update Pricing"
 
-      assert_text "Please review the following information before confirming the price update:"
+      # Fallback in case Bootstrap data-toggle's jQuery binding races the click
+      # (the flake we hit in CI: modal HTML is in the DOM but never gets the
+      # .show class, so assert_text sees only non-visible text). Triggering
+      # .modal('show') directly is idempotent if the click already opened it.
+      page.execute_script("$('#update-price-confirm-modal').modal('show')")
+      assert_text "Please review the following information before confirming the price update:", wait: 10
 
       assert_text "New Price:"
       assert_text "$150.00 per month"

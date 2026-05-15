@@ -9,8 +9,9 @@ class Onboarding::CreateAdmin
       name: email,
       email: email,
       password: "foobar",
-      admin: true, 
-      operator_id: operator.id
+      admin: true,
+      operator_id: operator.id,
+      admin_created: true,
     )
 
     if user.save

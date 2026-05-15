@@ -39,7 +39,6 @@ class ActiveSupport::TestCase
     allow_localhost: true,
     allow: ['chromedriver.storage.googleapis.com', 'storage.googleapis.com', 'googlechromelabs.github.io', 'fcm.googleapis.com']
   )
-  NewRelic::Agent.manual_start(enabled: false) if defined?(NewRelic)
 
   parallelize_setup do |worker|
     Searchkick.index_suffix = worker
@@ -122,7 +121,7 @@ class ActiveSupport::TestCase
       plan.update(stripe_plan_id: stripe_plan.id)
     end
 
-    customer = Stripe::Customer.create({ email: @user.email })
+    customer = Stripe::Customer.create({ email: @user.email }, { stripe_account: @user.original_location.stripe_user_id })
     @user.update_stripe_customer_id_for_location(@user.original_location, customer.id)
   end
 end

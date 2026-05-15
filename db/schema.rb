@@ -10,8 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
-
+ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -52,6 +51,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "activities", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.string "kind", null: false
+    t.string "subject_type"
+    t.bigint "subject_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "kind", "occurred_at"], name: "index_activities_on_operator_id_and_kind_and_occurred_at"
+    t.index ["subject_type", "subject_id"], name: "index_activities_on_subject_type_and_subject_id"
+    t.index ["user_id", "occurred_at"], name: "index_activities_on_user_id_and_occurred_at"
   end
 
   create_table "ahoy_events", force: :cascade do |t|
@@ -123,11 +137,73 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.index ["location_id"], name: "index_announcements_on_location_id"
   end
 
+  create_table "automated_workflows", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.string "workflow_type", null: false
+    t.boolean "enabled", default: false, null: false
+    t.jsonb "config", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_automated_workflows_on_location_id"
+    t.index ["operator_id", "location_id", "workflow_type"], name: "idx_workflows_operator_location_type", unique: true
+    t.index ["operator_id"], name: "index_automated_workflows_on_operator_id"
+  end
+
+  create_table "campaign_sends", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.bigint "campaign_step_id", null: false
+    t.bigint "user_id", null: false
+    t.string "status", default: "sent", null: false
+    t.string "error_message"
+    t.datetime "sent_at"
+    t.boolean "opened", default: false
+    t.datetime "opened_at"
+    t.boolean "clicked", default: false
+    t.datetime "clicked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id"], name: "index_campaign_sends_on_campaign_id"
+    t.index ["campaign_step_id", "user_id"], name: "index_campaign_sends_on_campaign_step_id_and_user_id", unique: true
+    t.index ["campaign_step_id"], name: "index_campaign_sends_on_campaign_step_id"
+    t.index ["user_id"], name: "index_campaign_sends_on_user_id"
+  end
+
+  create_table "campaign_steps", force: :cascade do |t|
+    t.bigint "campaign_id", null: false
+    t.integer "position", default: 0, null: false
+    t.string "subject", null: false
+    t.text "body", null: false
+    t.integer "delay_days", default: 0, null: false
+    t.integer "sent_count", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campaign_id", "position"], name: "index_campaign_steps_on_campaign_id_and_position", unique: true
+    t.index ["campaign_id"], name: "index_campaign_steps_on_campaign_id"
+  end
+
+  create_table "campaigns", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.string "name", null: false
+    t.string "campaign_type", default: "single", null: false
+    t.jsonb "segment", default: {}, null: false
+    t.string "status", default: "draft", null: false
+    t.integer "recipient_count", default: 0
+    t.datetime "scheduled_at"
+    t.datetime "sent_at"
+    t.integer "suppression_days", default: 7
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_campaigns_on_location_id"
+    t.index ["operator_id"], name: "index_campaigns_on_operator_id"
+  end
+
   create_table "checkins", force: :cascade do |t|
     t.integer "location_id", null: false
     t.integer "user_id", null: false
-    t.datetime "datetime_in", precision: nil, null: false
-    t.datetime "datetime_out", precision: nil
+    t.timestamptz "datetime_in", null: false
+    t.timestamptz "datetime_out"
     t.integer "invoice_id"
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
@@ -192,9 +268,43 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.integer "location_id"
+    t.boolean "complimentary", default: false, null: false
     t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
+  end
+
+  create_table "discount_codes", force: :cascade do |t|
+    t.string "code", null: false
+    t.integer "operator_id", null: false
+    t.integer "location_id"
+    t.string "discount_type", null: false
+    t.integer "discount_value", null: false
+    t.string "applies_to", default: "all", null: false
+    t.integer "max_redemptions"
+    t.integer "redemption_count", default: 0, null: false
+    t.datetime "expires_at"
+    t.boolean "active", default: true, null: false
+    t.string "stripe_coupon_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "code"], name: "index_discount_codes_on_operator_id_and_code", unique: true
+    t.index ["operator_id", "location_id"], name: "index_discount_codes_on_operator_id_and_location_id"
+  end
+
+  create_table "discount_redemptions", force: :cascade do |t|
+    t.bigint "discount_code_id", null: false
+    t.bigint "user_id", null: false
+    t.string "discountable_type"
+    t.bigint "discountable_id"
+    t.integer "discount_amount_in_cents", null: false
+    t.integer "operator_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["discount_code_id"], name: "index_discount_redemptions_on_discount_code_id"
+    t.index ["discountable_type", "discountable_id"], name: "index_discount_redemptions_on_discountable"
+    t.index ["operator_id"], name: "index_discount_redemptions_on_operator_id"
+    t.index ["user_id"], name: "index_discount_redemptions_on_user_id"
   end
 
   create_table "door_punches", force: :cascade do |t|
@@ -312,6 +422,40 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.string "source"
   end
 
+  create_table "lease_renewal_requests", force: :cascade do |t|
+    t.bigint "office_lease_id", null: false
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.integer "proposed_price_in_cents", null: false
+    t.integer "current_price_in_cents", null: false
+    t.date "proposed_start_date", null: false
+    t.date "proposed_end_date", null: false
+    t.string "escalation_applied"
+    t.string "status", default: "pending_leasee", null: false
+    t.text "leasee_notes"
+    t.text "admin_notes"
+    t.datetime "leasee_responded_at"
+    t.datetime "admin_responded_at"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_lease_renewal_requests_on_location_id"
+    t.index ["office_lease_id", "status"], name: "index_lease_renewal_requests_on_office_lease_id_and_status"
+    t.index ["office_lease_id"], name: "index_lease_renewal_requests_on_office_lease_id"
+    t.index ["operator_id"], name: "index_lease_renewal_requests_on_operator_id"
+  end
+
+  create_table "location_events", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.date "date", null: false
+    t.string "name", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_location_events_on_location_id"
+    t.index ["operator_id"], name: "index_location_events_on_operator_id"
+  end
+
   create_table "location_managements", force: :cascade do |t|
     t.bigint "location_id", null: false
     t.bigint "user_id", null: false
@@ -377,6 +521,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.string "sender_email"
     t.string "google_reviews_url"
     t.integer "renewal_reminder_days"
+    t.decimal "latitude", precision: 10, scale: 7
+    t.decimal "longitude", precision: 10, scale: 7
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"
@@ -414,11 +560,19 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.date "initial_invoice_date"
     t.boolean "always_allow_building_access", default: true, null: false
     t.bigint "location_id"
+    t.bigint "user_id"
+    t.integer "deposit_amount_in_cents", default: 0, null: false
+    t.boolean "auto_renew", default: false, null: false
+    t.integer "renewal_notice_days", default: 60, null: false
+    t.string "escalation_type"
+    t.decimal "escalation_value", precision: 10, scale: 2
+    t.string "cpi_index_series_id"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
     t.index ["organization_id"], name: "index_office_leases_on_organization_id"
     t.index ["subscription_id"], name: "index_office_leases_on_subscription_id"
+    t.index ["user_id"], name: "index_office_leases_on_user_id"
   end
 
   create_table "offices", force: :cascade do |t|
@@ -499,6 +653,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.string "sender_email"
     t.string "google_reviews_url"
     t.integer "renewal_reminder_days", default: 7
+    t.boolean "paid_room_reservation_notifications", default: true, null: false
+    t.string "mailchimp_api_key"
+    t.string "mailchimp_audience_id"
+    t.datetime "last_activities_backfilled_at"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -601,15 +759,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.index ["operator_id"], name: "index_product_email_templates_on_operator_id"
   end
 
-  create_table "refunds", force: :cascade do |t|
-    t.bigint "invoice_id"
-    t.string "stripe_refund_id"
-    t.datetime "created_at", precision: nil, null: false
-    t.datetime "updated_at", precision: nil, null: false
-    t.integer "amount", default: 0, null: false
-    t.index ["invoice_id"], name: "index_refunds_on_invoice_id"
-  end
-
   create_table "recurring_reservations", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "room_id", null: false
@@ -631,9 +780,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.index ["user_id"], name: "index_recurring_reservations_on_user_id"
   end
 
+  create_table "refunds", force: :cascade do |t|
+    t.bigint "invoice_id"
+    t.string "stripe_refund_id"
+    t.datetime "created_at", precision: nil, null: false
+    t.datetime "updated_at", precision: nil, null: false
+    t.integer "amount", default: 0, null: false
+    t.index ["invoice_id"], name: "index_refunds_on_invoice_id"
+  end
+
   create_table "reservations", force: :cascade do |t|
     t.integer "user_id", null: false
-    t.datetime "datetime_in", precision: nil, null: false
+    t.timestamptz "datetime_in", null: false
     t.integer "hours", default: 1, null: false
     t.integer "room_id", null: false
     t.datetime "created_at", precision: nil, null: false
@@ -646,6 +804,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.text "note"
     t.bigint "recurring_reservation_id"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
+  end
+
+  create_table "room_demand_misses", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.bigint "location_id", null: false
+    t.datetime "missed_at", null: false
+    t.integer "day_of_week"
+    t.integer "hour_of_day"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id", "day_of_week", "hour_of_day"], name: "idx_demand_misses_heatmap"
+    t.index ["location_id", "missed_at"], name: "index_room_demand_misses_on_location_id_and_missed_at"
+    t.index ["location_id"], name: "index_room_demand_misses_on_location_id"
+    t.index ["operator_id"], name: "index_room_demand_misses_on_operator_id"
+    t.index ["user_id"], name: "index_room_demand_misses_on_user_id"
   end
 
   create_table "rooms", force: :cascade do |t|
@@ -766,7 +940,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
     t.datetime "confirmation_sent_at"
     t.boolean "marketing_consent", default: false, null: false
     t.datetime "terms_accepted_at"
+    t.bigint "preferred_room_id"
+    t.integer "preferred_meeting_duration", default: 60
+    t.datetime "last_active_at"
+    t.boolean "email_opted_out", default: false, null: false
+    t.boolean "email_bounced", default: false, null: false
+    t.boolean "marketing_suppressed", default: false, null: false
+    t.string "marketing_suppressed_reason"
+    t.datetime "inactive_dismissed_at"
     t.index ["operator_id"], name: "index_users_on_operator_id"
+    t.index ["preferred_room_id"], name: "index_users_on_preferred_room_id"
   end
 
   create_table "weekly_updates", force: :cascade do |t|
@@ -783,12 +966,22 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "activities", "operators"
+  add_foreign_key "activities", "users"
   add_foreign_key "amenities", "rooms"
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
+  add_foreign_key "campaign_sends", "campaign_steps"
+  add_foreign_key "campaign_sends", "campaigns"
+  add_foreign_key "campaign_steps", "campaigns"
+  add_foreign_key "discount_redemptions", "discount_codes"
+  add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"
   add_foreign_key "feedback_replies", "member_feedbacks"
   add_foreign_key "feedback_replies", "users"
+  add_foreign_key "lease_renewal_requests", "locations"
+  add_foreign_key "lease_renewal_requests", "office_leases"
+  add_foreign_key "lease_renewal_requests", "operators"
   add_foreign_key "location_managements", "locations"
   add_foreign_key "location_managements", "users"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
@@ -796,12 +989,16 @@ ActiveRecord::Schema[7.1].define(version: 2026_03_18_000001) do
   add_foreign_key "office_leases", "operators", on_delete: :nullify
   add_foreign_key "office_leases", "organizations", on_delete: :nullify
   add_foreign_key "office_leases", "subscriptions", on_delete: :nullify
+  add_foreign_key "office_leases", "users"
   add_foreign_key "offices", "locations", on_delete: :nullify
   add_foreign_key "product_email_sends", "operators"
   add_foreign_key "product_email_sends", "users"
   add_foreign_key "product_email_templates", "locations"
   add_foreign_key "product_email_templates", "operators"
   add_foreign_key "refunds", "invoices", on_delete: :nullify
+  add_foreign_key "room_demand_misses", "locations"
+  add_foreign_key "room_demand_misses", "operators"
+  add_foreign_key "room_demand_misses", "users"
   add_foreign_key "rooms", "locations"
   add_foreign_key "tracking_pixels", "locations"
   add_foreign_key "tracking_pixels", "operators"

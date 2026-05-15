@@ -70,6 +70,206 @@ RSpec.describe Operator::UsersController, type: :controller do
       it "renders profile template" do
         expect(response).to render_template(:profile)
       end
+
+      it "defaults @active_tab to 'recent'" do
+        expect(assigns(:active_tab)).to eq("recent")
+      end
+    end
+
+    describe "timeline tab selection" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "honors a valid tab param" do
+        get :show, params: { id: test_user.id, tab: "emails" }
+        expect(assigns(:active_tab)).to eq("emails")
+      end
+
+      it "falls back to 'recent' for an unknown tab" do
+        get :show, params: { id: test_user.id, tab: "garbage" }
+        expect(assigns(:active_tab)).to eq("recent")
+      end
+
+      it "accepts all six declared tabs" do
+        %w[recent emails tours reservations payments notes].each do |tab|
+          get :show, params: { id: test_user.id, tab: tab }
+          expect(assigns(:active_tab)).to eq(tab)
+        end
+      end
+    end
+
+    describe "timeline rendering" do
+      render_views
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "wraps the timeline in a turbo_frame_tag with id person_timeline" do
+        get :show, params: { id: test_user.id }
+        expect(response.body).to include('id="person_timeline"')
+      end
+
+      it "renders all 6 tab labels" do
+        get :show, params: { id: test_user.id }
+        %w[Recent Emails Tours Reservations Payments Notes].each do |label|
+          expect(response.body).to include(label)
+        end
+      end
+
+      it "shows the user's signup activity in the Recent tab" do
+        # test_user's signup Activity is auto-logged by Phase 1.3.8 callback
+        get :show, params: { id: test_user.id, tab: "recent" }
+        expect(response.body).to include("Signed up")
+      end
+
+      it "Emails tab shows email_sent activities and hides unrelated kinds" do
+        Activity.log(user: test_user, operator: operator, kind: :email_sent,
+                     payload: { "subject" => "Welcome to Cowork" })
+        Activity.log(user: test_user, operator: operator, kind: :checkin,
+                     payload: { "location_name" => "Main Floor" })
+
+        get :show, params: { id: test_user.id, tab: "emails" }
+
+        expect(response.body).to include("Welcome to Cowork")
+        expect(response.body).not_to include("Main Floor")
+      end
+
+      it "shows an empty-state when a tab has no matching activities" do
+        get :show, params: { id: test_user.id, tab: "tours" }
+        expect(response.body).to include("No tours logged")
+      end
+
+      it "renders a 'Log a tour' button in the profile header" do
+        get :show, params: { id: test_user.id }
+        expect(response.body).to include("Log a tour")
+        expect(response.body).to include("logTourModal")
+      end
+
+      it "renders an 'Add note' button in the profile header" do
+        get :show, params: { id: test_user.id }
+        expect(response.body).to include("Add note")
+        expect(response.body).to include("addNoteModal")
+      end
+    end
+  end
+
+  describe "POST #log_tour" do
+    context "when admin logs a tour for a member" do
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "creates a tour Activity with notes + logged_by_user_id payload" do
+        expect {
+          post :log_tour, params: { user_id: test_user.id, notes: "Walk-in from web search" }
+        }.to change { Activity.where(user: test_user, kind: "tour").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "tour").last
+        expect(activity.operator).to eq(operator)
+        expect(activity.payload["notes"]).to eq("Walk-in from web search")
+        expect(activity.payload["logged_by_user_id"]).to eq(admin_user.id)
+      end
+
+      it "accepts a blank notes value (notes are optional)" do
+        expect {
+          post :log_tour, params: { user_id: test_user.id, notes: "" }
+        }.to change { Activity.where(user: test_user, kind: "tour").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "tour").last
+        expect(activity.payload["notes"]).to eq("")
+        expect(activity.payload["logged_by_user_id"]).to eq(admin_user.id)
+      end
+
+      it "redirects back to the user profile" do
+        post :log_tour, params: { user_id: test_user.id, notes: "Quick walkthrough" }
+        expect(response).to redirect_to(user_path(test_user))
+      end
+    end
+
+    context "when a non-admin tries to log a tour" do
+      before do
+        allow(controller).to receive(:current_user).and_return(regular_user)
+      end
+
+      it "is blocked by Pundit and does not create an Activity" do
+        expect {
+          begin
+            post :log_tour, params: { user_id: test_user.id, notes: "sneaky" }
+          rescue Pundit::NotAuthorizedError
+            # expected — non-admin cannot log tours
+          end
+        }.not_to change { Activity.where(user: test_user, kind: "tour").count }
+      end
+    end
+  end
+
+  describe "POST #add_note" do
+    context "when admin adds a note to a Person with no existing Lead" do
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "auto-creates a Lead for the user under the current tenant" do
+        expect(test_user.reload.leads_as_user.count).to eq(0) if test_user.respond_to?(:leads_as_user)
+        expect {
+          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Mentioned wants standing desk" } }
+        }.to change { Lead.where(user: test_user, operator: operator).count }.by(1)
+      end
+
+      it "creates a LeadNote authored by current_user with the given content" do
+        expect {
+          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Followed up by email" } }
+        }.to change { LeadNote.count }.by(1)
+
+        note = LeadNote.last
+        expect(note.user).to eq(admin_user)
+        expect(note.lead.user).to eq(test_user)
+        expect(note.content.to_plain_text).to include("Followed up by email")
+      end
+
+      it "writes an Activity row of kind :note via LeadNote#after_create" do
+        expect {
+          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Quick chat in lobby" } }
+        }.to change { Activity.where(user: test_user, kind: "note").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "note").last
+        expect(activity.payload["author_name"]).to eq(admin_user.name)
+        expect(activity.payload["content_preview"]).to include("Quick chat in lobby")
+      end
+
+      it "redirects back to the user profile" do
+        post :add_note, params: { user_id: test_user.id, lead_note: { content: "Note body" } }
+        expect(response).to redirect_to(user_path(test_user))
+      end
+    end
+
+    context "when the Person already has a Lead" do
+      let!(:existing_lead) { Lead.create!(user: test_user, operator: operator) }
+
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "reuses the existing Lead instead of creating a second one" do
+        expect {
+          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Another touchpoint" } }
+        }.not_to change { Lead.where(user: test_user, operator: operator).count }
+
+        expect(LeadNote.last.lead).to eq(existing_lead)
+      end
+    end
+
+    context "when a non-admin tries to add a note" do
+      before do
+        allow(controller).to receive(:current_user).and_return(regular_user)
+      end
+
+      it "is blocked by Pundit and does not create a LeadNote" do
+        expect {
+          begin
+            post :add_note, params: { user_id: test_user.id, lead_note: { content: "sneaky" } }
+          rescue Pundit::NotAuthorizedError
+            # expected — non-admin cannot add notes
+          end
+        }.not_to change { LeadNote.count }
+      end
     end
   end
 

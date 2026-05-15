@@ -30,7 +30,7 @@ RSpec.describe IosNotification do
 
   describe "#send!" do
     let(:data) { { type: "reservation", resource_id: 42, path: "/reservations/42" } }
-    let(:connection) { instance_double(Apnotic::Connection, push: double(ok?: true), close: nil) }
+    let(:connection) { instance_double(Apnotic::Connection, push: double(ok?: true, status: 200), close: nil) }
 
     before do
       allow(Apnotic::Connection).to receive(:new).and_return(connection)

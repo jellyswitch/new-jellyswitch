@@ -49,69 +49,51 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     assert_equal [@user], @notifiable.send(:recipients)
   end
 
-  test "ios notification is sent when operator has both push certificate and bundle_id" do
-    # Setup operator with both certificate and bundle_id
-    @operator.stubs(:push_notification_certificate).returns(mock(attached?: true))
-    @operator.stubs(:bundle_id).returns("com.example.app")
-    
-    # Get the actual recipients to know how many to expect
-    recipients = @notifiable.send(:recipients)
-    recipients.each { |user| user.stubs(:ios_token).returns("some_token") }
-    
-    # Mock IosNotification with proper response chain
+  test "ios notification is sent when APNs is configured and operator has bundle_id" do
+    Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(true)
+    Operator.any_instance.stubs(:bundle_id).returns("com.example.app")
+
+    @user.stubs(:ios_token).returns("some_token")
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
+
     response_mock = mock
     response_mock.stubs(:ok?).returns(true)
     response_mock.stubs(:body).returns("success")
-    
+
     ios_notification_mock = mock
-    ios_notification_mock.expects(:send!).returns(response_mock).times(recipients.count)
-    IosNotification.expects(:new).returns(ios_notification_mock).times(recipients.count)
-    
+    ios_notification_mock.expects(:send!).returns(response_mock)
+    IosNotification.expects(:new).returns(ios_notification_mock)
+
     @notifiable.send(:ios)
   end
 
-  test "ios notification is not sent when operator has certificate but no bundle_id" do
-    # Setup operator with certificate but no bundle_id
-    @operator.stubs(:push_notification_certificate).returns(mock(attached?: true))
-    @operator.stubs(:bundle_id).returns(nil)
-    @operator.stubs(:name).returns("Test Operator")
-    
-    # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
-    
-    # IosNotification should not be called
+  test "ios notification is not sent when APNs is configured but operator has no bundle_id" do
+    Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(true)
+    Operator.any_instance.stubs(:bundle_id).returns(nil)
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
+
     IosNotification.expects(:new).never
-    
+
     @notifiable.send(:ios)
   end
 
-  test "ios notification is not sent when operator has bundle_id but no certificate" do
-    # Setup operator with bundle_id but no certificate
-    @operator.stubs(:push_notification_certificate).returns(mock(attached?: false))
-    @operator.stubs(:bundle_id).returns("com.example.app")
-    @operator.stubs(:name).returns("Test Operator")
-    
-    # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
-    
-    # IosNotification should not be called
+  test "ios notification is not sent when APNs is not configured even if operator has bundle_id" do
+    Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(false)
+    Operator.any_instance.stubs(:bundle_id).returns("com.example.app")
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
+
     IosNotification.expects(:new).never
-    
+
     @notifiable.send(:ios)
   end
 
-  test "ios notification is not sent when operator has neither certificate nor bundle_id" do
-    # Setup operator with neither certificate nor bundle_id
-    @operator.stubs(:push_notification_certificate).returns(mock(attached?: false))
-    @operator.stubs(:bundle_id).returns(nil)
-    @operator.stubs(:name).returns("Test Operator")
-    
-    # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
-    
-    # IosNotification should not be called
+  test "ios notification is not sent when neither APNs is configured nor operator has bundle_id" do
+    Notifiable::WeeklyUpdate.any_instance.stubs(:apns_configured?).returns(false)
+    Operator.any_instance.stubs(:bundle_id).returns(nil)
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
+
     IosNotification.expects(:new).never
-    
+
     @notifiable.send(:ios)
   end
 
@@ -151,7 +133,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never
@@ -166,7 +148,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never
@@ -181,7 +163,7 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
     @operator.stubs(:name).returns("Test Operator")
     
     # Mock recipients
-    @notifiable.stubs(:recipients).returns([@user])
+    Notifiable::WeeklyUpdate.any_instance.stubs(:recipients).returns([@user])
     
     # FCM should not be called
     FCM.expects(:new).never

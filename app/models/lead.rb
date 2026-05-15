@@ -15,7 +15,7 @@
 class Lead < ApplicationRecord
   belongs_to :operator
   belongs_to :user
-  belongs_to :ahoy_visit, class_name: "Ahoy::Visit"
+  belongs_to :ahoy_visit, class_name: "Ahoy::Visit", optional: true
 
   has_many :lead_notes
 

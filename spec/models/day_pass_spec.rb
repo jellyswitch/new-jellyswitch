@@ -100,4 +100,26 @@ RSpec.describe DayPass, type: :model do
       end
     end
   end
+
+  describe "activity logging" do
+    let(:user) { create(:user) }
+
+    it "creates exactly one :day_pass Activity on create" do
+      user # force creation outside the expect block
+      expect { create(:day_pass, user: user) }.to change(Activity.where(kind: "day_pass"), :count).by(1)
+      activity = Activity.where(kind: "day_pass").last
+      expect(activity.user).to eq(user)
+      expect(activity.subject).to eq(DayPass.last)
+    end
+
+    it "denormalizes day, type, location, complimentary flag" do
+      day_pass = create(:day_pass, user: user, complimentary: true)
+      payload = Activity.last.payload
+
+      expect(payload["day"]).to eq(day_pass.day.iso8601)
+      expect(payload["complimentary"]).to eq(true)
+      expect(payload["day_pass_type_name"]).to be_present
+      expect(payload["location_name"]).to be_present
+    end
+  end
 end

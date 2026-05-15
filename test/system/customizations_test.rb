@@ -24,7 +24,9 @@ class CustomizationsTest < ApplicationSystemTestCase
     log_in(user)
 
     operator = operators(:cowork_tahoe)
-    location = operator.locations.first
+    # operator.locations.first is non-deterministic with parallel-test
+    # location creation; use the fixture explicitly.
+    location = locations(:cowork_tahoe_location)
     other_location = create(:location, operator: operator, name: "Other Location")
 
     visit customization_path

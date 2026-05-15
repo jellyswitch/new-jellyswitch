@@ -37,11 +37,14 @@ class Operator::UsersController < Operator::BaseController
     render :archived
   end
 
+  TIMELINE_TABS = %w[recent emails tours reservations payments notes].freeze
+
   def show
     find_user
     authorize @user
 
     @usage_report = Jellyswitch::UsageReport.new(@user)
+    @active_tab = TIMELINE_TABS.include?(params[:tab]) ? params[:tab] : "recent"
 
     if @user == current_user
       render :show
@@ -53,6 +56,43 @@ class Operator::UsersController < Operator::BaseController
   def about
     find_user(:user_id)
     authorize @user
+  end
+
+  def log_tour
+    find_user(:user_id)
+    authorize @user, :log_tour?
+
+    Activity.log(
+      user: @user,
+      operator: current_tenant,
+      kind: :tour,
+      payload: {
+        "notes" => params[:notes].to_s,
+        "logged_by_user_id" => current_user.id
+      }
+    )
+
+    flash[:success] = "Tour logged."
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
+  def add_note
+    find_user(:user_id)
+    authorize @user, :add_note?
+
+    lead = current_tenant.leads.where(user: @user).first_or_create!
+    lead_note = lead.lead_notes.create(
+      user: current_user,
+      content: params.require(:lead_note).permit(:content)[:content]
+    )
+
+    if lead_note.persisted?
+      flash[:success] = "Note added."
+    else
+      flash[:error] = "Could not add note."
+    end
+
+    turbo_redirect(user_path(@user), action: "replace")
   end
 
   def ltv
@@ -346,19 +386,23 @@ class Operator::UsersController < Operator::BaseController
 
   def edit_billing
     find_user(:user_id)
+    authorize @user, :edit_billing?
     include_stripe
   end
 
   def update_billing
     find_user(:user_id)
+    authorize @user, :update_billing?
     token = params[:stripeToken]
-    result = Billing::Payment::UpdateUserPayment.call(user: current_user, location: current_location, token: token)
+    # Use @user (the user from the URL), not current_user — otherwise an
+    # admin updating a billing contact's card silently updates their own.
+    result = Billing::Payment::UpdateUserPayment.call(user: @user, location: current_location, token: token)
     if result.success?
       flash[:success] = "Billing info updated."
-      turbo_redirect(user_path(current_user))
+      turbo_redirect(user_path(@user))
     else
       flash[:error] = result.message
-      turbo_redirect(user_billing_path(current_user))
+      turbo_redirect(user_billing_path(@user))
     end
   end
 

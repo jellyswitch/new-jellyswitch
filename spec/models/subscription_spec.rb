@@ -72,6 +72,10 @@ RSpec.describe Subscription, type: :model do
     end
 
     describe '#cancel_stripe!' do
+      before do
+        allow(subscription).to receive(:stripe_subscription).and_return(stripe_subscription_mock)
+      end
+
       it 'deletes the stripe subscription with prorate false by default (no refund per ops policy)' do
         expect(stripe_subscription_mock).to receive(:delete).with(prorate: false)
         subscription.cancel_stripe!
@@ -84,6 +88,10 @@ RSpec.describe Subscription, type: :model do
     end
 
     describe '#set_stripe_to_cancel!' do
+      before do
+        allow(subscription).to receive(:stripe_subscription).and_return(stripe_subscription_mock)
+      end
+
       it 'sets the stripe subscription to cancel at period end' do
         expect(stripe_subscription_mock).to receive(:save).with(cancel_at_period_end: true)
         subscription.set_stripe_to_cancel!
@@ -152,6 +160,55 @@ RSpec.describe Subscription, type: :model do
 
       it 'raises error if active stripe subscription exists' do
         expect { subscription.destroy }.to raise_error(RuntimeError, /Cancel Stripe Subscription first/)
+      end
+    end
+
+    describe "activity logging" do
+      let(:user) { create(:user) }
+
+      it "logs :subscription_started on create when subscribable is a User" do
+        user # force creation outside expect (signup Activity belongs to this user)
+        expect {
+          create(:subscription, subscribable: user, billable: user)
+        }.to change(Activity.where(kind: "subscription_started"), :count).by(1)
+
+        activity = Activity.where(kind: "subscription_started").last
+        expect(activity.user).to eq(user)
+        expect(activity.subject).to eq(Subscription.last)
+      end
+
+      it "denormalizes plan name and start_date into payload" do
+        subscription = create(:subscription, subscribable: user, billable: user)
+        payload = Activity.last.payload
+
+        expect(payload["plan_name"]).to eq(subscription.plan.pretty_name)
+        expect(payload["start_date"]).to eq(subscription.start_date.iso8601)
+      end
+
+      it "logs :subscription_ended when active flips from true to false" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+
+        expect { subscription.update!(active: false) }.to change(Activity, :count).by(1)
+        expect(Activity.last.kind).to eq("subscription_ended")
+      end
+
+      it "does not log :subscription_ended on unrelated updates" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+
+        expect { subscription.update!(paused: true) }.not_to change(Activity.where(kind: "subscription_ended"), :count)
+      end
+
+      it "does not log :subscription_ended twice if active is reset" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+        subscription.update!(active: false)
+
+        expect { subscription.update!(active: false) }.not_to change(Activity, :count)
+      end
+
+      it "does not log subscription_started/ended when subscribable is not a User (e.g. Organization)" do
+        expect {
+          create(:subscription, :for_organization)
+        }.not_to change(Activity.where(kind: ["subscription_started", "subscription_ended"]), :count)
       end
     end
   end

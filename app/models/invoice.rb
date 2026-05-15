@@ -52,6 +52,8 @@ class Invoice < ApplicationRecord
   }
   scope :for_week, -> (week_start, week_end) { where('due_date > ? and due_date <= ?', week_start, week_end) }
 
+  after_update :log_payment_activity_if_status_changed
+
   VOIDABLE_STATUSES = %w(open uncollectible)
   STATUSES = (VOIDABLE_STATUSES + %w(void paid refunded)).freeze
 
@@ -155,5 +157,26 @@ class Invoice < ApplicationRecord
     number.present? ? "Invoice ##{number}" : "Invoice ##{id}"
   rescue
     number.present? ? "Invoice ##{number}" : "Invoice ##{id}"
+  end
+
+  def log_payment_activity_if_status_changed
+    return unless saved_change_to_status?
+    return unless billable.is_a?(User)
+
+    case status
+    when "paid"
+      Activity.log(user: billable, kind: :payment_succeeded, subject: self, operator: operator)
+    when "uncollectible"
+      Activity.log(user: billable, kind: :payment_failed, subject: self, operator: operator)
+    end
+  end
+
+  def to_activity_payload
+    {
+      "amount_due" => amount_due,
+      "amount_paid" => amount_paid,
+      "status" => status,
+      "number" => number,
+    }
   end
 end

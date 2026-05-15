@@ -43,13 +43,18 @@ class CheckinTest < ApplicationSystemTestCase
     mock_token = StripeMock.generate_card_token(last4: "4242", exp_month: 12, exp_year: 34)
     p "Mock token: #{mock_token}"
 
+    # setTimeout(50) mimics real Stripe network latency so the event loop
+    # drains between the user-click submit (which preventDefault'd) and
+    # the followup form.requestSubmit(). With Promise.resolve()'s
+    # synchronous microtask resolution, Turbo's submit listener drops the
+    # programmatic second submit and the form never POSTs.
     page.execute_script(<<~JS)
       Object.defineProperty(window.stripe, 'createToken', {
         value: function(element) {
-          return Promise.resolve({
-            token: {
-              id: '#{mock_token}'
-            }
+          return new Promise(function(resolve) {
+            setTimeout(function() {
+              resolve({ token: { id: '#{mock_token}' } });
+            }, 50);
           });
         },
         writable: true,
@@ -57,9 +62,9 @@ class CheckinTest < ApplicationSystemTestCase
       });
     JS
 
-    click_on "Check in now"
+    find("#stripe-submit").click
 
-    assert_text "You're checked in"
+    assert_text "You're checked in", wait: 15
 
     # advances 2 hours
     Timecop.travel(Time.current + 2.hours)
