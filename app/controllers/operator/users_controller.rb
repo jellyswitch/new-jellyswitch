@@ -58,6 +58,24 @@ class Operator::UsersController < Operator::BaseController
     authorize @user
   end
 
+  def log_tour
+    find_user(:user_id)
+    authorize @user, :log_tour?
+
+    Activity.log(
+      user: @user,
+      operator: current_tenant,
+      kind: :tour,
+      payload: {
+        "notes" => params[:notes].to_s,
+        "logged_by_user_id" => current_user.id
+      }
+    )
+
+    flash[:success] = "Tour logged."
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
   def ltv
     find_user(:user_id)
     authorize @user

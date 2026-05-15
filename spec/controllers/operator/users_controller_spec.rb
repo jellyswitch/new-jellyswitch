@@ -135,6 +135,62 @@ RSpec.describe Operator::UsersController, type: :controller do
         get :show, params: { id: test_user.id, tab: "tours" }
         expect(response.body).to include("No tours logged")
       end
+
+      it "renders a 'Log a tour' button in the profile header" do
+        get :show, params: { id: test_user.id }
+        expect(response.body).to include("Log a tour")
+        expect(response.body).to include("logTourModal")
+      end
+    end
+  end
+
+  describe "POST #log_tour" do
+    context "when admin logs a tour for a member" do
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "creates a tour Activity with notes + logged_by_user_id payload" do
+        expect {
+          post :log_tour, params: { user_id: test_user.id, notes: "Walk-in from web search" }
+        }.to change { Activity.where(user: test_user, kind: "tour").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "tour").last
+        expect(activity.operator).to eq(operator)
+        expect(activity.payload["notes"]).to eq("Walk-in from web search")
+        expect(activity.payload["logged_by_user_id"]).to eq(admin_user.id)
+      end
+
+      it "accepts a blank notes value (notes are optional)" do
+        expect {
+          post :log_tour, params: { user_id: test_user.id, notes: "" }
+        }.to change { Activity.where(user: test_user, kind: "tour").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "tour").last
+        expect(activity.payload["notes"]).to eq("")
+        expect(activity.payload["logged_by_user_id"]).to eq(admin_user.id)
+      end
+
+      it "redirects back to the user profile" do
+        post :log_tour, params: { user_id: test_user.id, notes: "Quick walkthrough" }
+        expect(response).to redirect_to(user_path(test_user))
+      end
+    end
+
+    context "when a non-admin tries to log a tour" do
+      before do
+        allow(controller).to receive(:current_user).and_return(regular_user)
+      end
+
+      it "is blocked by Pundit and does not create an Activity" do
+        expect {
+          begin
+            post :log_tour, params: { user_id: test_user.id, notes: "sneaky" }
+          rescue Pundit::NotAuthorizedError
+            # expected — non-admin cannot log tours
+          end
+        }.not_to change { Activity.where(user: test_user, kind: "tour").count }
+      end
     end
   end
 

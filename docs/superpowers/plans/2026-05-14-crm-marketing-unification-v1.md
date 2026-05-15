@@ -153,12 +153,12 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 2.2 — "Log a tour" button
 
-- [ ] Add button to user show page header: "Log a tour."
-- [ ] On click, opens a modal with note field (optional) and "Log" button.
-- [ ] POST to `users#log_tour` action that calls `Activity.log(user:, kind: :tour, payload: {notes: ..., logged_by_user_id: current_user.id})`.
-- [ ] Add People list "Log a tour" entry point that opens a Person picker modal.
-- [ ] Spec: clicking button + submitting modal creates an Activity row of kind `tour`.
-- [ ] **Commit:** "Add Log a Tour button"
+- [x] Add button to user show page header: "Log a tour."
+- [x] On click, opens a modal with note field (optional) and "Log" button.
+- [x] POST to `users#log_tour` action that calls `Activity.log(user:, kind: :tour, payload: {notes: ..., logged_by_user_id: current_user.id})`.
+- [ ] ~~Add People list "Log a tour" entry point that opens a Person picker modal.~~ *Deferred until Phase 3.3/3.4 when the People list lands.*
+- [x] Spec: clicking button + submitting modal creates an Activity row of kind `tour`.
+- [x] **Commit:** "Add Log a Tour button"
 
 ### 2.3 — "Add note" button
 

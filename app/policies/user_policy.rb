@@ -28,6 +28,10 @@ class UserPolicy < ApplicationPolicy
     has_admin_right?
   end
 
+  def log_tour?
+    has_admin_right?
+  end
+
   def childcare?
     has_right_over_user?
   end
