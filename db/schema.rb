@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_22_220000) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_14_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -51,6 +51,21 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_220000) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "activities", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.string "kind", null: false
+    t.string "subject_type"
+    t.bigint "subject_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "kind", "occurred_at"], name: "index_activities_on_operator_id_and_kind_and_occurred_at"
+    t.index ["subject_type", "subject_id"], name: "index_activities_on_subject_type_and_subject_id"
+    t.index ["user_id", "occurred_at"], name: "index_activities_on_user_id_and_occurred_at"
   end
 
   create_table "ahoy_events", force: :cascade do |t|
@@ -950,6 +965,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_22_220000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "activities", "operators"
+  add_foreign_key "activities", "users"
   add_foreign_key "amenities", "rooms"
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
