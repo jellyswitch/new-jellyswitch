@@ -44,7 +44,22 @@ class DayPass < ApplicationRecord
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
 
+  after_create :log_activity
+
   # Instance methods
+  def log_activity
+    Activity.log(user: user, kind: :day_pass, subject: self, operator: operator)
+  end
+
+  def to_activity_payload
+    {
+      "day" => day&.iso8601,
+      "day_pass_type_name" => day_pass_type_name,
+      "location_name" => location&.name,
+      "complimentary" => complimentary,
+    }
+  end
+
   def pretty_day
     day.strftime("%m/%d/%Y")
   end
