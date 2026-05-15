@@ -100,6 +100,16 @@ class User < ApplicationRecord
 
   has_many :activities, dependent: :destroy
 
+  # Lifecycle stage — derived at query time, never stored (ADR-0002).
+  # Grace days reads from current_location.past_member_grace_days, falling
+  # back to DEFAULT_PAST_MEMBER_GRACE_DAYS when the user has no current_location.
+  DEFAULT_PAST_MEMBER_GRACE_DAYS = 180
+  LIFECYCLE_STAGES = %i[member past_member day_passer quiet tour_taker].freeze
+  LIFECYCLE_PRIOR_ACTIVITY_KINDS = %w[checkin door_punch reservation day_pass subscription_started].freeze
+  LIFECYCLE_VISIT_KINDS = %w[checkin door_punch reservation].freeze
+  RECENT_DAY_PASS_DAYS = 30
+  QUIET_THRESHOLD_DAYS = 30
+
   def log_signup_activity
     Activity.log(user: self, kind: :signup, subject: self, operator: operator)
   end
@@ -110,6 +120,98 @@ class User < ApplicationRecord
       "email" => email,
     }
   end
+
+  def lifecycle_stage
+    return :member if active_subscription? || subscription_ended_within_grace?
+    return :day_passer if recent_day_pass?
+    return :past_member if subscription_ended_past_grace?
+    return :quiet if previously_active? && !recent_visit?
+    :tour_taker
+  end
+
+  def self.in_stage(stage)
+    stage = stage.to_sym
+    raise ArgumentError, "unknown lifecycle stage: #{stage}" unless LIFECYCLE_STAGES.include?(stage)
+
+    day_pass_cutoff = RECENT_DAY_PASS_DAYS.days.ago.to_date
+    visit_cutoff = QUIET_THRESHOLD_DAYS.days.ago
+
+    active_sub_ids = Subscription.where(subscribable_type: "User", active: true).pluck(:subscribable_id)
+
+    grace_join = <<~SQL
+      INNER JOIN users ON users.id = activities.user_id
+      LEFT JOIN locations ON locations.id = users.current_location_id
+    SQL
+    grace_cutoff_sql = "activities.occurred_at >= NOW() - (COALESCE(locations.past_member_grace_days, ?) * INTERVAL '1 day')"
+    in_grace_ids = Activity.where(kind: "subscription_ended")
+                           .joins(grace_join)
+                           .where(grace_cutoff_sql, DEFAULT_PAST_MEMBER_GRACE_DAYS)
+                           .pluck("activities.user_id")
+    past_grace_ids = Activity.where(kind: "subscription_ended")
+                             .joins(grace_join)
+                             .where("NOT (#{grace_cutoff_sql})", DEFAULT_PAST_MEMBER_GRACE_DAYS)
+                             .pluck("activities.user_id")
+    recent_day_pass_ids = DayPass.where("day >= ?", day_pass_cutoff).pluck(:user_id)
+    prior_active_ids = Activity.where(kind: LIFECYCLE_PRIOR_ACTIVITY_KINDS).pluck(:user_id)
+    recent_visit_ids = Activity.where(kind: LIFECYCLE_VISIT_KINDS)
+                               .where("occurred_at >= ?", visit_cutoff).pluck(:user_id)
+
+    member_ids = (active_sub_ids + in_grace_ids).uniq
+
+    case stage
+    when :member
+      where(id: member_ids)
+    when :day_passer
+      where(id: recent_day_pass_ids - member_ids)
+    when :past_member
+      where(id: (past_grace_ids - member_ids - recent_day_pass_ids).uniq)
+    when :quiet
+      quiet_ids = prior_active_ids - member_ids - recent_day_pass_ids - past_grace_ids - recent_visit_ids
+      where(id: quiet_ids.uniq)
+    when :tour_taker
+      quiet_ids = prior_active_ids - member_ids - recent_day_pass_ids - past_grace_ids - recent_visit_ids
+      excluded = (member_ids + recent_day_pass_ids + past_grace_ids + quiet_ids).uniq
+      where.not(id: excluded)
+    end
+  end
+
+  private
+
+  def active_subscription?
+    subscriptions.where(active: true).exists?
+  end
+
+  def subscription_ended_within_grace?
+    activities.where(kind: "subscription_ended")
+              .where("occurred_at >= ?", past_member_grace_days_threshold.days.ago)
+              .exists?
+  end
+
+  def subscription_ended_past_grace?
+    activities.where(kind: "subscription_ended")
+              .where("occurred_at < ?", past_member_grace_days_threshold.days.ago)
+              .exists?
+  end
+
+  def past_member_grace_days_threshold
+    current_location&.past_member_grace_days || DEFAULT_PAST_MEMBER_GRACE_DAYS
+  end
+
+  def recent_day_pass?
+    day_passes.where("day >= ?", RECENT_DAY_PASS_DAYS.days.ago.to_date).exists?
+  end
+
+  def previously_active?
+    activities.where(kind: LIFECYCLE_PRIOR_ACTIVITY_KINDS).exists?
+  end
+
+  def recent_visit?
+    activities.where(kind: LIFECYCLE_VISIT_KINDS)
+              .where("occurred_at >= ?", QUIET_THRESHOLD_DAYS.days.ago)
+              .exists?
+  end
+
+  public
 
   # Scopes
   scope :approved, -> { where(approved: true) }

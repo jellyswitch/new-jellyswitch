@@ -103,6 +103,9 @@ class Location < ApplicationRecord
 
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true
+  validates :past_member_grace_days,
+            presence: true,
+            numericality: { only_integer: true, greater_than_or_equal_to: 120, less_than_or_equal_to: 365 }
 
   scope :visible, -> { where(visible: true) }
 

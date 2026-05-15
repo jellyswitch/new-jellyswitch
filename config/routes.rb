@@ -546,6 +546,7 @@ Rails.application.routes.draw do
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
     get :visible, to: "operator/locations#visible"
+    patch :past_member_grace_days, to: "operator/locations#update_past_member_grace_days"
   end
   resources :member_feedbacks, controller: "operator/member_feedbacks" do
     member do
@@ -666,6 +667,7 @@ Rails.application.routes.draw do
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
   resources :email_confirmations, only: [:show], controller: "operator/email_confirmations"
   post :resend_confirmation, to: "operator/email_confirmations#resend"
+  resources :people, controller: "operator/people", only: [:index]
   resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"

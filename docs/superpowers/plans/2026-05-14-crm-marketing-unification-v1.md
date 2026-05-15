@@ -189,45 +189,68 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 3.1 — Stage query method
 
-- [ ] Write spec for `User#lifecycle_stage` returning one of `:member, :day_passer, :tour_taker, :past_member, :quiet`.
-- [ ] Build cases driven by:
+- [x] Write spec for `User#lifecycle_stage` returning one of `:member, :day_passer, :tour_taker, :past_member, :quiet`.
+- [x] Build cases driven by:
   - `:member` if active subscription
   - `:past_member` if subscription ended > location.past_member_grace_days ago
   - `:day_passer` if day pass within last 30 days, no active subscription
   - `:quiet` if was active but no checkin/door_punch/reservation in 30 days
   - `:tour_taker` otherwise (has Lead row OR has tour activity)
-- [ ] Add `User.in_stage(stage)` scope using activity + subscription joins (no enum column).
-- [ ] Spec edge cases: someone with both an active subscription AND a Lead row = `:member` (subscription wins).
-- [ ] **Commit:** "Derive User#lifecycle_stage from data"
+- [x] Add `User.in_stage(stage)` scope using activity + subscription joins (no enum column).
+- [x] Spec edge cases: someone with both an active subscription AND a Lead row = `:member` (subscription wins).
+- [x] **Commit:** "Derive User#lifecycle_stage from data"
+
+  *Implementation note:* Per ADR-0002, no `lifecycle_stage` column added. Grace days is currently `User::DEFAULT_PAST_MEMBER_GRACE_DAYS = 180`; Phase 3.2 will swap to per-location lookup. CONTEXT.md's "members in grace still show as Member" honored — the in-grace check sits inside the `:member` branch. `:day_passer` takes precedence over `:past_member` (a returning past member who buys a day pass shows as `:day_passer`).
 
 ### 3.2 — Per-location grace days
 
-- [ ] Migration: `Location.past_member_grace_days` integer, default 180.
-- [ ] Add to Location validations: `inclusion: { in: 120..365 }` (4 months to 12 months).
-- [ ] Expose in the Automated Emails config UI as a stage-transition setting at the top.
-- [ ] **Commit:** "Add per-location past-member grace period setting"
+- [x] Migration: `Location.past_member_grace_days` integer, default 180.
+- [x] Add to Location validations: `inclusion: { in: 120..365 }` (4 months to 12 months).
+- [x] Expose in the Automated Emails config UI as a stage-transition setting at the top.
+- [x] **Commit:** "Add per-location past-member grace period setting"
+
+  *Implementation notes:*
+  - `User#lifecycle_stage` instance method now reads `current_location&.past_member_grace_days || DEFAULT_PAST_MEMBER_GRACE_DAYS` via a private `past_member_grace_days_threshold` helper.
+  - `User.in_stage(stage)` scope honors per-location grace via a LEFT JOIN to `locations` and a `COALESCE(locations.past_member_grace_days, 180)` cutoff in SQL — no longer uses the global constant for the boundary check.
+  - UI lives on `app/views/operator/product_email_templates/index.html.erb`. Form posts to `PATCH /locations/:location_id/past_member_grace_days` (new `update_past_member_grace_days` action on `Operator::LocationsController`) which authorizes via `LocationPolicy#update?` and redirects back to `product_email_templates_path`.
 
 ### 3.3 — People list with stage filters (Rails)
 
-- [ ] Build `app/views/operator/people/index.html.erb` with chip filters at top: All · Members · Day-passers · Tour-takers · Past members · Quiet.
-- [ ] Each chip queries `User.in_stage(:label)`.
-- [ ] Result list shows: photo + name + stage badge + last activity timestamp + point-of-contact name.
-- [ ] Pagination at 50 per page.
-- [ ] Expose JSON API at `GET /operator/people.json?stage=<stage>&page=<n>` returning the same shape — consumed by mobile in 3.4.
-- [ ] **Commit:** "Add People list with lifecycle stage filters"
+- [x] Build `app/views/operator/people/index.html.erb` with chip filters at top: All · Members · Day-passers · Tour-takers · Past members · Quiet.
+- [x] Each chip queries `User.in_stage(:label)`.
+- [x] Result list shows: photo + name + stage badge + last activity timestamp + point-of-contact name.
+- [x] Pagination at 50 per page.
+- [x] Expose JSON API at `GET /operator/people.json?stage=<stage>&page=<n>` returning the same shape — consumed by mobile in 3.4.
+- [x] **Commit:** "Add People list with lifecycle stage filters"
+
+  *Implementation notes:*
+  - Route: `resources :people, controller: "operator/people", only: [:index]` → `GET /people`. Helper: `people_path(stage: …)`.
+  - Filter via `?stage=member|day_passer|tour_taker|past_member|quiet` query param. Unknown values fall back to `all`. Default sort: by name. Pagination 50/page via Pagy (matches existing operator list pattern).
+  - `point_of_contact_name` is rendered as `null` in JSON and omitted from the HTML for Phase 3.3. Phase 4.3 will wire it up (column doesn't exist yet — Phase 4.1 schema migration).
+  - Stage badges + labels are constants on `Operator::PeopleController` (`STAGE_LABELS`, `STAGE_BADGE_CLASSES`); `PeopleHelper#stage_badge` renders the Bootstrap pill.
+  - Pundit `PersonPolicy#index?` allows admin/community_manager/general_manager/superadmin.
+  - **No nav entry yet** — Phase 8.1 wires the People umbrella into `_admin_nav.html.erb`. Currently reachable only by visiting `/people` directly.
 
 ### 3.4 — People list with stage filters (Mobile native)
 
 Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
-- [ ] Build `src/components/StageFilterChips.js` — horizontal scrollable chip row, controlled by a `selectedStage` prop.
-- [ ] Build `src/components/PersonListItem.js` — photo + name + stage badge + last-activity timestamp + PoC name (mirrors the Rails partial).
-- [ ] Build `src/screens/admin/PeopleListScreen.js` — header with chip row, FlatList of PersonListItem, infinite scroll via the JSON API from 3.3.
-- [ ] Wire to `adminMembersAPI` — add `peopleList({stage, page})` calling `/operator/people.json`.
-- [ ] Add to `AppNavigator.js` admin stack; replace the existing "Members" entry point in `MoreScreen.js` with "People" → `PeopleListScreen`.
-- [ ] Test in iOS sim across all 5 stages + "All"; tapping a person navigates to existing `MemberDetailScreen`.
-- [ ] Run Maestro after this lands (per `feedback_run_maestro_after_ui.md`).
-- [ ] **Commit:** "Add native People list screen with stage filters"
+- [x] Build `src/components/StageFilterChips.js` — horizontal scrollable chip row, controlled by a `selectedStage` prop.
+- [x] Build `src/components/PersonListItem.js` — photo + name + stage badge + last-activity timestamp + PoC name (mirrors the Rails partial).
+- [x] Build `src/screens/admin/PeopleListScreen.js` — header with chip row, FlatList of PersonListItem, infinite scroll via the JSON API from 3.3.
+- [x] Wire to `adminMembersAPI` — add `peopleList({stage, page})` calling `/admin/people` (resolves to `/api/v1/admin/people` via base URL).
+- [x] Add to `AppNavigator.js` admin stack; new "PEOPLE" section at top of `MoreScreen.js` menu with "People" → `PeopleListScreen`. (Existing Members bottom tab left untouched — Phase 8.1 will reorg.)
+- [ ] Test in iOS sim across all 5 stages + "All"; tapping a person navigates to existing `MemberDetailScreen`. *Blocked: requires the sibling API endpoint (see follow-on below) deployed to staging and an app rebuild.*
+- [ ] Run Maestro after this lands. *Same blocker — the new screen has no exercise path until the API endpoint exists.*
+- [x] **Commit:** mobile commit `33694b3` "Add native People list screen with stage filters"
+
+  **Follow-on Rails work needed before mobile can consume:**
+  - Add `GET /api/v1/admin/people` endpoint on `feature/mobile-api` (or wherever the v1 API namespace lives). Reuse the JSON shape from `Operator::PeopleController#people_json`. The mobile app's `peopleList({stage, page})` already points at `/admin/people`.
+
+  *Notes:*
+  - Plan said "replace existing Members entry in MoreScreen" — MoreScreen has no Members entry (Members is a bottom tab). Added a new PEOPLE section at the top instead.
+  - testID conventions: `people-chip-{stage}`, `person-list-item-{id}`, `people-list`.
+  - Each chip switch resets pagination to page 1; pull-to-refresh + infinite scroll via FlatList.
 
 ---
 
