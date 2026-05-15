@@ -301,4 +301,197 @@ RSpec.describe User, type: :model do
       expect(payload["email"]).to eq("new@example.com")
     end
   end
+
+  describe "#lifecycle_stage" do
+    let(:stage_operator) { create(:operator) }
+    let(:stage_location) { create(:location, operator: stage_operator) }
+    let(:stage_user) { create(:user, operator: stage_operator, current_location: stage_location) }
+
+    def log_activity(user, kind, occurred_at)
+      Activity.create!(user: user, operator: user.operator, kind: kind,
+                       occurred_at: occurred_at, subject: user)
+    end
+
+    context "with an active subscription" do
+      before { create(:subscription, subscribable: stage_user, billable: stage_user, active: true) }
+
+      it "returns :member" do
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+
+      it "returns :member even when a Lead row exists" do
+        create(:lead, user: stage_user, operator: stage_operator)
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+
+      it "returns :member even when the user has a recent day pass" do
+        create(:day_pass, user: stage_user, billable: stage_user,
+               operator: stage_operator, location: stage_location,
+               day: 5.days.ago.to_date)
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+    end
+
+    context "with subscription ended within the grace window" do
+      before do
+        log_activity(stage_user, "subscription_ended",
+                     (User::DEFAULT_PAST_MEMBER_GRACE_DAYS - 5).days.ago)
+      end
+
+      it "returns :member (still in grace)" do
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+    end
+
+    context "with subscription ended past the grace window" do
+      before do
+        log_activity(stage_user, "subscription_ended",
+                     (User::DEFAULT_PAST_MEMBER_GRACE_DAYS + 5).days.ago)
+      end
+
+      it "returns :past_member" do
+        expect(stage_user.lifecycle_stage).to eq(:past_member)
+      end
+    end
+
+    context "with a day pass in the last 30 days and no active subscription" do
+      before do
+        create(:day_pass, user: stage_user, billable: stage_user,
+               operator: stage_operator, location: stage_location,
+               day: 10.days.ago.to_date)
+      end
+
+      it "returns :day_passer" do
+        expect(stage_user.lifecycle_stage).to eq(:day_passer)
+      end
+    end
+
+    context "with a recent day pass and a long-expired subscription" do
+      before do
+        log_activity(stage_user, "subscription_ended",
+                     (User::DEFAULT_PAST_MEMBER_GRACE_DAYS + 30).days.ago)
+        create(:day_pass, user: stage_user, billable: stage_user,
+               operator: stage_operator, location: stage_location,
+               day: 5.days.ago.to_date)
+      end
+
+      it "returns :day_passer (recent day pass beats past membership)" do
+        expect(stage_user.lifecycle_stage).to eq(:day_passer)
+      end
+    end
+
+    context "previously active, no recent visits, no recent day pass" do
+      before do
+        log_activity(stage_user, "checkin", 60.days.ago)
+      end
+
+      it "returns :quiet" do
+        expect(stage_user.lifecycle_stage).to eq(:quiet)
+      end
+    end
+
+    context "previously active with a checkin within the last 30 days" do
+      before do
+        log_activity(stage_user, "checkin", 60.days.ago)
+        log_activity(stage_user, "checkin", 5.days.ago)
+      end
+
+      it "does not return :quiet" do
+        expect(stage_user.lifecycle_stage).not_to eq(:quiet)
+      end
+    end
+
+    context "with a Lead row but no engagement" do
+      before { create(:lead, user: stage_user, operator: stage_operator) }
+
+      it "returns :tour_taker" do
+        expect(stage_user.lifecycle_stage).to eq(:tour_taker)
+      end
+    end
+
+    context "with a tour Activity but no Lead" do
+      before { log_activity(stage_user, "tour", 7.days.ago) }
+
+      it "returns :tour_taker" do
+        expect(stage_user.lifecycle_stage).to eq(:tour_taker)
+      end
+    end
+
+    context "with no other state" do
+      it "returns :tour_taker as the catch-all" do
+        expect(stage_user.lifecycle_stage).to eq(:tour_taker)
+      end
+    end
+  end
+
+  describe ".in_stage" do
+    let(:stage_operator) { create(:operator) }
+    let(:stage_location) { create(:location, operator: stage_operator) }
+
+    def user_in(operator, current_location:)
+      create(:user, operator: operator, current_location: current_location)
+    end
+
+    def log_activity(user, kind, occurred_at)
+      Activity.create!(user: user, operator: user.operator, kind: kind,
+                       occurred_at: occurred_at, subject: user)
+    end
+
+    let!(:member) do
+      u = user_in(stage_operator, current_location: stage_location)
+      create(:subscription, subscribable: u, billable: u, active: true)
+      u
+    end
+
+    let!(:past_member) do
+      u = user_in(stage_operator, current_location: stage_location)
+      log_activity(u, "subscription_ended", (User::DEFAULT_PAST_MEMBER_GRACE_DAYS + 10).days.ago)
+      u
+    end
+
+    let!(:day_passer) do
+      u = user_in(stage_operator, current_location: stage_location)
+      create(:day_pass, user: u, billable: u, operator: stage_operator,
+             location: stage_location, day: 5.days.ago.to_date)
+      u
+    end
+
+    let!(:quiet_user) do
+      u = user_in(stage_operator, current_location: stage_location)
+      log_activity(u, "checkin", 60.days.ago)
+      u
+    end
+
+    let!(:tour_taker) do
+      u = user_in(stage_operator, current_location: stage_location)
+      log_activity(u, "tour", 5.days.ago)
+      u
+    end
+
+    it "returns users in :member stage" do
+      expect(User.in_stage(:member)).to contain_exactly(member)
+    end
+
+    it "returns users in :past_member stage" do
+      expect(User.in_stage(:past_member)).to contain_exactly(past_member)
+    end
+
+    it "returns users in :day_passer stage" do
+      expect(User.in_stage(:day_passer)).to contain_exactly(day_passer)
+    end
+
+    it "returns users in :quiet stage" do
+      expect(User.in_stage(:quiet)).to contain_exactly(quiet_user)
+    end
+
+    it "returns users in :tour_taker stage" do
+      expect(User.in_stage(:tour_taker)).to contain_exactly(tour_taker)
+    end
+
+    it "is consistent with #lifecycle_stage for each user" do
+      [member, past_member, day_passer, quiet_user, tour_taker].each do |u|
+        expect(User.in_stage(u.lifecycle_stage)).to include(u)
+      end
+    end
+  end
 end

@@ -185,16 +185,18 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 3.1 — Stage query method
 
-- [ ] Write spec for `User#lifecycle_stage` returning one of `:member, :day_passer, :tour_taker, :past_member, :quiet`.
-- [ ] Build cases driven by:
+- [x] Write spec for `User#lifecycle_stage` returning one of `:member, :day_passer, :tour_taker, :past_member, :quiet`.
+- [x] Build cases driven by:
   - `:member` if active subscription
   - `:past_member` if subscription ended > location.past_member_grace_days ago
   - `:day_passer` if day pass within last 30 days, no active subscription
   - `:quiet` if was active but no checkin/door_punch/reservation in 30 days
   - `:tour_taker` otherwise (has Lead row OR has tour activity)
-- [ ] Add `User.in_stage(stage)` scope using activity + subscription joins (no enum column).
-- [ ] Spec edge cases: someone with both an active subscription AND a Lead row = `:member` (subscription wins).
-- [ ] **Commit:** "Derive User#lifecycle_stage from data"
+- [x] Add `User.in_stage(stage)` scope using activity + subscription joins (no enum column).
+- [x] Spec edge cases: someone with both an active subscription AND a Lead row = `:member` (subscription wins).
+- [x] **Commit:** "Derive User#lifecycle_stage from data"
+
+  *Implementation note:* Per ADR-0002, no `lifecycle_stage` column added. Grace days is currently `User::DEFAULT_PAST_MEMBER_GRACE_DAYS = 180`; Phase 3.2 will swap to per-location lookup. CONTEXT.md's "members in grace still show as Member" honored — the in-grace check sits inside the `:member` branch. `:day_passer` takes precedence over `:past_member` (a returning past member who buys a day pass shows as `:day_passer`).
 
 ### 3.2 — Per-location grace days
 
