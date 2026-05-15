@@ -142,4 +142,47 @@ RSpec.describe Invoice, type: :model do
       end
     end
   end
+
+  describe "activity logging" do
+    let(:user) { create(:user) }
+    let(:logged_operator) { create(:operator) }
+
+    it "logs :payment_succeeded when status flips to 'paid'" do
+      invoice = create(:invoice, billable: user, operator: logged_operator, status: "open")
+
+      expect { invoice.update!(status: "paid") }.to change(Activity, :count).by(1)
+      activity = Activity.last
+      expect(activity.kind).to eq("payment_succeeded")
+      expect(activity.user).to eq(user)
+      expect(activity.subject).to eq(invoice)
+    end
+
+    it "logs :payment_failed when status flips to 'uncollectible'" do
+      invoice = create(:invoice, billable: user, operator: logged_operator, status: "open")
+
+      expect { invoice.update!(status: "uncollectible") }.to change(Activity, :count).by(1)
+      expect(Activity.last.kind).to eq("payment_failed")
+    end
+
+    it "does not log on unrelated status transitions (e.g. void)" do
+      invoice = create(:invoice, billable: user, operator: logged_operator, status: "open")
+      expect { invoice.update!(status: "void") }.not_to change(Activity, :count)
+    end
+
+    it "does not log when billable is not a User (e.g. Organization)" do
+      invoice = create(:invoice, status: "open") # factory default is Organization billable
+      expect { invoice.update!(status: "paid") }.not_to change(Activity, :count)
+    end
+
+    it "denormalizes amount, status, and invoice number into payload" do
+      invoice = create(:invoice, billable: user, operator: logged_operator, status: "open", amount_due: 5000, amount_paid: 0)
+      invoice.update!(status: "paid", amount_paid: 5000)
+
+      payload = Activity.last.payload
+      expect(payload["amount_due"]).to eq(5000)
+      expect(payload["amount_paid"]).to eq(5000)
+      expect(payload["status"]).to eq("paid")
+      expect(payload["number"]).to eq(invoice.number)
+    end
+  end
 end
