@@ -162,5 +162,54 @@ RSpec.describe Subscription, type: :model do
         expect { subscription.destroy }.to raise_error(RuntimeError, /Cancel Stripe Subscription first/)
       end
     end
+
+    describe "activity logging" do
+      let(:user) { create(:user) }
+
+      it "logs :subscription_started on create when subscribable is a User" do
+        expect {
+          create(:subscription, subscribable: user, billable: user)
+        }.to change(Activity, :count).by(1)
+
+        activity = Activity.last
+        expect(activity.kind).to eq("subscription_started")
+        expect(activity.user).to eq(user)
+        expect(activity.subject).to eq(Subscription.last)
+      end
+
+      it "denormalizes plan name and start_date into payload" do
+        subscription = create(:subscription, subscribable: user, billable: user)
+        payload = Activity.last.payload
+
+        expect(payload["plan_name"]).to eq(subscription.plan.pretty_name)
+        expect(payload["start_date"]).to eq(subscription.start_date.iso8601)
+      end
+
+      it "logs :subscription_ended when active flips from true to false" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+
+        expect { subscription.update!(active: false) }.to change(Activity, :count).by(1)
+        expect(Activity.last.kind).to eq("subscription_ended")
+      end
+
+      it "does not log :subscription_ended on unrelated updates" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+
+        expect { subscription.update!(paused: true) }.not_to change(Activity.where(kind: "subscription_ended"), :count)
+      end
+
+      it "does not log :subscription_ended twice if active is reset" do
+        subscription = create(:subscription, subscribable: user, billable: user, active: true)
+        subscription.update!(active: false)
+
+        expect { subscription.update!(active: false) }.not_to change(Activity, :count)
+      end
+
+      it "does not log when subscribable is not a User (e.g. Organization)" do
+        expect {
+          create(:subscription, :for_organization)
+        }.not_to change(Activity, :count)
+      end
+    end
   end
 end
