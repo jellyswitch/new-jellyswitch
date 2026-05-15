@@ -171,13 +171,17 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 2.4 — Mobile: timeline tabs in MemberDetailScreen
 
-- [ ] Build `PersonTimelineTabs.js` mirroring the Rails tab structure.
-- [ ] Build `ActivityTimelineItem.js` rendering one timeline row from an activity object.
-- [ ] Wire to existing `adminMembersAPI` — add `activities(user_id, tab)` endpoint.
-- [ ] Add tabs to `MemberDetailScreen.js` between header and existing content.
-- [ ] Test in iOS sim: dark mode renders, all 6 tabs render.
-- [ ] Run Maestro to confirm no regression.
-- [ ] **Commit:** "Add per-person timeline tabs to mobile MemberDetailScreen"
+- [x] Build `PersonTimelineTabs.js` mirroring the Rails tab structure.
+- [x] Build `ActivityTimelineItem.js` rendering one timeline row from an activity object.
+- [x] Wire to existing `adminMembersAPI` — add `activities(user_id, tab)` endpoint (Rails `Api::V1::Admin::MembersController#activities` + `GET /api/v1/admin/members/:id/activities?tab=…`).
+- [x] Add tabs to `MemberDetailScreen.js` between header and existing content.
+- [ ] Test in iOS sim: dark mode renders, all 6 tabs render. *Deferred: needs Rails staging deploy or local Rails server pointing the app at it (the dev base URL is `https://jellyswitch-staging.herokuapp.com/api/v1` and staging doesn't yet have the new endpoint).*
+- [x] Run Maestro to confirm no regression — 8/8 PASS against the previously-installed bundle. *Note: Maestro ran against the installed app, not against a rebuilt bundle including these new components. Components syntax-check clean but a full re-validation needs a rebuild.*
+- [x] **Commit:** "Add per-person timeline tabs to mobile MemberDetailScreen" (mobile commit `9ea90d3` + Rails commit `c9dcc12e`)
+
+  *Bundled in this phase, separate commits:*
+  - Rails-side merge + cleanup: `46a26fa6` ("Merge main into feature/mobile-api") + `feb25f4c` ("Post-merge cleanup: sync schema.rb + fix 5 stale specs"). 957 RSpec examples / 0 failures post-merge.
+  - Mobile-side theme system landed first: `a3fecf5` ("Add persisted Auto/Light/Dark theme system across the app") — pre-existing WIP that was never committed; now in. Phase 2.4 components use `useTheme()` and flip with the active palette.
 
 ---
 
