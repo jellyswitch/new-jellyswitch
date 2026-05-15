@@ -96,6 +96,18 @@ class User < ApplicationRecord
   has_secure_password
 
   after_commit :sync_to_mailchimp, if: -> { operator.mailchimp_api_key.present? && saved_change_to_approved? }
+  after_create :log_signup_activity
+
+  def log_signup_activity
+    Activity.log(user: self, kind: :signup, subject: self, operator: operator)
+  end
+
+  def to_activity_payload
+    {
+      "name" => name,
+      "email" => email,
+    }
+  end
 
   # Scopes
   scope :approved, -> { where(approved: true) }

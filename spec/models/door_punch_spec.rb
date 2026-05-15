@@ -47,13 +47,13 @@ RSpec.describe DoorPunch, type: :model do
   end
 
   describe "activity logging" do
-    it "creates exactly one Activity of kind 'door_punch' on create" do
+    it "creates exactly one :door_punch Activity on create" do
+      user # force creation outside the expect block
       expect {
         create(:door_punch, operator: operator, user: user, door: door)
-      }.to change(Activity, :count).by(1)
+      }.to change(Activity.where(kind: "door_punch"), :count).by(1)
 
-      activity = Activity.last
-      expect(activity.kind).to eq("door_punch")
+      activity = Activity.where(kind: "door_punch").last
       expect(activity.user).to eq(user)
       expect(activity.operator).to eq(operator)
       expect(activity.subject).to eq(DoorPunch.last)

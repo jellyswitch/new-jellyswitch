@@ -113,7 +113,8 @@ RSpec.describe Activity, type: :model do
       newest = Activity.create!(user: user, operator: operator, kind: 'tour',     occurred_at: 1.hour.ago)
       middle = Activity.create!(user: user, operator: operator, kind: 'checkin',  occurred_at: 1.day.ago)
 
-      expect(Activity.recent.to_a).to eq([newest, middle, older])
+      ids = [older.id, newest.id, middle.id]
+      expect(Activity.where(id: ids).recent.to_a).to eq([newest, middle, older])
     end
   end
 end

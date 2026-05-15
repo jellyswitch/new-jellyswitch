@@ -104,10 +104,10 @@ RSpec.describe DayPass, type: :model do
   describe "activity logging" do
     let(:user) { create(:user) }
 
-    it "creates exactly one Activity of kind 'day_pass' on create" do
-      expect { create(:day_pass, user: user) }.to change(Activity, :count).by(1)
-      activity = Activity.last
-      expect(activity.kind).to eq("day_pass")
+    it "creates exactly one :day_pass Activity on create" do
+      user # force creation outside the expect block
+      expect { create(:day_pass, user: user) }.to change(Activity.where(kind: "day_pass"), :count).by(1)
+      activity = Activity.where(kind: "day_pass").last
       expect(activity.user).to eq(user)
       expect(activity.subject).to eq(DayPass.last)
     end

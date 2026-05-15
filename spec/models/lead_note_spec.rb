@@ -7,12 +7,12 @@ RSpec.describe LeadNote, type: :model do
     let(:operator) { create(:operator) }
     let(:lead) { create(:lead, user: prospect, operator: operator) }
 
-    it "creates exactly one Activity of kind 'note' on create" do
+    it "creates exactly one :note Activity on create" do
+      lead   # force creation (lead factory creates prospect User, which logs a signup Activity)
+      author # ditto for author User
       expect {
         create(:lead_note, lead: lead, user: author)
-      }.to change(Activity, :count).by(1)
-
-      expect(Activity.last.kind).to eq("note")
+      }.to change(Activity.where(kind: "note"), :count).by(1)
     end
 
     it "puts the activity on the prospect's timeline, not the author's" do

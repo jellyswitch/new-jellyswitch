@@ -167,12 +167,12 @@ RSpec.describe Subscription, type: :model do
       let(:user) { create(:user) }
 
       it "logs :subscription_started on create when subscribable is a User" do
+        user # force creation outside expect (signup Activity belongs to this user)
         expect {
           create(:subscription, subscribable: user, billable: user)
-        }.to change(Activity, :count).by(1)
+        }.to change(Activity.where(kind: "subscription_started"), :count).by(1)
 
-        activity = Activity.last
-        expect(activity.kind).to eq("subscription_started")
+        activity = Activity.where(kind: "subscription_started").last
         expect(activity.user).to eq(user)
         expect(activity.subject).to eq(Subscription.last)
       end
@@ -205,10 +205,10 @@ RSpec.describe Subscription, type: :model do
         expect { subscription.update!(active: false) }.not_to change(Activity, :count)
       end
 
-      it "does not log when subscribable is not a User (e.g. Organization)" do
+      it "does not log subscription_started/ended when subscribable is not a User (e.g. Organization)" do
         expect {
           create(:subscription, :for_organization)
-        }.not_to change(Activity, :count)
+        }.not_to change(Activity.where(kind: ["subscription_started", "subscription_ended"]), :count)
       end
     end
   end

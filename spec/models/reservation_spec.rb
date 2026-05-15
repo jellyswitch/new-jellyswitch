@@ -215,13 +215,11 @@ RSpec.describe Reservation, type: :model do
   describe "activity logging" do
     let(:user) { create(:user) }
 
-    it "creates exactly one Activity of kind 'reservation' on create" do
+    it "creates exactly one :reservation Activity on create" do
+      user # force creation before the expect block so user-signup Activity isn't counted
       expect {
         create(:reservation, user: user, room: room)
-      }.to change(Activity, :count).by(1)
-
-      activity = Activity.last
-      expect(activity.kind).to eq("reservation")
+      }.to change(Activity.where(kind: "reservation"), :count).by(1)
     end
 
     it "associates the activity with the user, operator, and reservation" do
