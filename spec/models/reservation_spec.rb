@@ -212,6 +212,38 @@ RSpec.describe Reservation, type: :model do
     end
   end
 
+  describe "activity logging" do
+    let(:user) { create(:user) }
+
+    it "creates exactly one Activity of kind 'reservation' on create" do
+      expect {
+        create(:reservation, user: user, room: room)
+      }.to change(Activity, :count).by(1)
+
+      activity = Activity.last
+      expect(activity.kind).to eq("reservation")
+    end
+
+    it "associates the activity with the user, operator, and reservation" do
+      reservation = create(:reservation, user: user, room: room)
+      activity = Activity.last
+
+      expect(activity.user).to eq(user)
+      expect(activity.operator).to eq(room.location.operator)
+      expect(activity.subject).to eq(reservation)
+    end
+
+    it "denormalizes room_name, location_name, timing into payload" do
+      reservation = create(:reservation, user: user, room: room, minutes: 90)
+      activity = Activity.last
+
+      expect(activity.payload["room_name"]).to eq(room.name)
+      expect(activity.payload["location_name"]).to eq(room.location.name)
+      expect(activity.payload["minutes"]).to eq(90)
+      expect(activity.payload["datetime_in"]).to be_present
+    end
+  end
+
   describe "DST transition" do
     before { Time.zone = "Pacific Time (US & Canada)" }
 

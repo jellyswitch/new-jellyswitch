@@ -43,6 +43,21 @@ class Reservation < ApplicationRecord
 
   delegate :operator, :location, to: :room
 
+  after_create :log_activity
+
+  def log_activity
+    Activity.log(user: user, kind: :reservation, subject: self)
+  end
+
+  def to_activity_payload
+    {
+      "room_name" => room&.name,
+      "location_name" => room&.location&.name,
+      "datetime_in" => datetime_in&.iso8601,
+      "minutes" => minutes,
+    }
+  end
+
   REMINDER_OFFSET_MINUTES = 10.minutes.freeze
 
   def pretty_datetime
