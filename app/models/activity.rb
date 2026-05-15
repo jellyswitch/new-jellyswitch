@@ -54,7 +54,17 @@ class Activity < ApplicationRecord
 
   scope :recent, -> { order(occurred_at: :desc) }
 
+  after_create :assign_default_point_of_contact_on_tour
+
   def self.log(**kwargs)
     ActivityLogger.log(**kwargs)
+  end
+
+  private
+
+  def assign_default_point_of_contact_on_tour
+    return unless kind.to_s == "tour"
+    return if user.point_of_contact_id.present?
+    user.assign_default_point_of_contact!
   end
 end

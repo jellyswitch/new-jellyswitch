@@ -21,6 +21,12 @@ class Lead < ApplicationRecord
 
   after_create :set_status
   after_create :set_source
+  after_create :assign_default_point_of_contact_to_user
+
+  def assign_default_point_of_contact_to_user
+    return if user.point_of_contact_id.present?
+    user.assign_default_point_of_contact!
+  end
 
   SOURCES = {
     web: "web",

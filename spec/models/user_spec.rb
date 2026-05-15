@@ -50,6 +50,84 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe "#assign_default_point_of_contact!" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let!(:gm) { create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location) }
+    let!(:admin) { create(:user, operator: operator, role: User::ADMIN, current_location: location) }
+
+    it "assigns the location's general-manager when one exists" do
+      member = create(:user, operator: operator, current_location: location, point_of_contact: nil)
+      member.update_column(:point_of_contact_id, nil)  # in case after_create assigned
+      member.assign_default_point_of_contact!
+      expect(member.reload.point_of_contact).to eq(gm)
+    end
+
+    it "falls back to an admin when no GM at the location" do
+      gm.update!(current_location: nil)
+      member = create(:user, operator: operator, current_location: location)
+      member.update_column(:point_of_contact_id, nil)
+      member.assign_default_point_of_contact!
+      expect(member.reload.point_of_contact).to eq(admin)
+    end
+
+    it "is a no-op when point_of_contact is already set" do
+      other_gm = create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location)
+      member = create(:user, operator: operator, current_location: location)
+      member.update!(point_of_contact: other_gm)
+      member.assign_default_point_of_contact!
+      expect(member.reload.point_of_contact).to eq(other_gm)
+    end
+
+    it "does not assign a PoC to staff users themselves" do
+      new_gm = create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location)
+      expect(new_gm.point_of_contact).to be_nil
+    end
+
+    it "is a no-op when no GM and no admin exists" do
+      gm.destroy
+      admin.destroy
+      member = create(:user, operator: operator, current_location: location)
+      member.update_column(:point_of_contact_id, nil)
+      expect { member.assign_default_point_of_contact! }.not_to raise_error
+      expect(member.reload.point_of_contact).to be_nil
+    end
+  end
+
+  describe "automatic point-of-contact assignment" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let!(:gm) { create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location) }
+
+    it "is set on User.after_create for new members" do
+      member = create(:user, operator: operator, current_location: location)
+      expect(member.point_of_contact).to eq(gm)
+    end
+
+    it "is set when a tour Activity is logged for a PoC-less user" do
+      pocless = create(:user, operator: operator, current_location: nil)
+      pocless.update_column(:point_of_contact_id, nil)
+      pocless.update!(current_location: location)
+      Activity.log(user: pocless, kind: :tour, operator: operator, subject: pocless)
+      expect(pocless.reload.point_of_contact).to eq(gm)
+    end
+
+    it "is set when a Lead is created for a PoC-less user" do
+      pocless = create(:user, operator: operator, current_location: nil)
+      pocless.update_column(:point_of_contact_id, nil)
+      pocless.update!(current_location: location)
+      create(:lead, user: pocless, operator: operator)
+      expect(pocless.reload.point_of_contact).to eq(gm)
+    end
+
+    it "does not overwrite an existing PoC when a tour Activity is logged" do
+      other_gm = create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location)
+      member = create(:user, operator: operator, current_location: location, point_of_contact: other_gm)
+      Activity.log(user: member, kind: :tour, operator: operator, subject: member)
+      expect(member.reload.point_of_contact).to eq(other_gm)
+    end
+  end
+
   describe 'scopes' do
     let!(:approved_user) { create(:user, approved: true, operator: operator) }
     let!(:unapproved_user) { create(:user, approved: false, operator: operator) }

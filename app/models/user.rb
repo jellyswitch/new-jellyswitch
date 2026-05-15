@@ -102,6 +102,7 @@ class User < ApplicationRecord
 
   after_commit :sync_to_mailchimp, if: -> { operator.mailchimp_api_key.present? && saved_change_to_approved? }
   after_create :log_signup_activity
+  after_create :assign_default_point_of_contact!
 
   has_many :activities, dependent: :destroy
 
@@ -117,6 +118,20 @@ class User < ApplicationRecord
 
   def log_signup_activity
     Activity.log(user: self, kind: :signup, subject: self, operator: operator)
+  end
+
+  # Auto-assigns a default point-of-contact when this Person doesn't have one.
+  # Priority: current_location's general-manager → operator's primary admin.
+  # No-op if PoC already set, if the user is staff themselves, or if no
+  # candidate exists. Phase 4.3 will add a manual reassignment UI.
+  STAFF_ROLES = %w[community-manager general-manager admin superadmin].freeze
+
+  def assign_default_point_of_contact!
+    return if point_of_contact_id.present?
+    return if STAFF_ROLES.include?(role)
+
+    candidate = default_point_of_contact_candidate
+    update_column(:point_of_contact_id, candidate.id) if candidate
   end
 
   def to_activity_payload
@@ -214,6 +229,15 @@ class User < ApplicationRecord
     activities.where(kind: LIFECYCLE_VISIT_KINDS)
               .where("occurred_at >= ?", QUIET_THRESHOLD_DAYS.days.ago)
               .exists?
+  end
+
+  def default_point_of_contact_candidate
+    if current_location
+      gm = operator.users.where(role: "general-manager", current_location_id: current_location.id)
+                          .order(:created_at).first
+      return gm if gm
+    end
+    operator.users.where(role: "admin").order(:created_at).first
   end
 
   public

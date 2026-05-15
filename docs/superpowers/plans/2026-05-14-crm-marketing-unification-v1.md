@@ -270,13 +270,19 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 4.2 — Default assignment
 
-- [ ] Helper `User#assign_default_point_of_contact!` — picks current_location's GM, falls back to operator's primary admin.
-- [ ] Hook into:
+- [x] Helper `User#assign_default_point_of_contact!` — picks current_location's GM, falls back to operator's primary admin.
+- [x] Hook into:
   - `User.after_create` (signup path)
   - `Activity.log(kind: :tour)` (on first tour with no PoC)
   - Lead creation
-- [ ] Skip if PoC already set (consistency rule).
-- [ ] **Commit:** "Auto-assign default point of contact"
+- [x] Skip if PoC already set (consistency rule).
+- [x] **Commit:** "Auto-assign default point of contact"
+
+  *Notes:*
+  - Uses `update_column(:point_of_contact_id, ...)` to skip validations and callbacks (avoids re-firing User's own after_create chain on a stale record).
+  - Staff users (admin/general-manager/community-manager/superadmin per `User::STAFF_ROLES`) skip the assignment — a GM doesn't get themselves as a PoC.
+  - Candidate priority: GM at `current_location` (oldest by `created_at`) → fall back to operator's oldest admin. Returns nil if neither exists; assignment is a silent no-op in that case.
+  - Hooks: `User.after_create` (right after `log_signup_activity`), `Activity.after_create` (when kind == "tour"), `Lead.after_create`.
 
 ### 4.3 — UI
 
