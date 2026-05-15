@@ -179,6 +179,9 @@ Rails.application.routes.draw do
         get 'members/:id/usage', to: 'members#usage'
         get 'members/:id/activities', to: 'members#activities'
 
+        # People (lifecycle-stage filtered list)
+        get 'people', to: 'people#index'
+
         # Reservations
         get 'reservations', to: 'reservations#index'
         get 'reservations/calendar', to: 'reservations#calendar'
