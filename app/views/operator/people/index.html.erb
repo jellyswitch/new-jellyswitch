@@ -11,9 +11,15 @@
     <% Operator::PeopleController::STAGE_LABELS.each do |key, label| %>
       <% active = @stage == key %>
       <%= link_to label,
-                  people_path(stage: key == "all" ? nil : key),
+                  people_path(stage: key == "all" ? nil : key, owned_by_me: @owned_by_me ? 1 : nil),
                   class: "btn btn-sm #{active ? 'btn-primary' : 'btn-outline-secondary'} mr-1 mb-1" %>
     <% end %>
+  </div>
+
+  <div class="text-center mb-3">
+    <%= link_to (@owned_by_me ? "Showing only people I own" : "People I own"),
+                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1),
+                class: "btn btn-sm #{@owned_by_me ? 'btn-primary' : 'btn-outline-secondary'}" %>
   </div>
 
   <% if @people.any? %>
@@ -33,6 +39,9 @@
                   Last activity: <%= time_ago_in_words(last) %> ago
                 <% else %>
                   No activity yet
+                <% end %>
+                <% if person.point_of_contact %>
+                  · Owner: <%= person.point_of_contact.name %>
                 <% end %>
               </div>
             </div>

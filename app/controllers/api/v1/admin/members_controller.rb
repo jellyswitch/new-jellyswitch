@@ -68,6 +68,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       marketing_suppressed: user.marketing_suppressed,
       marketing_suppressed_reason: user.marketing_suppressed_reason,
       inactive_dismissed_at: user.inactive_dismissed_at&.iso8601,
+      point_of_contact_id: user.point_of_contact_id,
+      point_of_contact_name: user.point_of_contact&.name,
     }
   end
 

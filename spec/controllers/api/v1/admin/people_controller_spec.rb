@@ -68,6 +68,27 @@ RSpec.describe Api::V1::Admin::PeopleController, type: :controller do
         body = JSON.parse(response.body)
         expect(body["stage"]).to eq("all")
       end
+
+      it "filters to people owned by the current_api_user when owned_by_me=1" do
+        owned = create(:user, operator: operator, current_location: location,
+                              name: "Owned", point_of_contact: admin_user)
+        get :index, params: { owned_by_me: 1 }
+        body = JSON.parse(response.body)
+        expect(body["owned_by_me"]).to be true
+        ids = body["people"].map { |p| p["id"] }
+        expect(ids).to include(owned.id)
+        expect(ids).not_to include(member.id)
+      end
+
+      it "returns point_of_contact_name in each person row" do
+        owner = create(:user, operator: operator, role: User::GENERAL_MANAGER,
+                              current_location: location)
+        member.update!(point_of_contact: owner)
+        get :index
+        body = JSON.parse(response.body)
+        person = body["people"].find { |p| p["id"] == member.id }
+        expect(person["point_of_contact_name"]).to eq(owner.name)
+      end
     end
 
     context "when authenticated as a non-admin user" do

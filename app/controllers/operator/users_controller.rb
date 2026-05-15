@@ -95,6 +95,43 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
+  def reassign_point_of_contact
+    find_user(:user_id)
+    authorize @user, :reassign_point_of_contact?
+
+    previous_owner = @user.point_of_contact
+    new_owner_id = params[:point_of_contact_id].presence
+    new_owner = new_owner_id.present? ? current_tenant.users.find_by(id: new_owner_id) : nil
+
+    if @user.update(point_of_contact: new_owner)
+      log_owner_reassigned(previous_owner, new_owner) if previous_owner != new_owner
+      flash[:success] = new_owner ? "Owner set to #{new_owner.name}." : "Owner cleared."
+    else
+      flash[:error] = "Could not update owner."
+    end
+
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
+  private
+
+  def log_owner_reassigned(previous_owner, new_owner)
+    Activity.log(
+      user: @user,
+      operator: current_tenant,
+      kind: :note,
+      payload: {
+        "owner_reassigned" => true,
+        "previous_owner_name" => previous_owner&.name,
+        "new_owner_name" => new_owner&.name,
+        "actor_user_id" => current_user.id,
+        "actor_name" => current_user.name,
+      },
+    )
+  end
+
+  public
+
   def ltv
     find_user(:user_id)
     authorize @user

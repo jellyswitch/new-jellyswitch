@@ -518,4 +518,69 @@ RSpec.describe Operator::UsersController, type: :controller do
       end
     end
   end
+
+  describe "PATCH #reassign_point_of_contact" do
+    let!(:new_owner) { create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location) }
+    let!(:previous_owner) { create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location) }
+
+    before do
+      test_user.update!(point_of_contact: previous_owner)
+    end
+
+    context "when an admin reassigns to a different staff user" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "updates point_of_contact" do
+        patch :reassign_point_of_contact,
+              params: { user_id: test_user.id, point_of_contact_id: new_owner.id }
+        expect(test_user.reload.point_of_contact).to eq(new_owner)
+      end
+
+      it "logs an Activity of kind :note with owner_reassigned payload" do
+        expect {
+          patch :reassign_point_of_contact,
+                params: { user_id: test_user.id, point_of_contact_id: new_owner.id }
+        }.to change { Activity.where(user: test_user, kind: "note").count }.by(1)
+
+        activity = Activity.where(user: test_user, kind: "note").last
+        expect(activity.payload["owner_reassigned"]).to be true
+        expect(activity.payload["previous_owner_name"]).to eq(previous_owner.name)
+        expect(activity.payload["new_owner_name"]).to eq(new_owner.name)
+        expect(activity.payload["actor_user_id"]).to eq(admin_user.id)
+      end
+
+      it "does NOT log an Activity when the owner doesn't actually change" do
+        expect {
+          patch :reassign_point_of_contact,
+                params: { user_id: test_user.id, point_of_contact_id: previous_owner.id }
+        }.not_to change { Activity.where(user: test_user, kind: "note").count }
+      end
+
+      it "clears point_of_contact when given a blank value" do
+        patch :reassign_point_of_contact,
+              params: { user_id: test_user.id, point_of_contact_id: "" }
+        expect(test_user.reload.point_of_contact).to be_nil
+      end
+
+      it "redirects to the user path" do
+        patch :reassign_point_of_contact,
+              params: { user_id: test_user.id, point_of_contact_id: new_owner.id }
+        expect(response).to redirect_to(user_path(test_user))
+      end
+    end
+
+    context "when a non-admin tries to reassign" do
+      before { allow(controller).to receive(:current_user).and_return(regular_user) }
+
+      it "is blocked by Pundit" do
+        expect {
+          begin
+            patch :reassign_point_of_contact,
+                  params: { user_id: test_user.id, point_of_contact_id: new_owner.id }
+          rescue Pundit::NotAuthorizedError
+          end
+        }.not_to change { test_user.reload.point_of_contact }
+      end
+    end
+  end
 end

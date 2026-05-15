@@ -21,10 +21,13 @@ class Operator::PeopleController < Operator::BaseController
   def index
     authorize :person, :index?
     @stage = params[:stage].presence_in(STAGE_LABELS.keys) || "all"
+    @owned_by_me = ActiveModel::Type::Boolean.new.cast(params[:owned_by_me]) == true
+
     base_scope = current_tenant.users.visible.non_superadmins
     base_scope = base_scope.in_stage(@stage) unless @stage == "all"
+    base_scope = base_scope.where(point_of_contact_id: current_user.id) if @owned_by_me
 
-    @pagy, @people = pagy(base_scope.order(:name), items: 50)
+    @pagy, @people = pagy(base_scope.includes(:point_of_contact).order(:name), items: 50)
     @last_activity_by_user_id = Activity.where(user_id: @people.map(&:id))
                                         .group(:user_id)
                                         .maximum(:occurred_at)
@@ -40,6 +43,7 @@ class Operator::PeopleController < Operator::BaseController
   def people_json
     {
       stage: @stage,
+      owned_by_me: @owned_by_me,
       page: @pagy.page,
       total_pages: @pagy.pages,
       total_count: @pagy.count,
@@ -55,7 +59,7 @@ class Operator::PeopleController < Operator::BaseController
       photo_url: photo_url_for(user),
       lifecycle_stage: user.lifecycle_stage.to_s,
       last_activity_at: @last_activity_by_user_id[user.id]&.iso8601,
-      point_of_contact_name: nil,
+      point_of_contact_name: user.point_of_contact&.name,
     }
   end
 

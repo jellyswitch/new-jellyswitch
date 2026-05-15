@@ -286,11 +286,18 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 4.3 — UI
 
-- [ ] Add "Owned by [GM Sarah ▾]" dropdown on Person show page.
-- [ ] Permission-gated: only `admin` or `general_manager` can edit (Pundit policy).
-- [ ] On change: write Activity row of kind `note` saying "Owner reassigned from X to Y by Z."
-- [ ] Add "People I own" filter chip on People list.
-- [ ] **Commit:** "Add point-of-contact UI + filter"
+- [x] Add "Owned by [GM Sarah ▾]" dropdown on Person show page.
+- [x] Permission-gated: only `admin` or `general_manager` can edit (Pundit policy).
+- [x] On change: write Activity row of kind `note` saying "Owner reassigned from X to Y by Z."
+- [x] Add "People I own" filter chip on People list.
+- [x] **Commit:** "Add point-of-contact UI + filter"
+
+  *Notes:*
+  - Web dropdown auto-submits on change via `onchange="this.form.requestSubmit()"` (existing codebase pattern, no Stimulus controller needed). Route: `PATCH /users/:user_id/reassign_point_of_contact`.
+  - Owner-reassigned Activity has a distinctive payload (`owner_reassigned: true` + `previous_owner_name` + `new_owner_name` + `actor_name`). `activity_label` helper branches on this flag and renders "Owner reassigned from X to Y by Z" instead of the regular Note label.
+  - **Mobile parity choice:** Owner is displayed read-only on `MemberDetailScreen` (below the header badges); native editing is deferred to a future phase per the "near-full parity" softener and the documented web-only CRM authoring exception. The native People list has a full "People I own" toggle chip below the stage row.
+  - JSON: `point_of_contact_id` + `point_of_contact_name` added to `GET /api/v1/admin/members/:id` and to every person row in both People list endpoints.
+  - PoC filter param: `?owned_by_me=1` on both `/people` and `/api/v1/admin/people`. Mobile maps it to `ownedByMe` (camelCase) on the client method.
 
 ### 4.4 — Notifications
 

@@ -76,5 +76,37 @@ RSpec.describe Operator::PeopleController, type: :controller do
         expect(response).to redirect_to(root_path)
       end
     end
+
+    context "with owned_by_me filter" do
+      let!(:owned_member) do
+        create(:user, operator: operator, current_location: location, name: "Owned",
+                      point_of_contact: admin_user)
+      end
+      let!(:other_member) do
+        create(:user, operator: operator, current_location: location, name: "Other")
+      end
+
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "filters to people owned by the current user when owned_by_me=1" do
+        get :index, params: { owned_by_me: 1 }
+        expect(assigns(:owned_by_me)).to be true
+        expect(assigns(:people).map(&:id)).to include(owned_member.id)
+        expect(assigns(:people).map(&:id)).not_to include(other_member.id)
+      end
+
+      it "ignores the filter when owned_by_me is unset" do
+        get :index
+        expect(assigns(:owned_by_me)).to be false
+        expect(assigns(:people).map(&:id)).to include(owned_member.id, other_member.id)
+      end
+
+      it "surfaces point_of_contact_name in JSON" do
+        get :index, params: { owned_by_me: 1 }, format: :json
+        body = JSON.parse(response.body)
+        expect(body["owned_by_me"]).to be true
+        expect(body["people"].first["point_of_contact_name"]).to eq(admin_user.name)
+      end
+    end
   end
 end

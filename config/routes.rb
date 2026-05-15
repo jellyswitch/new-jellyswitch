@@ -792,6 +792,7 @@ Rails.application.routes.draw do
     get :invoices, to: "operator/users#invoices"
     post :log_tour, to: "operator/users#log_tour"
     post :add_note, to: "operator/users#add_note"
+    patch :reassign_point_of_contact, to: "operator/users#reassign_point_of_contact"
     get :ltv, to: "operator/users#ltv"
     get :membership, to: "operator/users#membership"
     get :memberships, to: "operator/users#memberships"
