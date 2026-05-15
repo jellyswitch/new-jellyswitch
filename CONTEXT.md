@@ -9,7 +9,7 @@ For architectural decisions (the *why* behind the vocabulary), see `docs/adr/`.
 ## CRM / Marketing
 
 ### Person
-A unified entity representing anyone in the operator's universe: members, past members, day-passers, tour-takers, and prospects. Underneath, every Person is a `User` row. There is **no separate Person model or Person profile screen** — the operator's existing admin member-detail page (`app/views/operator/users/show.html.erb`, mobile `MemberDetailScreen.js`) serves as the unified Person view.
+A unified entity representing anyone in the operator's universe: members, past members, day-passers, tour-takers, and prospects. Underneath, every Person is a `User` row. There is **no separate Person model or Person profile screen** — the operator's existing admin member-detail page (`app/views/operator/users/profile.html.erb`, mobile `MemberDetailScreen.js`) serves as the unified Person view. Note: `Operator::UsersController#show` renders `show.html.erb` when `@user == current_user` (member self-view) and `profile.html.erb` otherwise (admin-viewing-member). The CRM timeline lives on `profile.html.erb` — the admin-facing surface.
 
 **Do not say "Contact" or "Lead" in operator-facing UI.** Use "Person" or the lifecycle-stage label.
 

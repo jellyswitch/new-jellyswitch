@@ -47,6 +47,8 @@
 
       <% end %>
 
+      <%= render "timeline", user: @user, active_tab: @active_tab %>
+
       <%= link_to user_about_path(@user), class: "list-group-item list-group-item-action m-0" do %>
         <div class="row">
           <div class="col-lg-10 col-11">

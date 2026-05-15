@@ -1,0 +1,11 @@
+<%# Tabbed activity timeline for the unified Person view. Loads inside a
+    Turbo Frame so tab clicks swap content without a full page reload. %>
+<%= turbo_frame_tag "person_timeline" do %>
+  <div class="person-timeline list-item p-0 mb-3" style="background: #fff;">
+    <%= render "timeline_tabs", user: user, active_tab: active_tab %>
+
+    <div class="timeline-body px-3 py-3">
+      <%= render "timeline_#{active_tab}", user: user %>
+    </div>
+  </div>
+<% end %>

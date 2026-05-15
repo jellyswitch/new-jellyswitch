@@ -37,11 +37,14 @@ class Operator::UsersController < Operator::BaseController
     render :archived
   end
 
+  TIMELINE_TABS = %w[recent emails tours reservations payments notes].freeze
+
   def show
     find_user
     authorize @user
 
     @usage_report = Jellyswitch::UsageReport.new(@user)
+    @active_tab = TIMELINE_TABS.include?(params[:tab]) ? params[:tab] : "recent"
 
     if @user == current_user
       render :show

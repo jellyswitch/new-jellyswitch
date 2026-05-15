@@ -1,0 +1,9 @@
+<div class="d-flex align-items-start py-2 timeline-row" data-activity-kind="<%= activity.kind %>">
+  <div class="mr-3" style="width: 24px; text-align: center; padding-top: 2px;">
+    <i class="<%= activity_icon_class(activity) %>"></i>
+  </div>
+  <div class="flex-grow-1">
+    <div style="font-size: 14px;"><%= activity_label(activity) %></div>
+    <small class="text-muted"><%= activity_timeline_pretty_time(activity) %></small>
+  </div>
+</div>

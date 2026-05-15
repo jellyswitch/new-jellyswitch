@@ -70,6 +70,71 @@ RSpec.describe Operator::UsersController, type: :controller do
       it "renders profile template" do
         expect(response).to render_template(:profile)
       end
+
+      it "defaults @active_tab to 'recent'" do
+        expect(assigns(:active_tab)).to eq("recent")
+      end
+    end
+
+    describe "timeline tab selection" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "honors a valid tab param" do
+        get :show, params: { id: test_user.id, tab: "emails" }
+        expect(assigns(:active_tab)).to eq("emails")
+      end
+
+      it "falls back to 'recent' for an unknown tab" do
+        get :show, params: { id: test_user.id, tab: "garbage" }
+        expect(assigns(:active_tab)).to eq("recent")
+      end
+
+      it "accepts all six declared tabs" do
+        %w[recent emails tours reservations payments notes].each do |tab|
+          get :show, params: { id: test_user.id, tab: tab }
+          expect(assigns(:active_tab)).to eq(tab)
+        end
+      end
+    end
+
+    describe "timeline rendering" do
+      render_views
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "wraps the timeline in a turbo_frame_tag with id person_timeline" do
+        get :show, params: { id: test_user.id }
+        expect(response.body).to include('id="person_timeline"')
+      end
+
+      it "renders all 6 tab labels" do
+        get :show, params: { id: test_user.id }
+        %w[Recent Emails Tours Reservations Payments Notes].each do |label|
+          expect(response.body).to include(label)
+        end
+      end
+
+      it "shows the user's signup activity in the Recent tab" do
+        # test_user's signup Activity is auto-logged by Phase 1.3.8 callback
+        get :show, params: { id: test_user.id, tab: "recent" }
+        expect(response.body).to include("Signed up")
+      end
+
+      it "Emails tab shows email_sent activities and hides unrelated kinds" do
+        Activity.log(user: test_user, operator: operator, kind: :email_sent,
+                     payload: { "subject" => "Welcome to Cowork" })
+        Activity.log(user: test_user, operator: operator, kind: :checkin,
+                     payload: { "location_name" => "Main Floor" })
+
+        get :show, params: { id: test_user.id, tab: "emails" }
+
+        expect(response.body).to include("Welcome to Cowork")
+        expect(response.body).not_to include("Main Floor")
+      end
+
+      it "shows an empty-state when a tab has no matching activities" do
+        get :show, params: { id: test_user.id, tab: "tours" }
+        expect(response.body).to include("No tours logged")
+      end
     end
   end
 

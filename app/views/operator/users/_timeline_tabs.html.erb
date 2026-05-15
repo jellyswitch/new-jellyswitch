@@ -1,0 +1,11 @@
+<ul class="nav nav-pills nav-justified border-bottom" style="border-radius: 0;">
+  <% ActivityTimelineHelper::TABS.each do |tab| %>
+    <li class="nav-item">
+      <%= link_to user_path(user, tab: tab[:key]),
+            class: "nav-link rounded-0 #{'active' if active_tab == tab[:key]}",
+            data: { turbo_frame: "person_timeline" } do %>
+        <%= tab[:label] %>
+      <% end %>
+    </li>
+  <% end %>
+</ul>

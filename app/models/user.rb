@@ -98,6 +98,8 @@ class User < ApplicationRecord
   after_commit :sync_to_mailchimp, if: -> { operator.mailchimp_api_key.present? && saved_change_to_approved? }
   after_create :log_signup_activity
 
+  has_many :activities, dependent: :destroy
+
   def log_signup_activity
     Activity.log(user: self, kind: :signup, subject: self, operator: operator)
   end
