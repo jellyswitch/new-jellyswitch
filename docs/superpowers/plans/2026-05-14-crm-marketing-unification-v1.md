@@ -231,14 +231,22 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
-- [ ] Build `src/components/StageFilterChips.js` — horizontal scrollable chip row, controlled by a `selectedStage` prop.
-- [ ] Build `src/components/PersonListItem.js` — photo + name + stage badge + last-activity timestamp + PoC name (mirrors the Rails partial).
-- [ ] Build `src/screens/admin/PeopleListScreen.js` — header with chip row, FlatList of PersonListItem, infinite scroll via the JSON API from 3.3.
-- [ ] Wire to `adminMembersAPI` — add `peopleList({stage, page})` calling `/operator/people.json`.
-- [ ] Add to `AppNavigator.js` admin stack; replace the existing "Members" entry point in `MoreScreen.js` with "People" → `PeopleListScreen`.
-- [ ] Test in iOS sim across all 5 stages + "All"; tapping a person navigates to existing `MemberDetailScreen`.
-- [ ] Run Maestro after this lands (per `feedback_run_maestro_after_ui.md`).
-- [ ] **Commit:** "Add native People list screen with stage filters"
+- [x] Build `src/components/StageFilterChips.js` — horizontal scrollable chip row, controlled by a `selectedStage` prop.
+- [x] Build `src/components/PersonListItem.js` — photo + name + stage badge + last-activity timestamp + PoC name (mirrors the Rails partial).
+- [x] Build `src/screens/admin/PeopleListScreen.js` — header with chip row, FlatList of PersonListItem, infinite scroll via the JSON API from 3.3.
+- [x] Wire to `adminMembersAPI` — add `peopleList({stage, page})` calling `/admin/people` (resolves to `/api/v1/admin/people` via base URL).
+- [x] Add to `AppNavigator.js` admin stack; new "PEOPLE" section at top of `MoreScreen.js` menu with "People" → `PeopleListScreen`. (Existing Members bottom tab left untouched — Phase 8.1 will reorg.)
+- [ ] Test in iOS sim across all 5 stages + "All"; tapping a person navigates to existing `MemberDetailScreen`. *Blocked: requires the sibling API endpoint (see follow-on below) deployed to staging and an app rebuild.*
+- [ ] Run Maestro after this lands. *Same blocker — the new screen has no exercise path until the API endpoint exists.*
+- [x] **Commit:** mobile commit `33694b3` "Add native People list screen with stage filters"
+
+  **Follow-on Rails work needed before mobile can consume:**
+  - Add `GET /api/v1/admin/people` endpoint on `feature/mobile-api` (or wherever the v1 API namespace lives). Reuse the JSON shape from `Operator::PeopleController#people_json`. The mobile app's `peopleList({stage, page})` already points at `/admin/people`.
+
+  *Notes:*
+  - Plan said "replace existing Members entry in MoreScreen" — MoreScreen has no Members entry (Members is a bottom tab). Added a new PEOPLE section at the top instead.
+  - testID conventions: `people-chip-{stage}`, `person-list-item-{id}`, `people-list`.
+  - Each chip switch resets pagination to page 1; pull-to-refresh + infinite scroll via FlatList.
 
 ---
 
