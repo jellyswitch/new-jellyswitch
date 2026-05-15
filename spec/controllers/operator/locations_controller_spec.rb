@@ -251,4 +251,47 @@ RSpec.describe Operator::LocationsController, type: :controller do
       end
     end
   end
+
+  describe "PATCH #update_past_member_grace_days" do
+    context "when user is admin" do
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+      end
+
+      it "updates past_member_grace_days when valid" do
+        patch :update_past_member_grace_days,
+              params: { location_id: location.id, location: { past_member_grace_days: 240 } }
+        location.reload
+        expect(location.past_member_grace_days).to eq(240)
+      end
+
+      it "does not update past_member_grace_days when out of range" do
+        original = location.past_member_grace_days
+        patch :update_past_member_grace_days,
+              params: { location_id: location.id, location: { past_member_grace_days: 500 } }
+        location.reload
+        expect(location.past_member_grace_days).to eq(original)
+      end
+
+      it "redirects to product_email_templates_path" do
+        patch :update_past_member_grace_days,
+              params: { location_id: location.id, location: { past_member_grace_days: 200 } }
+        expect(response).to redirect_to(product_email_templates_path(location_id: location.id))
+      end
+    end
+
+    context "when user is not authorized" do
+      before do
+        allow(controller).to receive(:current_user).and_return(regular_user)
+      end
+
+      it "does not update past_member_grace_days" do
+        original = location.past_member_grace_days
+        patch :update_past_member_grace_days,
+              params: { location_id: location.id, location: { past_member_grace_days: 240 } }
+        location.reload
+        expect(location.past_member_grace_days).to eq(original)
+      end
+    end
+  end
 end

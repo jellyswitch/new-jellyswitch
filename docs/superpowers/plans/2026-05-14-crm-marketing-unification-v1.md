@@ -200,10 +200,15 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 3.2 — Per-location grace days
 
-- [ ] Migration: `Location.past_member_grace_days` integer, default 180.
-- [ ] Add to Location validations: `inclusion: { in: 120..365 }` (4 months to 12 months).
-- [ ] Expose in the Automated Emails config UI as a stage-transition setting at the top.
-- [ ] **Commit:** "Add per-location past-member grace period setting"
+- [x] Migration: `Location.past_member_grace_days` integer, default 180.
+- [x] Add to Location validations: `inclusion: { in: 120..365 }` (4 months to 12 months).
+- [x] Expose in the Automated Emails config UI as a stage-transition setting at the top.
+- [x] **Commit:** "Add per-location past-member grace period setting"
+
+  *Implementation notes:*
+  - `User#lifecycle_stage` instance method now reads `current_location&.past_member_grace_days || DEFAULT_PAST_MEMBER_GRACE_DAYS` via a private `past_member_grace_days_threshold` helper.
+  - `User.in_stage(stage)` scope honors per-location grace via a LEFT JOIN to `locations` and a `COALESCE(locations.past_member_grace_days, 180)` cutoff in SQL — no longer uses the global constant for the boundary check.
+  - UI lives on `app/views/operator/product_email_templates/index.html.erb`. Form posts to `PATCH /locations/:location_id/past_member_grace_days` (new `update_past_member_grace_days` action on `Operator::LocationsController`) which authorizes via `LocationPolicy#update?` and redirects back to `product_email_templates_path`.
 
 ### 3.3 — People list with stage filters (Rails)
 

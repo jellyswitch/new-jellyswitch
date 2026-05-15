@@ -354,6 +354,32 @@ RSpec.describe User, type: :model do
       end
     end
 
+    context "with a custom per-location grace window" do
+      before do
+        stage_location.update!(past_member_grace_days: 300)
+      end
+
+      it "treats subscription_ended 250 days ago as still :member (within 300-day grace)" do
+        log_activity(stage_user, "subscription_ended", 250.days.ago)
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+
+      it "treats subscription_ended 310 days ago as :past_member (past 300-day grace)" do
+        log_activity(stage_user, "subscription_ended", 310.days.ago)
+        expect(stage_user.lifecycle_stage).to eq(:past_member)
+      end
+    end
+
+    context "user with no current_location" do
+      let(:stage_user) { create(:user, operator: stage_operator, current_location: nil) }
+
+      it "falls back to DEFAULT_PAST_MEMBER_GRACE_DAYS" do
+        log_activity(stage_user, "subscription_ended",
+                     (User::DEFAULT_PAST_MEMBER_GRACE_DAYS - 5).days.ago)
+        expect(stage_user.lifecycle_stage).to eq(:member)
+      end
+    end
+
     context "with a day pass in the last 30 days and no active subscription" do
       before do
         create(:day_pass, user: stage_user, billable: stage_user,
@@ -491,6 +517,23 @@ RSpec.describe User, type: :model do
     it "is consistent with #lifecycle_stage for each user" do
       [member, past_member, day_passer, quiet_user, tour_taker].each do |u|
         expect(User.in_stage(u.lifecycle_stage)).to include(u)
+      end
+    end
+
+    context "with a custom per-location grace window" do
+      let!(:custom_location) do
+        create(:location, operator: stage_operator, past_member_grace_days: 300)
+      end
+
+      let!(:still_member_on_custom_location) do
+        u = create(:user, operator: stage_operator, current_location: custom_location)
+        log_activity(u, "subscription_ended", 250.days.ago)
+        u
+      end
+
+      it "classifies the 250-days-ago-ended user as :member (within 300-day grace)" do
+        expect(User.in_stage(:member)).to include(still_member_on_custom_location)
+        expect(User.in_stage(:past_member)).not_to include(still_member_on_custom_location)
       end
     end
   end

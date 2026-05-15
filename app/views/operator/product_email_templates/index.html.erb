@@ -6,6 +6,22 @@
     <h5 class="text-center text-muted mb-3"><%= @location.name %></h5>
   <% end %>
 
+  <% if @location %>
+    <hr />
+    <h5>Stage transitions</h5>
+    <p class="text-muted small">
+      A past member is someone whose subscription ended more than this many days ago.
+      Within the grace window, they still show as a Member.
+    </p>
+    <%= form_with(model: @location, url: location_past_member_grace_days_path(location_id: @location.id), method: :patch, local: true, class: "form-inline") do |f| %>
+      <div class="form-group">
+        <%= f.label :past_member_grace_days, "Past-member grace period (days)", class: "mr-2" %>
+        <%= f.number_field :past_member_grace_days, min: 120, max: 365, step: 1, class: "form-control form-control-sm mr-2", style: "width: 100px" %>
+        <%= f.submit "Save", class: "btn btn-primary btn-sm" %>
+      </div>
+    <% end %>
+  <% end %>
+
   <hr />
   <h5>Onboarding Emails</h5>
   <p class="text-muted small">Sent immediately after a purchase is made.</p>

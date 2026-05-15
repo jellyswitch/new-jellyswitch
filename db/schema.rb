@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_15_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -523,6 +523,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "renewal_reminder_days"
     t.decimal "latitude", precision: 10, scale: 7
     t.decimal "longitude", precision: 10, scale: 7
+    t.integer "past_member_grace_days", default: 180, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"

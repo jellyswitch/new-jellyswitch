@@ -101,7 +101,8 @@ class User < ApplicationRecord
   has_many :activities, dependent: :destroy
 
   # Lifecycle stage — derived at query time, never stored (ADR-0002).
-  # Phase 3.2 will swap DEFAULT_PAST_MEMBER_GRACE_DAYS for a per-location setting.
+  # Grace days reads from current_location.past_member_grace_days, falling
+  # back to DEFAULT_PAST_MEMBER_GRACE_DAYS when the user has no current_location.
   DEFAULT_PAST_MEMBER_GRACE_DAYS = 180
   LIFECYCLE_STAGES = %i[member past_member day_passer quiet tour_taker].freeze
   LIFECYCLE_PRIOR_ACTIVITY_KINDS = %w[checkin door_punch reservation day_pass subscription_started].freeze
@@ -132,15 +133,24 @@ class User < ApplicationRecord
     stage = stage.to_sym
     raise ArgumentError, "unknown lifecycle stage: #{stage}" unless LIFECYCLE_STAGES.include?(stage)
 
-    grace_cutoff = DEFAULT_PAST_MEMBER_GRACE_DAYS.days.ago
     day_pass_cutoff = RECENT_DAY_PASS_DAYS.days.ago.to_date
     visit_cutoff = QUIET_THRESHOLD_DAYS.days.ago
 
     active_sub_ids = Subscription.where(subscribable_type: "User", active: true).pluck(:subscribable_id)
+
+    grace_join = <<~SQL
+      INNER JOIN users ON users.id = activities.user_id
+      LEFT JOIN locations ON locations.id = users.current_location_id
+    SQL
+    grace_cutoff_sql = "activities.occurred_at >= NOW() - (COALESCE(locations.past_member_grace_days, ?) * INTERVAL '1 day')"
     in_grace_ids = Activity.where(kind: "subscription_ended")
-                           .where("occurred_at >= ?", grace_cutoff).pluck(:user_id)
+                           .joins(grace_join)
+                           .where(grace_cutoff_sql, DEFAULT_PAST_MEMBER_GRACE_DAYS)
+                           .pluck("activities.user_id")
     past_grace_ids = Activity.where(kind: "subscription_ended")
-                             .where("occurred_at < ?", grace_cutoff).pluck(:user_id)
+                             .joins(grace_join)
+                             .where("NOT (#{grace_cutoff_sql})", DEFAULT_PAST_MEMBER_GRACE_DAYS)
+                             .pluck("activities.user_id")
     recent_day_pass_ids = DayPass.where("day >= ?", day_pass_cutoff).pluck(:user_id)
     prior_active_ids = Activity.where(kind: LIFECYCLE_PRIOR_ACTIVITY_KINDS).pluck(:user_id)
     recent_visit_ids = Activity.where(kind: LIFECYCLE_VISIT_KINDS)
@@ -173,14 +183,18 @@ class User < ApplicationRecord
 
   def subscription_ended_within_grace?
     activities.where(kind: "subscription_ended")
-              .where("occurred_at >= ?", DEFAULT_PAST_MEMBER_GRACE_DAYS.days.ago)
+              .where("occurred_at >= ?", past_member_grace_days_threshold.days.ago)
               .exists?
   end
 
   def subscription_ended_past_grace?
     activities.where(kind: "subscription_ended")
-              .where("occurred_at < ?", DEFAULT_PAST_MEMBER_GRACE_DAYS.days.ago)
+              .where("occurred_at < ?", past_member_grace_days_threshold.days.ago)
               .exists?
+  end
+
+  def past_member_grace_days_threshold
+    current_location&.past_member_grace_days || DEFAULT_PAST_MEMBER_GRACE_DAYS
   end
 
   def recent_day_pass?

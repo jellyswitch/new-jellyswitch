@@ -107,6 +107,19 @@ class Operator::LocationsController < Operator::BaseController
     turbo_redirect(location_path(@location), action: "replace")
   end
 
+  def update_past_member_grace_days
+    find_location(:location_id)
+    authorize @location, :update?
+
+    if @location.update(past_member_grace_days: params.dig(:location, :past_member_grace_days))
+      flash[:success] = "Past-member grace period updated."
+    else
+      flash[:error] = @location.errors.full_messages.to_sentence
+    end
+
+    turbo_redirect(product_email_templates_path(location_id: @location.id))
+  end
+
   private
 
   def find_location(key=:id)
