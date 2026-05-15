@@ -14,6 +14,29 @@
 - [docs/adr/0002-lifecycle-stage-derived.md](../../adr/0002-lifecycle-stage-derived.md)
 - [docs/adr/0003-spam-guard-invariant.md](../../adr/0003-spam-guard-invariant.md)
 
+## Platform parity (resolved 2026-05-14)
+
+Per the project's standing iOS / Android / Web parity rule (`memory/feedback_cross_platform_parity.md`):
+
+**Full mobile parity (native screens):**
+- Person view tabbed timeline (Phase 2)
+- **People list with stage-filter chips (Phase 3.3 + new 3.4)** — native `PeopleListScreen.js` with chip filters + API endpoint
+- Point-of-Contact UI on Person view (Phase 4.3) — via WKWebView'd Person view
+
+**Web-only (CRM authoring surfaces — falls under the project's web-only CRM exception):**
+- Welcome drip + new automation types (Phase 5)
+- Spam Guard cool-down UI + Campaign compose (Phase 6)
+- AutomatedWorkflow operator UI (Phase 8.2)
+- Per-location grace-days setting (Phase 3.2) — lives inside the web-only Automated Emails screen
+
+**Backend-only (no surface implications):**
+- Activity model, logger, source-table callbacks, backfill (Phase 1)
+- Lifecycle stage derivation (Phase 3.1)
+- PoC schema + default assignment + notifications (Phase 4.1, 4.2, 4.4)
+- Sendgrid event webhook (Phase 7)
+
+Nav reorg (Phase 8.1) still touches both surfaces — Rails `_admin_nav.html.erb` and mobile `MoreScreen.js`.
+
 ---
 
 ## File map
@@ -40,6 +63,9 @@
 ### New files (Mobile)
 - `src/screens/admin/PersonTimelineTabs.js` — Recent/Emails/Tours/etc. tabs for member detail
 - `src/components/ActivityTimelineItem.js` — single timeline row renderer
+- `src/screens/admin/PeopleListScreen.js` — native People list with stage-filter chips (Phase 3.4)
+- `src/components/StageFilterChips.js` — Members · Day-passers · Tour-takers · Past members · Quiet chip row
+- `src/components/PersonListItem.js` — photo + name + stage badge + last-activity + PoC row renderer
 
 ### Modified files (Rails)
 - `app/models/user.rb` — add `lifecycle_stage` derived method, `point_of_contact_id`, `has_many :activities`
@@ -175,13 +201,27 @@ For each model below, write a model spec asserting `after_create` writes one Act
 - [ ] Expose in the Automated Emails config UI as a stage-transition setting at the top.
 - [ ] **Commit:** "Add per-location past-member grace period setting"
 
-### 3.3 — People list with stage filters
+### 3.3 — People list with stage filters (Rails)
 
 - [ ] Build `app/views/operator/people/index.html.erb` with chip filters at top: All · Members · Day-passers · Tour-takers · Past members · Quiet.
 - [ ] Each chip queries `User.in_stage(:label)`.
 - [ ] Result list shows: photo + name + stage badge + last activity timestamp + point-of-contact name.
 - [ ] Pagination at 50 per page.
+- [ ] Expose JSON API at `GET /operator/people.json?stage=<stage>&page=<n>` returning the same shape — consumed by mobile in 3.4.
 - [ ] **Commit:** "Add People list with lifecycle stage filters"
+
+### 3.4 — People list with stage filters (Mobile native)
+
+Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
+
+- [ ] Build `src/components/StageFilterChips.js` — horizontal scrollable chip row, controlled by a `selectedStage` prop.
+- [ ] Build `src/components/PersonListItem.js` — photo + name + stage badge + last-activity timestamp + PoC name (mirrors the Rails partial).
+- [ ] Build `src/screens/admin/PeopleListScreen.js` — header with chip row, FlatList of PersonListItem, infinite scroll via the JSON API from 3.3.
+- [ ] Wire to `adminMembersAPI` — add `peopleList({stage, page})` calling `/operator/people.json`.
+- [ ] Add to `AppNavigator.js` admin stack; replace the existing "Members" entry point in `MoreScreen.js` with "People" → `PeopleListScreen`.
+- [ ] Test in iOS sim across all 5 stages + "All"; tapping a person navigates to existing `MemberDetailScreen`.
+- [ ] Run Maestro after this lands (per `feedback_run_maestro_after_ui.md`).
+- [ ] **Commit:** "Add native People list screen with stage filters"
 
 ---
 
@@ -223,6 +263,8 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ## Phase 5: Welcome drip + new automations
 
+> **Surface:** Web-only (CRM authoring exception, per platform-parity decision 2026-05-14). No mobile screens required.
+
 ### 5.1 — Extend ProductEmailTemplate
 
 - [ ] Add new `email_type` values: `re_engagement`, `past_member_recovery`.
@@ -259,6 +301,8 @@ For each model below, write a model spec asserting `after_create` writes one Act
 ---
 
 ## Phase 6: Spam Guard
+
+> **Surface:** Service is backend; UI is web-only (CRM authoring exception). No mobile screens required.
 
 ### 6.1 — Central service
 
@@ -324,7 +368,10 @@ For each model below, write a model spec asserting `after_create` writes one Act
 - [ ] Spec navigation: links land on the right pages.
 - [ ] **Commit:** "Consolidate Leads + Automations + Campaigns under People"
 
-### 8.2 — AutomatedWorkflow operator UI
+### 8.2 — AutomatedWorkflow operator UI (web-only)
+
+> Per platform-parity decision 2026-05-14: this UI is web-only. Mobile operators see automations running via the Person timeline but do not toggle/edit them from mobile.
+
 
 - [ ] New controller `Operator::Admin::AutomatedWorkflowsController` with `index` and `update`.
 - [ ] View `index.html.erb` lists each of the 7 types (4 existing + 3 new) with on/off toggle + plain-English description + editable timing fields.
