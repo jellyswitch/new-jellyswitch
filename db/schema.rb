@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_14_000001) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -656,6 +656,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000001) do
     t.boolean "paid_room_reservation_notifications", default: true, null: false
     t.string "mailchimp_api_key"
     t.string "mailchimp_audience_id"
+    t.datetime "last_activities_backfilled_at"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
