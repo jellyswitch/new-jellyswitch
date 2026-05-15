@@ -177,6 +177,7 @@ Rails.application.routes.draw do
         get 'members/:id/reservations', to: 'members#reservations'
         get 'members/:id/checkins', to: 'members#checkins'
         get 'members/:id/usage', to: 'members#usage'
+        get 'members/:id/activities', to: 'members#activities'
 
         # Reservations
         get 'reservations', to: 'reservations#index'

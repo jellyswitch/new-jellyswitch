@@ -405,7 +405,35 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     }
   end
 
+  ACTIVITY_TABS = %w[recent emails tours reservations payments notes].freeze
+
+  def activities
+    user = current_tenant.users.find(params[:id])
+    tab = ACTIVITY_TABS.include?(params[:tab]) ? params[:tab] : "recent"
+
+    scope = user.activities.recent
+    if tab != "recent"
+      scope = scope.where(kind: ActivityTimelineHelper::KIND_GROUPS.fetch(tab))
+    end
+
+    render json: {
+      tab: tab,
+      activities: scope.limit(50).map { |a| activity_json(a) },
+    }
+  end
+
   private
+
+  def activity_json(activity)
+    {
+      id: activity.id,
+      kind: activity.kind,
+      occurred_at: activity.occurred_at.iso8601,
+      label: ApplicationController.helpers.activity_label(activity),
+      icon: ActivityTimelineHelper::ICONS[activity.kind],
+      payload: activity.payload || {},
+    }
+  end
 
   def search_users(scope)
     q = "%#{params[:q]}%"
