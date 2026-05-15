@@ -53,4 +53,8 @@ class Activity < ApplicationRecord
   validates :occurred_at, presence: true
 
   scope :recent, -> { order(occurred_at: :desc) }
+
+  def self.log(**kwargs)
+    ActivityLogger.log(**kwargs)
+  end
 end
