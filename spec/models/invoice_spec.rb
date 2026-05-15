@@ -136,9 +136,9 @@ RSpec.describe Invoice, type: :model do
         end
       end
 
-      it "returns error when stripe invoice does not exist" do
+      it "returns nil when stripe invoice does not exist" do
         invoice.stripe_invoice_id = nil
-        expect(invoice.payment_method).to eq("error")
+        expect(invoice.payment_method).to be_nil
       end
     end
   end

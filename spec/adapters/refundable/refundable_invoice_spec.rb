@@ -8,13 +8,13 @@ RSpec.describe Refundable::RefundableInvoice do
   describe "#cancel" do
     context "when invoice has not been refunded" do
       before do
-        allow(invoice.location).to receive(:create_stripe_refund).with(refundable_invoice).and_return(stripe_refund)
+        allow(invoice.location).to receive(:create_stripe_refund).and_return(stripe_refund)
       end
 
       it "creates a Stripe refund and local refund record" do
         refundable_invoice.cancel
 
-        expect(invoice.location).to have_received(:create_stripe_refund).with(refundable_invoice)
+        expect(invoice.location).to have_received(:create_stripe_refund).with(refundable_invoice, nil, amount: invoice.amount_due)
         expect(invoice.refunds.count).to eq(1)
         expect(invoice.refunds.first.stripe_refund_id).to eq("re_123")
         expect(invoice.refunds.first.amount).to eq(invoice.amount_due)
