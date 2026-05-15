@@ -34,6 +34,19 @@ class Checkin < ApplicationRecord
 
   delegate :operator, to: :location
 
+  after_create :log_activity
+
+  def log_activity
+    Activity.log(user: user, kind: :checkin, subject: self)
+  end
+
+  def to_activity_payload
+    {
+      "location_name" => location&.name,
+      "datetime_in" => datetime_in&.iso8601,
+    }
+  end
+
   def charge_description
     "Hourly charge for #{location.name}"
   end
