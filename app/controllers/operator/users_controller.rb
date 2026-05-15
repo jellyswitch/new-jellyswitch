@@ -76,6 +76,25 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
+  def add_note
+    find_user(:user_id)
+    authorize @user, :add_note?
+
+    lead = current_tenant.leads.where(user: @user).first_or_create!
+    lead_note = lead.lead_notes.create(
+      user: current_user,
+      content: params.require(:lead_note).permit(:content)[:content]
+    )
+
+    if lead_note.persisted?
+      flash[:success] = "Note added."
+    else
+      flash[:error] = "Could not add note."
+    end
+
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
   def ltv
     find_user(:user_id)
     authorize @user

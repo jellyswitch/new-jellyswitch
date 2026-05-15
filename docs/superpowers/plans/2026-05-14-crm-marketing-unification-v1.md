@@ -162,10 +162,12 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 2.3 — "Add note" button
 
-- [ ] Add "Add note" button to user show page.
-- [ ] On submit, creates `LeadNote` (which already triggers Activity.log via 1.3).
-- [ ] Spec.
-- [ ] **Commit:** "Add Add Note button to person view"
+- [x] Add "Add note" button to user show page.
+- [x] On submit, creates `LeadNote` (which already triggers Activity.log via 1.3). Auto-creates a Lead for the User if none exists in the current tenant.
+- [x] Spec.
+- [x] **Commit:** "Add Add Note button to person view"
+
+  *Side effect (bundled in this commit):* `Lead.belongs_to :ahoy_visit` relaxed to `optional: true` — admin-created leads from this surface have no web visit. CONTEXT.md already frames Lead as "a sales annotation on a User," consistent with this.
 
 ### 2.4 — Mobile: timeline tabs in MemberDetailScreen
 

@@ -4,7 +4,7 @@ RSpec.describe Lead, type: :model do
   describe 'associations' do
     it { should belong_to(:operator) }
     it { should belong_to(:user) }
-    it { should belong_to(:ahoy_visit).class_name('Ahoy::Visit') }
+    it { should belong_to(:ahoy_visit).class_name('Ahoy::Visit').optional }
     it { should have_many(:lead_notes) }
   end
 
@@ -69,6 +69,21 @@ RSpec.describe Lead, type: :model do
           expect(lead.reload.source).to eq(Lead::SOURCES[:event])
         end
       end
+    end
+  end
+
+  describe 'admin-created leads (no ahoy_visit)' do
+    let(:user) { create(:user) }
+    let(:operator) { create(:operator) }
+
+    it 'is valid without an ahoy_visit (manual lead annotation)' do
+      lead = Lead.new(user: user, operator: operator, ahoy_visit: nil)
+      expect(lead).to be_valid
+    end
+
+    it 'leaves source blank when there is no ahoy_visit' do
+      lead = Lead.create!(user: user, operator: operator, ahoy_visit: nil)
+      expect(lead.reload.source).to be_nil
     end
   end
 

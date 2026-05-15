@@ -473,6 +473,7 @@ Rails.application.routes.draw do
     get :day_passes, to: "operator/users#day_passes"
     get :invoices, to: "operator/users#invoices"
     post :log_tour, to: "operator/users#log_tour"
+    post :add_note, to: "operator/users#add_note"
     get :ltv, to: "operator/users#ltv"
     get :membership, to: "operator/users#membership"
     get :memberships, to: "operator/users#memberships"

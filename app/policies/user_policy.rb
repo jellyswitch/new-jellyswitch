@@ -32,6 +32,10 @@ class UserPolicy < ApplicationPolicy
     has_admin_right?
   end
 
+  def add_note?
+    has_admin_right?
+  end
+
   def childcare?
     has_right_over_user?
   end
