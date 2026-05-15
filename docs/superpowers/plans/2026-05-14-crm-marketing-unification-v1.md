@@ -96,46 +96,46 @@ Nav reorg (Phase 8.1) still touches both surfaces — Rails `_admin_nav.html.erb
 
 ### 1.1 — Schema
 
-- [ ] Write Activity model spec asserting: belongs_to user + operator, validates kind in enum, payload defaults to {}, scoped by occurred_at desc.
-- [ ] Run spec to confirm it fails (no model yet).
-- [ ] Generate migration `create_activities` with columns from CONTEXT.md (user_id, operator_id, kind string, subject_id+subject_type, payload jsonb, occurred_at).
-- [ ] Add indexes: `[user_id, occurred_at]`, `[operator_id, kind, occurred_at]`, `[subject_type, subject_id]`.
-- [ ] Run migration locally; rerun spec to confirm green.
-- [ ] **Commit:** "Add Activity model + migration"
+- [x] Write Activity model spec asserting: belongs_to user + operator, validates kind in enum, payload defaults to {}, scoped by occurred_at desc.
+- [x] Run spec to confirm it fails (no model yet).
+- [x] Generate migration `create_activities` with columns from CONTEXT.md (user_id, operator_id, kind string, subject_id+subject_type, payload jsonb, occurred_at).
+- [x] Add indexes: `[user_id, occurred_at]`, `[operator_id, kind, occurred_at]`, `[subject_type, subject_id]`.
+- [x] Run migration locally; rerun spec to confirm green.
+- [x] **Commit:** "Add Activity model + migration"
 
 ### 1.2 — Logger API
 
-- [ ] Write spec for `ActivityLogger.log(user:, kind:, subject:, payload:)` — validates kind, denormalizes a few fields from subject if payload is empty, returns the Activity.
-- [ ] Implement `app/services/activity_logger.rb`.
-- [ ] Add convenience class method `Activity.log(...)` delegating to ActivityLogger.
-- [ ] Run specs → green.
-- [ ] **Commit:** "Add Activity.log API"
+- [x] Write spec for `ActivityLogger.log(user:, kind:, subject:, payload:)` — validates kind, denormalizes a few fields from subject if payload is empty, returns the Activity.
+- [x] Implement `app/services/activity_logger.rb`.
+- [x] Add convenience class method `Activity.log(...)` delegating to ActivityLogger.
+- [x] Run specs → green.
+- [x] **Commit:** "Add Activity.log API"
 
 ### 1.3 — Source-table callbacks
 
 For each model below, write a model spec asserting `after_create` writes one Activity row of the correct kind, then implement the callback.
 
-- [ ] `Reservation` → `kind: :reservation`
-- [ ] `Checkin` → `kind: :checkin`
-- [ ] `DoorPunch` → `kind: :door_punch`
-- [ ] `DayPass` → `kind: :day_pass`
-- [ ] `Subscription` create → `kind: :subscription_started`
-- [ ] `Subscription` cancel/destroy → `kind: :subscription_ended`
-- [ ] `Invoice` paid → `kind: :payment_succeeded`
-- [ ] `Invoice` failed → `kind: :payment_failed`
-- [ ] `LeadNote` create → `kind: :note`
-- [ ] `User` after_create → `kind: :signup`
-- [ ] `ApplicationMailer.after_action :log_email_sent` → `kind: :email_sent` (capture every outbound email)
-- [ ] **Commit after each model:** keeps PRs reviewable; rollback granularity if any callback breaks production sends.
+- [x] `Reservation` → `kind: :reservation`
+- [x] `Checkin` → `kind: :checkin`
+- [x] `DoorPunch` → `kind: :door_punch`
+- [x] `DayPass` → `kind: :day_pass`
+- [x] `Subscription` create → `kind: :subscription_started`
+- [x] `Subscription` cancel/destroy → `kind: :subscription_ended`
+- [x] `Invoice` paid → `kind: :payment_succeeded`
+- [x] `Invoice` failed → `kind: :payment_failed`
+- [x] `LeadNote` create → `kind: :note`
+- [x] `User` after_create → `kind: :signup`
+- [x] `ApplicationMailer.after_action :log_email_sent` → `kind: :email_sent` (capture every outbound email)
+- [x] **Commit after each model:** keeps PRs reviewable; rollback granularity if any callback breaks production sends.
 
 ### 1.4 — Backfill job
 
-- [ ] Write spec for `BackfillActivitiesJob.perform(operator_id, since: 2.years.ago)` — for each source model, finds rows in window, writes Activity rows, idempotent on re-run via `Activity.exists?(subject: ...)`.
-- [ ] Implement job streaming 1k rows at a time (`find_in_batches`).
-- [ ] Add `Operator.last_activities_backfilled_at` column to track progress.
-- [ ] Spec idempotency by running twice and asserting no duplicate Activity rows.
-- [ ] Add rake task `bin/rake activities:backfill_all` that enqueues per-operator.
-- [ ] **Commit:** "Add 2-year activities backfill job"
+- [x] Write spec for `BackfillActivitiesJob.perform(operator_id, since: 2.years.ago)` — for each source model, finds rows in window, writes Activity rows, idempotent on re-run via `Activity.exists?(subject: ...)`.
+- [x] Implement job streaming 1k rows at a time (`find_in_batches`).
+- [x] Add `Operator.last_activities_backfilled_at` column to track progress.
+- [x] Spec idempotency by running twice and asserting no duplicate Activity rows.
+- [x] Add rake task `bin/rake activities:backfill_all` that enqueues per-operator.
+- [x] **Commit:** "Add 2-year activities backfill job"
 
 ---
 
@@ -143,13 +143,13 @@ For each model below, write a model spec asserting `after_create` writes one Act
 
 ### 2.1 — Rails: tabs on existing user show page
 
-- [ ] Read [`app/views/operator/users/show.html.erb`](app/views/operator/users/show.html.erb) to understand current structure.
-- [ ] Add a tab strip at top of show page: Recent · Emails · Tours · Reservations · Payments · Notes.
-- [ ] Create partial `_timeline_recent.html.erb` rendering `@user.activities.order(occurred_at: :desc).limit(50)` with kind-specific icon + payload-rendered text.
-- [ ] Create partials `_timeline_emails.html.erb`, `_timeline_tours.html.erb`, `_timeline_reservations.html.erb`, `_timeline_payments.html.erb`, `_timeline_notes.html.erb` — each a filtered subset of activities.
-- [ ] Use Turbo Frames so tab clicks update inline without full reload.
-- [ ] Write feature spec asserting the timeline renders activities with correct copy per kind.
-- [ ] **Commit:** "Add timeline tabs to admin user show page"
+- [x] Read [`app/views/operator/users/show.html.erb`](app/views/operator/users/show.html.erb) to understand current structure.
+- [x] Add a tab strip at top of show page: Recent · Emails · Tours · Reservations · Payments · Notes.
+- [x] Create partial `_timeline_recent.html.erb` rendering `@user.activities.order(occurred_at: :desc).limit(50)` with kind-specific icon + payload-rendered text.
+- [x] Create partials `_timeline_emails.html.erb`, `_timeline_tours.html.erb`, `_timeline_reservations.html.erb`, `_timeline_payments.html.erb`, `_timeline_notes.html.erb` — each a filtered subset of activities.
+- [x] Use Turbo Frames so tab clicks update inline without full reload.
+- [x] Write feature spec asserting the timeline renders activities with correct copy per kind.
+- [x] **Commit:** "Add timeline tabs to admin user show page"
 
 ### 2.2 — "Log a tour" button
 
