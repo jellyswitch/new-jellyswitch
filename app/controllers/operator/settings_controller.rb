@@ -1,12 +1,12 @@
 class Operator::SettingsController < Operator::BaseController
-  before_action :require_authentication
   before_action :require_admin_or_superadmin!
 
   def index
-    redirect_to branding_settings_path
+    redirect_to settings_branding_path
   end
 
   def branding;             end
+  # No update_payments — Stripe Connect is OAuth, not a form. See Payments tab in spec.
   def payments;             end
   def doors;                end
   def hours_and_address;    end

@@ -766,27 +766,25 @@ Rails.application.routes.draw do
     end
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
-  resource :settings, only: [], path: "/operator/settings", controller: "operator/settings" do
-    collection do
-      get :branding
-      patch :update_branding
-      get :payments
-      get :doors
-      patch :update_doors
-      post :import_doors
-      get :hours_and_address
-      patch :update_hours_and_address
-      get :wifi_and_pixels
-      patch :update_wifi_and_pixels
-      get :notifications
-      patch :update_notifications
-      get :modules
-      patch :update_modules
-      get :policies
-      patch :update_policies
-    end
+  scope "/operator/settings", as: "settings", controller: "operator/settings" do
+    get  "/",                          to: "operator/settings#index"
+    get  "branding",                   to: "operator/settings#branding",                   as: :branding
+    patch "update_branding",           to: "operator/settings#update_branding",            as: :update_branding
+    get  "payments",                   to: "operator/settings#payments",                   as: :payments
+    get  "doors",                      to: "operator/settings#doors",                      as: :doors
+    patch "update_doors",              to: "operator/settings#update_doors",               as: :update_doors
+    post "import_doors",               to: "operator/settings#import_doors",               as: :import_doors
+    get  "hours_and_address",          to: "operator/settings#hours_and_address",          as: :hours_and_address
+    patch "update_hours_and_address",  to: "operator/settings#update_hours_and_address",   as: :update_hours_and_address
+    get  "wifi_and_pixels",            to: "operator/settings#wifi_and_pixels",            as: :wifi_and_pixels
+    patch "update_wifi_and_pixels",    to: "operator/settings#update_wifi_and_pixels",     as: :update_wifi_and_pixels
+    get  "notifications",              to: "operator/settings#notifications",              as: :notifications
+    patch "update_notifications",      to: "operator/settings#update_notifications",       as: :update_notifications
+    get  "modules",                    to: "operator/settings#modules",                    as: :modules
+    patch "update_modules",            to: "operator/settings#update_modules",             as: :update_modules
+    get  "policies",                   to: "operator/settings#policies",                   as: :policies
+    patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
   end
-  get "/operator/settings", to: "operator/settings#index", as: :operator_settings_root
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do

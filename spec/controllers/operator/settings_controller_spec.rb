@@ -13,7 +13,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
 
   it "GET #index redirects to branding" do
     get :index
-    expect(response).to redirect_to(branding_settings_path)
+    expect(response).to redirect_to(settings_branding_path)
   end
 
   it "GET #branding returns 200" do
