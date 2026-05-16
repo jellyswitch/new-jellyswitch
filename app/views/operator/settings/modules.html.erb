@@ -1,3 +1,32 @@
 <%= render layout: "operator/settings/tab_layout", locals: { active: :modules } do %>
-  <p>Modules tab — coming in Task 9.</p>
+  <%= form_with model: @operator, url: settings_update_modules_path, method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @operator %>
+    <p class="text-muted">Turn product modules on or off for your space.</p>
+
+    <% [
+      [:announcements_enabled, "Announcements"],
+      [:events_enabled, "Events"],
+      [:door_integration_enabled, "Door Integration"],
+      [:rooms_enabled, "Rooms & Reservations"],
+      [:offices_enabled, "Offices & Leases"],
+      [:bulletin_board_enabled, "Bulletin Board"],
+      [:childcare_enabled, "Childcare"],
+      [:crm_enabled, "CRM"],
+    ].each do |attr, label| %>
+      <div class="form-check">
+        <%= f.check_box attr, class: "form-check-input" %>
+        <%= f.label attr, label, class: "form-check-label" %>
+      </div>
+    <% end %>
+
+    <div class="form-check">
+      <%= f.check_box :credits_enabled, class: "form-check-input" %>
+      <%= f.label :credits_enabled, "Credits", class: "form-check-label" %>
+      <small class="form-text text-warning">
+        Credits is currently <strong>dormant</strong> — toggling on may not behave as expected.
+      </small>
+    </div>
+
+    <%= f.submit "Save Modules", class: "btn btn-primary mt-3" %>
+  <% end %>
 <% end %>

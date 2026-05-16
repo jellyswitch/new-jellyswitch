@@ -17,7 +17,9 @@ class Operator::SettingsController < Operator::BaseController
   def notifications
     @operator = current_operator
   end
-  def modules;              end
+  def modules
+    @operator = current_operator
+  end
   def policies;             end
 
   def update_branding
@@ -40,7 +42,14 @@ class Operator::SettingsController < Operator::BaseController
       render :notifications, status: :unprocessable_entity
     end
   end
-  def update_modules;              head :not_implemented; end
+  def update_modules
+    @operator = current_operator
+    if @operator.update(modules_params)
+      redirect_to settings_modules_path, notice: "Modules saved."
+    else
+      render :modules, status: :unprocessable_entity
+    end
+  end
   def update_policies;             head :not_implemented; end
 
   private
@@ -60,6 +69,14 @@ class Operator::SettingsController < Operator::BaseController
       :checkin_notifications, :refund_notifications, :post_notifications,
       :paid_room_reservation_notifications, :sender_email,
       :mailchimp_api_key, :mailchimp_audience_id
+    )
+  end
+
+  def modules_params
+    params.require(:operator).permit(
+      :announcements_enabled, :events_enabled, :door_integration_enabled,
+      :rooms_enabled, :offices_enabled, :bulletin_board_enabled,
+      :credits_enabled, :childcare_enabled, :crm_enabled
     )
   end
 
