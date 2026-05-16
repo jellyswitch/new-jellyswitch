@@ -5,6 +5,10 @@ class Operator::SettingsController < Operator::BaseController
     redirect_to settings_branding_path
   end
 
+  def legacy_redirect
+    redirect_to settings_branding_path, status: :moved_permanently
+  end
+
   def branding
     @operator = current_operator
   end

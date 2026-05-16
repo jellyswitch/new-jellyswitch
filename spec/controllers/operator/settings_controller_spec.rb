@@ -349,4 +349,26 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(response).to redirect_to(settings_doors_path(location_id: location.id))
     end
   end
+
+  describe "GET #legacy_redirect" do
+    it "redirects to settings_branding_path with 301" do
+      get :legacy_redirect
+      expect(response).to have_http_status(:moved_permanently)
+      expect(response).to redirect_to(settings_branding_path)
+    end
+  end
+
+  describe "legacy URL routing" do
+    it "GET /customization routes to settings#legacy_redirect" do
+      expect(get: "/customization").to route_to("operator/settings#legacy_redirect")
+    end
+
+    it "GET /operator/operators/:id/edit routes to settings#legacy_redirect" do
+      expect(get: "/operator/operators/123/edit").to route_to(
+        controller: "operator/settings",
+        action: "legacy_redirect",
+        id: "123"
+      )
+    end
+  end
 end
