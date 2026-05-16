@@ -19,7 +19,7 @@ class LandingController < ApplicationController
   def stripe_connect_setup
     if params[:error].present?
       flash[:error] = params[:error_description]
-      redirect_to landing_url(subdomain: current_user.operator.subdomain)
+      redirect_to settings_payments_url(subdomain: current_user.operator.subdomain), allow_other_host: true
     else
       location_id = params[:state]
 
@@ -35,28 +35,16 @@ class LandingController < ApplicationController
 
       if result.success?
         flash[:success] = location ? "Your location has been connected to Stripe" : "Your account has been connected to Stripe."
-        redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        redirect_to settings_payments_url(subdomain: current_user.operator.subdomain), allow_other_host: true
       else
         flash[:error] = "There was a problem storing your Stripe credentials. (#{result.message})"
-        if location
-          if location.onboarded?
-            redirect_to modules_url(subdomain: current_user.operator.subdomain), allow_other_host: true
-          else
-            redirect_to landing_url(subdomain: current_user.operator.subdomain), allow_other_host: true
-          end
-        else
-          if current_user.operator.onboarded?
-            redirect_to modules_url(subdomain: current_user.operator.subdomain), allow_other_host: true
-          else
-            redirect_to landing_url(subdomain: current_user.operator.subdomain), allow_other_host: true
-          end
-        end
+        redirect_to settings_payments_url(subdomain: current_user.operator.subdomain), allow_other_host: true
       end
     end
   rescue Exception => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
-    turbo_redirect(landing_url(subdomain: current_user.operator.subdomain), action: "replace")
+    turbo_redirect(settings_payments_url(subdomain: current_user.operator.subdomain), action: "replace")
   end
 
 end
