@@ -117,4 +117,51 @@ RSpec.describe Activity, type: :model do
       expect(Activity.where(id: ids).recent.to_a).to eq([newest, middle, older])
     end
   end
+
+  describe "point-of-contact notification on after_create" do
+    include ActiveJob::TestHelper
+
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let!(:gm) { create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location) }
+    let!(:person) { create(:user, operator: operator, current_location: location) }
+
+    before { clear_enqueued_jobs }
+    after { clear_enqueued_jobs }
+
+    it "enqueues SendNotificationsJob with PointOfContactAlert when a significant Activity is logged for a PoC-owned Person" do
+      expect {
+        Activity.log(user: person, kind: :email_replied, operator: operator, subject: person)
+      }.to have_enqueued_job(SendNotificationsJob).with(an_instance_of(Activity), "PointOfContactAlert")
+    end
+
+    it "enqueues for signup kind (creating a new user fires this end-to-end)" do
+      expect {
+        create(:user, operator: operator, current_location: location)
+      }.to have_enqueued_job(SendNotificationsJob).with(an_instance_of(Activity), "PointOfContactAlert").once
+    end
+
+    it "does not enqueue for non-significant kinds" do
+      expect {
+        Activity.log(user: person, kind: :checkin, operator: operator, subject: person)
+      }.not_to have_enqueued_job(SendNotificationsJob)
+    end
+
+    it "does not enqueue when the user has no point_of_contact" do
+      orphan = create(:user, operator: operator, current_location: nil)
+      orphan.update_column(:point_of_contact_id, nil)
+      clear_enqueued_jobs
+      expect {
+        Activity.log(user: orphan, kind: :email_replied, operator: operator, subject: orphan)
+      }.not_to have_enqueued_job(SendNotificationsJob)
+    end
+
+    it "uses the assigned point_of_contact as the sole recipient (not other team members)" do
+      other_gm = create(:user, operator: operator, role: User::GENERAL_MANAGER, current_location: location)
+      activity = Activity.log(user: person, kind: :subscription_ended, operator: operator, subject: person)
+      adapter = Notifiable::PointOfContactAlert.new(activity)
+      expect(adapter.send(:recipients)).to contain_exactly(person.point_of_contact)
+      expect(adapter.send(:recipients)).not_to include(other_gm)
+    end
+  end
 end

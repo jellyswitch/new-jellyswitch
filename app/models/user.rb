@@ -101,8 +101,8 @@ class User < ApplicationRecord
   has_secure_password
 
   after_commit :sync_to_mailchimp, if: -> { operator.mailchimp_api_key.present? && saved_change_to_approved? }
-  after_create :log_signup_activity
   after_create :assign_default_point_of_contact!
+  after_create :log_signup_activity
 
   has_many :activities, dependent: :destroy
 

@@ -301,10 +301,16 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 4.4 — Notifications
 
-- [ ] When a Person owned by user X has a significant event (email_replied, signup, subscription_ended, lifecycle becomes :quiet), notify X.
-- [ ] Reuse existing notification infrastructure (whatever the Activity Feed uses).
-- [ ] Spec: PoC receives notification on email_replied activity; non-PoC team members do not.
-- [ ] **Commit:** "Notify point-of-contact on significant events"
+- [x] When a Person owned by user X has a significant event (email_replied, signup, subscription_ended, ~~lifecycle becomes :quiet~~), notify X.
+- [x] Reuse existing notification infrastructure (whatever the Activity Feed uses).
+- [x] Spec: PoC receives notification on email_replied activity; non-PoC team members do not.
+- [x] **Commit:** "Notify point-of-contact on significant events"
+
+  *Notes:*
+  - New `Notifiable::PointOfContactAlert` adapter — direct push to a single recipient (the PoC), no FeedItem (the Person's Activity timeline already shows the event in context). Registered in `NotifiableFactory`.
+  - `Activity.after_create` enqueues `SendNotificationsJob.perform_later(self, "PointOfContactAlert")` when (a) the kind is in `SIGNIFICANT_KINDS = %w[signup email_replied subscription_ended]` AND (b) `user.point_of_contact_id` is set.
+  - **Reordered User callbacks** so `assign_default_point_of_contact!` runs *before* `log_signup_activity`. Without this, the signup Activity fires when point_of_contact_id is still nil and the signup notification gets skipped.
+  - **`:quiet` lifecycle transition is deferred.** It requires a periodic job to detect users crossing the 30-day-no-visit threshold (no Activity is logged on lifecycle change). Per CONTEXT.md, `lifecycle_stage_changed` is in the V1.5+ deferred-kinds list. When that lands, add `"lifecycle_stage_changed"` to `SIGNIFICANT_KINDS` and the existing wiring covers the alert.
 
 ---
 
