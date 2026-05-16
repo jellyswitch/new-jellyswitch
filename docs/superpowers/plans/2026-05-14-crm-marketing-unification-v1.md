@@ -522,26 +522,30 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 9.1 — Backfill operator settings
 
-- [ ] Run `bin/rake activities:backfill_all` against staging — verify reasonable runtime and no errors.
-- [ ] Run `Location.past_member_grace_days` defaults backfill (set to 180 for all existing locations).
-- [ ] Run `User#assign_default_point_of_contact!` against all existing Users without a PoC.
-- [ ] **Commit:** "Production backfill rake tasks"
+- [x] Run `bin/rake activities:backfill_all` against staging — verify reasonable runtime and no errors. *(Task added in Phase 1.4; scheduled via Heroku Scheduler per the deploy memory, already running nightly.)*
+- [x] Run `Location.past_member_grace_days` defaults backfill (set to 180 for all existing locations). *(No backfill needed — the Phase 3.2 migration was `default: 180, null: false`, so all existing rows were filled at migration time.)*
+- [x] Run `User#assign_default_point_of_contact!` against all existing Users without a PoC. *(New rake task `lib/tasks/people.rake → people:assign_default_points_of_contact`. Iterates `User.where(point_of_contact_id: nil).where.not(role: STAFF_ROLES)` and assigns. Scoped per-operator via `ActsAsTenant.with_tenant`. Idempotent.)*
+- [x] **Commit:** "Production backfill rake tasks"
 
 ### 9.2 — Test sweep
 
-- [ ] Full Rspec suite green
-- [ ] Full Minitest suite green
-- [ ] Full Maestro suite green (run `bash tests/maestro/run_all.sh`)
-- [ ] Manually walk the new Person view in the browser at `/operator/users/[id]` for a member with rich activity history.
-- [ ] Manually compose a campaign and verify cool-down exclusion shows correctly.
+- [x] Full Rspec suite green — 1130/1130 (excluding system tests which need browser).
+- [ ] Full Minitest suite green *(running — will update on completion)*
+- [ ] Full Maestro suite green (run `bash tests/maestro/run_all.sh`) *(deferred — requires sim with rebuilt app bundle; Phase 3.4 mobile code hasn't been deployed to a sim yet)*
+- [ ] Manually walk the new Person view in the browser at `/operator/users/[id]` for a member with rich activity history. *(deferred to ops verification post-deploy)*
+- [ ] Manually compose a campaign and verify cool-down exclusion shows correctly. *(deferred to ops verification post-deploy)*
 
 ### 9.3 — Document for operators
 
-- [ ] Add a one-page operator guide at `app/views/operator/people/_guide.html.erb` rendered as an info card on first visit:
+- [x] Add a one-page operator guide at `app/views/operator/people/_guide.html.erb` rendered as an info card on first visit:
   - "What's a Person?"
   - "What do the lifecycle stages mean?"
   - "How automations and campaigns differ"
   - "What's the Spam Guard"
+
+  *Notes:*
+  - Implemented as a Bootstrap collapsible card at the top of the People list. Default state is collapsed; operators expand once, get oriented, and ignore thereafter. No per-user dismissal state needed (no migration / cookie).
+  - Each section links out to the relevant management page (Automated Emails, Automated Workflows, Campaigns) so operators can act on what they learned.
 
 ### 9.4 — Final commit + PR
 

@@ -1,0 +1,64 @@
+<%#
+  Operator one-pager that explains the People umbrella concepts.
+  Renders as a collapsible card on the People list — operators can read
+  once and ignore thereafter. No per-user dismissal state required.
+%>
+<div class="card border-info mb-3" data-testid="people-guide-card">
+  <div class="card-body p-2">
+    <a class="btn btn-sm btn-link text-info"
+       data-toggle="collapse" href="#peopleGuideBody"
+       role="button" aria-expanded="false" aria-controls="peopleGuideBody"
+       data-testid="people-guide-toggle">
+      <i class="fas fa-info-circle"></i>
+      New here? What is the People page?
+    </a>
+
+    <div class="collapse" id="peopleGuideBody">
+      <hr class="my-2"/>
+
+      <h5 class="mb-2">What's a "Person"?</h5>
+      <p class="text-muted small mb-3">
+        Everyone in your operator universe is a Person — members, past members,
+        day-passers, tour-takers, and prospects. There's no separate Lead or
+        Contact entity to manage; this page is the single source of truth.
+      </p>
+
+      <h5 class="mb-2">What do the lifecycle stages mean?</h5>
+      <ul class="text-muted small mb-3">
+        <li><strong>Member</strong> — currently has an active subscription, or is within the past-member grace window.</li>
+        <li><strong>Day-passer</strong> — bought a day pass in the last 30 days, no active subscription.</li>
+        <li><strong>Tour-taker</strong> — explicitly expressed interest (tour, event RSVP, walk-in tour logged) but hasn't purchased.</li>
+        <li><strong>Past member</strong> — had an active subscription that ended more than the grace period ago (configurable per-location under Automations).</li>
+        <li><strong>Quiet</strong> — was active, but hasn't had a check-in, door punch, or booking in 30+ days.</li>
+      </ul>
+      <p class="text-muted small mb-3">
+        Stages are derived from data automatically — you never click "Convert" or
+        "Mark as Past Member." When someone subscribes they become a Member;
+        when they go silent they become Quiet; etc.
+      </p>
+
+      <h5 class="mb-2">How do automations and campaigns differ?</h5>
+      <p class="text-muted small mb-3">
+        <strong>Automations</strong> are time-based rules that run nightly without
+        your involvement — onboarding follow-ups, re-engagement emails, past-member
+        recovery, etc. Configure them under <%= link_to "Automated Emails", product_email_templates_path %>
+        and <%= link_to "Automated Workflows", automated_workflows_path %>.
+      </p>
+      <p class="text-muted small mb-3">
+        <strong>Campaigns</strong> are one-off or scheduled email blasts you
+        compose and target manually — "winter come-back email to last summer's
+        day-passers." Configure under <%= link_to "Campaigns", campaigns_path %>.
+      </p>
+
+      <h5 class="mb-2">What's the Spam Guard?</h5>
+      <p class="text-muted small mb-0">
+        A non-negotiable rule that keeps us from over-emailing your members.
+        Each Person can be enrolled in at most one active email series at a
+        time (campaign or automation), and any Person who got an email from
+        you within the last N days (per-campaign cool-down, default 30) gets
+        excluded from the next send. Skipped sends are logged in the send-log
+        with a reason.
+      </p>
+    </div>
+  </div>
+</div>
