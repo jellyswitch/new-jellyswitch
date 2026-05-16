@@ -320,10 +320,17 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 5.1 — Extend ProductEmailTemplate
 
-- [ ] Add new `email_type` values: `re_engagement`, `past_member_recovery`.
-- [ ] Update `available_merge_tags` to include any new tags needed (e.g., `{{days_since_last_visit}}`, `{{plan_canceled_on}}`).
-- [ ] Update `seed_defaults_for` to include defaults for new types.
-- [ ] **Commit:** "Add re_engagement + past_member_recovery email types"
+- [x] Add new `email_type` values: `re_engagement`, `past_member_recovery`.
+- [x] Update `available_merge_tags` to include any new tags needed (e.g., `{{days_since_last_visit}}`, `{{plan_canceled_on}}`).
+- [x] Update `seed_defaults_for` to include defaults for new types.
+- [x] **Commit:** "Add re_engagement + past_member_recovery email types"
+
+  *Notes:*
+  - `RE_ENGAGEMENT_PRODUCTS = %w[day_pass reservation]` + `PAST_MEMBER_RECOVERY_PRODUCTS = %w[membership]` — keep the cross-product matrix scoped sensibly (no office_lease re_engagement; no day_pass past_member_recovery).
+  - Default delays: re_engagement 14d, past_member_recovery 30d (after grace).
+  - Merge tags wired in `replace_merge_tags`: `{{days_since_last_visit}}` reads `user.activities.where(kind: [...]).maximum(:occurred_at)`; `{{plan_canceled_on}}` reads from the most recent `subscription_ended` Activity (formatted as "November 3, 2025").
+  - UI index page (`product_email_templates/index.html.erb`) gains two new sections ("Re-Engagement Emails" and "Past-Member Recovery Emails") below Signup Nudge.
+  - 12 new specs.
 
 ### 5.2 — Brand-stripped Cowork Tahoe seed copy
 

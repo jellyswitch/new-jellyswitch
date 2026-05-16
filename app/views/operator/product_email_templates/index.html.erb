@@ -64,5 +64,33 @@
   </dl>
 
   <hr />
+  <h5>Re-Engagement Emails</h5>
+  <p class="text-muted small">Sent after a configurable delay when a day-passer or room reserver hasn't returned.</p>
+  <dl>
+    <% @re_engagement_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Past-Member Recovery Emails</h5>
+  <p class="text-muted small">Sent after the grace period ends to former members whose subscription has lapsed.</p>
+  <dl>
+    <% @past_member_recovery_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
   <%= link_to "View Send Log", send_log_product_email_templates_path, class: "btn btn-block btn-outline-secondary" %>
 <% end %>
