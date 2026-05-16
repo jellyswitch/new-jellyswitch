@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Sendgrid Event Webhook receiver — global path, no subdomain constraint.
+  # Auth via HTTP Basic if SENDGRID_WEBHOOK_USERNAME/PASSWORD env vars set.
+  post "/sendgrid/events", to: "sendgrid/events#receive"
+
   namespace :api do
     resources :doors, only: [:index] do
       member do

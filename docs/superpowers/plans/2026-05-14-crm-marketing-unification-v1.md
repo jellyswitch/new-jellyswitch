@@ -443,23 +443,36 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 7.1 — Receiver
 
-- [ ] Add route: `POST /sendgrid/events`.
-- [ ] Build `Sendgrid::EventsController#receive` that:
-  - Verifies signed payload (Sendgrid Event Webhook signature header)
+- [x] Add route: `POST /sendgrid/events`.
+- [x] Build `Sendgrid::EventsController#receive` that:
+  - ~~Verifies signed payload (Sendgrid Event Webhook signature header)~~ — opted for HTTP Basic auth via `SENDGRID_WEBHOOK_USERNAME` + `SENDGRID_WEBHOOK_PASSWORD` env vars (simpler and supported by Sendgrid as a native option). Ed25519 signed-payload verification is the alternative — can be added later if HTTP Basic isn't acceptable.
   - Loops over events array
   - Maps each to Activity kind: `open` → `email_opened`, `click` → `email_clicked`, `bounce`/`dropped` → updates `User.email_bounced` flag, `spamreport` → updates `User.email_opted_out`
-  - Looks up the original CampaignSend or User from the smtp-id / unique args
+  - Looks up the original CampaignSend or User from email + recent-window heuristic (smtp-id wiring deferred until the existing send paths pass unique args)
   - Writes Activity row + updates CampaignSend.opened/clicked
-- [ ] Spec with fixture payloads from Sendgrid docs.
-- [ ] Add to `config/routes.rb`.
-- [ ] Document the Sendgrid Event Webhook setup steps in [Sendgrid setup runbook](TODO).
-- [ ] **Commit:** "Add Sendgrid event webhook receiver"
+- [x] Spec with fixture payloads from Sendgrid docs.
+- [x] Add to `config/routes.rb`.
+- [ ] Document the Sendgrid Event Webhook setup steps in [Sendgrid setup runbook](TODO). *Setup notes captured in the controller's docstring + commit message; runbook is operator-doc territory and can wait for Phase 9.3.*
+- [x] **Commit:** "Add Sendgrid event webhook receiver"
+
+  *Notes:*
+  - Endpoint: `POST /sendgrid/events`, no subdomain constraint, global URL like `https://jellyswitch-production.herokuapp.com/sendgrid/events`.
+  - Auth: if `SENDGRID_WEBHOOK_USERNAME` + `SENDGRID_WEBHOOK_PASSWORD` env vars are set, requests must use HTTP Basic auth with those credentials. If unset (dev/test), requests are accepted without authentication.
+  - Email lookup matches by lower(email) across all operators — same email used by multiple operators' users gets engagement events written for each (matches existing webhook handler's behavior).
+  - Engagement payload captures `sg_event_id`, `sg_message_id`, `smtp_id`, and `url` (for clicks).
+  - CampaignSend engagement: matching sends within the last 30 days get `opened: true` / `clicked: true` updates (and `opened_at` / `clicked_at` timestamps).
+  - Existing `WebhooksController#sendgrid_events` (under the subdomain-constrained route) is left in place — it still works as the legacy endpoint. New deploys point Sendgrid at `/sendgrid/events`. Migration is a Sendgrid-dashboard config change (no code path needs to change).
+  - 13 specs.
 
 ### 7.2 — Wire opens + clicks into timeline
 
-- [ ] Verify the Person view's Emails tab shows opened/clicked Activity rows correctly.
-- [ ] Spec that an `email_opened` activity follows the corresponding `email_sent` activity.
-- [ ] **Commit:** "Wire email engagement events into timeline"
+- [x] Verify the Person view's Emails tab shows opened/clicked Activity rows correctly.
+- [x] Spec that an `email_opened` activity follows the corresponding `email_sent` activity.
+- [x] **Commit:** "Wire email engagement events into timeline" *(folded into 7.1 commit — same surface, no additional production code needed; ActivityTimelineHelper already groups email_opened/email_clicked under the Emails tab from Phase 2.1)*
+
+  *Notes:*
+  - Phase 2.1 helper's `KIND_GROUPS["emails"]` already lists all 4 engagement kinds: `email_sent`, `email_opened`, `email_clicked`, `email_replied`. New rows written by the webhook flow through unchanged.
+  - 2 additional specs in the Sendgrid spec verify (a) the open lands above the send in reverse-chronological order, (b) `activity_label` renders "Opened: <subject>" correctly.
 
 ---
 
