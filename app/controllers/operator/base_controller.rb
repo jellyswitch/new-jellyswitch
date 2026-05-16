@@ -90,6 +90,11 @@ class Operator::BaseController < ApplicationController
       elsif (request.get? && request.format.html?) && !(controller_name == "landing" && action_name == "index")
         # If the user tries go go anywhere that is not the landing page, they should be redirected to the landing page where they will select location
         redirect_to root_path
+      elsif !(controller_name == "landing" && action_name == "index")
+        # Logged-out, non-HTML or non-GET request to a non-landing controller
+        # with no current_location — we can't sensibly redirect, but the action
+        # would NoMethodError on nil downstream. Halt cleanly instead.
+        head :unauthorized
       end
     end
   end

@@ -54,6 +54,24 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     assert :success
   end
 
+  # Regression: production NoMethodError (Honeybadger #130571713) when
+  # current_location was nil inside find_day_passes. The action must not
+  # crash on `current_location.day_passes`.
+  test "index redirects when current_location is nil for logged-in user" do
+    Operator::DayPassesController.any_instance.stubs(:current_location).returns(nil)
+    get day_passes_path, env: default_env
+    assert_response :redirect
+  end
+
+  # Regression for the logged-out non-HTML path through reset_location, which
+  # previously fell through and let the action run with a nil current_location.
+  test "index halts cleanly when logged-out non-HTML hits with nil current_location" do
+    Operator::DayPassesController.any_instance.stubs(:current_location).returns(nil)
+    Operator::DayPassesController.any_instance.stubs(:logged_in?).returns(false)
+    get day_passes_path(format: :json), env: default_env
+    assert_response :unauthorized
+  end
+
   test "should get day pass show path" do
     get day_pass_path(@day_pass), env: default_env
     assert :success

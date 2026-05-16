@@ -5,6 +5,7 @@ class Operator::DayPassesController < Operator::BaseController
 
   def index
     find_day_passes
+    return if performed?
     authorize @day_passes
   end
 
@@ -163,6 +164,10 @@ class Operator::DayPassesController < Operator::BaseController
   private
 
   def find_day_passes
+    if current_location.nil?
+      redirect_to root_path
+      return
+    end
     @day_passes = current_location.day_passes.order('created_at DESC')
   end
 
