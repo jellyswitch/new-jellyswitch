@@ -36,7 +36,14 @@ class Operator::SettingsController < Operator::BaseController
   end
   def update_doors;                head :not_implemented; end
   def import_doors;                head :not_implemented; end
-  def update_hours_and_address;    head :not_implemented; end
+  def update_hours_and_address
+    @location = selected_location
+    if @location.update(hours_and_address_params)
+      redirect_to settings_hours_and_address_path(location_id: @location.id), notice: "Hours & address saved."
+    else
+      render :hours_and_address, status: :unprocessable_entity
+    end
+  end
   def update_wifi_and_pixels;      head :not_implemented; end
   def update_notifications
     @operator = current_operator
@@ -78,6 +85,18 @@ class Operator::SettingsController < Operator::BaseController
     end
   end
   helper_method :selected_location
+
+  def hours_and_address_params
+    params.require(:location).permit(
+      :name, :building_address, :city, :state, :zip,
+      :latitude, :longitude,
+      :time_zone, :working_day_start, :working_day_end,
+      :open_sunday, :open_monday, :open_tuesday, :open_wednesday,
+      :open_thursday, :open_friday, :open_saturday,
+      :building_access_instructions,
+      :contact_name, :contact_email, :contact_phone
+    )
+  end
 
   def branding_params
     params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)

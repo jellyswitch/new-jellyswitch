@@ -201,4 +201,47 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(response.body).to include(location.name)
     end
   end
+
+  describe "GET #hours_and_address" do
+    render_views
+    it "renders address, hours, and contact fields for the selected location" do
+      get :hours_and_address
+      expect(response).to have_http_status(:ok)
+      %w[name building_address city state zip time_zone
+         working_day_start working_day_end open_monday open_saturday
+         contact_name contact_email contact_phone building_access_instructions
+         latitude longitude].each do |attr|
+        expect(response.body).to include("location[#{attr}]"), "missing field: #{attr}"
+      end
+    end
+  end
+
+  describe "PATCH #update_hours_and_address" do
+    it "saves address fields" do
+      patch :update_hours_and_address, params: {
+        location_id: location.id,
+        location: {
+          name: "Updated Name", building_address: "1 New St", city: "Tahoe",
+          state: "CA", zip: "96150", time_zone: "Pacific Time (US & Canada)",
+          working_day_start: "08:00", working_day_end: "20:00",
+          open_monday: "1", open_saturday: "0",
+          contact_name: "Jane", contact_email: "jane@untethered.com", contact_phone: "555-1234"
+        }
+      }
+      expect(response).to redirect_to(settings_hours_and_address_path(location_id: location.id))
+      location.reload
+      expect(location.name).to eq("Updated Name")
+      expect(location.building_address).to eq("1 New St")
+      expect(location.working_day_start).to eq("08:00")
+    end
+
+    it "rejects params outside the whitelist" do
+      original_wifi = location.wifi_name
+      patch :update_hours_and_address, params: {
+        location_id: location.id,
+        location: { wifi_name: "should not change" }
+      }
+      expect(location.reload.wifi_name).to eq(original_wifi)
+    end
+  end
 end

@@ -1,5 +1,83 @@
 <%= render layout: "operator/settings/tab_layout", locals: { active: :hours_and_address } do %>
   <%= render "operator/settings/location_switcher" %>
-  <p>Editing: <strong><%= selected_location.name %></strong></p>
-  <p>Fields coming in Task 10.</p>
+
+  <%= form_with model: @location, url: settings_update_hours_and_address_path(location_id: @location.id), method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @location %>
+
+    <h5>Address</h5>
+    <div class="form-group">
+      <%= f.label :name, "Location name" %>
+      <%= f.text_field :name, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :building_address %>
+      <%= f.text_field :building_address, class: "form-control" %>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6"><%= f.label :city %><%= f.text_field :city, class: "form-control" %></div>
+      <div class="form-group col-md-2"><%= f.label :state %><%= f.text_field :state, class: "form-control" %></div>
+      <div class="form-group col-md-4"><%= f.label :zip, "ZIP" %><%= f.text_field :zip, class: "form-control" %></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <%= f.label :latitude %>
+        <%= f.number_field :latitude, step: "any", class: "form-control" %>
+      </div>
+      <div class="form-group col-md-6">
+        <%= f.label :longitude %>
+        <%= f.number_field :longitude, step: "any", class: "form-control" %>
+      </div>
+    </div>
+    <small class="form-text text-muted mb-3">Auto-population from address coming soon.</small>
+
+    <hr>
+    <h5>Hours</h5>
+    <div class="form-group">
+      <%= f.label :time_zone %>
+      <%= f.time_zone_select :time_zone, ActiveSupport::TimeZone.us_zones, {}, class: "form-control" %>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-6">
+        <%= f.label :working_day_start, "Open at" %>
+        <%= f.text_field :working_day_start, class: "form-control", placeholder: "09:00" %>
+      </div>
+      <div class="form-group col-md-6">
+        <%= f.label :working_day_end, "Close at" %>
+        <%= f.text_field :working_day_end, class: "form-control", placeholder: "18:00" %>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Open days</label>
+      <% %i[open_sunday open_monday open_tuesday open_wednesday open_thursday open_friday open_saturday].each do |day| %>
+        <div class="form-check form-check-inline">
+          <%= f.check_box day, class: "form-check-input" %>
+          <%= f.label day, day.to_s.sub("open_", "").titleize, class: "form-check-label" %>
+        </div>
+      <% end %>
+    </div>
+
+    <hr>
+    <h5>Building access</h5>
+    <div class="form-group">
+      <%= f.label :building_access_instructions, "Instructions for members entering the building" %>
+      <%= f.text_area :building_access_instructions, rows: 3, class: "form-control" %>
+    </div>
+
+    <hr>
+    <h5>Contact</h5>
+    <div class="form-group">
+      <%= f.label :contact_name %>
+      <%= f.text_field :contact_name, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :contact_email %>
+      <%= f.email_field :contact_email, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :contact_phone %>
+      <%= f.telephone_field :contact_phone, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Save Hours & Address", class: "btn btn-primary" %>
+  <% end %>
 <% end %>
