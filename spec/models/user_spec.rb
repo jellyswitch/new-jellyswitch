@@ -92,6 +92,16 @@ RSpec.describe User, type: :model do
       expect { member.assign_default_point_of_contact! }.not_to raise_error
       expect(member.reload.point_of_contact).to be_nil
     end
+
+    it "is a no-op when the user's operator record has been deleted (data-integrity orphan)" do
+      member = create(:user, operator: operator, current_location: location)
+      member.update_column(:point_of_contact_id, nil)
+      # Simulate the prod scenario: operator_id still points to a now-missing
+      # operator row (FKs don't ON DELETE CASCADE). #operator returns nil.
+      allow(member).to receive(:operator).and_return(nil)
+      expect { member.assign_default_point_of_contact! }.not_to raise_error
+      expect(member.reload.point_of_contact).to be_nil
+    end
   end
 
   describe "automatic point-of-contact assignment" do
