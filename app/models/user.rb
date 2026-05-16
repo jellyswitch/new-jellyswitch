@@ -261,6 +261,8 @@ class User < ApplicationRecord
   end
 
   def default_point_of_contact_candidate
+    return nil if operator.nil?
+
     if current_location
       gm = operator.users.where(role: "general-manager", current_location_id: current_location.id)
                           .order(:created_at).first
