@@ -40,6 +40,18 @@ class HasDollarsTest < ActiveSupport::TestCase
     assert_nil fake.price_in_cents
   end
 
+  test "nil input clears cents to nil" do
+    fake = Fake.new(price_in_cents: 500)
+    fake.price = nil
+    assert_nil fake.price_in_cents
+  end
+
+  test "whitespace-only string clears cents to nil" do
+    fake = Fake.new(price_in_cents: 500)
+    fake.price = "   "
+    assert_nil fake.price_in_cents
+  end
+
   test "nil cents reads as nil dollars" do
     fake = Fake.new(price_in_cents: nil)
     assert_nil fake.price

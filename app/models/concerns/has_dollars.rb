@@ -11,8 +11,10 @@ module HasDollars
           cents.nil? ? nil : cents / 100.0
         end
 
+        # Uses public_send (not read_attribute) so the concern works for both
+        # ActiveRecord models and lightweight ActiveModel::Attributes objects.
         define_method("#{name}=") do |value|
-          if value.is_a?(String) && value.strip.empty? || value.nil?
+          if value.blank?
             public_send(:"#{cents_attr}=", nil)
           else
             public_send(:"#{cents_attr}=", (BigDecimal(value.to_s) * 100).to_i)
