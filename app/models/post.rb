@@ -17,7 +17,8 @@ class Post < ApplicationRecord
   belongs_to :user
   delegate :operator, to: :location
 
-  has_many :post_replies
+  has_many :post_replies, dependent: :destroy
+  has_many :post_reactions, dependent: :destroy
 
   has_rich_text :content
 end

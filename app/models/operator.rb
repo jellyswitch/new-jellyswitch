@@ -58,7 +58,15 @@ class Operator < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged, slug_column: :subdomain
 
+  validates :refund_fee_percent,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
+            allow_nil: true
+  validates :cancellation_window_hours,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 168 },
+            allow_nil: true
+
   has_many :announcements
+  has_many :automated_workflows
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors

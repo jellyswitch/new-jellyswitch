@@ -6,25 +6,36 @@ class ProductEmailTemplate < ApplicationRecord
   has_rich_text :body
 
   PRODUCT_TYPES = %w[day_pass reservation office_lease membership signup_nudge].freeze
-  EMAIL_TYPES = %w[onboarding follow_up nudge].freeze
+  EMAIL_TYPES = %w[onboarding follow_up nudge re_engagement past_member_recovery].freeze
+
+  # (product_type, email_type) combos that re_engagement and past_member_recovery
+  # apply to. Onboarding/follow_up/nudge use the original cross-product matrix.
+  RE_ENGAGEMENT_PRODUCTS = %w[day_pass reservation].freeze
+  PAST_MEMBER_RECOVERY_PRODUCTS = %w[membership].freeze
 
   DEFAULT_SUBJECTS = {
     "day_pass_onboarding" => "Welcome! Here's what you need to know",
     "day_pass_follow_up" => "How was your visit?",
+    "day_pass_re_engagement" => "Come back and see us",
     "reservation_onboarding" => "Your reservation is confirmed!",
     "reservation_follow_up" => "How was your reservation?",
+    "reservation_re_engagement" => "Ready for your next booking?",
     "office_lease_onboarding" => "Welcome to your new office!",
     "office_lease_follow_up" => "How's your office working out?",
     "membership_onboarding" => "Welcome, new member!",
     "membership_follow_up" => "How's your membership going?",
+    "membership_past_member_recovery" => "We'd love to welcome you back",
     "signup_nudge_nudge" => "Come check us out!"
   }.freeze
 
   DEFAULT_DELAYS = {
     "day_pass" => 2,
+    "day_pass_re_engagement" => 14,
     "reservation" => 1,
+    "reservation_re_engagement" => 14,
     "office_lease" => 180,
     "membership" => 90,
+    "membership_past_member_recovery" => 30,
     "signup_nudge" => 1
   }.freeze
 
@@ -36,28 +47,55 @@ class ProductEmailTemplate < ApplicationRecord
   scope :onboarding, -> { where(email_type: "onboarding") }
   scope :follow_up, -> { where(email_type: "follow_up") }
   scope :nudge, -> { where(email_type: "nudge") }
+  scope :re_engagement, -> { where(email_type: "re_engagement") }
+  scope :past_member_recovery, -> { where(email_type: "past_member_recovery") }
   scope :enabled, -> { where(enabled: true) }
   scope :for_product, ->(type) { where(product_type: type) }
   scope :for_location, ->(location) { where(location: location) }
 
   def self.seed_defaults_for(operator, location:)
+    require Rails.root.join("db/seeds/welcome_drip_templates")
+
     # Product onboarding + follow-up
     %w[day_pass reservation office_lease membership].each do |product|
       %w[onboarding follow_up].each do |etype|
-        find_or_create_by(operator: operator, location: location, product_type: product, email_type: etype) do |t|
-          t.subject = DEFAULT_SUBJECTS["#{product}_#{etype}"] || "Email from #{operator.name}"
-          t.follow_up_delay_days = DEFAULT_DELAYS[product] if etype == "follow_up"
-          t.enabled = false
-        end
+        delay = etype == "follow_up" ? DEFAULT_DELAYS[product] : nil
+        seed_template(operator, location, product, etype, delay)
       end
     end
 
     # Signup nudge
-    find_or_create_by(operator: operator, location: location, product_type: "signup_nudge", email_type: "nudge") do |t|
-      t.subject = DEFAULT_SUBJECTS["signup_nudge_nudge"] || "Come check us out!"
-      t.follow_up_delay_days = DEFAULT_DELAYS["signup_nudge"]
+    seed_template(operator, location, "signup_nudge", "nudge", DEFAULT_DELAYS["signup_nudge"])
+
+    # Re-engagement (day_passer_followup + room_reservation_followup automations)
+    RE_ENGAGEMENT_PRODUCTS.each do |product|
+      seed_template(operator, location, product, "re_engagement", DEFAULT_DELAYS["#{product}_re_engagement"])
+    end
+
+    # Past-member recovery (past_member_recovery automation)
+    PAST_MEMBER_RECOVERY_PRODUCTS.each do |product|
+      seed_template(operator, location, product, "past_member_recovery", DEFAULT_DELAYS["#{product}_past_member_recovery"])
+    end
+  end
+
+  def self.seed_template(operator, location, product_type, email_type, delay_days = nil)
+    template = find_or_create_by(operator: operator, location: location,
+                                 product_type: product_type, email_type: email_type) do |t|
+      subject_key = "#{product_type}_#{email_type}"
+      t.subject = DEFAULT_SUBJECTS[subject_key] || "Email from #{operator.name}"
+      t.follow_up_delay_days = delay_days
       t.enabled = false
     end
+
+    # Apply the brand-stripped default body only to brand-new rows (avoid
+    # clobbering operator customizations). A row counts as "new" when it
+    # has no rich-text body persisted yet.
+    if template.persisted? && template.body.blank?
+      body_html = WelcomeDripSeed.body_for(product_type, email_type)
+      template.update!(body: body_html) if body_html.present?
+    end
+
+    template
   end
 
   def product_label
@@ -75,23 +113,31 @@ class ProductEmailTemplate < ApplicationRecord
     when "onboarding" then "Onboarding"
     when "follow_up" then "Follow-Up"
     when "nudge" then "Nudge"
+    when "re_engagement" then "Re-Engagement"
+    when "past_member_recovery" then "Past-Member Recovery"
     end
   end
 
   def has_delay?
-    email_type.in?(%w[follow_up nudge])
+    email_type.in?(%w[follow_up nudge re_engagement past_member_recovery])
   end
 
   def delay_description
-    case product_type
-    when "day_pass"
-      "Days after the day pass date. Email sends at noon. Set to 0 to send midway through their visit day."
-    when "reservation"
-      "Days after the reservation ends. Set to 0 to send right after their booking."
-    when "signup_nudge"
-      "Days after signup to send if they haven't made a purchase."
+    if email_type == "re_engagement"
+      "Days after the last visit with no return. The email fires only if the Person hasn't come back since."
+    elsif email_type == "past_member_recovery"
+      "Days after the past-member grace period ends. Tune the grace period in 'Stage transitions' above."
     else
-      "Days after purchase to send the follow-up email."
+      case product_type
+      when "day_pass"
+        "Days after the day pass date. Email sends at noon. Set to 0 to send midway through their visit day."
+      when "reservation"
+        "Days after the reservation ends. Set to 0 to send right after their booking."
+      when "signup_nudge"
+        "Days after signup to send if they haven't made a purchase."
+      else
+        "Days after purchase to send the follow-up email."
+      end
     end
   end
 
@@ -130,6 +176,14 @@ class ProductEmailTemplate < ApplicationRecord
         { tag: "{{plan_name}}", label: "Plan Name", description: "Membership plan name" },
         { tag: "{{start_date}}", label: "Start Date", description: "Membership start date" }
       ]
+    end
+
+    if email_type == "re_engagement"
+      tags << { tag: "{{days_since_last_visit}}", label: "Days Since Last Visit", description: "Days since the Person's most recent visit" }
+    end
+
+    if email_type == "past_member_recovery"
+      tags << { tag: "{{plan_canceled_on}}", label: "Plan Canceled On", description: "Date the Person's membership ended" }
     end
 
     if operator&.has_mobile_app_links?
@@ -177,6 +231,26 @@ class ProductEmailTemplate < ApplicationRecord
     if google_url.present?
       google_review_html = '<a href="' + google_url.to_s + '" target="_blank" style="display: inline-block; color: #ffffff; background-color: #27ae60; border: solid 1px #27ae60; border-radius: 4px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 14px; font-weight: bold; margin: 0; padding: 12px 24px;">Leave a Google Review</a>'
       result = result.gsub("{{google_review_button}}", google_review_html)
+    end
+
+    # Re-engagement: days since the user's most recent visit Activity.
+    # Uses checkin/door_punch/reservation/day_pass kinds (per User::LIFECYCLE_VISIT_KINDS
+    # extended to include day_pass).
+    if result.include?("{{days_since_last_visit}}")
+      last_visit = user.activities
+                       .where(kind: %w[checkin door_punch reservation day_pass])
+                       .maximum(:occurred_at)
+      days = last_visit ? (Time.current.to_date - last_visit.to_date).to_i : nil
+      result = result.gsub("{{days_since_last_visit}}", days&.to_s || "")
+    end
+
+    # Past-member recovery: when their most recent subscription ended.
+    if result.include?("{{plan_canceled_on}}")
+      ended_at = user.activities
+                     .where(kind: "subscription_ended")
+                     .maximum(:occurred_at)
+      formatted = ended_at ? ended_at.to_date.strftime("%B %-d, %Y") : ""
+      result = result.gsub("{{plan_canceled_on}}", formatted)
     end
 
     # Product-specific tags

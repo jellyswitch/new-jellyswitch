@@ -28,6 +28,7 @@ class Operator::Admin::CampaignsController < Operator::BaseController
 
   def show
     @recipient_count = @campaign.recipient_count_for(current_location)
+    @spam_guard_excluded_count = @campaign.spam_guard_excluded_count_for(current_location)
     @recipients = @campaign.build_recipient_query(current_location).limit(50)
   end
 
@@ -117,7 +118,7 @@ class Operator::Admin::CampaignsController < Operator::BaseController
 
   def campaign_params
     params.require(:campaign).permit(
-      :name, :campaign_type, :suppression_days, :scheduled_at,
+      :name, :campaign_type, :suppression_days, :cool_down_days, :scheduled_at,
       segment: [:status_filter, date_range: [:from, :to], customer_types: []],
       campaign_steps_attributes: [:id, :position, :subject, :body, :delay_days, :_destroy]
     )

@@ -36,6 +36,12 @@ class AutomatedWorkflowsJob < ApplicationJob
         run_booking_reminder(workflow, operator, location)
       when "signup_nurture"
         run_signup_nurture(workflow, operator, location)
+      when "day_passer_followup"
+        run_day_passer_followup(workflow, operator, location)
+      when "room_reservation_followup"
+        run_room_reservation_followup(workflow, operator, location)
+      when "past_member_recovery"
+        run_past_member_recovery(workflow, operator, location)
       end
     rescue => e
       Rails.logger.error("AutomatedWorkflow #{workflow.workflow_type} failed: #{e.message}")
@@ -67,6 +73,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       next if user.reservations.where("created_at > ?", cutoff).exists?
       next if user.door_punches.where("created_at > ?", cutoff).exists?
       next if already_sent?(user, "re_engagement", days)
+      next unless guard_eligible?(user, operator, "re_engagement_#{user.id}_#{Date.current}")
 
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
       record_send(user, "re_engagement", "onboarding")
@@ -147,12 +154,141 @@ class AutomatedWorkflowsJob < ApplicationJob
 
         send_key = "signup_nurture_step_#{step}_user_#{user.id}"
         next if already_sent_key?(send_key)
+        next unless guard_eligible?(user, operator, send_key)
 
         UserMailer.re_engagement_email(user, operator, template, location).deliver_later
         record_send_key(user, send_key)
         break # only send one step per run
       end
     end
+  end
+
+  # Day-passer follow-up: email day-passers N days after their visit if they
+  # haven't returned (no day_pass / reservation / checkin / door_punch since).
+  # Skips current members (they're already engaged).
+  def run_day_passer_followup(workflow, operator, location)
+    days_after = workflow.days_after
+    target_date = days_after.days.ago.to_date
+
+    template = ProductEmailTemplate.find_by(
+      operator: operator, location: location,
+      product_type: "day_pass", email_type: "re_engagement"
+    )
+    return unless template&.enabled?
+
+    DayPass.where(operator: operator, location: location, day: target_date)
+           .includes(:user)
+           .find_each do |day_pass|
+      user = day_pass.user
+      next unless user
+      next if user.email_opted_out? || user.email_bounced?
+      next if user.has_active_subscription?
+      next if returned_since?(user, day_pass.day)
+
+      send_key = "day_passer_followup_#{day_pass.id}"
+      next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
+
+      UserMailer.re_engagement_email(user, operator, template, location).deliver_later
+      record_send_key(user, send_key)
+    end
+  end
+
+  # Room-reservation follow-up: same shape but driven off Reservation rows.
+  def run_room_reservation_followup(workflow, operator, location)
+    days_after = workflow.days_after
+    target_window_start = (days_after + 1).days.ago.beginning_of_day
+    target_window_end = days_after.days.ago.end_of_day
+
+    template = ProductEmailTemplate.find_by(
+      operator: operator, location: location,
+      product_type: "reservation", email_type: "re_engagement"
+    )
+    return unless template&.enabled?
+
+    Reservation.joins(:room)
+               .where(rooms: { location_id: location.id })
+               .where(cancelled: false)
+               .where(datetime_in: target_window_start..target_window_end)
+               .includes(:user, :room)
+               .find_each do |reservation|
+      user = reservation.user
+      next unless user
+      next if user.email_opted_out? || user.email_bounced?
+      next if user.has_active_subscription?
+      next if returned_since?(user, reservation.datetime_in.to_date)
+
+      send_key = "room_reservation_followup_#{reservation.id}"
+      next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
+
+      UserMailer.re_engagement_email(user, operator, template, location).deliver_later
+      record_send_key(user, send_key)
+    end
+  end
+
+  # Past-member recovery: email former members `days_after_grace` days AFTER
+  # `location.past_member_grace_days` has expired. Skips current members.
+  def run_past_member_recovery(workflow, operator, location)
+    days_after_grace = workflow.days_after_grace
+    grace_days = location.past_member_grace_days
+    target_date = (grace_days + days_after_grace).days.ago.to_date
+
+    template = ProductEmailTemplate.find_by(
+      operator: operator, location: location,
+      product_type: "membership", email_type: "past_member_recovery"
+    )
+    return unless template&.enabled?
+
+    # Find users whose most-recent subscription_ended Activity was on target_date.
+    activity_users = Activity.where(kind: "subscription_ended", operator: operator)
+                             .where("DATE(occurred_at AT TIME ZONE 'UTC') = ?", target_date)
+                             .pluck(:user_id)
+                             .uniq
+
+    User.where(id: activity_users)
+        .where(email_opted_out: false, email_bounced: false)
+        .find_each do |user|
+      next if user.has_active_subscription?
+
+      send_key = "past_member_recovery_#{user.id}_#{target_date}"
+      next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
+
+      UserMailer.re_engagement_email(user, operator, template, location).deliver_later
+      record_send_key(user, send_key)
+    end
+  end
+
+  def returned_since?(user, since_date)
+    user.day_passes.where("day > ?", since_date).exists? ||
+      user.reservations.where("datetime_in > ?", since_date.to_time).exists? ||
+      user.checkins.where("datetime_in > ?", since_date.to_time).exists? ||
+      user.door_punches.where("created_at > ?", since_date.to_time).exists?
+  end
+
+  # Returns true if SpamGuard says we're clear to send. Otherwise records a
+  # ProductEmailSend with status="skipped" + reason so the send_log shows
+  # what got filtered. cool_down_days defaults to 30 — Phase 8.2 may add
+  # per-workflow overrides.
+  def guard_eligible?(user, operator, send_key, cool_down_days: 30)
+    return true if SpamGuard.eligible?(user, sender: operator, cool_down_days: cool_down_days)
+    log_skip(user, operator, send_key, "Skipped by Spam Guard (in active series or within cool-down)")
+    false
+  end
+
+  def log_skip(user, operator, send_key, reason)
+    ProductEmailSend.create!(
+      operator: operator,
+      user: user,
+      sendable: user,
+      email_type: send_key,
+      status: "skipped",
+      error_message: reason,
+      sent_at: Time.current,
+    )
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    # Already logged — fine.
   end
 
   def already_sent?(user, product_type, cooldown_days)
@@ -178,13 +314,14 @@ class AutomatedWorkflowsJob < ApplicationJob
   end
 
   def record_send_key(user, key)
-    ProductEmailSend.create(
+    ProductEmailSend.create!(
+      user: user,
       sendable: user,
-      product_type: "automation",
       email_type: key,
-      status: "sent"
+      status: "sent",
+      sent_at: Time.current,
     )
-  rescue ActiveRecord::RecordNotUnique
-    # Already sent
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    # Already sent (unique index covers the dedup case)
   end
 end

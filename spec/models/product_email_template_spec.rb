@@ -1,0 +1,138 @@
+require "rails_helper"
+
+RSpec.describe ProductEmailTemplate, type: :model do
+  let(:operator) { create(:operator) }
+  let(:location) { create(:location, operator: operator) }
+  let(:user) { create(:user, operator: operator, current_location: location) }
+
+  describe "EMAIL_TYPES" do
+    it "includes re_engagement and past_member_recovery" do
+      expect(ProductEmailTemplate::EMAIL_TYPES).to include("re_engagement", "past_member_recovery")
+    end
+  end
+
+  describe ".seed_defaults_for" do
+    before { ProductEmailTemplate.seed_defaults_for(operator, location: location) }
+
+    it "creates re_engagement templates for day_pass and reservation" do
+      day_pass_re = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                                 product_type: "day_pass", email_type: "re_engagement")
+      expect(day_pass_re).to be_present
+      expect(day_pass_re.follow_up_delay_days).to eq(14)
+      expect(day_pass_re.enabled).to be false
+
+      reservation_re = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                                    product_type: "reservation", email_type: "re_engagement")
+      expect(reservation_re).to be_present
+      expect(reservation_re.follow_up_delay_days).to eq(14)
+    end
+
+    it "creates a past_member_recovery template for membership" do
+      past_member = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                                  product_type: "membership", email_type: "past_member_recovery")
+      expect(past_member).to be_present
+      expect(past_member.follow_up_delay_days).to eq(30)
+    end
+
+    it "does not create re_engagement for membership or office_lease" do
+      ProductEmailTemplate::EMAIL_TYPES.each do |etype|
+        next unless etype == "re_engagement"
+        %w[membership office_lease signup_nudge].each do |product|
+          expect(ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: product, email_type: etype)).to be_nil
+        end
+      end
+    end
+
+    it "is idempotent (re-running does not duplicate rows)" do
+      count_before = ProductEmailTemplate.count
+      ProductEmailTemplate.seed_defaults_for(operator, location: location)
+      expect(ProductEmailTemplate.count).to eq(count_before)
+    end
+
+    it "seeds brand-stripped body content for day_pass × onboarding" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "onboarding")
+      expect(template.body.to_s).to include("{{first_name}}")
+      expect(template.body.to_s).to include("{{space_name}}")
+      expect(template.body.to_s).not_to include("Cowork Tahoe")
+    end
+
+    it "seeds body content for re_engagement templates" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "re_engagement")
+      expect(template.body.to_s).to include("{{days_since_last_visit}}")
+    end
+
+    it "seeds body content for past_member_recovery" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "membership", email_type: "past_member_recovery")
+      expect(template.body.to_s).to include("{{plan_canceled_on}}")
+    end
+
+    it "does not clobber a customized body on re-seed" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "onboarding")
+      template.update!(body: "<p>Operator's custom copy</p>")
+      ProductEmailTemplate.seed_defaults_for(operator, location: location)
+      expect(template.reload.body.to_s).to include("Operator's custom copy")
+    end
+  end
+
+  describe "#has_delay?" do
+    it "is true for re_engagement and past_member_recovery" do
+      expect(ProductEmailTemplate.new(email_type: "re_engagement").has_delay?).to be true
+      expect(ProductEmailTemplate.new(email_type: "past_member_recovery").has_delay?).to be true
+    end
+  end
+
+  describe "#available_merge_tags" do
+    it "includes {{days_since_last_visit}} for re_engagement" do
+      template = ProductEmailTemplate.new(operator: operator, location: location,
+                                          product_type: "day_pass", email_type: "re_engagement")
+      tag_names = template.available_merge_tags.map { |t| t[:tag] }
+      expect(tag_names).to include("{{days_since_last_visit}}")
+    end
+
+    it "includes {{plan_canceled_on}} for past_member_recovery" do
+      template = ProductEmailTemplate.new(operator: operator, location: location,
+                                          product_type: "membership", email_type: "past_member_recovery")
+      tag_names = template.available_merge_tags.map { |t| t[:tag] }
+      expect(tag_names).to include("{{plan_canceled_on}}")
+    end
+
+    it "does not include either new tag on standard templates" do
+      template = ProductEmailTemplate.new(operator: operator, location: location,
+                                          product_type: "membership", email_type: "onboarding")
+      tag_names = template.available_merge_tags.map { |t| t[:tag] }
+      expect(tag_names).not_to include("{{days_since_last_visit}}", "{{plan_canceled_on}}")
+    end
+  end
+
+  describe ".replace_merge_tags for the new tags" do
+    it "replaces {{days_since_last_visit}} with days since the user's last visit Activity" do
+      Activity.create!(user: user, operator: operator, kind: "checkin",
+                       occurred_at: 21.days.ago, subject: user)
+      result = ProductEmailTemplate.replace_merge_tags(
+        "Hi, it's been {{days_since_last_visit}} days.",
+        user: user, operator: operator, location: location)
+      expect(result).to eq("Hi, it's been 21 days.")
+    end
+
+    it "renders empty {{days_since_last_visit}} when the user has no visit Activity" do
+      result = ProductEmailTemplate.replace_merge_tags(
+        "Last visit: {{days_since_last_visit}}",
+        user: user, operator: operator, location: location)
+      expect(result).to eq("Last visit: ")
+    end
+
+    it "replaces {{plan_canceled_on}} with a formatted date" do
+      Activity.create!(user: user, operator: operator, kind: "subscription_ended",
+                       occurred_at: Time.zone.local(2025, 11, 3), subject: user)
+      result = ProductEmailTemplate.replace_merge_tags(
+        "Plan ended {{plan_canceled_on}}",
+        user: user, operator: operator, location: location)
+      expect(result).to eq("Plan ended November 3, 2025")
+    end
+  end
+end

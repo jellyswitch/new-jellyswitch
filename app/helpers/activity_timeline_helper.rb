@@ -38,7 +38,12 @@ module ActivityTimelineHelper
     when "subscription_ended"   then "Ended membership: #{p['plan_name'] || 'plan'}"
     when "payment_succeeded"    then "Paid #{ActiveSupport::NumberHelper.number_to_currency((p['amount_paid'] || 0) / 100.0)}"
     when "payment_failed"       then "Payment failed (#{p['number'] || 'invoice'})"
-    when "note"                 then "Note from #{p['author_name'] || 'staff'}: #{p['content_preview'] || ''}"
+    when "note"
+      if p["owner_reassigned"]
+        "Owner reassigned from #{p['previous_owner_name'] || 'no one'} to #{p['new_owner_name'] || 'no one'} by #{p['actor_name'] || 'staff'}"
+      else
+        "Note from #{p['author_name'] || 'staff'}: #{p['content_preview'] || ''}"
+      end
     when "email_sent"           then "Sent: #{p['subject'] || '(no subject)'}"
     when "email_opened"         then "Opened: #{p['subject'] || '(no subject)'}"
     when "email_clicked"        then "Clicked: #{p['subject'] || '(no subject)'}"

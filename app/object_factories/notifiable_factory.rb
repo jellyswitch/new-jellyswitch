@@ -41,6 +41,8 @@ class NotifiableFactory
       Notifiable::Approval
     when "RoomDemandMiss"
       Notifiable::DemandMiss
+    when "PointOfContactAlert"
+      Notifiable::PointOfContactAlert
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)

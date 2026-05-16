@@ -6,7 +6,7 @@ module Notifiable
     end
 
     def deep_link_data
-      { type: "reservation", resource_id: id, path: "/reservations/#{id}" }
+      { screen: "MyReservations", type: "reservation", resource_id: id }
     end
 
     def should_send_notification?

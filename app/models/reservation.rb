@@ -137,8 +137,15 @@ class Reservation < ApplicationRecord
   end
 
   def end_now!
+    # End-early is a "release the room" action only — billing already
+    # captured at start (or will at start, if the user end_now's
+    # something they booked just before that captured). Shortening
+    # minutes flips ongoing? to false so the room frees up immediately
+    # for the next member; the captured charge stays at the booked
+    # amount (the slot was held against other members regardless).
     actual_duration = [(Time.current - datetime_in) / 60, minutes].min.floor
     update(minutes: actual_duration, ended_early: true)
+    true
   end
 
   def amenity_names

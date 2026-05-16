@@ -54,9 +54,22 @@
   </div>
 
   <div class="form-group">
-    <%= f.label :suppression_days, "Contact Suppression (days)" %>
-    <%= f.number_field :suppression_days, class: "form-control", min: 0, max: 90 %>
-    <small class="form-text text-muted">Skip users who received a campaign email within this many days.</small>
+    <%= f.label :cool_down_days, "Spam Guard cool-down" %>
+    <%
+      cool_down_options = [
+        ["Off — send to all eligible candidates", 0],
+        ["30 days (default)", 30],
+        ["60 days", 60],
+        ["90 days", 90],
+      ]
+      current = campaign.cool_down_days
+      custom_value = cool_down_options.none? { |_, v| v == current } ? current : nil
+      cool_down_options << ["Custom: #{custom_value} days", custom_value] if custom_value
+    %>
+    <%= f.select :cool_down_days, options_for_select(cool_down_options, current), {}, class: "form-control" %>
+    <small class="form-text text-muted">
+      Skip anyone who received any email from this operator within this window — and anyone currently enrolled in another active series (Spam Guard, ADR-0003).
+    </small>
   </div>
 
   <hr class="my-4"/>

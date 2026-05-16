@@ -42,9 +42,13 @@ class Room < ApplicationRecord
   belongs_to :location
 
   # Scopes
-  scope :visible, ->() { where(visible: true) }
-  scope :invisible, ->() { where(visible: false) }
-  scope :rentable, ->() { where(rentable: true) }
+  scope :active, -> { where(archived: [false, nil]) }
+  scope :archived, -> { where(archived: true) }
+  # `visible` and `rentable` chain the active filter so member-facing
+  # paths never see archived rooms, regardless of caller.
+  scope :visible, ->() { active.where(visible: true) }
+  scope :invisible, ->() { active.where(visible: false) }
+  scope :rentable, ->() { active.where(rentable: true) }
   scope :cheapest, ->() { order("hourly_rate_in_cents DESC") }
 
   # Slugs

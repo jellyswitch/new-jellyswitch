@@ -1,9 +1,26 @@
 <%= list_item do %>
+  <%= render "shared/people_subnav", active_tab: "automations" %>
   <h4 class="display-4 text-center">Automated Emails</h4>
   <p class="text-muted text-center mb-4">Configure automated emails sent to members after purchases and signups. Edit the content using the rich text editor.</p>
 
   <% if @location %>
     <h5 class="text-center text-muted mb-3"><%= @location.name %></h5>
+  <% end %>
+
+  <% if @location %>
+    <hr />
+    <h5>Stage transitions</h5>
+    <p class="text-muted small">
+      A past member is someone whose subscription ended more than this many days ago.
+      Within the grace window, they still show as a Member.
+    </p>
+    <%= form_with(model: @location, url: location_past_member_grace_days_path(location_id: @location.id), method: :patch, local: true, class: "form-inline") do |f| %>
+      <div class="form-group">
+        <%= f.label :past_member_grace_days, "Past-member grace period (days)", class: "mr-2" %>
+        <%= f.number_field :past_member_grace_days, min: 120, max: 365, step: 1, class: "form-control form-control-sm mr-2", style: "width: 100px" %>
+        <%= f.submit "Save", class: "btn btn-primary btn-sm" %>
+      </div>
+    <% end %>
   <% end %>
 
   <hr />
@@ -38,6 +55,34 @@
   <p class="text-muted small">Sent to new signups who haven't made a purchase yet.</p>
   <dl>
     <% @nudge_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Re-Engagement Emails</h5>
+  <p class="text-muted small">Sent after a configurable delay when a day-passer or room reserver hasn't returned.</p>
+  <dl>
+    <% @re_engagement_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Past-Member Recovery Emails</h5>
+  <p class="text-muted small">Sent after the grace period ends to former members whose subscription has lapsed.</p>
+  <dl>
+    <% @past_member_recovery_templates.each do |template| %>
       <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
         <strong><%= template.product_label %></strong>
         <span class="text-muted ml-2"><%= template.subject %></span>

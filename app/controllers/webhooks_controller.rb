@@ -1,6 +1,6 @@
 
 class WebhooksController < ApplicationController
-  protect_from_forgery except: [:stripe, :sendgrid_events]
+  protect_from_forgery except: [:stripe]
 
   def stripe
     payload = JSON.parse(request.body.read, symbolize_names: true)
@@ -55,6 +55,20 @@ class WebhooksController < ApplicationController
       else
         ok
       end
+    when "payment_intent.canceled", "payment_intent.payment_failed"
+      # Reservations use manual-capture PaymentIntents. Stripe can
+      # auto-cancel them after ~7 days, fraud holds, etc. Mark the
+      # reservation payment_failed so the operator sees it and the
+      # member gets a heads-up.
+      pi_id = @event.data.object.id
+      reservation = Reservation.unscoped.find_by(stripe_payment_intent_id: pi_id)
+      if reservation && reservation.payment_failed_at.blank? && reservation.captured_at.blank? && !reservation.cancelled?
+        reason = @event.data.object.try(:last_payment_error)&.try(:message) ||
+                 @event.data.object.try(:cancellation_reason) ||
+                 @event.type
+        Reservations::MarkPaymentFailed.call(reservation: reservation, reason: reason.to_s) rescue nil
+      end
+      ok
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)
 
@@ -110,33 +124,5 @@ class WebhooksController < ApplicationController
     else
       Honeybadger.notify(msg, method: meth)
     end
-  end
-
-  # SendGrid Event Webhook — handles bounces and engagement tracking
-  # Configure in SendGrid: Settings > Mail Settings > Event Webhook
-  def sendgrid_events
-    events = JSON.parse(request.body.read)
-    events.each do |event|
-      email = event["email"]&.downcase
-      next unless email.present?
-
-      case event["event"]
-      when "bounce", "dropped"
-        User.where("lower(email) = ?", email).update_all(email_bounced: true)
-      when "open"
-        # Track opens for campaign sends
-        CampaignSend.where(user: User.where("lower(email) = ?", email))
-          .where(opened: false)
-          .update_all(opened: true, opened_at: Time.current)
-      when "click"
-        CampaignSend.where(user: User.where("lower(email) = ?", email))
-          .where(clicked: false)
-          .update_all(clicked: true, clicked_at: Time.current)
-      end
-    rescue => e
-      Rails.logger.warn("SendGrid event processing error: #{e.message}")
-    end
-
-    head :ok
   end
 end

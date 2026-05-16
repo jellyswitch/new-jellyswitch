@@ -1,0 +1,76 @@
+<% title "Automated Workflows" %>
+
+<%= wide_card do %>
+  <%= render "shared/people_subnav", active_tab: "automations" %>
+
+  <h4 class="display-4 text-center mb-3">Automated Workflows</h4>
+  <p class="text-muted text-center mb-4">
+    Time-based rules that run nightly. Toggle individual workflows on/off and
+    edit their timing. Email content is managed under Automations →
+    <%= link_to "Email Templates", product_email_templates_path %>.
+  </p>
+
+  <% if @workflows.empty? %>
+    <p class="text-center text-muted my-5">No workflows seeded yet — visit any operator page to trigger seeding.</p>
+  <% else %>
+    <ul class="list-group list-group-flush">
+      <% @workflows.each do |workflow| %>
+        <li class="list-group-item" data-testid="workflow-row-<%= workflow.workflow_type %>">
+          <%= form_with(url: automated_workflow_path(workflow), method: :patch, local: true) do |f| %>
+            <div class="d-flex align-items-center mb-2">
+              <strong class="flex-grow-1"><%= workflow.human_name %></strong>
+              <div class="form-check form-switch ml-auto">
+                <%# Hidden field ensures `enabled=false` posts when the box is unchecked. %>
+                <%= hidden_field_tag "automated_workflow[enabled]", "0" %>
+                <%= check_box_tag "automated_workflow[enabled]", "1", workflow.enabled?,
+                      class: "form-check-input",
+                      data: { testid: "toggle-#{workflow.workflow_type}" } %>
+                <%= label_tag "automated_workflow[enabled]", workflow.enabled? ? "On" : "Off", class: "form-check-label ml-2" %>
+              </div>
+            </div>
+
+            <p class="text-muted small mb-2"><%= workflow.description %></p>
+
+            <div class="form-row align-items-end">
+              <% case workflow.workflow_type %>
+              <% when "re_engagement" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Days inactive</label>
+                  <%= number_field_tag "automated_workflow[config][days_inactive]", workflow.days_inactive, class: "form-control form-control-sm", style: "width: 80px", min: 1 %>
+                </div>
+              <% when "past_due_followup" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Follow-up days (comma-separated)</label>
+                  <%= text_field_tag "automated_workflow[config][followup_days]", workflow.followup_days.join(", "), class: "form-control form-control-sm", style: "width: 180px" %>
+                </div>
+              <% when "booking_reminder" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Hours before</label>
+                  <%= number_field_tag "automated_workflow[config][hours_before]", workflow.hours_before, class: "form-control form-control-sm", style: "width: 80px", min: 1 %>
+                </div>
+              <% when "signup_nurture" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Sequence days (comma-separated)</label>
+                  <%= text_field_tag "automated_workflow[config][sequence_days]", workflow.sequence_days.join(", "), class: "form-control form-control-sm", style: "width: 220px" %>
+                </div>
+              <% when "day_passer_followup", "room_reservation_followup" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Days after</label>
+                  <%= number_field_tag "automated_workflow[config][days_after]", workflow.days_after, class: "form-control form-control-sm", style: "width: 80px", min: 1 %>
+                </div>
+              <% when "past_member_recovery" %>
+                <div class="form-group col-auto mb-0">
+                  <label class="small text-muted">Days after grace</label>
+                  <%= number_field_tag "automated_workflow[config][days_after_grace]", workflow.days_after_grace, class: "form-control form-control-sm", style: "width: 100px", min: 1 %>
+                </div>
+              <% end %>
+              <div class="form-group col-auto mb-0">
+                <%= submit_tag "Save", class: "btn btn-primary btn-sm" %>
+              </div>
+            </div>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+<% end %>

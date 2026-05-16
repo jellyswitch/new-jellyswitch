@@ -36,6 +36,10 @@ class UserPolicy < ApplicationPolicy
     has_admin_right?
   end
 
+  def reassign_point_of_contact?
+    admin? || general_manager? || superadmin?
+  end
+
   def childcare?
     has_right_over_user?
   end

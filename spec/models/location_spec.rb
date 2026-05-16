@@ -159,4 +159,41 @@ RSpec.describe Location, type: :model do
       end
     end
   end
+
+  describe "past_member_grace_days" do
+    let(:operator) { create(:operator) }
+    let(:location) { build(:location, operator: operator) }
+
+    it "defaults to 180 (6 months)" do
+      location.save!
+      expect(location.reload.past_member_grace_days).to eq(180)
+    end
+
+    it "is valid at the 120-day lower bound" do
+      location.past_member_grace_days = 120
+      expect(location).to be_valid
+    end
+
+    it "is valid at the 365-day upper bound" do
+      location.past_member_grace_days = 365
+      expect(location).to be_valid
+    end
+
+    it "is invalid below 120 days" do
+      location.past_member_grace_days = 119
+      expect(location).not_to be_valid
+      expect(location.errors[:past_member_grace_days]).to be_present
+    end
+
+    it "is invalid above 365 days" do
+      location.past_member_grace_days = 366
+      expect(location).not_to be_valid
+      expect(location.errors[:past_member_grace_days]).to be_present
+    end
+
+    it "is invalid when nil" do
+      location.past_member_grace_days = nil
+      expect(location).not_to be_valid
+    end
+  end
 end

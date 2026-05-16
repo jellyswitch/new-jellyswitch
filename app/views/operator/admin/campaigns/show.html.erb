@@ -48,6 +48,12 @@
             <div class="col-sm-4">
               <small class="text-muted">Recipients</small><br/>
               <strong><%= @recipient_count %></strong> users
+              <% if (excluded = @spam_guard_excluded_count) && excluded > 0 %>
+                <span class="d-block small text-muted"
+                      title="Excluded by Spam Guard: anyone in another active series or who got an email from you in the last <%= @campaign.cool_down_days %> days.">
+                  · <%= excluded %> excluded by Spam Guard
+                </span>
+              <% end %>
             </div>
           </div>
           <% if @campaign.segment_date_range %>

@@ -9,6 +9,8 @@ class Operator::ProductEmailTemplatesController < Operator::BaseController
     @onboarding_templates = current_tenant.product_email_templates.for_location(@location).onboarding.order(:product_type)
     @follow_up_templates = current_tenant.product_email_templates.for_location(@location).follow_up.order(:product_type)
     @nudge_templates = current_tenant.product_email_templates.for_location(@location).nudge
+    @re_engagement_templates = current_tenant.product_email_templates.for_location(@location).re_engagement.order(:product_type)
+    @past_member_recovery_templates = current_tenant.product_email_templates.for_location(@location).past_member_recovery.order(:product_type)
   end
 
   def edit

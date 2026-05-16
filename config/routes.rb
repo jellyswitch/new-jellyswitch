@@ -1,4 +1,8 @@
 Rails.application.routes.draw do
+  # Sendgrid Event Webhook receiver — global path, no subdomain constraint.
+  # Auth via HTTP Basic if SENDGRID_WEBHOOK_USERNAME/PASSWORD env vars set.
+  post "/sendgrid/events", to: "sendgrid/events#receive"
+
   namespace :api do
     resources :doors, only: [:index] do
       member do
@@ -6,6 +10,322 @@ Rails.application.routes.draw do
       end
     end
     resources :locations, only: [:index]
+
+    namespace :v1 do
+      post 'auth/login', to: 'auth#login'
+      post 'auth/signup', to: 'auth#signup'
+      post 'auth/forgot_password', to: 'auth#forgot_password'
+      post 'auth/reset_password', to: 'auth#reset_password'
+      post 'auth/refresh', to: 'auth#refresh'
+      post 'auth/lookup_operators', to: 'auth#lookup_operators'
+      get 'auth/operators', to: 'auth#operators'
+
+      get 'me', to: 'users#me'
+      patch 'me', to: 'users#update'
+      post 'me/push_token', to: 'users#register_push_token'
+
+      get 'dashboard', to: 'dashboard#show'
+      get 'onboarding_status', to: 'dashboard#onboarding_status'
+
+      resources :doors, only: [:index] do
+        member do
+          post :unlock
+          get :punches
+        end
+      end
+
+      resources :rooms, only: [:index] do
+        member do
+          get :availability
+          get :time_slots
+          get :pricing
+        end
+      end
+      get 'reserve_now', to: 'rooms#reserve_now'
+
+      resources :reservations, only: [:index, :create, :destroy] do
+        member do
+          get :extension_options
+          patch :extend_time
+          patch :end_now
+        end
+      end
+
+      resources :events, only: [:index, :show, :create] do
+        collection do
+          get :my_submissions
+        end
+        member do
+          post :rsvp
+        end
+      end
+
+      # Memberships / Subscriptions
+      get 'plans', to: 'subscriptions#plans'
+      get 'my_subscription', to: 'subscriptions#my_subscription'
+      resources :subscriptions, only: [:create, :destroy] do
+        member do
+          post :pause
+          post :unpause
+          patch :upgrade
+          post :cancel_now
+        end
+      end
+
+      # Day Passes
+      get 'day_pass_types', to: 'day_passes#types'
+      get 'my_day_passes', to: 'day_passes#index'
+      resources :day_passes, only: [:create] do
+        collection do
+          post :redeem
+          post :apply_code
+        end
+      end
+
+      # Bulletin Board / Posts
+      resources :posts, only: [:index, :show, :create] do
+        resources :replies, only: [:create], controller: 'post_replies'
+        resources :reactions, only: [:create], controller: 'post_reactions'
+      end
+
+      # Member Feedback / Messages
+      resources :member_feedbacks, only: [:index, :show, :create] do
+        member do
+          post :reply
+          patch :rate
+        end
+      end
+
+      # Invoices
+      resources :invoices, only: [:index] do
+        member do
+          post :charge
+        end
+      end
+
+      # Payment Method
+      get 'payment_method', to: 'payment_methods#show'
+      post 'payment_method', to: 'payment_methods#update'
+
+      # Profile enhancements
+      patch 'me/password', to: 'users#change_password'
+      post 'me/profile_photo', to: 'users#upload_profile_photo'
+      patch 'me/location', to: 'users#switch_location'
+      post 'me/accept_terms', to: 'users#accept_terms'
+      patch 'me/email_preferences', to: 'users#update_email_preferences'
+      post 'me/purchase_credits', to: 'users#purchase_credits'
+      get 'me/credit_info', to: 'users#credit_info'
+      get 'me/usage', to: 'users#usage'
+      delete 'me', to: 'users#destroy_account'
+
+      # Announcements
+      resources :announcements, only: [:index]
+
+      # Check-in
+      get 'checkins/current', to: 'checkins#current'
+      resources :checkins, only: [:create, :destroy]
+
+      # Stripe
+      get 'stripe_config', to: 'stripe#show_config'
+      post 'setup_intent', to: 'stripe#setup_intent'
+      post 'validate_discount_code', to: 'stripe#validate_discount_code'
+
+      # Organizations
+      get 'my_organization', to: 'organizations#show'
+      patch 'my_organization', to: 'organizations#update'
+      post 'my_organization/add_member', to: 'organizations#add_member'
+      post 'my_organization/remove_member', to: 'organizations#remove_member'
+      get 'my_organization/invoices', to: 'organizations#invoices'
+      get 'my_organization/payment_method', to: 'organizations#payment_method'
+
+      # Admin namespace
+      namespace :admin do
+        # Feed
+        get 'feed', to: 'feed#index'
+        post 'feed', to: 'feed#create'
+        post 'feed/:id/comments', to: 'feed#comment'
+        delete 'feed/:id', to: 'feed#destroy'
+
+        # Notification preferences (operator-level toggles)
+        get 'notification_preferences', to: 'notification_preferences#show'
+        patch 'notification_preferences', to: 'notification_preferences#update'
+
+        # Today's Activity
+        get 'todays_activity', to: 'todays_activity#index'
+
+        # Members
+        get 'members', to: 'members#index'
+        get 'members/unapproved', to: 'members#unapproved'
+        get 'members/archived', to: 'members#archived'
+        post 'members', to: 'members#create'
+        get 'members/:id', to: 'members#show'
+        patch 'members/:id', to: 'members#update'
+        post 'members/:id/approve', to: 'members#approve'
+        post 'members/:id/unapprove', to: 'members#unapprove'
+        post 'members/:id/archive', to: 'members#archive'
+        post 'members/:id/unarchive', to: 'members#unarchive'
+        post 'members/:id/add_credits', to: 'members#add_credits'
+        post 'members/:id/change_payment', to: 'members#change_payment'
+        post 'members/:id/assign_subscription', to: 'members#assign_subscription'
+        post 'members/:id/create_day_pass', to: 'members#create_day_pass'
+        post 'members/:id/create_reservation', to: 'members#create_reservation'
+        patch 'members/:id/edit_profile', to: 'members#edit_profile'
+        post 'members/:id/create_invoice', to: 'members#create_invoice'
+        post 'members/:id/cancel_subscription', to: 'members#cancel_subscription'
+        post 'members/:id/cancel_subscription_now', to: 'members#cancel_subscription_now'
+        post 'members/:id/reset_password', to: 'members#reset_password'
+        post 'members/:id/suppress', to: 'members#suppress'
+        post 'members/:id/unsuppress', to: 'members#unsuppress'
+        post 'members/:id/dismiss_inactive', to: 'members#dismiss_inactive'
+        get 'members/:id/invoices', to: 'members#invoices'
+        get 'members/:id/reservations', to: 'members#reservations'
+        get 'members/:id/checkins', to: 'members#checkins'
+        get 'members/:id/usage', to: 'members#usage'
+        get 'members/:id/activities', to: 'members#activities'
+
+        # People (lifecycle-stage filtered list)
+        get 'people', to: 'people#index'
+
+        # Reservations
+        get 'reservations', to: 'reservations#index'
+        get 'reservations/calendar', to: 'reservations#calendar'
+        post 'reservations', to: 'reservations#create'
+        patch 'reservations/:id/extend', to: 'reservations#extend'
+        delete 'reservations/:id', to: 'reservations#destroy'
+
+        # Rooms
+        resources :rooms, only: [:index, :create, :update, :destroy] do
+          member do
+            post :unarchive
+          end
+        end
+
+        # Announcements
+        get 'announcements', to: 'announcements#index'
+        post 'announcements', to: 'announcements#create'
+        patch 'announcements/:id', to: 'announcements#update'
+        delete 'announcements/:id', to: 'announcements#destroy'
+
+        # Events
+        resources :events, only: [:index, :create, :update, :destroy] do
+          member do
+            patch :approve
+            patch :reject
+          end
+        end
+
+        # Plans
+        resources :plans, only: [:index, :create, :update] do
+          member do
+            post :toggle_visibility
+            post :toggle_availability
+          end
+        end
+
+        # Day Pass Types
+        resources :day_pass_types, only: [:index, :create, :update]
+        get 'day_passes', to: 'day_passes#index'
+
+        # Invoices
+        get 'invoices', to: 'invoices#index'
+        post 'invoices', to: 'invoices#create'
+        post 'invoices/:id/refund', to: 'invoices#refund'
+        post 'invoices/:id/charge', to: 'invoices#charge'
+        post 'invoices/:id/mark_paid', to: 'invoices#mark_paid'
+        get 'accounting', to: 'invoices#accounting'
+
+        # Offices & Leases
+        resources :offices, only: [:index, :create, :update, :destroy]
+        get 'office_leases', to: 'office_leases#index'
+        get 'office_leases/renewals', to: 'office_leases#renewals'
+        post 'office_leases', to: 'office_leases#create'
+        get 'office_leases/:id', to: 'office_leases#show'
+        patch 'office_leases/:id/price', to: 'office_leases#update_price'
+        post 'office_leases/:id/terminate', to: 'office_leases#terminate'
+
+        # Organizations
+        resources :organizations, only: [:index, :show, :create, :update]
+
+        # Leads
+        resources :leads, only: [:index, :show, :create, :update, :destroy] do
+          resources :notes, only: [:create], controller: 'lead_notes'
+          member do
+            post :convert_to_member
+          end
+        end
+
+        # Doors
+        get 'doors', to: 'doors#index'
+        post 'doors', to: 'doors#create'
+        patch 'doors/:id', to: 'doors#update'
+        post 'doors/:id/open', to: 'doors#open'
+        post 'doors/:id/archive', to: 'doors#archive'
+        post 'doors/:id/unarchive', to: 'doors#unarchive'
+        get 'doors/:id/punches', to: 'doors#punches'
+
+        # Reports
+        get 'reports', to: 'reports#index'
+        get 'reports/revenue', to: 'reports#revenue'
+        get 'reports/room_demand', to: 'reports#room_demand'
+        get 'reports/members', to: 'reports#members'
+        get 'reports/inactive_members', to: 'reports#inactive_members'
+        get 'reports/suppressed_members', to: 'reports#suppressed_members'
+        get 'reports/checkins', to: 'reports#checkins'
+        get 'reports/ltv', to: 'reports#ltv'
+        post 'reports/member_csv', to: 'reports#member_csv'
+
+        # Feedback
+        get 'feedbacks', to: 'feedbacks#index'
+        get 'feedbacks/:id', to: 'feedbacks#show'
+        post 'feedbacks/:id/reply', to: 'feedbacks#reply'
+        post 'feedbacks/:id/dismiss', to: 'feedbacks#dismiss'
+
+        # Email Templates
+        resources :email_templates, only: [:index, :update] do
+          member do
+            post :toggle
+            get :send_log
+          end
+        end
+
+        # Campaigns
+        resources :campaigns, only: [:index, :create, :update, :destroy] do
+          member do
+            post :send_campaign
+            post :pause
+            post :resume
+            post :test_send
+          end
+        end
+
+        # Discount Codes
+        resources :discount_codes, only: [:index, :create, :update, :destroy]
+
+        # Settings
+        get 'settings', to: 'settings#show'
+        patch 'settings', to: 'settings#update'
+        get 'modules', to: 'settings#modules'
+        patch 'modules', to: 'settings#update_modules'
+        get 'notifications_config', to: 'settings#notifications'
+        patch 'notifications_config', to: 'settings#update_notifications'
+
+        # Posts (moderation)
+        get 'posts', to: 'posts#index'
+        delete 'posts/:id', to: 'posts#destroy'
+
+        # Checkins
+        get 'checkins', to: 'checkins#index'
+        post 'checkins', to: 'checkins#create'
+
+        # Recurring Reservations
+        resources :recurring_reservations, only: [:index, :create, :destroy] do
+          delete 'occurrences/:date', to: 'recurring_reservations#cancel_occurrence', on: :member
+        end
+
+        # Search
+        get 'search', to: 'search#index'
+      end
+    end
   end
 
   namespace :mobile do
@@ -66,7 +386,6 @@ Rails.application.routes.draw do
     resources :webhooks do
       collection do
         post :stripe, to: "webhooks#stripe"
-        post :sendgrid_events, to: "webhooks#sendgrid_events"
       end
     end
     resources :users
@@ -233,6 +552,7 @@ Rails.application.routes.draw do
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"
     get :visible, to: "operator/locations#visible"
+    patch :past_member_grace_days, to: "operator/locations#update_past_member_grace_days"
   end
   resources :member_feedbacks, controller: "operator/member_feedbacks" do
     member do
@@ -276,6 +596,7 @@ Rails.application.routes.draw do
   end
   resources :unsubscribes, controller: "operator/unsubscribes", only: [:show]
   post "email_preferences", to: "operator/users#toggle_email_preferences", as: :member_toggle_email
+  resources :automated_workflows, controller: "operator/admin/automated_workflows", only: [:index, :update]
   resources :campaigns, controller: "operator/admin/campaigns" do
     member do
       post :send_campaign
@@ -353,6 +674,7 @@ Rails.application.routes.draw do
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
   resources :email_confirmations, only: [:show], controller: "operator/email_confirmations"
   post :resend_confirmation, to: "operator/email_confirmations#resend"
+  resources :people, controller: "operator/people", only: [:index]
   resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"
@@ -474,6 +796,7 @@ Rails.application.routes.draw do
     get :invoices, to: "operator/users#invoices"
     post :log_tour, to: "operator/users#log_tour"
     post :add_note, to: "operator/users#add_note"
+    patch :reassign_point_of_contact, to: "operator/users#reassign_point_of_contact"
     get :ltv, to: "operator/users#ltv"
     get :membership, to: "operator/users#membership"
     get :memberships, to: "operator/users#memberships"

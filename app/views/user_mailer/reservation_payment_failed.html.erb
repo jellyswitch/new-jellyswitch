@@ -1,0 +1,28 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    We weren't able to process payment for your meeting room reservation. Your booking is still on our calendar — but we need a working card on file to keep it.
+  </p>
+
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%; margin-bottom: 16px;">
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Room:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @reservation.room.name %></td>
+    </tr>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>When:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @reservation.datetime_in.strftime("%B %e, %Y at %l:%M %p") %></td>
+    </tr>
+  </table>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; margin: 0; margin-bottom: 16px;">
+    Please update your payment method in the app, or get in touch with us if you'd like to cancel.
+  </p>
+
+  <% if @reason.present? %>
+    <p style="font-family: Helvetica, sans-serif; font-size: 12px; color: #888; margin: 0;">
+      Reason from card processor: <%= @reason %>
+    </p>
+  <% end %>
+<% end %>

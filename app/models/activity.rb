@@ -54,7 +54,24 @@ class Activity < ApplicationRecord
 
   scope :recent, -> { order(occurred_at: :desc) }
 
+  after_create :assign_default_point_of_contact_on_tour
+  after_create :notify_point_of_contact
+
   def self.log(**kwargs)
     ActivityLogger.log(**kwargs)
+  end
+
+  private
+
+  def assign_default_point_of_contact_on_tour
+    return unless kind.to_s == "tour"
+    return if user.point_of_contact_id.present?
+    user.assign_default_point_of_contact!
+  end
+
+  def notify_point_of_contact
+    return unless Notifiable::PointOfContactAlert::SIGNIFICANT_KINDS.include?(kind.to_s)
+    return unless user&.point_of_contact_id.present?
+    SendNotificationsJob.perform_later(self, "PointOfContactAlert")
   end
 end

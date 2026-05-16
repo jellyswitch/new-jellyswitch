@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_15_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -195,6 +195,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "suppression_days", default: 7
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "cool_down_days", default: 30, null: false
     t.index ["location_id"], name: "index_campaigns_on_location_id"
     t.index ["operator_id"], name: "index_campaigns_on_operator_id"
   end
@@ -253,7 +254,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "location_id"
     t.integer "included_meeting_room_minutes"
     t.integer "overage_rate_in_cents", default: 0, null: false
+    t.boolean "default_for_room_booking", default: false, null: false
     t.index ["location_id"], name: "index_day_pass_types_on_location_id"
+    t.index ["operator_id", "location_id", "default_for_room_booking"], name: "index_dpt_on_op_loc_default"
   end
 
   create_table "day_passes", force: :cascade do |t|
@@ -341,6 +344,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.datetime "ends_at", precision: nil
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
+    t.datetime "approved_at"
+    t.datetime "rejected_at"
+    t.boolean "submitted_via_app", default: false, null: false
+    t.index ["approved_at"], name: "index_events_on_approved_at"
   end
 
   create_table "feed_item_comments", force: :cascade do |t|
@@ -401,8 +408,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.string "billable_type"
     t.bigint "billable_id"
     t.integer "location_id"
+    t.string "stripe_payment_intent_id"
+    t.string "description"
+    t.datetime "refunded_at"
+    t.integer "refund_amount_in_cents"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_invoices_on_location_id"
+    t.index ["stripe_payment_intent_id"], name: "index_invoices_on_stripe_payment_intent_id"
   end
 
   create_table "lead_notes", force: :cascade do |t|
@@ -523,6 +535,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "renewal_reminder_days"
     t.decimal "latitude", precision: 10, scale: 7
     t.decimal "longitude", precision: 10, scale: 7
+    t.integer "past_member_grace_days", default: 180, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
     t.index ["zip"], name: "index_locations_on_zip"
@@ -657,6 +670,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.string "mailchimp_api_key"
     t.string "mailchimp_audience_id"
     t.datetime "last_activities_backfilled_at"
+    t.integer "refund_fee_percent", default: 0, null: false
+    t.integer "cancellation_window_hours", default: 24, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -710,6 +725,17 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "overage_rate_in_cents", default: 0
     t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
+  end
+
+  create_table "post_reactions", force: :cascade do |t|
+    t.bigint "post_id", null: false
+    t.bigint "user_id", null: false
+    t.string "emoji", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["post_id", "user_id", "emoji"], name: "index_post_reactions_unique", unique: true
+    t.index ["post_id"], name: "index_post_reactions_on_post_id"
+    t.index ["user_id"], name: "index_post_reactions_on_user_id"
   end
 
   create_table "post_replies", force: :cascade do |t|
@@ -803,7 +829,13 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.boolean "paid"
     t.text "note"
     t.bigint "recurring_reservation_id"
+    t.string "stripe_payment_intent_id"
+    t.integer "authorized_amount_in_cents"
+    t.integer "captured_amount_in_cents"
+    t.datetime "captured_at"
+    t.datetime "payment_failed_at"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
+    t.index ["stripe_payment_intent_id"], name: "index_reservations_on_stripe_payment_intent_id", unique: true
   end
 
   create_table "room_demand_misses", force: :cascade do |t|
@@ -837,6 +869,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.integer "hourly_rate_in_cents", default: 0, null: false
     t.integer "credit_cost", default: 0, null: false
     t.boolean "allow_shorter_reservation_duration", default: true, null: false
+    t.text "features", default: [], array: true
+    t.boolean "archived", default: false, null: false
+    t.index ["archived"], name: "index_rooms_on_archived"
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
   end
@@ -948,7 +983,9 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
     t.boolean "marketing_suppressed", default: false, null: false
     t.string "marketing_suppressed_reason"
     t.datetime "inactive_dismissed_at"
+    t.bigint "point_of_contact_id"
     t.index ["operator_id"], name: "index_users_on_operator_id"
+    t.index ["point_of_contact_id"], name: "index_users_on_point_of_contact_id"
     t.index ["preferred_room_id"], name: "index_users_on_preferred_room_id"
   end
 
@@ -991,6 +1028,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
   add_foreign_key "office_leases", "subscriptions", on_delete: :nullify
   add_foreign_key "office_leases", "users"
   add_foreign_key "offices", "locations", on_delete: :nullify
+  add_foreign_key "post_reactions", "posts"
+  add_foreign_key "post_reactions", "users"
   add_foreign_key "product_email_sends", "operators"
   add_foreign_key "product_email_sends", "users"
   add_foreign_key "product_email_templates", "locations"
@@ -1004,4 +1043,5 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_14_000002) do
   add_foreign_key "tracking_pixels", "operators"
   add_foreign_key "user_payment_profiles", "locations"
   add_foreign_key "user_payment_profiles", "users"
+  add_foreign_key "users", "users", column: "point_of_contact_id"
 end
