@@ -49,6 +49,34 @@ RSpec.describe ProductEmailTemplate, type: :model do
       ProductEmailTemplate.seed_defaults_for(operator, location: location)
       expect(ProductEmailTemplate.count).to eq(count_before)
     end
+
+    it "seeds brand-stripped body content for day_pass × onboarding" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "onboarding")
+      expect(template.body.to_s).to include("{{first_name}}")
+      expect(template.body.to_s).to include("{{space_name}}")
+      expect(template.body.to_s).not_to include("Cowork Tahoe")
+    end
+
+    it "seeds body content for re_engagement templates" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "re_engagement")
+      expect(template.body.to_s).to include("{{days_since_last_visit}}")
+    end
+
+    it "seeds body content for past_member_recovery" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "membership", email_type: "past_member_recovery")
+      expect(template.body.to_s).to include("{{plan_canceled_on}}")
+    end
+
+    it "does not clobber a customized body on re-seed" do
+      template = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "onboarding")
+      template.update!(body: "<p>Operator's custom copy</p>")
+      ProductEmailTemplate.seed_defaults_for(operator, location: location)
+      expect(template.reload.body.to_s).to include("Operator's custom copy")
+    end
   end
 
   describe "#has_delay?" do

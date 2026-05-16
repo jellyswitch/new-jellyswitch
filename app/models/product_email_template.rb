@@ -54,41 +54,48 @@ class ProductEmailTemplate < ApplicationRecord
   scope :for_location, ->(location) { where(location: location) }
 
   def self.seed_defaults_for(operator, location:)
+    require Rails.root.join("db/seeds/welcome_drip_templates")
+
     # Product onboarding + follow-up
     %w[day_pass reservation office_lease membership].each do |product|
       %w[onboarding follow_up].each do |etype|
-        find_or_create_by(operator: operator, location: location, product_type: product, email_type: etype) do |t|
-          t.subject = DEFAULT_SUBJECTS["#{product}_#{etype}"] || "Email from #{operator.name}"
-          t.follow_up_delay_days = DEFAULT_DELAYS[product] if etype == "follow_up"
-          t.enabled = false
-        end
+        delay = etype == "follow_up" ? DEFAULT_DELAYS[product] : nil
+        seed_template(operator, location, product, etype, delay)
       end
     end
 
     # Signup nudge
-    find_or_create_by(operator: operator, location: location, product_type: "signup_nudge", email_type: "nudge") do |t|
-      t.subject = DEFAULT_SUBJECTS["signup_nudge_nudge"] || "Come check us out!"
-      t.follow_up_delay_days = DEFAULT_DELAYS["signup_nudge"]
-      t.enabled = false
-    end
+    seed_template(operator, location, "signup_nudge", "nudge", DEFAULT_DELAYS["signup_nudge"])
 
     # Re-engagement (day_passer_followup + room_reservation_followup automations)
     RE_ENGAGEMENT_PRODUCTS.each do |product|
-      find_or_create_by(operator: operator, location: location, product_type: product, email_type: "re_engagement") do |t|
-        t.subject = DEFAULT_SUBJECTS["#{product}_re_engagement"] || "Come back and see us"
-        t.follow_up_delay_days = DEFAULT_DELAYS["#{product}_re_engagement"]
-        t.enabled = false
-      end
+      seed_template(operator, location, product, "re_engagement", DEFAULT_DELAYS["#{product}_re_engagement"])
     end
 
     # Past-member recovery (past_member_recovery automation)
     PAST_MEMBER_RECOVERY_PRODUCTS.each do |product|
-      find_or_create_by(operator: operator, location: location, product_type: product, email_type: "past_member_recovery") do |t|
-        t.subject = DEFAULT_SUBJECTS["#{product}_past_member_recovery"] || "We'd love to welcome you back"
-        t.follow_up_delay_days = DEFAULT_DELAYS["#{product}_past_member_recovery"]
-        t.enabled = false
-      end
+      seed_template(operator, location, product, "past_member_recovery", DEFAULT_DELAYS["#{product}_past_member_recovery"])
     end
+  end
+
+  def self.seed_template(operator, location, product_type, email_type, delay_days = nil)
+    template = find_or_create_by(operator: operator, location: location,
+                                 product_type: product_type, email_type: email_type) do |t|
+      subject_key = "#{product_type}_#{email_type}"
+      t.subject = DEFAULT_SUBJECTS[subject_key] || "Email from #{operator.name}"
+      t.follow_up_delay_days = delay_days
+      t.enabled = false
+    end
+
+    # Apply the brand-stripped default body only to brand-new rows (avoid
+    # clobbering operator customizations). A row counts as "new" when it
+    # has no rich-text body persisted yet.
+    if template.persisted? && template.body.blank?
+      body_html = WelcomeDripSeed.body_for(product_type, email_type)
+      template.update!(body: body_html) if body_html.present?
+    end
+
+    template
   end
 
   def product_label

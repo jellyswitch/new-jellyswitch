@@ -334,11 +334,25 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 5.2 — Brand-stripped Cowork Tahoe seed copy
 
-- [ ] Pull Cowork Tahoe's existing onboarding/follow_up template content from production DB (read-only export).
-- [ ] Strip brand-specific copy (replace "Cowork Tahoe" → `{{space_name}}`, etc.).
-- [ ] Place in `db/seeds/welcome_drip_templates.rb`.
-- [ ] On first deploy + on new operator creation, seed defaults from this file.
-- [ ] **Commit:** "Seed welcome drip templates from Cowork Tahoe (brand-stripped)"
+- [x] Pull Cowork Tahoe's existing onboarding/follow_up template content from production DB (read-only export).
+- [x] Strip brand-specific copy (replace "Cowork Tahoe" → `{{space_name}}`, etc.).
+- [x] Place in `db/seeds/welcome_drip_templates.rb`.
+- [x] On first deploy + on new operator creation, seed defaults from this file.
+- [x] **Commit:** "Seed welcome drip templates from Cowork Tahoe (brand-stripped)"
+
+  *Notes:*
+  - Source: Cowork Tahoe production templates id 45–50 (5 enabled rows: day_pass/membership/reservation × onboarding+follow_up) plus the office_lease + signup_nudge defaults we already had. Pulled 2026-05-15 via `heroku pg:psql -a jellyswitch-production` (read-only).
+  - Stripped:
+    - "Cowork Tahoe" → `{{space_name}}`
+    - "David and Jamie" / "Jamie & David" / "Jamie" signatures → "The {{space_name}} team"
+    - Specific addresses ("3079 Harrison Ave", "Harrison Ave & Modesto Ave") → `{{location_address}}` merge tag
+    - "Cowork Tahoe app" → "our mobile app"
+    - Specific room names ("Eagle Conference Room", "Publisher's Office") → "the conference room"
+    - All pricing references ($15/hour, $100 Day Office, $50/hour) — operator-specific
+    - PDF attachment tags (Member's Guide, Conference Room Agreement) — operator-specific files
+    - "untethered.space" URLs and Round Hill / Untethered multi-location refs
+  - Added bodies for all 12 combos (8 from Cowork Tahoe; 4 freshly written for office_lease + the 3 Phase 5.1 types where Cowork Tahoe had no equivalent).
+  - `seed_template` is the new helper that find_or_creates the row AND writes the default body — but ONLY if the row had no body yet. Re-seeding never clobbers operator customizations. Spec'd.
 
 ### 5.3 — Wire welcome drip enqueue
 
