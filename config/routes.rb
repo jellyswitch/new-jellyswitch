@@ -419,8 +419,6 @@ Rails.application.routes.draw do
   get "/members_groups", to: "operator/landing#members_groups", as: :members_groups
   get "/offices_leases", to: "operator/landing#offices_leases", as: :offices_leases
   get "/plans_day_passes", to: "operator/landing#plans_day_passes", as: :plans_day_passes
-  # Legacy redirect — Task 20 will delete the commented line below
-  # get "/customization", to: "operator/landing#customization", as: :customization
   get "/customization", to: "operator/settings#legacy_redirect", as: :customization
   get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
   post "/pause_membership/:id", to: "operator/pause_memberships#create", as: "pause_membership"
@@ -668,7 +666,7 @@ Rails.application.routes.draw do
     get :out_of_band, to: "operator/organizations#out_of_band"
     get :payment_method, to: "operator/organizations#payment_method"
   end
-  resources :operators, as: :operator_operators, controller: "operator/operators" do
+  resources :operators, as: :operator_operators, controller: "operator/operators", only: [:show] do
     get :approval_required, to: "operator/operators#approval_required"
     get :checkin_required, to: "operator/operators#checkin_required"
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
@@ -787,7 +785,6 @@ Rails.application.routes.draw do
     get  "policies",                   to: "operator/settings#policies",                   as: :policies
     patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
   end
-  # Legacy redirect — /operator/operators/:id/edit had no prior route (Task 20 can remove this note)
   get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
