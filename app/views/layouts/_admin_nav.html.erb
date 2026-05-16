@@ -1,3 +1,30 @@
+<%
+  nav_icons = {
+    "Home" => "fas fa-home",
+    "Building Access" => "fas fa-door-open",
+    "People" => "fas fa-users",
+    "Members & Groups" => "fas fa-users",
+    "Offices & Leases" => "fas fa-building",
+    "Rooms & Reservations" => "fas fa-briefcase",
+    "Plans & Day Passes" => "fas fa-id-card",
+    "Childcare" => "fas fa-child",
+    "Leads" => "fas fa-user-plus",
+    "Announcements" => "fas fa-bullhorn",
+    "Bulletin Board" => "fas fa-clipboard",
+    "Events" => "far fa-calendar-alt",
+    "Automated Emails" => "fas fa-envelope",
+    "Campaigns" => "fas fa-paper-plane",
+    "My Messages" => "fas fa-comment-alt",
+    "Invoices & Expenses" => "fas fa-file-invoice-dollar",
+    "Data" => "fas fa-chart-bar",
+    "Customization" => "fas fa-paint-brush",
+    "Change Location" => "fas fa-map-marker-alt",
+    "My Account" => "fas fa-user-circle",
+    "Member Dashboard" => "fas fa-th-large",
+    "App Config" => "fas fa-cog",
+  }
+  settings_titles = ["Customization", "Change Location", "My Account", "Member Dashboard", "App Config"]
+%>
 <% if mobile_app_request? %>
   <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 10px 16px; padding-top: calc(env(safe-area-inset-top, 0px) + 10px); background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08);">
     <a href="<%= feed_items_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.95rem; font-weight: 600; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px;" data-turbo-action="<%= restore_if_possible %>">
@@ -10,13 +37,27 @@
         <%= current_tenant.name %>
       <% end %>
     </a>
-    <button onclick="document.getElementById('ios-admin-nav-menu').style.display = document.getElementById('ios-admin-nav-menu').style.display === 'none' ? 'block' : 'none'" style="flex-shrink: 0; padding: 8px; background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;">
+    <button onclick="document.getElementById('ios-admin-nav-menu').style.display = document.getElementById('ios-admin-nav-menu').style.display === 'none' ? 'block' : 'none'" style="flex-shrink: 0; padding: 10px; background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;" aria-label="Toggle menu">
       <span style="display: inline-block; width: 22px; height: 22px; background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2722%27 height=%2722%27 viewBox=%270 0 22 22%27%3e%3cpath stroke=%27%23555%27 stroke-linecap=%27round%27 stroke-width=%272%27 d=%27M3 5h16M3 11h16M3 17h16%27/%3e%3c/svg%3e'); background-repeat: no-repeat; background-position: center; background-size: 100%;"></span>
     </button>
   </div>
-  <div id="ios-admin-nav-menu" style="display: none; background-color: #fff; padding: 0 16px 8px; box-shadow: 0 2px 4px rgba(0,0,0,.08);">
+  <div id="ios-admin-nav-menu" style="display: none; background-color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.08);">
+    <% settings_started = false %>
     <% paths.each do |path| %>
-      <a href="<%= path[:path] %>" onclick="document.getElementById('ios-admin-nav-menu').style.display='none'" style="display: block; padding: 8px 0; color: rgba(0,0,0,.7); text-decoration: none;" data-turbo-action="<%= restore_if_possible %>"><%= path[:title] %></a>
+      <% if !settings_started && settings_titles.include?(path[:title]) %>
+        <% settings_started = true %>
+        <div style="padding: 12px 20px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #9CA3AF; background: #F8F9FA; border-top: 1px solid #E5E7EB;">
+          Settings
+        </div>
+      <% end %>
+      <a href="<%= path[:path] %>"
+         onclick="document.getElementById('ios-admin-nav-menu').style.display='none'"
+         style="display: flex; align-items: center; padding: 14px 20px; color: #1A1A2E; text-decoration: none; border-bottom: 1px solid #F1F3F5; gap: 14px; min-height: 48px;"
+         data-turbo-action="<%= restore_if_possible %>">
+        <i class="<%= nav_icons[path[:title]] || 'fas fa-chevron-right' %>" style="color: #6B7280; width: 18px; text-align: center;"></i>
+        <span style="flex: 1; font-size: 15px;"><%= path[:title] %></span>
+        <i class="fas fa-chevron-right" style="color: #C8CED3; font-size: 12px;"></i>
+      </a>
     <% end %>
   </div>
 <% else %>
@@ -37,11 +78,14 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <% paths.each do |path| %>
-          <%= link_to path[:title], path[:path], class: "nav-link", data: { "turbo-action" => restore_if_possible} %>
+          <li class="nav-item">
+            <%= link_to path[:path], class: "nav-link d-flex align-items-center", data: { "turbo-action" => restore_if_possible } do %>
+              <i class="<%= nav_icons[path[:title]] || 'fas fa-chevron-right' %> text-muted mr-2" style="width: 18px; text-align: center; font-size: 14px;"></i>
+              <%= path[:title] %>
+            <% end %>
+          </li>
         <% end %>
       </ul>
     </div>
   </nav>
 <% end %>
-
-

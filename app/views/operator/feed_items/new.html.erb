@@ -1,7 +1,12 @@
 <% title "New Post" %>
 
-<%= list_wrapper do %>
-  <%= list_item do %>
-    <%= render "form", feed_item: @feed_item %>
-  <% end %>
+<%= wide_card do %>
+  <div class="mb-3">
+    <%= link_to "← Back to feed".html_safe, feed_items_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <h4 class="display-4 text-center mb-1">Post a management note</h4>
+  <p class="text-center text-muted mb-4">Share an update with your team. Posted to the activity feed.</p>
+
+  <%= render "form", feed_item: @feed_item %>
 <% end %>

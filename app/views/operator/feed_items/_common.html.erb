@@ -1,20 +1,17 @@
-<div class="row">
-  <div class="col-2"></div>
-  <div class="col d-flex justify-content-around">
-    <%= link_to feed_item_path(feed_item), data: { turbo_method: :delete, turbo_action: (restore_if_possible rescue "replace") } do %>
-      <i class="far fa-trash-alt" style="opacity: 0.6;"></i>
+<div class="d-flex align-items-center justify-content-between mt-3 pt-2 border-top">
+  <div class="d-flex align-items-center" style="gap: 16px;">
+    <%= link_to feed_item_path(feed_item), data: { turbo_method: :delete, turbo_action: (restore_if_possible rescue "replace") }, title: "Delete", "aria-label": "Delete" do %>
+      <i class="far fa-trash-alt text-muted"></i>
     <% end %>
-  
-    <%# Expense toggle hidden - feature needs work %>
-    <div class="d-flex justify-content-center">
-      <%= render "operator/feed_items/comment_count", feed_item: feed_item %>
+
+    <%= render "operator/feed_items/comment_count", feed_item: feed_item %>
+  </div>
+
+  <% if feed_item.requires_approval? %>
+    <div>
+      <%= render "operator/feed_items/feed_approval_toggle", user: feed_item.user, feed_item: feed_item %>
     </div>
-  </div>
-  <div class="col-3 d-flex justify-content-center">
-    <% if feed_item.requires_approval? %>
-      <%= render "operator/feed_items/feed_approval_toggle", user: feed_item.user, feed_item: feed_item  %>  
-    <% end %>
-  </div>
+  <% end %>
 </div>
 
 <% if comments %>

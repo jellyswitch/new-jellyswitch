@@ -2,6 +2,20 @@
 
 <%= turbo_stream_from current_tenant, "feed_items" %>
 
+<%
+  empty_state = if @notes_active
+    { icon: "fa-clipboard", title: "No management notes yet", body: "Notes you post to the team will show up here.", cta_text: "Post a note", cta_path: new_feed_item_path }
+  elsif @questions_active
+    { icon: "fa-question-circle", title: "No questions from members", body: "When members tag the team with a question, it'll appear here.", cta_text: nil, cta_path: nil }
+  elsif @activity_active
+    { icon: "fa-users", title: "Quiet right now", body: "Check-ins, reservations, and signups will land here as they happen.", cta_text: nil, cta_path: nil }
+  elsif @financial_active
+    { icon: "fa-dollar-sign", title: "No financial activity", body: "New subscriptions, refunds, and failed payments will appear here.", cta_text: nil, cta_path: nil }
+  else
+    { icon: "fa-stream", title: "Nothing happening yet", body: "Activity from check-ins, members, and payments will stream in here.", cta_text: "Post the first note", cta_path: new_feed_item_path }
+  end
+%>
+
 <div class="row mt-1 mb-0 p-0" style="overflow-x: hidden;">
   <div class="col-lg-2 order-2 order-lg-1"></div>
   <div class="col-lg-6 order-3 order-lg-2 m-0 p-0">
@@ -19,7 +33,18 @@
       <%= list_wrapper do %>
         <div id="feed-items">
           <%= list_item do %>
-            No feed items yet!
+            <div class="text-center py-4">
+              <div class="mb-3" style="font-size: 2.5rem; color: #c8ced3;">
+                <i class="fas <%= empty_state[:icon] %>"></i>
+              </div>
+              <h5 class="mb-2"><%= empty_state[:title] %></h5>
+              <p class="text-muted small mb-3" style="max-width: 320px; margin-left: auto; margin-right: auto;">
+                <%= empty_state[:body] %>
+              </p>
+              <% if empty_state[:cta_text] %>
+                <%= link_to empty_state[:cta_text], empty_state[:cta_path], class: "btn btn-sm btn-outline-primary" %>
+              <% end %>
+            </div>
           <% end %>
         </div>
       <% end %>

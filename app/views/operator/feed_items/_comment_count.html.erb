@@ -1,9 +1,6 @@
-<%= link_to feed_item_path(feed_item), class: "ml-3" do %>
+<%= link_to feed_item_path(feed_item), class: "text-muted text-decoration-none", title: "View comments", "aria-label": "View comments" do %>
+  <i class="far fa-comment-alt"></i>
   <% if feed_item.feed_item_comments.count > 0 %>
-    <i class="far fa-comment-alt">
-      <%= feed_item.feed_item_comments.count %>
-    </i>
-  <% else %>
-  <i class="far fa-comment-alt" style="opacity: 0.6;"></i>
-  <% end %>  
+    <span class="ml-1"><%= feed_item.feed_item_comments.count %></span>
+  <% end %>
 <% end %>
