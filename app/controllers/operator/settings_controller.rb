@@ -5,7 +5,10 @@ class Operator::SettingsController < Operator::BaseController
     redirect_to settings_branding_path
   end
 
-  def branding;             end
+  def branding
+    @operator = current_operator
+  end
+
   # No update_payments — Stripe Connect is OAuth, not a form. See Payments tab in spec.
   def payments;             end
   def doors;                end
@@ -15,7 +18,13 @@ class Operator::SettingsController < Operator::BaseController
   def modules;              end
   def policies;             end
 
-  def update_branding;             head :not_implemented; end
+  def update_branding
+    if current_operator.update(branding_params)
+      redirect_to settings_branding_path, notice: "Branding saved."
+    else
+      render :branding, status: :unprocessable_entity
+    end
+  end
   def update_doors;                head :not_implemented; end
   def import_doors;                head :not_implemented; end
   def update_hours_and_address;    head :not_implemented; end
@@ -25,6 +34,14 @@ class Operator::SettingsController < Operator::BaseController
   def update_policies;             head :not_implemented; end
 
   private
+
+  def current_operator
+    current_tenant
+  end
+
+  def branding_params
+    params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)
+  end
 
   def require_admin_or_superadmin!
     unless admin? || superadmin?
