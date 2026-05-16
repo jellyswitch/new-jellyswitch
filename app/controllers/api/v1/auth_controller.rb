@@ -75,6 +75,8 @@ class Api::V1::AuthController < Api::V1::BaseController
         original_location_id: location_id,
         terms_accepted: "1",
         marketing_consent: params[:marketing_opt_in] != false,
+        home_latitude:  params[:home_latitude],
+        home_longitude: params[:home_longitude],
       },
       operator: operator,
       admin_created: false,
