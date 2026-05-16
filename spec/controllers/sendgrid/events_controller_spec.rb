@@ -109,9 +109,9 @@ RSpec.describe Sendgrid::EventsController, type: :controller do
       end
     end
 
-    context "Ed25519 signed-payload verification" do
-      let(:signing_key) { Ed25519::SigningKey.generate }
-      let(:public_key_b64) { Base64.strict_encode64(signing_key.verify_key.to_bytes) }
+    context "ECDSA signed-payload verification" do
+      let(:signing_key) { OpenSSL::PKey::EC.generate("prime256v1") }
+      let(:public_key_b64) { Base64.strict_encode64(signing_key.public_to_der) }
 
       before do
         @prev_key = ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"]
@@ -120,7 +120,7 @@ RSpec.describe Sendgrid::EventsController, type: :controller do
       after { ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"] = @prev_key }
 
       def sign(timestamp, body)
-        Base64.strict_encode64(signing_key.sign(timestamp + body))
+        Base64.strict_encode64(signing_key.sign(OpenSSL::Digest.new("SHA256"), timestamp + body))
       end
 
       it "returns 200 with a valid signature + recent timestamp" do
@@ -156,11 +156,12 @@ RSpec.describe Sendgrid::EventsController, type: :controller do
       end
 
       it "returns 401 when signed by a different key" do
-        wrong_key = Ed25519::SigningKey.generate
+        wrong_key = OpenSSL::PKey::EC.generate("prime256v1")
         body_str = [event("open")].to_json
         timestamp = Time.current.to_i.to_s
         request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP"] = timestamp
-        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] = Base64.strict_encode64(wrong_key.sign(timestamp + body_str))
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] =
+          Base64.strict_encode64(wrong_key.sign(OpenSSL::Digest.new("SHA256"), timestamp + body_str))
         post :receive, body: body_str
         expect(response).to have_http_status(:unauthorized)
       end

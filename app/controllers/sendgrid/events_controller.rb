@@ -6,9 +6,10 @@
 #
 # Signed-payload verification (recommended for prod):
 #   1. In Sendgrid → Mail Settings → Event Webhook → Signature Verification, enable it
-#      and copy the base64-encoded public verification key.
+#      and copy the base64-encoded public verification key. Sendgrid signs with
+#      ECDSA on the P-256 curve (SHA-256); the key arrives as DER-encoded SPKI.
 #   2. Set `SENDGRID_WEBHOOK_VERIFICATION_KEY` to that key. The controller
-#      then rejects (401) any request whose Ed25519 signature doesn't match.
+#      then rejects (401) any request whose ECDSA signature doesn't match.
 #   3. With the key unset (dev/test), requests are accepted without verification.
 class Sendgrid::EventsController < ApplicationController
   skip_before_action :verify_authenticity_token, raise: false
@@ -34,9 +35,9 @@ class Sendgrid::EventsController < ApplicationController
 
   private
 
-  # Verifies the Ed25519 signature on the raw POST body per Sendgrid spec:
+  # Verifies the ECDSA-P-256 signature on the raw POST body per Sendgrid spec:
   #   payload-to-sign = timestamp + raw_body
-  #   signature       = base64(Ed25519.sign(private_key, payload-to-sign))
+  #   signature       = base64(ECDSA-DER(sha256(payload-to-sign), private_key))
   # Returns true if verification passes OR if no verification key is configured
   # (allows dev/test to POST without setup).
   def authenticated?(raw_body)
@@ -50,10 +51,15 @@ class Sendgrid::EventsController < ApplicationController
     # Replay-protection: reject timestamps older than SIGNATURE_MAX_AGE.
     return false if (Time.current.to_i - timestamp.to_i).abs > SIGNATURE_MAX_AGE.to_i
 
-    verify_key = Ed25519::VerifyKey.new(Base64.decode64(expected_key))
-    verify_key.verify(Base64.decode64(signature_b64), timestamp + raw_body)
-    true
-  rescue Ed25519::VerifyError, ArgumentError
+    ec_key = OpenSSL::PKey.read(Base64.decode64(expected_key))
+    return false unless ec_key.is_a?(OpenSSL::PKey::EC)
+
+    ec_key.verify(
+      OpenSSL::Digest.new("SHA256"),
+      Base64.decode64(signature_b64),
+      timestamp + raw_body,
+    )
+  rescue OpenSSL::OpenSSLError, ArgumentError
     false
   end
 
