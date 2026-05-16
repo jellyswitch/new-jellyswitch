@@ -85,6 +85,15 @@ class User < ApplicationRecord
 
   alias :location :current_location
 
+  # Reverse geocoding — populate home_city/home_state from lat/lng on save
+  reverse_geocoded_by :home_latitude, :home_longitude do |obj, results|
+    if (place = results.first)
+      obj.home_city  = place.city
+      obj.home_state = place.state_code
+    end
+  end
+  after_validation :reverse_geocode, if: -> { home_latitude_changed? || home_longitude_changed? }
+
   # Slugs
   extend FriendlyId
   friendly_id :name, use: :slugged
