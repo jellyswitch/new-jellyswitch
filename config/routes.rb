@@ -766,7 +766,7 @@ Rails.application.routes.draw do
     end
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
-  resource :settings, only: [], controller: "operator/settings" do
+  resource :settings, only: [], path: "/operator/settings", controller: "operator/settings" do
     collection do
       get :branding
       patch :update_branding
