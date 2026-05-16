@@ -425,10 +425,17 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 6.3 — Automation enqueue checks
 
-- [ ] In `AutomatedWorkflowsJob` and the `ProductEmailTemplate` send path, call `SpamGuard.eligible?` before sending.
-- [ ] If not eligible, skip + log to send_log with reason.
-- [ ] Spec.
-- [ ] **Commit:** "Apply Spam Guard to all automation send paths"
+- [x] In `AutomatedWorkflowsJob` and the `ProductEmailTemplate` send path, call `SpamGuard.eligible?` before sending.
+- [x] If not eligible, skip + log to send_log with reason.
+- [x] Spec.
+- [x] **Commit:** "Apply Spam Guard to all automation send paths"
+
+  *Notes:*
+  - `AutomatedWorkflowsJob#guard_eligible?` is the shared helper — returns true if SpamGuard clears the send, otherwise logs a `ProductEmailSend` with `status: "skipped"` and a reason. Wired into all 5 handlers (re_engagement, signup_nurture, day_passer_followup, room_reservation_followup, past_member_recovery). `past_due_followup` + `booking_reminder` deliberately skipped — both are operational notifications, not marketing.
+  - `SendProductEmailJob` gates every send EXCEPT `onboarding`. Onboarding is the post-purchase welcome ("your booking is confirmed") — operationally required and gating it would create confusing UX gaps right after a purchase. Follow-up + nudge + re_engagement + past_member_recovery all gate.
+  - `User#enroll_in_welcome_drip!` now also consults SpamGuard before creating the enrollment marker — a user already in another drip won't get welcome-dripped on top.
+  - Default `cool_down_days: 30` for all automation paths. Campaign uses its own per-campaign value from Phase 6.2.
+  - Spec: 2 new tests on `AutomatedWorkflowsJob` — skipped row appears with reason; no `status: "sent"` row created when SpamGuard says no.
 
 ---
 

@@ -137,12 +137,14 @@ class User < ApplicationRecord
   WELCOME_DRIP_ENROLLED_KEY = "welcome_drip_enrolled".freeze
 
   # Mark this Person as enrolled in the Welcome Drip. Idempotent: no-op if
-  # already enrolled or if the user is currently an active member (members
-  # don't need a welcome drip; they came in via a subscription).
-  # Phase 6.3 will gate this with SpamGuard.eligible?.
+  # already enrolled, if the user is currently an active member, or if
+  # SpamGuard says they're not eligible (already in another active series
+  # or within cool-down).
   def enroll_in_welcome_drip!
     return false if has_active_subscription?
     return false if welcome_drip_enrolled?
+    return false unless SpamGuard.eligible?(self, sender: operator, cool_down_days: 30)
+
     ProductEmailSend.create!(
       operator: operator,
       user: self,

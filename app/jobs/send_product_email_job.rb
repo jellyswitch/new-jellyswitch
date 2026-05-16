@@ -41,6 +41,20 @@ class SendProductEmailJob < ApplicationJob
         return if sendable.respond_to?(:active?) && !sendable.active?
       end
 
+      # SpamGuard (ADR-0003): gate all marketing-type sends. Onboarding is
+      # operationally-required (welcome / "your booking is confirmed"
+      # information) and always sends — gating it would create confusing UX
+      # gaps right after a purchase.
+      if email_type != "onboarding" && !SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)
+        ProductEmailSend.create!(
+          operator: operator, user: user, sendable: sendable,
+          email_type: email_type, status: "skipped",
+          error_message: "Skipped by Spam Guard (in active series or within cool-down)",
+          sent_at: Time.current,
+        )
+        return
+      end
+
       # Send the email
       begin
         case email_type

@@ -73,6 +73,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       next if user.reservations.where("created_at > ?", cutoff).exists?
       next if user.door_punches.where("created_at > ?", cutoff).exists?
       next if already_sent?(user, "re_engagement", days)
+      next unless guard_eligible?(user, operator, "re_engagement_#{user.id}_#{Date.current}")
 
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
       record_send(user, "re_engagement", "onboarding")
@@ -153,6 +154,7 @@ class AutomatedWorkflowsJob < ApplicationJob
 
         send_key = "signup_nurture_step_#{step}_user_#{user.id}"
         next if already_sent_key?(send_key)
+        next unless guard_eligible?(user, operator, send_key)
 
         UserMailer.re_engagement_email(user, operator, template, location).deliver_later
         record_send_key(user, send_key)
@@ -185,8 +187,8 @@ class AutomatedWorkflowsJob < ApplicationJob
 
       send_key = "day_passer_followup_#{day_pass.id}"
       next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
 
-      # TODO Phase 6.3: SpamGuard.eligible?(user, sender: operator, cool_down_days: 30) check
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
       record_send_key(user, send_key)
     end
@@ -218,8 +220,8 @@ class AutomatedWorkflowsJob < ApplicationJob
 
       send_key = "room_reservation_followup_#{reservation.id}"
       next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
 
-      # TODO Phase 6.3: SpamGuard.eligible? check
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
       record_send_key(user, send_key)
     end
@@ -251,8 +253,8 @@ class AutomatedWorkflowsJob < ApplicationJob
 
       send_key = "past_member_recovery_#{user.id}_#{target_date}"
       next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
 
-      # TODO Phase 6.3: SpamGuard.eligible? check
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
       record_send_key(user, send_key)
     end
@@ -263,6 +265,30 @@ class AutomatedWorkflowsJob < ApplicationJob
       user.reservations.where("datetime_in > ?", since_date.to_time).exists? ||
       user.checkins.where("datetime_in > ?", since_date.to_time).exists? ||
       user.door_punches.where("created_at > ?", since_date.to_time).exists?
+  end
+
+  # Returns true if SpamGuard says we're clear to send. Otherwise records a
+  # ProductEmailSend with status="skipped" + reason so the send_log shows
+  # what got filtered. cool_down_days defaults to 30 — Phase 8.2 may add
+  # per-workflow overrides.
+  def guard_eligible?(user, operator, send_key, cool_down_days: 30)
+    return true if SpamGuard.eligible?(user, sender: operator, cool_down_days: cool_down_days)
+    log_skip(user, operator, send_key, "Skipped by Spam Guard (in active series or within cool-down)")
+    false
+  end
+
+  def log_skip(user, operator, send_key, reason)
+    ProductEmailSend.create!(
+      operator: operator,
+      user: user,
+      sendable: user,
+      email_type: send_key,
+      status: "skipped",
+      error_message: reason,
+      sent_at: Time.current,
+    )
+  rescue ActiveRecord::RecordNotUnique, ActiveRecord::RecordInvalid
+    # Already logged — fine.
   end
 
   def already_sent?(user, product_type, cooldown_days)
