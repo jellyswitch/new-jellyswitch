@@ -2,27 +2,28 @@
 
 
 <div class="d-flex justify-content-center mb-2">
-  <div class="btn-group mt-2" role="group" aria-label="Filter">
-    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", data: {"turbo-action" => "replace"} %>
+  <div class="btn-group mt-2" role="group" aria-label="Feed filters">
+    <%= link_to "All", feed_items_path, class: "btn btn-light #{@all_active}", title: "All activity", "aria-label": "All activity", data: {"turbo-action" => "replace"} %>
 
-    <%= link_to notes_feed_items_path, class: "filter-note-feed-items btn btn-light #{@notes_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to notes_feed_items_path, class: "filter-note-feed-items btn btn-light #{@notes_active}", title: "Management notes", "aria-label": "Management notes", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-clipboard"></i>
     <% end %>
 
-    <%= link_to questions_feed_items_path, class: "filter-question-feed-items btn btn-light #{@questions_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to questions_feed_items_path, class: "filter-question-feed-items btn btn-light #{@questions_active}", title: "Questions", "aria-label": "Questions", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-question"></i>
     <% end %>
 
-    <%= link_to activity_feed_items_path, class: "filter-activity-feed-items btn btn-light #{@activity_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to activity_feed_items_path, class: "filter-activity-feed-items btn btn-light #{@activity_active}", title: "Member activity", "aria-label": "Member activity", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-users"></i>
     <% end %>
 
-    <%= link_to financial_feed_items_path, class: "btn btn-light #{@financial_active}", data: {"turbo-action" => "replace"} do %>
+    <%= link_to financial_feed_items_path, class: "btn btn-light #{@financial_active}", title: "Financial events", "aria-label": "Financial events", data: {"turbo-action" => "replace"} do %>
       <i class="fas fa-dollar-sign"></i>
     <% end %>
 
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#newModal" id="new-management-note">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#newModal" id="new-management-note" title="Post or create" aria-label="Post or create">
       <i class="fas fa-plus"></i>
+      <span class="d-none d-lg-inline ml-1" style="font-size: 13px;">Post</span>
     </button>
   </div>
 </div>
@@ -198,66 +199,91 @@
   <% end %>
 <% end %>
 
-<div class="modal fade" id="newModal" tabindex="-1" role="dialog">
+<div class="modal fade" id="newModal" tabindex="-1" role="dialog" aria-labelledby="newModalTitle">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
-      <div class="modal-body">
+      <div class="modal-header py-2">
+        <h6 class="modal-title mb-0" id="newModalTitle">What would you like to do?</h6>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-0">
         <div class="list-group list-group-flush">
 
           <% if policy(:room).enabled? %>
-            <%= link_to calendar_reservations_path(reserve_now: true), class: "list-group-item list-group-item-action" do %>
-              <i class="fas fa-calendar-alt"></i>
-              &nbsp;
-              Reserve now
+            <div class="list-group-item bg-light py-1 px-3 text-uppercase text-muted" style="font-size: 11px; letter-spacing: 0.5px;">Reserve</div>
+
+            <%= link_to calendar_reservations_path(reserve_now: true), class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+              <i class="fas fa-calendar-alt text-muted mr-3 mt-1" style="width: 18px;"></i>
+              <div>
+                <div>Reserve now</div>
+                <small class="text-muted">Book a room starting right now</small>
+              </div>
             <% end %>
 
-            <%= link_to rooms_path, class: "list-group-item list-group-item-action" do %>
-              <i class="fas fa-briefcase"></i>
-              &nbsp;
-              Reserve a room
+            <%= link_to rooms_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+              <i class="fas fa-briefcase text-muted mr-3 mt-1" style="width: 18px;"></i>
+              <div>
+                <div>Reserve a room</div>
+                <small class="text-muted">Pick a room and a future time</small>
+              </div>
             <% end %>
           <% end %>
 
-          <%= link_to new_feed_item_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-edit"></i>
-            &nbsp;
-            Post a management note
+          <div class="list-group-item bg-light py-1 px-3 text-uppercase text-muted" style="font-size: 11px; letter-spacing: 0.5px;">Post</div>
+
+          <%= link_to new_feed_item_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+            <i class="fas fa-edit text-muted mr-3 mt-1" style="width: 18px;"></i>
+            <div>
+              <div>Management note</div>
+              <small class="text-muted">Share an update with your team</small>
+            </div>
           <% end %>
 
           <% if policy(:announcement).enabled? %>
-            <%= link_to new_announcement_path, class: "list-group-item list-group-item-action" do %>
-              <i class="fas fa-bullhorn"></i>
-              &nbsp;
-              Post an announcement
+            <%= link_to new_announcement_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+              <i class="fas fa-bullhorn text-muted mr-3 mt-1" style="width: 18px;"></i>
+              <div>
+                <div>Announcement</div>
+                <small class="text-muted">Push a message to all members</small>
+              </div>
             <% end %>
           <% end %>
 
           <% if policy(:event).enabled? %>
-            <%= link_to new_event_path, class: "list-group-item list-group-item-action" do %>
-              <i class="far fa-calendar-alt"></i>
-              &nbsp;
-              Create an event
+            <%= link_to new_event_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+              <i class="far fa-calendar-alt text-muted mr-3 mt-1" style="width: 18px;"></i>
+              <div>
+                <div>Event</div>
+                <small class="text-muted">Schedule something on the location calendar</small>
+              </div>
             <% end %>
           <% end %>
 
-          <%= link_to add_member_users_path, class: "list-group-item list-group-item-action" do %>
-            <i class="fas fa-users"></i>
-            &nbsp;
-            Add a member
+          <div class="list-group-item bg-light py-1 px-3 text-uppercase text-muted" style="font-size: 11px; letter-spacing: 0.5px;">Add</div>
+
+          <%= link_to add_member_users_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+            <i class="fas fa-users text-muted mr-3 mt-1" style="width: 18px;"></i>
+            <div>
+              <div>Member</div>
+              <small class="text-muted">Create a member account manually</small>
+            </div>
           <% end %>
 
           <% if policy(:office).enabled? %>
-            <%= link_to new_office_lease_path, class: "list-group-item list-group-item-action" do %>
-              <i class="fas fa-file-alt"></i>
-              &nbsp;
-              Add an office lease
+            <%= link_to new_office_lease_path, class: "list-group-item list-group-item-action d-flex align-items-start" do %>
+              <i class="fas fa-file-alt text-muted mr-3 mt-1" style="width: 18px;"></i>
+              <div>
+                <div>Office lease</div>
+                <small class="text-muted">Set up a private office contract</small>
+              </div>
             <% end %>
           <% end %>
-
-          <div class="list-group-item">
-            <button type="button" class="btn btn-block btn-secondary" data-dismiss="modal">Cancel</button>
-          </div>
         </div>
+      </div>
+      <div class="modal-footer py-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>

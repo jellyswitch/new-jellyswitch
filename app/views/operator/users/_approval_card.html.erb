@@ -1,25 +1,18 @@
-<li class="list-group-item m-0 pb-4">
-
-  <div class="row mb-2 mt-2">
-    <div class="col-2">
-      <%= render "shared/small_profile_photo", user: user %>
-    </div>
-    <div class="col-6">
-      <p class="mb-1 pt-2">
-        <%= user.name %>
-      </p>
-    </div>
-    <div class="col-1 pt-1">
-      <%= link_to user_path(user), class: "btn btn-outline-primary btn-sm" do %>
-        <i class="fas fa-search-plus"></i>
-      <% end %>
-    </div>
-    <div class="col-1 pt-1 ml-1">
-      <%= render "approval_toggle_icon", user: user %>
-    </div>
-    <div class="col-1 pt-1 ml-1">
-      <%= render "archive_toggle_icon", user: user %>
-    </div>
+<li class="list-group-item d-flex align-items-center py-3">
+  <div class="mr-3 flex-shrink-0" style="width: 44px;">
+    <%= render "shared/small_profile_photo", user: user %>
   </div>
 
+  <div class="flex-grow-1" style="min-width: 0;">
+    <div class="font-weight-bold text-dark text-truncate"><%= user.name %></div>
+    <small class="text-muted">Signed up <%= time_ago_in_words(user.created_at) %> ago</small>
+  </div>
+
+  <div class="d-flex align-items-center flex-shrink-0" style="gap: 8px;">
+    <%= link_to user_path(user), class: "btn btn-outline-secondary btn-sm", title: "View profile", "aria-label": "View profile" do %>
+      <i class="fas fa-search-plus"></i>
+    <% end %>
+    <%= render "approval_toggle_icon", user: user %>
+    <%= render "archive_toggle_icon", user: user %>
+  </div>
 </li>

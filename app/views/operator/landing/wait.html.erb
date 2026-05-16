@@ -1,91 +1,133 @@
 <% title "Awaiting Approval" %>
 
-<div class="row mt-3" data-controller="approval-poll" data-approval-poll-url-value="/approval_status">
-  <div class="col-sm-3"></div>
-  <div class="col-sm">
-    <div class="jumbotron bg-white pb-4 pt-4">
-      <h4 class="display-4 text-center mt-2">We're excited you're here!</h4>
-      <p class="lead text-center mb-4 mt-3">
-        Your account is being reviewed. We'll notify you as soon as you're approved.
-      </p>
-
-      <%# Progress indicators %>
-      <div class="px-3 mb-4">
-        <% pending_sub = current_user.subscriptions.pending.first %>
-        <% has_billing = current_user.has_billing_for_location?(current_location) %>
-
-        <div class="d-flex align-items-center mb-2">
-          <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-          <span>Account created</span>
-        </div>
-
-        <div class="d-flex align-items-center mb-2">
-          <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-          <span>Email confirmed</span>
-        </div>
-
-        <% if pending_sub %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-            <span>Plan selected: <strong><%= pending_sub.plan.name %></strong></span>
-          </div>
-        <% elsif current_user.day_passes.any? %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-            <span>Day pass purchased</span>
-          </div>
-        <% elsif current_user.reservations.any? %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-            <span>Room reserved</span>
-          </div>
-        <% else %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-muted mr-2" style="font-size: 18px;">&#9675;</span>
-            <span class="text-muted">
-              No plan selected yet —
-              <%= link_to "browse options", choose_path %>
-            </span>
-          </div>
-        <% end %>
-
-        <% if has_billing %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
-            <span>Payment method added</span>
-          </div>
-        <% elsif pending_sub %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="text-muted mr-2" style="font-size: 18px;">&#9675;</span>
-            <span class="text-muted">
-              Payment method needed —
-              <%= link_to "add now", activate_path %>
-            </span>
-          </div>
-        <% end %>
-
-        <div class="d-flex align-items-center mb-2">
-          <div class="spinner-grow spinner-grow-sm text-warning mr-2" role="status">
-            <span class="sr-only">Waiting...</span>
-          </div>
-          <span class="text-warning font-weight-bold">Awaiting approval</span>
-        </div>
-      </div>
-
-      <hr/>
-
-      <p class="text-center text-muted mt-3" style="font-size: 14px;">
-        Need to get started right away? Reach out to us:
-      </p>
-      <p class="text-center">
-        <% if current_tenant.contact_email.present? %>
-          <%= mail_to current_tenant.contact_email, current_tenant.contact_name || current_tenant.contact_email, class: "btn btn-outline-primary btn-sm" %>
-        <% end %>
-        <% if current_tenant.contact_phone.present? %>
-          <%= link_to current_tenant.contact_phone, "tel:#{current_tenant.contact_phone}", class: "btn btn-outline-primary btn-sm" %>
-        <% end %>
+<div data-controller="approval-poll" data-approval-poll-url-value="/approval_status">
+  <%= wide_card do %>
+    <div class="text-center py-3">
+      <h4 class="display-4 mb-2">You're almost in!</h4>
+      <p class="lead text-muted mb-0">
+        Your account is being reviewed. We'll notify you the moment you're approved.
       </p>
     </div>
-  </div>
-  <div class="col-sm-3"></div>
+  <% end %>
+
+  <%= wide_card do %>
+    <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Your progress</h6>
+
+    <% pending_sub = current_user.subscriptions.pending.first %>
+    <% has_billing = current_user.has_billing_for_location?(current_location) %>
+
+    <div class="d-flex align-items-center mb-2">
+      <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+      <span>Account created</span>
+    </div>
+
+    <div class="d-flex align-items-center mb-2">
+      <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+      <span>Email confirmed</span>
+    </div>
+
+    <% if pending_sub %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+        <span>Plan selected: <strong><%= pending_sub.plan.name %></strong></span>
+      </div>
+    <% elsif current_user.day_passes.any? %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+        <span>Day pass purchased</span>
+      </div>
+    <% elsif current_user.reservations.any? %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+        <span>Room reserved</span>
+      </div>
+    <% else %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-muted mr-2" style="font-size: 18px;">&#9675;</span>
+        <span class="text-muted">
+          No plan selected yet —
+          <%= link_to "browse options", choose_path %>
+        </span>
+      </div>
+    <% end %>
+
+    <% if has_billing %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+        <span>Payment method added</span>
+      </div>
+    <% elsif pending_sub %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-muted mr-2" style="font-size: 18px;">&#9675;</span>
+        <span class="text-muted">
+          Payment method needed —
+          <%= link_to "add now", activate_path %>
+        </span>
+      </div>
+    <% end %>
+
+    <div class="d-flex align-items-center">
+      <div class="spinner-grow spinner-grow-sm text-warning mr-2" role="status">
+        <span class="sr-only">Waiting...</span>
+      </div>
+      <span class="text-warning font-weight-bold">Awaiting approval</span>
+    </div>
+  <% end %>
+
+  <%= wide_card do %>
+    <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">While you wait</h6>
+
+    <div class="d-flex align-items-start mb-3">
+      <i class="fas fa-clock text-info mr-3 mt-1" style="width: 18px;"></i>
+      <div>
+        <div>Approvals usually happen within a few business hours.</div>
+        <small class="text-muted">You'll get an email and a push notification as soon as you're in.</small>
+      </div>
+    </div>
+
+    <% unless current_user.has_profile_photo? %>
+      <%= link_to edit_user_path(current_user), class: "d-flex align-items-start text-decoration-none text-dark mb-3" do %>
+        <i class="fas fa-camera text-info mr-3 mt-1" style="width: 18px;"></i>
+        <div>
+          <div>Add a profile photo</div>
+          <small class="text-muted">Help other members recognize you on day one.</small>
+        </div>
+        <i class="fas fa-chevron-right text-muted small ml-auto"></i>
+      <% end %>
+    <% end %>
+
+    <%= link_to edit_user_path(current_user), class: "d-flex align-items-start text-decoration-none text-dark" do %>
+      <i class="fas fa-id-badge text-info mr-3 mt-1" style="width: 18px;"></i>
+      <div>
+        <div>Fill out your bio</div>
+        <small class="text-muted">A short intro goes a long way in a coworking space.</small>
+      </div>
+      <i class="fas fa-chevron-right text-muted small ml-auto"></i>
+    <% end %>
+  <% end %>
+
+  <% if current_tenant.contact_email.present? || current_tenant.contact_phone.present? %>
+    <%= wide_card do %>
+      <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Have a question?</h6>
+
+      <p class="text-muted small mb-3">
+        Need to get started right away or have a question for the team? Reach out — we're happy to help.
+      </p>
+
+      <div class="d-flex flex-wrap" style="gap: 8px;">
+        <% if current_tenant.contact_email.present? %>
+          <%= mail_to current_tenant.contact_email, class: "btn btn-outline-primary btn-sm" do %>
+            <i class="fas fa-envelope mr-1"></i>
+            <%= current_tenant.contact_name.presence || current_tenant.contact_email %>
+          <% end %>
+        <% end %>
+        <% if current_tenant.contact_phone.present? %>
+          <%= link_to "tel:#{current_tenant.contact_phone}", class: "btn btn-outline-primary btn-sm" do %>
+            <i class="fas fa-phone mr-1"></i>
+            <%= current_tenant.contact_phone %>
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
 </div>

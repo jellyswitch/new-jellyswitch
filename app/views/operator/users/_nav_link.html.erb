@@ -1,0 +1,9 @@
+<% count = local_assigns.fetch(:count, nil) %>
+<%= link_to path, class: "list-group-item list-group-item-action d-flex align-items-center" do %>
+  <i class="fas <%= icon %> text-muted mr-3" style="width: 18px;"></i>
+  <span class="flex-grow-1"><%= label %></span>
+  <% if count %>
+    <span class="badge badge-light mr-2"><%= count %></span>
+  <% end %>
+  <i class="fas fa-chevron-right text-muted small"></i>
+<% end %>

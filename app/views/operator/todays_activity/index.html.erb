@@ -5,15 +5,66 @@
   <div class="col-lg-6 m-0 p-0">
 
     <%# Header %>
-    <div class="px-3 pt-3 pb-2">
-      <h5 class="font-weight-bold mb-1">Who's Coming Today</h5>
-      <p class="text-muted mb-0" style="font-size: 13px;">
-        <%= Date.current.strftime("%A, %B %-d") %> &middot;
-        <%= @total_visitors %> <%= @total_visitors == 1 ? "visitor" : "visitors" %> expected
-        <% if @paid_reservation_revenue + @day_pass_revenue > 0 %>
-          &middot; <span class="text-success font-weight-bold"><%= number_to_currency(@paid_reservation_revenue + @day_pass_revenue) %> in bookings</span>
-        <% end %>
-      </p>
+    <div class="px-3 pt-4 pb-2 text-center">
+      <h4 class="display-4 mb-1">Today</h4>
+      <p class="text-muted mb-3"><%= Date.current.strftime("%A, %B %-d") %></p>
+    </div>
+
+    <%# KPI cards %>
+    <% total_revenue = @paid_reservation_revenue + @day_pass_revenue %>
+    <% first_timer_count = @first_timer_ids.size %>
+    <div class="row text-center mx-2 mb-3">
+      <div class="col-6 col-lg-3 mb-2">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-info" style="font-size: 1.6rem;"><%= @total_visitors %></div>
+          <div class="text-muted small">
+            <%= "Visitor".pluralize(@total_visitors) %> expected
+          </div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted">
+              <%= @paid_reservations.count + @free_reservations.count %> bookings · <%= @day_passes.count %> day passes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-2">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold <%= total_revenue > 0 ? 'text-success' : 'text-muted' %>" style="font-size: 1.6rem; white-space: nowrap;">
+            <%= number_to_currency(total_revenue, precision: 0) %>
+          </div>
+          <div class="text-muted small">Booked revenue</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted">
+              <%= number_to_currency(@paid_reservation_revenue, precision: 0) %> rooms · <%= number_to_currency(@day_pass_revenue, precision: 0) %> passes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-2">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold <%= first_timer_count > 0 ? 'text-warning' : 'text-muted' %>" style="font-size: 1.6rem;">
+            <%= first_timer_count %>
+          </div>
+          <div class="text-muted small">First-time visitors</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted">Worth a warm welcome</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-2">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold <%= @new_members.count > 0 ? 'text-primary' : 'text-muted' %>" style="font-size: 1.6rem;">
+            <%= @new_members.count %>
+          </div>
+          <div class="text-muted small">New members</div>
+          <div class="mt-1" style="font-size: 11px;">
+            <span class="text-muted">Joined in the last 7 days</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <%# Paid Room Bookings %>
@@ -144,10 +195,14 @@
 
     <%# Empty state %>
     <% if @paid_reservations.empty? && @day_passes.empty? && @free_reservations.empty? && @new_members.empty? %>
-      <div class="text-center mt-5 px-3">
-        <div style="font-size: 48px;">&#128524;</div>
-        <h5 class="font-weight-bold mt-2">Quiet Day</h5>
-        <p class="text-muted">No day passes, reservations, or new members scheduled for today.</p>
+      <div class="text-center py-4 px-3">
+        <div class="mb-3" style="font-size: 2.5rem; color: #c8ced3;">
+          <i class="fas fa-mug-hot"></i>
+        </div>
+        <h5 class="mb-2">Quiet day</h5>
+        <p class="text-muted small mb-0" style="max-width: 320px; margin-left: auto; margin-right: auto;">
+          No bookings, day passes, or new members on the books for today. Coffee's on you.
+        </p>
       </div>
     <% end %>
 
