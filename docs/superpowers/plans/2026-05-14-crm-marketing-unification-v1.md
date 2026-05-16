@@ -393,13 +393,19 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 6.1 — Central service
 
-- [ ] Spec for `SpamGuard.eligible?(user, sender:, cool_down_days:)`:
+- [x] Spec for `SpamGuard.eligible?(user, sender:, cool_down_days:)`:
   - Returns false if user is currently in any active series (`drip` campaign OR multi-step automation enrolled within the last 60 days)
   - Returns false if user received any email from `sender` operator within `cool_down_days`
   - Returns true otherwise
-- [ ] Implement `app/services/spam_guard.rb`.
-- [ ] Spec edge: transactional emails (mailers called directly, not through Campaign/Automation) bypass the guard automatically (they don't enqueue, so SpamGuard never gets consulted).
-- [ ] **Commit:** "Add SpamGuard service"
+- [x] Implement `app/services/spam_guard.rb`.
+- [x] Spec edge: transactional emails (mailers called directly, not through Campaign/Automation) bypass the guard automatically (they don't enqueue, so SpamGuard never gets consulted).
+- [x] **Commit:** "Add SpamGuard service"
+
+  *Notes:*
+  - `ACTIVE_SERIES_LOOKBACK = 60.days` — anything older than that doesn't count as "currently enrolled."
+  - `cool_down_days: 0` is treated as "no cool-down" (operator opted out).
+  - Transactional emails (password resets, booking confirms) DO log `:email_sent` Activities (Phase 1.3.9), so they affect the cool-down check the next time SpamGuard runs. The invariant the plan calls out is that SpamGuard isn't part of the transactional send path itself — callers (Campaign/Automation) consult it; transactional mailers just send. Spec'd.
+  - 12 specs cover: defensive nil handling, cool-down hit/miss/other-operator/zero, welcome-drip enrolled, expired welcome-drip enrollment, active-drip recipient, paused-campaign skip, single-campaign skip, transactional bypass.
 
 ### 6.2 — Campaign cool-down column + UI
 
