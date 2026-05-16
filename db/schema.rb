@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_15_000002) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_15_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -195,6 +195,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_15_000002) do
     t.integer "suppression_days", default: 7
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "cool_down_days", default: 30, null: false
     t.index ["location_id"], name: "index_campaigns_on_location_id"
     t.index ["operator_id"], name: "index_campaigns_on_operator_id"
   end

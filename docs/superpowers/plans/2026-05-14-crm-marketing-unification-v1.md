@@ -409,12 +409,19 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 6.2 — Campaign cool-down column + UI
 
-- [ ] Migration: `Campaign.cool_down_days` integer, default 30.
-- [ ] Add to campaign form as dropdown: 0 (off) / 30 / 60 / 90 / custom.
-- [ ] Update `Campaign#build_recipient_query` to apply `SpamGuard.eligible?` filter.
-- [ ] On campaign compose page, show "X recipients · Y excluded by Spam Guard (hover for reason)."
-- [ ] Spec: campaign with 100 candidates and 20 of them in active drip → recipient count = 80.
-- [ ] **Commit:** "Add cool-down dropdown + Spam Guard filter to Campaign"
+- [x] Migration: `Campaign.cool_down_days` integer, default 30.
+- [x] Add to campaign form as dropdown: 0 (off) / 30 / 60 / 90 / custom.
+- [x] Update `Campaign#build_recipient_query` to apply `SpamGuard.eligible?` filter.
+- [x] On campaign compose page, show "X recipients · Y excluded by Spam Guard (hover for reason)."
+- [x] Spec: campaign with 100 candidates and 20 of them in active drip → recipient count = 80.
+- [x] **Commit:** "Add cool-down dropdown + Spam Guard filter to Campaign"
+
+  *Notes:*
+  - `build_recipient_query(location, apply_spam_guard: true)` is the new signature. The keyword defaults to true; preview callers pass `false` to see the raw candidate pool.
+  - `Campaign#spam_guard_excluded_count_for(location)` returns the diff (raw − filtered). Used by the show page to render the "· N excluded by Spam Guard" tooltip.
+  - Form dropdown options: 0 (off) / 30 (default) / 60 / 90 / custom (custom appears automatically when the persisted value isn't in the list).
+  - Existing `Campaign#suppression_days` column is left untouched — it's legacy with default 7 and was previously the closest concept. SpamGuard uses `cool_down_days` exclusively. Could be dropped in a future cleanup.
+  - 100-candidates-20-in-drip plan-acceptance spec passes (`expect(filtered).to eq(80)`).
 
 ### 6.3 — Automation enqueue checks
 

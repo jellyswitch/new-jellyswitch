@@ -68,7 +68,7 @@ class Campaign < ApplicationRecord
     segment["status_filter"] || "all"
   end
 
-  def build_recipient_query(location)
+  def build_recipient_query(location, apply_spam_guard: true)
     users = User.for_space(operator).visible
     users = users.originally_at_location(location) if location
 
@@ -115,11 +115,28 @@ class Campaign < ApplicationRecord
     excluded = excluded_user_ids
     users = users.where.not(id: excluded) if excluded.any?
 
+    # Apply Spam Guard (ADR-0003): drop anyone in another active series or
+    # cooled down on this operator. Set apply_spam_guard: false for preview
+    # callers that want the raw candidate pool.
+    if apply_spam_guard
+      ineligible_ids = users.pluck(:id).reject do |uid|
+        SpamGuard.eligible?(User.find(uid), sender: operator, cool_down_days: cool_down_days)
+      end
+      users = users.where.not(id: ineligible_ids) if ineligible_ids.any?
+    end
+
     users
   end
 
   def recipient_count_for(location)
     build_recipient_query(location).count
+  end
+
+  # Number of candidates excluded by Spam Guard at compose time.
+  def spam_guard_excluded_count_for(location)
+    raw = build_recipient_query(location, apply_spam_guard: false).count
+    filtered = build_recipient_query(location, apply_spam_guard: true).count
+    raw - filtered
   end
 
   def clone!
