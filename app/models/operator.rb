@@ -87,6 +87,7 @@ class Operator < ApplicationRecord
   has_many :offices
   has_many :office_leases
   has_many :locations
+  accepts_nested_attributes_for :locations, allow_destroy: false
   has_many :weekly_updates
   has_many :product_email_templates
   has_many :product_email_sends

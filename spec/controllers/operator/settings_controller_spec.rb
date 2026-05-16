@@ -308,4 +308,45 @@ RSpec.describe Operator::SettingsController, type: :controller do
       end
     end
   end
+
+  describe "GET #doors" do
+    render_views
+    it "renders operator KISI key + per-location overrides + import button" do
+      operator.update!(kisi_api_key: "operator-key-xyz")
+      location.update!(kisi_api_key: nil)
+      get :doors
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("operator[kisi_api_key]")
+      expect(response.body).to include(location.name)
+      expect(response.body).to include("Import doors from KISI")
+    end
+  end
+
+  describe "PATCH #update_doors" do
+    it "saves operator-level KISI key" do
+      patch :update_doors, params: { operator: { kisi_api_key: "new-operator-key" } }
+      expect(response).to redirect_to(settings_doors_path)
+      expect(operator.reload.kisi_api_key).to eq("new-operator-key")
+    end
+
+    it "saves per-location override and clears it back to default" do
+      patch :update_doors, params: {
+        operator: { locations_attributes: [{ id: location.id, kisi_api_key: "loc-override" }] }
+      }
+      expect(location.reload.kisi_api_key).to eq("loc-override")
+
+      patch :update_doors, params: {
+        operator: { locations_attributes: [{ id: location.id, kisi_api_key: "" }] }
+      }
+      expect(location.reload.kisi_api_key).to be_nil
+    end
+  end
+
+  describe "POST #import_doors" do
+    it "calls Onboarding::GetKisiDoors and redirects" do
+      expect(Onboarding::GetKisiDoors).to receive(:call).with(hash_including(location: location)).and_return(double(success?: true))
+      post :import_doors, params: { location_id: location.id }
+      expect(response).to redirect_to(settings_doors_path(location_id: location.id))
+    end
+  end
 end

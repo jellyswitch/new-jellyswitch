@@ -1,3 +1,54 @@
 <%= render layout: "operator/settings/tab_layout", locals: { active: :doors } do %>
-  <p>Doors tab — coming in Task 14.</p>
+  <h5>KISI API key</h5>
+  <%= form_with model: @operator, url: settings_update_doors_path, method: :patch do |f| %>
+    <div class="form-group">
+      <%= f.label :kisi_api_key, "Operator-wide KISI API key (used as default for all locations)" %>
+      <%= f.text_field :kisi_api_key, class: "form-control text-monospace" %>
+      <small class="form-text text-muted">Locations without their own override use this key.</small>
+    </div>
+
+    <% if current_operator.locations.count > 1 %>
+      <h6 class="mt-4">Per-location overrides</h6>
+    <% end %>
+    <%= f.fields_for :locations, current_operator.locations.order(:name) do |loc_form| %>
+      <div class="form-row align-items-end mb-2">
+        <%= loc_form.hidden_field :id %>
+        <div class="col-md-4"><%= loc_form.object.name %></div>
+        <div class="col-md-6">
+          <%= loc_form.text_field :kisi_api_key,
+                                  placeholder: loc_form.object.kisi_api_key.nil? ? "uses operator default" : "kisi_••••#{loc_form.object.kisi_api_key.to_s.last(4)}",
+                                  class: "form-control text-monospace form-control-sm" %>
+        </div>
+        <div class="col-md-2">
+          <% if loc_form.object.kisi_api_key.nil? %>
+            <span class="badge badge-secondary">uses operator default</span>
+          <% else %>
+            <span class="badge badge-info">override</span>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+
+    <%= f.submit "Save KISI key", class: "btn btn-primary" %>
+  <% end %>
+
+  <hr class="my-4">
+
+  <h5>Doors</h5>
+  <%= form_with url: settings_import_doors_path, method: :post, local: true, class: "form-inline mb-3" do %>
+    <% if current_operator.locations.count > 1 %>
+      <select name="location_id" class="form-control mr-2">
+        <% current_operator.locations.order(:name).each do |loc| %>
+          <option value="<%= loc.id %>" <%= "selected" if loc.id == selected_location.id %>><%= loc.name %></option>
+        <% end %>
+      </select>
+    <% else %>
+      <%= hidden_field_tag :location_id, current_operator.locations.first.id %>
+    <% end %>
+    <button type="submit" class="btn btn-outline-primary">
+      <i class="fas fa-cloud-download-alt mr-1"></i> Import doors from KISI
+    </button>
+  <% end %>
+
+  <%= turbo_frame_tag "doors_list", src: doors_path(location_id: selected_location.id) %>
 <% end %>

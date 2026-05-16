@@ -104,6 +104,8 @@ class Location < ApplicationRecord
 
   has_many :user_payment_profiles, dependent: :destroy
 
+  normalizes :kisi_api_key, with: ->(v) { v.blank? ? nil : v }
+
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true
   validates :past_member_grace_days,

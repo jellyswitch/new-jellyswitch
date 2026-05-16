@@ -14,7 +14,9 @@ class Operator::SettingsController < Operator::BaseController
     @location = selected_location
     @current_location = @location
   end
-  def doors;                end
+  def doors
+    @operator = current_operator
+  end
   def hours_and_address
     @location = selected_location
   end
@@ -40,8 +42,25 @@ class Operator::SettingsController < Operator::BaseController
       render :branding, status: :unprocessable_entity
     end
   end
-  def update_doors;                head :not_implemented; end
-  def import_doors;                head :not_implemented; end
+  def update_doors
+    @operator = current_operator
+    if @operator.update(doors_params)
+      redirect_to settings_doors_path, notice: "Doors settings saved."
+    else
+      render :doors, status: :unprocessable_entity
+    end
+  end
+
+  def import_doors
+    result = Onboarding::GetKisiDoors.call(location: selected_location)
+    if result.success?
+      redirect_to settings_doors_path(location_id: selected_location.id), notice: "Doors imported from KISI."
+    else
+      redirect_to settings_doors_path(location_id: selected_location.id), alert: "KISI import failed: #{result.message}"
+    end
+  rescue => e
+    redirect_to settings_doors_path(location_id: selected_location.id), alert: "KISI import error: #{e.message}"
+  end
   def update_hours_and_address
     @location = selected_location
     if @location.update(hours_and_address_params)
@@ -137,6 +156,13 @@ class Operator::SettingsController < Operator::BaseController
     params.require(:location).permit(
       :wifi_name, :wifi_password,
       tracking_pixels_attributes: [:id, :operator_id, :name, :script, :always_on, :_destroy]
+    )
+  end
+
+  def doors_params
+    params.require(:operator).permit(
+      :kisi_api_key,
+      locations_attributes: [:id, :kisi_api_key]
     )
   end
 
