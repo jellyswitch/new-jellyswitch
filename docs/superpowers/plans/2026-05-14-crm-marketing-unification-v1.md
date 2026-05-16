@@ -342,10 +342,16 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 5.3 — Wire welcome drip enqueue
 
-- [ ] In `DayPass.after_create`, if user has no prior subscription, enqueue Welcome Drip (subject to Spam Guard from Phase 6).
-- [ ] In `Crm::CreateLead` (event RSVP path), enqueue Welcome Drip (subject to Spam Guard).
-- [ ] Spec: enqueueing happens; double-enqueue is a no-op.
-- [ ] **Commit:** "Auto-enqueue Welcome Drip from day-pass and event RSVP"
+- [x] In `DayPass.after_create`, if user has no prior subscription, enqueue Welcome Drip (~~subject to Spam Guard from Phase 6~~ — Spam Guard wiring deferred to Phase 6.3).
+- [x] In `Crm::CreateLead` (event RSVP path), enqueue Welcome Drip — via `Lead.after_create` gated on `source == "event"`. Other Lead sources (web tour-request, referral) intentionally skip enrollment.
+- [x] Spec: enqueueing happens; double-enqueue is a no-op.
+- [x] **Commit:** "Auto-enqueue Welcome Drip from day-pass and event RSVP"
+
+  *Notes:*
+  - Enrollment marker is a `ProductEmailSend` row with `email_type: "welcome_drip_enrolled"`. The unique index `[sendable_type, sendable_id, email_type]` enforces idempotency at the DB level — `enroll_in_welcome_drip!` rescues `RecordNotUnique` and returns false.
+  - `User#enroll_in_welcome_drip!` skips users with active subscriptions (they're already members).
+  - The actual *send* of the welcome drip step emails still happens in `AutomatedWorkflowsJob#run_signup_nurture`. That handler currently filters to users with no day_passes/subscriptions/reservations — Phase 9 will broaden it to consume the `welcome_drip_enrolled` marker so day-passers + event RSVPs receive the drip. For now, enrollment is recorded but unused; once 9.1 runs, those rows become live triggers.
+  - Phase 6.3 will gate `enroll_in_welcome_drip!` with `SpamGuard.eligible?`.
 
 ### 5.4 — Three new AutomatedWorkflow types
 

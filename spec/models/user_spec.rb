@@ -637,4 +637,67 @@ RSpec.describe User, type: :model do
       end
     end
   end
+
+  describe "#enroll_in_welcome_drip!" do
+    let(:wd_operator) { create(:operator) }
+    let(:wd_location) { create(:location, operator: wd_operator) }
+    let(:wd_user) { create(:user, operator: wd_operator, current_location: wd_location) }
+
+    it "creates a welcome_drip_enrolled marker and returns true" do
+      expect(wd_user.enroll_in_welcome_drip!).to be true
+      expect(wd_user.welcome_drip_enrolled?).to be true
+    end
+
+    it "is idempotent (re-enrolling returns false and does not duplicate)" do
+      wd_user.enroll_in_welcome_drip!
+      expect {
+        expect(wd_user.enroll_in_welcome_drip!).to be false
+      }.not_to change { ProductEmailSend.where(sendable: wd_user, email_type: "welcome_drip_enrolled").count }
+    end
+
+    it "is a no-op for users with an active subscription" do
+      # Force the active-subscription check to be true without wiring up the
+      # full Subscription factory (which routes through Cowork Tahoe fixture).
+      allow(wd_user).to receive(:has_active_subscription?).and_return(true)
+      expect(wd_user.enroll_in_welcome_drip!).to be false
+      expect(wd_user.welcome_drip_enrolled?).to be false
+    end
+  end
+
+  describe "DayPass.after_create welcome-drip enrollment" do
+    let(:wd_operator) { create(:operator) }
+    let(:wd_location) { create(:location, operator: wd_operator) }
+    let(:wd_user) { create(:user, operator: wd_operator, current_location: wd_location) }
+
+    it "enrolls the user in the welcome drip when a day pass is created" do
+      expect {
+        create(:day_pass, user: wd_user, billable: wd_user, operator: wd_operator,
+                          location: wd_location, day: Date.current)
+      }.to change { wd_user.reload.welcome_drip_enrolled? }.from(false).to(true)
+    end
+
+    it "is idempotent (a second day pass does not re-enroll)" do
+      create(:day_pass, user: wd_user, billable: wd_user, operator: wd_operator,
+                        location: wd_location, day: Date.current)
+      expect {
+        create(:day_pass, user: wd_user, billable: wd_user, operator: wd_operator,
+                          location: wd_location, day: 1.day.ago.to_date)
+      }.not_to change { ProductEmailSend.where(sendable: wd_user, email_type: "welcome_drip_enrolled").count }
+    end
+  end
+
+  describe "Lead.after_create welcome-drip enrollment" do
+    let(:wd_operator) { create(:operator) }
+    let(:wd_user) { create(:user, operator: wd_operator) }
+
+    it "enrolls when the Lead source is event" do
+      lead = create(:lead, user: wd_user, operator: wd_operator, source: Lead::SOURCES[:event])
+      expect(wd_user.reload.welcome_drip_enrolled?).to be true
+    end
+
+    it "does not enroll when the Lead source is web" do
+      create(:lead, user: wd_user, operator: wd_operator, source: Lead::SOURCES[:web])
+      expect(wd_user.reload.welcome_drip_enrolled?).to be false
+    end
+  end
 end

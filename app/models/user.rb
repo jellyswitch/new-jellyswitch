@@ -134,6 +134,33 @@ class User < ApplicationRecord
     update_column(:point_of_contact_id, candidate.id) if candidate
   end
 
+  WELCOME_DRIP_ENROLLED_KEY = "welcome_drip_enrolled".freeze
+
+  # Mark this Person as enrolled in the Welcome Drip. Idempotent: no-op if
+  # already enrolled or if the user is currently an active member (members
+  # don't need a welcome drip; they came in via a subscription).
+  # Phase 6.3 will gate this with SpamGuard.eligible?.
+  def enroll_in_welcome_drip!
+    return false if has_active_subscription?
+    return false if welcome_drip_enrolled?
+    ProductEmailSend.create!(
+      operator: operator,
+      user: self,
+      sendable: self,
+      email_type: WELCOME_DRIP_ENROLLED_KEY,
+      status: "scheduled",
+      sent_at: Time.current,
+    )
+    true
+  rescue ActiveRecord::RecordNotUnique
+    false
+  end
+
+  def welcome_drip_enrolled?
+    ProductEmailSend.where(sendable_type: "User", sendable_id: id,
+                           email_type: WELCOME_DRIP_ENROLLED_KEY).exists?
+  end
+
   def to_activity_payload
     {
       "name" => name,

@@ -45,10 +45,18 @@ class DayPass < ApplicationRecord
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
 
   after_create :log_activity
+  after_create :enroll_user_in_welcome_drip
 
   # Instance methods
   def log_activity
     Activity.log(user: user, kind: :day_pass, subject: self, operator: operator)
+  end
+
+  # Auto-enroll the day-passer in the Welcome Drip. Idempotent — no-op if
+  # the user is already a member or already enrolled. Phase 6.3 will gate
+  # this with SpamGuard.
+  def enroll_user_in_welcome_drip
+    user&.enroll_in_welcome_drip!
   end
 
   def to_activity_payload

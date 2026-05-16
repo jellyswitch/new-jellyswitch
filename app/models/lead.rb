@@ -22,10 +22,19 @@ class Lead < ApplicationRecord
   after_create :set_status
   after_create :set_source
   after_create :assign_default_point_of_contact_to_user
+  after_create :enroll_user_in_welcome_drip_from_event
 
   def assign_default_point_of_contact_to_user
     return if user.point_of_contact_id.present?
     user.assign_default_point_of_contact!
+  end
+
+  # Auto-enroll Persons who arrive via an event RSVP. Other Lead sources
+  # (web tour-request, referral) are deferred — they may be hand-curated
+  # by ops and don't always indicate the same level of interest.
+  def enroll_user_in_welcome_drip_from_event
+    return unless source.to_s == Lead::SOURCES[:event]
+    user&.enroll_in_welcome_drip!
   end
 
   SOURCES = {
