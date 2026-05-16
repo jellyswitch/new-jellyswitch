@@ -766,6 +766,27 @@ Rails.application.routes.draw do
     end
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
+  resource :settings, only: [], controller: "operator/settings" do
+    collection do
+      get :branding
+      patch :update_branding
+      get :payments
+      get :doors
+      patch :update_doors
+      post :import_doors
+      get :hours_and_address
+      patch :update_hours_and_address
+      get :wifi_and_pixels
+      patch :update_wifi_and_pixels
+      get :notifications
+      patch :update_notifications
+      get :modules
+      patch :update_modules
+      get :policies
+      patch :update_policies
+    end
+  end
+  get "/operator/settings", to: "operator/settings#index", as: :operator_settings_root
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
