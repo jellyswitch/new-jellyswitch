@@ -349,14 +349,21 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 5.4 — Three new AutomatedWorkflow types
 
-- [ ] Add `day_passer_followup`, `room_reservation_followup`, `past_member_recovery` to TYPES.
-- [ ] Default config:
+- [x] Add `day_passer_followup`, `room_reservation_followup`, `past_member_recovery` to TYPES.
+- [x] Default config:
   - `day_passer_followup`: `{ days_after: 14 }`
   - `room_reservation_followup`: `{ days_after: 14 }`
   - `past_member_recovery`: `{ days_after_grace: 30 }`
-- [ ] Implement each in `AutomatedWorkflowsJob` — fire when conditions met, respect Spam Guard.
-- [ ] Spec each.
-- [ ] **Commit:** "Add 3 new automation types"
+- [x] Implement each in `AutomatedWorkflowsJob` — fire when conditions met, ~~respect Spam Guard~~ (TODO Phase 6.3 wires SpamGuard.eligible? checks into all 3 handlers).
+- [x] Spec each.
+- [x] **Commit:** "Add 3 new automation types"
+
+  *Notes:*
+  - Each handler iterates the relevant source records (DayPass / Reservation / subscription_ended Activity), gates on email_opted_out/email_bounced + has_active_subscription? + returned_since?, then sends + records via `record_send_key`.
+  - `record_send_key` was broken before (didn't pass `user:`, would silently fail validation). Fixed in this commit to use `create!` with user + sendable + email_type + status + sent_at.
+  - SpamGuard.eligible? check is a TODO comment in each handler — Phase 6.3 will wire it.
+  - Past-member recovery's send key includes the target date so re-running on a future date doesn't re-send the same person.
+  - 14 specs: model (TYPES + seed_defaults + descriptions) + job dispatch routing + day_passer_followup end-to-end (record, idempotent, template disabled, returned-since skip).
 
 ---
 
