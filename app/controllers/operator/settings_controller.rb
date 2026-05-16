@@ -14,7 +14,9 @@ class Operator::SettingsController < Operator::BaseController
   def doors;                end
   def hours_and_address;    end
   def wifi_and_pixels;      end
-  def notifications;        end
+  def notifications
+    @operator = current_operator
+  end
   def modules;              end
   def policies;             end
 
@@ -30,7 +32,14 @@ class Operator::SettingsController < Operator::BaseController
   def import_doors;                head :not_implemented; end
   def update_hours_and_address;    head :not_implemented; end
   def update_wifi_and_pixels;      head :not_implemented; end
-  def update_notifications;        head :not_implemented; end
+  def update_notifications
+    @operator = current_operator
+    if @operator.update(notifications_params)
+      redirect_to settings_notifications_path, notice: "Notifications saved."
+    else
+      render :notifications, status: :unprocessable_entity
+    end
+  end
   def update_modules;              head :not_implemented; end
   def update_policies;             head :not_implemented; end
 
@@ -42,6 +51,16 @@ class Operator::SettingsController < Operator::BaseController
 
   def branding_params
     params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)
+  end
+
+  def notifications_params
+    params.require(:operator).permit(
+      :email_enabled, :reservation_notifications, :membership_notifications,
+      :signup_notifications, :day_pass_notifications, :member_feedback_notifications,
+      :checkin_notifications, :refund_notifications, :post_notifications,
+      :paid_room_reservation_notifications, :sender_email,
+      :mailchimp_api_key, :mailchimp_audience_id
+    )
   end
 
   def require_admin_or_superadmin!

@@ -60,4 +60,55 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(response.body).to include("name=\"operator[snippet]\"")
     end
   end
+
+  describe "GET #notifications" do
+    render_views
+
+    before do
+      allow(controller).to receive(:current_operator).and_return(operator)
+    end
+
+    it "renders all 10 notification toggles + Mailchimp + sender_email" do
+      get :notifications
+      expect(response).to have_http_status(:ok)
+      %w[email_enabled reservation_notifications membership_notifications signup_notifications
+         day_pass_notifications member_feedback_notifications checkin_notifications
+         refund_notifications post_notifications paid_room_reservation_notifications].each do |attr|
+        expect(response.body).to include("operator[#{attr}]"), "missing toggle: #{attr}"
+      end
+      expect(response.body).to include("operator[sender_email]")
+      expect(response.body).to include("operator[mailchimp_api_key]")
+      expect(response.body).to include("operator[mailchimp_audience_id]")
+    end
+  end
+
+  describe "PATCH #update_notifications" do
+    before do
+      allow(controller).to receive(:current_operator).and_return(operator)
+    end
+
+    it "saves notification toggles + Mailchimp fields" do
+      patch :update_notifications, params: {
+        operator: {
+          signup_notifications: "1",
+          sender_email: "noreply@untethered.com",
+          mailchimp_api_key: "mc-abc",
+          mailchimp_audience_id: "aud-1",
+        }
+      }
+      expect(response).to redirect_to(settings_notifications_path)
+      operator.reload
+      expect(operator.signup_notifications).to be true
+      expect(operator.sender_email).to eq("noreply@untethered.com")
+      expect(operator.mailchimp_api_key).to eq("mc-abc")
+      expect(operator.mailchimp_audience_id).to eq("aud-1")
+    end
+
+    it "rejects params outside the notifications whitelist" do
+      original_snippet = operator.snippet
+      patch :update_notifications, params: { operator: { snippet: "should not change" } }
+      operator.reload
+      expect(operator.snippet).to eq(original_snippet)
+    end
+  end
 end
