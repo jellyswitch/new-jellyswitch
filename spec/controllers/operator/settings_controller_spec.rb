@@ -143,4 +143,46 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(operator.snippet).to eq(original_snippet)
     end
   end
+
+  describe "GET #policies" do
+    render_views
+
+    before do
+      allow(controller).to receive(:current_operator).and_return(operator)
+    end
+
+    it "renders day pass price input in dollars" do
+      operator.update!(day_pass_cost_in_cents: 2599)
+      get :policies
+      expect(response.body).to include("name=\"operator[day_pass_cost]\"")
+      expect(response.body).to include("25.99")
+      expect(response.body).to include("step=\"0.01\"")
+    end
+  end
+
+  describe "PATCH #update_policies" do
+    before do
+      allow(controller).to receive(:current_operator).and_return(operator)
+    end
+
+    it "saves day pass cost converting dollars to cents" do
+      patch :update_policies, params: {
+        operator: { day_pass_cost: "40.99", refund_fee_percent: "5", cancellation_window_hours: "24", renewal_reminder_days: "7", approval_required: "1", checkin_required: "0" }
+      }
+      expect(response).to redirect_to(settings_policies_path)
+      operator.reload
+      expect(operator.day_pass_cost_in_cents).to eq(4099)
+      expect(operator.refund_fee_percent).to eq(5)
+      expect(operator.cancellation_window_hours).to eq(24)
+      expect(operator.renewal_reminder_days).to eq(7)
+      expect(operator.approval_required).to be true
+      expect(operator.checkin_required).to be false
+    end
+
+    it "rejects direct write to day_pass_cost_in_cents" do
+      operator.update!(day_pass_cost_in_cents: 2500)
+      patch :update_policies, params: { operator: { day_pass_cost_in_cents: "1" } }
+      expect(operator.reload.day_pass_cost_in_cents).to eq(2500)
+    end
+  end
 end

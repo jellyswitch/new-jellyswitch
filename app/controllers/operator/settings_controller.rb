@@ -20,7 +20,9 @@ class Operator::SettingsController < Operator::BaseController
   def modules
     @operator = current_operator
   end
-  def policies;             end
+  def policies
+    @operator = current_operator
+  end
 
   def update_branding
     @operator = current_operator
@@ -50,7 +52,14 @@ class Operator::SettingsController < Operator::BaseController
       render :modules, status: :unprocessable_entity
     end
   end
-  def update_policies;             head :not_implemented; end
+  def update_policies
+    @operator = current_operator
+    if @operator.update(policies_params)
+      redirect_to settings_policies_path, notice: "Policies saved."
+    else
+      render :policies, status: :unprocessable_entity
+    end
+  end
 
   private
 
@@ -77,6 +86,17 @@ class Operator::SettingsController < Operator::BaseController
       :announcements_enabled, :events_enabled, :door_integration_enabled,
       :rooms_enabled, :offices_enabled, :bulletin_board_enabled,
       :credits_enabled, :childcare_enabled, :crm_enabled
+    )
+  end
+
+  def policies_params
+    params.require(:operator).permit(
+      :day_pass_cost,  # virtual; HasDollars writes to day_pass_cost_in_cents
+      :refund_fee_percent,
+      :cancellation_window_hours,
+      :renewal_reminder_days,
+      :approval_required,
+      :checkin_required
     )
   end
 
