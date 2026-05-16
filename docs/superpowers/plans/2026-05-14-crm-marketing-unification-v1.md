@@ -445,7 +445,7 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 - [x] Add route: `POST /sendgrid/events`.
 - [x] Build `Sendgrid::EventsController#receive` that:
-  - ~~Verifies signed payload (Sendgrid Event Webhook signature header)~~ — opted for HTTP Basic auth via `SENDGRID_WEBHOOK_USERNAME` + `SENDGRID_WEBHOOK_PASSWORD` env vars (simpler and supported by Sendgrid as a native option). Ed25519 signed-payload verification is the alternative — can be added later if HTTP Basic isn't acceptable.
+  - Verifies signed payload (Sendgrid Event Webhook signature header) via Ed25519 (`ed25519` gem). `SENDGRID_WEBHOOK_VERIFICATION_KEY` env var holds the base64-encoded public key from the Sendgrid dashboard. Includes 10-minute timestamp replay window.
   - Loops over events array
   - Maps each to Activity kind: `open` → `email_opened`, `click` → `email_clicked`, `bounce`/`dropped` → updates `User.email_bounced` flag, `spamreport` → updates `User.email_opted_out`
   - Looks up the original CampaignSend or User from email + recent-window heuristic (smtp-id wiring deferred until the existing send paths pass unique args)
@@ -457,7 +457,7 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
   *Notes:*
   - Endpoint: `POST /sendgrid/events`, no subdomain constraint, global URL like `https://jellyswitch-production.herokuapp.com/sendgrid/events`.
-  - Auth: if `SENDGRID_WEBHOOK_USERNAME` + `SENDGRID_WEBHOOK_PASSWORD` env vars are set, requests must use HTTP Basic auth with those credentials. If unset (dev/test), requests are accepted without authentication.
+  - Auth: if `SENDGRID_WEBHOOK_VERIFICATION_KEY` env var is set (base64-encoded Ed25519 public key from Sendgrid dashboard), requests must include a valid `X-Twilio-Email-Event-Webhook-Signature` + `-Timestamp` header pair and the timestamp must be within 10 minutes of now (replay protection). If unset (dev/test), requests are accepted without verification.
   - Email lookup matches by lower(email) across all operators — same email used by multiple operators' users gets engagement events written for each (matches existing webhook handler's behavior).
   - Engagement payload captures `sg_event_id`, `sg_message_id`, `smtp_id`, and `url` (for clicks).
   - CampaignSend engagement: matching sends within the last 30 days get `opened: true` / `clicked: true` updates (and `opened_at` / `clicked_at` timestamps).

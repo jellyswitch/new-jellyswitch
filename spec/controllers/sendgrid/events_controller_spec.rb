@@ -109,32 +109,59 @@ RSpec.describe Sendgrid::EventsController, type: :controller do
       end
     end
 
-    context "HTTP Basic auth" do
+    context "Ed25519 signed-payload verification" do
+      let(:signing_key) { Ed25519::SigningKey.generate }
+      let(:public_key_b64) { Base64.strict_encode64(signing_key.verify_key.to_bytes) }
+
       before do
-        @prev_user = ENV["SENDGRID_WEBHOOK_USERNAME"]
-        @prev_pass = ENV["SENDGRID_WEBHOOK_PASSWORD"]
-        ENV["SENDGRID_WEBHOOK_USERNAME"] = "sg"
-        ENV["SENDGRID_WEBHOOK_PASSWORD"] = "secret"
+        @prev_key = ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"]
+        ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"] = public_key_b64
       end
-      after do
-        ENV["SENDGRID_WEBHOOK_USERNAME"] = @prev_user
-        ENV["SENDGRID_WEBHOOK_PASSWORD"] = @prev_pass
+      after { ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"] = @prev_key }
+
+      def sign(timestamp, body)
+        Base64.strict_encode64(signing_key.sign(timestamp + body))
       end
 
-      it "returns 401 when credentials are missing" do
+      it "returns 200 with a valid signature + recent timestamp" do
+        body_str = [event("open")].to_json
+        timestamp = Time.current.to_i.to_s
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP"] = timestamp
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] = sign(timestamp, body_str)
+        post :receive, body: body_str
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns 401 when the signature header is missing" do
         post_events([event("open")])
         expect(response).to have_http_status(:unauthorized)
       end
 
-      it "returns 200 when credentials are correct" do
-        request.env["HTTP_AUTHORIZATION"] = ActionController::HttpAuthentication::Basic.encode_credentials("sg", "secret")
-        post_events([event("open")])
-        expect(response).to have_http_status(:ok)
+      it "returns 401 when the signature doesn't match the body" do
+        body_str = [event("open")].to_json
+        timestamp = Time.current.to_i.to_s
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP"] = timestamp
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] = sign(timestamp, "different-body")
+        post :receive, body: body_str
+        expect(response).to have_http_status(:unauthorized)
       end
 
-      it "returns 401 when credentials are wrong" do
-        request.env["HTTP_AUTHORIZATION"] = ActionController::HttpAuthentication::Basic.encode_credentials("sg", "WRONG")
-        post_events([event("open")])
+      it "returns 401 when the timestamp is stale (replay attack)" do
+        body_str = [event("open")].to_json
+        old_timestamp = 1.hour.ago.to_i.to_s
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP"] = old_timestamp
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] = sign(old_timestamp, body_str)
+        post :receive, body: body_str
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it "returns 401 when signed by a different key" do
+        wrong_key = Ed25519::SigningKey.generate
+        body_str = [event("open")].to_json
+        timestamp = Time.current.to_i.to_s
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP"] = timestamp
+        request.env["HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE"] = Base64.strict_encode64(wrong_key.sign(timestamp + body_str))
+        post :receive, body: body_str
         expect(response).to have_http_status(:unauthorized)
       end
     end

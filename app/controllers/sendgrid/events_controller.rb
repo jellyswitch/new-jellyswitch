@@ -3,13 +3,20 @@
 #
 # Configure in Sendgrid: Settings → Mail Settings → Event Webhook.
 # Webhook URL: https://<your-host>/sendgrid/events
-# Auth (optional but recommended): set SENDGRID_WEBHOOK_USERNAME and
-# SENDGRID_WEBHOOK_PASSWORD env vars; in Sendgrid use the HTTP Basic auth
-# fields. When the env vars are unset (dev/test), requests are accepted
-# without authentication.
+#
+# Signed-payload verification (recommended for prod):
+#   1. In Sendgrid → Mail Settings → Event Webhook → Signature Verification, enable it
+#      and copy the base64-encoded public verification key.
+#   2. Set `SENDGRID_WEBHOOK_VERIFICATION_KEY` to that key. The controller
+#      then rejects (401) any request whose Ed25519 signature doesn't match.
+#   3. With the key unset (dev/test), requests are accepted without verification.
 class Sendgrid::EventsController < ApplicationController
   skip_before_action :verify_authenticity_token, raise: false
   skip_forgery_protection
+
+  SIGNATURE_HEADER = "HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_SIGNATURE".freeze
+  TIMESTAMP_HEADER = "HTTP_X_TWILIO_EMAIL_EVENT_WEBHOOK_TIMESTAMP".freeze
+  SIGNATURE_MAX_AGE = 10.minutes # reject replays of old captures
 
   ENGAGEMENT_KINDS = {
     "open" => "email_opened",
@@ -17,8 +24,9 @@ class Sendgrid::EventsController < ApplicationController
   }.freeze
 
   def receive
-    return head :unauthorized unless authenticated?
-    events = parse_events
+    raw_body = request.body.read
+    return head :unauthorized unless authenticated?(raw_body)
+    events = parse_events(raw_body)
     return head :bad_request if events.nil?
     events.each { |event| handle_event(event) }
     head :ok
@@ -26,21 +34,32 @@ class Sendgrid::EventsController < ApplicationController
 
   private
 
-  def authenticated?
-    expected_user = ENV["SENDGRID_WEBHOOK_USERNAME"]
-    expected_pass = ENV["SENDGRID_WEBHOOK_PASSWORD"]
-    return true if expected_user.blank? || expected_pass.blank?
+  # Verifies the Ed25519 signature on the raw POST body per Sendgrid spec:
+  #   payload-to-sign = timestamp + raw_body
+  #   signature       = base64(Ed25519.sign(private_key, payload-to-sign))
+  # Returns true if verification passes OR if no verification key is configured
+  # (allows dev/test to POST without setup).
+  def authenticated?(raw_body)
+    expected_key = ENV["SENDGRID_WEBHOOK_VERIFICATION_KEY"]
+    return true if expected_key.blank?
 
-    authenticate_with_http_basic do |u, p|
-      ActiveSupport::SecurityUtils.secure_compare(u, expected_user) &&
-        ActiveSupport::SecurityUtils.secure_compare(p, expected_pass)
-    end
+    signature_b64 = request.env[SIGNATURE_HEADER]
+    timestamp = request.env[TIMESTAMP_HEADER]
+    return false if signature_b64.blank? || timestamp.blank?
+
+    # Replay-protection: reject timestamps older than SIGNATURE_MAX_AGE.
+    return false if (Time.current.to_i - timestamp.to_i).abs > SIGNATURE_MAX_AGE.to_i
+
+    verify_key = Ed25519::VerifyKey.new(Base64.decode64(expected_key))
+    verify_key.verify(Base64.decode64(signature_b64), timestamp + raw_body)
+    true
+  rescue Ed25519::VerifyError, ArgumentError
+    false
   end
 
-  def parse_events
-    body = request.body.read
-    return [] if body.blank?
-    parsed = JSON.parse(body)
+  def parse_events(raw_body)
+    return [] if raw_body.blank?
+    parsed = JSON.parse(raw_body)
     parsed.is_a?(Array) ? parsed : nil
   rescue JSON::ParserError
     nil

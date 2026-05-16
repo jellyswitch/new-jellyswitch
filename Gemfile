@@ -13,6 +13,7 @@ gem "bootstrap", "~> 4.6.2"
 gem "chartkick", ">= 3.4.0"
 gem "dotenv-rails", require: "dotenv/rails-now"
 gem "draper"
+gem "ed25519", "~> 1.3" # Sendgrid Event Webhook signed-payload verification
 gem "faker", :git => "https://github.com/stympy/faker.git", :branch => "master"
 gem "fcm"
 gem "friendly_id"
