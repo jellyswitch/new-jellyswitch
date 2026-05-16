@@ -280,4 +280,32 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(location.tracking_pixels.first.name).to eq("GA")
     end
   end
+
+  describe "GET #payments" do
+    render_views
+
+    before { session[:location_id] = location.id }
+
+    context "when location is connected to Stripe" do
+      before { location.update!(stripe_user_id: "acct_test1234", stripe_access_token: "sk_test_xxx", stripe_publishable_key: "pk_test_abcd1234") }
+
+      it "renders Connected status with last chars of account id" do
+        get :payments
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Stripe Connected")
+        expect(response.body).to include("1234")  # last 4 of stripe_user_id
+        expect(response.body).to include("Reconnect")
+      end
+    end
+
+    context "when location is not connected" do
+      before { location.update!(stripe_user_id: nil, stripe_access_token: nil) }
+
+      it "renders Not Connected status and Connect button" do
+        get :payments
+        expect(response.body).to include("Stripe Not Connected")
+        expect(response.body).to include("Connect Stripe")
+      end
+    end
+  end
 end

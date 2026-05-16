@@ -10,7 +10,10 @@ class Operator::SettingsController < Operator::BaseController
   end
 
   # No update_payments — Stripe Connect is OAuth, not a form. See Payments tab in spec.
-  def payments;             end
+  def payments
+    @location = selected_location
+    @current_location = @location
+  end
   def doors;                end
   def hours_and_address
     @location = selected_location
