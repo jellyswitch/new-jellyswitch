@@ -38,7 +38,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "Members & Groups", path: members_groups_path}
+    items << {title: "People", path: people_path}
 
     if policy(:office).enabled?
       items << {title: "Offices & Leases", path: offices_path}
@@ -46,10 +46,6 @@ class Navigation::Default < SimpleDelegator
 
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
-    end
-
-    if policy(:lead).enabled?
-      items << {title: "Leads", path: leads_path}
     end
 
     if policy(:payment).enabled?
@@ -64,9 +60,6 @@ class Navigation::Default < SimpleDelegator
     if policy(:childcare).enabled?
       items << {title: "Childcare", path: childcare_index_path}
     end
-
-    items << {title: "Automated Emails", path: product_email_templates_path}
-    items << {title: "Campaigns", path: campaigns_path}
 
     [
       {title: "Data", path: reports_path},
@@ -163,7 +156,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "Members & Groups", path: members_groups_path}
+    items << {title: "People", path: people_path}
 
     if policy(:office).enabled?
       items << {title: "Offices & Leases", path: offices_path}
@@ -171,10 +164,6 @@ class Navigation::Default < SimpleDelegator
 
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
-    end
-
-    if policy(:lead).enabled?
-      items << {title: "Leads", path: leads_path}
     end
 
     if policy(:payment).enabled?
@@ -185,8 +174,6 @@ class Navigation::Default < SimpleDelegator
         items << item
       end
     end
-
-    items << {title: "Automated Emails", path: product_email_templates_path}
 
     [
       {title: "Data", path: reports_path},
@@ -222,14 +209,10 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "Members & Groups", path: members_groups_path}
+    items << {title: "People", path: people_path}
 
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}
-    end
-
-    if policy(:lead).enabled?
-      items << {title: "Leads", path: leads_path}
     end
 
     [

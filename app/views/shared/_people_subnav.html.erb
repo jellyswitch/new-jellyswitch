@@ -1,0 +1,25 @@
+<%#
+  People umbrella sub-nav (Phase 8.1). Renders at the top of the four
+  People-umbrella index pages: People list, Leads, Automated Emails,
+  Campaigns. `active_tab:` local selects which chip is highlighted.
+
+  Templates sub-tab is intentionally aliased to Automated Emails for now —
+  see plan note in Phase 8.1 for the underspecified-by-the-original-plan
+  reasoning.
+%>
+<% tabs = [
+  { key: "people",      label: "Members",     path: people_path },
+  { key: "leads",       label: "Leads",       path: leads_path },
+  { key: "automations", label: "Automations", path: product_email_templates_path },
+  { key: "campaigns",   label: "Campaigns",   path: campaigns_path },
+  { key: "templates",   label: "Templates",   path: product_email_templates_path },
+] %>
+
+<ul class="nav nav-pills justify-content-center mb-3" data-testid="people-subnav">
+  <% tabs.each do |tab| %>
+    <li class="nav-item">
+      <%= link_to tab[:label], tab[:path],
+            class: "nav-link #{'active' if active_tab.to_s == tab[:key]}" %>
+    </li>
+  <% end %>
+</ul>

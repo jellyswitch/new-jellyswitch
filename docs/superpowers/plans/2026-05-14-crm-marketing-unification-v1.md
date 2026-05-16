@@ -480,13 +480,21 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 
 ### 8.1 — People umbrella
 
-- [ ] Update `app/views/layouts/_admin_nav.html.erb` to remove `Leads`, `Automated Emails`, `Campaigns` from top-level paths array.
-- [ ] Add new `People` top-level item.
-- [ ] Build `Operator::PeopleController#index` rendering the People list (Phase 3.3) with sub-tabs across the top: Members · Leads · Automations · Campaigns · Templates.
-- [ ] Each sub-tab routes to existing controllers (don't duplicate logic — just the nav surface changes).
-- [ ] Update mobile nav (`MoreScreen.js`) to mirror.
-- [ ] Spec navigation: links land on the right pages.
-- [ ] **Commit:** "Consolidate Leads + Automations + Campaigns under People"
+- [x] Update `app/views/layouts/_admin_nav.html.erb` to remove `Leads`, `Automated Emails`, `Campaigns` from top-level paths array. *(Implemented via `Navigation::Default` — same effect, the layout reads from that adapter's `paths` array.)*
+- [x] Add new `People` top-level item.
+- [x] Build `Operator::PeopleController#index` rendering the People list (Phase 3.3) with sub-tabs across the top: Members · Leads · Automations · Campaigns · Templates.
+- [x] Each sub-tab routes to existing controllers (don't duplicate logic — just the nav surface changes).
+- [x] Update mobile nav (~~`MoreScreen.js`~~ `HamburgerMenu.js` — sandwich bar per user clarification) to mirror.
+- [x] Spec navigation: links land on the right pages.
+- [x] **Commit:** "Consolidate Leads + Automations + Campaigns under People"
+
+  *Notes:*
+  - Web: `Navigation::Default` updated in all 3 staff role methods (admin / general_manager / community_manager). "Members & Groups" → "People" (linked to `people_path`); "Leads", "Automated Emails", "Campaigns" removed from top-level. They live under People via the sub-nav.
+  - Sub-nav partial at [app/views/shared/_people_subnav.html.erb](app/views/shared/_people_subnav.html.erb) renders 5 chip-style nav-pills. Used `active_tab:` local for highlighting.
+  - Rendered at the top of: `people/index.html.erb`, `leads/index.html.erb`, `product_email_templates/index.html.erb`, `admin/campaigns/index.html.erb`.
+  - **Templates sub-tab** is currently aliased to `product_email_templates_path` — the plan didn't fully specify what "Templates" is distinct from "Automations." A future refactor can split.
+  - Mobile: `HamburgerMenu.js` reorders the People umbrella items into a contiguous group with dividers bracketing them — visually mirrors the web's "People with sub-tabs" pattern. Native sub-nav on PeopleListScreen is deferred (would need a tabbed/segment-control component; not in plan scope).
+  - 18 nav specs across the 3 staff roles.
 
 ### 8.2 — AutomatedWorkflow operator UI (web-only)
 

@@ -5,6 +5,7 @@
 <%= render(Layout::FullWidth.new) do %>
   <%= list_wrapper do %>
     <%= list_item do %>
+      <%= render "shared/people_subnav", active_tab: "campaigns" %>
       <div class="d-flex justify-content-between align-items-center mb-3">
         <small class="text-muted">Send targeted emails to customer segments.</small>
         <%= link_to "New Campaign", new_campaign_path, class: "btn btn-primary btn-sm" %>

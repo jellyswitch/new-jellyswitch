@@ -1,6 +1,7 @@
 <% title "People" %>
 
 <%= wide_card do %>
+  <%= render "shared/people_subnav", active_tab: "people" %>
   <h4 class="display-4 text-center mb-3">People</h4>
   <p class="text-muted text-center mb-3">
     <%= @pagy.count %> <%= "person".pluralize(@pagy.count) %>
