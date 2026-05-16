@@ -12,7 +12,9 @@ class Operator::SettingsController < Operator::BaseController
   # No update_payments — Stripe Connect is OAuth, not a form. See Payments tab in spec.
   def payments;             end
   def doors;                end
-  def hours_and_address;    end
+  def hours_and_address
+    @location = selected_location
+  end
   def wifi_and_pixels;      end
   def notifications
     @operator = current_operator
@@ -66,6 +68,16 @@ class Operator::SettingsController < Operator::BaseController
   def current_operator
     current_tenant
   end
+  helper_method :current_operator
+
+  def selected_location
+    @selected_location ||= if params[:location_id].present?
+      current_operator.locations.find(params[:location_id])
+    else
+      current_location || current_operator.locations.first
+    end
+  end
+  helper_method :selected_location
 
   def branding_params
     params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)

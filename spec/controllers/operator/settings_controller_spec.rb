@@ -185,4 +185,20 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(operator.reload.day_pass_cost_in_cents).to eq(2500)
     end
   end
+
+  describe "location switcher pattern" do
+    render_views
+    let(:other_location) { create(:location, operator: operator, name: "Reno Branch") }
+
+    it "GET #hours_and_address uses params[:location_id] when present" do
+      other_location  # force creation
+      get :hours_and_address, params: { location_id: other_location.id }
+      expect(response.body).to include("Reno Branch")
+    end
+
+    it "GET #hours_and_address defaults to current_location when no param" do
+      get :hours_and_address
+      expect(response.body).to include(location.name)
+    end
+  end
 end

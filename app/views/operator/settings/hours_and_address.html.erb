@@ -1,3 +1,5 @@
 <%= render layout: "operator/settings/tab_layout", locals: { active: :hours_and_address } do %>
-  <p>Hours &amp; Address tab — coming in Task 13.</p>
+  <%= render "operator/settings/location_switcher" %>
+  <p>Editing: <strong><%= selected_location.name %></strong></p>
+  <p>Fields coming in Task 10.</p>
 <% end %>
