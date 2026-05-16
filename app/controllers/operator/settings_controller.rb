@@ -19,7 +19,8 @@ class Operator::SettingsController < Operator::BaseController
   def policies;             end
 
   def update_branding
-    if current_operator.update(branding_params)
+    @operator = current_operator
+    if @operator.update(branding_params)
       redirect_to settings_branding_path, notice: "Branding saved."
     else
       render :branding, status: :unprocessable_entity
