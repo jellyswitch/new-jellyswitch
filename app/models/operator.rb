@@ -58,6 +58,9 @@ class Operator < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged, slug_column: :subdomain
 
+  include HasDollars
+  dollars :day_pass_cost
+
   validates :refund_fee_percent,
             numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
             allow_nil: true

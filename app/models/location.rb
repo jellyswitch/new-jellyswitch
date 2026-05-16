@@ -67,6 +67,9 @@ class Location < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  include HasDollars
+  dollars :hourly_rate, :credit_cost, :childcare_reservation_cost
+
   has_many :checkins
   has_many :childcare_slots
   has_many :childcare_reservations, through: :childcare_slots
