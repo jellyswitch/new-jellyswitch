@@ -597,6 +597,7 @@ Rails.application.routes.draw do
   end
   resources :unsubscribes, controller: "operator/unsubscribes", only: [:show]
   post "email_preferences", to: "operator/users#toggle_email_preferences", as: :member_toggle_email
+  resources :automated_workflows, controller: "operator/admin/automated_workflows", only: [:index, :update]
   resources :campaigns, controller: "operator/admin/campaigns" do
     member do
       post :send_campaign

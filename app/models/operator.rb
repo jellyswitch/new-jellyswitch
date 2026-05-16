@@ -66,6 +66,7 @@ class Operator < ApplicationRecord
             allow_nil: true
 
   has_many :announcements
+  has_many :automated_workflows
   has_many :day_passes
   has_many :day_pass_types
   has_many :doors

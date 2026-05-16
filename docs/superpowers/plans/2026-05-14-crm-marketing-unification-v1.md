@@ -501,12 +501,20 @@ Parity counterpart to 3.3, per platform-parity decision (2026-05-14).
 > Per platform-parity decision 2026-05-14: this UI is web-only. Mobile operators see automations running via the Person timeline but do not toggle/edit them from mobile.
 
 
-- [ ] New controller `Operator::Admin::AutomatedWorkflowsController` with `index` and `update`.
-- [ ] View `index.html.erb` lists each of the 7 types (4 existing + 3 new) with on/off toggle + plain-English description + editable timing fields.
-- [ ] Each type renders as a sentence: *"When [signup happens], send [4 emails] over [1, 3, 7, 14] days."* with the bracketed parts editable inline.
-- [ ] Wire to `AutomatedWorkflow.seed_defaults_for(operator, location:)` on first load to ensure rows exist.
-- [ ] Spec: toggle creates/updates record; editing sequence_days persists.
-- [ ] **Commit:** "Add AutomatedWorkflow operator UI"
+- [x] New controller `Operator::Admin::AutomatedWorkflowsController` with `index` and `update`.
+- [x] View `index.html.erb` lists each of the 7 types (4 existing + 3 new) with on/off toggle + plain-English description + editable timing fields.
+- [x] Each type renders as a sentence: *"When [signup happens], send [4 emails] over [1, 3, 7, 14] days."* with the bracketed parts editable inline. *(Renders via `workflow.description` from Phase 5.4 plus per-type form fields below.)*
+- [x] Wire to `AutomatedWorkflow.seed_defaults_for(operator, location:)` on first load to ensure rows exist.
+- [x] Spec: toggle creates/updates record; editing sequence_days persists.
+- [x] **Commit:** "Add AutomatedWorkflow operator UI"
+
+  *Notes:*
+  - Route: `resources :automated_workflows, only: [:index, :update]` → `/automated_workflows`.
+  - Policy `AutomatedWorkflowPolicy` gates index + update to admin/general_manager/superadmin.
+  - View renders one form per workflow row with type-specific config fields: re_engagement (days_inactive), past_due_followup (followup_days comma list), booking_reminder (hours_before), signup_nurture (sequence_days comma list), day_passer_followup + room_reservation_followup (days_after), past_member_recovery (days_after_grace).
+  - Added `Operator has_many :automated_workflows` (was missing; needed to scope queries through `current_tenant.automated_workflows`).
+  - 9 controller specs cover seed-on-index + idempotent reseed + toggle on/off + sequence_days edit + days_after edit + non-staff blocked.
+  - Sub-nav from 8.1 renders at the top so this page is reachable through the People umbrella.
 
 ---
 
