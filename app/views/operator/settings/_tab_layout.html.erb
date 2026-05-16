@@ -26,7 +26,7 @@
     </div>
   </aside>
   <main class="col-md-9 col-lg-10">
-    <h2 class="mb-3"><%= tabs.find { |t| t[:key] == active }[:label] %></h2>
+    <h2 class="mb-3"><%= tabs.find { |t| t[:key] == active }&.dig(:label) || active.to_s.humanize %></h2>
     <%= yield %>
   </main>
 </div>
