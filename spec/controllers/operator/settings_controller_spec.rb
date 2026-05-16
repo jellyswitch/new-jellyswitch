@@ -244,4 +244,40 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(location.reload.wifi_name).to eq(original_wifi)
     end
   end
+
+  describe "GET #wifi_and_pixels" do
+    render_views
+    it "renders WiFi fields and existing tracking pixels" do
+      location.tracking_pixels.create!(operator: operator, name: "FB Pixel", script: "<script>fbq()</script>")
+      get :wifi_and_pixels
+      expect(response.body).to include("location[wifi_name]")
+      expect(response.body).to include("location[wifi_password]")
+      expect(response.body).to include("FB Pixel")
+    end
+  end
+
+  describe "PATCH #update_wifi_and_pixels" do
+    it "saves WiFi credentials" do
+      patch :update_wifi_and_pixels, params: {
+        location_id: location.id,
+        location: { wifi_name: "Untethered-Guest", wifi_password: "letmein" }
+      }
+      expect(response).to redirect_to(settings_wifi_and_pixels_path(location_id: location.id))
+      location.reload
+      expect(location.wifi_name).to eq("Untethered-Guest")
+      expect(location.wifi_password).to eq("letmein")
+    end
+
+    it "adds a new tracking pixel via nested attributes" do
+      patch :update_wifi_and_pixels, params: {
+        location_id: location.id,
+        location: {
+          tracking_pixels_attributes: [{ name: "GA", script: "<script>gtag()</script>", operator_id: operator.id }]
+        }
+      }
+      location.reload
+      expect(location.tracking_pixels.count).to eq(1)
+      expect(location.tracking_pixels.first.name).to eq("GA")
+    end
+  end
 end

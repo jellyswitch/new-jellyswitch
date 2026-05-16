@@ -15,7 +15,10 @@ class Operator::SettingsController < Operator::BaseController
   def hours_and_address
     @location = selected_location
   end
-  def wifi_and_pixels;      end
+  def wifi_and_pixels
+    @location = selected_location
+    @location.tracking_pixels.build if @location.tracking_pixels.empty?
+  end
   def notifications
     @operator = current_operator
   end
@@ -44,7 +47,14 @@ class Operator::SettingsController < Operator::BaseController
       render :hours_and_address, status: :unprocessable_entity
     end
   end
-  def update_wifi_and_pixels;      head :not_implemented; end
+  def update_wifi_and_pixels
+    @location = selected_location
+    if @location.update(wifi_and_pixels_params)
+      redirect_to settings_wifi_and_pixels_path(location_id: @location.id), notice: "WiFi & pixels saved."
+    else
+      render :wifi_and_pixels, status: :unprocessable_entity
+    end
+  end
   def update_notifications
     @operator = current_operator
     if @operator.update(notifications_params)
@@ -117,6 +127,13 @@ class Operator::SettingsController < Operator::BaseController
       :announcements_enabled, :events_enabled, :door_integration_enabled,
       :rooms_enabled, :offices_enabled, :bulletin_board_enabled,
       :credits_enabled, :childcare_enabled, :crm_enabled
+    )
+  end
+
+  def wifi_and_pixels_params
+    params.require(:location).permit(
+      :wifi_name, :wifi_password,
+      tracking_pixels_attributes: [:id, :operator_id, :name, :script, :always_on, :_destroy]
     )
   end
 
