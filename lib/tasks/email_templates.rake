@@ -8,7 +8,7 @@ namespace :email_templates do
     abort "Source operator '#{source_subdomain}' not found" unless source_operator
 
     sources = {}
-    source_operator.product_email_templates.includes(:body).each do |t|
+    source_operator.product_email_templates.with_rich_text_body.each do |t|
       next if t.body.blank?
       key = [t.product_type, t.email_type]
       current = sources[key]
