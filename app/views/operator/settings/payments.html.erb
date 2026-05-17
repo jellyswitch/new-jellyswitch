@@ -1,0 +1,30 @@
+<%= render layout: "operator/settings/tab_layout", locals: { active: :payments } do %>
+  <%= render "operator/settings/location_switcher" %>
+
+  <% connected = @location.stripe_user_id.present? && @location.stripe_access_token.present? %>
+
+  <div class="card">
+    <div class="card-body">
+      <% if connected %>
+        <h4 class="text-success"><span class="fas fa-circle"></span> Stripe Connected</h4>
+        <dl class="row mb-3 small">
+          <dt class="col-sm-3">Account</dt>
+          <dd class="col-sm-9 text-monospace">acct_••••<%= @location.stripe_user_id.to_s.last(4) %></dd>
+          <dt class="col-sm-3">Publishable key</dt>
+          <dd class="col-sm-9 text-monospace">pk_••••<%= @location.stripe_publishable_key.to_s.last(4) %></dd>
+        </dl>
+        <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#stripeModal">
+          Reconnect Stripe Account
+        </button>
+      <% else %>
+        <h4 class="text-muted"><span class="far fa-circle"></span> Stripe Not Connected</h4>
+        <p>You'll need a Stripe account to accept day passes, memberships, and room reservations.</p>
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#stripeModal">
+          Connect Stripe Account
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%= render "shared/stripe_connect_modal" %>
+<% end %>

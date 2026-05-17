@@ -58,6 +58,9 @@ class Operator < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged, slug_column: :subdomain
 
+  include HasDollars
+  dollars :day_pass_cost
+
   validates :refund_fee_percent,
             numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
             allow_nil: true
@@ -84,6 +87,7 @@ class Operator < ApplicationRecord
   has_many :offices
   has_many :office_leases
   has_many :locations
+  accepts_nested_attributes_for :locations, allow_destroy: false
   has_many :weekly_updates
   has_many :product_email_templates
   has_many :product_email_sends

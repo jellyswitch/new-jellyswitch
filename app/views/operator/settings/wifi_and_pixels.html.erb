@@ -1,0 +1,42 @@
+<%= render layout: "operator/settings/tab_layout", locals: { active: :wifi_and_pixels } do %>
+  <%= render "operator/settings/location_switcher" %>
+
+  <%= form_with model: @location, url: settings_update_wifi_and_pixels_path(location_id: @location.id), method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @location %>
+
+    <h5>WiFi</h5>
+    <div class="form-group">
+      <%= f.label :wifi_name, "Network name (SSID)" %>
+      <%= f.text_field :wifi_name, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :wifi_password %>
+      <%= f.text_field :wifi_password, class: "form-control" %>
+    </div>
+
+    <hr>
+    <h5>Tracking pixels</h5>
+    <p class="text-muted small">JavaScript snippets injected into your public pages (Google Analytics, Facebook Pixel, etc.).</p>
+
+    <div id="tracking_pixels">
+      <%= f.fields_for :tracking_pixels do |pixel_form| %>
+        <%= render "operator/settings/tracking_pixel_fields", f: pixel_form %>
+      <% end %>
+    </div>
+
+    <template id="new_tracking_pixel_template">
+      <%= f.fields_for :tracking_pixels, TrackingPixel.new(operator: current_operator), child_index: "NEW_RECORD" do |pixel_form| %>
+        <%= render "operator/settings/tracking_pixel_fields", f: pixel_form %>
+      <% end %>
+    </template>
+
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="
+      const tpl = document.getElementById('new_tracking_pixel_template').innerHTML;
+      const html = tpl.replace(/NEW_RECORD/g, new Date().getTime());
+      document.getElementById('tracking_pixels').insertAdjacentHTML('beforeend', html);
+    ">+ Add tracking pixel</button>
+
+    <hr>
+    <%= f.submit "Save WiFi & Pixels", class: "btn btn-primary" %>
+  <% end %>
+<% end %>

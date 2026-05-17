@@ -1,0 +1,49 @@
+<%= render layout: "operator/settings/tab_layout", locals: { active: :notifications } do %>
+  <%= form_with model: @operator, url: settings_update_notifications_path, method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @operator %>
+
+    <h5 class="mt-2">Email notifications</h5>
+    <p class="text-muted small">Choose which operator-facing emails you'd like to receive.</p>
+
+    <% [
+      [:email_enabled, "Master switch: send any operator-facing emails"],
+      [:signup_notifications, "New member signups"],
+      [:checkin_notifications, "Member check-ins"],
+      [:day_pass_notifications, "Day pass purchases"],
+      [:membership_notifications, "Membership changes"],
+      [:reservation_notifications, "Room reservations (free)"],
+      [:paid_room_reservation_notifications, "Room reservations (paid)"],
+      [:refund_notifications, "Refunds processed"],
+      [:member_feedback_notifications, "Member feedback submitted"],
+      [:post_notifications, "Bulletin board posts"],
+    ].each do |attr, label| %>
+      <div class="form-check">
+        <%= f.check_box attr, class: "form-check-input" %>
+        <%= f.label attr, label, class: "form-check-label" %>
+      </div>
+    <% end %>
+
+    <hr class="my-4">
+
+    <h5>Sender address</h5>
+    <div class="form-group">
+      <%= f.label :sender_email, "From: address for outgoing emails" %>
+      <%= f.email_field :sender_email, class: "form-control" %>
+    </div>
+
+    <hr class="my-4">
+
+    <h5>Mailchimp</h5>
+    <p class="text-muted small">Sync new members to a Mailchimp audience.</p>
+    <div class="form-group">
+      <%= f.label :mailchimp_api_key, "API key" %>
+      <%= f.text_field :mailchimp_api_key, class: "form-control" %>
+    </div>
+    <div class="form-group">
+      <%= f.label :mailchimp_audience_id, "Audience ID" %>
+      <%= f.text_field :mailchimp_audience_id, class: "form-control" %>
+    </div>
+
+    <%= f.submit "Save Notifications", class: "btn btn-primary" %>
+  <% end %>
+<% end %>
