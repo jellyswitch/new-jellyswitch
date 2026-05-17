@@ -53,6 +53,8 @@ class ProductEmailTemplate < ApplicationRecord
   scope :for_product, ->(type) { where(product_type: type) }
   scope :for_location, ->(location) { where(location: location) }
 
+  before_save :disable_when_body_blank
+
   def self.seed_defaults_for(operator, location:)
     require Rails.root.join("db/seeds/welcome_drip_templates")
 
@@ -87,15 +89,27 @@ class ProductEmailTemplate < ApplicationRecord
       t.enabled = false
     end
 
-    # Apply the brand-stripped default body only to brand-new rows (avoid
-    # clobbering operator customizations). A row counts as "new" when it
-    # has no rich-text body persisted yet.
+    # Only seed body on brand-new rows. Prefer copying a sibling location's
+    # already-customized template over the brand-stripped default so a new
+    # location inherits the operator's existing edits.
     if template.persisted? && template.body.blank?
-      body_html = WelcomeDripSeed.body_for(product_type, email_type)
-      template.update!(body: body_html) if body_html.present?
+      sibling = where(operator: operator, product_type: product_type, email_type: email_type)
+                  .where.not(id: template.id)
+                  .find { |t| t.body.present? }
+
+      if sibling
+        template.update!(body: sibling.body.to_s)
+      else
+        body_html = WelcomeDripSeed.body_for(product_type, email_type)
+        template.update!(body: body_html) if body_html.present?
+      end
     end
 
     template
+  end
+
+  def disable_when_body_blank
+    self.enabled = false if body.blank?
   end
 
   def product_label

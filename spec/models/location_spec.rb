@@ -196,4 +196,26 @@ RSpec.describe Location, type: :model do
       expect(location).not_to be_valid
     end
   end
+
+  describe "after_create_commit seed_email_templates" do
+    let(:operator) { create(:operator) }
+
+    it "seeds product email templates for a newly created location" do
+      expect {
+        create(:location, operator: operator)
+      }.to change { ProductEmailTemplate.count }.by_at_least(1)
+    end
+
+    it "inherits a sibling location's customized body when creating a second location" do
+      first = create(:location, operator: operator)
+      sibling = ProductEmailTemplate.find_by(operator: operator, location: first,
+                                              product_type: "day_pass", email_type: "onboarding")
+      sibling.update!(body: "<p>Customized for #{operator.name}</p>")
+
+      second = create(:location, operator: operator)
+      new_template = ProductEmailTemplate.find_by(operator: operator, location: second,
+                                                   product_type: "day_pass", email_type: "onboarding")
+      expect(new_template.body.to_s).to include("Customized for #{operator.name}")
+    end
+  end
 end

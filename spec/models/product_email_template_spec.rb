@@ -135,4 +135,53 @@ RSpec.describe ProductEmailTemplate, type: :model do
       expect(result).to eq("Plan ended November 3, 2025")
     end
   end
+
+  describe ".seed_template with sibling-location fallback" do
+    let(:location_b) { create(:location, operator: operator) }
+
+    it "copies a sibling location's customized body when present" do
+      ProductEmailTemplate.seed_defaults_for(operator, location: location)
+      sibling = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                              product_type: "day_pass", email_type: "onboarding")
+      sibling.update!(body: "<p>Operator's hand-crafted day_pass onboarding copy</p>")
+
+      ProductEmailTemplate.seed_defaults_for(operator, location: location_b)
+
+      new_template = ProductEmailTemplate.find_by(operator: operator, location: location_b,
+                                                   product_type: "day_pass", email_type: "onboarding")
+      expect(new_template.body.to_s).to include("Operator's hand-crafted day_pass onboarding copy")
+    end
+
+    it "falls back to WelcomeDripSeed defaults when no sibling has content" do
+      ProductEmailTemplate.seed_defaults_for(operator, location: location_b)
+      new_template = ProductEmailTemplate.find_by(operator: operator, location: location_b,
+                                                   product_type: "day_pass", email_type: "onboarding")
+      expect(new_template.body.to_s).to include("{{first_name}}")
+    end
+  end
+
+  describe "before_save disable_when_body_blank" do
+    it "forces enabled=false when saving with a blank body" do
+      template = ProductEmailTemplate.new(operator: operator, location: location,
+                                           product_type: "day_pass", email_type: "onboarding",
+                                           subject: "Subject", enabled: true)
+      template.save!
+      expect(template.enabled).to be false
+    end
+
+    it "keeps enabled=true when body has content" do
+      template = ProductEmailTemplate.create!(operator: operator, location: location,
+                                                product_type: "day_pass", email_type: "onboarding",
+                                                subject: "Subject", body: "<p>Hello</p>", enabled: true)
+      expect(template.enabled).to be true
+    end
+
+    it "flips a previously-enabled row to disabled when admin clears the body" do
+      template = ProductEmailTemplate.create!(operator: operator, location: location,
+                                                product_type: "day_pass", email_type: "onboarding",
+                                                subject: "Subject", body: "<p>Hello</p>", enabled: true)
+      template.update!(body: "")
+      expect(template.reload.enabled).to be false
+    end
+  end
 end
