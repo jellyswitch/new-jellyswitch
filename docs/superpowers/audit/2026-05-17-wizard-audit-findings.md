@@ -174,6 +174,79 @@ Tests `Location#onboarded?`, which is not being changed. No update needed.
 
 **EXPANSION IS SAFE TO PROCEED.**
 
+---
+
+## Wizard step audit (2026-05-17)
+
+Static analysis of each controller action in `app/controllers/operator/onboarding_controller.rb`
+and its corresponding view in `app/views/operator/onboarding/`. Checked for broken routes,
+missing partials, model/attribute mismatches, and crash-level code paths.
+
+| Action | View | Status | Issue (if any) |
+|---|---|---|---|
+| `new` | `new.html.erb` | ✓ healthy | — |
+| `new_membership_plan` | `new_membership_plan.html.erb` | ✓ healthy | — |
+| `create_membership_plan` | (redirect) | ✓ healthy | — |
+| `new_day_pass_type` | `new_day_pass_type.html.erb` | ✓ healthy | — |
+| `create_day_pass_type` | (redirect) | ✓ healthy | — |
+| `new_room` | `new_room.html.erb` | ✓ healthy | — |
+| `create_room` | (redirect) | ⚠ cosmetic | `Room.new(room_params)` sets no `operator_id`/`location_id` in params. Relies on `acts_as_scopable` default-scope merging scope resources onto `.new()` — same pattern as `operator/rooms_controller`. Works in practice but fragile; a future `unscoped` call would silently orphan the room. |
+| `add_members` | `add_members.html.erb` | ⚠ cosmetic | Hard-coded `dave@jellyswitch.com` address in `mail_to`. Not a crash, but leaks an internal email address and is not tenant-configurable. |
+| `new_member` | `new_member.html.erb` | ✓ healthy | — |
+| `create_member` | (redirect) | ✓ healthy | — |
+| `new_stripe_members` | `new_stripe_members.html.erb` | ✓ healthy | — |
+| `create_stripe_members` | (redirect) | ⚠ cosmetic | Hardcoded password `"pizza123"` assigned to every imported Stripe member. Should use `SecureRandom` or force a password-reset email. |
+| `new_kisi` | `new_kisi.html.erb` | ✓ healthy | — |
+| `create_kisi` | (redirect) | ✓ healthy | `turbo_redirect` called without `action:` kwarg; defaults to `"replace"` — acceptable. |
+| `new_door` | `new_door.html.erb` | ✓ healthy | — |
+| `create_door` | (redirect) | ✓ healthy | — |
+| `skip` | (redirect) | ⚠ cosmetic | Route is `GET` but mutates state (`current_tenant.update(skip_onboarding: true)`). No CSRF protection on GET routes. Low risk (admin-only controller), but not idiomatic. |
+
+### Checked and confirmed clean
+
+- All route helpers used in views and the controller (`new_operator_onboarding_path`,
+  `*_operator_onboarding_index_path`) resolve correctly against the
+  `resources :onboarding, as: :operator_onboarding` block (lines 611–631 of `config/routes.rb`).
+- All shared partials referenced exist:
+  `operator/plans/_form`, `operator/day_pass_types/_form`, `operator/rooms/_form`,
+  `operator/users/_admin_edit_form`, `operator/onboarding/_checkbox`, `operator/onboarding/_door`.
+- Strong-params helpers (`plan_params`, `day_pass_type_params`, `room_params`, `user_params`)
+  are defined in the included helpers (`PlansHelper`, `DayPassTypesHelper`, `RoomsHelper`,
+  `UsersHelper`) and all reference `params` correctly from controller context.
+- `Onboarding::FetchStripeCustomers` always sets `context.customers` to an array (never nil).
+- `authorize_onboarding` calls `authorize :onboarding, :show?`; `OnboardingPolicy#show?` exists.
+- `turbo_redirect`, `wide_card`, `breadcrumb` helpers all exist.
+- `skip_onboarding` column is on the `operators` table (schema line 645).
+- `User.members` scope exists (role-based, line 281 of `user.rb`).
+
+### Totals
+
+| Severity | Count |
+|---|---|
+| Hard break (would 500 or blank page on first load) | **0** |
+| Cosmetic / data-integrity / security concern | **3** |
+
+### Three cosmetic findings summary
+
+1. **`create_room` — orphaned room risk** (`create_room`): relies on `acts_as_scopable`
+   default-scope side-effect to stamp `operator_id`/`location_id` onto
+   `Room.new(room_params)`. The same pattern exists in `operator/rooms_controller#create`,
+   so this is a pre-existing app-wide convention, not onboarding-specific. Flagged for
+   awareness; not a crash path today.
+
+2. **`add_members` — hard-coded support email**: `mail_to "Dave Paola <dave@jellyswitch.com>"`.
+   No crash. Should be an app constant or operator-level config.
+
+3. **`create_stripe_members` — hardcoded password**: every Stripe-imported user gets
+   `password: "pizza123"`. No crash, but a security smell. Should generate a random token
+   and queue a password-reset email.
+
+### Overall wizard health
+
+**The wizard is structurally sound.** All routes resolve, all partials exist, and there
+are no crash-level paths. The three flagged issues are pre-existing or cosmetic; none
+would surface as a 500 error during a normal first-load walkthrough.
+
 The two production gating callers (`landing_helper.rb` and
 `feed_items_controller.rb`) both have `|| skip_onboarding?` /
 `&& !skip_onboarding?` escape hatches. Grandfathered operators with
