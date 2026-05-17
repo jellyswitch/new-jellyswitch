@@ -31,6 +31,7 @@ class Organization < ApplicationRecord
 
   # Relationships
   has_many :users, dependent: :nullify
+  has_many :notes, as: :notable, dependent: :destroy
   has_many :office_leases, dependent: :destroy
   has_many :invoices, as: :billable, dependent: :destroy
   belongs_to :owner, class_name: "User", optional: true

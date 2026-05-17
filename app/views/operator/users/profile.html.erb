@@ -78,6 +78,8 @@
   </div>
 <% end %>
 
+<%= render "shared/notes_section", notable: @user, notable_type: "User" %>
+
 <%= wide_card do %>
   <%= render "timeline", user: @user, active_tab: @active_tab %>
 <% end %>

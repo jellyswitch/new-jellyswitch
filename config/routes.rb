@@ -677,6 +677,7 @@ Rails.application.routes.draw do
   resources :email_confirmations, only: [:show], controller: "operator/email_confirmations"
   post :resend_confirmation, to: "operator/email_confirmations#resend"
   resources :people, controller: "operator/people", only: [:index]
+  resources :notes, controller: "operator/notes", only: [:create, :destroy]
   resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"
