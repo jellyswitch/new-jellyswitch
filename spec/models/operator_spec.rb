@@ -126,10 +126,30 @@ RSpec.describe Operator, type: :model do
         create(:plan, operator: operator)
         create(:day_pass_type, operator: operator)
         create(:user, operator: operator, role: :unassigned)
+        operator.update!(stripe_user_id: "acct_test")
       end
 
       it 'returns true when all requirements are met' do
         expect(operator.onboarded?).to be true
+      end
+
+      context "with all wizard steps complete except Stripe" do
+        let(:incomplete_operator) do
+          op = create(:operator, stripe_user_id: nil)
+          create(:plan, operator: op)
+          create(:day_pass_type, operator: op)
+          create(:user, operator: op, role: :unassigned)
+          op
+        end
+
+        it "is NOT onboarded (Stripe required)" do
+          expect(incomplete_operator.onboarded?).to be false
+        end
+
+        it "IS onboarded once Stripe connects" do
+          incomplete_operator.update!(stripe_user_id: "acct_test1234")
+          expect(incomplete_operator.onboarded?).to be true
+        end
       end
     end
   end
