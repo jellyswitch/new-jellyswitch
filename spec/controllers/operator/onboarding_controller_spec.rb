@@ -51,6 +51,40 @@ RSpec.describe Operator::OnboardingController, type: :controller do
     end
   end
 
+  describe "idempotency skips" do
+    context "GET #new_membership_plan with existing plans" do
+      before { create(:plan, operator: operator) }
+      it "redirects to day_pass_type step" do
+        get :new_membership_plan
+        expect(response).to redirect_to(new_day_pass_type_operator_onboarding_index_path)
+      end
+    end
+
+    context "GET #new_day_pass_type with existing types" do
+      before { create(:day_pass_type, operator: operator) }
+      it "redirects to room step" do
+        get :new_day_pass_type
+        expect(response).to redirect_to(new_room_operator_onboarding_index_path)
+      end
+    end
+
+    context "GET #new_room with existing rooms (rooms enabled)" do
+      before { operator.update!(rooms_enabled: true); create(:room, operator: operator, location: location) }
+      it "redirects to add_members" do
+        get :new_room
+        expect(response).to redirect_to(add_members_operator_onboarding_index_path)
+      end
+    end
+
+    context "GET #new_kisi with existing key" do
+      before { operator.update!(kisi_api_key: "test-key") }
+      it "redirects to door step" do
+        get :new_kisi
+        expect(response).to redirect_to(new_door_operator_onboarding_index_path)
+      end
+    end
+  end
+
   describe "GET #new_stripe_members" do
     context "when Stripe not connected" do
       before { operator.update!(stripe_user_id: nil) }

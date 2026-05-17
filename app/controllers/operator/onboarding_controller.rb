@@ -24,6 +24,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_membership_plan
+    return turbo_redirect(new_day_pass_type_operator_onboarding_index_path) if current_tenant.plans.individual.count > 0
     @plan = current_location.plans.new
   end
 
@@ -48,6 +49,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_day_pass_type
+    return turbo_redirect(new_room_operator_onboarding_index_path) if current_tenant.day_pass_types.count > 0
     @day_pass_type = current_location.day_pass_types.new
   end
 
@@ -69,6 +71,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_room
+    return turbo_redirect(add_members_operator_onboarding_index_path) if current_tenant.rooms_enabled? && current_location.rooms.count > 0
     @room = current_location.rooms.new
   end
 
@@ -155,9 +158,7 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_kisi
-    if current_location.kisi_api_key.present?
-      turbo_redirect(new_door_operator_onboarding_index_path, action: "replace")
-    end
+    return turbo_redirect(new_door_operator_onboarding_index_path) if current_tenant.kisi_api_key.present?
   end
 
   def create_kisi
