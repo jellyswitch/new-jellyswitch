@@ -100,6 +100,11 @@
         <% end %>
       </dd>
 
+      <%- if @user.home_city.present? %>
+        <dt class="col-6">From</dt>
+        <dd class="col"><%= @user.home_city %><%= ", #{@user.home_state}" if @user.home_state.present? %></dd>
+      <%- end %>
+
       <dt class="col-6">Profile Photo</dt>
       <dd class="col">
         <%- if @user.has_profile_photo? %>
