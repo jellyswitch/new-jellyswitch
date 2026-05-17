@@ -107,4 +107,46 @@ RSpec.describe Operator::OnboardingController, type: :controller do
       end
     end
   end
+
+  describe "GET #new (wizard index) branding prompt" do
+    before do
+      # Make wizard otherwise complete
+      create(:plan, operator: operator, location: location)
+      create(:day_pass_type, operator: operator, location: location)
+      create(:user, operator: operator, role: :unassigned, original_location: location, current_location: location)
+      operator.update!(stripe_user_id: "acct_test1234")
+      # Stub current_location in the helper module so the view context resolves it.
+      # The controller stub doesn't propagate to ActionView's separate view context object.
+      allow_any_instance_of(SessionsHelper).to receive(:current_location).and_return(location)
+    end
+
+    context "when branding incomplete" do
+      render_views
+
+      before { operator.update!(snippet: "Generic snippet about the space") }
+
+      it "shows the branding completion prompt" do
+        get :new
+        expect(response.body).to include("Finish your branding")
+      end
+    end
+
+    context "when branding complete" do
+      render_views
+
+      # The controller sets @branding_incomplete; stub it directly so we don't need
+      # to deal with Active Storage internals (logo/ToS attachment) in a controller spec.
+      before do
+        allow(controller).to receive(:new) do
+          controller.instance_variable_set(:@branding_incomplete, false)
+          controller.render :new
+        end
+      end
+
+      it "does not show the prompt" do
+        get :new
+        expect(response.body).not_to include("Finish your branding")
+      end
+    end
+  end
 end

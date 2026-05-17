@@ -8,6 +8,10 @@ class Operator::OnboardingController < Operator::BaseController
   include UsersHelper
 
   def new
+    @branding_incomplete = !current_tenant.logo_image.attached? ||
+                           !current_tenant.terms_of_service.attached? ||
+                           current_tenant.snippet.blank? ||
+                           current_tenant.snippet == "Generic snippet about the space"
   end
 
   def new_stripe_connect
