@@ -109,6 +109,12 @@ class Location < ApplicationRecord
 
   normalizes :kisi_api_key, with: ->(v) { v.blank? ? nil : v }
 
+  # CRM is always on for every location. See Operator#crm_enabled? — the DB
+  # column is kept for history but the predicate short-circuits to true.
+  def crm_enabled?
+    true
+  end
+
   after_create_commit :seed_email_templates
 
   validates :working_day_start, presence: true

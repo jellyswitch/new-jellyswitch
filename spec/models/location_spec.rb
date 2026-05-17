@@ -197,6 +197,13 @@ RSpec.describe Location, type: :model do
     end
   end
 
+  describe "#crm_enabled?" do
+    it "always returns true regardless of the DB column" do
+      location = create(:location, crm_enabled: false)
+      expect(location.crm_enabled?).to be true
+    end
+  end
+
   describe "after_create_commit seed_email_templates" do
     let(:operator) { create(:operator) }
 

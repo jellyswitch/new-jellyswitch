@@ -74,15 +74,6 @@
           </div>
         </div>
 
-        <% if superadmin? %>
-          <div class="row">
-            <div class="col">
-              <%= render(ModuleToggle.new(predicate: policy(:lead).enabled?, path: crm_modules_path, label: "CRM & Lead Tracking")) do %>
-              <% end %>
-            </div>
-          </div>
-        <% end %>
-
         <div class="row mb-3">
           <div class="col">
             <%= render(ModuleToggle.new(predicate: policy(:childcare).enabled?, path: childcare_modules_path, label: "Childcare")) do %>
