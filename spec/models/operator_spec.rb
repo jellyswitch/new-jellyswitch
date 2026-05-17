@@ -167,4 +167,11 @@ RSpec.describe Operator, type: :model do
       end
     end
   end
+
+  describe "#crm_enabled?" do
+    it "always returns true regardless of the DB column" do
+      operator = create(:operator, crm_enabled: false)
+      expect(operator.crm_enabled?).to be true
+    end
+  end
 end

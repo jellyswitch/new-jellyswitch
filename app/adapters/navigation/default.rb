@@ -38,7 +38,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "People", path: people_path}
+    items << {title: "People (CRM)", path: people_path}
 
     if policy(:office).enabled?
       items << {title: "Offices & Leases", path: offices_path}
@@ -153,7 +153,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "People", path: people_path}
+    items << {title: "People (CRM)", path: people_path}
 
     if policy(:office).enabled?
       items << {title: "Offices & Leases", path: offices_path}
@@ -206,7 +206,7 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Events", path: events_path}
     end
 
-    items << {title: "People", path: people_path}
+    items << {title: "People (CRM)", path: people_path}
 
     if policy(:room).enabled?
       items << {title: "Rooms & Reservations", path: rooms_path}

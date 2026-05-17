@@ -124,7 +124,7 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
       :announcements_enabled, :events_enabled,
       :door_integration_enabled, :rooms_enabled,
       :offices_enabled, :bulletin_board_enabled,
-      :credits_enabled, :crm_enabled
+      :credits_enabled
     )
   end
 

@@ -61,6 +61,13 @@ class Operator < ApplicationRecord
   include HasDollars
   dollars :day_pass_cost
 
+  # CRM is always on for every operator. The DB column is kept for history but
+  # ignored by the predicate so existing checks like operator.crm_enabled? short-
+  # circuit to true regardless of stored value.
+  def crm_enabled?
+    true
+  end
+
   validates :refund_fee_percent,
             numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 100 },
             allow_nil: true
