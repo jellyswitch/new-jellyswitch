@@ -11,6 +11,17 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col-1">
+          <%= render "checkbox", checked: current_tenant.stripe_user_id.present? %>
+        </div>
+        <div class="col">
+          <%= link_to "Connect Stripe", new_stripe_connect_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
+        </div>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <div class="col-1">
           <%= render "checkbox", checked: current_location.plans.count > 0 %>
         </div>
         <div class="col">
