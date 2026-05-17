@@ -7,28 +7,6 @@ class Operator::OperatorsController < Operator::BaseController
     authorize @operator
   end
 
-  def edit
-    find_operator
-    authorize @operator
-  end
-
-  def update
-    find_operator
-
-    @operator.update(operator_params)
-
-    if @operator.save
-      flash[:success] = "Operator has been updated."
-      turbo_redirect(operator_path(@operator, subdomain: @operator.subdomain))
-    else
-      render :edit, status: 422
-    end
-  rescue Exception => e
-    Honeybadger.notify(e)
-    flash[:error] = "An error occurred: #{e.message}"
-    turbo_redirect(referrer_or_root)
-  end
-
   def stripe_connect_setup # seems like not used anymore, now using the one in LandingController#stripe_connect_setup
     find_operator
     if params[:error].present?
@@ -81,9 +59,5 @@ class Operator::OperatorsController < Operator::BaseController
     @operator = current_tenant
   end
 
-  def operator_params
-    params.require(:operator).permit(:name, :snippet, :wifi_name, :wifi_password, :building_address,
-      :approval_required, :contact_name, :contact_email, :contact_phone,
-      :background_image, :logo_image, :square_footage, :kisi_api_key, :terms_of_service, :checkin_required, :membership_text, :bundle_id, :ios_url, :android_url, :google_reviews_url, :renewal_reminder_days, :sender_email, :mailchimp_api_key, :mailchimp_audience_id)
-  end
+
 end

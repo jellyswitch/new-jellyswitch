@@ -154,10 +154,6 @@ class Operator::LandingController < Operator::BaseController
     authorize :plan, :index?
   end
 
-  def customization
-    authorize :dashboard, :show?
-  end
-
   def announcements_events
     authorize :dashboard, :show?
   end

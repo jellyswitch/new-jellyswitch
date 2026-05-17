@@ -1,0 +1,24 @@
+<div class="card mb-2">
+  <div class="card-body">
+    <%= f.hidden_field :id %>
+    <%= f.hidden_field :operator_id, value: current_operator.id %>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <%= f.label :name %>
+        <%= f.text_field :name, class: "form-control" %>
+      </div>
+      <div class="form-group col-md-8">
+        <%= f.label :script, "JavaScript snippet" %>
+        <%= f.text_area :script, rows: 2, class: "form-control text-monospace" %>
+      </div>
+    </div>
+    <div class="form-check">
+      <%= f.check_box :always_on, class: "form-check-input" %>
+      <%= f.label :always_on, "Inject even when user hasn't accepted cookies", class: "form-check-label small" %>
+    </div>
+    <div class="form-check">
+      <%= f.check_box :_destroy, class: "form-check-input" %>
+      <%= f.label :_destroy, "Delete this pixel", class: "form-check-label small text-danger" %>
+    </div>
+  </div>
+</div>
