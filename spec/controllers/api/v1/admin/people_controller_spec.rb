@@ -107,4 +107,50 @@ RSpec.describe Api::V1::Admin::PeopleController, type: :controller do
       end
     end
   end
+
+  describe "GET #index with from filter" do
+    let!(:local_member) { create(:user, operator: operator, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
+    let!(:reno_member)  { create(:user, operator: operator, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
+    let!(:bay_member)   { create(:user, operator: operator, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
+    let!(:no_geo)       { create(:user, operator: operator, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
+
+    before do
+      location.update!(city: "South Lake Tahoe", state: "CA")
+      request.headers["Authorization"] = "Bearer #{jwt_for(admin_user)}"
+    end
+
+    it "from=local filters to local members" do
+      get :index, params: { from: "local" }
+      body = JSON.parse(response.body)
+      expect(body["people"].map { |p| p["name"] }).to contain_exactly("Local")
+    end
+
+    it "from=out filters to out-of-town" do
+      get :index, params: { from: "out" }
+      body = JSON.parse(response.body)
+      expect(body["people"].map { |p| p["name"] }).to contain_exactly("Reno", "Bay")
+    end
+
+    it "from=state:CA filters by state" do
+      get :index, params: { from: "state:CA" }
+      body = JSON.parse(response.body)
+      expect(body["people"].map { |p| p["name"] }).to contain_exactly("Local", "Bay")
+    end
+
+    it "response includes available_states + primary_city + from" do
+      get :index
+      body = JSON.parse(response.body)
+      expect(body["available_states"]).to contain_exactly("CA", "NV")
+      expect(body["primary_city"]).to eq("South Lake Tahoe")
+      expect(body["from"]).to eq("")
+    end
+
+    it "person entries include home_city and home_state" do
+      get :index
+      body = JSON.parse(response.body)
+      bay = body["people"].find { |p| p["name"] == "Bay" }
+      expect(bay["home_city"]).to eq("Oakland")
+      expect(bay["home_state"]).to eq("CA")
+    end
+  end
 end
