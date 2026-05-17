@@ -169,9 +169,26 @@ class Api::V1::AuthController < Api::V1::BaseController
       phone: user.phone,
       approved: user.approved?,
       role: user.role,
+      admin: user.admin?,
+      superadmin: user.superadmin?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
+      # Match /me's logic so the mobile client can make correct routing
+      # decisions immediately on login response (preventing the
+      # "WelcomeScreen flash" race between login and the first /me).
+      has_active_coverage: compute_has_active_coverage(user),
     }
+  end
+
+  def compute_has_active_coverage(user)
+    loc = user.current_location || user.original_location
+    zone = loc&.time_zone.presence || 'UTC'
+    today = Time.current.in_time_zone(zone).to_date
+    user.has_active_subscription? ||
+      user.day_passes.where(day: today).any? ||
+      (loc.present? && user.has_active_lease?(loc)) ||
+      user.admin_or_manager?(loc) ||
+      user.superadmin?
   end
 end
