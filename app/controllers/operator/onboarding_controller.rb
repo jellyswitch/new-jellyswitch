@@ -10,6 +10,19 @@ class Operator::OnboardingController < Operator::BaseController
   def new
   end
 
+  def new_stripe_connect
+    session[:onboarding_in_progress] = true
+  end
+
+  def complete_stripe_connect
+    session.delete(:onboarding_in_progress)
+    if respond_to?(:turbo_redirect, true)
+      turbo_redirect(new_membership_plan_operator_onboarding_index_path, action: "replace")
+    else
+      redirect_to new_membership_plan_operator_onboarding_index_path
+    end
+  end
+
   def new_membership_plan
     @plan = current_location.plans.new
   end

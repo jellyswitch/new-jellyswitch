@@ -1,0 +1,27 @@
+<% title "Connect Stripe" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Connect Stripe</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Connect Stripe</h4>
+
+  <% if current_tenant.stripe_user_id.present? %>
+    <div class="alert alert-success mt-4">
+      <strong>&#10003; Stripe Connected</strong><br>
+      Account <code>acct_&bull;&bull;&bull;&bull;<%= current_tenant.stripe_user_id.to_s.last(4) %></code>
+    </div>
+    <%= button_to "Continue", complete_stripe_connect_operator_onboarding_index_path, method: :post, class: "btn btn-block btn-primary mt-3" %>
+  <% else %>
+    <p class="lead text-center mt-3">
+      Connect your Stripe account so members can subscribe, buy day passes, and book paid rooms.
+    </p>
+    <div class="alert alert-info mt-3">
+      <strong>Heads up:</strong> after connecting, Stripe usually verifies your business in a few hours &mdash; sometimes up to a day. You can keep exploring in demo mode in the meantime.
+    </div>
+    <%= link_to "Connect Stripe Account", stripe_connect_setup_path, class: "btn btn-block btn-primary mt-3" %>
+    <%= button_to "Skip for now", complete_stripe_connect_operator_onboarding_index_path, method: :post, class: "btn btn-block btn-link mt-2" %>
+  <% end %>
+<% end %>

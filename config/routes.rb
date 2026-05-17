@@ -610,6 +610,8 @@ Rails.application.routes.draw do
   end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
+      get  :new_stripe_connect
+      post :complete_stripe_connect
       get :new_membership_plan
       post :create_membership_plan
       get :new_day_pass_type
