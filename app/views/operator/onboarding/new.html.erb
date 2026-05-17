@@ -11,6 +11,17 @@
     <li class="list-group-item">
       <div class="row">
         <div class="col-1">
+          <%= render "checkbox", checked: current_tenant.stripe_user_id.present? %>
+        </div>
+        <div class="col">
+          <%= link_to "Connect Stripe", new_stripe_connect_operator_onboarding_index_path, class: "btn btn-block btn-primary" %>
+        </div>
+      </div>
+    </li>
+
+    <li class="list-group-item">
+      <div class="row">
+        <div class="col-1">
           <%= render "checkbox", checked: current_location.plans.count > 0 %>
         </div>
         <div class="col">
@@ -71,5 +82,16 @@
   <div class="row mt-4">
     <%= link_to "Skip onboarding", skip_operator_onboarding_index_path, class: "btn btn-block btn-outline-info" %>
   </div>
+
+  <% if @branding_incomplete %>
+    <div class="alert alert-warning mt-4">
+      <strong>Finish your branding</strong> before inviting members — your logo, "about" snippet, and terms of service show up in member emails and screens.
+      <% if respond_to?(:settings_branding_path) %>
+        <%= link_to "Go to Settings → Branding", settings_branding_path, class: "btn btn-sm btn-primary mt-2" %>
+      <% else %>
+        <a href="/operator/settings/branding" class="btn btn-sm btn-primary mt-2">Go to Settings → Branding</a>
+      <% end %>
+    </div>
+  <% end %>
   </div>
 <% end %>

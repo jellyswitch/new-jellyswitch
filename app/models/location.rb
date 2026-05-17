@@ -67,6 +67,9 @@ class Location < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  include HasDollars
+  dollars :hourly_rate, :credit_cost, :childcare_reservation_cost
+
   geocoded_by :address_string
   after_validation :geocode, if: -> { address_changed? && building_address.present? }
 
@@ -103,6 +106,8 @@ class Location < ApplicationRecord
   has_one_attached :photo
 
   has_many :user_payment_profiles, dependent: :destroy
+
+  normalizes :kisi_api_key, with: ->(v) { v.blank? ? nil : v }
 
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true

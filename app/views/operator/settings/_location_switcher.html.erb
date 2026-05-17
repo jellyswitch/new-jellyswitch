@@ -1,0 +1,14 @@
+<% if current_operator.locations.count > 1 %>
+  <div class="mb-3 d-flex align-items-center">
+    <label class="mr-2 text-muted small mb-0">Editing for location:</label>
+    <%= form_with url: request.path, method: :get, local: true, class: "d-inline" do %>
+      <select name="location_id" class="form-control form-control-sm" onchange="this.form.submit()">
+        <% current_operator.locations.order(:name).each do |loc| %>
+          <option value="<%= loc.id %>" <%= "selected" if loc.id == selected_location.id %>>
+            <%= loc.name %>
+          </option>
+        <% end %>
+      </select>
+    <% end %>
+  </div>
+<% end %>

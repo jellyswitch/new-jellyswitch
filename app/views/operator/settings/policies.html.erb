@@ -1,0 +1,43 @@
+<%= render layout: "operator/settings/tab_layout", locals: { active: :policies } do %>
+  <%= form_with model: @operator, url: settings_update_policies_path, method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @operator %>
+
+    <div class="form-group">
+      <%= f.label :day_pass_cost, "Day pass price" %>
+      <div class="input-group">
+        <div class="input-group-prepend"><span class="input-group-text">$</span></div>
+        <%= f.number_field :day_pass_cost,
+                            value: @operator.day_pass_cost,
+                            step: "0.01", min: 0,
+                            class: "form-control" %>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :refund_fee_percent, "Refund fee (%)" %>
+      <%= f.number_field :refund_fee_percent, min: 0, max: 100, class: "form-control" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :cancellation_window_hours, "Cancellation window (hours)" %>
+      <%= f.number_field :cancellation_window_hours, min: 0, class: "form-control" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :renewal_reminder_days, "Renewal reminder (days before)" %>
+      <%= f.number_field :renewal_reminder_days, min: 0, class: "form-control" %>
+    </div>
+
+    <div class="form-check">
+      <%= f.check_box :approval_required, class: "form-check-input" %>
+      <%= f.label :approval_required, "New signups require admin approval", class: "form-check-label" %>
+    </div>
+
+    <div class="form-check">
+      <%= f.check_box :checkin_required, class: "form-check-input" %>
+      <%= f.label :checkin_required, "Members must check in to access", class: "form-check-label" %>
+    </div>
+
+    <%= f.submit "Save Policies", class: "btn btn-primary mt-3" %>
+  <% end %>
+<% end %>

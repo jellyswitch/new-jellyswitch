@@ -63,7 +63,7 @@ class Navigation::Default < SimpleDelegator
 
     [
       {title: "Data", path: reports_path},
-      {title: "Customization", path: customization_path},
+      {title: "Settings", path: settings_branding_path},
       {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
@@ -78,9 +78,6 @@ class Navigation::Default < SimpleDelegator
       )
     end
 
-    if user.superadmin?
-      items << {title: "App Config", path: app_configs_path}
-    end
     items
   end
 
@@ -177,7 +174,7 @@ class Navigation::Default < SimpleDelegator
 
     [
       {title: "Data", path: reports_path},
-      {title: "Customization", path: customization_path},
+      {title: "Settings", path: settings_branding_path},
       {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}

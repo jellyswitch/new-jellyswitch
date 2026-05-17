@@ -419,7 +419,7 @@ Rails.application.routes.draw do
   get "/members_groups", to: "operator/landing#members_groups", as: :members_groups
   get "/offices_leases", to: "operator/landing#offices_leases", as: :offices_leases
   get "/plans_day_passes", to: "operator/landing#plans_day_passes", as: :plans_day_passes
-  get "/customization", to: "operator/landing#customization", as: :customization
+  get "/customization", to: "operator/settings#legacy_redirect", as: :customization
   get "/announcements_events", to: "operator/landing#announcements_events", as: :announcements_events
   post "/pause_membership/:id", to: "operator/pause_memberships#create", as: "pause_membership"
   delete "/pause_membership/:id", to: "operator/pause_memberships#destroy", as: "unpause_membership"
@@ -610,6 +610,8 @@ Rails.application.routes.draw do
   end
   resources :onboarding, controller: "operator/onboarding", as: :operator_onboarding do
     collection do
+      get  :new_stripe_connect
+      post :complete_stripe_connect
       get :new_membership_plan
       post :create_membership_plan
       get :new_day_pass_type
@@ -666,7 +668,7 @@ Rails.application.routes.draw do
     get :out_of_band, to: "operator/organizations#out_of_band"
     get :payment_method, to: "operator/organizations#payment_method"
   end
-  resources :operators, as: :operator_operators, controller: "operator/operators" do
+  resources :operators, as: :operator_operators, controller: "operator/operators", only: [:show] do
     get :approval_required, to: "operator/operators#approval_required"
     get :checkin_required, to: "operator/operators#checkin_required"
     get :stripe_connect_setup, to: "operator/operators/stripe_connect_setup"
@@ -766,6 +768,26 @@ Rails.application.routes.draw do
     end
   end
   resource :set_location, only: [:edit, :update], controller: "operator/set_location"
+  scope "/operator/settings", as: "settings", controller: "operator/settings" do
+    get  "/",                          to: "operator/settings#index"
+    get  "branding",                   to: "operator/settings#branding",                   as: :branding
+    patch "update_branding",           to: "operator/settings#update_branding",            as: :update_branding
+    get  "payments",                   to: "operator/settings#payments",                   as: :payments
+    get  "doors",                      to: "operator/settings#doors",                      as: :doors
+    patch "update_doors",              to: "operator/settings#update_doors",               as: :update_doors
+    post "import_doors",               to: "operator/settings#import_doors",               as: :import_doors
+    get  "hours_and_address",          to: "operator/settings#hours_and_address",          as: :hours_and_address
+    patch "update_hours_and_address",  to: "operator/settings#update_hours_and_address",   as: :update_hours_and_address
+    get  "wifi_and_pixels",            to: "operator/settings#wifi_and_pixels",            as: :wifi_and_pixels
+    patch "update_wifi_and_pixels",    to: "operator/settings#update_wifi_and_pixels",     as: :update_wifi_and_pixels
+    get  "notifications",              to: "operator/settings#notifications",              as: :notifications
+    patch "update_notifications",      to: "operator/settings#update_notifications",       as: :update_notifications
+    get  "modules",                    to: "operator/settings#modules",                    as: :modules
+    patch "update_modules",            to: "operator/settings#update_modules",             as: :update_modules
+    get  "policies",                   to: "operator/settings#policies",                   as: :policies
+    patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
+  end
+  get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
