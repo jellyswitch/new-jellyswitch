@@ -6,14 +6,30 @@
   <h4 class="display-4 text-center mb-3">People</h4>
   <p class="text-muted text-center mb-3">
     <%= @pagy.count %> <%= "person".pluralize(@pagy.count) %>
+    <%= " matching \"#{@q}\"" if @q.present? %>
     <%= " in #{Operator::PeopleController::STAGE_LABELS[@stage]}" unless @stage == "all" %>
   </p>
+
+  <%= form_with(url: people_path, method: :get, local: true, class: "mb-3") do |f| %>
+    <%= f.hidden_field :stage, value: @stage if @stage != "all" %>
+    <%= f.hidden_field :owned_by_me, value: 1 if @owned_by_me %>
+    <%= f.hidden_field :from, value: @from if @from.present? %>
+    <div class="input-group">
+      <%= f.text_field :q, value: @q, placeholder: "Search by name or email", class: "form-control", "aria-label": "Search people" %>
+      <div class="input-group-append">
+        <%= f.submit "Search", class: "btn btn-primary" %>
+        <% if @q.present? %>
+          <%= link_to "Clear", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence), class: "btn btn-outline-secondary" %>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 
   <div class="text-center mb-4">
     <% Operator::PeopleController::STAGE_LABELS.each do |key, label| %>
       <% active = @stage == key %>
       <%= link_to label,
-                  people_path(stage: key == "all" ? nil : key, owned_by_me: @owned_by_me ? 1 : nil),
+                  people_path(stage: key == "all" ? nil : key, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, q: @q.presence),
                   class: "btn btn-sm #{active ? 'btn-primary' : 'btn-outline-secondary'} mr-1 mb-1" %>
     <% end %>
   </div>
@@ -24,14 +40,14 @@
         From: <%= from_filter_label(@from, primary_city: @primary_city) %>
       </button>
       <div class="dropdown-menu">
-        <%= link_to "Any", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil), class: "dropdown-item" %>
+        <%= link_to "Any", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, q: @q.presence), class: "dropdown-item" %>
         <% if @primary_city.present? %>
-          <%= link_to "#{@primary_city} (local)", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "local"), class: "dropdown-item" %>
-          <%= link_to "Out of town", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "out"), class: "dropdown-item" %>
+          <%= link_to "#{@primary_city} (local)", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "local", q: @q.presence), class: "dropdown-item" %>
+          <%= link_to "Out of town", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "out", q: @q.presence), class: "dropdown-item" %>
           <% if @available_states.any? %><div class="dropdown-divider"></div><% end %>
         <% end %>
         <% @available_states.each do |state| %>
-          <%= link_to "State: #{state}", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "state:#{state}"), class: "dropdown-item" %>
+          <%= link_to "State: #{state}", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "state:#{state}", q: @q.presence), class: "dropdown-item" %>
         <% end %>
       </div>
     </div>
@@ -39,7 +55,7 @@
 
   <div class="text-center mb-3">
     <%= link_to (@owned_by_me ? "Showing only people I own" : "People I own"),
-                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1),
+                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1, from: @from.presence, q: @q.presence),
                 class: "btn btn-sm #{@owned_by_me ? 'btn-primary' : 'btn-outline-secondary'}" %>
   </div>
 
