@@ -1,0 +1,61 @@
+<%#
+  Shared notes section. Renders on both user and organization show pages.
+
+  Required locals:
+    notable        - User or Organization the notes are attached to
+    notable_type   - "User" or "Organization" (form param)
+
+  Notes are admin-only (NotePolicy). Members never see this UI.
+%>
+<% return unless policy(:note).can_see? %>
+
+<div class="card mb-3" data-testid="notes-section">
+  <div class="card-header bg-light">
+    <strong>Notes</strong>
+    <span class="text-muted small">— internal admin notes, not visible to <%= notable.is_a?(User) ? "this person" : "this organization" %></span>
+  </div>
+  <div class="card-body">
+    <%= form_with(url: notes_path, method: :post, local: true) do |f| %>
+      <%= hidden_field_tag :notable_type, notable_type %>
+      <%= hidden_field_tag :notable_id, notable.id %>
+      <div class="form-group mb-2">
+        <%= text_area_tag "note[body]", nil,
+              class: "form-control",
+              rows: 2,
+              placeholder: "Add a note about #{notable.is_a?(User) ? notable.name : notable.name}…",
+              required: true,
+              "aria-label": "New note body" %>
+      </div>
+      <%= f.submit "Add note", class: "btn btn-primary btn-sm" %>
+    <% end %>
+
+    <% notes = notable.notes.recent.includes(:author) %>
+    <% if notes.any? %>
+      <ul class="list-group list-group-flush mt-3" data-testid="notes-list">
+        <% notes.each do |note| %>
+          <li class="list-group-item px-0" data-note-id="<%= note.id %>">
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1">
+                <div class="text-muted small mb-1">
+                  <strong><%= note.author&.name || "Unknown" %></strong>
+                  · <%= time_ago_in_words(note.created_at) %> ago
+                </div>
+                <div style="white-space: pre-wrap;"><%= note.body %></div>
+              </div>
+              <% if policy(note).destroy? %>
+                <%= button_to note_path(note),
+                      method: :delete,
+                      class: "btn btn-sm btn-link text-danger p-0 ml-2",
+                      form: { data: { turbo_confirm: "Delete this note?" } } do %>
+                  <i class="fas fa-times"></i>
+                <% end %>
+              <% end %>
+            </div>
+          </li>
+        <% end %>
+      </ul>
+    <% else %>
+      <p class="text-muted small mt-3 mb-0">No notes yet.</p>
+    <% end %>
+  </div>
+</div>

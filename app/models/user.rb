@@ -47,6 +47,7 @@ class User < ApplicationRecord
   # Relationships
   has_many :announcements
   has_many :checkins
+  has_many :notes, as: :notable, dependent: :destroy
   has_many :child_profiles
   has_many :childcare_reservations, through: :child_profiles
   has_many :day_passes
