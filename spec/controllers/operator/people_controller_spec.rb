@@ -109,4 +109,67 @@ RSpec.describe Operator::PeopleController, type: :controller do
       end
     end
   end
+
+  describe "GET #index with from filter" do
+    let(:operator2) { create(:operator) }
+    let(:tahoe_loc) { create(:location, operator: operator2, city: "South Lake Tahoe", state: "CA") }
+    let(:admin2)    { create(:user, operator: operator2, role: "superadmin", original_location: tahoe_loc, current_location: tahoe_loc) }
+
+    let!(:local_member) { create(:user, operator: operator2, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
+    let!(:reno_member)  { create(:user, operator: operator2, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
+    let!(:bay_member)   { create(:user, operator: operator2, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
+    let!(:no_geo)       { create(:user, operator: operator2, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
+
+    before do
+      request.headers["X-Operator-Subdomain"] = operator2.subdomain
+      ActsAsTenant.current_tenant = operator2
+      allow(controller).to receive(:current_user).and_return(admin2)
+      allow(controller).to receive(:current_location).and_return(tahoe_loc)
+      allow(controller).to receive(:current_tenant).and_return(operator2)
+    end
+
+    it "from=local returns only members in the operator's primary city" do
+      get :index, params: { from: "local" }, format: :json
+      names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+      expect(names).to contain_exactly("Local")
+    end
+
+    it "from=out returns members with home_city set but not in primary city" do
+      get :index, params: { from: "out" }, format: :json
+      names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+      expect(names).to contain_exactly("Reno", "Bay")
+    end
+
+    it "from=state:CA returns only California members" do
+      get :index, params: { from: "state:CA" }, format: :json
+      names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+      expect(names).to contain_exactly("Local", "Bay")
+    end
+
+    it "from omitted returns all members (including those with no home_city)" do
+      get :index, format: :json
+      names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+      expect(names).to contain_exactly("Local", "Reno", "Bay", "NoGeo")
+    end
+
+    it "from=garbage is treated as no filter (graceful)" do
+      get :index, params: { from: "garbage" }, format: :json
+      names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+      expect(names.length).to eq(4)
+    end
+
+    it "response includes available_states and primary_city" do
+      get :index, format: :json
+      body = JSON.parse(response.body)
+      expect(body["available_states"]).to contain_exactly("CA", "NV")
+      expect(body["primary_city"]).to eq("South Lake Tahoe")
+    end
+
+    it "person_json includes home_city and home_state" do
+      get :index, format: :json
+      bay = JSON.parse(response.body)["people"].find { |p| p["name"] == "Bay" }
+      expect(bay["home_city"]).to eq("Oakland")
+      expect(bay["home_state"]).to eq("CA")
+    end
+  end
 end
