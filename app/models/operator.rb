@@ -203,7 +203,8 @@ class Operator < ApplicationRecord
     day_pass_types.count > 0 &&
     ((rooms_enabled? && rooms.count > 0) || true) &&
     (((door_integration_enabled? && doors.count > 0) || true) || locations.all? { |l| l.building_access_instructions.present? }) &&
-    users.members.count > 0
+    users.members.count > 0 &&
+    stripe_user_id.present?
   end
 
   def has_active_office_leases?
