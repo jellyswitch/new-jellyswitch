@@ -12,6 +12,8 @@ class Api::V1::UsersController < Api::V1::BaseController
       website: user.website,
       approved: user.approved?,
       role: user.role,
+      admin: user.admin?,
+      superadmin: user.superadmin?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
