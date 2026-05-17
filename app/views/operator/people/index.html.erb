@@ -19,6 +19,25 @@
   </div>
 
   <div class="text-center mb-3">
+    <div class="dropdown d-inline-block">
+      <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        From: <%= from_filter_label(@from, primary_city: @primary_city) %>
+      </button>
+      <div class="dropdown-menu">
+        <%= link_to "Any", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil), class: "dropdown-item" %>
+        <% if @primary_city.present? %>
+          <%= link_to "#{@primary_city} (local)", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "local"), class: "dropdown-item" %>
+          <%= link_to "Out of town", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "out"), class: "dropdown-item" %>
+          <% if @available_states.any? %><div class="dropdown-divider"></div><% end %>
+        <% end %>
+        <% @available_states.each do |state| %>
+          <%= link_to "State: #{state}", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "state:#{state}"), class: "dropdown-item" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mb-3">
     <%= link_to (@owned_by_me ? "Showing only people I own" : "People I own"),
                 people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1),
                 class: "btn btn-sm #{@owned_by_me ? 'btn-primary' : 'btn-outline-secondary'}" %>
@@ -46,6 +65,9 @@
                   · Owner: <%= person.point_of_contact.name %>
                 <% end %>
               </div>
+              <% if person.home_city.present? %>
+                <div class="text-muted small">From: <%= person.home_city %><%= ", #{person.home_state}" if person.home_state.present? %></div>
+              <% end %>
             </div>
           </div>
         </li>

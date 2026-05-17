@@ -11,6 +11,28 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
     base = base.in_stage(stage) unless stage == "all"
     base = base.where(point_of_contact_id: current_api_user.id) if owned_by_me
 
+    from = params[:from].to_s
+    primary_city_val = current_api_user.current_location&.city || current_api_user.original_location&.city
+
+    case from
+    when "local"
+      base = base.where(home_city: primary_city_val) if primary_city_val.present?
+    when "out"
+      base = base.where.not(home_city: [nil, primary_city_val])
+    when /\Astate:(.+)\z/
+      state = Regexp.last_match(1)
+      base = base.where(home_state: state) if state.present?
+    when "", "any", nil
+      # no filter
+    else
+      # unknown: no filter
+    end
+
+    available_states = current_tenant.users.visible.non_superadmins
+                                     .where.not(home_state: nil)
+                                     .distinct
+                                     .pluck(:home_state).sort
+
     total_count = base.count
     total_pages = (total_count.to_f / PER_PAGE).ceil.clamp(1, Float::INFINITY).to_i
     people = base.includes(:point_of_contact).order(:name).offset((page - 1) * PER_PAGE).limit(PER_PAGE)
@@ -22,6 +44,9 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
     render json: {
       stage: stage,
       owned_by_me: owned_by_me,
+      from: from,
+      primary_city: primary_city_val,
+      available_states: available_states,
       page: page,
       total_pages: total_pages,
       total_count: total_count,
@@ -40,6 +65,8 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
       lifecycle_stage: user.lifecycle_stage.to_s,
       last_activity_at: last_activity_by_user_id[user.id]&.iso8601,
       point_of_contact_name: user.point_of_contact&.name,
+      home_city: user.home_city,
+      home_state: user.home_state,
     }
   end
 
