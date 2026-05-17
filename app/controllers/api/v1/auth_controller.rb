@@ -8,18 +8,30 @@ class Api::V1::AuthController < Api::V1::BaseController
   # one visible location, with the primary location's city to
   # disambiguate ones with similar names.
   def operators
-    op_ids = Location.where(archived: [false, nil]).distinct.pluck(:operator_id)
-    operators = Operator.where(id: op_ids).order(:name)
+    op_ids = Location.visible.distinct.pluck(:operator_id)
+    operators = Operator.where(id: op_ids).order(:name).includes(:locations)
 
     render json: {
       operators: operators.map { |op|
-        loc = op.locations.where(archived: [false, nil]).order(:id).first
+        visible_locations = op.locations.visible.order(:id)
+        primary = visible_locations.first
         {
-          subdomain: op.subdomain,
-          name: op.name,
-          location_name: loc&.name,
-          city: loc&.city,
-          state: loc&.state,
+          id:            op.id,
+          name:          op.name,
+          subdomain:     op.subdomain,
+          # Backward-compat keys (still consumed by SignupScreen.js):
+          location_name: primary&.name,
+          city:          primary&.city,
+          state:         primary&.state,
+          # New keys (preferred going forward):
+          primary_location_name: primary&.name,
+          primary_city:          primary&.city,
+          primary_state:         primary&.state,
+          primary_latitude:      primary&.latitude,
+          primary_longitude:     primary&.longitude,
+          locations: visible_locations.map { |l|
+            { id: l.id, name: l.name, latitude: l.latitude, longitude: l.longitude }
+          },
         }
       }
     }
@@ -63,6 +75,8 @@ class Api::V1::AuthController < Api::V1::BaseController
         original_location_id: location_id,
         terms_accepted: "1",
         marketing_consent: params[:marketing_opt_in] != false,
+        home_latitude:  params[:home_latitude],
+        home_longitude: params[:home_longitude],
       },
       operator: operator,
       admin_created: false,
@@ -155,9 +169,26 @@ class Api::V1::AuthController < Api::V1::BaseController
       phone: user.phone,
       approved: user.approved?,
       role: user.role,
+      admin: user.admin?,
+      superadmin: user.superadmin?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
+      # Match /me's logic so the mobile client can make correct routing
+      # decisions immediately on login response (preventing the
+      # "WelcomeScreen flash" race between login and the first /me).
+      has_active_coverage: compute_has_active_coverage(user),
     }
+  end
+
+  def compute_has_active_coverage(user)
+    loc = user.current_location || user.original_location
+    zone = loc&.time_zone.presence || 'UTC'
+    today = Time.current.in_time_zone(zone).to_date
+    user.has_active_subscription? ||
+      user.day_passes.where(day: today).any? ||
+      (loc.present? && user.has_active_lease?(loc)) ||
+      user.admin_or_manager?(loc) ||
+      user.superadmin?
   end
 end

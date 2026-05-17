@@ -70,6 +70,9 @@ class Location < ApplicationRecord
   include HasDollars
   dollars :hourly_rate, :credit_cost, :childcare_reservation_cost
 
+  geocoded_by :address_string
+  after_validation :geocode, if: -> { address_changed? && building_address.present? }
+
   has_many :checkins
   has_many :childcare_slots
   has_many :childcare_reservations, through: :childcare_slots
@@ -226,6 +229,14 @@ class Location < ApplicationRecord
 
   def effective_renewal_reminder_days
     renewal_reminder_days || operator.renewal_reminder_days
+  end
+
+  def address_string
+    [building_address, city, state, zip].compact_blank.join(", ")
+  end
+
+  def address_changed?
+    building_address_changed? || city_changed? || state_changed? || zip_changed?
   end
 
   private

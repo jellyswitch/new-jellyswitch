@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_15_000003) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_16_222945) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -984,6 +984,11 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_15_000003) do
     t.string "marketing_suppressed_reason"
     t.datetime "inactive_dismissed_at"
     t.bigint "point_of_contact_id"
+    t.decimal "home_latitude", precision: 10, scale: 7
+    t.decimal "home_longitude", precision: 10, scale: 7
+    t.string "home_city"
+    t.string "home_state"
+    t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["operator_id"], name: "index_users_on_operator_id"
     t.index ["point_of_contact_id"], name: "index_users_on_point_of_contact_id"
     t.index ["preferred_room_id"], name: "index_users_on_preferred_room_id"
