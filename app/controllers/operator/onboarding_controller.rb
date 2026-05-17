@@ -111,6 +111,11 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def new_stripe_members
+    unless current_tenant.stripe_user_id.present?
+      @stripe_not_connected = true
+      return  # falls through to render :new_stripe_members
+    end
+
     result = Onboarding::FetchStripeCustomers.call(location: current_location)
 
     if result.success?

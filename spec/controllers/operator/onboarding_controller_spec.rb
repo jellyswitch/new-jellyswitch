@@ -50,4 +50,27 @@ RSpec.describe Operator::OnboardingController, type: :controller do
       expect(file).to include("new_stripe_connect_operator_onboarding_index_path")
     end
   end
+
+  describe "GET #new_stripe_members" do
+    context "when Stripe not connected" do
+      before { operator.update!(stripe_user_id: nil) }
+
+      it "renders the connect-first guard" do
+        get :new_stripe_members
+        expect(response).to have_http_status(:ok)
+        expect(assigns(:stripe_not_connected)).to be true
+      end
+    end
+
+    context "when Stripe connected" do
+      before { operator.update!(stripe_user_id: "acct_test1234", stripe_access_token: "sk_test_xxx") }
+
+      it "proceeds to the customer list" do
+        allow(Onboarding::FetchStripeCustomers).to receive(:call).and_return(double(success?: true, customers: []))
+        get :new_stripe_members
+        expect(response).to have_http_status(:ok)
+        expect(assigns(:stripe_not_connected)).to be_falsey
+      end
+    end
+  end
 end
