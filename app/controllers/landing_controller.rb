@@ -35,7 +35,11 @@ class LandingController < ApplicationController
 
       if result.success?
         flash[:success] = location ? "Your location has been connected to Stripe" : "Your account has been connected to Stripe."
-        redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        if session.delete(:onboarding_in_progress)
+          redirect_to new_stripe_connect_operator_onboarding_index_path(subdomain: current_user.operator.subdomain), allow_other_host: true
+        else
+          redirect_to landing_url(subdomain: current_user.operator.subdomain)
+        end
       else
         flash[:error] = "There was a problem storing your Stripe credentials. (#{result.message})"
         if location

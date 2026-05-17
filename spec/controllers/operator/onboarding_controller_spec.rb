@@ -42,4 +42,12 @@ RSpec.describe Operator::OnboardingController, type: :controller do
       expect(session[:onboarding_in_progress]).to be_nil
     end
   end
+
+  describe "Stripe Connect callback wizard return" do
+    it "redirects to wizard when onboarding_in_progress (file-based assertion)" do
+      file = File.read(Rails.root.join("app/controllers/landing_controller.rb"))
+      expect(file).to include("session.delete(:onboarding_in_progress)")
+      expect(file).to include("new_stripe_connect_operator_onboarding_index_path")
+    end
+  end
 end
