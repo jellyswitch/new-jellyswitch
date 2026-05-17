@@ -27,6 +27,12 @@ class Operator::PeopleController < Operator::BaseController
     base_scope = base_scope.in_stage(@stage) unless @stage == "all"
     base_scope = base_scope.where(point_of_contact_id: current_user.id) if @owned_by_me
 
+    @q = params[:q].to_s.strip
+    if @q.present?
+      like = "%#{@q.downcase}%"
+      base_scope = base_scope.where("LOWER(name) LIKE :q OR LOWER(email) LIKE :q", q: like)
+    end
+
     @from = params[:from].to_s
     primary_city_val = current_user.current_location&.city || current_user.original_location&.city
     @primary_city = primary_city_val
@@ -68,6 +74,7 @@ class Operator::PeopleController < Operator::BaseController
       stage: @stage,
       owned_by_me: @owned_by_me,
       from: @from,
+      q: @q,
       primary_city: @primary_city,
       available_states: @available_states,
       page: @pagy.page,

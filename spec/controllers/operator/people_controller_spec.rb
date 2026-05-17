@@ -171,5 +171,38 @@ RSpec.describe Operator::PeopleController, type: :controller do
       expect(bay["home_city"]).to eq("Oakland")
       expect(bay["home_state"]).to eq("CA")
     end
+
+    describe "search query q" do
+      it "filters by name (case-insensitive partial match)" do
+        get :index, params: { q: "alice" }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to contain_exactly("Alice Member")
+      end
+
+      it "filters by email substring" do
+        carol = User.find_by(name: "Carol Tour")
+        carol.update!(email: "carol@example.com")
+        get :index, params: { q: "carol@" }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to contain_exactly("Carol Tour")
+      end
+
+      it "echoes the q value back in the JSON response" do
+        get :index, params: { q: "alice" }, format: :json
+        expect(JSON.parse(response.body)["q"]).to eq("alice")
+      end
+
+      it "ignores blank/whitespace q" do
+        get :index, params: { q: "   " }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to include("Alice Member", "Carol Tour")
+      end
+
+      it "composes with stage filter" do
+        get :index, params: { q: "tour", stage: "tour_taker" }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to contain_exactly("Carol Tour")
+      end
+    end
   end
 end
