@@ -1,0 +1,13 @@
+New tour request
+
+<%= @requester.name %> requested a tour<% if @location %> at <%= @location.name %><% end %>.
+
+Email: <%= @requester.email %>
+<% if @requester.phone.present? %>Phone: <%= @requester.phone %><% end %>
+
+<% if @message.present? %>
+Message:
+<%= @message %>
+
+<% end %>
+Open in Jellyswitch: https://<%= @operator.subdomain %>.jellyswitch.com/users/<%= @requester.id %>

@@ -53,7 +53,6 @@ module Notifiable
 
     def send_email
       return unless should_send_notification?
-      return unless defined?(TourRequestMailer)
       recipients.each do |recipient|
         TourRequestMailer
           .with(recipient: recipient, activity: __getobj__)
