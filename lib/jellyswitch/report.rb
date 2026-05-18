@@ -95,18 +95,8 @@ module Jellyswitch
         subscribed: subscribed_count,
         out_of_band: oob_count,
         on_lease: lease_count,
-        free: free_member_count,
-        # Diagnostic: OOB members with no active Subscription record so they
-        # contribute $0 to MRR even though they're paying by check/ACH. If
-        # this is > 0, those users need a Subscription row created so MRR
-        # picks them up.
-        oob_without_subscription: oob_without_subscription_count
+        free: free_member_count
       }
-    end
-
-    def oob_without_subscription_count
-      active_sub_user_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
-      out_of_band_members.where.not(id: active_sub_user_ids).count
     end
 
     def free_members
