@@ -43,6 +43,8 @@ class NotifiableFactory
       Notifiable::DemandMiss
     when "PointOfContactAlert"
       Notifiable::PointOfContactAlert
+    when "TourRequestAlert"
+      Notifiable::TourRequestAlert
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)
