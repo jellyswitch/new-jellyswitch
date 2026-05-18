@@ -70,14 +70,43 @@ module Jellyswitch
       active_members.count
     end
 
+    # Comprehensive active membership: paying individuals + out-of-band +
+    # members under organizations with active office leases. The dashboard
+    # headline ("Active Members") should reflect this total — the historical
+    # active_member_count is intentionally narrower (paying-only) and several
+    # callers (weekly_update, operators_table, avg_visits_per_member) rely on
+    # the split, so keep it and add this as a sibling.
+    def total_active_members
+      subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
+      oob_ids = out_of_band_members.select(:id)
+      lease_member_ids = User.where(organization_id: office_leases.active.select(:organization_id)).select(:id)
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).or(User.where(id: lease_member_ids)).visible.approved
+    end
+
+    def total_active_member_count
+      total_active_members.count
+    end
+
     def active_member_breakdown
       subscribed_count = subscribed_members.count
       oob_count = out_of_band_members.where.not(id: subscribed_members.select(:id)).count
+      lease_count = active_lease_member_count
       {
         subscribed: subscribed_count,
         out_of_band: oob_count,
-        free: free_member_count
+        on_lease: lease_count,
+        free: free_member_count,
+        # Diagnostic: OOB members with no active Subscription record so they
+        # contribute $0 to MRR even though they're paying by check/ACH. If
+        # this is > 0, those users need a Subscription row created so MRR
+        # picks them up.
+        oob_without_subscription: oob_without_subscription_count
       }
+    end
+
+    def oob_without_subscription_count
+      active_sub_user_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
+      out_of_band_members.where.not(id: active_sub_user_ids).count
     end
 
     def free_members
@@ -133,6 +162,41 @@ module Jellyswitch
     def checkin_count(period_days = 30)
       scope = location ? location.checkins : Checkin.where(location: locations)
       scope.where("datetime_in > ?", period_days.days.ago).count
+    end
+
+    # Comprehensive period revenue — mirrors revenue_by_month semantics so the
+    # mobile REVENUE tile matches the web dashboard chart. A plain
+    # Invoice.sum(:amount_paid) misses out-of-band office-lease checks that the
+    # operator records outside the invoice flow; lease_supplement_for_month
+    # fills those in.
+    def revenue_for_period(period_days)
+      return 0 unless location
+      period_start = period_days.days.ago.to_date
+      period_end = Date.today
+
+      invoice_rev = location_invoices.paid
+        .where(due_date: period_start..period_end)
+        .sum(:amount_due).to_f / 100.0
+
+      lease_rev = 0.0
+      month = period_start.beginning_of_month
+      current_month = period_end.beginning_of_month
+      while month <= current_month
+        lease_rev += lease_supplement_for_month(month)
+        month = month.next_month
+      end
+
+      (invoice_rev + lease_rev).round
+    end
+
+    # Average MRR across the period — averages the per-month MRR snapshots
+    # mrr_by_month already computes. For periods < 1 month, falls back to the
+    # current MRR snapshot.
+    def avg_mrr(period_days = 30)
+      months = [(period_days / 30.0).round, 1].max
+      by_month = mrr_by_month(months) rescue {}
+      return mrr if by_month.empty?
+      (by_month.values.sum.to_f / by_month.size).round
     end
 
     def all_members
@@ -352,10 +416,28 @@ module Jellyswitch
           .where(due_date: target_month..target_month.end_of_month)
           .sum(:amount_due).to_f / 100.0
       when :active_members
-        # Count users who had active subs at that time
-        Subscription.where(plan: plans.individual.nonzero, active: true)
-          .where("subscriptions.created_at <= ?", days_ago.days.ago)
-          .distinct.count(:subscribable_id)
+        # Approximate "active members as of days_ago" using the same three
+        # buckets the headline now counts: subscriptions + OOB + office-lease
+        # members. Both the historical query and the current value must
+        # include all three or the trend percentage compares apples to
+        # oranges. This is an approximation — cancelled subs and ended
+        # leases aren't perfectly reconstructed, so a churn-heavy month
+        # will undercount historical and overstate growth.
+        cutoff = days_ago.days.ago
+        sub_user_ids = Subscription.where(plan: plans.individual.nonzero, subscribable_type: 'User')
+          .where("subscriptions.created_at <= ?", cutoff)
+          .where("subscriptions.active = ? OR subscriptions.updated_at > ?", true, cutoff)
+          .select(:subscribable_id)
+        oob_user_ids = out_of_band_members.where("users.created_at <= ?", cutoff).select(:id)
+        lease_org_ids = office_leases.where("start_date <= ?", cutoff)
+          .where("end_date IS NULL OR end_date >= ?", cutoff)
+          .select(:organization_id)
+        lease_user_ids = User.where(organization_id: lease_org_ids)
+          .where("users.created_at <= ?", cutoff).select(:id)
+        User.where(id: sub_user_ids)
+          .or(User.where(id: oob_user_ids))
+          .or(User.where(id: lease_user_ids))
+          .visible.approved.count
       when :room_utilization
         room_utilization(days_ago)
       when :visits_per_member
