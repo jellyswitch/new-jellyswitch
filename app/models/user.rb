@@ -120,7 +120,7 @@ class User < ApplicationRecord
   # Grace days reads from current_location.past_member_grace_days, falling
   # back to DEFAULT_PAST_MEMBER_GRACE_DAYS when the user has no current_location.
   DEFAULT_PAST_MEMBER_GRACE_DAYS = 180
-  LIFECYCLE_STAGES = %i[member past_member day_passer quiet tour_taker].freeze
+  LIFECYCLE_STAGES = %i[member past_member day_passer quiet tour_taker signup_only].freeze
   LIFECYCLE_PRIOR_ACTIVITY_KINDS = %w[checkin door_punch reservation day_pass subscription_started].freeze
   LIFECYCLE_VISIT_KINDS = %w[checkin door_punch reservation].freeze
   RECENT_DAY_PASS_DAYS = 30
@@ -185,7 +185,8 @@ class User < ApplicationRecord
     return :day_passer if recent_day_pass?
     return :past_member if subscription_ended_past_grace?
     return :quiet if previously_active? && !recent_visit?
-    :tour_taker
+    return :tour_taker if has_logged_tour?
+    :signup_only
   end
 
   def self.in_stage(stage)
@@ -214,6 +215,7 @@ class User < ApplicationRecord
     prior_active_ids = Activity.where(kind: LIFECYCLE_PRIOR_ACTIVITY_KINDS).pluck(:user_id)
     recent_visit_ids = Activity.where(kind: LIFECYCLE_VISIT_KINDS)
                                .where("occurred_at >= ?", visit_cutoff).pluck(:user_id)
+    tour_ids = Activity.where(kind: "tour").pluck(:user_id).uniq
 
     member_ids = (active_sub_ids + in_grace_ids).uniq
 
@@ -228,8 +230,17 @@ class User < ApplicationRecord
       quiet_ids = prior_active_ids - member_ids - recent_day_pass_ids - past_grace_ids - recent_visit_ids
       where(id: quiet_ids.uniq)
     when :tour_taker
+      # Now requires an actual tour Activity record — was previously the catch-all
+      # fallback for anyone not in another stage, which over-labeled hundreds of
+      # users who never had a tour.
       quiet_ids = prior_active_ids - member_ids - recent_day_pass_ids - past_grace_ids - recent_visit_ids
       excluded = (member_ids + recent_day_pass_ids + past_grace_ids + quiet_ids).uniq
+      where(id: tour_ids - excluded)
+    when :signup_only
+      # New stage that absorbs the old default fallback: people who signed up
+      # but never engaged AND never had a tour logged.
+      quiet_ids = prior_active_ids - member_ids - recent_day_pass_ids - past_grace_ids - recent_visit_ids
+      excluded = (member_ids + recent_day_pass_ids + past_grace_ids + quiet_ids + tour_ids).uniq
       where.not(id: excluded)
     end
   end
@@ -268,6 +279,10 @@ class User < ApplicationRecord
     activities.where(kind: LIFECYCLE_VISIT_KINDS)
               .where("occurred_at >= ?", QUIET_THRESHOLD_DAYS.days.ago)
               .exists?
+  end
+
+  def has_logged_tour?
+    activities.where(kind: "tour").exists?
   end
 
   def default_point_of_contact_candidate
