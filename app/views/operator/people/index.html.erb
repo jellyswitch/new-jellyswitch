@@ -15,7 +15,7 @@
     <%= f.hidden_field :owned_by_me, value: 1 if @owned_by_me %>
     <%= f.hidden_field :from, value: @from if @from.present? %>
     <div class="input-group">
-      <%= f.text_field :q, value: @q, placeholder: "Search by name or email", class: "form-control", "aria-label": "Search people" %>
+      <%= f.text_field :q, value: @q, placeholder: "Search by name, email, or zip", class: "form-control", "aria-label": "Search people" %>
       <div class="input-group-append">
         <%= f.submit "Search", class: "btn btn-primary" %>
         <% if @q.present? %>
@@ -97,8 +97,11 @@
                   · Owner: <%= person.point_of_contact.name %>
                 <% end %>
               </div>
-              <% if person.home_city.present? %>
-                <div class="text-muted small">From: <%= person.home_city %><%= ", #{person.home_state}" if person.home_state.present? %></div>
+              <% if person.home_city.present? || person.home_zip.present? %>
+                <div class="text-muted small">
+                  From:
+                  <%= person.home_city if person.home_city.present? %><%= ", #{person.home_state}" if person.home_state.present? %><%= person.home_city.present? ? " · " : "" %><%= person.home_zip if person.home_zip.present? %>
+                </div>
               <% end %>
             </div>
           </div>
