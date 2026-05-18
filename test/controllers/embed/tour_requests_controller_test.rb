@@ -7,6 +7,7 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     @operator.update!(tour_widget_enabled: true)
     @location = @operator.locations.first
     @location.update!(visible: true)
+    Rails.cache.clear
   end
 
   test "GET show renders form when widget enabled" do
@@ -95,5 +96,47 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
       name: "No Email", location_id: @location.id,
     }
     assert_response :unprocessable_entity
+  end
+
+  test "POST with honeypot filled silently returns 200 and writes nothing" do
+    assert_no_difference -> { User.count } do
+      assert_no_difference -> { Activity.count } do
+        post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
+          name: "Bot", email: "bot@spam.example", location_id: @location.id, _hp: "filled-by-bot",
+        }
+      end
+    end
+    assert_response :success
+  end
+
+  test "POST with failing Turnstile returns 422 and writes nothing" do
+    original_secret = ENV["TURNSTILE_SECRET"]
+    ENV["TURNSTILE_SECRET"] = "stub-secret"
+
+    Turnstile::Verifier.stubs(:call).returns(
+      Turnstile::Verifier::Result.new(success?: false, error_codes: ["invalid"])
+    )
+
+    assert_no_difference -> { Activity.count } do
+      post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
+        name: "Carl", email: "carl@example.com", location_id: @location.id,
+        "cf-turnstile-response" => "bad",
+      }
+    end
+    assert_response :unprocessable_entity
+  ensure
+    ENV["TURNSTILE_SECRET"] = original_secret
+  end
+
+  test "POST throttles after 5 requests per minute per IP" do
+    Rails.cache.clear
+
+    6.times do |i|
+      post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
+        name: "Rate#{i}", email: "rate#{i}@example.com", location_id: @location.id,
+      }
+    end
+    # 6th response should be 429.
+    assert_response :too_many_requests
   end
 end
