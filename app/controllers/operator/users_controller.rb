@@ -80,13 +80,14 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user, :add_note?
 
-    lead = current_tenant.leads.where(user: @user).first_or_create!
-    lead_note = lead.lead_notes.create(
-      user: current_user,
-      content: params.require(:lead_note).permit(:content)[:content]
+    note = Note.new(
+      notable: @user,
+      operator: current_tenant,
+      author: current_user,
+      body: params.require(:note).permit(:body)[:body],
     )
 
-    if lead_note.persisted?
+    if note.save
       flash[:success] = "Note added."
     else
       flash[:error] = "Could not add note."
