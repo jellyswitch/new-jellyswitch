@@ -149,4 +149,37 @@ RSpec.describe Operator::OnboardingController, type: :controller do
       end
     end
   end
+
+  describe "POST #create_stripe_members" do
+    let(:params) { { name: "Imported Member", email: "imported-member@example.com", stripe_customer_id: "cus_test_123", card_added: "true" } }
+
+    it "creates the user without the legacy pizza123 password" do
+      post :create_stripe_members, params: params
+      user = operator.users.find_by(email: params[:email])
+      expect(user).to be_present
+      expect(user.authenticate("pizza123")).to eq(false)
+    end
+
+    it "uses a random unguessable placeholder password" do
+      placeholder = nil
+      allow(SecureRandom).to receive(:hex).with(16).and_wrap_original do |orig, *args|
+        placeholder = orig.call(*args)
+      end
+      post :create_stripe_members, params: params
+      expect(placeholder).to be_present
+      expect(placeholder.length).to eq(32)
+      user = operator.users.find_by(email: params[:email])
+      expect(user.authenticate(placeholder)).to be_a(User)
+    end
+
+    it "sends a password-reset email so the imported member can set their own credentials" do
+      expect_any_instance_of(User).to receive(:send_password_reset_email)
+      post :create_stripe_members, params: params
+    end
+
+    it "marks the imported user as approved" do
+      post :create_stripe_members, params: params
+      expect(operator.users.find_by(email: params[:email]).approved).to be(true)
+    end
+  end
 end

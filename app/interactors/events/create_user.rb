@@ -6,13 +6,19 @@ class Events::CreateUser
   def call
     validate!
 
+    # Placeholder password — immediately overwritten by
+    # Events::SetPasswordAndSendEmail below (which also emails the
+    # user). 32 hex chars = 128 bits of entropy; brute-forcing during
+    # the window between this line and SetPasswordAndSendEmail is
+    # infeasible.
+    placeholder = SecureRandom.hex(16)
+
     result = ::Users::Create.call(
       params: {
         name: email,
         email: email,
-        password: "pizza123",
-        password_confirmation: "pizza123"
-
+        password: placeholder,
+        password_confirmation: placeholder
       },
       operator: event.location.operator
     )
