@@ -137,6 +137,52 @@
       <% end %>
     <% end %>
 
+    <%# New Members — moved up so MRR-impact rows sit near the top. Each
+        row's "+ $X / mo" is the normalized monthly contribution of the
+        member's plan (annual / quarterly etc. are divided so the amount
+        is comparable). %>
+    <% if @new_members.any? %>
+      <div class="px-3 pt-3 pb-1">
+        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #3498db;">
+          <i class="fas fa-user-plus"></i> New Members (<%= @new_members.count %>)
+        </small>
+      </div>
+      <% @new_members.each do |member| %>
+        <% active_sub = member.subscriptions.active.first %>
+        <% plan = active_sub&.plan %>
+        <% monthly_cents = plan ? case plan.interval
+                                  when "monthly" then plan.amount_in_cents.to_i
+                                  when "quarterly" then (plan.amount_in_cents.to_i / 3.0).round
+                                  when "biannually" then (plan.amount_in_cents.to_i / 6.0).round
+                                  when "annually" then (plan.amount_in_cents.to_i / 12.0).round
+                                  else plan.amount_in_cents.to_i
+                                  end : 0 %>
+        <div class="mx-3 mb-2">
+          <div class="card" style="border-left: 4px solid #3498db !important;">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <%= link_to member.name, user_path(member), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
+                  <span class="badge badge-info" style="font-size: 10px;">NEW MEMBER</span>
+                  <div class="text-muted" style="font-size: 12px;">
+                    Joined <%= time_ago_in_words(active_sub&.created_at || member.created_at) %> ago
+                    <% if plan %>
+                      &middot; <%= plan.name %>
+                    <% end %>
+                  </div>
+                </div>
+                <% if monthly_cents > 0 %>
+                  <span class="text-primary font-weight-bold" style="font-size: 15px; white-space: nowrap;">
+                    + <%= number_to_currency(monthly_cents / 100.0, precision: 0) %> / mo
+                  </span>
+                <% end %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+
     <%# Member Room Bookings (included in plan) %>
     <% if @free_reservations.any? %>
       <div class="px-3 pt-3 pb-1">
@@ -188,35 +234,6 @@
                   <% if member.organization.present? %>
                     <div class="text-muted" style="font-size: 11px;"><%= member.organization.name %></div>
                   <% end %>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    <% end %>
-
-    <%# New Members %>
-    <% if @new_members.any? %>
-      <div class="px-3 pt-3 pb-1">
-        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #3498db;">
-          <i class="fas fa-user-plus"></i> New Members (<%= @new_members.count %>)
-        </small>
-      </div>
-      <% @new_members.each do |member| %>
-        <div class="mx-3 mb-2">
-          <div class="card" style="border-left: 4px solid #3498db !important;">
-            <div class="card-body py-2 px-3">
-              <div class="d-flex justify-content-between align-items-start">
-                <div>
-                  <%= link_to member.name, user_path(member), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
-                  <span class="badge badge-info" style="font-size: 10px;">NEW MEMBER</span>
-                  <div class="text-muted" style="font-size: 12px;">
-                    Joined <%= time_ago_in_words(member.created_at) %> ago
-                    <% if member.subscriptions.active.first %>
-                      &middot; <%= member.subscriptions.active.first.plan.name %>
-                    <% end %>
-                  </div>
                 </div>
               </div>
             </div>
