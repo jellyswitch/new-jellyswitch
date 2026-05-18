@@ -15,7 +15,6 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     util_value = safe(0) { report.room_utilization(period_days) }
     visits_value = safe(0) { report.avg_visits_per_member_per_month(period_days) }
     daily_visitors_value = safe(0) { report.avg_daily_visitors(period_days) }
-    avg_revenue_value = safe(0) { avg_monthly_revenue(period_days) }
     rev_per_member = safe(0) { report.revenue_per_member }
     avg_tenure = safe(0) { report.average_member_tenure }
     dp_conv = safe(0) { report.day_pass_conversion_rate }
@@ -30,7 +29,6 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       period_days: period_days,
       # Primary KPIs
       current_mrr: (mrr_value * 100).to_i, # cents — mobile divides by 100
-      avg_monthly_revenue: avg_revenue_value, # already cents
       revenue: revenue_total, # cents
       active_members: safe(0) { report.active_member_count },
       churn_rate: churn_rate_value,
@@ -42,8 +40,8 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       daily_visitors: daily_visitors_value,
       revenue_per_member: (rev_per_member * 100).to_i, # cents
       avg_tenure_months: avg_tenure,
-      day_pass_count: safe(0) { report.last_30_day_pass_count },
-      checkin_count: safe(0) { report.checkins_last_30_days_count },
+      day_pass_count: safe(0) { report.day_pass_count(period_days) },
+      checkin_count: safe(0) { report.checkin_count(period_days) },
       day_pass_conversion_rate: dp_conv,
 
       # Multi-timeframe trends — % change vs 30/90/365 days ago, per metric.
@@ -256,11 +254,4 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     }
   end
 
-  def avg_monthly_revenue(period_days)
-    months_in_period = [(period_days / 30.0).round, 1].max
-    total_revenue = Invoice.where(operator: current_tenant)
-      .where("date >= ?", period_days.days.ago)
-      .sum(:amount_paid)
-    (total_revenue.to_f / months_in_period).round
-  end
 end

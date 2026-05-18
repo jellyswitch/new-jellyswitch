@@ -126,6 +126,15 @@ module Jellyswitch
       checkins_last_30_days.count
     end
 
+    def day_pass_count(period_days = 30)
+      day_passes.where("day > ?", period_days.days.ago).count
+    end
+
+    def checkin_count(period_days = 30)
+      scope = location ? location.checkins : Checkin.where(location: locations)
+      scope.where("datetime_in > ?", period_days.days.ago).count
+    end
+
     def all_members
       users.members.non_superadmins.order("name")
     end
