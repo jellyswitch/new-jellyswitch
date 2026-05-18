@@ -1,14 +1,24 @@
-<li class="list-group-item d-flex align-items-center py-3">
-  <div class="mr-3 flex-shrink-0" style="width: 44px;">
-    <%= render "shared/small_profile_photo", user: user %>
+<%# Two-row flex wrap so that on extra-narrow viewports (e.g. foldable
+    cover displays at ~240 CSS px) the action buttons drop to a second
+    line instead of squeezing the name + status column down to 40 px
+    and causing the "Sign / ed / up 3 / mon / ths / ago" char-by-char
+    word wrap. The min-width on the identity cluster forces the buttons
+    to wrap before the text does. %>
+<li class="list-group-item d-flex flex-wrap align-items-center py-3" style="gap: 8px;">
+  <div class="d-flex align-items-center flex-grow-1" style="min-width: 200px;">
+    <div class="mr-3 flex-shrink-0" style="width: 44px;">
+      <%= render "shared/small_profile_photo", user: user %>
+    </div>
+
+    <div class="flex-grow-1" style="min-width: 0;">
+      <div class="font-weight-bold text-dark text-truncate"><%= user.name %></div>
+      <%# text-truncate on a block-level small so "Signed up X ago" ellipsizes
+          if there genuinely isn't horizontal room, instead of word-wrapping. %>
+      <small class="text-muted d-block text-truncate">Signed up <%= time_ago_in_words(user.created_at) %> ago</small>
+    </div>
   </div>
 
-  <div class="flex-grow-1" style="min-width: 0;">
-    <div class="font-weight-bold text-dark text-truncate"><%= user.name %></div>
-    <small class="text-muted">Signed up <%= time_ago_in_words(user.created_at) %> ago</small>
-  </div>
-
-  <div class="d-flex align-items-center flex-shrink-0" style="gap: 8px;">
+  <div class="d-flex align-items-center flex-shrink-0 ml-auto" style="gap: 8px;">
     <%= link_to user_path(user), class: "btn btn-outline-secondary btn-sm", title: "View profile", "aria-label": "View profile" do %>
       <i class="fas fa-search-plus"></i>
     <% end %>
