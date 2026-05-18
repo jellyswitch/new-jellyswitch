@@ -134,13 +134,18 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def create_stripe_members
-    # if there are future errors check this
+    # Random unguessable placeholder password — the imported member will
+    # receive a password-reset email immediately after save and set their
+    # own. 32 hex chars = 128 bits of entropy, infeasible to brute-force in
+    # the window before the user resets.
+    placeholder_password = SecureRandom.hex(16)
+
     user = current_tenant.users.new(
       name: params[:name],
       email: params[:email],
       stripe_customer_id: params[:stripe_customer_id],
       card_added: params[:card_added] == "true",
-      password: "pizza123",
+      password: placeholder_password,
       approved: true,
       original_location_id: current_location.id,
       current_location_id: current_location.id
@@ -153,7 +158,12 @@ class Operator::OnboardingController < Operator::BaseController
     )
 
     if user.save
-      flash[:success] = "Member added."
+      # Trigger password-reset email so the imported member can set their own
+      # credentials. Without this, the account is unreachable to its owner
+      # (they never see the random placeholder).
+      user.create_reset_digest
+      user.send_password_reset_email
+      flash[:success] = "Member added. Password-reset email sent to #{user.email}."
     else
       flash[:error] = errors_for(user)
     end
