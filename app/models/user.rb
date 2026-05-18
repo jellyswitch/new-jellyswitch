@@ -86,11 +86,17 @@ class User < ApplicationRecord
 
   alias :location :current_location
 
-  # Reverse geocoding — populate home_city/home_state from lat/lng on save
+  # Reverse geocoding — populate home_city/home_state/home_zip from lat/lng on
+  # save. home_zip was added 2026-05-17 to enable sharper local/visitor
+  # classification in the CRM; existing users with lat/lng will pick it up
+  # automatically on next save, and a backfill rake task pulls zip from Stripe
+  # billing addresses for users who already have a stripe_customer_id but no
+  # lat/lng (see lib/tasks/users.rake).
   reverse_geocoded_by :home_latitude, :home_longitude do |obj, results|
     if (place = results.first)
       obj.home_city  = place.city
       obj.home_state = place.state_code
+      obj.home_zip   = place.postal_code if obj.home_zip.blank?
     end
   end
   after_validation :reverse_geocode, if: -> { home_latitude_changed? || home_longitude_changed? }
