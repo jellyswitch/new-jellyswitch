@@ -85,4 +85,67 @@ RSpec.describe Api::V1::AuthController, type: :controller do
       expect(user.home_longitude).to be_nil
     end
   end
+
+  describe "POST #lookup_operators" do
+    # `:user` factory requires `original_location` to be settable from
+    # `operator.locations.first`, so each operator needs at least one location.
+    let!(:op_a) do
+      o = create(:operator, name: "Space A", subdomain: "space-a-test")
+      create(:location, operator: o)
+      o
+    end
+    let!(:op_b) do
+      o = create(:operator, name: "Space B", subdomain: "space-b-test")
+      create(:location, operator: o)
+      o
+    end
+    let!(:op_c) do
+      o = create(:operator, name: "Space C", subdomain: "space-c-test")
+      create(:location, operator: o)
+      o
+    end
+
+    it "returns operators where the email has an active user record" do
+      create(:user, operator: op_a, email: "multi@example.com", archived: false)
+      create(:user, operator: op_b, email: "multi@example.com", archived: false)
+
+      post :lookup_operators, params: { email: "multi@example.com" }
+      body = JSON.parse(response.body)
+      subdomains = body["operators"].map { |o| o["subdomain"] }
+      expect(subdomains).to contain_exactly("space-a-test", "space-b-test")
+      expect(body["multiple"]).to be true
+    end
+
+    it "includes operators where the user record is archived" do
+      # Soft-deleted accounts can still log in (see #login), so lookup must
+      # surface their operators — otherwise the mobile brand-sticky flow
+      # silently routes cross-tenant admins to the wrong space.
+      create(:user, operator: op_a, email: "mixed@example.com", archived: false)
+      create(:user, operator: op_b, email: "mixed@example.com", archived: true)
+
+      post :lookup_operators, params: { email: "mixed@example.com" }
+      subdomains = JSON.parse(response.body)["operators"].map { |o| o["subdomain"] }
+      expect(subdomains).to contain_exactly("space-a-test", "space-b-test")
+    end
+
+    it "returns empty when the email has no users" do
+      post :lookup_operators, params: { email: "nobody@example.com" }
+      body = JSON.parse(response.body)
+      expect(body["operators"]).to eq([])
+      expect(body["multiple"]).to be false
+    end
+
+    it "returns empty when email is blank" do
+      post :lookup_operators, params: { email: "" }
+      expect(JSON.parse(response.body)["operators"]).to eq([])
+    end
+
+    it "matches case-insensitively and strips whitespace" do
+      create(:user, operator: op_c, email: "cap@example.com", archived: false)
+
+      post :lookup_operators, params: { email: "  CAP@Example.com  " }
+      subdomains = JSON.parse(response.body)["operators"].map { |o| o["subdomain"] }
+      expect(subdomains).to contain_exactly("space-c-test")
+    end
+  end
 end
