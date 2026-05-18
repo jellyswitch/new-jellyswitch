@@ -31,6 +31,9 @@ class Operator::SettingsController < Operator::BaseController
   def notifications
     @operator = current_operator
   end
+  def tour_widget
+    @operator = current_operator
+  end
   def modules
     @operator = current_operator
   end
@@ -87,6 +90,15 @@ class Operator::SettingsController < Operator::BaseController
       redirect_to settings_notifications_path, notice: "Notifications saved."
     else
       render :notifications, status: :unprocessable_entity
+    end
+  end
+  def update_tour_widget
+    @operator = current_operator
+    if @operator.update(tour_widget_params)
+      redirect_to settings_tour_widget_path, notice: "Tour widget settings saved."
+    else
+      flash.now[:error] = @operator.errors.full_messages.to_sentence
+      render :tour_widget, status: :unprocessable_entity
     end
   end
   def update_modules
@@ -178,6 +190,14 @@ class Operator::SettingsController < Operator::BaseController
       :renewal_reminder_days,
       :approval_required,
       :checkin_required
+    )
+  end
+
+  def tour_widget_params
+    params.require(:operator).permit(
+      :tour_widget_enabled,
+      :tour_widget_thank_you_url,
+      :tour_widget_intro_html,
     )
   end
 
