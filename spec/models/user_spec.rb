@@ -681,6 +681,32 @@ RSpec.describe User, type: :model do
       expect(wd_user.enroll_in_welcome_drip!).to be false
       expect(wd_user.welcome_drip_enrolled?).to be false
     end
+
+    it "enrolls the user even when a recent transactional email_sent exists" do
+      # Per David: system / transactional emails (e.g. account confirmation
+      # at signup, day-pass receipts) must NOT block welcome-drip enrollment.
+      # SpamGuard's 30-day cool-down still applies to *other* drip campaigns
+      # and one-off sends — just not to the foundational welcome drip.
+      Activity.create!(
+        user: wd_user, operator: wd_operator,
+        kind: "email_sent",
+        subject: wd_user,
+        occurred_at: 5.minutes.ago,
+        payload: { "subject" => "Confirm your email for #{wd_operator.name}",
+                   "mailer" => "UserMailer", "action" => "email_confirmation" },
+      )
+
+      expect(wd_user.enroll_in_welcome_drip!).to be true
+      expect(wd_user.welcome_drip_enrolled?).to be true
+    end
+
+    it "still refuses enrollment when the user is already in an active drip campaign" do
+      # The 'one active series at a time' invariant from ADR-0003 stays — the
+      # welcome drip exemption is from the recently-emailed cool-down only.
+      allow(SpamGuard).to receive(:in_active_drip?).with(wd_user, wd_operator).and_return(true)
+      expect(wd_user.enroll_in_welcome_drip!).to be false
+      expect(wd_user.welcome_drip_enrolled?).to be false
+    end
   end
 
   describe "DayPass.after_create welcome-drip enrollment" do
