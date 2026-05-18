@@ -14,12 +14,27 @@ class Operator::TodaysActivityController < Operator::BaseController
     @paid_reservations = @all_reservations.select(&:paid?)
     @free_reservations = @all_reservations.reject(&:paid?)
 
-    # New members (approved in last 7 days with active subscription)
-    @new_members = User.originally_at_location(current_location)
+    # New members — anyone whose ACTIVE subscription started in the last
+    # 7 days. Filtering on users.created_at (the previous behavior) silently
+    # excluded converted day-passers whose User row dates from their first
+    # day-pass purchase weeks or months earlier; their *subscription*
+    # started recently. Same pattern as Api::V1::Admin::TodaysActivityController.
+    sub_starts = Subscription
+      .joins(:plan)
+      .where(plans: { operator_id: current_tenant.id })
+      .where(active: true, pending: [false, nil])
+      .where(subscribable_type: 'User')
+      .where('subscriptions.created_at >= ?', 7.days.ago)
+      .group(:subscribable_id)
+      .maximum('subscriptions.created_at')
+    @new_members = User
+      .where(id: sub_starts.keys)
       .approved.visible
-      .where("users.created_at > ?", 7.days.ago)
+      .where.not(role: 'admin')
       .includes(:subscriptions)
-      .select { |u| u.subscriptions.active.any? }
+      .to_a
+      .sort_by { |u| sub_starts[u.id] || Time.zone.now }
+      .reverse
 
     # Walk-ins — members who actually showed up today (door punch or
     # checkin), regardless of whether they had a booking. Union of both
