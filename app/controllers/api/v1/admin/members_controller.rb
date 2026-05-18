@@ -424,6 +424,28 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     }
   end
 
+  def log_tour
+    user = current_tenant.users.find(params[:id])
+
+    activity = Activity.log(
+      user: user,
+      operator: current_tenant,
+      kind: :tour,
+      payload: {
+        "notes" => params[:notes].to_s,
+        "logged_by_user_id" => current_api_user.id,
+      }
+    )
+
+    render json: {
+      success: true,
+      activity: {
+        id: activity.id,
+        occurred_at: activity.occurred_at.iso8601,
+      },
+    }, status: :created
+  end
+
   private
 
   def activity_json(activity)

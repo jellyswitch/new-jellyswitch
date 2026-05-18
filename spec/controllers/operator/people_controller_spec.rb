@@ -108,6 +108,29 @@ RSpec.describe Operator::PeopleController, type: :controller do
         expect(body["people"].first["point_of_contact_name"]).to eq(admin_user.name)
       end
     end
+
+    context "Log Tour quick action (per-row)" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "renders a Log Tour trigger on each person row" do
+        get :index
+        # member + tour_taker = 2 rows = 2 triggers
+        triggers = response.body.scan(/data-action="click->log-tour-modal#prepare"/)
+        expect(triggers.length).to be >= 2
+      end
+
+      it "renders exactly one shared Log Tour modal element" do
+        get :index
+        expect(response.body.scan('id="sharedLogTourModal"').length).to eq(1)
+        expect(response.body).to include('data-controller="log-tour-modal"')
+      end
+
+      it "encodes the user's name and log_tour URL as Stimulus params on the button" do
+        get :index
+        expect(response.body).to include("data-log-tour-modal-name-param=\"Alice Member\"")
+        expect(response.body).to include("data-log-tour-modal-url-param=\"#{Rails.application.routes.url_helpers.user_log_tour_path(member)}\"")
+      end
+    end
   end
 
   describe "GET #index with from filter" do

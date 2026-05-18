@@ -182,6 +182,7 @@ Rails.application.routes.draw do
         get 'members/:id/checkins', to: 'members#checkins'
         get 'members/:id/usage', to: 'members#usage'
         get 'members/:id/activities', to: 'members#activities'
+        post 'members/:id/log_tour', to: 'members#log_tour'
 
         # People (lifecycle-stage filtered list)
         get 'people', to: 'people#index'
