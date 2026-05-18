@@ -3,6 +3,16 @@ Rails.application.routes.draw do
   # Auth via HTTP Basic if SENDGRID_WEBHOOK_USERNAME/PASSWORD env vars set.
   post "/sendgrid/events", to: "sendgrid/events#receive"
 
+  # Public embeddable tour-request widget (no auth, frame-able, CSRF-skipped).
+  namespace :embed do
+    scope "tour_request/:operator_subdomain" do
+      get  "/",                       to: "tour_requests#show",      as: :tour_request
+      get  "/locations/:location_id", to: "tour_requests#show",      as: :tour_request_for_location
+      post "/",                       to: "tour_requests#create"
+      get  "/thank_you",              to: "tour_requests#thank_you", as: :tour_request_thank_you
+    end
+  end
+
   namespace :api do
     resources :doors, only: [:index] do
       member do
@@ -789,6 +799,8 @@ Rails.application.routes.draw do
     patch "update_modules",            to: "operator/settings#update_modules",             as: :update_modules
     get  "policies",                   to: "operator/settings#policies",                   as: :policies
     patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
+    get   "tour_widget",               to: "operator/settings#tour_widget",                as: :tour_widget
+    patch "update_tour_widget",        to: "operator/settings#update_tour_widget",         as: :update_tour_widget
   end
   get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"

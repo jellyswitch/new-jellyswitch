@@ -28,6 +28,7 @@ class Activity < ApplicationRecord
   KINDS = %w[
     signup
     tour
+    tour_request
     checkin
     door_punch
     reservation

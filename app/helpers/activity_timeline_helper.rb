@@ -63,7 +63,7 @@ module ActivityTimelineHelper
 
   KIND_GROUPS = {
     "emails"       => %w[email_sent email_opened email_clicked email_replied],
-    "tours"        => %w[tour],
+    "tours"        => %w[tour tour_request],
     "reservations" => %w[reservation],
     "payments"     => %w[payment_succeeded payment_failed],
     "notes"        => %w[note],

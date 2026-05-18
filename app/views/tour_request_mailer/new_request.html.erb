@@ -1,0 +1,20 @@
+<h2>New tour request</h2>
+
+<p><strong><%= @requester.name %></strong> requested a tour<% if @location %> at <strong><%= @location.name %></strong><% end %>.</p>
+
+<ul>
+  <li><strong>Email:</strong> <%= mail_to @requester.email %></li>
+  <% if @requester.phone.present? %>
+    <li><strong>Phone:</strong> <%= @requester.phone %></li>
+  <% end %>
+</ul>
+
+<% if @message.present? %>
+  <h3>Message</h3>
+  <p><%= simple_format(@message) %></p>
+<% end %>
+
+<p>
+  <%= link_to "Open in Jellyswitch",
+              "https://#{@operator.subdomain}.jellyswitch.com/users/#{@requester.id}" %>
+</p>
