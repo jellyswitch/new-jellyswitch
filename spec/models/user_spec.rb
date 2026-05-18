@@ -537,25 +537,25 @@ RSpec.describe User, type: :model do
       end
     end
 
-    context "with a Lead row but no engagement" do
+    context "with a Lead row but no tour Activity" do
       before { create(:lead, user: stage_user, operator: stage_operator) }
 
-      it "returns :tour_taker" do
-        expect(stage_user.lifecycle_stage).to eq(:tour_taker)
+      it "returns :signup_only (a Lead alone doesn't make them a tour-taker)" do
+        expect(stage_user.lifecycle_stage).to eq(:signup_only)
       end
     end
 
     context "with a tour Activity but no Lead" do
       before { log_activity(stage_user, "tour", 7.days.ago) }
 
-      it "returns :tour_taker" do
+      it "returns :tour_taker (tour Activity is the trigger)" do
         expect(stage_user.lifecycle_stage).to eq(:tour_taker)
       end
     end
 
     context "with no other state" do
-      it "returns :tour_taker as the catch-all" do
-        expect(stage_user.lifecycle_stage).to eq(:tour_taker)
+      it "returns :signup_only as the catch-all (was :tour_taker before refinement)" do
+        expect(stage_user.lifecycle_stage).to eq(:signup_only)
       end
     end
   end
@@ -604,6 +604,11 @@ RSpec.describe User, type: :model do
       u
     end
 
+    let!(:signup_only_user) do
+      # Signed up, never engaged, never had a tour logged
+      user_in(stage_operator, current_location: stage_location)
+    end
+
     it "returns users in :member stage" do
       expect(User.in_stage(:member)).to contain_exactly(member)
     end
@@ -620,12 +625,16 @@ RSpec.describe User, type: :model do
       expect(User.in_stage(:quiet)).to contain_exactly(quiet_user)
     end
 
-    it "returns users in :tour_taker stage" do
+    it "returns users in :tour_taker stage (only those with a tour Activity)" do
       expect(User.in_stage(:tour_taker)).to contain_exactly(tour_taker)
     end
 
+    it "returns users in :signup_only stage (catch-all for signups with no engagement and no tour)" do
+      expect(User.in_stage(:signup_only)).to contain_exactly(signup_only_user)
+    end
+
     it "is consistent with #lifecycle_stage for each user" do
-      [member, past_member, day_passer, quiet_user, tour_taker].each do |u|
+      [member, past_member, day_passer, quiet_user, tour_taker, signup_only_user].each do |u|
         expect(User.in_stage(u.lifecycle_stage)).to include(u)
       end
     end

@@ -6,6 +6,7 @@ class Operator::PeopleController < Operator::BaseController
     "member" => "Members",
     "day_passer" => "Day-passers",
     "tour_taker" => "Tour-takers",
+    "signup_only" => "Signed up",
     "past_member" => "Past members",
     "quiet" => "Quiet",
   }.freeze
@@ -14,6 +15,7 @@ class Operator::PeopleController < Operator::BaseController
     "member" => "badge-success",
     "day_passer" => "badge-info",
     "tour_taker" => "badge-warning",
+    "signup_only" => "badge-light",
     "past_member" => "badge-secondary",
     "quiet" => "badge-light",
   }.freeze
