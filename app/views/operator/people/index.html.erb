@@ -113,3 +113,11 @@
     <p class="text-center text-muted my-5">No people in this stage yet.</p>
   <% end %>
 <% end %>
+
+<%# Mobile WebView: native bottom tab bar overlays the last ~80-100px of the
+    web content, hiding the pagy nav behind it. Add an inert spacer below so
+    the bottom of the list (and its pagination) is reachable. Includes
+    safe-area-inset-bottom for devices with home indicators. %>
+<% if mobile_app_request? %>
+  <div style="height: calc(120px + env(safe-area-inset-bottom, 0px));" aria-hidden="true"></div>
+<% end %>
