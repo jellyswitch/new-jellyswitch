@@ -70,12 +70,31 @@ module Jellyswitch
       active_members.count
     end
 
+    # Comprehensive active membership: paying individuals + out-of-band +
+    # members under organizations with active office leases. The dashboard
+    # headline ("Active Members") should reflect this total — the historical
+    # active_member_count is intentionally narrower (paying-only) and several
+    # callers (weekly_update, operators_table, avg_visits_per_member) rely on
+    # the split, so keep it and add this as a sibling.
+    def total_active_members
+      subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
+      oob_ids = out_of_band_members.select(:id)
+      lease_member_ids = User.where(organization_id: office_leases.active.select(:organization_id)).select(:id)
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).or(User.where(id: lease_member_ids)).visible.approved
+    end
+
+    def total_active_member_count
+      total_active_members.count
+    end
+
     def active_member_breakdown
       subscribed_count = subscribed_members.count
       oob_count = out_of_band_members.where.not(id: subscribed_members.select(:id)).count
+      lease_count = active_lease_member_count
       {
         subscribed: subscribed_count,
         out_of_band: oob_count,
+        on_lease: lease_count,
         free: free_member_count
       }
     end

@@ -6,12 +6,15 @@
   </div>
 
   <h4 class="display-4 text-center">Active Members</h4>
-  <p class="lead text-center">Total: <%= @report.active_member_count %></p>
+  <p class="lead text-center">Total: <%= @report.total_active_member_count %></p>
   <% breakdown = @report.active_member_breakdown %>
   <p class="text-center text-muted">
     <%= breakdown[:subscribed] %> subscribed
     <% if breakdown[:out_of_band] > 0 %>
       &middot; <%= breakdown[:out_of_band] %> out-of-band
+    <% end %>
+    <% if breakdown[:on_lease] > 0 %>
+      &middot; <%= breakdown[:on_lease] %> on office lease
     <% end %>
     &middot; <%= breakdown[:free] %> free
   </p>
@@ -26,7 +29,7 @@
       </tr>
     </thead>
     <tbody>
-      <% @report.active_members.each do |user| %>
+      <% @report.total_active_members.each do |user| %>
         <tr>
           <td><%= link_to user.name, user_path(user) %></td>
           <td><%= short_date(user.created_at) %></td>

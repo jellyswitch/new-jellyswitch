@@ -41,7 +41,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       current_mrr: (mrr_value * 100).to_i, # cents — mobile divides by 100
       avg_mrr: (avg_mrr_value * 100).to_i, # cents — period-averaged MRR
       revenue: revenue_total, # cents
-      active_members: safe(0) { report.active_member_count },
+      active_members: safe(0) { report.total_active_member_count },
       churn_rate: churn_rate_value,
       churn_count: churn_count_value,
       net_growth: growth_value,
@@ -62,7 +62,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
         churn: safe({}) { report.trends_for(:churn, churn_rate_value) },
         room_utilization: safe({}) { report.trends_for(:room_utilization, util_value) },
         visits_per_member: safe({}) { report.trends_for(:visits_per_member, visits_value) },
-        active_members: safe({}) { report.trends_for(:active_members, report.active_member_count) },
+        active_members: safe({}) { report.trends_for(:active_members, report.total_active_member_count) },
       },
 
       # Actionable insights — same source the web dashboard renders.

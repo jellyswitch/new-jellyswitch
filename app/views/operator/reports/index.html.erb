@@ -62,9 +62,9 @@
       <div class="col-6 col-lg-3 mb-3">
         <%= link_to active_members_reports_path, class: "text-decoration-none text-dark d-block h-100" do %>
           <div class="border rounded p-3 h-100">
-            <div class="h4 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
+            <div class="h4 mb-0 font-weight-bold"><%= @report.total_active_member_count %></div>
             <div class="text-muted small">Active Members</div>
-            <div style="font-size: 10px;" class="text-muted"><%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> oob<% end %></div>
+            <div style="font-size: 10px;" class="text-muted"><%= breakdown[:subscribed] %> subscribed<% if breakdown[:out_of_band] > 0 %> · <%= breakdown[:out_of_band] %> oob<% end %><% if breakdown[:on_lease] > 0 %> · <%= breakdown[:on_lease] %> on lease<% end %></div>
           </div>
         <% end %>
       </div>
@@ -96,7 +96,7 @@
     <div class="row text-center mb-2">
       <div class="col-6 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h3 mb-0 font-weight-bold"><%= @report.active_member_count %></div>
+          <div class="h3 mb-0 font-weight-bold"><%= @report.total_active_member_count %></div>
           <div class="text-muted small">Active Members</div>
         </div>
       </div>
@@ -321,7 +321,7 @@
       <div class="list-group list-group-flush">
         <%= link_to active_members_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
           Active Members
-          <span class="badge badge-primary badge-pill"><%= @report.active_member_count %></span>
+          <span class="badge badge-primary badge-pill"><%= @report.total_active_member_count %></span>
         <% end %>
         <%= link_to active_leases_reports_path, class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center" do %>
           Active Leases
