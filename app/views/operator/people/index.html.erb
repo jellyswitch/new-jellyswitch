@@ -60,6 +60,22 @@
   </div>
 
   <% if @people.any? %>
+    <% if @pagy.pages > 1 %>
+      <div class="d-flex justify-content-between align-items-center mb-3 py-2 px-3 bg-light rounded">
+        <% if @pagy.prev %>
+          <%= link_to "‹ Prev", url_for(request.query_parameters.merge(page: @pagy.prev)), class: "btn btn-sm btn-outline-secondary" %>
+        <% else %>
+          <span class="btn btn-sm btn-outline-secondary disabled">‹ Prev</span>
+        <% end %>
+        <span class="text-muted small">Page <%= @pagy.page %> of <%= @pagy.pages %> · <%= @pagy.count %> <%= "person".pluralize(@pagy.count) %></span>
+        <% if @pagy.next %>
+          <%= link_to "Next ›", url_for(request.query_parameters.merge(page: @pagy.next)), class: "btn btn-sm btn-outline-secondary" %>
+        <% else %>
+          <span class="btn btn-sm btn-outline-secondary disabled">Next ›</span>
+        <% end %>
+      </div>
+    <% end %>
+
     <ul class="list-group list-group-flush">
       <% @people.each do |person| %>
         <li class="list-group-item">
