@@ -65,10 +65,27 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       },
     }
 
-    # Apply discount code if provided
+    # Apply discount code if provided. The same field accepts a DiscountCode
+    # (percent / amount off) OR a DayPassType access code (e.g. "CoworkCafe").
+    # We try DiscountCode first (case-insensitive via for_code scope). If that
+    # fails AND it matches a DayPassType, surface a structured error so the
+    # mobile client can redirect to the matched day pass instead of silently
+    # proceeding without a discount.
     if discount_code.present?
-      dc = DiscountCode.find_by(code: discount_code, operator: current_tenant)
-      interactor_params[:discount_code] = dc if dc&.active?
+      dc = DiscountCode.for_location(current_location).for_code(discount_code).first
+      if dc&.active?
+        interactor_params[:discount_code] = dc
+      else
+        dpt = DayPassType.for_location(current_location).for_code(discount_code).first
+        if dpt
+          return render json: {
+            success: false,
+            error: "This code unlocks #{dpt.name} (#{ActionController::Base.helpers.number_to_currency(dpt.amount_in_cents.to_i / 100.0)}). Please switch to that day pass to use the code.",
+            day_pass_type_id: dpt.id,
+            day_pass_type_name: dpt.name,
+          }, status: :unprocessable_entity
+        end
+      end
     end
 
     result = interactor.call(**interactor_params)
@@ -121,7 +138,23 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         message: (is_free ? 'This code covers a day pass — pick one below to redeem.' : 'Discount applied — it\'ll be used at purchase.'),
       }
     else
-      render json: { type: 'invalid', valid: false, error: result.message || 'Invalid code' }, status: :unprocessable_entity
+      # Fallback: maybe it's a DayPassType access code (e.g. "CoworkCafe")
+      # rather than a coupon. Return the matching day pass so the mobile
+      # client can route the user there.
+      dpt = DayPassType.for_location(current_location).for_code(code).first
+      if dpt
+        render json: {
+          type: 'day_pass_type',
+          valid: true,
+          code: code,
+          day_pass_type_id: dpt.id,
+          day_pass_type_name: dpt.name,
+          amount_in_cents: dpt.amount_in_cents,
+          message: "Code unlocks #{dpt.name} — #{ActionController::Base.helpers.number_to_currency(dpt.amount_in_cents.to_i / 100.0)}.",
+        }
+      else
+        render json: { type: 'invalid', valid: false, error: result.message || 'Invalid code' }, status: :unprocessable_entity
+      end
     end
   end
 end

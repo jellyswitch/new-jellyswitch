@@ -50,7 +50,13 @@ class Operator::DayPassesController < Operator::BaseController
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
 
-    # Validate discount code if provided
+    # Validate discount code if provided.
+    # The inline "discount code" field accepts BOTH a DiscountCode (percent /
+    # amount off) AND a DayPassType access code (e.g. "CoworkCafe" — unlocks a
+    # hidden $10 Cafe Hour Pass). If DiscountCode lookup fails, we fall back to
+    # DayPassType.for_code. A match there means the customer typed an access
+    # code, not a coupon — we redirect them to that day-pass-type's checkout
+    # instead of returning an unhelpful "Invalid discount code" error.
     discount_code = nil
     if params[:discount_code].present?
       validate_result = Billing::DiscountCodes::ValidateCode.call(
@@ -61,6 +67,19 @@ class Operator::DayPassesController < Operator::BaseController
       if validate_result.success?
         discount_code = validate_result.discount_code
       else
+        dpt_result = Billing::DayPasses::RedeemCode.call(
+          code: params[:discount_code],
+          operator: current_tenant,
+          location: current_location
+        )
+        if dpt_result.success?
+          turbo_redirect(redeem_paid_day_passes_path(
+            code: params[:discount_code],
+            day_pass_type_id: dpt_result.day_pass_type.id
+          ))
+          return
+        end
+
         flash[:error] = validate_result.message
         turbo_redirect(new_day_pass_path)
         return
