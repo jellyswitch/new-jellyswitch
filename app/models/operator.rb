@@ -74,6 +74,12 @@ class Operator < ApplicationRecord
   validates :cancellation_window_hours,
             numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 168 },
             allow_nil: true
+  validates :tour_widget_thank_you_url,
+            allow_blank: true,
+            format: {
+              with: %r{\Ahttps?://},
+              message: "must start with http:// or https://"
+            }
 
   has_many :announcements
   has_many :automated_workflows
@@ -98,6 +104,8 @@ class Operator < ApplicationRecord
   has_many :weekly_updates
   has_many :product_email_templates
   has_many :product_email_sends
+
+  has_rich_text :tour_widget_intro_html
 
   has_many :childcare_reservations, through: :locations
   has_many :child_profiles, through: :users
@@ -141,6 +149,10 @@ class Operator < ApplicationRecord
     define_method "#{resource}_by_location" do |location|
       public_send(resource).where(location: location)
     end
+  end
+
+  def tour_widget_active?
+    tour_widget_enabled? && locations.where(visible: true).exists?
   end
 
   def has_mobile_app_links?
