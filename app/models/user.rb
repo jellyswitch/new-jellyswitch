@@ -154,12 +154,19 @@ class User < ApplicationRecord
 
   # Mark this Person as enrolled in the Welcome Drip. Idempotent: no-op if
   # already enrolled, if the user is currently an active member, or if
-  # SpamGuard says they're not eligible (already in another active series
-  # or within cool-down).
+  # the one-active-series invariant says they're in another drip already.
+  #
+  # The welcome drip is *foundational onboarding*, not a marketing follow-up.
+  # System / transactional sends (account confirmation, day-pass receipt,
+  # password resets) must not gate it — otherwise every brand-new day-passer
+  # gets silently excluded because their signup confirmation email is within
+  # the 30-day cool-down. `cool_down_days: 0` skips SpamGuard's
+  # recently-emailed check while still honoring the in-active-drip and
+  # in-welcome-drip guards (ADR-0003's series invariant).
   def enroll_in_welcome_drip!
     return false if has_active_subscription?
     return false if welcome_drip_enrolled?
-    return false unless SpamGuard.eligible?(self, sender: operator, cool_down_days: 30)
+    return false unless SpamGuard.eligible?(self, sender: operator, cool_down_days: 0)
 
     ProductEmailSend.create!(
       operator: operator,
