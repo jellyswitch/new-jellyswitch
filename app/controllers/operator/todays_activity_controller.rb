@@ -30,9 +30,16 @@ class Operator::TodaysActivityController < Operator::BaseController
     all_user_ids = (day_pass_user_ids + reservation_user_ids).uniq
     @first_timer_ids = detect_first_timers(all_user_ids)
 
-    # Revenue totals
+    # Revenue totals — match the mobile API: paid rooms + day passes +
+    # today's new subscription plan amounts (catches converted day-passers
+    # whose User row is older than today but whose sub started today).
     @paid_reservation_revenue = @paid_reservations.sum { |r| r.room.hourly_rate_in_cents * (r.minutes / 60.0) / 100.0 }
     @day_pass_revenue = @day_passes.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
+    @new_subscription_revenue = Subscription.joins(:plan)
+      .where(plans: { operator_id: current_tenant.id })
+      .where(active: true, pending: [false, nil])
+      .where(created_at: Date.current.beginning_of_day..Date.current.end_of_day)
+      .sum('plans.amount_in_cents').to_f / 100.0
   end
 
   private

@@ -11,7 +11,7 @@
     </div>
 
     <%# KPI cards %>
-    <% total_revenue = @paid_reservation_revenue + @day_pass_revenue %>
+    <% total_revenue = @paid_reservation_revenue + @day_pass_revenue + @new_subscription_revenue %>
     <% first_timer_count = @first_timer_ids.size %>
     <div class="row text-center mx-2 mb-3">
       <div class="col-6 col-lg-3 mb-2">
@@ -36,7 +36,7 @@
           <div class="text-muted small">Booked revenue</div>
           <div class="mt-1" style="font-size: 11px;">
             <span class="text-muted">
-              <%= number_to_currency(@paid_reservation_revenue, precision: 0) %> rooms · <%= number_to_currency(@day_pass_revenue, precision: 0) %> passes
+              <%= number_to_currency(@paid_reservation_revenue, precision: 0) %> rooms · <%= number_to_currency(@day_pass_revenue, precision: 0) %> passes<% if @new_subscription_revenue > 0 %> · <%= number_to_currency(@new_subscription_revenue, precision: 0) %> subs<% end %>
             </span>
           </div>
         </div>
@@ -80,7 +80,7 @@
             <div class="card-body py-2 px-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
                   <% if @first_timer_ids.include?(reservation.user_id) %>
                     <span class="badge badge-warning" style="font-size: 10px;">NEW VISITOR</span>
                   <% end %>
@@ -115,7 +115,7 @@
             <div class="card-body py-2 px-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <%= link_to day_pass.user.name, user_path(day_pass.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <%= link_to day_pass.user.name, user_path(day_pass.user), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
                   <% if @first_timer_ids.include?(day_pass.user_id) %>
                     <span class="badge badge-warning" style="font-size: 10px;">NEW VISITOR</span>
                   <% end %>
@@ -150,7 +150,7 @@
             <div class="card-body py-2 px-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <%= link_to reservation.user.name, user_path(reservation.user), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
                   <div class="text-muted" style="font-size: 12px;">
                     <%= reservation.room.name %> &middot;
                     <%= reservation.datetime_in.strftime("%-I:%M %p") %> - <%= reservation.datetime_out.strftime("%-I:%M %p") %>
@@ -177,7 +177,7 @@
             <div class="card-body py-2 px-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
-                  <%= link_to member.name, user_path(member), class: "font-weight-bold text-dark", style: "font-size: 14px;" %>
+                  <%= link_to member.name, user_path(member), class: "font-weight-bold text-dark", style: "font-size: 14px; text-decoration: underline;" %>
                   <span class="badge badge-info" style="font-size: 10px;">NEW MEMBER</span>
                   <div class="text-muted" style="font-size: 12px;">
                     Joined <%= time_ago_in_words(member.created_at) %> ago
