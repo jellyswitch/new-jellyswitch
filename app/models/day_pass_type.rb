@@ -31,7 +31,11 @@ class DayPassType < ApplicationRecord
   scope :invisible, -> { where(visible: false) }
   scope :free, -> { where(amount_in_cents: 0) }
   scope :for_operator, ->(operator) { where(operator_id: operator.id) }
-  scope :for_code, ->(code) { where(code: code) }
+  # Case-insensitive + whitespace-tolerant lookup. Matches DiscountCode#for_code.
+  # Shelley reported a real-world failure where her discount code didn't work
+  # because exact-match case-sensitive comparison rejected anything other than
+  # the stored capitalization.
+  scope :for_code, ->(code) { where("LOWER(code) = ?", code.to_s.downcase.strip) }
   scope :cheapest, -> { order("amount_in_cents ASC").first }
 
   def self.options_for_select(operator)
