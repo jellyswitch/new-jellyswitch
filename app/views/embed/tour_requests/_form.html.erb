@@ -1,0 +1,52 @@
+<form action="<%= embed_tour_request_path(operator_subdomain: @operator.subdomain) %>" method="post" class="tour-request-form">
+  <% if @operator.tour_widget_intro_html.body.present? %>
+    <div class="intro"><%= @operator.tour_widget_intro_html %></div>
+  <% end %>
+
+  <% if @pinned_location %>
+    <input type="hidden" name="location_id" value="<%= @pinned_location.id %>">
+  <% elsif @locations.size > 1 %>
+    <label>
+      Location
+      <select name="location_id" required>
+        <% @locations.each do |loc| %>
+          <option value="<%= loc.id %>"><%= loc.name %></option>
+        <% end %>
+      </select>
+    </label>
+  <% elsif @locations.size == 1 %>
+    <input type="hidden" name="location_id" value="<%= @locations.first.id %>">
+  <% end %>
+
+  <label>
+    Your name
+    <input type="text" name="name" required>
+  </label>
+
+  <label>
+    Email
+    <input type="email" name="email" required>
+  </label>
+
+  <label>
+    Phone (optional)
+    <input type="tel" name="phone">
+  </label>
+
+  <label>
+    What are you looking for?
+    <textarea name="message" rows="4"></textarea>
+  </label>
+
+  <!-- Honeypot: bots fill it; humans don't see it. -->
+  <div style="position:absolute; left:-9999px; height:0; overflow:hidden;" aria-hidden="true">
+    <label>Leave this empty: <input type="text" name="_hp" tabindex="-1" autocomplete="off"></label>
+  </div>
+
+  <% if ENV["TURNSTILE_SITEKEY"].present? %>
+    <div class="cf-turnstile" data-sitekey="<%= ENV["TURNSTILE_SITEKEY"] %>"></div>
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <% end %>
+
+  <button type="submit">Request a tour</button>
+</form>

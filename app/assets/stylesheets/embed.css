@@ -1,0 +1,21 @@
+body.embed-tour-request {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  max-width: 540px;
+  margin: 24px auto;
+  padding: 0 16px;
+  color: #1a1a1a;
+}
+body.embed-tour-request h1 { font-size: 22px; margin: 0 0 16px; }
+body.embed-tour-request form label { display: block; margin: 12px 0 4px; font-weight: 500; }
+body.embed-tour-request form input,
+body.embed-tour-request form select,
+body.embed-tour-request form textarea {
+  width: 100%; padding: 8px 10px; border: 1px solid #ccc; border-radius: 4px; font: inherit;
+  box-sizing: border-box;
+}
+body.embed-tour-request form button {
+  margin-top: 16px; padding: 10px 18px; background: #2b6cb0; color: white;
+  border: none; border-radius: 4px; font-size: 15px; cursor: pointer;
+}
+body.embed-tour-request form button:hover { background: #2c5282; }
+body.embed-tour-request .intro { margin-bottom: 16px; color: #4a5568; }

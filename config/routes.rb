@@ -5,7 +5,7 @@ Rails.application.routes.draw do
 
   # Public embeddable tour-request widget (no auth, frame-able, CSRF-skipped).
   namespace :embed do
-    scope "tour_request/:subdomain" do
+    scope "tour_request/:operator_subdomain" do
       get  "/",                       to: "tour_requests#show",      as: :tour_request
       get  "/locations/:location_id", to: "tour_requests#show",      as: :tour_request_for_location
       post "/",                       to: "tour_requests#create"
