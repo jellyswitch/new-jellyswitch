@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_16_222945) do
+ActiveRecord::Schema[7.1].define(version: 2026_05_17_182658) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -561,6 +561,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_16_222945) do
     t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 
+  create_table "notes", force: :cascade do |t|
+    t.string "notable_type", null: false
+    t.bigint "notable_id", null: false
+    t.bigint "operator_id", null: false
+    t.bigint "author_id", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_notes_on_author_id"
+    t.index ["notable_type", "notable_id"], name: "index_notes_on_notable"
+    t.index ["operator_id", "created_at"], name: "index_notes_on_operator_id_and_created_at"
+    t.index ["operator_id"], name: "index_notes_on_operator_id"
+  end
+
   create_table "office_leases", force: :cascade do |t|
     t.bigint "operator_id"
     t.bigint "organization_id"
@@ -988,7 +1002,10 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_16_222945) do
     t.decimal "home_longitude", precision: 10, scale: 7
     t.string "home_city"
     t.string "home_state"
+    t.string "home_zip"
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
+    t.index ["home_zip"], name: "index_users_on_home_zip"
+    t.index ["operator_id", "home_state", "home_city"], name: "index_users_on_operator_home_state_home_city"
     t.index ["operator_id"], name: "index_users_on_operator_id"
     t.index ["point_of_contact_id"], name: "index_users_on_point_of_contact_id"
     t.index ["preferred_room_id"], name: "index_users_on_preferred_room_id"
@@ -1026,6 +1043,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_16_222945) do
   add_foreign_key "lease_renewal_requests", "operators"
   add_foreign_key "location_managements", "locations"
   add_foreign_key "location_managements", "users"
+  add_foreign_key "notes", "operators"
+  add_foreign_key "notes", "users", column: "author_id"
   add_foreign_key "office_leases", "locations", on_delete: :nullify
   add_foreign_key "office_leases", "offices", on_delete: :nullify
   add_foreign_key "office_leases", "operators", on_delete: :nullify
