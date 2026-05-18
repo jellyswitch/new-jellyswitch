@@ -69,6 +69,16 @@ class WebhooksController < ApplicationController
         Reservations::MarkPaymentFailed.call(reservation: reservation, reason: reason.to_s) rescue nil
       end
       ok
+    when "charge.succeeded"
+      # The Payment Element collects ZIP/postal code in the card input. The
+      # resulting Charge object carries it through to webhooks at
+      # billing_details.address.postal_code. We capture it as a side effect of
+      # a successful charge so existing members who pay (subs renewals, day
+      # passes, room bookings) backfill home_zip going forward. No frontend
+      # change needed — Stripe already passes the postal_code.
+      capture_home_zip_from_charge(@event)
+      ok
+
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)
 
@@ -112,6 +122,32 @@ class WebhooksController < ApplicationController
       report_error(result.message, __method__)
       error(result.message)
     end
+  end
+
+  # Pulls the billing postal_code off a charge.succeeded event and stores it
+  # on the paying user's home_zip. Idempotent — only writes when home_zip is
+  # blank, so a previously-set value (from signup-geo or manual entry) is
+  # preserved. Scoped to the connected account that fired the event so a
+  # charge on one operator's Stripe account can never set zip on a user at
+  # a different operator.
+  def capture_home_zip_from_charge(event)
+    charge = event.data.object
+    customer_id = charge.try(:customer)
+    postal_code = charge.try(:billing_details)&.try(:address)&.try(:postal_code).presence
+    connected_account = event.try(:account)
+
+    return unless customer_id.present? && postal_code.present? && connected_account.present?
+
+    operator = Operator.find_by(stripe_user_id: connected_account)
+    return unless operator
+
+    user = operator.users.find_by(stripe_customer_id: customer_id)
+    return unless user
+    return if user.home_zip.present?
+
+    user.update_columns(home_zip: postal_code)
+  rescue StandardError => e
+    Rails.logger.warn("capture_home_zip_from_charge: #{e.class}: #{e.message}")
   end
 
   def report_error(msg, meth=nil)
