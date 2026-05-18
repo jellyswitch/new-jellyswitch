@@ -566,7 +566,6 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_18_054832) do
     t.bigint "notable_id", null: false
     t.bigint "operator_id", null: false
     t.bigint "author_id", null: false
-    t.text "body", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["author_id"], name: "index_notes_on_author_id"

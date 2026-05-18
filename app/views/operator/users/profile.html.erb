@@ -195,8 +195,8 @@
             </button>
           </div>
           <div class="modal-body">
-            <%= f.fields_for :lead_note, LeadNote.new do |note_form| %>
-              <%= note_form.rich_text_area :content, placeholder: "Type a note about this person..." %>
+            <%= f.fields_for :note, Note.new do |note_form| %>
+              <%= note_form.rich_text_area :body, placeholder: "Type a note about this person..." %>
             <% end %>
           </div>
           <div class="modal-footer">
