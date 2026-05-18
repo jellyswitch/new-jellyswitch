@@ -18,9 +18,6 @@
     <% end %>
     &middot; <%= breakdown[:free] %> free
   </p>
-  <% if breakdown[:oob_without_subscription].to_i > 0 %>
-    <p class="text-center"><span class="badge badge-warning">⚠ <%= breakdown[:oob_without_subscription] %> out-of-band member<%= "s" if breakdown[:oob_without_subscription] != 1 %> with no subscription record — they contribute $0 to MRR. Create a subscription row for each so their plan amount is counted.</span></p>
-  <% end %>
 
   <table class="table table-sm">
     <thead>
