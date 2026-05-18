@@ -14,10 +14,11 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     todays_day_passes = DayPass.where(operator: current_tenant, day: today)
 
     # Today's new subscriptions (catches converted day-passers: their User
-    # record may be old, but the subscription started today).
+    # record may be old, but the subscription started today). Subscription
+    # has no operator_id column — operator is reached through plan.
     todays_new_subscriptions = Subscription
       .joins(:plan)
-      .where(operator: current_tenant)
+      .where(plans: { operator_id: current_tenant.id })
       .where(active: true, pending: [false, nil])
       .where(created_at: today.beginning_of_day..today.end_of_day)
 
