@@ -145,7 +145,10 @@
         <% end %>
       </div>
     </div>
-    <%= line_chart @report.mrr_by_month([@period_days / 30, 3].max, product_filter: product_filter),
+    <%# Cap chart at 24 months even for "All Time" — a 10-year MRR chart is
+        unreadable and pre-cap iteration timed out on Heroku. 24 months also
+        matches avg_mrr's cap so they share the memoized mrr_by_month. %>
+    <%= line_chart @report.mrr_by_month([[@period_days / 30, 24].min, 3].max, product_filter: product_filter),
           prefix: "$", thousands: ",",
           colors: ["#4e79a7"],
           height: "250px",

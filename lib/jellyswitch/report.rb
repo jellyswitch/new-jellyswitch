@@ -181,9 +181,14 @@ module Jellyswitch
 
     # Average MRR across the period — averages the per-month MRR snapshots
     # mrr_by_month already computes. For periods < 1 month, falls back to the
-    # current MRR snapshot.
+    # current MRR snapshot. Capped at 24 months so "All Time" (which would
+    # otherwise iterate ~120 months) doesn't blow the Heroku 30s timeout —
+    # 24 months is plenty for a meaningful running average and matches the
+    # chart cap below so the memoized mrr_by_month result is reused.
+    AVG_MRR_MAX_MONTHS = 24
     def avg_mrr(period_days = 30)
-      months = [(period_days / 30.0).round, 1].max
+      months = [(period_days / 30.0).round, AVG_MRR_MAX_MONTHS].min
+      months = [months, 1].max
       by_month = mrr_by_month(months) rescue {}
       return mrr if by_month.empty?
       (by_month.values.sum.to_f / by_month.size).round
@@ -583,6 +588,13 @@ module Jellyswitch
     end
 
     def mrr_by_month(months = 12, product_filter: "all")
+      # Memoize per Report instance — the dashboard renders the MRR chart AND
+      # the avg_mrr tile in the same request and both call this with similar
+      # args. Without the cache, "All Time" timed out at >30s on Heroku.
+      @mrr_by_month_cache ||= {}
+      cache_key = [months, product_filter]
+      return @mrr_by_month_cache[cache_key] if @mrr_by_month_cache.key?(cache_key)
+
       result = {}
       months.times do |i|
         date = i.months.ago.beginning_of_month
@@ -623,7 +635,7 @@ module Jellyswitch
 
         result[label] = total.round(0)
       end
-      result.reverse_each.to_h
+      @mrr_by_month_cache[cache_key] = result.reverse_each.to_h
     end
 
     def churn_rate(period_days = 30)
