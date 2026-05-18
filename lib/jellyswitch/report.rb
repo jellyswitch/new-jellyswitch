@@ -135,6 +135,41 @@ module Jellyswitch
       scope.where("datetime_in > ?", period_days.days.ago).count
     end
 
+    # Comprehensive period revenue — mirrors revenue_by_month semantics so the
+    # mobile REVENUE tile matches the web dashboard chart. A plain
+    # Invoice.sum(:amount_paid) misses out-of-band office-lease checks that the
+    # operator records outside the invoice flow; lease_supplement_for_month
+    # fills those in.
+    def revenue_for_period(period_days)
+      return 0 unless location
+      period_start = period_days.days.ago.to_date
+      period_end = Date.today
+
+      invoice_rev = location_invoices.paid
+        .where(due_date: period_start..period_end)
+        .sum(:amount_due).to_f / 100.0
+
+      lease_rev = 0.0
+      month = period_start.beginning_of_month
+      current_month = period_end.beginning_of_month
+      while month <= current_month
+        lease_rev += lease_supplement_for_month(month)
+        month = month.next_month
+      end
+
+      (invoice_rev + lease_rev).round
+    end
+
+    # Average MRR across the period — averages the per-month MRR snapshots
+    # mrr_by_month already computes. For periods < 1 month, falls back to the
+    # current MRR snapshot.
+    def avg_mrr(period_days = 30)
+      months = [(period_days / 30.0).round, 1].max
+      by_month = mrr_by_month(months) rescue {}
+      return mrr if by_month.empty?
+      (by_month.values.sum.to_f / by_month.size).round
+    end
+
     def all_members
       users.members.non_superadmins.order("name")
     end

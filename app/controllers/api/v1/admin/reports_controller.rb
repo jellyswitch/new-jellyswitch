@@ -8,6 +8,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     report = Jellyswitch::Report.new(current_tenant, current_location)
 
     mrr_value = safe(0) { report.mrr }
+    avg_mrr_value = safe(0) { report.avg_mrr(period_days) }
     churn_rate_value = safe(0) { report.churn_rate(period_days) }
     churn_count_value = safe(0) { report.churned_members_count(period_days) }
     growth_value = safe(0) { report.net_member_growth(period_days) }
@@ -19,16 +20,26 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     avg_tenure = safe(0) { report.average_member_tenure }
     dp_conv = safe(0) { report.day_pass_conversion_rate }
 
-    # Revenue uses an explicit date window so "Last Month" returns the
-    # invoices dated within that month, not the trailing 30 days.
-    revenue_total = safe(0) { Invoice.where(operator: current_tenant)
-      .where(date: period_start..period_end).sum(:amount_paid) }
+    # Revenue mirrors the web dashboard's revenue_by_month: paid invoices in
+    # the window + lease_supplement_for_month for out-of-band lease checks.
+    # `current_month` / `last_month` keep an explicit date-range so those
+    # period chips return invoices dated within that month.
+    revenue_total = safe(0) do
+      if %w[current_month last_month].include?(params[:period])
+        invoice_rev = Invoice.where(operator: current_tenant)
+          .where(date: period_start..period_end).sum(:amount_paid)
+        invoice_rev # already cents
+      else
+        (report.revenue_for_period(period_days) * 100).to_i # convert dollars → cents
+      end
+    end
 
     render json: {
       period: params[:period] || '30',
       period_days: period_days,
       # Primary KPIs
       current_mrr: (mrr_value * 100).to_i, # cents — mobile divides by 100
+      avg_mrr: (avg_mrr_value * 100).to_i, # cents — period-averaged MRR
       revenue: revenue_total, # cents
       active_members: safe(0) { report.active_member_count },
       churn_rate: churn_rate_value,
