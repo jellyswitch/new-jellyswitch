@@ -446,6 +446,31 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     }, status: :created
   end
 
+  def add_note
+    user = current_tenant.users.find(params[:id])
+
+    note = Note.new(
+      notable: user,
+      operator: current_tenant,
+      author: current_api_user,
+      body: params[:body],
+    )
+
+    if note.save
+      render json: {
+        success: true,
+        note: {
+          id: note.id,
+          body: note.body.to_plain_text,
+          author: current_api_user.name,
+          created_at: note.created_at.iso8601,
+        },
+      }, status: :created
+    else
+      render_error(note.errors.full_messages.join(", "))
+    end
+  end
+
   private
 
   def activity_json(activity)

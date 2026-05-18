@@ -201,32 +201,31 @@ RSpec.describe Operator::UsersController, type: :controller do
   end
 
   describe "POST #add_note" do
-    context "when admin adds a note to a Person with no existing Lead" do
+    context "when admin adds a note to a Person" do
       before do
         allow(controller).to receive(:current_user).and_return(admin_user)
       end
 
-      it "auto-creates a Lead for the user under the current tenant" do
-        expect(test_user.reload.leads_as_user.count).to eq(0) if test_user.respond_to?(:leads_as_user)
+      it "creates a Note attached to the user, authored by current_user, with the given body" do
         expect {
-          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Mentioned wants standing desk" } }
-        }.to change { Lead.where(user: test_user, operator: operator).count }.by(1)
+          post :add_note, params: { user_id: test_user.id, note: { body: "Followed up by email" } }
+        }.to change { Note.where(notable: test_user).count }.by(1)
+
+        note = Note.where(notable: test_user).last
+        expect(note.author).to eq(admin_user)
+        expect(note.operator).to eq(operator)
+        expect(note.body.to_plain_text).to include("Followed up by email")
       end
 
-      it "creates a LeadNote authored by current_user with the given content" do
+      it "does NOT create a Lead (Lead workaround is gone)" do
         expect {
-          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Followed up by email" } }
-        }.to change { LeadNote.count }.by(1)
-
-        note = LeadNote.last
-        expect(note.user).to eq(admin_user)
-        expect(note.lead.user).to eq(test_user)
-        expect(note.content.to_plain_text).to include("Followed up by email")
+          post :add_note, params: { user_id: test_user.id, note: { body: "Walking-in tomorrow" } }
+        }.not_to change { Lead.count }
       end
 
-      it "writes an Activity row of kind :note via LeadNote#after_create" do
+      it "writes an Activity row of kind :note via Note#after_create" do
         expect {
-          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Quick chat in lobby" } }
+          post :add_note, params: { user_id: test_user.id, note: { body: "Quick chat in lobby" } }
         }.to change { Activity.where(user: test_user, kind: "note").count }.by(1)
 
         activity = Activity.where(user: test_user, kind: "note").last
@@ -235,24 +234,8 @@ RSpec.describe Operator::UsersController, type: :controller do
       end
 
       it "redirects back to the user profile" do
-        post :add_note, params: { user_id: test_user.id, lead_note: { content: "Note body" } }
+        post :add_note, params: { user_id: test_user.id, note: { body: "Note body" } }
         expect(response).to redirect_to(user_path(test_user))
-      end
-    end
-
-    context "when the Person already has a Lead" do
-      let!(:existing_lead) { Lead.create!(user: test_user, operator: operator) }
-
-      before do
-        allow(controller).to receive(:current_user).and_return(admin_user)
-      end
-
-      it "reuses the existing Lead instead of creating a second one" do
-        expect {
-          post :add_note, params: { user_id: test_user.id, lead_note: { content: "Another touchpoint" } }
-        }.not_to change { Lead.where(user: test_user, operator: operator).count }
-
-        expect(LeadNote.last.lead).to eq(existing_lead)
       end
     end
 
@@ -261,14 +244,14 @@ RSpec.describe Operator::UsersController, type: :controller do
         allow(controller).to receive(:current_user).and_return(regular_user)
       end
 
-      it "is blocked by Pundit and does not create a LeadNote" do
+      it "is blocked by Pundit and does not create a Note" do
         expect {
           begin
-            post :add_note, params: { user_id: test_user.id, lead_note: { content: "sneaky" } }
+            post :add_note, params: { user_id: test_user.id, note: { body: "sneaky" } }
           rescue Pundit::NotAuthorizedError
             # expected — non-admin cannot add notes
           end
-        }.not_to change { LeadNote.count }
+        }.not_to change { Note.count }
       end
     end
   end
