@@ -68,6 +68,7 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       revenue_total: revenue_cents,
       paid_bookings: paid_bookings.includes(:user, :room).map { |r|
         {
+          user_id: r.user_id,
           user_name: r.user.name,
           room_name: r.room.name,
           time: r.datetime_in.strftime("%l:%M %p").strip,
@@ -77,6 +78,7 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       },
       day_passes: todays_day_passes.includes(:user, :day_pass_type).map { |dp|
         {
+          user_id: dp.user_id,
           user_name: dp.user.name,
           type_name: dp.day_pass_type_name,
           cost: dp.day_pass_type&.amount_in_cents || 0,
@@ -85,6 +87,7 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       },
       member_bookings: member_bookings.includes(:user, :room).map { |r|
         {
+          user_id: r.user_id,
           user_name: r.user.name,
           room_name: r.room.name,
           time: r.datetime_in.strftime("%l:%M %p").strip
@@ -103,6 +106,7 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
         was_daypasser = first_day_pass.present? && active_sub.present? &&
                         first_day_pass.created_at < active_sub.created_at
         {
+          user_id: u.id,
           user_name: u.name,
           plan_name: active_sub&.plan&.name,
           joined_at: active_sub&.created_at || u.created_at,
