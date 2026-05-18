@@ -248,14 +248,6 @@ Rails.application.routes.draw do
         # Organizations
         resources :organizations, only: [:index, :show, :create, :update]
 
-        # Leads
-        resources :leads, only: [:index, :show, :create, :update, :destroy] do
-          resources :notes, only: [:create], controller: 'lead_notes'
-          member do
-            post :convert_to_member
-          end
-        end
-
         # Doors
         get 'doors', to: 'doors#index'
         post 'doors', to: 'doors#create'
@@ -548,8 +540,6 @@ Rails.application.routes.draw do
     end
     get :charge
   end
-  resources :leads, controller: "operator/leads"
-  resources :lead_notes, controller: "operator/lead_notes"
   resources :locations, controller: "operator/locations" do
     get :allow_hourly, to: "operator/locations#allow_hourly"
     get :new_users_get_free_day_pass, to: "operator/locations#new_users_get_free_day_pass"

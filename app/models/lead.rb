@@ -13,6 +13,29 @@
 #
 
 class Lead < ApplicationRecord
+  # DEPRECATED: scheduled for deletion in Lead deprecation PR 3.
+  # See docs/recommendations/2026-05-17-leads-model-deprecation.md.
+  # PR 2 removed the UI + drop the welcome-drip-from-event callback;
+  # the model is kept alive for one bake cycle so any sneaky callers
+  # surface in Honeybadger before the table is dropped.
+  def self.new(*, **, &)
+    _notify_lead_deprecation("new")
+    super
+  end
+
+  def self.find(*, **, &)
+    _notify_lead_deprecation("find")
+    super
+  end
+
+  def self._notify_lead_deprecation(method_name)
+    return if Rails.env.test?
+    caller_line = caller(2, 1).first
+    message = "[Lead deprecation] Lead.#{method_name} called from #{caller_line}"
+    Rails.logger.warn(message)
+    Honeybadger.notify(message, context: { method: method_name, caller: caller_line, tags: "lead-deprecation" }) if defined?(Honeybadger)
+  end
+
   belongs_to :operator
   belongs_to :user
   belongs_to :ahoy_visit, class_name: "Ahoy::Visit", optional: true
@@ -22,19 +45,10 @@ class Lead < ApplicationRecord
   after_create :set_status
   after_create :set_source
   after_create :assign_default_point_of_contact_to_user
-  after_create :enroll_user_in_welcome_drip_from_event
 
   def assign_default_point_of_contact_to_user
     return if user.point_of_contact_id.present?
     user.assign_default_point_of_contact!
-  end
-
-  # Auto-enroll Persons who arrive via an event RSVP. Other Lead sources
-  # (web tour-request, referral) are deferred — they may be hand-curated
-  # by ops and don't always indicate the same level of interest.
-  def enroll_user_in_welcome_drip_from_event
-    return unless source.to_s == Lead::SOURCES[:event]
-    user&.enroll_in_welcome_drip!
   end
 
   SOURCES = {

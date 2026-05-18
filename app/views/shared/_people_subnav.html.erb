@@ -1,14 +1,10 @@
 <%#
-  People (CRM) umbrella sub-nav. Renders on the People list, Leads,
-  Automated Emails, and Campaigns index pages. `active_tab:` selects
-  which pill is highlighted.
-
-  Templates was previously aliased to Automated Emails and dropped to
-  reduce confusion — the two pills linked to the same path.
+  People (CRM) umbrella sub-nav. Renders on the People list, Automated
+  Emails, and Campaigns index pages. `active_tab:` selects which pill is
+  highlighted.
 %>
 <% tabs = [
   { key: "people",      label: "Members",     path: people_path },
-  { key: "leads",       label: "Leads",       path: leads_path },
   { key: "automations", label: "Automations", path: product_email_templates_path },
   { key: "campaigns",   label: "Campaigns",   path: campaigns_path },
 ] %>
