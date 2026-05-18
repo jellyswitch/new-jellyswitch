@@ -142,7 +142,13 @@ class Api::V1::AuthController < Api::V1::BaseController
     email = params[:email]&.downcase&.strip
     return render json: { operators: [] } if email.blank?
 
-    users = User.where("lower(email) = ?", email).where(archived: [false, nil])
+    # Intentionally NOT filtering by `archived` — #login allows archived
+    # users to authenticate (a soft-deleted account isn't a forbidden
+    # account), so lookup must surface their operators too. Otherwise the
+    # mobile brand-sticky flow auto-routes them to whichever space they
+    # happen to be active on, silently demoting cross-tenant admins
+    # whose original tenant record is archived.
+    users = User.where("lower(email) = ?", email)
     operators = users.map(&:operator).uniq.compact
 
     # Don't reveal if email exists when there are no results — return empty
