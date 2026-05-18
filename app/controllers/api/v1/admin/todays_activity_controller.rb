@@ -31,14 +31,27 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     # 7 days. Previously filtered on `users.created_at`, which silently
     # excluded converted day-passers (their User row dates from their
     # first day-pass purchase, weeks or months earlier).
+    #
+    # Postgres rejects `DISTINCT ... ORDER BY subscriptions.created_at`
+    # unless the order column is in the SELECT list, so we first
+    # collect each candidate user's most-recent qualifying subscription
+    # start, then load + sort in Ruby. Bounded list (max ~dozen rows),
+    # so the in-memory sort is fine.
+    sub_starts = Subscription
+      .joins(:plan)
+      .where(plans: { operator_id: current_tenant.id })
+      .where(active: true, pending: [false, nil])
+      .where(subscribable_type: 'User')
+      .where('subscriptions.created_at >= ?', 7.days.ago)
+      .group(:subscribable_id)
+      .maximum('subscriptions.created_at')
+
     new_members = current_tenant.users
-                                .joins(:subscriptions)
-                                .where(subscriptions: { active: true, pending: [false, nil] })
-                                .where('subscriptions.created_at >= ?', 7.days.ago)
-                                .where(approved: true)
+                                .where(id: sub_starts.keys, approved: true)
                                 .where.not(role: 'admin')
-                                .distinct
-                                .order('subscriptions.created_at DESC')
+                                .to_a
+                                .sort_by { |u| sub_starts[u.id] }
+                                .reverse
 
     # Visitor count
     visitor_count = paid_bookings.distinct.count(:user_id) +
@@ -77,7 +90,11 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
           time: r.datetime_in.strftime("%l:%M %p").strip
         }
       },
-      new_members: new_members.includes(:subscriptions, :day_passes).map { |u|
+      # `new_members` is now a plain Array after the in-Ruby sort above,
+      # so `.includes` doesn't apply. ActiveRecord still caches the
+      # associations lazily; the bounded result size (a few per week)
+      # makes the N+1 negligible here.
+      new_members: new_members.map { |u|
         active_sub = u.subscriptions.find { |s| s.active? && !s.pending? }
         # Was this person a day-passer before becoming a subscriber? The
         # converted-day-passer story is worth surfacing in the UI — it's
