@@ -406,10 +406,28 @@ module Jellyswitch
           .where(due_date: target_month..target_month.end_of_month)
           .sum(:amount_due).to_f / 100.0
       when :active_members
-        # Count users who had active subs at that time
-        Subscription.where(plan: plans.individual.nonzero, active: true)
-          .where("subscriptions.created_at <= ?", days_ago.days.ago)
-          .distinct.count(:subscribable_id)
+        # Approximate "active members as of days_ago" using the same three
+        # buckets the headline now counts: subscriptions + OOB + office-lease
+        # members. Both the historical query and the current value must
+        # include all three or the trend percentage compares apples to
+        # oranges. This is an approximation — cancelled subs and ended
+        # leases aren't perfectly reconstructed, so a churn-heavy month
+        # will undercount historical and overstate growth.
+        cutoff = days_ago.days.ago
+        sub_user_ids = Subscription.where(plan: plans.individual.nonzero, subscribable_type: 'User')
+          .where("subscriptions.created_at <= ?", cutoff)
+          .where("subscriptions.active = ? OR subscriptions.updated_at > ?", true, cutoff)
+          .select(:subscribable_id)
+        oob_user_ids = out_of_band_members.where("users.created_at <= ?", cutoff).select(:id)
+        lease_org_ids = office_leases.where("start_date <= ?", cutoff)
+          .where("end_date IS NULL OR end_date >= ?", cutoff)
+          .select(:organization_id)
+        lease_user_ids = User.where(organization_id: lease_org_ids)
+          .where("users.created_at <= ?", cutoff).select(:id)
+        User.where(id: sub_user_ids)
+          .or(User.where(id: oob_user_ids))
+          .or(User.where(id: lease_user_ids))
+          .visible.approved.count
       when :room_utilization
         room_utilization(days_ago)
       when :visits_per_member
