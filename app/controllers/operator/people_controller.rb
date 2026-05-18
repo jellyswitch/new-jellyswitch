@@ -32,7 +32,12 @@ class Operator::PeopleController < Operator::BaseController
     @q = params[:q].to_s.strip
     if @q.present?
       like = "%#{@q.downcase}%"
-      base_scope = base_scope.where("LOWER(name) LIKE :q OR LOWER(email) LIKE :q", q: like)
+      # home_zip is compared without LOWER because it's already digits/letters
+      # without case; the LIKE wildcards still match partial zips.
+      base_scope = base_scope.where(
+        "LOWER(name) LIKE :q OR LOWER(email) LIKE :q OR home_zip LIKE :zip",
+        q: like, zip: "%#{@q}%"
+      )
     end
 
     @from = params[:from].to_s
@@ -97,6 +102,7 @@ class Operator::PeopleController < Operator::BaseController
       point_of_contact_name: user.point_of_contact&.name,
       home_city: user.home_city,
       home_state: user.home_state,
+      home_zip: user.home_zip,
     }
   end
 

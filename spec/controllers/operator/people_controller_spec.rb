@@ -203,6 +203,29 @@ RSpec.describe Operator::PeopleController, type: :controller do
         names = JSON.parse(response.body)["people"].map { |p| p["name"] }
         expect(names).to contain_exactly("Carol Tour")
       end
+
+      it "matches home_zip when q is a zip-like value" do
+        member.update!(home_zip: "96150")
+        get :index, params: { q: "96150" }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to contain_exactly("Alice Member")
+      end
+
+      it "matches partial zip via LIKE" do
+        member.update!(home_zip: "96150")
+        get :index, params: { q: "961" }, format: :json
+        names = JSON.parse(response.body)["people"].map { |p| p["name"] }
+        expect(names).to include("Alice Member")
+      end
+    end
+
+    describe "person_json includes home_zip" do
+      it "surfaces home_zip in the JSON response" do
+        member.update!(home_zip: "96150")
+        get :index, format: :json
+        alice = JSON.parse(response.body)["people"].find { |p| p["name"] == "Alice Member" }
+        expect(alice["home_zip"]).to eq("96150")
+      end
     end
   end
 end
