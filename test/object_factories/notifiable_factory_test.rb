@@ -29,4 +29,23 @@ class NotifiableFactoryTest < ActiveSupport::TestCase
 
     assert_equal "Unknown notifiable type: UnknownType", exception.message
   end
+
+  test "returns TourRequestAlert instance for type 'TourRequestAlert'" do
+    setup_initial_user_fixtures
+    operator = operators(:cowork_tahoe)
+    location = operator.locations.first
+    requester = User.create!(
+      email: "req+factory@example.com", name: "Req Factory", operator: operator,
+      original_location_id: location.id, admin_created: true,
+      password: "tempPass1!", phone: "555-0002",
+    )
+    activity = Activity.create!(
+      user: requester, operator: operator, kind: "tour_request",
+      occurred_at: Time.current, subject: location, payload: { "message" => "hi" },
+    )
+
+    notifiable = NotifiableFactory.for(activity, "TourRequestAlert")
+
+    assert_instance_of Notifiable::TourRequestAlert, notifiable
+  end
 end
