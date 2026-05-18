@@ -45,7 +45,18 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # created by the server (via GrantFreeDayPass / DayPassCode-style
     # flows) or by an admin through the admin endpoint, not by members
     # directly.
-    return render_error('This day pass is not available.') unless day_pass_type.available && day_pass_type.visible
+    # Hidden (visible:false) day pass types may be purchased only when the
+    # request carries a matching access code — that's the whole point of the
+    # access_code field. Without this bypass, the inline "have a code?" flow
+    # from apply_code would surface the hidden pass id but create would still
+    # reject it. The cross-check (code must match THIS pass) prevents using
+    # one hidden pass's code to unlock a different hidden pass.
+    return render_error('This day pass is not available.') unless day_pass_type.available
+    unless day_pass_type.visible
+      matches_access_code = discount_code.present? &&
+        DayPassType.for_location(current_location).for_code(discount_code).exists?(id: day_pass_type.id)
+      return render_error('This day pass is not available.') unless matches_access_code
+    end
     return render_error('Free day passes cannot be purchased directly.') if day_pass_type.amount_in_cents.to_i <= 0
 
     # Use the same interactor chain as the web app
@@ -68,16 +79,17 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # Apply discount code if provided. The same field accepts a DiscountCode
     # (percent / amount off) OR a DayPassType access code (e.g. "CoworkCafe").
     # We try DiscountCode first (case-insensitive via for_code scope). If that
-    # fails AND it matches a DayPassType, surface a structured error so the
-    # mobile client can redirect to the matched day pass instead of silently
-    # proceeding without a discount.
+    # fails AND it matches a DayPassType OTHER than the one being purchased,
+    # surface a structured error so the mobile client can redirect the user.
+    # If it matches THE SAME pass being purchased, the code is the access key
+    # that unlocked this hidden pass — not a coupon — so we accept it silently.
     if discount_code.present?
       dc = DiscountCode.for_location(current_location).for_code(discount_code).first
       if dc&.active?
         interactor_params[:discount_code] = dc
       else
         dpt = DayPassType.for_location(current_location).for_code(discount_code).first
-        if dpt
+        if dpt && dpt.id != day_pass_type.id
           return render json: {
             success: false,
             error: "This code unlocks #{dpt.name} (#{ActionController::Base.helpers.number_to_currency(dpt.amount_in_cents.to_i / 100.0)}). Please switch to that day pass to use the code.",
