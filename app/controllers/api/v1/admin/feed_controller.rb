@@ -91,6 +91,21 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   def feed_item_json(fi)
     type = fi.blob['type']
     user = fi.user
+    # Embed the comments themselves, not just the count. Without this,
+    # the mobile FeedScreen shows "1" next to the Reply button but
+    # gives admins no way to actually read the reply (tapping Reply
+    # opens a compose input rather than a thread view). Bounded list —
+    # feed items rarely accumulate more than a handful of comments —
+    # so inline is fine.
+    comments = fi.feed_item_comments.includes(:user).order(:created_at).map { |c|
+      {
+        id: c.id,
+        body: c.comment,
+        author: c.user&.name,
+        is_admin: c.user&.admin_or_manager?(fi.location) || false,
+        created_at: c.created_at,
+      }
+    }
     base = {
       id: fi.id,
       type: type,
@@ -99,7 +114,8 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
       user_approved: user&.approved?,
       created_at: fi.created_at,
       expense: fi.expense,
-      comment_count: fi.feed_item_comments.size,
+      comment_count: comments.size,
+      comments: comments,
     }
 
     case type
