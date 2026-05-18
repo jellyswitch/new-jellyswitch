@@ -139,6 +139,10 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
           user_id: u.id,
           user_name: u.name,
           plan_name: active_sub&.plan&.name,
+          # Normalized monthly MRR contribution of this member's plan, in
+          # cents. Both surfaces render this as "$X / mo" alongside the
+          # plan name so the operator sees what each new member adds.
+          monthly_amount: active_sub&.plan ? normalize_plan_to_monthly_cents(active_sub.plan) : 0,
           joined_at: active_sub&.created_at || u.created_at,
           was_daypasser: was_daypasser,
         }
@@ -151,5 +155,18 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
   def first_timer?(user, today)
     !user.checkins.where("datetime_in < ?", today.beginning_of_day).exists? &&
       !user.reservations.unscoped.where(user: user, cancelled: false).where("datetime_in < ?", today.beginning_of_day).exists?
+  end
+
+  # Mirrors Jellyswitch::Report#normalize_to_monthly but returns cents
+  # (the rest of this controller's amounts are in cents).
+  def normalize_plan_to_monthly_cents(plan)
+    amount = plan.amount_in_cents.to_i
+    case plan.interval
+    when "monthly" then amount
+    when "quarterly" then (amount / 3.0).round
+    when "biannually" then (amount / 6.0).round
+    when "annually" then (amount / 12.0).round
+    else amount
+    end
   end
 end
