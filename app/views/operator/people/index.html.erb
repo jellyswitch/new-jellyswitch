@@ -76,7 +76,7 @@
       </div>
     <% end %>
 
-    <ul class="list-group list-group-flush">
+    <ul class="list-group list-group-flush" data-controller="log-tour-modal">
       <% @people.each do |person| %>
         <li class="list-group-item">
           <div class="d-flex align-items-center">
@@ -104,9 +104,48 @@
                 </div>
               <% end %>
             </div>
+            <% if policy(person).log_tour? %>
+              <button type="button"
+                      class="btn btn-sm btn-outline-primary ml-2"
+                      data-toggle="modal"
+                      data-target="#sharedLogTourModal"
+                      data-action="click->log-tour-modal#prepare"
+                      data-log-tour-modal-name-param="<%= person.name %>"
+                      data-log-tour-modal-url-param="<%= user_log_tour_path(person) %>"
+                      title="Log a tour for <%= person.name %>">
+                <i class="fas fa-walking"></i> Tour
+              </button>
+            <% end %>
           </div>
         </li>
       <% end %>
+
+      <%# One shared modal — Stimulus populates the title and form action from the
+          clicked button's data params. Avoids rendering N modals into the DOM. %>
+      <div class="modal fade" id="sharedLogTourModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+          <div class="modal-content">
+            <%= form_with url: "#", method: :post, local: true, html: { data: { "log-tour-modal-target": "form" } } do |f| %>
+              <div class="modal-header">
+                <h5 class="modal-title">Log a tour for <span data-log-tour-modal-target="title">someone</span></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <div class="form-group">
+                  <%= f.label :notes, "Notes (optional)" %>
+                  <%= f.text_area :notes, class: "form-control", rows: 4, placeholder: "Where did they come from, what did they ask about, etc." %>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <%= f.submit "Log", class: "btn btn-primary" %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </ul>
 
     <div class="mt-3">
