@@ -21,10 +21,30 @@ class Operator::TodaysActivityController < Operator::BaseController
       .includes(:subscriptions)
       .select { |u| u.subscriptions.active.any? }
 
-    # Total visitors expected
+    # Walk-ins — members who actually showed up today (door punch or
+    # checkin), regardless of whether they had a booking. Union of both
+    # sources, dedup by user_id. The earliest event time per user gives
+    # an "arrived at" stamp for the UI.
+    today_start = Date.current.beginning_of_day
+    door_first = DoorPunch.where(door: current_location.doors)
+      .where("created_at >= ?", today_start)
+      .group(:user_id).minimum(:created_at)
+    checkin_first = Checkin.where(location: current_location)
+      .where("datetime_in >= ?", today_start)
+      .group(:user_id).minimum(:datetime_in)
+    @arrived_at_by_user = door_first.merge(checkin_first) { |_, a, b| [a, b].min }
+
+    # Total visitors expected — distinct across bookings + walk-ins
     day_pass_user_ids = @day_passes.map(&:user_id)
     reservation_user_ids = @all_reservations.map(&:user_id)
-    @total_visitors = (day_pass_user_ids + reservation_user_ids).uniq.count
+    walk_in_user_ids = @arrived_at_by_user.keys.compact
+    @total_visitors = (day_pass_user_ids + reservation_user_ids + walk_in_user_ids).uniq.count
+
+    # Walk-ins shown in their own section: members here today who AREN'T
+    # already listed under day passes / reservations.
+    already_listed = (day_pass_user_ids + reservation_user_ids).uniq
+    walk_in_only_ids = walk_in_user_ids - already_listed
+    @walk_in_members = User.where(id: walk_in_only_ids).order(:name).to_a
 
     # Collect all user IDs for first-timer check (batch query)
     all_user_ids = (day_pass_user_ids + reservation_user_ids).uniq
