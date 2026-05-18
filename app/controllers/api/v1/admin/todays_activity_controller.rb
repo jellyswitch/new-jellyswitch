@@ -53,10 +53,31 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
                                 .sort_by { |u| sub_starts[u.id] }
                                 .reverse
 
-    # Visitor count
-    visitor_count = paid_bookings.distinct.count(:user_id) +
-                    todays_day_passes.distinct.count(:user_id) +
-                    member_bookings.distinct.count(:user_id)
+    # Walk-ins — members who actually arrived today (door punch or
+    # checkin), regardless of whether they had a booking. Union of both
+    # sources, deduped by user_id. The earliest event per user is
+    # surfaced as "arrived at" in the UI.
+    today_start = today.beginning_of_day
+    operator_door_ids = Door.joins(:location).where(locations: { operator_id: current_tenant.id }).pluck(:id)
+    door_first = DoorPunch.where(door_id: operator_door_ids)
+      .where("created_at >= ?", today_start)
+      .group(:user_id).minimum(:created_at)
+    operator_location_ids = current_tenant.locations.pluck(:id)
+    checkin_first = Checkin.where(location_id: operator_location_ids)
+      .where("datetime_in >= ?", today_start)
+      .group(:user_id).minimum(:datetime_in)
+    arrived_at_by_user = door_first.merge(checkin_first) { |_, a, b| [a, b].min }
+
+    # Visitor count — distinct across bookings + walk-ins
+    booking_user_ids = (paid_bookings.distinct.pluck(:user_id) +
+                        todays_day_passes.distinct.pluck(:user_id) +
+                        member_bookings.distinct.pluck(:user_id)).uniq.compact
+    walk_in_user_ids = arrived_at_by_user.keys.compact
+    visitor_count = (booking_user_ids + walk_in_user_ids).uniq.count
+
+    # Walk-ins-only list — members here today not already shown under bookings.
+    walk_in_only_ids = walk_in_user_ids - booking_user_ids
+    walk_in_users = User.where(id: walk_in_only_ids).order(:name).to_a
 
     render json: {
       visitor_count: visitor_count,
@@ -97,6 +118,15 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       # so `.includes` doesn't apply. ActiveRecord still caches the
       # associations lazily; the bounded result size (a few per week)
       # makes the N+1 negligible here.
+      walk_in_members: walk_in_users.map { |u|
+        arrived = arrived_at_by_user[u.id]
+        {
+          user_id: u.id,
+          user_name: u.name,
+          arrived_at: arrived&.iso8601,
+          arrived_time: arrived ? arrived.in_time_zone(Time.zone).strftime("%l:%M %p").strip : nil,
+        }
+      },
       new_members: new_members.map { |u|
         active_sub = u.subscriptions.find { |s| s.active? && !s.pending? }
         # Was this person a day-passer before becoming a subscriber? The
