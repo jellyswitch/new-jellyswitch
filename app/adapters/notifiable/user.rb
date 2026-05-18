@@ -8,9 +8,12 @@ module Notifiable
       # which previously produced two "X signed up" rows on the dashboard for
       # the same person. Approval should still send the push/email — only the
       # duplicate feed entry is suppressed.
-      return if FeedItem.where(user_id: id, operator_id: operator.id)
-                        .where("blob->>'type' = ?", "new-user")
-                        .exists?
+      # `::FeedItem` (not bare `FeedItem`) — lexical lookup from inside
+      # Notifiable::User otherwise resolves to Notifiable::FeedItem, which
+      # has no .where method.
+      return if ::FeedItem.where(user_id: id, operator_id: operator.id)
+                          .where("blob->>'type' = ?", "new-user")
+                          .exists?
       blob = { type: "new-user" }
       FeedItemCreator.create_feed_item(operator, location, self.__getobj__, blob)
     end
