@@ -4,7 +4,7 @@
   <%= form_with model: @operator, url: settings_update_tour_widget_path, method: :patch, local: true do |f| %>
     <div class="form-group">
       <div class="custom-control custom-switch">
-        <%= f.check_box :tour_widget_enabled, class: "custom-control-input", id: "tour_widget_enabled" %>
+        <%= f.check_box :tour_widget_enabled, class: "custom-control-input" %>
         <%= f.label :tour_widget_enabled, "Allow public tour requests", class: "custom-control-label" %>
       </div>
       <small class="form-text text-muted">When off, the public endpoint returns 404 to any visitor.</small>
