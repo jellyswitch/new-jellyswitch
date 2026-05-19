@@ -91,10 +91,24 @@ RSpec.describe FeedItem, type: :model do
     end
 
     describe '#is_expense_feed?' do
-      it 'identifies expense-related content' do
-        feed_item.text = ActionText::Content.new('This is an expense')
+      it 'is true when the post has both an expense keyword and a dollar amount' do
+        feed_item.text = ActionText::Content.new('Spent $5.00 on coffee for the team')
         expect(feed_item.is_expense_feed?).to be true
+      end
 
+      it 'is false when the post mentions "spent" with no dollar amount' do
+        # Regression: a management note like "We spent the afternoon
+        # rearranging the lobby" must not silently become an expense.
+        feed_item.text = ActionText::Content.new('We spent the afternoon rearranging the lobby')
+        expect(feed_item.is_expense_feed?).to be false
+      end
+
+      it 'is false when the post has a dollar amount but no expense keyword' do
+        feed_item.text = ActionText::Content.new('New plan launches at $99 next month')
+        expect(feed_item.is_expense_feed?).to be false
+      end
+
+      it 'is false for a regular post' do
         feed_item.text = ActionText::Content.new('Regular post')
         expect(feed_item.is_expense_feed?).to be false
       end

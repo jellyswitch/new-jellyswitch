@@ -1,4 +1,4 @@
-<% if feed_item.expense? %>
+<% if feed_item.expense? && feed_item.amount.to_i > 0 %>
   <dl class="row">
     <dt class="col-6">
       Amount:

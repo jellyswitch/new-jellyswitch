@@ -165,8 +165,14 @@ class FeedItem < ApplicationRecord
     end
   end
 
+  # Auto-classify a post as an expense ONLY when both signals are present:
+  # an expense keyword AND a dollar amount. "We spent the afternoon
+  # rearranging the lobby" should stay a regular note; "Spent $5 on
+  # coffee" should book itself as an expense.
   def is_expense_feed?
-    (self.text && self.text.to_plain_text.downcase.include_any?(["spent", "expense", "expenditure"])) ? true : false
+    return false unless text.present?
+    plain = text.to_plain_text.downcase
+    plain.include_any?(["spent", "expense", "expenditure"]) && plain.match?(/\$\d/)
   end
 
   def parse_amount
