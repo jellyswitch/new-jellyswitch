@@ -27,12 +27,21 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
 
   def create
     body = params[:body]
-    feed_item = FeedItem.create!(
-      blob: { 'type' => 'post', 'body' => body, 'user_name' => current_api_user.name },
+    # Persist body in three places so the note renders everywhere:
+    #   - blob['body']  — what this serializer (and the mobile FeedScreen) reads
+    #   - blob['text']  — what web-created notes use; keeps stripped plain-text
+    #                     parity with FeedItems::Save and any blob['text'] readers
+    #   - text (ActionText) — what the web _post_feed_item.html.erb partial
+    #                          renders. Without this, mobile-created notes show
+    #                          as empty cards on the web dashboard.
+    feed_item = FeedItem.new(
+      blob: { 'type' => 'post', 'body' => body, 'text' => body, 'user_name' => current_api_user.name },
       operator: current_tenant,
       location: current_location,
-      user: current_api_user
+      user: current_api_user,
     )
+    feed_item.text = body
+    feed_item.save!
 
     # Send push notifications to @mentioned users
     notify_mentioned_users(body, feed_item, current_api_user)
