@@ -59,6 +59,35 @@
       a:not(.btn):not(.nav-link):not(.list-group-item):not(.navbar-brand):not(.dropdown-item):hover {
         color: var(--brand-color-hover) !important;
       }
+      /* Brand nav-pills + nav-tabs so the active tab and inactive link
+         text match the operator's brand color instead of Bootstrap's
+         default blue. Active pill gets the brand fill; inactive link
+         text gets brand color; active tab border gets brand color. */
+      .nav-pills .nav-link.active,
+      .nav-pills .show > .nav-link {
+        background-color: var(--brand-color) !important;
+        color: #fff !important;
+      }
+      .nav-pills .nav-link:not(.active),
+      .nav-tabs .nav-link:not(.active) {
+        color: var(--brand-color) !important;
+      }
+      .nav-pills .nav-link:not(.active):hover,
+      .nav-tabs .nav-link:not(.active):hover {
+        color: var(--brand-color-hover) !important;
+      }
+      .nav-tabs .nav-link.active {
+        color: var(--brand-color) !important;
+        border-bottom-color: transparent !important;
+      }
+      /* "primary" semantic = brand. (text-info / text-success / text-warning /
+         text-danger stay as Bootstrap status colors — they convey status,
+         not brand.) */
+      .text-primary { color: var(--brand-color) !important; }
+      .badge-primary, .bg-primary {
+        background-color: var(--brand-color) !important;
+        color: #fff !important;
+      }
       .back-bar {
         background: white;
         padding: 10px 16px;
