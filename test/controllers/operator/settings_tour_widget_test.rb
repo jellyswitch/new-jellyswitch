@@ -13,6 +13,17 @@ class Operator::SettingsTourWidgetTest < ActionDispatch::IntegrationTest
     assert_select "h2", /Tour Widget/i
   end
 
+  test "tour_widget_enabled toggle: label[for] matches checkbox id (custom-switch clickability)" do
+    get settings_tour_widget_path, env: default_env
+    assert_response :success
+    # Bootstrap 4 custom-switch visually hides the input; only the label is clickable.
+    # If label[for] doesn't match the checkbox id, clicking the toggle does nothing.
+    checkbox_id = css_select("input[type=checkbox][name='operator[tour_widget_enabled]']").first&.attr("id")
+    label_for   = css_select("label.custom-control-label[for='#{checkbox_id}']").first&.attr("for")
+    assert_equal checkbox_id, label_for,
+      "tour_widget_enabled label[for] must match its checkbox id, otherwise the custom-switch toggle is unclickable"
+  end
+
   test "GET tour_widget redirects when current user is not admin" do
     reset!
     log_in users(:cowork_tahoe_member)
