@@ -45,11 +45,29 @@ module ActivityTimelineHelper
         "Note from #{p['author_name'] || 'staff'}: #{p['content_preview'] || ''}"
       end
     when "email_sent"           then "Sent: #{p['subject'] || '(no subject)'}"
-    when "email_opened"         then "Opened: #{p['subject'] || '(no subject)'}"
-    when "email_clicked"        then "Clicked: #{p['subject'] || '(no subject)'}"
-    when "email_replied"        then "Replied to: #{p['subject'] || '(no subject)'}"
+    when "email_opened"         then "Opened: #{engagement_subject(activity, p)}"
+    when "email_clicked"        then "Clicked: #{engagement_subject(activity, p)}"
+    when "email_replied"        then "Replied to: #{engagement_subject(activity, p)}"
     else activity.kind.humanize
     end
+  end
+
+  # Sendgrid's open/click webhook events don't carry the email subject,
+  # so engagement activities are logged without one. Fall back to the most
+  # recent email_sent subject for the same user in the prior 60 days —
+  # in practice the matching send always lands seconds before the open.
+  def engagement_subject(activity, payload)
+    return payload["subject"] if payload["subject"].present?
+
+    prior_subject = Activity
+      .where(user_id: activity.user_id, kind: "email_sent")
+      .where(occurred_at: (activity.occurred_at - 60.days)..activity.occurred_at)
+      .order(occurred_at: :desc)
+      .limit(1)
+      .pluck(Arel.sql("payload->>'subject'"))
+      .first
+
+    prior_subject.presence || "(no subject)"
   end
 
   TABS = [
