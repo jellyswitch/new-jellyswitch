@@ -34,6 +34,22 @@ RSpec.describe Navigation::Default do
       people = nav.public_send(role_method).find { |i| i[:title] == "People" }
       expect(people[:path]).to eq("/people")
     end
+
+    it "includes the Groups top-level item" do
+      titles = nav.public_send(role_method).map { |i| i[:title] }
+      expect(titles).to include("Groups")
+    end
+
+    it "links Groups at organizations_path" do
+      groups = nav.public_send(role_method).find { |i| i[:title] == "Groups" }
+      expect(groups[:path]).to eq("/organizations")
+    end
+
+    it "places Groups immediately after the People item" do
+      titles = nav.public_send(role_method).map { |i| i[:title] }
+      people_idx = titles.index { |t| t.to_s.start_with?("People") }
+      expect(titles[people_idx + 1]).to eq("Groups")
+    end
   end
 
   describe "#admin_nav_items" do
