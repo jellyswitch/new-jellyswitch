@@ -20,6 +20,11 @@ RSpec.describe Navigation::Member do
         titles = nav.paths.map { |item| item[:title] }
         expect(titles).to include("Building Access")
       end
+
+      it "does not include Groups" do
+        titles = nav.paths.map { |item| item[:title] }
+        expect(titles).not_to include("Groups")
+      end
     end
 
     context "approved member without active subscription or day pass" do
