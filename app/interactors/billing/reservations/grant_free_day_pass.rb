@@ -13,7 +13,10 @@ class Billing::Reservations::GrantFreeDayPass
         free_day_pass_type = free_day_passes.first
         invoice = Invoice.find_by(stripe_invoice_id: context.invoice&.id)
 
-        day_pass = DayPass.new(user: user, day: reservation_day, day_pass_type: free_day_pass_type, operator: location.operator, billable_type: "User", billable_id: user.id, invoice: invoice, complimentary: true)
+        # location must be set or SendProductEmailJob can't find the
+        # day-pass onboarding template (scoped per operator+location).
+        # Comp day-passers were silently going emailless without this.
+        day_pass = DayPass.new(user: user, day: reservation_day, day_pass_type: free_day_pass_type, operator: location.operator, location: location, billable_type: "User", billable_id: user.id, invoice: invoice, complimentary: true)
         if day_pass.save
           Rails.logger.info "Granted a free day pass to #{user.email} for reservation #{reservation.id}"
           # Paid day-pass purchases run through Billing::DayPasses::CreateDayPass
