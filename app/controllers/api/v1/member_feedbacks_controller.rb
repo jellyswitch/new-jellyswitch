@@ -15,7 +15,13 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
         id: r.id,
         body: r.body,
         author: r.user&.name,
-        is_admin: r.user&.admin?,
+        # `FeedbackReply#from_admin?` matches the admin-side controller and
+        # `admin_or_manager?(location)` — i.e. admin OR superadmin OR
+        # general-manager OR community-manager. The prior `r.user&.admin?`
+        # only matched `role == ADMIN || admin == true`, so a reply from
+        # a GM or CM rendered without the "Staff" badge on the member's
+        # mobile thread.
+        is_admin: r.from_admin?,
         created_at: r.created_at.strftime("%B %e at %l:%M %p"),
       }
     }
@@ -70,7 +76,7 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
     feedback = current_api_user.member_feedbacks.find(params[:id])
     rating = params[:rating].to_i
     return render_error('Rating must be 1–5') unless (1..5).include?(rating)
-    return render_error('No staff reply yet — nothing to rate') unless feedback.feedback_replies.any? { |r| r.user&.admin? }
+    return render_error('No staff reply yet — nothing to rate') unless feedback.feedback_replies.any?(&:from_admin?)
 
     feedback.update!(rating: rating)
     render json: feedback_json(feedback)
@@ -79,7 +85,10 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
   private
 
   def feedback_json(f)
-    has_admin_reply = f.feedback_replies.any? { |r| r.user&.admin? }
+    # Use FeedbackReply#from_admin? — same definition the admin-side
+    # controller uses — so GM / community-manager replies count as
+    # "staff replied" for status/can_rate purposes.
+    has_admin_reply = f.feedback_replies.any?(&:from_admin?)
     {
       id: f.id,
       body: f.comment,
