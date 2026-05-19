@@ -1,5 +1,5 @@
-<dl class="row">
-  <% if feed_item.expense? %>
+<% if feed_item.expense? %>
+  <dl class="row">
     <dt class="col-6">
       Amount:
     </dt>
@@ -8,12 +8,12 @@
         <%= number_to_currency(feed_item.amount.to_f/100.0)  %>
       </span>
     </dd>
-  <% end %>
-</dl>
+  </dl>
+<% end %>
 
-<p style="overflow-wrap: break-word; white-space: pre-wrap;">
+<div class="feed-item-post-body" style="overflow-wrap: break-word; white-space: pre-wrap;">
   <%= feed_item.text %>
-</p>
+</div>
 
 <%- if feed_item.has_photos? %>
   <div class="row mt-1 mb-3">
