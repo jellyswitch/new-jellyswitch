@@ -46,26 +46,26 @@ class Billing::Reservations::GrantFreeDayPassTest < ActiveSupport::TestCase
     @interactor.call
   end
 
-  test "schedules the day-pass onboarding email when a comp pass is granted" do
-    # Regression: prod data showed every paid day pass got the
-    # "Welcome! Here's what you need to know" onboarding email but every
-    # complimentary one (granted via this interactor) did not — because
-    # GrantFreeDayPass calls DayPass.new(...).save directly and never
-    # reaches the ScheduleDayPassEmails step in the paid-purchase chain.
+  test "does not schedule the day-pass onboarding email when a comp pass is granted alongside a paid reservation" do
+    # A paid room reservation already sends its own "Your reservation is
+    # confirmed!" onboarding email via ScheduleReservationEmails. Sending
+    # the day-pass welcome on top of that is a duplicate that confuses
+    # the customer (per customer feedback at Cowork Tahoe — Matthew Amigh
+    # got both for a Publisher's Office booking and reported the
+    # day-pass welcome as a glitch).
     @room.stubs(:paid_room?).returns(true)
     @user.stubs(:should_charge_for_reservation?).returns(true)
     Invoice.stubs(:find_by).returns(@invoice)
 
-    ScheduleProductEmails.expects(:call).with(
-      has_entries(
-        product_email_sendable: instance_of(DayPass),
-        product_email_type: "day_pass",
-        product_email_user: @user,
-        operator: @location.operator,
-      )
-    ).once
+    ScheduleProductEmails.expects(:call).never
 
     @interactor.call
+
+    # The day pass itself still gets created so the user can access the
+    # workspace on the reservation day.
+    assert_equal DayPass.last.user, @user
+    assert_equal DayPass.last.location, @location
+    assert_equal DayPass.last.complimentary, true
   end
 
   test "does not schedule the onboarding email when no comp pass is granted" do
