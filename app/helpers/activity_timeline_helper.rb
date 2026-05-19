@@ -36,7 +36,7 @@ module ActivityTimelineHelper
     when "day_pass"             then p["complimentary"] ? "Comped a day pass" : "Bought a day pass"
     when "subscription_started" then "Started membership: #{p['plan_name'] || 'plan'}"
     when "subscription_ended"   then "Ended membership: #{p['plan_name'] || 'plan'}"
-    when "payment_succeeded"    then "Paid #{ActiveSupport::NumberHelper.number_to_currency((p['amount_paid'] || 0) / 100.0)}"
+    when "payment_succeeded"    then "Paid #{ActiveSupport::NumberHelper.number_to_currency(payment_amount_cents(p) / 100.0)}"
     when "payment_failed"       then "Payment failed (#{p['number'] || 'invoice'})"
     when "note"
       if p["owner_reassigned"]
@@ -45,11 +45,23 @@ module ActivityTimelineHelper
         "Note from #{p['author_name'] || 'staff'}: #{p['content_preview'] || ''}"
       end
     when "email_sent"           then "Sent: #{p['subject'] || '(no subject)'}"
-    when "email_opened"         then "Opened: #{engagement_subject(activity, p)}"
+    when "email_opened"         then "Opened email"
     when "email_clicked"        then "Clicked: #{engagement_subject(activity, p)}"
     when "email_replied"        then "Replied to: #{engagement_subject(activity, p)}"
     else activity.kind.humanize
     end
+  end
+
+  # Invoice#amount_paid lags amount_due for invoices whose status is "paid"
+  # but didn't come through Stripe's invoice.payment_succeeded webhook
+  # (e.g. direct PaymentIntent captures for day pass / room reservations).
+  # Christine Crook's $40 day pass surfaced this — the activity payload
+  # stored amount_paid=0 even though status="paid" and amount_due=4000.
+  # Fall back to amount_due so the timeline displays the real amount.
+  def payment_amount_cents(payload)
+    paid = payload["amount_paid"].to_i
+    return paid if paid > 0
+    payload["amount_due"].to_i
   end
 
   # Sendgrid's open/click webhook events don't carry the email subject,
