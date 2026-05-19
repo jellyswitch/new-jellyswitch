@@ -45,7 +45,10 @@ module Notifiable
           current_location_id: location.id,
         )
       else
-        User.none
+        # `::User` (not bare `User`) — lexical lookup from inside
+        # Notifiable::TourRequestAlert otherwise resolves to Notifiable::User,
+        # the adapter sibling, which has no .none scope.
+        ::User.none
       end
 
       (admins.to_a + managers.to_a).uniq
