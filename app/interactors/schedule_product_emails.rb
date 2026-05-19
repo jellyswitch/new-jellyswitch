@@ -5,11 +5,17 @@ class ScheduleProductEmails
     sendable = context.product_email_sendable
     product_type = context.product_email_type
     user = context.product_email_user
-    operator = context.operator
 
-    return unless sendable && product_type && user && operator
+    return unless sendable && product_type && user
 
     location = resolve_location(sendable, user)
+    # Most callers (Billing::Reservations::CreateRoomReservation and friends)
+    # never put operator on the context, so falling back to derive it from
+    # the sendable / location keeps onboarding + follow-up emails firing.
+    # Without this, every paid room reservation silently skipped its email.
+    operator = context.operator || resolve_operator(sendable, location, user)
+
+    return unless operator
 
     # Schedule onboarding email (immediate)
     onboarding_template = ProductEmailTemplate.find_by(
@@ -71,6 +77,17 @@ class ScheduleProductEmails
       sendable.plan&.location
     else
       Location.find_by(id: user.original_location_id)
+    end
+  end
+
+  def resolve_operator(sendable, location, user)
+    case sendable
+    when DayPass, Subscription, OfficeLease
+      sendable.operator
+    when Reservation
+      sendable.room&.location&.operator
+    else
+      location&.operator || user&.original_location&.operator
     end
   end
 
