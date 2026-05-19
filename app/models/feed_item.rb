@@ -175,6 +175,16 @@ class FeedItem < ApplicationRecord
     plain.include_any?(["spent", "expense", "expenditure"]) && plain.match?(/\$\d/)
   end
 
+  # Mobile posts come in as plain text (literal `\n` newlines, no tags) and
+  # need `white-space: pre-wrap` to render line breaks. Web/Trix posts come
+  # in as structured HTML (lists, paragraphs, divs) where `pre-wrap` makes
+  # the whitespace BETWEEN tags visible as enormous gaps. Skip pre-wrap
+  # whenever the body has any HTML tag.
+  def rich_html_body?
+    return false if text.blank?
+    text.body.to_html.match?(/<[a-z]/i)
+  end
+
   def parse_amount
     if text.present?
       raw = text.to_plain_text.scan(/\$\d+.*\d+/).first

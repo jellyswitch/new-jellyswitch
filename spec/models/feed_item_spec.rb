@@ -113,6 +113,30 @@ RSpec.describe FeedItem, type: :model do
         expect(feed_item.is_expense_feed?).to be false
       end
     end
+
+    describe '#rich_html_body?' do
+      it 'is false for a plain-text note (mobile-created)' do
+        # ActionText stores plain mobile text verbatim with literal `\n`
+        # newlines; the body has no HTML tags. The renderer needs
+        # `white-space: pre-wrap` to keep those line breaks visible.
+        feed_item.text = ActionText::Content.new("Open at 8am today\n\nNeed wifi fixed")
+        expect(feed_item.rich_html_body?).to be false
+      end
+
+      it 'is true for a bulleted-list note (Trix/web-created)' do
+        # Regression: David's web bullet post rendered with massive vertical
+        # gaps between bullets because `pre-wrap` preserved the whitespace
+        # between `<li>` tags. Body HTML must be detected as rich so we
+        # skip pre-wrap.
+        feed_item.text = ActionText::Content.new("<ul><li>one</li><li>two</li></ul>")
+        expect(feed_item.rich_html_body?).to be true
+      end
+
+      it 'is false when text is blank' do
+        feed_item.text = nil
+        expect(feed_item.rich_html_body?).to be false
+      end
+    end
   end
 
   describe 'lazy relationships' do
