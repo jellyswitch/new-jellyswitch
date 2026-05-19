@@ -19,8 +19,15 @@ namespace :feed_items do
 
       puts "  #{dry_run ? '[would fix]' : '[fixing]'}  fi=#{fi.id} op=#{fi.operator_id} created=#{fi.created_at.iso8601}"
       unless dry_run
+        # has_rich_text uses touch: true, which bumps updated_at on the parent
+        # whenever the rich-text association saves. The feed orders by
+        # updated_at DESC, so naive saving here would launch every ancient note
+        # to the top of the feed. Capture the original updated_at and restore
+        # it after the save.
+        original_updated_at = fi.updated_at
         fi.text = body
         fi.save!
+        fi.update_columns(updated_at: original_updated_at)
       end
       fixed += 1
     end
