@@ -1,7 +1,7 @@
 class Api::V1::Admin::SearchController < Api::V1::Admin::BaseController
   def index
     q = "%#{params[:q]}%"
-    return render json: { members: [], organizations: [], rooms: [], doors: [] } if params[:q].blank?
+    return render json: { members: [], organizations: [], rooms: [], doors: [], events: [], plans: [], invoices: [] } if params[:q].blank?
 
     members = current_tenant.users
       .where("users.name ILIKE ? OR users.email ILIKE ?", q, q)
@@ -23,11 +23,6 @@ class Api::V1::Admin::SearchController < Api::V1::Admin::BaseController
       .limit(10)
       .map { |d| { id: d.id, name: d.name, type: "door" } }
 
-    leads = Lead.joins(:user).where(operator: current_tenant)
-      .where("users.name ILIKE ? OR users.email ILIKE ?", q, q)
-      .limit(10)
-      .map { |l| { id: l.id, name: l.user&.name, email: l.user&.email, status: l.status, type: "lead" } }
-
     events = Event.where(location: current_location)
       .where("events.title ILIKE ?", q)
       .limit(10)
@@ -48,7 +43,6 @@ class Api::V1::Admin::SearchController < Api::V1::Admin::BaseController
       organizations: organizations,
       rooms: rooms,
       doors: doors,
-      leads: leads,
       events: events,
       plans: plans,
       invoices: invoices,

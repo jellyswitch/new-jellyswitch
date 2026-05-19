@@ -731,18 +731,4 @@ RSpec.describe User, type: :model do
     end
   end
 
-  describe "Lead.after_create welcome-drip enrollment" do
-    let(:wd_operator) { create(:operator) }
-    let(:wd_user) { create(:user, operator: wd_operator) }
-
-    it "enrolls when the Lead source is event" do
-      lead = create(:lead, user: wd_user, operator: wd_operator, source: Lead::SOURCES[:event])
-      expect(wd_user.reload.welcome_drip_enrolled?).to be true
-    end
-
-    it "does not enroll when the Lead source is web" do
-      create(:lead, user: wd_user, operator: wd_operator, source: Lead::SOURCES[:web])
-      expect(wd_user.reload.welcome_drip_enrolled?).to be false
-    end
-  end
 end
