@@ -121,7 +121,9 @@
         </div>
         <div class="row mt-3">
           <div class="col">
-            <%= link_to "Cancel membership", "#", data: { toggle: "modal", target: "#cancelMembershipModal" }, class: "btn btn-block btn-danger" %>
+            <button type="button" class="btn btn-block btn-danger" data-toggle="modal" data-target="#cancelMembershipModal">
+              Cancel membership
+            </button>
           </div>
         </div>
       <% end %>
@@ -149,7 +151,7 @@
             -->
             <div class="text-center">
               <h3 class="text-center mt-1">Cancel Membership</h3>
-              <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal" }, data: { turbo_method: :delete }, class: "btn btn-sm btn-danger" %>
+              <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal", turbo_method: :delete, turbo_confirm: "Cancel your membership at the end of the current billing period?" }, class: "btn btn-sm btn-danger" %>
               <hr />
             </div>
           </div>
