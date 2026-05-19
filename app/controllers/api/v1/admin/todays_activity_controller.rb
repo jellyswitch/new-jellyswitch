@@ -1,24 +1,29 @@
 class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
   def index
     today = Date.current
+    location = current_location
+    # Without a current_location we cannot scope safely; return an empty
+    # day rather than risk surfacing another location's members.
+    return render(json: empty_payload) unless location
 
-    # Today's reservations
+    # Today's reservations — scoped to rooms at this location so a sister
+    # location's bookings never leak in.
     todays_reservations = Reservation.joins(:room)
-                                     .where(rooms: { operator_id: current_tenant.id })
+                                     .where(rooms: { location_id: location.id })
                                      .where(datetime_in: today.beginning_of_day..today.end_of_day)
 
     paid_bookings = todays_reservations.where(paid: true)
     member_bookings = todays_reservations.where(paid: [false, nil])
 
-    # Today's day passes
-    todays_day_passes = DayPass.where(operator: current_tenant, day: today)
+    # Today's day passes — scoped to this location, not the operator.
+    todays_day_passes = DayPass.where(location: location, day: today)
 
     # Today's new subscriptions (catches converted day-passers: their User
-    # record may be old, but the subscription started today). Subscription
-    # has no operator_id column — operator is reached through plan.
+    # record may be old, but the subscription started today). Scoped to
+    # plans tied to this location.
     todays_new_subscriptions = Subscription
       .joins(:plan)
-      .where(plans: { operator_id: current_tenant.id })
+      .where(plans: { operator_id: current_tenant.id, location_id: location.id })
       .where(active: true, pending: [false, nil])
       .where(created_at: today.beginning_of_day..today.end_of_day)
 
@@ -39,7 +44,7 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     # so the in-memory sort is fine.
     sub_starts = Subscription
       .joins(:plan)
-      .where(plans: { operator_id: current_tenant.id })
+      .where(plans: { operator_id: current_tenant.id, location_id: location.id })
       .where(active: true, pending: [false, nil])
       .where(subscribable_type: 'User')
       .where('subscriptions.created_at >= ?', 7.days.ago)
@@ -56,14 +61,13 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     # Walk-ins — members who actually arrived today (door punch or
     # checkin), regardless of whether they had a booking. Union of both
     # sources, deduped by user_id. The earliest event per user is
-    # surfaced as "arrived at" in the UI.
+    # surfaced as "arrived at" in the UI. Scoped to this location only.
     today_start = today.beginning_of_day
-    operator_door_ids = Door.joins(:location).where(locations: { operator_id: current_tenant.id }).pluck(:id)
-    door_first = DoorPunch.where(door_id: operator_door_ids)
+    location_door_ids = location.doors.pluck(:id)
+    door_first = DoorPunch.where(door_id: location_door_ids)
       .where("created_at >= ?", today_start)
       .group(:user_id).minimum(:created_at)
-    operator_location_ids = current_tenant.locations.pluck(:id)
-    checkin_first = Checkin.where(location_id: operator_location_ids)
+    checkin_first = Checkin.where(location_id: location.id)
       .where("datetime_in >= ?", today_start)
       .group(:user_id).minimum(:datetime_in)
     arrived_at_by_user = door_first.merge(checkin_first) { |_, a, b| [a, b].min }
@@ -151,6 +155,19 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
   end
 
   private
+
+  def empty_payload
+    {
+      visitor_count: 0,
+      revenue: 0,
+      revenue_total: 0,
+      paid_bookings: [],
+      day_passes: [],
+      member_bookings: [],
+      walk_in_members: [],
+      new_members: [],
+    }
+  end
 
   def first_timer?(user, today)
     !user.checkins.where("datetime_in < ?", today.beginning_of_day).exists? &&
