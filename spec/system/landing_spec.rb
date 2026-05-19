@@ -12,14 +12,18 @@ RSpec.describe "Landing Page", type: :system do
   let!(:ongoing_reservation) { create(:reservation, user: user, datetime_in: Time.zone.now, minutes: 30, room: room_1) }
 
 
-  # Currently skipping this test since it's was unstable
+  # Location is set via the persisted User#current_location association rather
+  # than driving the UI picker through Capybara. The picker flow was flaky
+  # because session[:location_id] was occasionally lost across the post-login
+  # redirect; the SessionsHelper now falls back to current_user.current_location
+  # so persisting on the user is sufficient.
   context "when user has an reservation" do
 
     context "when user has an ongoing reservation at the location" do
       let(:room) { room_1 }
 
       before do
-        switch_to_location location_1
+        user.update!(current_location: location_1)
         log_in user
       end
 
@@ -32,7 +36,7 @@ RSpec.describe "Landing Page", type: :system do
 
     context "when user has an future/ongoing reservations at a different location" do
       before do
-        switch_to_location location_2
+        user.update!(current_location: location_2)
         log_in user
       end
 
@@ -46,7 +50,7 @@ RSpec.describe "Landing Page", type: :system do
     before do
       user.reservations.future.destroy_all
       user.reservations.ongoing.destroy_all
-      switch_to_location location_1
+      user.update!(current_location: location_1)
       log_in user
     end
 

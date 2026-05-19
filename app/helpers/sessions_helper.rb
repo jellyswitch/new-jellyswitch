@@ -83,6 +83,12 @@ module SessionsHelper
         cookies.delete(:location_id)
         nil
       end
+    elsif current_user&.current_location_id # persisted user preference — survives session/cookie loss
+      user_loc = current_tenant.locations.find_by(id: current_user.current_location_id)
+      if user_loc
+        set_location(user_loc)
+        @current_location = user_loc
+      end
     elsif current_tenant.locations.count == 1 # if I only have one location, use it automatically
       set_location(current_tenant.locations.first)
       @current_location = current_tenant.locations.first
