@@ -48,9 +48,26 @@
     <button class="btn btn-outline-secondary" type="button" data-clipboard-target="form-snippet">Copy</button>
   </div>
 
+  <%# Sign a short-lived token so the iframe can preview the widget even
+      when tour_widget_enabled is off. The Embed controller verifies the
+      token instead of trusting the session cookie, which doesn't always
+      cross the embed boundary cleanly. %>
+  <% preview_token = Embed::TourRequestsController.verifier.generate({
+       "operator_id" => @operator.id, "exp" => 1.hour.from_now.to_i,
+     }) %>
+  <% preview_url = embed_tour_request_url(
+       operator_subdomain: @operator.subdomain,
+       host: request.host_with_port,
+       preview_token: preview_token,
+     ) %>
+  <% public_url = embed_tour_request_url(
+       operator_subdomain: @operator.subdomain,
+       host: request.host_with_port,
+     ) %>
+
   <h3 class="mt-4">Live preview</h3>
   <iframe id="widget-preview"
-          src="<%= embed_tour_request_url(operator_subdomain: @operator.subdomain, host: request.host_with_port) %>"
+          src="<%= preview_url %>"
           width="100%" height="500" style="border: 1px solid #ddd; border-radius: 4px;"
           title="Tour widget preview">
   </iframe>
@@ -61,22 +78,31 @@
       var iframeBox = document.getElementById('iframe-snippet');
       var formBox = document.getElementById('form-snippet');
       var preview = document.getElementById('widget-preview');
-      var base = <%= raw embed_tour_request_url(operator_subdomain: @operator.subdomain, host: request.host_with_port).to_json %>;
+      // Two URLs: the public one (what the operator embeds on their marketing
+      // site) and the preview one (token-signed so the iframe shows the widget
+      // even when it's disabled).
+      var publicBase  = <%= raw public_url.to_json %>;
+      var previewBase = <%= raw preview_url.to_json %>;
+
+      function withLocation(base, locationId) {
+        if (!locationId) return base;
+        var url = new URL(base);
+        url.pathname = url.pathname.replace(/\/?$/, "") + "/locations/" + locationId;
+        return url.toString();
+      }
 
       function render() {
-        var path = base;
-        if (picker.value) {
-          path = path.replace(/\/?$/, "") + "/locations/" + picker.value;
-        }
-        iframeBox.value = '<iframe src="' + path + '" width="100%" height="600" style="border:none;" title="Request a tour"></iframe>';
-        formBox.value = '<form action="' + path + '" method="post">\n' +
+        var publicPath = withLocation(publicBase, picker.value);
+        var previewPath = withLocation(previewBase, picker.value);
+        iframeBox.value = '<iframe src="' + publicPath + '" width="100%" height="600" style="border:none;" title="Request a tour"></iframe>';
+        formBox.value = '<form action="' + publicPath + '" method="post">\n' +
                         '  <input name="name" placeholder="Your name" required>\n' +
                         '  <input name="email" type="email" placeholder="Email" required>\n' +
                         '  <textarea name="message" placeholder="What are you looking for?"></textarea>\n' +
                         '  <input name="_hp" tabindex="-1" autocomplete="off" style="display:none">\n' +
                         '  <button type="submit">Request a tour</button>\n' +
                         '</form>';
-        preview.src = path;
+        preview.src = previewPath;
       }
 
       picker.addEventListener('change', render);
