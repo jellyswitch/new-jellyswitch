@@ -99,10 +99,13 @@
     color: rgba(255,255,255,0.8);
   }
   .feedback-reply-form {
-    position: sticky;
-    bottom: 0;
     background: #fff;
     padding-top: 8px;
+    /* Was position: sticky; bottom: 0 — collided with the mobile app's
+       fixed bottom tab bar (z-index 1050), which sat right on top of the
+       Send button so only a thin slice above the tab bar was clickable.
+       Static positioning keeps the form at the end of the conversation
+       and avoids the overlap. */
   }
   @media (max-width: 768px) {
     .chat-bubble {
@@ -110,3 +113,13 @@
     }
   }
 </style>
+
+<script>
+  // Drop the user onto the unread reply rather than the original message —
+  // mark_as_read! fires after this page renders, so the .chat-bubble--unread
+  // marker still exists on the DOM at load time.
+  document.addEventListener("DOMContentLoaded", function () {
+    var unread = document.querySelector(".chat-bubble--unread");
+    if (unread) unread.scrollIntoView({ block: "center" });
+  });
+</script>

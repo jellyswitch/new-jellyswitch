@@ -42,21 +42,53 @@ RSpec.describe Operator::MemberFeedbacksController, type: :controller do
       }
     end
 
-    context "with valid params" do
+    context "with valid params and no existing thread" do
+      let(:fresh_feedback) { build(:member_feedback, id: 999, operator: operator, location: location, user: regular_user) }
+
       before do
+        # Make sure the user has zero prior threads so we hit the Create branch.
+        # Don't reference `member_feedback` here — its `let` is lazy and would
+        # be auto-created by RSpec's mock setup, putting a thread in the DB.
+        MemberFeedback.where(user: regular_user).destroy_all
         allow(MemberFeedback::Create).to receive(:call).and_return(
-          OpenStruct.new(success?: true, member_feedback: member_feedback)
+          OpenStruct.new(success?: true, member_feedback: fresh_feedback)
         )
       end
 
-      it "creates a new member feedback" do
+      it "creates a new member feedback thread" do
         post :create, params: valid_params
-        expect(flash[:success]).to eq("Thank you for your feedback!")
+        expect(MemberFeedback::Create).to have_received(:call)
+        expect(flash[:success]).to eq("Thank you — staff will reply right here.")
       end
 
-      it "redirects to home path" do
+      it "redirects to the new thread's show page" do
         post :create, params: valid_params
-        expect(response).to redirect_to(home_path)
+        expect(response).to redirect_to(member_feedback_path(fresh_feedback))
+      end
+    end
+
+    context "when the member already has a thread for this location" do
+      # Regression: each submit used to spawn a fresh MemberFeedback, so
+      # staff replies on the old thread were invisible to the member.
+      # Submits now append to the existing thread as a FeedbackReply.
+      let!(:existing) { create(:member_feedback, operator: operator, location: location, user: regular_user, comment: "First question") }
+
+      it "appends to the existing thread rather than creating a new one" do
+        expect(MemberFeedback::Create).not_to receive(:call)
+        expect(MemberFeedback::CreateReply).to receive(:call).with(
+          hash_including(member_feedback: existing, body: "Great space!")
+        ).and_return(OpenStruct.new(success?: true))
+
+        post :create, params: valid_params
+      end
+
+      it "redirects to the existing thread's show page after appending" do
+        allow(MemberFeedback::CreateReply).to receive(:call).and_return(
+          OpenStruct.new(success?: true)
+        )
+
+        post :create, params: valid_params
+        expect(response).to redirect_to(member_feedback_path(existing))
       end
     end
 
