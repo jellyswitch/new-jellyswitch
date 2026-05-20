@@ -47,13 +47,24 @@
       <% end %>
     </div>
 
-    <%# Reply form %>
+    <%# Reply form. Use a <button> (rather than <input type="submit">) and
+        an oversized hit area — Jamie reported the previous "Send" only
+        registered taps on a small sliver inside the visual button on iOS
+        WKWebView. min-height: 56px clears the Apple HIG 44pt touch target
+        comfortably; the inner span keeps the visual label centered. %>
     <%= form_with url: reply_member_feedback_path(@member_feedback), scope: :feedback_reply, method: :post, local: true do |f| %>
       <div class="feedback-reply-form mt-3">
-        <div class="input-group">
-          <%= f.text_area :body, placeholder: "Type a reply...", class: "form-control", rows: 2, required: true, id: "reply-body" %>
-        </div>
-        <%= f.submit "Send", class: "btn btn-primary btn-block mt-2", id: "reply-submit" %>
+        <%= f.text_area :body,
+              placeholder: "Type a reply...",
+              class: "form-control",
+              rows: 3,
+              required: true,
+              id: "reply-body" %>
+        <button type="submit"
+                id="reply-submit"
+                class="btn btn-primary btn-block btn-lg mt-2 feedback-reply-form__send">
+          <i class="fas fa-paper-plane mr-2"></i>Send
+        </button>
       </div>
     <% end %>
   <% end %>
@@ -107,6 +118,15 @@
        Static positioning keeps the form at the end of the conversation
        and avoids the overlap. */
   }
+  .feedback-reply-form__send {
+    min-height: 56px;          /* generous touch target on iOS / Android */
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feedback-reply-form__send i { font-size: 0.95em; }
   @media (max-width: 768px) {
     .chat-bubble {
       max-width: 90%;
