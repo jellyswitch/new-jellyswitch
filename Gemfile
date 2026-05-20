@@ -86,7 +86,7 @@ end
 group :development, :test do
   gem "bundler-audit"
   gem "debug", platforms: [:mri, :mingw, :x64_mingw]
-  gem "minitest", "~> 5.0"
+  gem "minitest", "~> 6.0"
   gem "mocha", "~> 1.14"
   gem "policy-assertions"
   gem "pry-byebug"
