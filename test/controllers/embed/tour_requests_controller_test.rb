@@ -25,6 +25,52 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
+  test "GET show with a valid preview token renders form even when widget disabled" do
+    # Regression: admins on the settings page need the live preview iframe to
+    # render even when tour_widget_enabled is off, otherwise the preview is
+    # blank exactly when they want to look at it. The settings view signs a
+    # short-lived token that proves the iframe is coming from a logged-in
+    # operator admin; the embed controller verifies it without depending on
+    # session cookies traversing the embed boundary.
+    @operator.update!(tour_widget_enabled: false)
+    token = Embed::TourRequestsController.verifier.generate({
+      "operator_id" => @operator.id, "exp" => 1.hour.from_now.to_i,
+    })
+
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain, preview_token: token)
+
+    assert_response :success
+    assert_select "form[action=?]", embed_tour_request_path(operator_subdomain: @operator.subdomain)
+    assert_select "div", text: /Preview mode/
+  end
+
+  test "GET show with an expired preview token still 404s when widget disabled" do
+    @operator.update!(tour_widget_enabled: false)
+    token = Embed::TourRequestsController.verifier.generate({
+      "operator_id" => @operator.id, "exp" => 1.hour.ago.to_i,
+    })
+
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain, preview_token: token)
+    assert_response :not_found
+  end
+
+  test "GET show with a preview token for a different operator still 404s" do
+    @operator.update!(tour_widget_enabled: false)
+    token = Embed::TourRequestsController.verifier.generate({
+      "operator_id" => @operator.id + 9999, "exp" => 1.hour.from_now.to_i,
+    })
+
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain, preview_token: token)
+    assert_response :not_found
+  end
+
+  test "GET show with a tampered preview token still 404s" do
+    @operator.update!(tour_widget_enabled: false)
+
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain, preview_token: "not-a-real-token")
+    assert_response :not_found
+  end
+
   test "GET show 404s when subdomain unknown" do
     get embed_tour_request_path(operator_subdomain: "no-such-operator")
     assert_response :not_found

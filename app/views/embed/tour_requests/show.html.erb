@@ -1,2 +1,8 @@
+<% if admin_previewing? && !@operator.tour_widget_active? %>
+  <div style="background: #fff3cd; border: 1px solid #ffeeba; color: #856404; padding: 8px 12px; border-radius: 4px; margin-bottom: 16px; font-size: 13px;">
+    <strong>Preview mode.</strong> The public widget is currently disabled, so visitors see a 404. Enable it on the settings page when you're ready.
+  </div>
+<% end %>
+
 <h1>Request a tour at <%= @operator.name %></h1>
 <%= render "form" %>
