@@ -15,14 +15,19 @@
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <div class="feedback-chat" id="feedback-chat">
-      <%# Original feedback message (always from the member) %>
-      <div class="chat-bubble <%= is_admin ? 'chat-bubble-other' : 'chat-bubble-mine' %>">
-        <div class="chat-body"><%= simple_format(@member_feedback.comment) %></div>
-        <div class="chat-meta">
-          <%= is_admin ? "Member" : "You" %>
-          &middot; <%= time_ago_in_words(@member_feedback.created_at) %> ago
+      <%# Original feedback message (always from the member). Skip the
+          bubble when the comment is blank — that's the "host messaged
+          first" case, where the conversation should start with the
+          host's FeedbackReply rather than an empty member bubble. %>
+      <% if @member_feedback.comment.to_s.strip.present? %>
+        <div class="chat-bubble <%= is_admin ? 'chat-bubble-other' : 'chat-bubble-mine' %>">
+          <div class="chat-body"><%= simple_format(@member_feedback.comment) %></div>
+          <div class="chat-meta">
+            <%= is_admin ? "Member" : "You" %>
+            &middot; <%= time_ago_in_words(@member_feedback.created_at) %> ago
+          </div>
         </div>
-      </div>
+      <% end %>
 
       <%# Replies %>
       <% @feedback_replies.each do |reply| %>

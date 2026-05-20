@@ -129,6 +129,16 @@ class Operator::LandingController < Operator::BaseController
       return
     end
 
+    # Auto-send the host's "Hi! Any questions?" greeting on the visitor's
+    # first hit so it shows up as a real first message in My Messages.
+    # Idempotent — no-op if they already have a thread at this location.
+    MemberFeedback::EnsureHostGreeting.call(
+      user: current_user,
+      location: current_location,
+      operator: current_tenant,
+      host: space_host_for(current_location),
+    )
+
     flash.keep
     @day_pass_types = current_location.day_pass_types.available.visible
     @plans = current_location.plans.for_individuals.order("amount_in_cents DESC")
