@@ -393,5 +393,29 @@ button {
   &__textarea {
     font-size: 14px;
   }
+
+  // Reply-waiting variant: louder, warmer background so it reads as "there's
+  // something for you" rather than "we want something from you".
+  &--reply {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, #fff8e1 0%, #fffdf3 100%);
+    border-color: #ffe082;
+    box-shadow: 0 8px 24px rgba(255, 193, 7, 0.18);
+    padding: 12px 14px;
+
+    .space-host-nudge__copy strong { color: #6b4f00; }
+    .space-host-nudge__role        { color: #997b1a; }
+    .space-host-nudge__snippet {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #4b3a00;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+  }
 }
 

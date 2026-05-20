@@ -6,11 +6,16 @@
   <%= render "shared/back_bar", back_path: root_path, back_label: "Home", page_title: "Conversation" %>
 <% end %>
 
+<% is_admin = current_user.admin_or_manager?(current_location) %>
+<%# Compute unread status BEFORE we render — mark_as_read! runs in the
+    controller after this view loads, but on first paint the unread reply
+    should glow so the member can spot it instantly. %>
+<% last_read = @member_feedback.last_read_at %>
+
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
     <div class="feedback-chat" id="feedback-chat">
       <%# Original feedback message (always from the member) %>
-      <% is_admin = current_user.admin_or_manager?(current_location) %>
       <div class="chat-bubble <%= is_admin ? 'chat-bubble-other' : 'chat-bubble-mine' %>">
         <div class="chat-body"><%= simple_format(@member_feedback.comment) %></div>
         <div class="chat-meta">
@@ -22,7 +27,8 @@
       <%# Replies %>
       <% @feedback_replies.each do |reply| %>
         <% is_mine = (reply.from_admin? && is_admin) || (!reply.from_admin? && !is_admin) %>
-        <div class="chat-bubble <%= is_mine ? 'chat-bubble-mine' : 'chat-bubble-other' %>">
+        <% unread_for_member = !is_admin && reply.from_admin? && (last_read.nil? || reply.created_at > last_read) %>
+        <div class="chat-bubble <%= is_mine ? 'chat-bubble-mine' : 'chat-bubble-other' %> <%= 'chat-bubble--unread' if unread_for_member %>">
           <div class="chat-body"><%= simple_format(reply.body) %></div>
           <div class="chat-meta">
             <% if is_mine %>
@@ -33,6 +39,9 @@
               Member
             <% end %>
             &middot; <%= time_ago_in_words(reply.created_at) %> ago
+            <% if unread_for_member %>
+              &middot; <span class="text-warning"><strong>New</strong></span>
+            <% end %>
           </div>
         </div>
       <% end %>
@@ -52,10 +61,7 @@
 
 <style>
   .feedback-chat {
-    max-height: 500px;
-    overflow-y: auto;
     padding: 10px 0;
-    -webkit-overflow-scrolling: touch;
     display: flex;
     flex-direction: column;
   }
@@ -81,6 +87,9 @@
     align-self: flex-start;
     border-bottom-left-radius: 4px;
   }
+  .chat-bubble--unread {
+    box-shadow: 0 0 0 2px #ffc107, 0 2px 8px rgba(255, 193, 7, 0.25);
+  }
   .chat-meta {
     font-size: 11px;
     margin-top: 4px;
@@ -99,14 +108,5 @@
     .chat-bubble {
       max-width: 90%;
     }
-    .feedback-chat {
-      max-height: 60vh;
-    }
   }
 </style>
-
-<script>
-  // Auto-scroll to bottom of chat
-  var chat = document.getElementById("feedback-chat");
-  if (chat) chat.scrollTop = chat.scrollHeight;
-</script>

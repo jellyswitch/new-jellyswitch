@@ -1,13 +1,17 @@
-<% unread = logged_in? && !admin? ? current_user.member_feedbacks.includes(:feedback_replies).select(&:has_unread_replies?) : [] %>
+<% unread = logged_in? && !admin? ? unread_admin_threads_for(current_user) : [] %>
 <% if unread.any? %>
-  <%= link_to my_feedback_member_feedbacks_path, class: "d-block", style: "background: #fff8e1; border-bottom: 1px solid #ffe082; color: #6b4f00; padding: 10px 16px; text-decoration: none; font-size: 14px;", data: { "turbo-action" => "replace" } do %>
+  <%# Single unread thread → deep-link straight to the conversation so the
+      member doesn't have to drill through a list page to read it. %>
+  <% target = unread.size == 1 ? member_feedback_path(unread.first) : my_feedback_member_feedbacks_path %>
+  <%= link_to target, class: "d-block", style: "background: #fff8e1; border-bottom: 1px solid #ffe082; color: #6b4f00; padding: 10px 16px; text-decoration: none; font-size: 14px;", data: { "turbo-action" => "replace" } do %>
     <div style="max-width: 720px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
       <span>
         <i class="fas fa-envelope" style="margin-right: 8px;"></i>
         <% if unread.size == 1 %>
-          You have a new reply waiting in My Messages
+          <% reply = unread.first.feedback_replies.select(&:from_admin?).last %>
+          <strong><%= reply&.user&.name || "Staff" %></strong> replied — tap to read
         <% else %>
-          You have <%= unread.size %> new replies waiting in My Messages
+          You have <%= unread.size %> new replies waiting
         <% end %>
       </span>
       <span style="font-weight: 600;">View &rsaquo;</span>
