@@ -91,12 +91,50 @@ RSpec.describe FeedItem, type: :model do
     end
 
     describe '#is_expense_feed?' do
-      it 'identifies expense-related content' do
-        feed_item.text = ActionText::Content.new('This is an expense')
+      it 'is true when the post has both an expense keyword and a dollar amount' do
+        feed_item.text = ActionText::Content.new('Spent $5.00 on coffee for the team')
         expect(feed_item.is_expense_feed?).to be true
+      end
 
+      it 'is false when the post mentions "spent" with no dollar amount' do
+        # Regression: a management note like "We spent the afternoon
+        # rearranging the lobby" must not silently become an expense.
+        feed_item.text = ActionText::Content.new('We spent the afternoon rearranging the lobby')
+        expect(feed_item.is_expense_feed?).to be false
+      end
+
+      it 'is false when the post has a dollar amount but no expense keyword' do
+        feed_item.text = ActionText::Content.new('New plan launches at $99 next month')
+        expect(feed_item.is_expense_feed?).to be false
+      end
+
+      it 'is false for a regular post' do
         feed_item.text = ActionText::Content.new('Regular post')
         expect(feed_item.is_expense_feed?).to be false
+      end
+    end
+
+    describe '#rich_html_body?' do
+      it 'is false for a plain-text note (mobile-created)' do
+        # ActionText stores plain mobile text verbatim with literal `\n`
+        # newlines; the body has no HTML tags. The renderer needs
+        # `white-space: pre-wrap` to keep those line breaks visible.
+        feed_item.text = ActionText::Content.new("Open at 8am today\n\nNeed wifi fixed")
+        expect(feed_item.rich_html_body?).to be false
+      end
+
+      it 'is true for a bulleted-list note (Trix/web-created)' do
+        # Regression: David's web bullet post rendered with massive vertical
+        # gaps between bullets because `pre-wrap` preserved the whitespace
+        # between `<li>` tags. Body HTML must be detected as rich so we
+        # skip pre-wrap.
+        feed_item.text = ActionText::Content.new("<ul><li>one</li><li>two</li></ul>")
+        expect(feed_item.rich_html_body?).to be true
+      end
+
+      it 'is false when text is blank' do
+        feed_item.text = nil
+        expect(feed_item.rich_html_body?).to be false
       end
     end
   end

@@ -1,4 +1,4 @@
-<% if feed_item.expense? %>
+<% if feed_item.expense? && feed_item.amount.to_i > 0 %>
   <dl class="row">
     <dt class="col-6">
       Amount:
@@ -11,7 +11,9 @@
   </dl>
 <% end %>
 
-<div class="feed-item-post-body" style="overflow-wrap: break-word; white-space: pre-wrap;">
+<% body_style = "overflow-wrap: break-word;" %>
+<% body_style += " white-space: pre-wrap;" unless feed_item.rich_html_body? %>
+<div class="feed-item-post-body" style="<%= body_style %>">
   <%= feed_item.text %>
 </div>
 
