@@ -17,6 +17,10 @@ class IosNotification
     )
     notification = Apnotic::Notification.new(user.ios_token)
     notification.alert = message
+    # Without an explicit sound, APNs delivers the push silently regardless
+    # of what the client's notification handler requests. "default" plays the
+    # system default tone — audible push, no custom asset required.
+    notification.sound = "default"
     notification.topic = user.operator.bundle_id
     notification.custom_payload = data if data.present?
     response = connection.push(notification)

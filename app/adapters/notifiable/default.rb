@@ -68,7 +68,18 @@ class Notifiable::Default < SimpleDelegator
                 "notification": {
                   "title": message,
                   "body": message
-              }}
+              },
+                # Pin to the channel the mobile app creates with HIGH importance
+                # and request the default tone explicitly. Without this, FCM
+                # routes to the implicit "Miscellaneous" channel on some
+                # Android versions, which is silent by default.
+                "android": {
+                  "notification": {
+                    "sound": "default",
+                    "channel_id": "default",
+                  }
+                }
+              }
           payload["data"] = deep_link_data.transform_values(&:to_s) if deep_link_data.present?
           fcm.send_v1(payload)
           puts "Pushed message: #{message} to #{user.name}'s android device: #{user.android_token}"
