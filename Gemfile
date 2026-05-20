@@ -11,6 +11,9 @@ gem "aws-sdk-s3", "~> 1.48", require: false
 gem "bcrypt"
 gem "bootstrap", "~> 4.6.2"
 gem "chartkick", ">= 3.4.0"
+# Pin to 2.x — connection_pool 3.x changed ConnectionPool.new to require
+# keyword args, which Rails 7.1's RedisCacheStore can't call.
+gem "connection_pool", "~> 2.5"
 gem "dotenv-rails", require: "dotenv/rails-now"
 gem "draper"
 gem "faker", :git => "https://github.com/stympy/faker.git", :branch => "master"
@@ -47,7 +50,7 @@ gem "request_store"
 gem "roadie-rails", "~> 3.2"
 gem "sassc-rails", "~> 2.1"
 gem "searchkick"
-gem "sidekiq", "~> 6.5.10"
+gem "sidekiq", "~> 7.3"
 gem "simple_calendar"
 gem "sprockets-rails"
 gem "stimulus-rails"
