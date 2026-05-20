@@ -8,12 +8,37 @@ class Operator::MemberFeedbacksController < Operator::BaseController
 
   def create
     authorize MemberFeedback.new
-    result = MemberFeedback::Create.call(member_feedback_params: member_feedback_params, user: current_user, operator: current_tenant, location: current_location)
-    @member_feedback = result.member_feedback
+
+    # Treat the conversation as ongoing: if the member already has a thread
+    # for this location, append the new comment as a reply rather than
+    # spinning up a fresh thread. New threads orphan staff replies that the
+    # member never finds.
+    existing = current_user.member_feedbacks
+      .where(location: current_location)
+      .order(updated_at: :desc)
+      .first
+
+    if existing.present?
+      result = MemberFeedback::CreateReply.call(
+        member_feedback: existing,
+        user: current_user,
+        operator: current_tenant,
+        body: member_feedback_params[:comment],
+      )
+      @member_feedback = existing
+    else
+      result = MemberFeedback::Create.call(
+        member_feedback_params: member_feedback_params,
+        user: current_user,
+        operator: current_tenant,
+        location: current_location,
+      )
+      @member_feedback = result.member_feedback
+    end
 
     if result.success?
-      flash[:success] = "Thank you for your feedback!"
-      turbo_redirect(home_path, action: restore_if_possible)
+      flash[:success] = "Thank you — staff will reply right here."
+      turbo_redirect(member_feedback_path(@member_feedback), action: restore_if_possible)
     else
       flash[:error] = result.message
       background_image
