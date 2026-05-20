@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   include ApplicationHelper
   include SessionsHelper
   include Pagy::Backend
-  include Pundit
+  include Pundit::Authorization
 
   skip_forgery_protection
 

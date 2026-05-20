@@ -1,6 +1,6 @@
 class Navigation::Default < SimpleDelegator
   include Rails.application.routes.url_helpers
-  include Pundit
+  include Pundit::Authorization
   attr_reader :operator, :location, :user
 
   def initialize(operator, location, user)
