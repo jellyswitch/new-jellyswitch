@@ -78,6 +78,18 @@ module LandingHelper
     gm || location.operator.users.where(role: User::ADMIN).order(:created_at).first
   end
 
+  # All of the member's feedback threads with at least one unread admin reply,
+  # ordered most-recent-first. Drives the global banner, the nudge bubble's
+  # "reply waiting" variant, and the my_feedback list page.
+  def unread_admin_threads_for(user)
+    return [] unless user
+
+    user.member_feedbacks
+        .includes(:feedback_replies)
+        .select { |f| f.has_unread_replies? && f.feedback_replies.any?(&:from_admin?) }
+        .sort_by { |f| -(f.feedback_replies.last&.created_at&.to_i || 0) }
+  end
+
   private
 
   def always_has_access?

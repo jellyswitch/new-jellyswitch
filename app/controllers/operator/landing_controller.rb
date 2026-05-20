@@ -26,7 +26,7 @@ class Operator::LandingController < Operator::BaseController
     # Unread admin replies — drives the red badge on "My Messages" and the
     # global header banner. Previously the view referenced @open_tickets
     # but nothing assigned it, so the badge never appeared.
-    @open_tickets = current_user&.member_feedbacks&.includes(:feedback_replies)&.select(&:has_unread_replies?) || []
+    @open_tickets = unread_admin_threads_for(current_user)
 
     response.headers["Turbo-Location"] = home_url
     flash.keep

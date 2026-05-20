@@ -11,9 +11,22 @@
     <% if @member_feedbacks.any? %>
       <div class="list-group list-group-flush mt-3">
         <% @member_feedbacks.each do |feedback| %>
-          <%= link_to member_feedback_path(feedback), class: "list-group-item list-group-item-action" do %>
+          <% latest_reply = feedback.feedback_replies.sort_by(&:created_at).last %>
+          <% unread = feedback.has_unread_replies? && latest_reply&.from_admin? %>
+          <%= link_to member_feedback_path(feedback), class: "list-group-item list-group-item-action #{'border-warning' if unread}" do %>
             <p class="mb-1"><%= truncate(feedback.comment, length: 100) %></p>
-            <small class="text-muted">
+            <% if latest_reply %>
+              <div class="mt-2 pl-3" style="border-left: 3px solid <%= unread ? '#ffc107' : '#e0e0e0' %>;">
+                <small class="<%= unread ? 'text-dark' : 'text-muted' %>">
+                  <strong><%= latest_reply.from_admin? ? (latest_reply.user&.name || 'Staff') : 'You' %>:</strong>
+                  <%= truncate(latest_reply.body.to_s, length: 140) %>
+                </small>
+                <% if unread %>
+                  <span class="badge badge-warning ml-1">New</span>
+                <% end %>
+              </div>
+            <% end %>
+            <small class="text-muted d-block mt-2">
               <%= time_ago_in_words(feedback.updated_at) %> ago
               <% if feedback.feedback_replies.any? %>
                 &middot; <%= feedback.feedback_replies.count %> <%= "reply".pluralize(feedback.feedback_replies.count) %>
