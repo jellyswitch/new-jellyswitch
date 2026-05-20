@@ -42,10 +42,22 @@ class Api::V1::RoomsController < Api::V1::BaseController
     start_hour = parse_hour.call(location&.working_day_start, 8)
     end_hour = parse_hour.call(location&.working_day_end, 18)
 
+    # Superadmins can book outside posted working hours — useful for ops
+    # tests, off-hours member coverage, and ad-hoc bookings the location
+    # admin needs to make manually. Regular admins are still bound by the
+    # location's working hours.
+    if current_api_user&.superadmin?
+      start_hour = 0
+      end_hour = 24
+    end
+
     zone = location&.time_zone || 'UTC'
     slots = []
-    current_time = date.in_time_zone(zone).change(hour: start_hour)
-    end_time = date.in_time_zone(zone).change(hour: end_hour)
+    # Use addition rather than `change(hour: x)` so end_hour == 24
+    # (superadmin all-day window) doesn't raise ArgumentError.
+    day_start = date.in_time_zone(zone).beginning_of_day
+    current_time = day_start + start_hour.hours
+    end_time = day_start + end_hour.hours
 
     # If this is today, skip past slots. Round up to the next 15-min mark
     # so the user can't pick a start time that's already gone by.
