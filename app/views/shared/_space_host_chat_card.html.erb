@@ -1,0 +1,100 @@
+<%# One unified "your space host messaged you" card. Mirrors the mobile
+    WelcomeScreen but compresses the old two-card layout (Have a Question
+    + Need a Hand) into a single chat-style affordance:
+
+      - Host's greeting rendered as a chat bubble from David / GM / admin.
+      - Reply textarea + Send button — submitting appends to the member's
+        existing feedback thread (one conversation, no new tickets).
+      - My Messages link that pulses yellow with a count when the member
+        has an unread admin reply.
+      - Call / Text / Email shortcuts to the host directly. %>
+<% host = space_host_for(current_location) %>
+<% return unless host.present? %>
+<% unread = current_user ? unread_admin_threads_for(current_user) : [] %>
+<% unread_count = unread.size %>
+<% unread_thread = unread.first %>
+<% latest_admin_reply = unread_thread&.feedback_replies&.select(&:from_admin?)&.last %>
+<% first_name = current_user&.name.to_s.split.first.presence %>
+<% greeting = "Hi#{first_name ? " #{first_name}" : ''}! Any questions about getting started at #{current_location.name}?" %>
+<% phone = current_location.contact_phone.presence || host.phone %>
+<% email = current_location.contact_email.presence || host.email %>
+
+<div class="space-host-chat <%= 'space-host-chat--unread' if unread_count > 0 %>">
+  <div class="d-flex align-items-start" style="gap: 12px;">
+    <% if host.has_profile_photo? %>
+      <%= image_tag host.normal_profile_photo,
+            class: "rounded-circle flex-shrink-0",
+            style: "width: 44px; height: 44px; object-fit: cover;",
+            alt: host.name %>
+    <% else %>
+      <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
+           style="width: 44px; height: 44px; background: var(--brand-color, #76b82a); color: #fff; font-weight: 600;">
+        <%= host.name.to_s.split.map(&:first).first(2).join.upcase %>
+      </div>
+    <% end %>
+
+    <div style="flex: 1; min-width: 0;">
+      <div class="space-host-chat__bubble">
+        <% if latest_admin_reply %>
+          <%= simple_format(truncate(latest_admin_reply.body.to_s, length: 220), {}, sanitize: true) %>
+        <% else %>
+          <%= greeting %>
+        <% end %>
+      </div>
+      <div class="text-muted small mt-1">
+        <strong><%= latest_admin_reply&.user&.name || host.name %></strong>
+        &middot; your <%= current_location.name %> host
+      </div>
+    </div>
+  </div>
+
+  <%= form_for(MemberFeedback.new, html: { class: "mt-3" }) do |f| %>
+    <%= f.hidden_field :anonymous, value: false %>
+    <%= f.text_area :comment,
+          placeholder: "Type your response…",
+          class: "form-control",
+          rows: 2,
+          required: true %>
+
+    <div class="d-flex align-items-center mt-2 flex-wrap" style="gap: 8px;">
+      <%= f.submit "Send Message", class: "btn btn-primary" %>
+
+      <% messages_target = unread_thread.present? ? member_feedback_path(unread_thread) : my_feedback_member_feedbacks_path %>
+      <%= link_to messages_target,
+                  class: "btn #{unread_count > 0 ? 'btn-warning space-host-chat__messages-link space-host-chat__messages-link--pulse' : 'btn-outline-secondary space-host-chat__messages-link'} d-inline-flex align-items-center",
+                  data: { "turbo-action" => "replace" } do %>
+        My Messages
+        <% if unread_count > 0 %>
+          <span class="badge badge-light ml-2" style="background: #fff; color: #3b2c00; font-weight: 700;"><%= unread_count %></span>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if phone.present? || email.present? %>
+    <div class="row mt-3 mx-n1">
+      <% if phone.present? %>
+        <div class="col-4 px-1">
+          <%= link_to "tel:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
+            <i class="fas fa-phone-alt mb-1"></i>
+            <small>Call</small>
+          <% end %>
+        </div>
+        <div class="col-4 px-1">
+          <%= link_to "sms:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
+            <i class="fas fa-comment-dots mb-1"></i>
+            <small>Text</small>
+          <% end %>
+        </div>
+      <% end %>
+      <% if email.present? %>
+        <div class="<%= phone.present? ? 'col-4' : 'col-12' %> px-1">
+          <%= link_to "mailto:#{email}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
+            <i class="fas fa-envelope mb-1"></i>
+            <small>Email</small>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

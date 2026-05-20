@@ -394,6 +394,48 @@ button {
     font-size: 14px;
   }
 
+}
+
+// Pulse for the "My Messages" button when there's an unread admin reply.
+// Mirrors the React Native MyMessagesButton's halo so the web and mobile
+// experiences look the same — see jellyswitch-mobile WelcomeScreen.
+@keyframes my-messages-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.55); }
+  50%      { box-shadow: 0 0 0 8px rgba(255, 193, 7, 0); }
+}
+
+.space-host-chat {
+  &__bubble {
+    background: #f1f3f5;
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: #1f2937;
+    font-size: 14px;
+    line-height: 1.4;
+    p { margin-bottom: 0; }
+  }
+
+  &--unread {
+    .space-host-chat__bubble {
+      background: linear-gradient(135deg, #fff8e1 0%, #fffdf3 100%);
+      color: #4b3a00;
+      box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.35);
+    }
+  }
+
+  &__messages-link {
+    font-weight: 600;
+
+    &--pulse {
+      animation: my-messages-pulse 1.6s infinite;
+      background-color: #ffc107 !important;
+      border-color: #ffc107 !important;
+      color: #3b2c00 !important;
+    }
+  }
+}
+
+.space-host-nudge {
   // Reply-waiting variant: louder, warmer background so it reads as "there's
   // something for you" rather than "we want something from you".
   &--reply {
