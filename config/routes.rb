@@ -787,7 +787,7 @@ Rails.application.routes.draw do
     patch "update_notifications",      to: "operator/settings#update_notifications",       as: :update_notifications
     get  "modules",                    to: "operator/settings#modules",                    as: :modules
     patch "update_modules",            to: "operator/settings#update_modules",             as: :update_modules
-    get  "policies",                   to: "operator/settings#policies",                   as: :policies
+    get  "policies",                   to: "operator/settings#policies_tab",               as: :policies
     patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
     get   "tour_widget",               to: "operator/settings#tour_widget",                as: :tour_widget
     patch "update_tour_widget",        to: "operator/settings#update_tour_widget",         as: :update_tour_widget

@@ -37,8 +37,17 @@ class Operator::SettingsController < Operator::BaseController
   def modules
     @operator = current_operator
   end
-  def policies
+  # Renamed from `policies` to avoid shadowing `Pundit::Authorization#policies`.
+  # Pundit 2.5.2 calls `policies` internally when building its cache_store
+  # (`LegacyStore.new(policies)`). When this action method shadowed the
+  # helper, Pundit got back the result of `@operator = current_operator`
+  # (an AR record) instead of the `{}` cache hash, then crashed on the
+  # next `policy(:door)` with "can't write unknown attribute 'door'".
+  # Route name (`settings_policies_path`) + URL (`/operator/settings/policies`)
+  # stay the same so existing links don't break.
+  def policies_tab
     @operator = current_operator
+    render :policies
   end
 
   def update_branding
