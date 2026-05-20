@@ -70,6 +70,21 @@ RSpec.describe IosNotification do
 
       expect(apns_notification.custom_payload).to be_nil
     end
+
+    it "sets sound to default so the push is audible" do
+      # Regression: APNs requires an explicit sound key on the payload;
+      # without it the push arrives silently regardless of what the client's
+      # notification handler requests via shouldPlaySound.
+      apns_notification = nil
+      allow(Apnotic::Notification).to receive(:new).and_wrap_original do |method, *args|
+        apns_notification = method.call(*args)
+        apns_notification
+      end
+
+      described_class.new(user: user, message: "Test").send!
+
+      expect(apns_notification.sound).to eq("default")
+    end
   end
 
   describe "#validate!" do
