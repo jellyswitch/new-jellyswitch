@@ -119,7 +119,10 @@ class AutomatedWorkflowsJob < ApplicationJob
     reservations.find_each do |reservation|
       user = reservation.user
       next if user.email_opted_out? || user.email_bounced?
-      next unless reservation.room.rentable? # paid rooms only
+      # Only remind people who actually paid for the reservation. Members on
+      # plans, day-pass holders, lease holders, admins, GMs, and CMs all book
+      # rentable rooms with reservation.paid = false (see Billing::Reservations::SaveRoomReservation).
+      next unless reservation.paid?
 
       send_key = "booking_reminder_#{reservation.id}"
       next if already_sent_key?(send_key)

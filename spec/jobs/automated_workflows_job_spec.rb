@@ -93,6 +93,50 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
     end
   end
 
+  describe "booking_reminder" do
+    let!(:workflow) do
+      AutomatedWorkflow.create!(operator: operator, location: location,
+                                workflow_type: "booking_reminder",
+                                config: { "hours_before" => 24 }, enabled: true)
+    end
+    let(:room) do
+      create(:room, operator: operator, location: location,
+                    rentable: true, hourly_rate_in_cents: 5000)
+    end
+
+    it "sends a reminder for a paid reservation in the 24h window" do
+      reservation = create(:reservation, user: member_user, room: room,
+                                         datetime_in: 24.hours.from_now + 30.minutes,
+                                         paid: true)
+
+      expect {
+        described_class.new.perform
+      }.to change { ProductEmailSend.where(email_type: "booking_reminder_#{reservation.id}").count }.by(1)
+    end
+
+    it "does NOT send a reminder when the reservation was not paid (member/admin/day-pass)" do
+      # paid: false is what SaveRoomReservation sets for admins, GMs, CMs,
+      # members with active subscriptions, day-pass holders, and lease holders.
+      reservation = create(:reservation, user: member_user, room: room,
+                                         datetime_in: 24.hours.from_now + 30.minutes,
+                                         paid: false)
+
+      expect {
+        described_class.new.perform
+      }.not_to change { ProductEmailSend.where(email_type: "booking_reminder_#{reservation.id}").count }
+    end
+
+    it "is idempotent for paid reservations" do
+      create(:reservation, user: member_user, room: room,
+                           datetime_in: 24.hours.from_now + 30.minutes,
+                           paid: true)
+      described_class.new.perform
+      expect {
+        described_class.new.perform
+      }.not_to change { ProductEmailSend.where("email_type LIKE ?", "booking_reminder_%").count }
+    end
+  end
+
   describe "AutomatedWorkflow handler dispatch" do
     it "routes day_passer_followup to run_day_passer_followup" do
       AutomatedWorkflow.create!(operator: operator, location: location,
