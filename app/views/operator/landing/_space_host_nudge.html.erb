@@ -1,0 +1,58 @@
+<% host = space_host_for(current_location) %>
+<% if host.present? && !current_user&.has_active_subscription? && !admin? %>
+  <div data-controller="space-host-nudge"
+       data-space-host-nudge-delay-value="10000"
+       data-space-host-nudge-storage-key-value="space_host_nudge_dismissed_v1_<%= current_location.id %>"
+       class="space-host-nudge"
+       hidden>
+    <button type="button"
+            class="space-host-nudge__close"
+            data-action="space-host-nudge#dismiss"
+            aria-label="Dismiss">
+      &times;
+    </button>
+
+    <%# Collapsed: tap-to-expand prompt. %>
+    <button type="button"
+            class="space-host-nudge__prompt"
+            data-action="space-host-nudge#expand"
+            data-space-host-nudge-target="prompt">
+      <% if host.has_profile_photo? %>
+        <%= image_tag host.normal_profile_photo, class: "space-host-nudge__avatar", alt: host.name %>
+      <% else %>
+        <div class="space-host-nudge__avatar space-host-nudge__avatar--initials">
+          <%= host.name.to_s.split.map(&:first).first(2).join.upcase %>
+        </div>
+      <% end %>
+      <div class="space-host-nudge__copy">
+        <strong><%= host.name %></strong>
+        <span class="space-host-nudge__role">Your <%= current_location.name %> host</span>
+        <p>Have any questions?</p>
+      </div>
+    </button>
+
+    <%# Expanded: inline feedback form. %>
+    <div class="space-host-nudge__form"
+         data-space-host-nudge-target="form"
+         hidden>
+      <div class="space-host-nudge__form-header">
+        <strong>Ask <%= host.name.to_s.split.first.presence || host.name %></strong>
+        <button type="button"
+                class="space-host-nudge__collapse"
+                data-action="space-host-nudge#collapse"
+                aria-label="Back">
+          &#8592;
+        </button>
+      </div>
+      <%= form_for(MemberFeedback.new, html: { data: { action: "submit->space-host-nudge#markDismissed" } }) do |f| %>
+        <%= f.hidden_field :anonymous, value: false %>
+        <%= f.text_area :comment,
+              placeholder: "How can we help?",
+              class: "form-control space-host-nudge__textarea",
+              rows: 3,
+              data: { "space-host-nudge-target" => "comment" } %>
+        <%= f.submit "Send", class: "btn btn-block btn-primary mt-2", id: "space_host_nudge_submit" %>
+      <% end %>
+    </div>
+  </div>
+<% end %>

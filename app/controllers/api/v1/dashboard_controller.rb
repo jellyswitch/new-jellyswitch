@@ -20,8 +20,11 @@ class Api::V1::DashboardController < Api::V1::BaseController
     door_usage = DoorPunch.where(user: user, door: doors).group(:door_id).count
     doors = doors.sort_by { |d| -(door_usage[d.id] || 0) }
 
-    # Open feedback tickets
-    open_tickets = user.member_feedbacks.where(status: ['open', nil]).count rescue 0
+    # Unread admin replies waiting for the member. Uses MemberFeedback#last_read_at
+    # vs feedback_replies.created_at — set in MemberFeedback#has_unread_replies?.
+    # (The previous query referenced a `status` column that doesn't exist and was
+    # silently rescuing to 0, so the RN badge never lit up.)
+    open_tickets = user.member_feedbacks.includes(:feedback_replies).count(&:has_unread_replies?)
 
     render json: {
       reservations_today: today_reservations.count,

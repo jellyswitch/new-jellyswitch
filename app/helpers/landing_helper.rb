@@ -67,6 +67,17 @@ module LandingHelper
     end
   end
 
+  # Picks the "space host" surfaced in the choose-page nudge bubble. Prefers
+  # a general manager assigned to this location, falls back to the oldest
+  # admin on the operator. Returns nil when neither exists.
+  def space_host_for(location)
+    return nil unless location
+
+    gm = location.operator.users.where(role: User::GENERAL_MANAGER, current_location_id: location.id)
+                                .order(:created_at).first
+    gm || location.operator.users.where(role: User::ADMIN).order(:created_at).first
+  end
+
   private
 
   def always_has_access?
