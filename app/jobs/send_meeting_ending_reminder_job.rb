@@ -6,6 +6,15 @@ class SendMeetingEndingReminderJob < ApplicationJob
   def perform(reservation_id)
     reservation = Reservation.find_by(id: reservation_id)
     return if reservation.nil? || reservation.cancelled?
+    # `end_now!` (mobile "End Reservation" button + admin equivalents)
+    # shortens `minutes` and sets `ended_early: true` — it does NOT set
+    # `cancelled: true`. Without these guards the previously-scheduled
+    # 10-min-before-end push fires at the original wait_until even though
+    # the reservation is over. Skip if the user ended it early OR if the
+    # current end time has already passed (defensive — covers extensions
+    # that re-scheduled, manual datetime edits, or any other shortening).
+    return if reservation.ended_early?
+    return if reservation.datetime_out <= Time.current
 
     room = reservation.room
     user = reservation.user
