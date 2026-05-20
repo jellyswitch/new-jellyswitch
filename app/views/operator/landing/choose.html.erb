@@ -46,10 +46,12 @@
   <% end %>
 <% end %>
 
+<%# Unified "space host messaged you" card — the host greets the visitor,
+    the visitor replies, and the conversation continues on the thread show
+    page. Replaces the older 10-second delayed nudge + Contact Us pair so
+    web and mobile show the same single affordance. %>
 <%= render Layout::FullWidth.new do %>
   <%= list_item do %>
-    <%= render "shared/contact_card" %>
+    <%= render "shared/space_host_chat_card" %>
   <% end %>
 <% end %>
-
-<%= render "operator/landing/space_host_nudge" %>
