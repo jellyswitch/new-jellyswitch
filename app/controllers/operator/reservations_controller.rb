@@ -87,10 +87,10 @@ class Operator::ReservationsController < Operator::BaseController
 
   def choose_time_post
     @room = current_tenant.rooms.find(params[:room_id])
-    if params[:day].present?
-      @day = Date.parse(params[:day])
-    else
-      @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
+    @day = parsed_day_param
+    if @day.nil?
+      redirect_to choose_day_reservations_path(room_id: @room.id, user_id: @user.id),
+                  alert: "Please pick a date before continuing." and return
     end
     turbo_redirect choose_time_reservations_path(room_id: @room.id, user_id: @user.id, day: @day)
   end
@@ -98,10 +98,10 @@ class Operator::ReservationsController < Operator::BaseController
   def choose_time
     # requires room, user, day
     @room = current_tenant.rooms.find(params[:room_id])
-    if params[:day].present?
-      @day = Date.parse(params[:day])
-    else
-      @day = Date.new(params["day(1i)"].to_i, params["day(2i)"].to_i, params["day(3i)"].to_i)
+    @day = parsed_day_param
+    if @day.nil?
+      redirect_to choose_day_reservations_path(room_id: @room.id, user_id: @user.id),
+                  alert: "Please pick a date before continuing." and return
     end
   end
 
@@ -654,6 +654,24 @@ class Operator::ReservationsController < Operator::BaseController
   end
 
   private
+
+  # Returns a Date from either a free-text `params[:day]` (e.g. "2026-05-21")
+  # OR the Rails `date_select`-style `day(1i)`/`day(2i)`/`day(3i)` triple,
+  # or `nil` if neither produces a valid date. Used by the operator
+  # reservation creation flow (choose_time_post / choose_time) so blank
+  # date submissions redirect back to the picker with a flash instead of
+  # crashing in `Date.new(0, 0, 0)`.
+  def parsed_day_param
+    if params[:day].present?
+      Date.parse(params[:day]) rescue nil
+    else
+      y = params["day(1i)"].to_i
+      m = params["day(2i)"].to_i
+      d = params["day(3i)"].to_i
+      return nil if y.zero? || m.zero? || d.zero?
+      Date.new(y, m, d) rescue nil
+    end
+  end
 
   def find_reservation(key = :id)
     @reservation = Reservation.for_location_id(current_location&.id).find(params[key])
