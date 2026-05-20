@@ -17,6 +17,17 @@ RSpec.describe Operator::LandingController, type: :controller do
         get :home
         expect(assigns(:reservation)).to eq(ongoing_reservation)
     end
+
+    it "assigns @open_tickets so the My-Messages badge can render" do
+      # Regression: the view referenced @open_tickets but nothing assigned it,
+      # so the unread-reply badge never appeared. Must be a defined collection
+      # (Array or AR::Relation) responding to .any?/.size for the view.
+      get :home
+      tickets = assigns(:open_tickets)
+      expect(tickets).not_to be_nil
+      expect(tickets).to respond_to(:any?)
+      expect(tickets).to respond_to(:size)
+    end
   end
 
   describe "reserve_now_card partial (regression: unclickable buttons)" do

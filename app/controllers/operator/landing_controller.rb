@@ -23,6 +23,10 @@ class Operator::LandingController < Operator::BaseController
 
     # Count of user's feedback submissions (for showing My Messages button)
     @message_count = current_user&.member_feedbacks&.count || 0
+    # Unread admin replies — drives the red badge on "My Messages" and the
+    # global header banner. Previously the view referenced @open_tickets
+    # but nothing assigned it, so the badge never appeared.
+    @open_tickets = current_user&.member_feedbacks&.includes(:feedback_replies)&.select(&:has_unread_replies?) || []
 
     response.headers["Turbo-Location"] = home_url
     flash.keep
