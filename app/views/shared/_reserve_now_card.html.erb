@@ -2,10 +2,10 @@
   Reserve a meeting room
 </h5>
 <p class="card-text">
-    Choose a date from the calendar below to reserve a meeting room at <%= current_location.name %>. Once you have selected a date, you can proceed with your reservation.
+  Choose a date from the calendar below to reserve a meeting room at <%= current_location.name %>. Once you have selected a date, you can proceed with your reservation.
 </p>
-<p class="card-text">
+<%# Button wrapper is a <div>, not a <p>: the previous <p> + stray </p> tripped WKWebView click handling. %>
+<div class="card-text">
   <%= link_to "Reserve Now", instant_book_reservations_path, class: "btn btn-block btn-primary" %>
   <%= link_to "Reserve Later", calendar_reservations_path, class: "btn btn-block btn-outline-primary" %>
-</p>
-</p>
+</div>
