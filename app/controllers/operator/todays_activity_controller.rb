@@ -15,13 +15,14 @@ class Operator::TodaysActivityController < Operator::BaseController
     @free_reservations = @all_reservations.reject(&:paid?)
 
     # New members — anyone whose ACTIVE subscription started in the last
-    # 7 days. Filtering on users.created_at (the previous behavior) silently
-    # excluded converted day-passers whose User row dates from their first
-    # day-pass purchase weeks or months earlier; their *subscription*
-    # started recently. Same pattern as Api::V1::Admin::TodaysActivityController.
+    # 7 days. Scoped to plans tied to the current location so a sister
+    # location's signups never appear here. Filtering on users.created_at
+    # (the previous behavior) silently excluded converted day-passers whose
+    # User row dates from their first day-pass purchase weeks or months
+    # earlier; their *subscription* started recently.
     sub_starts = Subscription
       .joins(:plan)
-      .where(plans: { operator_id: current_tenant.id })
+      .where(plans: { operator_id: current_tenant.id, location_id: current_location.id })
       .where(active: true, pending: [false, nil])
       .where(subscribable_type: 'User')
       .where('subscriptions.created_at >= ?', 7.days.ago)
@@ -71,7 +72,7 @@ class Operator::TodaysActivityController < Operator::BaseController
     @paid_reservation_revenue = @paid_reservations.sum { |r| r.room.hourly_rate_in_cents * (r.minutes / 60.0) / 100.0 }
     @day_pass_revenue = @day_passes.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
     @new_subscription_revenue = Subscription.joins(:plan)
-      .where(plans: { operator_id: current_tenant.id })
+      .where(plans: { operator_id: current_tenant.id, location_id: current_location.id })
       .where(active: true, pending: [false, nil])
       .where(created_at: Date.current.beginning_of_day..Date.current.end_of_day)
       .sum('plans.amount_in_cents').to_f / 100.0
