@@ -261,8 +261,8 @@ GEM
       logger
       ostruct
     ice_cube (0.17.0)
-    image_processing (1.12.2)
-      mini_magick (>= 4.9.5, < 5)
+    image_processing (1.14.0)
+      mini_magick (>= 4.9.5, < 6)
       ruby-vips (>= 2.0.17, < 3)
     importmap-rails (1.1.5)
       actionpack (>= 6.0.0)
@@ -301,7 +301,8 @@ GEM
     marcel (1.1.0)
     matrix (0.4.3)
     method_source (1.1.0)
-    mini_magick (4.11.0)
+    mini_magick (5.3.1)
+      logger
     mini_mime (1.1.5)
     mini_portile2 (2.8.9)
     minitest (5.27.0)
@@ -477,8 +478,9 @@ GEM
     rspec-support (3.13.1)
     ruby-graphviz (1.2.5)
       rexml
-    ruby-vips (2.1.4)
+    ruby-vips (2.3.0)
       ffi (~> 1.12)
+      logger
     ruby2_keywords (0.0.5)
     rubyzip (3.2.2)
     safely_block (0.3.0)
@@ -606,7 +608,7 @@ DEPENDENCIES
   honeybadger
   httparty
   icalendar
-  image_processing (~> 1.2)
+  image_processing (~> 1.14)
   importmap-rails
   interactor (~> 3.0)
   jbuilder (~> 2.11)
