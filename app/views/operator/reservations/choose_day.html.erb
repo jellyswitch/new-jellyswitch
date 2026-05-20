@@ -22,7 +22,16 @@
 
     <%= form_with(url: choose_time_post_reservations_path, method: :post) do |f| %>
       <div class="form-group">
-        <%= f.date_select :day, {order: [:month, :day, :year]}, class: "form-control mt-2" %>
+        <%= f.label :day, "Date", class: "form-label" %>
+        <%# Use HTML5 date_field with `required` so the browser refuses to
+            submit a blank date — the server-side `parsed_day_param` guard
+            in the controller remains as defense-in-depth. `min` is today
+            so operators can't accidentally pick a past date from this flow. %>
+        <%= f.date_field :day,
+              required: true,
+              value: Date.current,
+              min: Date.current,
+              class: "form-control mt-2" %>
       </div>
       <%= f.hidden_field :room_id, value: @room.id %>
       <%= f.hidden_field :user_id, value: @user.id %>
