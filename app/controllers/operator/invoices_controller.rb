@@ -54,6 +54,28 @@ class Operator::InvoicesController < Operator::BaseController
     turbo_redirect(referrer_or_root, action: "replace")
   end
 
+  def email_receipt
+    find_invoice(:invoice_id)
+    authorize @invoice
+
+    unless @invoice.paid?
+      flash[:error] = "Receipts can only be emailed for paid invoices."
+      turbo_redirect(referrer_or_root, action: "replace")
+      return
+    end
+
+    recipient = @invoice.billable&.email.to_s
+    if recipient.blank?
+      flash[:error] = "Customer has no email on file."
+      turbo_redirect(referrer_or_root, action: "replace")
+      return
+    end
+
+    UserMailer.invoice_receipt_email(@invoice).deliver_later
+    flash[:success] = "Receipt emailed to #{recipient}."
+    turbo_redirect(referrer_or_root, action: "replace")
+  end
+
   def new
     authorize Invoice.new
 

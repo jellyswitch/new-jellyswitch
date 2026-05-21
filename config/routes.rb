@@ -549,6 +549,7 @@ Rails.application.routes.draw do
       get :delinquent, to: "operator/invoices#delinquent"
     end
     get :charge
+    post :email_receipt
   end
   resources :locations, controller: "operator/locations" do
     get :allow_hourly, to: "operator/locations#allow_hourly"

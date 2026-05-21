@@ -37,6 +37,18 @@
       <%= link_to "Download PDF", invoice.pdf_url, class: "btn btn-block btn-primary" %>
 
       <% if invoice.paid?  %>
+        <% if policy(invoice).email_receipt? && invoice.billable&.email.present? %>
+          <div class="clearfix mb-1"></div>
+          <%= button_to invoice_email_receipt_path(invoice), class: "btn btn-block btn-outline-primary" do %>
+            <span class="show-when-enabled">
+              Email receipt to customer
+            </span>
+            <span class="show-when-disabled">
+              Sending...
+            </span>
+          <% end %>
+        <% end %>
+
         <div class="clearfix mb-1"></div>
         <% if policy(:invoice).create? %>
           <%= button_to invoice_refunds_path(invoice), class: "btn btn-block btn-secondary" do %>

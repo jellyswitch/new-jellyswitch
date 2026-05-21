@@ -1,0 +1,46 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    Hi <%= @invoice.billable.name.to_s.split(" ").first %>,
+  </p>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    You requested a copy of your receipt. The details are below, and you can view or download a PDF copy directly from Stripe using the button.
+  </p>
+
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%; margin-bottom: 16px;">
+    <% if @invoice.description.present? %>
+      <tr>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>For:</strong></td>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @invoice.description %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Amount:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;">$<%= format('%.2f', @amount_cents / 100.0) %></td>
+    </tr>
+    <% if @invoice.date.present? %>
+      <tr>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Date:</strong></td>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @invoice.date.strftime("%B %e, %Y") %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Status:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @invoice.status&.capitalize %></td>
+    </tr>
+  </table>
+
+  <% if @receipt_url.present? %>
+    <p style="margin: 0 0 16px;">
+      <a href="<%= @receipt_url %>" style="background-color: #007bff; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-family: Helvetica, sans-serif; font-size: 14px; display: inline-block;">View / Download Receipt</a>
+    </p>
+    <p style="font-family: Helvetica, sans-serif; font-size: 12px; color: #666; margin: 0;">
+      If the button does not work, copy and paste this URL into your browser:<br>
+      <span style="word-break: break-all;"><%= @receipt_url %></span>
+    </p>
+  <% end %>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 13px; color: #666; margin-top: 24px;">
+    Questions? Just reply to this email.
+  </p>
+<% end %>

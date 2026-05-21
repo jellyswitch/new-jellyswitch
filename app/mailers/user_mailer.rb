@@ -226,6 +226,26 @@ class UserMailer < ApplicationMailer
     mail to: @user.email, subject: subject, from: from_address, reply_to: @operator.contact_email
   end
 
+  # Resends a receipt to the customer for an existing invoice. Triggered
+  # manually by an admin via the "Email receipt to customer" button when
+  # a member asks for a copy. Body includes the Stripe-hosted receipt
+  # URL (or Stripe Invoice PDF for subscription-backed invoices), where
+  # the customer can hit Stripe's own Download as PDF.
+  def invoice_receipt_email(invoice)
+    @invoice = invoice
+    @operator = invoice.operator
+    @location = invoice.location
+    @recipient_email = invoice.billable.email
+    @amount_cents = invoice.amount_paid.to_i.nonzero? || invoice.amount_due.to_i
+    @receipt_url = invoice.pdf_url
+    @host = ENV['ASSET_HOST']
+
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+    subject = "Your receipt from #{@operator.name} — $#{format('%.2f', @amount_cents / 100.0)}"
+
+    mail to: @recipient_email, subject: subject, from: from_address, reply_to: @operator.contact_email
+  end
+
   def booking_reminder_email(user, operator, reservation, location = nil)
     @user = user
     @operator = operator

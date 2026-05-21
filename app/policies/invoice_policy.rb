@@ -38,6 +38,10 @@ class InvoicePolicy < ApplicationPolicy
     (admin? || general_manager? || superadmin?) && billing_enabled?
   end
 
+  def email_receipt?
+    (admin? || general_manager? || superadmin?) && billing_enabled?
+  end
+
   private
 
   def card_added?
