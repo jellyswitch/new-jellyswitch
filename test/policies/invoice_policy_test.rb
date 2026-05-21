@@ -68,4 +68,11 @@ class InvoicePolicyTest < PolicyAssertions::Test
     assert_not_permitted @community_manager, Invoice
     assert_permit @general_manager, Invoice
   end
+
+  def test_email_receipt
+    assert_not_permitted @member, invoices(:paid_invoice)
+    assert_permit @admin, invoices(:paid_invoice)
+    assert_not_permitted @community_manager, invoices(:paid_invoice)
+    assert_permit @general_manager, invoices(:paid_invoice)
+  end
 end
