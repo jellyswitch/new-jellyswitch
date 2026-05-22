@@ -16,7 +16,8 @@
         <div class="room-filter-container">
           <select id="room-filter" class="form-control">
             <option value="">All Rooms</option>
-            <% current_location.rooms.visible.order(:name).each do |room| %>
+            <% room_filter_scope = current_user&.admin_or_manager?(current_location) ? current_location.rooms : current_location.rooms.visible %>
+            <% room_filter_scope.order(:name).each do |room| %>
               <option value="<%= room.id %>"><%= room.name %></option>
             <% end %>
           </select>
