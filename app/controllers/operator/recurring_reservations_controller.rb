@@ -1,6 +1,11 @@
 class Operator::RecurringReservationsController < Operator::BaseController
   before_action :background_image
 
+  # Telemetry: capture full request context on RecordNotFound before
+  # letting Rails render the 404. Same pattern as Operator::ReservationsController.
+  # Defined on Operator::BaseController.
+  rescue_from ActiveRecord::RecordNotFound, with: :report_record_not_found_with_context
+
   def index
     authorize :recurring_reservation
     @recurring_reservations = RecurringReservation.where(location: current_location)
