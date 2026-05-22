@@ -118,18 +118,20 @@ class Room < ApplicationRecord
     end
   end
 
-  def self.unavailable(date: Date.current.to_s, time: Time.current.strftime("%I:%M"), duration: 30)
+  def self.unavailable(date: Date.current.to_s, time: Time.current.strftime("%I:%M"), duration: 30, include_hidden: false)
     start_time = Time.zone.parse("#{date} #{time}")
     end_time = (start_time + duration.to_i.minutes)
 
-    Room.visible.left_joins(:reservations)
+    base = include_hidden ? Room.active : Room.visible
+    base.left_joins(:reservations)
         .where("(reservations.datetime_in + make_interval(mins := reservations.minutes)) > ? AND reservations.datetime_in < ?", start_time, end_time)
         .distinct
   end
 
-  def self.available(date: Date.current.to_s, time: Time.current.strftime("%H:%M"), duration: 30)
-    unavailable_rooms = self.unavailable(date: date, time: time, duration: duration)
-    Room.visible.where.not(id: unavailable_rooms.select(:id))
+  def self.available(date: Date.current.to_s, time: Time.current.strftime("%H:%M"), duration: 30, include_hidden: false)
+    unavailable_rooms = self.unavailable(date: date, time: time, duration: duration, include_hidden: include_hidden)
+    base = include_hidden ? Room.active : Room.visible
+    base.where.not(id: unavailable_rooms.select(:id))
   end
 
   # Instance Methods

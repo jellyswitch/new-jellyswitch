@@ -300,9 +300,10 @@ class Operator::ReservationsController < Operator::BaseController
 
       duration = params[:duration]
 
-      available_rooms = current_location.rooms.available(date: date, time: time, duration: duration)
-
       parsed_date = Time.zone.parse(date)
+      include_hidden = current_user.admin_or_manager?(current_location)
+      available_rooms = current_location.rooms.available(date: date, time: time, duration: duration, include_hidden: include_hidden)
+
       if !current_user.can_see_all_rooms?(current_location, parsed_date)
         available_rooms = available_rooms.rentable
       end
@@ -323,7 +324,7 @@ class Operator::ReservationsController < Operator::BaseController
       parsed_date = Date.parse(date)
       parsed_time = Time.zone.parse("#{date} #{time}")
 
-      rooms = current_location.rooms.visible
+      rooms = current_user.admin_or_manager?(current_location) ? current_location.rooms.active : current_location.rooms.visible
       rooms = rooms.rentable unless current_user.can_see_all_rooms?(current_location, parsed_date)
 
       max_duration = 0
