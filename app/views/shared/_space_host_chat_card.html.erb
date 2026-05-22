@@ -14,8 +14,7 @@
 <% unread_count = unread.size %>
 <% unread_thread = unread.first %>
 <% latest_admin_reply = unread_thread&.feedback_replies&.select(&:from_admin?)&.last %>
-<% first_name = current_user&.name.to_s.split.first.presence %>
-<% greeting = "Hi#{first_name ? " #{first_name}" : ''}! Any questions about getting started at #{current_location.name}?" %>
+<% greeting = "Can I answer any questions for you?" %>
 <% phone = current_location.contact_phone.presence || host.phone %>
 <% email = current_location.contact_email.presence || host.email %>
 
