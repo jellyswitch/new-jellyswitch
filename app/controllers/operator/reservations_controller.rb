@@ -3,6 +3,13 @@ class Operator::ReservationsController < Operator::BaseController
   before_action :background_image, except: [:reserve_now, :reserve_now_price]
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
 
+  # Telemetry: when `current_tenant.rooms.find(params[:room_id])` (or any
+  # other `find!`) in this controller raises RecordNotFound, the user sees
+  # a generic Rails 404 with no breadcrumb to debug from. Capture full
+  # request context to Honeybadger before re-raising so the 404 still
+  # renders unchanged. Defined on Operator::BaseController.
+  rescue_from ActiveRecord::RecordNotFound, with: :report_record_not_found_with_context
+
   include ActionView::Helpers::NumberHelper
   include ReservationHelper
   include CreditHelper

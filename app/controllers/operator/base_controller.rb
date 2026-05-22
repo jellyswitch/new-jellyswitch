@@ -37,6 +37,34 @@ class Operator::BaseController < ApplicationController
     UserContext.new(current_user, current_tenant, current_location)
   end
 
+  # Telemetry-only handler: report the full request context to Honeybadger
+  # before letting Rails handle the 404 as usual. Wired up via `rescue_from`
+  # in specific controllers (currently the reservation flows) where blind
+  # 404s have been hard to diagnose from logs alone — e.g. an admin clicks
+  # "Reserve Later" on a hidden room and lands on a Rails 404, but the
+  # exact `room_id`/`user_id`/`day` that caused `find` to miss never
+  # makes it into Honeybadger because RecordNotFound isn't a 500.
+  #
+  # Re-raises so the user-facing behavior is unchanged.
+  def report_record_not_found_with_context(error)
+    Honeybadger.notify(error, context: {
+      controller: self.class.name,
+      action: action_name,
+      method: request.method,
+      path: request.path,
+      fullpath: request.fullpath,
+      params: params.to_unsafe_h,
+      user_id: current_user&.id,
+      user_email: current_user&.email,
+      operator_subdomain: request.subdomains.first,
+      current_tenant_id: current_tenant&.id,
+      current_location_id: current_location&.id,
+      referer: request.referer,
+      user_agent: request.user_agent,
+    })
+    raise error
+  end
+
   def store_ios_token
     if logged_in?
       match = request.user_agent.match(/.*deviceToken: (.*)/)
