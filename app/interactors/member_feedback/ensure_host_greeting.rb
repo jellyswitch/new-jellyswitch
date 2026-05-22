@@ -48,6 +48,7 @@ class MemberFeedback::EnsureHostGreeting
   def default_greeting(user, location)
     first_name = user.name.to_s.split.first.presence
     intro = first_name ? "Hi #{first_name}!" : "Hi there!"
-    "#{intro} Any questions about getting started at #{location.name}? I'm here to help."
+    "#{intro} Welcome to #{location.name} — I'm here whenever you need a hand. " \
+      "Day-pass logistics, room availability, what to expect when you arrive… ask anything."
   end
 end
