@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Untethered Zephyr Cove — Lake Tahoe Coworking, Nevada Side</title>
+<meta name="description" content="Lakefront coworking in Zephyr Cove, NV — minutes from Stateline, the casinos, and Heavenly Village. Day passes, dedicated desks, private offices, eight meeting spaces. Also at Cowork Tahoe in midtown South Lake." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --lake-deep: #1B3A57;
+    --lake-mid: #2D5577;
+    --pine: #2D5C4D;
+    --pine-light: #3F7563;
+    --coral: #E8745B;
+    --coral-dark: #D45F47;
+    --cream: #FAF6F0;
+    --cream-warm: #F2EBDD;
+    --charcoal: #2A2A2A;
+    --gray: #6B6B6B;
+    --gray-light: #B8B5AE;
+    --hairline: #E5DFD2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--charcoal);
+    background: var(--cream);
+    line-height: 1.6;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* Top brand bar */
+  .brand-bar {
+    background: var(--lake-deep);
+    color: rgba(255,255,255,0.85);
+    font-size: 13px;
+    padding: 10px 0;
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .brand-bar-inner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .brand-bar img.untethered-mark {
+    height: 18px;
+    width: auto;
+    vertical-align: -3px;
+    filter: brightness(1.05);
+  }
+  .brand-bar a {
+    color: white;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 1px;
+  }
+  .brand-bar a:hover { border-bottom-color: white; }
+
+  /* Nav */
+  nav {
+    background: var(--cream);
+    border-bottom: 1px solid var(--hairline);
+    padding: 22px 0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+    background: rgba(250, 246, 240, 0.92);
+  }
+  .nav-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    background: var(--lake-deep);
+    border-radius: 50%;
+    position: relative;
+  }
+  .logo-mark::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    background: var(--coral);
+  }
+  .logo-stack {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .logo-primary {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--lake-deep);
+    letter-spacing: -0.01em;
+  }
+  .logo-secondary {
+    font-family: 'Inter', sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--gray);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+  }
+  .nav-links a {
+    color: var(--charcoal);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--coral); }
+  .nav-cta {
+    background: var(--lake-deep);
+    color: white !important;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .nav-cta:hover { background: var(--lake-mid); color: white !important; }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    background: linear-gradient(135deg, #1B3A57 0%, #2D5577 50%, #3F7563 100%);
+    color: white;
+    overflow: hidden;
+    padding: 100px 0 120px;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(232,116,91,0.18) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(250,246,240,0.12) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  /* Decorative mountain silhouette */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 120px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath fill='%23FAF6F0' d='M0,120 L0,80 L120,40 L240,70 L360,30 L480,60 L600,20 L720,55 L840,25 L960,65 L1080,35 L1200,70 L1200,120 Z'/%3E%3C/svg%3E") no-repeat bottom;
+    background-size: cover;
+    opacity: 0.95;
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 760px;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    margin-bottom: 24px;
+    padding: 6px 14px;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 100px;
+  }
+  .hero h1 {
+    font-size: clamp(40px, 5.5vw, 64px);
+    margin-bottom: 24px;
+    color: white;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--coral);
+    font-weight: 400;
+  }
+  .hero-sub {
+    font-size: 20px;
+    color: rgba(255,255,255,0.88);
+    max-width: 560px;
+    margin-bottom: 8px;
+  }
+
+  /* Slim geo-callout strip */
+  .geo-callout {
+    background: var(--cream-warm);
+    border-bottom: 1px solid var(--hairline);
+    padding: 18px 0;
+  }
+  .geo-callout-inner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    font-size: 15px;
+    text-align: center;
+  }
+  .geo-callout-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    background: var(--coral);
+    color: white;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .geo-callout-text { color: var(--charcoal); }
+  .geo-callout-text strong { color: var(--lake-deep); font-weight: 600; }
+  .geo-callout-link {
+    color: var(--coral);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .geo-callout-link:hover { text-decoration: underline; }
+
+  /* Product grid — the new heart of the page */
+  .products {
+    padding: 96px 0 100px;
+    background: var(--cream);
+  }
+  .products-intro {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 56px;
+  }
+  .products-intro .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .products-intro h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--lake-deep);
+    margin-bottom: 14px;
+  }
+  .products-intro p {
+    color: var(--gray);
+    font-size: 17px;
+  }
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 1000px) {
+    .product-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 540px) {
+    .product-grid { grid-template-columns: 1fr; }
+  }
+  .product-card {
+    background: white;
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 32px 26px;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    position: relative;
+  }
+  .product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 32px rgba(27, 58, 87, 0.08);
+    border-color: var(--coral);
+  }
+  .product-icon {
+    width: 44px; height: 44px;
+    background: var(--cream-warm);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    color: var(--lake-deep);
+  }
+  .product-icon svg { width: 24px; height: 24px; stroke-width: 1.75; }
+  .product-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: var(--lake-deep);
+    margin-bottom: 8px;
+    line-height: 1.2;
+  }
+  .product-card .product-desc {
+    color: var(--gray);
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+  .product-card .product-price {
+    font-size: 13px;
+    color: var(--charcoal);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+  .product-card .product-price strong {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    color: var(--lake-deep);
+    display: block;
+    margin-top: 2px;
+  }
+  .product-card .product-price .per {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray);
+  }
+  .product-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--lake-deep);
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: background 0.15s;
+  }
+  .product-cta:hover { background: var(--lake-mid); }
+  .product-cta-arrow { transition: transform 0.15s; }
+  .product-cta:hover .product-cta-arrow { transform: translateX(3px); }
+
+  /* Keep .fork styles for backward-compat if needed */
+  .fork {
+    padding: 80px 0 100px;
+    background: var(--cream);
+  }
+  .fork-intro {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .fork-intro h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--lake-deep);
+    margin-bottom: 12px;
+  }
+  .fork-intro p {
+    color: var(--gray);
+    font-size: 18px;
+    max-width: 540px;
+    margin: 0 auto;
+  }
+  .fork-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 768px) {
+    .fork-cards { grid-template-columns: 1fr; }
+  }
+  .fork-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 36px;
+    border: 1px solid var(--hairline);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .fork-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(27, 58, 87, 0.08);
+  }
+  .fork-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+  }
+  .fork-card.monthly::before { background: linear-gradient(90deg, var(--pine) 0%, var(--lake-deep) 100%); }
+  .fork-card.daypass::before { background: linear-gradient(90deg, var(--lake-deep) 0%, var(--coral) 100%); }
+
+  .fork-tag {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .fork-tag::before {
+    content: '◆';
+    font-size: 10px;
+  }
+  .fork-card.monthly .fork-tag { color: var(--pine); }
+  .fork-card.daypass .fork-tag { color: var(--lake-deep); }
+
+  .fork-card h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    color: var(--charcoal);
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .fork-card .who {
+    color: var(--gray);
+    margin-bottom: 24px;
+    font-size: 16px;
+  }
+  .fork-card ul {
+    list-style: none;
+    margin-bottom: 32px;
+    flex: 1;
+  }
+  .fork-card li {
+    padding: 8px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 15px;
+    color: var(--charcoal);
+  }
+  .fork-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--pine);
+    font-weight: 700;
+  }
+  .fork-card.daypass li::before { color: var(--coral); }
+
+  .fork-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 16px;
+    transition: transform 0.1s, background 0.15s;
+    width: 100%;
+  }
+  .fork-card .fork-cta {
+    background: var(--lake-deep);
+    color: white;
+  }
+  .fork-card .fork-cta:hover {
+    background: var(--lake-mid);
+  }
+  .fork-card .price-note {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 14px;
+    text-align: center;
+  }
+  .fork-card li strong {
+    color: var(--lake-deep);
+    font-weight: 600;
+  }
+  .fork-arrow {
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  .fork-cta:hover .fork-arrow { transform: translateX(3px); }
+
+  /* Photo strip */
+  .photos {
+    padding: 0 0 8px;
+    background: var(--cream);
+  }
+  .photo-strip {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 12px;
+    padding: 0 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  @media (max-width: 900px) {
+    .photo-strip { grid-template-columns: 1fr 1fr; }
+    .photo-strip > div:first-child { grid-column: span 2; }
+  }
+  @media (max-width: 540px) {
+    .photo-strip { grid-template-columns: 1fr; }
+    .photo-strip > div:first-child { grid-column: span 1; }
+  }
+  .photo {
+    aspect-ratio: 4/3;
+    border-radius: 12px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-color: var(--lake-mid);
+    position: relative;
+    transition: transform 0.3s;
+  }
+  .photo:hover { transform: scale(1.015); }
+  .photo:first-child { aspect-ratio: 16/9; }
+
+  /* Testimonials band */
+  .testimonials {
+    padding: 100px 0;
+    background: linear-gradient(180deg, var(--cream) 0%, var(--cream-warm) 100%);
+  }
+  .testimonials-header {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .testimonials-header .google-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1px solid var(--hairline);
+    padding: 10px 18px;
+    border-radius: 100px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 18px;
+    color: var(--charcoal);
+  }
+  .google-stars { color: #F4A100; letter-spacing: 1px; font-size: 16px; }
+  .google-label { color: var(--gray); font-size: 13px; }
+  .testimonials-header h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--lake-deep);
+  }
+  .quotes-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 900px) {
+    .quotes-grid { grid-template-columns: 1fr; }
+  }
+  .quote-card {
+    background: white;
+    border-radius: 12px;
+    padding: 32px 28px;
+    border: 1px solid var(--hairline);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 0 rgba(27,58,87,0.03);
+  }
+  .quote-stars { color: #F4A100; font-size: 15px; margin-bottom: 14px; letter-spacing: 1px; }
+  .quote-text {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--charcoal);
+    margin-bottom: 24px;
+    flex: 1;
+  }
+  .quote-text::before { content: '"'; color: var(--coral); font-size: 28px; vertical-align: -4px; margin-right: 2px; }
+  .quote-text::after { content: '"'; color: var(--coral); font-size: 28px; vertical-align: -8px; margin-left: 2px; }
+  .quote-attr {
+    font-size: 13px;
+    color: var(--gray);
+    border-top: 1px solid var(--hairline);
+    padding-top: 14px;
+  }
+  .quote-attr strong { color: var(--lake-deep); font-weight: 600; }
+
+  /* Acquisition story band */
+  .acquisition {
+    padding: 64px 0;
+    background: var(--pine);
+    color: white;
+    text-align: center;
+  }
+  .acquisition-inner { max-width: 720px; margin: 0 auto; }
+  .acquisition .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 12px;
+    display: block;
+  }
+  .acquisition h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(24px, 2.8vw, 32px);
+    margin-bottom: 14px;
+    color: white;
+  }
+  .acquisition p {
+    color: rgba(255,255,255,0.85);
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  .acquisition a {
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.4);
+    text-decoration: none;
+  }
+  .acquisition a:hover { border-bottom-color: white; }
+
+  /* Membership comparison */
+  .plans {
+    padding: 100px 0 96px;
+    background: var(--cream);
+    border-top: 1px solid var(--hairline);
+  }
+  .plans-intro {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 56px;
+  }
+  .plans-intro .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 14px;
+    display: block;
+  }
+  .plans-intro h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    color: var(--lake-deep);
+    margin-bottom: 14px;
+  }
+  .plans-intro p { color: var(--gray); font-size: 17px; }
+  .plans-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+  @media (max-width: 900px) { .plans-grid { grid-template-columns: 1fr; } }
+  .plan-card {
+    background: white;
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 36px 30px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .plan-card.featured {
+    border-color: var(--lake-deep);
+    border-width: 2px;
+    transform: translateY(-8px);
+    box-shadow: 0 24px 48px rgba(27,58,87,0.12);
+  }
+  @media (max-width: 900px) { .plan-card.featured { transform: none; } }
+  .plan-badge {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--lake-deep);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+  .plan-name {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    color: var(--lake-deep);
+    margin-bottom: 6px;
+    line-height: 1.1;
+  }
+  .plan-tagline { color: var(--gray); font-size: 14px; margin-bottom: 24px; min-height: 40px; }
+  .plan-price {
+    margin-bottom: 28px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .plan-price strong {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 40px;
+    color: var(--lake-deep);
+    line-height: 1;
+  }
+  .plan-price .per { color: var(--gray); font-size: 14px; margin-left: 4px; }
+  .plan-features { list-style: none; margin-bottom: 28px; flex: 1; }
+  .plan-features li {
+    padding: 9px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--charcoal);
+  }
+  .plan-features li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--pine);
+    font-weight: 700;
+  }
+  .plan-features li.highlight {
+    background: linear-gradient(90deg, rgba(232,116,91,0.08) 0%, transparent 100%);
+    border-radius: 6px;
+    margin-left: -8px;
+    padding-left: 36px;
+  }
+  .plan-features li.highlight::before { left: 8px; color: var(--coral); }
+  .plan-features li strong { color: var(--lake-deep); font-weight: 600; }
+  .plan-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 15px;
+    background: var(--cream-warm);
+    color: var(--lake-deep);
+    border: 1px solid var(--hairline);
+    transition: background 0.15s, color 0.15s;
+  }
+  .plan-card.featured .plan-cta { background: var(--lake-deep); color: white; border-color: var(--lake-deep); }
+  .plan-cta:hover { background: var(--lake-mid); color: white; border-color: var(--lake-mid); }
+  .plans-fineprint { text-align: center; margin-top: 40px; font-size: 13px; color: var(--gray); }
+
+  /* About section */
+  .about {
+    padding: 100px 0;
+    background: var(--cream-warm);
+  }
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 80px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .about-grid { grid-template-columns: 1fr; gap: 48px; }
+  }
+  .about-img {
+    border-radius: 16px;
+    aspect-ratio: 4/5;
+    background-color: #2D5577;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(27, 58, 87, 0.15);
+  }
+  .about-img::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(27,58,87,0) 50%, rgba(27,58,87,0.65) 100%);
+    z-index: 1;
+  }
+  .about-img-label { z-index: 2; }
+  .about-img-label {
+    position: absolute;
+    bottom: 20px;
+    left: 24px;
+    color: white;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+  }
+  .about h2 {
+    font-size: clamp(28px, 3.5vw, 42px);
+    color: var(--lake-deep);
+    margin-bottom: 24px;
+  }
+  .about p {
+    font-size: 17px;
+    color: var(--charcoal);
+    margin-bottom: 18px;
+    line-height: 1.7;
+  }
+  .about-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid var(--hairline);
+  }
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--coral);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--gray);
+    letter-spacing: 0.02em;
+  }
+
+  /* Practical info */
+  .practical {
+    padding: 100px 0;
+    background: var(--cream);
+  }
+  .practical-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+  }
+  @media (max-width: 768px) {
+    .practical-grid { grid-template-columns: 1fr; }
+  }
+  .practical h2 {
+    font-size: clamp(28px, 3.5vw, 38px);
+    color: var(--lake-deep);
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .info-block {
+    background: white;
+    padding: 36px;
+    border-radius: 12px;
+    border: 1px solid var(--hairline);
+  }
+  .info-block h3 {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    color: var(--lake-deep);
+    margin-bottom: 20px;
+  }
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 15px;
+  }
+  .info-row:last-child { border-bottom: none; }
+  .info-row .label { color: var(--gray); }
+  .info-row .value { font-weight: 500; color: var(--charcoal); }
+  .info-block address {
+    font-style: normal;
+    color: var(--charcoal);
+    line-height: 1.7;
+    margin-bottom: 16px;
+  }
+  .info-block .map-link {
+    color: var(--coral);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 15px;
+  }
+  .info-block .map-link:hover { text-decoration: underline; }
+
+  /* Closing band */
+  .closing {
+    background: var(--lake-deep);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+  }
+  .closing h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(28px, 3.5vw, 40px);
+    margin-bottom: 16px;
+    color: white;
+  }
+  .closing p {
+    color: rgba(255,255,255,0.8);
+    font-size: 18px;
+    max-width: 540px;
+    margin: 0 auto 32px;
+  }
+  .closing-cta {
+    display: inline-block;
+    background: var(--coral);
+    color: white;
+    text-decoration: none;
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: background 0.15s;
+  }
+  .closing-cta:hover { background: var(--coral-dark); }
+
+  /* Footer */
+  footer {
+    background: #14283C;
+    color: rgba(255,255,255,0.7);
+    padding: 48px 0 32px;
+    font-size: 14px;
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 32px;
+  }
+  .footer-brand .logo { color: white; margin-bottom: 12px; }
+  .footer-brand p { max-width: 320px; line-height: 1.6; }
+  .footer-network {
+    text-align: right;
+    font-size: 13px;
+  }
+  .footer-network strong { color: white; display: block; margin-bottom: 6px; font-weight: 600; }
+  .footer-network a { color: var(--coral); text-decoration: none; }
+  .footer-bottom {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 600px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .footer-network { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<div class="brand-bar">
+  <span class="brand-bar-inner">
+    <img src="https://untethered.space/wp-content/uploads/2024/11/Untethered_PrimaryLogo_NoTagline_FullColor_LightLogo-1.png" alt="Untethered" class="untethered-mark" />
+    <span><strong style="color:white;">Zephyr Cove</strong> · Also at <a href="https://coworktahoe.com">Cowork Tahoe</a> in midtown, and every <a href="https://untethered.space">Untethered location</a>.</span>
+  </span>
+</div>
+
+<nav>
+  <div class="container nav-inner">
+    <a href="/" class="logo">
+      <span class="logo-mark"></span>
+      <span class="logo-stack">
+        <span class="logo-primary">Untethered</span>
+        <span class="logo-secondary">Zephyr Cove</span>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#visit">Visit</a>
+      <a href="#membership" class="nav-cta">Tour the space</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container hero-content">
+    <span class="hero-eyebrow">An Untethered workspace · Stateline · Nevada side</span>
+    <h1 class="display">Untethered Zephyr Cove — <em>lakeside coworking,</em> minutes from the casinos.</h1>
+    <p class="hero-sub">
+      Day passes, memberships, eight meeting spaces, and virtual offices in Round Hill Shopping Center. Walking distance to Nevada Beach, ten minutes to Heavenly Village.
+    </p>
+  </div>
+</section>
+
+<div class="geo-callout">
+  <div class="container geo-callout-inner">
+    <span class="geo-callout-icon">📍</span>
+    <span class="geo-callout-text">
+      Staying mid-town South Lake, near Regan Beach or Al Tahoe? <strong>Cowork Tahoe</strong> is the same workspace, closer to you.
+    </span>
+    <a href="https://coworktahoe.com" class="geo-callout-link">See Cowork Tahoe →</a>
+  </div>
+</div>
+
+<section class="products" id="memberships">
+  <div class="container">
+    <div class="products-intro">
+      <span class="eyebrow">What we offer</span>
+      <h2 class="display">A workspace for whatever you need.</h2>
+      <p>Drop in for a day, settle in for the season, host a client meeting, or just need a real business address. Cowork Tahoe has all four.</p>
+    </div>
+
+    <div class="product-grid">
+
+      <!-- Day Passes -->
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 7V3M16 7V3M3 11h18M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Day Passes</h3>
+        <p class="product-desc">Drop in for the day. Open seating, fast wifi, coffee, up to 3 hours of call-room use. Perfect for visitors, ski-and-work weeks, or workations. M–F.</p>
+        <div class="product-price">Day Pass <strong>$40<span class="per"> / day</span></strong></div>
+        <div class="product-price" style="margin-top:-8px;">Day Office <strong>$100<span class="per"> / day</span></strong></div>
+        <a href="/day-pass" class="product-cta">
+          Book a day pass <span class="product-cta-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Memberships -->
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="8" r="4" stroke-linecap="round"/><path d="M4 21v-1a8 8 0 0116 0v1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Memberships</h3>
+        <p class="product-desc">Flex desks, dedicated desks, and private offices. 24/7 access, eight meeting spaces, mail handling, and reciprocal access at every Untethered location.</p>
+        <div class="product-price">Flex <strong>$225<span class="per"> / month</span></strong></div>
+        <div class="product-price" style="margin-top:-8px;">Dedicated <strong>$300<span class="per"> / month</span></strong></div>
+        <div class="product-price" style="margin-top:-8px;">Private Office <strong>$700+<span class="per"> / month</span></strong></div>
+        <a href="#memberships" class="product-cta">
+          See all plans <span class="product-cta-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Conference Rooms -->
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="6" width="18" height="12" rx="2" stroke-linejoin="round"/><path d="M7 10h10M7 14h6" stroke-linecap="round"/></svg>
+        </div>
+        <h3>Meeting &amp; Conference Rooms</h3>
+        <p class="product-desc">Eight distinct meeting spaces including a 16-person boardroom with A/V and screencasting. Sound-proof call booths for one-on-ones and recorded calls.</p>
+        <div class="product-price">Boardroom <strong>$50<span class="per"> / hour</span></strong></div>
+        <div class="product-price" style="margin-top:-8px; color:var(--gray);"><span class="per">Call booths free for members</span></div>
+        <a href="/meeting-rooms" class="product-cta">
+          Reserve a room <span class="product-cta-arrow">→</span>
+        </a>
+      </div>
+
+      <!-- Virtual Office -->
+      <div class="product-card">
+        <div class="product-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7l9 6 9-6M5 5h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Virtual Office</h3>
+        <p class="product-desc">A Nevada business address — mail handling, package receiving, professional reception. For remote teams who want a tax-friendly Sierra footprint.</p>
+        <div class="product-price">From <strong>$49<span class="per"> / month</span></strong></div>
+        <a href="#virtual-office" class="product-cta">
+          Get an address <span class="product-cta-arrow">→</span>
+        </a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="photos" aria-label="The space">
+  <div class="photo-strip">
+    <div class="photo" style="background-image: url('https://untethered.space/wp-content/uploads/2025/01/Untethered2024-061-1024x702.jpg'); background-color: #2D5577;" title="Zephyr Cove workspace"></div>
+    <div class="photo" style="background-image: url('https://untethered.space/wp-content/uploads/2025/01/Untethered2024-161-1024x683.jpg');" title="Outdoor workspace"></div>
+    <div class="photo" style="background-image: url('https://untethered.space/wp-content/uploads/2025/01/Untethered2024-103-1024x683.jpg');" title="Meeting room"></div>
+    <div class="photo" style="background-image: url('https://untethered.space/wp-content/uploads/2025/01/Untethered2024-081-1024x673.jpg');" title="Call booths"></div>
+  </div>
+</section>
+
+<section class="plans" id="plans">
+  <div class="container">
+    <div class="plans-intro">
+      <span class="eyebrow">Membership plans</span>
+      <h2 class="display">Three ways to belong.</h2>
+      <p>All plans include 24/7 building access, fast fiber, complimentary coffee &amp; kombucha, sound-proof call booths, and reciprocal access at every Untethered location.</p>
+    </div>
+
+    <div class="plans-grid">
+
+      <!-- Flex -->
+      <div class="plan-card">
+        <div class="plan-name">Flex</div>
+        <div class="plan-tagline">Hot-desk anywhere there's an open seat. For part-time and seasonal members.</div>
+        <div class="plan-price"><strong>$225</strong><span class="per">/month</span></div>
+        <ul class="plan-features">
+          <li>Open seating at any available desk</li>
+          <li>24/7 building access via app</li>
+          <li class="highlight"><strong>10 hours / month</strong> of meeting-room time included</li>
+          <li>Free use of sound-proof call booths</li>
+          <li>Mail receiving (small parcels)</li>
+          <li>Reciprocal access at Cowork Tahoe</li>
+          <li>Month-to-month, cancel anytime</li>
+        </ul>
+        <a href="#flex" class="plan-cta">Choose Flex →</a>
+      </div>
+
+      <!-- Dedicated — featured -->
+      <div class="plan-card featured">
+        <span class="plan-badge">Most popular</span>
+        <div class="plan-name">Dedicated</div>
+        <div class="plan-tagline">Your own desk, every day. For full-time residents and serious operators.</div>
+        <div class="plan-price"><strong>$300</strong><span class="per">/month</span></div>
+        <ul class="plan-features">
+          <li>Your own assigned desk, set up how you like it</li>
+          <li>24/7 building access via app</li>
+          <li class="highlight"><strong>Unlimited</strong> meeting-room access</li>
+          <li>Free use of sound-proof call booths</li>
+          <li>Mail receiving (small parcels)</li>
+          <li>Reciprocal access at Cowork Tahoe</li>
+          <li>Locker for after-hours storage</li>
+          <li>Month-to-month, cancel anytime</li>
+        </ul>
+        <a href="#dedicated" class="plan-cta">Choose Dedicated →</a>
+      </div>
+
+      <!-- Private Office -->
+      <div class="plan-card">
+        <div class="plan-name">Private Office</div>
+        <div class="plan-tagline">A real lockable office for solo operators and small teams. 90–225 sq ft.</div>
+        <div class="plan-price"><strong>$700+</strong><span class="per">/month</span></div>
+        <ul class="plan-features">
+          <li>Your own lockable, furnished office</li>
+          <li>24/7 building access via app</li>
+          <li class="highlight"><strong>Unlimited</strong> meeting-room access</li>
+          <li>Free use of sound-proof call booths</li>
+          <li>Mail &amp; package receiving</li>
+          <li>Reciprocal access at Cowork Tahoe</li>
+          <li>Business address on US-50</li>
+          <li>1-year minimum lease, 1 month deposit</li>
+        </ul>
+        <a href="/private-offices" class="plan-cta">Tour an office →</a>
+      </div>
+
+    </div>
+
+    <p class="plans-fineprint">
+      Need more than 10 hours of meeting rooms a month? Most Flex members upgrade to Dedicated for unlimited use. Have questions? <a href="/tour" style="color:var(--coral);">Book a 15-minute tour →</a>
+    </p>
+  </div>
+</section>
+
+<section class="about" id="about">
+  <div class="container about-grid">
+    <div class="about-img" style="background-image: url('https://untethered.space/wp-content/uploads/2025/01/Untethered2024-138.jpg'); background-size: cover; background-position: center;">
+      <span class="about-img-label">Zephyr Cove · Round Hill Shopping Center</span>
+    </div>
+    <div>
+      <h2 class="display">Lakeside coworking, by Stateline and the casinos.</h2>
+      <p>
+        Untethered Zephyr Cove sits in Round Hill Shopping Center on US-50 — minutes from Nevada Beach, walking distance to coffee and food, ten minutes from Heavenly Village and the gondola. Designed from day one as a modern, lake-adjacent workspace for the people who chose the Nevada side of the lake.
+      </p>
+      <p>
+        Eight distinct meeting spaces (including a 16-person boardroom), sound-proof call booths, a fully equipped kitchen, a real outdoor workspace, and the kind of fast fiber that doesn't blink during snow days. Same memberships as our sister location at <a href="https://coworktahoe.com" style="color:var(--coral); font-weight:500;">Cowork Tahoe</a> — pick whichever is closer to where you're staying.
+      </p>
+      <div class="about-stats">
+        <div>
+          <div class="stat-num">8</div>
+          <div class="stat-label">Meeting spaces</div>
+        </div>
+        <div>
+          <div class="stat-num">16</div>
+          <div class="stat-label">Person boardroom</div>
+        </div>
+        <div>
+          <div class="stat-num">10 min</div>
+          <div class="stat-label">To Heavenly Village</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="testimonials" aria-label="What members say">
+  <div class="container">
+    <div class="testimonials-header">
+      <div class="google-rating">
+        <span class="google-stars">★★★★★</span>
+        <span><strong>Reviews on Google</strong></span>
+        <span class="google-label">· Add real review data here</span>
+      </div>
+      <h2 class="display">What members say about Zephyr Cove.</h2>
+    </div>
+    <div class="quotes-grid">
+
+      <div class="quote-card">
+        <div class="quote-stars">★★★★★</div>
+        <p class="quote-text">The lakeside outdoor patio is unreal — taking calls outside in summer with the breeze off the water is something no other coworking space in Tahoe has. Fast fiber, great meeting rooms, friendly team.</p>
+        <div class="quote-attr"><strong>Member, flex plan</strong> · Placeholder — pull real review</div>
+      </div>
+
+      <div class="quote-card">
+        <div class="quote-stars">★★★★★</div>
+        <p class="quote-text">Eight meeting rooms means I can always find one. Showed a client around for an offsite and they couldn't believe a coworking space had production-quality A/V in the boardroom.</p>
+        <div class="quote-attr"><strong>Member, dedicated desk</strong> · Placeholder — pull real review</div>
+      </div>
+
+      <div class="quote-card">
+        <div class="quote-stars">★★★★★</div>
+        <p class="quote-text">I day-passed for a week-long work-and-ski trip — stayed at the Hard Rock, walked to coffee, drove ten minutes to Heavenly. Will book again next winter. Easiest workation I've done.</p>
+        <div class="quote-attr"><strong>Day pass visitor</strong> · Placeholder — pull real review</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="acquisition" aria-label="Untethered family">
+  <div class="container acquisition-inner">
+    <span class="eyebrow">Built for the Sierra</span>
+    <h2>One of three Untethered locations — same membership, same app.</h2>
+    <p>
+      Untethered is a network of outdoor-inspired workspaces across the Sierra. Members get reciprocal access at <a href="https://coworktahoe.com">Cowork Tahoe</a> in midtown South Lake and every other Untethered location. One membership, one app, one community — wherever the day takes you.
+    </p>
+  </div>
+</section>
+
+<section class="practical" id="visit">
+  <div class="container">
+    <h2 class="display">Visit the space.</h2>
+    <div class="practical-grid">
+
+      <div class="info-block">
+        <h3>Location</h3>
+        <address>
+          195 US Highway 50<br>
+          Zephyr Cove, NV 89448<br>
+          (775) 749-8733
+        </address>
+        <a href="https://maps.google.com/?q=195+US+50+Zephyr+Cove+NV" class="map-link">Open in Google Maps →</a>
+      </div>
+
+      <div class="info-block">
+        <h3>Hours &amp; access</h3>
+        <div class="info-row"><span class="label">Staffed hours</span><span class="value">Mon–Fri · 9am–5pm</span></div>
+        <div class="info-row"><span class="label">Member access</span><span class="value">24/7 via app</span></div>
+        <div class="info-row"><span class="label">Day passes</span><span class="value">M–F · business hours</span></div>
+        <div class="info-row"><span class="label">Parking</span><span class="value">Free · first-come</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="closing">
+  <div class="container">
+    <h2>Come see the space.</h2>
+    <p>Tours take 15 minutes. Bring your laptop — we'll set you up at a desk after, on us.</p>
+    <a href="/tour" class="closing-cta">Schedule a tour →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <a href="/" class="logo" style="margin-bottom:14px;">
+          <span class="logo-mark"></span>
+          <span class="logo-stack">
+            <span class="logo-primary" style="color:white;">Untethered</span>
+            <span class="logo-secondary" style="color:rgba(255,255,255,0.6);">Zephyr Cove</span>
+          </span>
+        </a>
+        <p>Outdoor-inspired workspaces across the Sierra. Zephyr Cove sits in Round Hill Shopping Center, minutes from Stateline and Heavenly Village.</p>
+      </div>
+      <div class="footer-network">
+        <strong>Other Untethered locations</strong>
+        <a href="https://coworktahoe.com">Cowork Tahoe · Midtown South Lake →</a><br>
+        <a href="https://untethered.space">All locations →</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Untethered Workspaces, Inc. · Zephyr Cove location</span>
+      <span>Privacy · Terms</span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
