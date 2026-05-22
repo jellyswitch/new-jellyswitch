@@ -16,6 +16,18 @@ Honeybadger.configure do |config|
       next notice.halt! if from_redis
     end
 
+    # Empty multipart bodies: Rack 3+ raises EmptyContentError when a request
+    # advertises Content-Type: multipart/form-data but the body is empty.
+    # Pre-Rack-3 silently returned empty params. No browser produces this —
+    # in production it's exclusively bots/vulnerability scanners POSTing junk
+    # to "/". Mapped to 400 in config/application.rb so the client gets a
+    # proper Bad Request response; suppressed here so the bot traffic doesn't
+    # drown out real errors. If a legitimate code path ever raises this, it
+    # will still appear in Rails logs.
+    if defined?(Rack::Multipart::EmptyContentError) && notice.exception.is_a?(Rack::Multipart::EmptyContentError)
+      next notice.halt!
+    end
+
     # Note: Heroku platform errors (H15 idle connection, H12 timeout, etc.)
     # are ingested by Honeybadger directly from the Heroku log drain via
     # the Honeybadger Heroku addon — they never pass through this Ruby

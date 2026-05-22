@@ -35,5 +35,14 @@ module Jellyswitch
     config.action_controller.asset_host = ENV['ASSET_HOST']
     config.beginning_of_week = :sunday
     config.hosts.clear
+
+    # Rack 3+ raises EmptyContentError when a request has
+    # Content-Type: multipart/form-data but an empty body. Pre-Rack-3 this
+    # was silently treated as empty params. In production this only fires
+    # from bots and vulnerability scanners POSTing junk to "/" — no browser
+    # produces it. Map it to 400 so the client gets a proper Bad Request
+    # instead of 500, and suppress it from Honeybadger in
+    # config/initializers/honeybadger.rb.
+    config.action_dispatch.rescue_responses["Rack::Multipart::EmptyContentError"] = :bad_request
   end
 end
