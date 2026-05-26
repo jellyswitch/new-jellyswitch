@@ -39,6 +39,29 @@ class MemberFeedback < ApplicationRecord
     update_column(:last_read_at, Time.current)
   end
 
+  # How long after the last reply on either side the conversation is treated
+  # as "wrapped up" — at which point the rate-this-experience CTA becomes
+  # available. Showing the rating immediately after the first staff reply
+  # felt premature; 24h gives both sides a chance to follow up first.
+  RATING_WRAP_UP_WINDOW = 24.hours
+
+  # Returns true when the member should be invited to rate this thread.
+  # Rules:
+  # - Already rated → false (no second prompt)
+  # - No staff reply yet → false (nothing to rate)
+  # - Last activity on either side <24h ago → false (still active)
+  #
+  # `feedback_replies` is loaded into memory once and reused so the call
+  # is a single SQL round-trip even when the replies aren't pre-loaded
+  # (controller serializers tend to enumerate them too).
+  def can_rate?
+    return false if rating.present?
+    replies = feedback_replies.to_a
+    return false unless replies.any?(&:from_admin?)
+    last_reply_at = replies.map(&:created_at).max
+    last_reply_at < RATING_WRAP_UP_WINDOW.ago
+  end
+
   def unread_reply_count
     return 0 if feedback_replies.empty?
     return feedback_replies.count if last_read_at.nil?
