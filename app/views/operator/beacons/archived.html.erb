@@ -1,0 +1,24 @@
+<%- title "Archived Beacons" %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link_to "Beacons", beacons_path %></li>
+    <li class="breadcrumb-item active">Archived</li>
+  </ol>
+</nav>
+
+<% if @beacons.empty? %>
+  <%= wide_card do %>
+    <p class="text-center text-muted my-3">No archived beacons.</p>
+  <% end %>
+<% else %>
+  <% @beacons.each do |beacon| %>
+    <%= wide_card do %>
+      <h4 class="display-4 text-center"><%= beacon.name %></h4>
+      <p class="text-center text-muted">
+        <small><code><%= beacon.uuid %></code> · major <%= beacon.major %> / minor <%= beacon.minor %></small>
+      </p>
+      <%= button_to "Unarchive", beacon_unarchive_path(beacon_id: beacon.id), method: :post, class: "btn btn-block btn-primary" %>
+    <% end %>
+  <% end %>
+<% end %>

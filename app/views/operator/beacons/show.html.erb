@@ -1,0 +1,12 @@
+<%- title @beacon.name %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link_to "Beacons", beacons_path %></li>
+    <li class="breadcrumb-item active"><%= @beacon.name %></li>
+  </ol>
+</nav>
+
+<%= wide_card do %>
+  <%= render @beacon %>
+<% end %>

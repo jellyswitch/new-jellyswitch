@@ -519,6 +519,12 @@ Rails.application.routes.draw do
       get :archived, to: "operator/doors#archived"
     end
   end
+  resources :beacons, controller: "operator/beacons" do
+    post :unarchive, to: "operator/beacons#unarchive"
+    collection do
+      get :archived, to: "operator/beacons#archived"
+    end
+  end
   resources :door_punches, controller: "operator/door_punches"
   resources :events, controller: "operator/events" do
     collection do
