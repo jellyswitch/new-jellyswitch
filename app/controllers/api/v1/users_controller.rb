@@ -26,6 +26,27 @@ class Api::V1::UsersController < Api::V1::BaseController
       # spaces) don't surface in the React Native LocationSwitchScreen — that
       # screen renders `response.data.locations` directly.
       locations: user.operator.locations.visible.map { |l| { id: l.id, name: l.name } },
+      # iBeacons the device should start monitoring for auto-unlock-on-approach.
+      # Scoped to the operator's visible locations so a member with cross-
+      # location access doesn't have to re-fetch when switching spaces. Beacons
+      # without an assigned door are skipped — they can't unlock anything yet.
+      # Membership and door-permission checks still happen server-side at
+      # /api/v1/door/auto_unlock time, so listing a beacon here is safe even
+      # for locations the user isn't currently entitled to enter.
+      beacons: user.operator.locations.visible.flat_map { |l|
+        l.beacons.available.where.not(door_id: nil).map { |b|
+          {
+            identifier:    "beacon-#{b.id}",
+            uuid:          b.uuid,
+            major:         b.major,
+            minor:         b.minor,
+            name:          b.name,
+            door_name:     b.door&.name,
+            location_id:   l.id,
+            location_name: l.name,
+          }
+        }
+      },
       terms_accepted: user.terms_accepted_at.present?,
       has_terms_of_service: user.operator.terms_of_service.attached?,
       terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, host: request.host_with_port) : nil,
