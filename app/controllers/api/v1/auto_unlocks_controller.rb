@@ -1,0 +1,49 @@
+class Api::V1::AutoUnlocksController < Api::V1::BaseController
+  include Api::V1::DoorUnlocking
+
+  NONCE_TTL = 60.seconds
+
+  def create
+    uuid  = params[:uuid].to_s
+    major = params[:major]
+    minor = params[:minor]
+    nonce = params[:nonce].to_s
+
+    return render_error("nonce required") if nonce.blank?
+    return render_error("nonce already used", status: :conflict) unless claim_nonce!(nonce)
+
+    beacon = Beacon.available
+                   .where(operator: current_tenant)
+                   .find_by(uuid: uuid, major: major, minor: minor)
+    return render_error("Unknown beacon", status: :not_found) if beacon.nil?
+
+    door = beacon.door
+    return render_error("Beacon is not yet assigned to a door") if door.nil?
+    return render_error("Door is not configured for unlock")    if door.kisi_id.blank?
+
+    location = beacon.location
+    user     = current_api_user
+
+    unless user_can_access_building?(user, location)
+      return render json: {
+        success: false,
+        door:    door.name,
+        message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+      }, status: :forbidden
+    end
+
+    begin
+      perform_unlock(door: door, user: user, location: location, method: "auto")
+      render json: { success: true, door: door.name, message: "Door unlocked" }
+    rescue => e
+      render json: { success: false, door: door.name, message: e.message }
+    end
+  end
+
+  private
+
+  def claim_nonce!(nonce)
+    key = "auto_unlock_nonce:#{nonce}"
+    Rails.cache.write(key, 1, expires_in: NONCE_TTL, unless_exist: true)
+  end
+end

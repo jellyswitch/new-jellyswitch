@@ -44,6 +44,14 @@ Rails.application.routes.draw do
         end
       end
 
+      post 'door/auto_unlock', to: 'auto_unlocks#create'
+
+      resources :beacons, only: [] do
+        collection do
+          post :heartbeat
+        end
+      end
+
       resources :rooms, only: [:index] do
         member do
           get :availability
