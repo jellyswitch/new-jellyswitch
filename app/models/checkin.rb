@@ -5,8 +5,8 @@
 #
 #  id            :bigint(8)        not null, primary key
 #  billable_type :string
-#  datetime_in   :datetime         not null
-#  datetime_out  :datetime
+#  datetime_in   :timestamptz      not null
+#  datetime_out  :timestamptz
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
 #  billable_id   :bigint(8)
@@ -17,6 +17,7 @@
 # Indexes
 #
 #  index_checkins_on_billable_type_and_billable_id  (billable_type,billable_id)
+#  index_checkins_on_location_id                    (location_id)
 #
 
 class Checkin < ApplicationRecord

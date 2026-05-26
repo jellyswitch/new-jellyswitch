@@ -1,3 +1,38 @@
+# == Schema Information
+#
+# Table name: lease_renewal_requests
+#
+#  id                      :bigint(8)        not null, primary key
+#  admin_notes             :text
+#  admin_responded_at      :datetime
+#  current_price_in_cents  :integer          not null
+#  escalation_applied      :string
+#  expires_at              :datetime
+#  leasee_notes            :text
+#  leasee_responded_at     :datetime
+#  proposed_end_date       :date             not null
+#  proposed_price_in_cents :integer          not null
+#  proposed_start_date     :date             not null
+#  status                  :string           default("pending_leasee"), not null
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  location_id             :bigint(8)
+#  office_lease_id         :bigint(8)        not null
+#  operator_id             :bigint(8)        not null
+#
+# Indexes
+#
+#  index_lease_renewal_requests_on_location_id                 (location_id)
+#  index_lease_renewal_requests_on_office_lease_id             (office_lease_id)
+#  index_lease_renewal_requests_on_office_lease_id_and_status  (office_lease_id,status)
+#  index_lease_renewal_requests_on_operator_id                 (operator_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
+#  fk_rails_...  (office_lease_id => office_leases.id)
+#  fk_rails_...  (operator_id => operators.id)
+#
 class LeaseRenewalRequest < ApplicationRecord
   belongs_to :office_lease
   belongs_to :operator

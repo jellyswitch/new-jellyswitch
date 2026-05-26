@@ -1,3 +1,29 @@
+# == Schema Information
+#
+# Table name: product_email_templates
+#
+#  id                   :bigint(8)        not null, primary key
+#  email_type           :string           not null
+#  enabled              :boolean          default(FALSE)
+#  follow_up_delay_days :integer
+#  product_type         :string           not null
+#  subject              :string           not null
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  location_id          :bigint(8)
+#  operator_id          :bigint(8)        not null
+#
+# Indexes
+#
+#  idx_pet_operator_location_product_email       (operator_id,location_id,product_type,email_type) UNIQUE
+#  index_product_email_templates_on_location_id  (location_id)
+#  index_product_email_templates_on_operator_id  (operator_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
+#  fk_rails_...  (operator_id => operators.id)
+#
 class ProductEmailTemplate < ApplicationRecord
   acts_as_tenant :operator
   belongs_to :operator

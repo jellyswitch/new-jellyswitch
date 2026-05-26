@@ -1,3 +1,27 @@
+# == Schema Information
+#
+# Table name: notes
+#
+#  id           :bigint(8)        not null, primary key
+#  notable_type :string           not null
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  author_id    :bigint(8)        not null
+#  notable_id   :bigint(8)        not null
+#  operator_id  :bigint(8)        not null
+#
+# Indexes
+#
+#  index_notes_on_author_id                   (author_id)
+#  index_notes_on_notable                     (notable_type,notable_id)
+#  index_notes_on_operator_id                 (operator_id)
+#  index_notes_on_operator_id_and_created_at  (operator_id,created_at)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (author_id => users.id)
+#  fk_rails_...  (operator_id => operators.id)
+#
 class Note < ApplicationRecord
   acts_as_tenant :operator
 
