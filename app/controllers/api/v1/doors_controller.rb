@@ -1,5 +1,5 @@
 class Api::V1::DoorsController < Api::V1::BaseController
-  include DoorsHelper
+  include Api::V1::DoorUnlocking
 
   def index
     location = current_location
@@ -27,58 +27,23 @@ class Api::V1::DoorsController < Api::V1::BaseController
   end
 
   def unlock
-    door = Door.find(params[:id])
+    door     = Door.find(params[:id])
     location = current_location
-    user = current_api_user
+    user     = current_api_user
 
     unless user_can_access_building?(user, location)
       return render json: {
         success: false,
-        door: door.name,
+        door:    door.name,
         message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
       }, status: :forbidden
     end
 
-    # Log the attempt
-    DoorPunch.create(user: user, door: door, operator: current_tenant)
-
-    # Call Kisi API
     begin
-      response = unlock_door(door, location)
-      DoorPunch.create(user: user, door: door, operator: current_tenant, json: response)
+      perform_unlock(door: door, user: user, location: location, method: "manual")
       render json: { success: true, door: door.name, message: "Door unlocked" }
     rescue => e
       render json: { success: false, door: door.name, message: e.message }
     end
-  end
-
-  private
-
-  def user_can_access_building?(user, location)
-    return false if user.nil?
-    # Admins/managers/superadmin always.
-    return true if user.superadmin?
-    return true if location && user.admin_or_manager?(location)
-    # Active coverage today.
-    zone = location&.time_zone.presence || 'UTC'
-    today = Time.current.in_time_zone(zone).to_date
-    return true if user.has_active_subscription?
-    return true if user.day_passes.where(day: today).any?
-    return true if location && user.has_active_lease?(location)
-    # Anyone with a room reservation today (active or upcoming) gets in.
-    day_start = today.in_time_zone(zone).beginning_of_day
-    day_end = today.in_time_zone(zone).end_of_day
-    return true if user.reservations.where(cancelled: false)
-                      .where(datetime_in: day_start..day_end).any?
-    false
-  end
-
-  def unlock_door(door, location)
-    url = "https://api.kisi.io/locks/#{door.kisi_id}/unlock"
-    HTTParty.post(url, headers: {
-      "Authorization" => "KISI-LOGIN #{location.kisi_api_key}",
-      "Content-type" => "application/json",
-      "Accept" => "application/json",
-    }).parsed_response
   end
 end

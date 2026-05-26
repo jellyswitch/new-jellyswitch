@@ -19,6 +19,16 @@ class Rack::Attack
     req.ip if req.post? && req.path.start_with?("/embed/")
   end
 
+  ### Throttle BLE auto-unlock POSTs to 30/minute per Bearer token ###
+  # Members walk by repeatedly; 30/min comfortably covers normal traffic
+  # while capping a hostile loop. Bearer token includes the user id so this
+  # is per-user even before JWT decode.
+  throttle("api/v1/auto_unlock/token", limit: 30, period: 1.minute) do |req|
+    if req.post? && req.path == "/api/v1/door/auto_unlock"
+      req.get_header("HTTP_AUTHORIZATION").to_s.split(" ").last.presence || req.ip
+    end
+  end
+
   ### Custom response for throttled requests ###
   self.throttled_responder = lambda do |env|
     [429, { "Content-Type" => "text/plain" }, ["Too many requests. Please wait a minute and try again."]]
