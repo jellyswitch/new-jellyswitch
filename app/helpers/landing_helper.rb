@@ -67,11 +67,19 @@ module LandingHelper
     end
   end
 
-  # Picks the "space host" surfaced in the choose-page nudge bubble. Prefers
-  # a general manager assigned to this location, falls back to the oldest
-  # admin on the operator. Returns nil when neither exists.
+  # Picks the "space host" surfaced in the choose-page nudge bubble and in
+  # the auto-greeting chat thread. Resolution order:
+  #
+  #   1. `location.space_host` — explicit per-location override. Operators
+  #      set this to designate a specific on-site host so the bubble doesn't
+  #      default to whoever happens to be the operator's founder.
+  #   2. General manager whose current_location_id matches this location.
+  #   3. Oldest admin on the operator (last-resort fallback).
+  #
+  # Returns nil when none of those exist.
   def space_host_for(location)
     return nil unless location
+    return location.space_host if location.space_host_id.present?
 
     gm = location.operator.users.where(role: User::GENERAL_MANAGER, current_location_id: location.id)
                                 .order(:created_at).first
