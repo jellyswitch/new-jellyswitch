@@ -36,7 +36,15 @@
             </div>
           </div>
         <% end %>
-        <%= render Location.visible, label: "Take me to" %>
+        <%# Scope to the current operator — `Location.visible` is a global scope
+            that leaks every operator's locations into every operator's landing
+            page. Anonymous visitors on, say, untethered.jellyswitch.com would
+            see "Cowork Tahoe" (belonging to op 1 / tml.jellyswitch.com) in the
+            picker, click it, and end up with `session[:location_id]` pointing
+            to a location whose `operator != current_tenant` — which the
+            `current_location` helper then immediately unsets, dropping them
+            back into the no-location state. %>
+        <%= render current_tenant.locations.visible, label: "Take me to" %>
       <% end %>
     <% end %>
   </div>

@@ -4,6 +4,16 @@ class Operator::UsersController < Operator::BaseController
   before_action :require_authentication, except: [:new, :create, :confirmation_pending]
   before_action :background_image
 
+  # On a multi-location operator, an anonymous visitor needs to be able to
+  # sign up *before* they have a current location — but `reset_location` on
+  # the base controller redirects no-location anon GET HTML requests back to
+  # root. That created a redirect loop: visitor clicks "Sign Up" on the
+  # location-picker page, gets bounced to root, sees the picker again, etc.
+  # `new`/`create`/`confirmation_pending` are intentionally the
+  # anon-accessible actions (mirroring the `require_authentication` skip
+  # above), so they should also bypass the location guard.
+  skip_before_action :reset_location, only: [:new, :create, :confirmation_pending]
+
   def index
     @pagy, @users = find_approved_users
     @unapproved_users = find_unapproved_users
