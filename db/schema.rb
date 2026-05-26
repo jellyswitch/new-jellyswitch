@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_05_26_040628) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_26_182914) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -148,6 +148,27 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_26_040628) do
     t.index ["location_id"], name: "index_automated_workflows_on_location_id"
     t.index ["operator_id", "location_id", "workflow_type"], name: "idx_workflows_operator_location_type", unique: true
     t.index ["operator_id"], name: "index_automated_workflows_on_operator_id"
+  end
+
+  create_table "beacons", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "uuid", null: false
+    t.integer "major", null: false
+    t.integer "minor", null: false
+    t.bigint "location_id", null: false
+    t.bigint "door_id"
+    t.integer "operator_id", default: 1, null: false
+    t.datetime "last_seen_at"
+    t.integer "battery_pct"
+    t.datetime "installed_at"
+    t.text "notes"
+    t.boolean "available", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["door_id"], name: "index_beacons_on_door_id"
+    t.index ["location_id"], name: "index_beacons_on_location_id"
+    t.index ["operator_id", "uuid", "major", "minor"], name: "index_beacons_on_operator_uuid_major_minor", unique: true
+    t.index ["operator_id"], name: "index_beacons_on_operator_id"
   end
 
   create_table "campaign_sends", force: :cascade do |t|
@@ -1033,6 +1054,8 @@ ActiveRecord::Schema[7.1].define(version: 2026_05_26_040628) do
   add_foreign_key "amenities", "rooms"
   add_foreign_key "amenities_reservations", "amenities"
   add_foreign_key "amenities_reservations", "reservations"
+  add_foreign_key "beacons", "doors"
+  add_foreign_key "beacons", "locations"
   add_foreign_key "campaign_sends", "campaign_steps"
   add_foreign_key "campaign_sends", "campaigns"
   add_foreign_key "campaign_steps", "campaigns"
