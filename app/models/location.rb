@@ -67,6 +67,14 @@ class Location < ApplicationRecord
   belongs_to :operator
   acts_as_tenant :operator
 
+  # Optional override for who appears as the auto-greeting chat host at this
+  # location. When nil, `LandingHelper#space_host_for` falls back to the
+  # role-based algorithm (GM at this location → oldest operator admin).
+  # See migration 20260526040628_add_space_host_to_locations for why this
+  # isn't a Postgres FK (cross-tenant assignment is enforced at the app
+  # layer, not the schema).
+  belongs_to :space_host, class_name: "User", optional: true
+
   include HasDollars
   dollars :hourly_rate, :credit_cost, :childcare_reservation_cost
 
