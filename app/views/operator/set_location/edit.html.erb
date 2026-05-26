@@ -11,7 +11,10 @@
           <p class="text-center">Your current location is: <%= current_location.name %></p>
         <% end %>
       <% end %>
-      <%= render Location.visible, label: "Switch to" %>
+      <%# Scope to current operator + visible. `Location.visible` is a
+          global scope that leaks every operator's locations into every
+          operator's switch page; same bug we fixed in landing/index. %>
+      <%= render current_tenant.locations.visible, label: "Switch to" %>
     <% end %>
   </div>
   <div class="col-lg-3"></div>
