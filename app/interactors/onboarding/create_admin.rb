@@ -2,13 +2,23 @@ class Onboarding::CreateAdmin
   include Interactor
   include ErrorsHelper
 
-  delegate :email, :operator, to: :context
+  delegate :email, :password, :password_confirmation, :operator, to: :context
 
   def call
+    # Refuse to proceed without a password. The previous behavior — hardcoded
+    # `password: "foobar"` — meant every workspace owner had the same known
+    # password until they happened to change it, which is an account-takeover
+    # vector for any operator-onboarding account that's still using it.
+    if password.blank?
+      context.fail!(message: "Password is required.")
+      return
+    end
+
     user = User.new(
       name: email,
       email: email,
-      password: "foobar",
+      password: password,
+      password_confirmation: password_confirmation,
       admin: true,
       operator_id: operator.id,
       admin_created: true,
