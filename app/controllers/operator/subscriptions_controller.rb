@@ -24,6 +24,21 @@ class Operator::SubscriptionsController < Operator::BaseController
     include_stripe
   end
 
+  # GET /subscriptions/:id has no dedicated show page — subscription details
+  # live on the user's change-account / membership overview. We declare a
+  # show action anyway because `resources :subscriptions` registers the
+  # route, and without a matching action Rails raises ActionNotFound → 404.
+  # That bit a real member who long-pressed the "Cancel Membership" link
+  # in the mobile WKWebView wrapper: iOS previews the raw GET href, not
+  # the DELETE that data-turbo-method would actually fire, so the preview
+  # rendered the Rails 404 page mid-cancellation and made the user think
+  # the flow was broken.
+  def show
+    find_subscription
+    authorize @subscription, :edit?
+    redirect_to user_change_account_path(@subscription.subscribable)
+  end
+
   def create
     authorize Subscription, :new?
 
