@@ -39,7 +39,7 @@ class Subscription < ApplicationRecord
   # Scopes
   scope :active, -> { where(active: true) }
   scope :pending, -> { where(pending: true) }
-  scope :for_operator, ->(operator) { joins(:plan).where("plans.operator_id = '?'", operator.id) }
+  scope :for_operator, ->(operator) { joins(:plan).where(plans: { operator_id: operator.id }) }
   scope :for_location, ->(location) do
           joins(:plan).where(plans: { id: Plan.for_location(location).map(&:id) })
         end
