@@ -44,6 +44,10 @@ class DoorPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.door_integration_enabled?
+    # Nil-safe: anonymous users (or admins on a multi-location operator who
+    # haven't picked a location yet) reach the operator nav layout with
+    # `location` unset. Treat absent location as "feature off" so the nav
+    # render doesn't 500.
+    location&.door_integration_enabled? || false
   end
 end

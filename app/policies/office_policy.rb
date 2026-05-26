@@ -36,7 +36,8 @@ class OfficePolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.offices_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.offices_enabled? || false
   end
 
   def destroy?

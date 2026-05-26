@@ -16,7 +16,8 @@ class PostPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.bulletin_board_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.bulletin_board_enabled? || false
   end
 
   def can_see?
