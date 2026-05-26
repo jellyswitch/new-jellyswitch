@@ -4,17 +4,17 @@
 #
 #  id                                 :bigint(8)        not null, primary key
 #  allow_shorter_reservation_duration :boolean          default(TRUE), not null
-#  av                                 :boolean          default(FALSE), not null
+#  archived                           :boolean          default(FALSE), not null
 #  capacity                           :integer          default(1), not null
 #  credit_cost                        :integer          default(0), not null
 #  description                        :text
+#  features                           :text             default([]), is an Array
 #  hourly_rate_in_cents               :integer          default(0), not null
 #  name                               :string           not null
 #  rentable                           :boolean          default(FALSE), not null
 #  slug                               :string
 #  square_footage                     :integer          default(0), not null
 #  visible                            :boolean          default(TRUE), not null
-#  whiteboard                         :boolean          default(FALSE), not null
 #  created_at                         :datetime         not null
 #  updated_at                         :datetime         not null
 #  location_id                        :bigint(8)
@@ -22,6 +22,7 @@
 #
 # Indexes
 #
+#  index_rooms_on_archived     (archived)
 #  index_rooms_on_location_id  (location_id)
 #  index_rooms_on_operator_id  (operator_id)
 #

@@ -1,3 +1,22 @@
+# == Schema Information
+#
+# Table name: automated_workflows
+#
+#  id            :bigint(8)        not null, primary key
+#  config        :jsonb            not null
+#  enabled       :boolean          default(FALSE), not null
+#  workflow_type :string           not null
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  location_id   :bigint(8)
+#  operator_id   :bigint(8)        not null
+#
+# Indexes
+#
+#  idx_workflows_operator_location_type      (operator_id,location_id,workflow_type) UNIQUE
+#  index_automated_workflows_on_location_id  (location_id)
+#  index_automated_workflows_on_operator_id  (operator_id)
+#
 class AutomatedWorkflow < ApplicationRecord
   belongs_to :operator
   belongs_to :location, optional: true

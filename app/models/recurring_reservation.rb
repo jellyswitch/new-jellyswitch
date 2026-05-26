@@ -1,3 +1,30 @@
+# == Schema Information
+#
+# Table name: recurring_reservations
+#
+#  id                 :bigint(8)        not null, primary key
+#  cancelled          :boolean          default(FALSE), not null
+#  day_of_month       :integer
+#  day_of_week        :integer
+#  duration_minutes   :integer          not null
+#  end_date           :date             not null
+#  recurrence_pattern :string           not null
+#  start_date         :date             not null
+#  time_of_day        :time             not null
+#  title              :string           not null
+#  created_at         :datetime         not null
+#  updated_at         :datetime         not null
+#  location_id        :bigint(8)
+#  operator_id        :integer          not null
+#  room_id            :integer          not null
+#  user_id            :integer          not null
+#
+# Indexes
+#
+#  index_recurring_reservations_on_operator_id  (operator_id)
+#  index_recurring_reservations_on_room_id      (room_id)
+#  index_recurring_reservations_on_user_id      (user_id)
+#
 class RecurringReservation < ApplicationRecord
   belongs_to :user
   belongs_to :room

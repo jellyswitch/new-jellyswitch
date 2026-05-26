@@ -5,9 +5,12 @@
 #
 #  id                                  :bigint(8)        not null, primary key
 #  allow_hourly                        :boolean          default(FALSE), not null
+#  announcements_enabled               :boolean          default(TRUE), not null
 #  billing_state                       :string
 #  building_access_instructions        :string
 #  building_address                    :string
+#  bulletin_board_enabled              :boolean          default(FALSE), not null
+#  childcare_enabled                   :boolean          default(TRUE), not null
 #  childcare_reservation_cost_in_cents :integer          default(0), not null
 #  city                                :string
 #  common_square_footage               :integer          default(0), not null
@@ -15,10 +18,19 @@
 #  contact_name                        :string
 #  contact_phone                       :string
 #  credit_cost_in_cents                :integer          default(0), not null
+#  credits_enabled                     :boolean          default(FALSE), not null
+#  crm_enabled                         :boolean          default(TRUE), not null
+#  door_integration_enabled            :boolean          default(TRUE), not null
+#  events_enabled                      :boolean          default(TRUE), not null
 #  flex_square_footage                 :integer          default(0), not null
+#  google_reviews_url                  :string
 #  hourly_rate_in_cents                :integer          default(0), not null
+#  kisi_api_key                        :string
+#  latitude                            :decimal(10, 7)
+#  longitude                           :decimal(10, 7)
 #  name                                :string
 #  new_users_get_free_day_pass         :boolean          default(FALSE), not null
+#  offices_enabled                     :boolean          default(FALSE), not null
 #  open_friday                         :boolean          default(TRUE), not null
 #  open_monday                         :boolean          default(TRUE), not null
 #  open_saturday                       :boolean          default(FALSE), not null
@@ -26,6 +38,10 @@
 #  open_thursday                       :boolean          default(TRUE), not null
 #  open_tuesday                        :boolean          default(TRUE), not null
 #  open_wednesday                      :boolean          default(TRUE), not null
+#  past_member_grace_days              :integer          default(180), not null
+#  renewal_reminder_days               :integer
+#  rooms_enabled                       :boolean          default(TRUE), not null
+#  sender_email                        :string
 #  snippet                             :string
 #  square_footage                      :integer
 #  state                               :string
@@ -42,22 +58,13 @@
 #  created_at                          :datetime         not null
 #  updated_at                          :datetime         not null
 #  operator_id                         :bigint(8)
+#  space_host_id                       :bigint(8)
 #  stripe_user_id                      :string
-#  kisi_api_key                        :string
-#  skip_onboarding                     :boolean          default(FALSE), not null
-#  announcements_enabled               :boolean
-#  events_enabled                      :boolean
-#  door_integration_enabled            :boolean
-#  rooms_enabled                       :boolean
-#  offices_enabled                     :boolean
-#  bulletin_board_enabled              :boolean
-#  credits_enabled                     :boolean
-#  childcare_enabled                   :boolean
-#  crm_enabled                         :boolean
 #
 # Indexes
 #
 #  index_locations_on_operator_id     (operator_id)
+#  index_locations_on_space_host_id   (space_host_id)
 #  index_locations_on_state_and_city  (state,city)
 #  index_locations_on_zip             (zip)
 #

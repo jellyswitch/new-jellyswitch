@@ -9,6 +9,10 @@
 #  location_id :integer          not null
 #  user_id     :integer          not null
 #
+# Indexes
+#
+#  index_posts_on_location_id  (location_id)
+#
 
 class Post < ApplicationRecord
   include HasLocation

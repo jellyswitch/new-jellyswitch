@@ -2,16 +2,21 @@
 #
 # Table name: location_managements
 #
-#  id                            :bigint(8)        not null, primary key
-#  created_at                    :datetime         not null
-#  updated_at                    :datetime         not null
-#  location_id                   :bigint(8)        not null
-#  user_id                       :bigint(8)        not null
+#  id          :bigint(8)        not null, primary key
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  location_id :bigint(8)        not null
+#  user_id     :bigint(8)        not null
 #
 # Indexes
 #
 #  index_location_managements_on_location_id  (location_id)
 #  index_location_managements_on_user_id      (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
+#  fk_rails_...  (user_id => users.id)
 #
 
 class LocationManagement < ApplicationRecord

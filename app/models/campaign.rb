@@ -1,3 +1,27 @@
+# == Schema Information
+#
+# Table name: campaigns
+#
+#  id               :bigint(8)        not null, primary key
+#  campaign_type    :string           default("single"), not null
+#  cool_down_days   :integer          default(30), not null
+#  name             :string           not null
+#  recipient_count  :integer          default(0)
+#  scheduled_at     :datetime
+#  segment          :jsonb            not null
+#  sent_at          :datetime
+#  status           :string           default("draft"), not null
+#  suppression_days :integer          default(7)
+#  created_at       :datetime         not null
+#  updated_at       :datetime         not null
+#  location_id      :bigint(8)
+#  operator_id      :bigint(8)        not null
+#
+# Indexes
+#
+#  index_campaigns_on_location_id  (location_id)
+#  index_campaigns_on_operator_id  (operator_id)
+#
 class Campaign < ApplicationRecord
   belongs_to :operator
   belongs_to :location, optional: true

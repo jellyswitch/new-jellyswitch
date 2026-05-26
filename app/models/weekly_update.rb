@@ -9,8 +9,12 @@
 #  week_start    :datetime
 #  created_at    :datetime         not null
 #  updated_at    :datetime         not null
-#  operator_id   :integer
 #  location_id   :integer
+#  operator_id   :integer
+#
+# Indexes
+#
+#  index_weekly_updates_on_location_id  (location_id)
 #
 
 class WeeklyUpdate < ApplicationRecord

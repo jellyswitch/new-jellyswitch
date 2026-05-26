@@ -1,3 +1,32 @@
+# == Schema Information
+#
+# Table name: reservations
+#
+#  id                         :bigint(8)        not null, primary key
+#  authorized_amount_in_cents :integer
+#  cancelled                  :boolean          default(FALSE), not null
+#  captured_amount_in_cents   :integer
+#  captured_at                :datetime
+#  credit_cost                :integer          default(0), not null
+#  datetime_in                :timestamptz      not null
+#  ended_early                :boolean          default(FALSE)
+#  hours                      :integer          default(1), not null
+#  minutes                    :integer          default(0), not null
+#  note                       :text
+#  paid                       :boolean
+#  payment_failed_at          :datetime
+#  created_at                 :datetime         not null
+#  updated_at                 :datetime         not null
+#  recurring_reservation_id   :bigint(8)
+#  room_id                    :integer          not null
+#  stripe_payment_intent_id   :string
+#  user_id                    :integer          not null
+#
+# Indexes
+#
+#  index_reservations_on_recurring_reservation_id  (recurring_reservation_id)
+#  index_reservations_on_stripe_payment_intent_id  (stripe_payment_intent_id) UNIQUE
+#
 FactoryBot.define do
   factory :reservation do
     association :user

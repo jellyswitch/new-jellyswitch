@@ -3,15 +3,20 @@
 #
 # Table name: member_feedbacks
 #
-#  id          :bigint(8)        not null, primary key
-#  anonymous   :boolean          default(FALSE), not null
-#  comment     :text
-#  rating      :integer
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  operator_id :integer          not null
-#  location_id :integer
-#  user_id     :integer
+#  id           :bigint(8)        not null, primary key
+#  anonymous    :boolean          default(FALSE), not null
+#  comment      :text
+#  last_read_at :datetime
+#  rating       :integer
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  location_id  :integer
+#  operator_id  :integer          not null
+#  user_id      :integer
+#
+# Indexes
+#
+#  index_member_feedbacks_on_location_id  (location_id)
 #
 
 class MemberFeedback < ApplicationRecord

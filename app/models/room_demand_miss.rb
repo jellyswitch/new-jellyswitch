@@ -1,3 +1,31 @@
+# == Schema Information
+#
+# Table name: room_demand_misses
+#
+#  id          :bigint(8)        not null, primary key
+#  day_of_week :integer
+#  hour_of_day :integer
+#  missed_at   :datetime         not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  location_id :bigint(8)        not null
+#  operator_id :bigint(8)        not null
+#  user_id     :bigint(8)        not null
+#
+# Indexes
+#
+#  idx_demand_misses_heatmap                              (location_id,day_of_week,hour_of_day)
+#  index_room_demand_misses_on_location_id                (location_id)
+#  index_room_demand_misses_on_location_id_and_missed_at  (location_id,missed_at)
+#  index_room_demand_misses_on_operator_id                (operator_id)
+#  index_room_demand_misses_on_user_id                    (user_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (location_id => locations.id)
+#  fk_rails_...  (operator_id => operators.id)
+#  fk_rails_...  (user_id => users.id)
+#
 class RoomDemandMiss < ApplicationRecord
   belongs_to :user
   belongs_to :operator
