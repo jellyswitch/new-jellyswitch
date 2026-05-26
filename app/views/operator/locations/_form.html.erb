@@ -33,6 +33,21 @@
     <%= f.text_field :contact_phone, placeholder: "Contact Phone Number", class: "form-control" %>
   </div>
 
+  <% if location.persisted? && location.operator.present? && policy(location).set_space_host? %>
+    <div class="form-group">
+      <%= f.label :space_host_id, "Space host" %>
+      <% candidates = location.operator.users
+                              .where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER])
+                              .visible
+                              .order(:name) %>
+      <%= f.select :space_host_id,
+            options_from_collection_for_select(candidates, :id, :name, location.space_host_id),
+            { include_blank: "(Use default: oldest admin)" },
+            class: "form-control" %>
+      <small class="form-text text-muted">Whose name + photo appears as the host on the first chat greeting.</small>
+    </div>
+  <% end %>
+
   <hr />
   <h5>Email Settings</h5>
   <p class="text-muted small">Override operator-level email settings for this location. Leave blank to use the operator defaults.</p>

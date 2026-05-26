@@ -43,4 +43,8 @@ class LocationPolicy < ApplicationPolicy
   def edit_tracking_pixels?
     admin?
   end
+
+  def set_space_host?
+    admin?
+  end
 end

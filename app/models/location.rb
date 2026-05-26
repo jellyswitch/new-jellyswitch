@@ -130,6 +130,14 @@ class Location < ApplicationRecord
   validates :past_member_grace_days,
             presence: true,
             numericality: { only_integer: true, greater_than_or_equal_to: 120, less_than_or_equal_to: 365 }
+  validate :space_host_belongs_to_same_operator
+
+  def space_host_belongs_to_same_operator
+    return if space_host_id.blank?
+    return if space_host && space_host.operator_id == operator_id
+
+    errors.add(:space_host_id, "must be a member of this operator")
+  end
 
   scope :visible, -> { where(visible: true) }
 
