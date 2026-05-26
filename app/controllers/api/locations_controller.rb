@@ -15,7 +15,9 @@ class Api::LocationsController < ApplicationController
 
     # Include all operator locations if user has access to multiple
     if current_tenant
-      locations = current_tenant.locations.where.not(latitude: nil, longitude: nil)
+      # Scope to .visible so geofencing doesn't trigger door-unlock UI for
+      # hidden locations (test scratchpads, archived spaces).
+      locations = current_tenant.locations.visible.where.not(latitude: nil, longitude: nil)
     end
 
     render json: locations.map { |loc|

@@ -22,7 +22,10 @@ class Api::V1::UsersController < Api::V1::BaseController
       location_id: user.current_location_id || user.original_location_id,
       operator_subdomain: user.operator.subdomain,
       features: location_features(user),
-      locations: user.operator.locations.map { |l| { id: l.id, name: l.name } },
+      # Scope to .visible so hidden locations (test scratchpads, archived
+      # spaces) don't surface in the React Native LocationSwitchScreen — that
+      # screen renders `response.data.locations` directly.
+      locations: user.operator.locations.visible.map { |l| { id: l.id, name: l.name } },
       terms_accepted: user.terms_accepted_at.present?,
       has_terms_of_service: user.operator.terms_of_service.attached?,
       terms_of_service_url: user.operator.terms_of_service.attached? ? Rails.application.routes.url_helpers.rails_blob_url(user.operator.terms_of_service, host: request.host_with_port) : nil,

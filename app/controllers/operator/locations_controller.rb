@@ -4,7 +4,12 @@ class Operator::LocationsController < Operator::BaseController
   before_action :background_image
 
   def index
-    @locations = Location.all
+    # Scope to current tenant. `Location.all` is global and would render
+    # every operator's locations into the admin's Locations page — a
+    # multi-tenant isolation bug. Admins still see hidden locations here
+    # (no `.visible` filter) because this is the page where they manage
+    # them.
+    @locations = current_tenant.locations
     authorize @locations
   end
 

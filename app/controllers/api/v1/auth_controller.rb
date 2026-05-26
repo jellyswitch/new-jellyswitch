@@ -63,8 +63,10 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     set_current_tenant(operator)
 
-    # Use the same interactor chain as web signup
-    location_id = params[:location_id].present? ? params[:location_id] : operator.locations.first&.id
+    # Use the same interactor chain as web signup. Default to the first
+    # *visible* location so a signup with no location_id never auto-assigns
+    # the new user to a hidden test/archived space.
+    location_id = params[:location_id].present? ? params[:location_id] : operator.locations.visible.first&.id
 
     result = Users::Create.call(
       params: {

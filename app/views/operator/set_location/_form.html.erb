@@ -1,4 +1,5 @@
-<% Location.visible.each do |location| %>
+<%# Scope to current operator + visible — see set_location/edit.html.erb %>
+<% current_tenant.locations.visible.each do |location| %>
   <%= wide_card do %>
     <%= form_for(:location, url: set_location_path, method: :put, html: {class: "form"}) do |f| %>
       <%= f.hidden_field :id, value: location.id %>
