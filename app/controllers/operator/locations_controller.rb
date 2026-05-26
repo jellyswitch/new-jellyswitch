@@ -162,7 +162,7 @@ class Operator::LocationsController < Operator::BaseController
   end
 
   def location_params
-    params.require(:location).permit(
+    permitted = [
       :name, :snippet, :wifi_name, :wifi_password, :building_address,
       :city, :state, :zip, :latitude, :longitude, :contact_name, :contact_email, :contact_phone,
       :background_image, :square_footage, :time_zone, :visible,
@@ -171,6 +171,10 @@ class Operator::LocationsController < Operator::BaseController
       :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
       :open_friday, :open_saturday, :working_day_start, :working_day_end, :kisi_api_key,
       :credit_cost_in_cents, :sender_email, :google_reviews_url, :renewal_reminder_days,
+    ]
+    permitted << :space_host_id if policy(@location || Location).set_space_host?
+    params.require(:location).permit(
+      *permitted,
       tracking_pixels_attributes: [:id, :name, :position, :script, :always_on, :_destroy]
     )
   end
