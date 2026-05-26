@@ -1,0 +1,43 @@
+# == Schema Information
+#
+# Table name: beacons
+#
+#  id           :bigint(8)        not null, primary key
+#  available    :boolean          default(TRUE), not null
+#  battery_pct  :integer
+#  installed_at :datetime
+#  last_seen_at :datetime
+#  major        :integer          not null
+#  minor        :integer          not null
+#  name         :string           not null
+#  notes        :text
+#  uuid         :string           not null
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#  door_id      :bigint(8)
+#  location_id  :bigint(8)        not null
+#  operator_id  :integer          default(1), not null
+#
+# Indexes
+#
+#  index_beacons_on_door_id                    (door_id)
+#  index_beacons_on_location_id                (location_id)
+#  index_beacons_on_operator_id                (operator_id)
+#  index_beacons_on_operator_uuid_major_minor  (operator_id,uuid,major,minor) UNIQUE
+#
+# Foreign Keys
+#
+#  fk_rails_...  (door_id => doors.id)
+#  fk_rails_...  (location_id => locations.id)
+#
+cowork_tahoe_front_door_beacon:
+  name: Cowork Tahoe Front Door
+  uuid: 426C7565-4368-6172-6D42-6561636F6E73
+  major: 1
+  minor: 1
+  operator: cowork_tahoe
+  location: cowork_tahoe_location
+  battery_pct: 100
+  available: true
+  installed_at: <%= 1.week.ago.iso8601 %>
+  last_seen_at: <%= 10.minutes.ago.iso8601 %>
