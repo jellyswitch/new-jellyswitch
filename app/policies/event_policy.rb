@@ -41,6 +41,7 @@ class EventPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.events_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.events_enabled? || false
   end
 end

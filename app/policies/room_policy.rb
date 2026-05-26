@@ -28,7 +28,8 @@ class RoomPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.rooms_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.rooms_enabled? || false
   end
 
   def destroy?

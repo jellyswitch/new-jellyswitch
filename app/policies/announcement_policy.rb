@@ -12,7 +12,8 @@ class AnnouncementPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.announcements_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.announcements_enabled? || false
   end
 
   private

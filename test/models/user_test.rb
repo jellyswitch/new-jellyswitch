@@ -142,4 +142,19 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal User.relevant_admins_of_location(nil), []
   end
+
+  # Regression: a user whose Operator record has been deleted (orphaned
+  # operator_id) used to crash the after_commit :sync_to_mailchimp callback
+  # with NoMethodError on nil — the destroy still committed, but the
+  # request/job raised. Reproduced in prod 2026-05-25 destroying user 37092.
+  test 'destroy does not raise when operator is missing' do
+    user = users(:cowork_tahoe_non_member)
+    user.update_column(:operator_id, 0)
+    user.reload
+    assert_nil user.operator
+
+    assert_nothing_raised do
+      user.destroy
+    end
+  end
 end

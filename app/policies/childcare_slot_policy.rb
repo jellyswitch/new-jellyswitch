@@ -28,6 +28,7 @@ class ChildcareSlotPolicy < ApplicationPolicy
   end
 
   def enabled?
-    location.childcare_enabled?
+    # Nil-safe; see DoorPolicy#enabled? for the rationale.
+    location&.childcare_enabled? || false
   end
 end
