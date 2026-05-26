@@ -27,6 +27,14 @@ class BeaconPolicy < ApplicationPolicy
     enabled? && (admin? || general_manager?)
   end
 
+  def archived?
+    enabled? && (admin? || community_manager? || general_manager?)
+  end
+
+  def unarchive?
+    enabled? && (admin? || general_manager?)
+  end
+
   def enabled?
     location&.door_integration_enabled? || false
   end

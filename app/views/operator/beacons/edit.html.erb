@@ -1,0 +1,19 @@
+<%- title "Configure Beacon" %>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><%= link_to "Beacons", beacons_path %></li>
+    <li class="breadcrumb-item active"><%= @beacon.name %></li>
+  </ol>
+</nav>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Edit Beacon</h4>
+  <%= render "form", label: "Update" %>
+
+  <div class="row mt-2">
+    <div class="col-12">
+      <%= link_to "Cancel", beacons_path, class: "btn btn-block btn-warning" %>
+    </div>
+  </div>
+<% end %>

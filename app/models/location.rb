@@ -92,6 +92,7 @@ class Location < ApplicationRecord
   has_many :childcare_slots
   has_many :childcare_reservations, through: :childcare_slots
   has_many :doors
+  has_many :beacons
   has_many :events
   has_many :rooms
   has_many :offices

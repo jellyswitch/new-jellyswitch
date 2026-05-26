@@ -1,0 +1,43 @@
+<h4 class="display-4 text-center"><%= beacon.name %></h4>
+
+<div class="row text-center mb-3">
+  <div class="col-4">
+    <small class="text-muted d-block">Battery</small>
+    <% if beacon.battery_pct.present? %>
+      <strong class="<%= beacon.low_battery? ? 'text-danger' : 'text-success' %>">
+        <%= beacon.battery_pct %>%
+      </strong>
+    <% else %>
+      <span class="text-muted">—</span>
+    <% end %>
+  </div>
+  <div class="col-4">
+    <small class="text-muted d-block">Last Seen</small>
+    <% if beacon.last_seen_at.present? %>
+      <strong class="<%= beacon.stale? ? 'text-warning' : 'text-success' %>"
+              title="<%= beacon.last_seen_at.iso8601 %>">
+        <%= time_ago_in_words(beacon.last_seen_at) %> ago
+      </strong>
+    <% else %>
+      <span class="text-muted">Never</span>
+    <% end %>
+  </div>
+  <div class="col-4">
+    <small class="text-muted d-block">Door</small>
+    <% if beacon.door.present? %>
+      <strong><%= beacon.door.name %></strong>
+    <% else %>
+      <span class="text-warning">Unassigned</span>
+    <% end %>
+  </div>
+</div>
+
+<p class="text-center text-muted">
+  <small>
+    <code><%= beacon.uuid %></code><br>
+    major <%= beacon.major %> / minor <%= beacon.minor %>
+  </small>
+</p>
+
+<%= link_to "Configure", edit_beacon_path(beacon), class: "btn btn-block btn-info" %>
+<%= link_to "Archive", beacon_path(beacon), method: :delete, class: "btn btn-block btn-outline-danger mt-2", data: { confirm: "Are you sure you want to archive #{beacon.name}?" } %>
