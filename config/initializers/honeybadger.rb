@@ -25,6 +25,17 @@ Honeybadger.configure do |config|
       next notice.halt! if from_redis
     end
 
+    # `heroku run rails runner` one-liners that raise during eval get
+    # flushed by Honeybadger's at_exit hook with no controller / job /
+    # task context — component reports as "at_exit" and action is nil.
+    # These are interactive ad-hoc prod queries (usually column-name
+    # typos, e.g. `users.admin_created` when the column is the virtual
+    # attr_accessor only); they aren't user-facing errors and bury real
+    # notifications in the dashboard. Sidekiq, ActiveJob, and rake task
+    # errors all set component to their own class name, so they're
+    # unaffected by this filter.
+    next notice.halt! if notice.component == "at_exit" && notice.action.nil?
+
     # Note: Heroku platform errors (H15 idle connection, H12 timeout, etc.)
     # are ingested by Honeybadger directly from the Heroku log drain via
     # the Honeybadger Heroku addon — they never pass through this Ruby
