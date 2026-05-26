@@ -4,7 +4,9 @@ class  OnboardingController < ApplicationController
 
   def create_user
     result = Onboarding::CreateAccount.call(
-      email: params[:email]
+      email:                 params[:email],
+      password:              params[:password],
+      password_confirmation: params[:password_confirmation],
     )
 
     if result.success?
