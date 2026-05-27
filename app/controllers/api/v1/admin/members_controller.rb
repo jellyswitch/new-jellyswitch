@@ -382,6 +382,13 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       id: r.id, room_name: r.room&.name, date: r.datetime_in.strftime("%B %e, %Y"),
       time: r.datetime_in.strftime("%l:%M %p").strip, minutes: r.minutes,
       cancelled: r.cancelled,
+      # When a member taps "End reservation now," the model writes
+      # ended_early=true and rewrites `minutes` to the actual time used.
+      # The admin's mobile list was rendering only room/date/time/minutes,
+      # so an ended-early booking looked identical to a still-active one
+      # — admins thought a paid reservation was running when the user had
+      # already walked out. Surface the flag so the client can badge it.
+      ended_early: r.ended_early,
     }}
   end
 
