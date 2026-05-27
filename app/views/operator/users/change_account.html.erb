@@ -28,7 +28,15 @@
               <%#= render "operator/users/pause_membership_form", subscription: @subscription %>
               <!-- <hr /> -->
               <h3 class="text-center mt-3">Cancel Membership</h3>
-              <%= link_to "Cancel Membership", subscription_path(@subscription), data: { turbo_method: :delete }, class: "btn btn-sm btn-warning m-2" %>
+              <%# button_to instead of link_to + data-turbo-method=delete: %>
+              <%# the link variant gets routed through navigation interception %>
+              <%# as a plain GET in the iOS WKWebView wrapper, hits #show, and %>
+              <%# silently redirects without cancelling. A form POST with %>
+              <%# _method=delete survives every layer. %>
+              <%= button_to "Cancel Membership", subscription_path(@subscription),
+                  method: :delete,
+                  form: { data: { turbo_confirm: "Cancel your membership at the end of the current billing period?" } },
+                  class: "btn btn-sm btn-warning m-2" %>
               <hr />
             <% end %>
           <%# end %>

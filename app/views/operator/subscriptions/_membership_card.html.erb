@@ -151,7 +151,17 @@
             -->
             <div class="text-center">
               <h3 class="text-center mt-1">Cancel Membership</h3>
-              <%= link_to "Cancel Membership", subscription_path(subscription), data: { dismiss: "modal", turbo_method: :delete, turbo_confirm: "Cancel your membership at the end of the current billing period?" }, class: "btn btn-sm btn-danger" %>
+              <%# button_to (form POST + _method=delete) instead of link_to + %>
+              <%# data-turbo-method=delete. The link variant has been racing %>
+              <%# Bootstrap's data-dismiss=modal and getting intercepted as a %>
+              <%# plain GET by the iOS WKWebView wrapper — members ended up %>
+              <%# at /users/:slug/change_account via the show action without %>
+              <%# any cancellation actually firing. A real form submission %>
+              <%# can't be silently downgraded to GET by any layer. %>
+              <%= button_to "Cancel Membership", subscription_path(subscription),
+                  method: :delete,
+                  form: { data: { turbo_confirm: "Cancel your membership at the end of the current billing period?" } },
+                  class: "btn btn-sm btn-danger" %>
               <hr />
             </div>
           </div>
