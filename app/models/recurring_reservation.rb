@@ -38,7 +38,7 @@ class RecurringReservation < ApplicationRecord
   validates :title, :recurrence_pattern, :duration_minutes, :time_of_day,
             :start_date, :end_date, presence: true
   validates :recurrence_pattern, inclusion: {
-    in: %w[daily_weekdays weekly biweekly monthly]
+    in: %w[daily daily_weekdays weekly biweekly monthly bimonthly]
   }
   validate :end_date_after_start_date
 
@@ -53,10 +53,12 @@ class RecurringReservation < ApplicationRecord
   }.freeze
 
   PATTERN_OPTIONS = {
+    "Daily" => "daily",
     "Daily (Weekdays)" => "daily_weekdays",
     "Weekly" => "weekly",
     "Biweekly" => "biweekly",
-    "Monthly" => "monthly"
+    "Monthly" => "monthly",
+    "Bimonthly (every 2 months)" => "bimonthly",
   }.freeze
 
   def occurrence_dates
@@ -65,6 +67,8 @@ class RecurringReservation < ApplicationRecord
 
     while current <= end_date
       case recurrence_pattern
+      when "daily"
+        dates << current
       when "daily_weekdays"
         dates << current if current.on_weekday?
       when "weekly"
@@ -76,6 +80,15 @@ class RecurringReservation < ApplicationRecord
         end
       when "monthly"
         dates << current if current.day == (day_of_month || start_date.day)
+      when "bimonthly"
+        # Every other month on the configured (or start-date) day.
+        # Anchored to start_date's month so a series starting in
+        # January recurs Mar / May / Jul / … not Feb / Apr.
+        target_day = day_of_month || start_date.day
+        if current.day == target_day
+          month_diff = (current.year * 12 + current.month) - (start_date.year * 12 + start_date.month)
+          dates << current if month_diff.even?
+        end
       end
       current += 1.day
     end
@@ -93,10 +106,12 @@ class RecurringReservation < ApplicationRecord
 
   def pattern_description
     case recurrence_pattern
+    when "daily" then "Every day"
     when "daily_weekdays" then "Every weekday"
     when "weekly" then "Every #{Date::DAYNAMES[day_of_week || 0]}"
     when "biweekly" then "Every other #{Date::DAYNAMES[day_of_week || 0]}"
     when "monthly" then "Monthly on the #{(day_of_month || start_date.day).ordinalize}"
+    when "bimonthly" then "Every other month on the #{(day_of_month || start_date.day).ordinalize}"
     end
   end
 
