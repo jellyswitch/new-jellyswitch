@@ -9,11 +9,23 @@ class EventPolicy < ApplicationPolicy
   end
 
   def new?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && can_submit?
   end
 
   def create?
-    enabled? && (admin? || community_manager? || general_manager?)
+    enabled? && can_submit?
+  end
+
+  # Members + office-lease holders can propose events on the web now,
+  # mirroring the existing mobile API path (Api::V1::EventsController#create).
+  # Non-admin submissions land with approved_at=nil and go through the same
+  # approval queue admins already use for mobile member submissions.
+  # Anonymous / day-pass-only / pending users still can't submit.
+  def can_submit?
+    return false unless is_user?
+    admin? || community_manager? || general_manager? || superadmin? ||
+      user.has_active_subscription? ||
+      (location.present? && user.has_active_lease?(location))
   end
 
   def show?
