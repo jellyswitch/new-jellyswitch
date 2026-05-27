@@ -2,17 +2,31 @@ class Api::V1::AuthController < Api::V1::BaseController
   skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators]
 
   # GET /api/v1/auth/operators
-  # Public catalog of bookable spaces for the signup-screen dropdown
-  # (members shouldn't have to know the subdomain; "Cowork Tahoe" is
-  # what they read on the door). Returns operators that have at least
-  # one visible location, with the primary location's city to
-  # disambiguate ones with similar names.
+  #
+  # Returns the calling app's operator (scoped via X-Operator-Subdomain).
+  # Used by the mobile signup screen to populate the operator's visible
+  # locations array — important for multi-location operators like
+  # Untethered (Zephyr Cove + main) where the user picks which location
+  # to be signed up at.
+  #
+  # Used to return the entire jellyswitch catalog (every operator with a
+  # visible location) unscoped — that leaked Innogrove / InSpark / Studio
+  # entries into Cowork Tahoe's branded app picker, alongside any
+  # low-quality / spammy operator signups. Now hard-scoped to the
+  # X-Operator-Subdomain header set by the api client.
+  #
+  # If a caller doesn't identify a tenant, returns an empty array — the
+  # signup form's default already targets `brand.subdomain` so the user
+  # can still complete signup; the picker is just empty.
   def operators
-    op_ids = Location.visible.distinct.pluck(:operator_id)
-    operators = Operator.where(id: op_ids).order(:name).includes(:locations)
+    operators = if current_tenant
+      Operator.where(id: current_tenant.id).includes(:locations)
+    else
+      Operator.none
+    end
 
     render json: {
-      operators: operators.map { |op|
+      operators: operators.order(:name).map { |op|
         visible_locations = op.locations.visible.order(:id)
         primary = visible_locations.first
         {
