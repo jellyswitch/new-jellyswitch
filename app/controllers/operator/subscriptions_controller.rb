@@ -33,18 +33,10 @@ class Operator::SubscriptionsController < Operator::BaseController
   # the DELETE that data-turbo-method would actually fire, so the preview
   # rendered the Rails 404 page mid-cancellation and made the user think
   # the flow was broken.
-  #
-  # The local Pundit rescue handles the same preview when it arrives without
-  # session cookies. The global rescue sets a "Whoops! That's not allowed"
-  # flash and bounces to root, and that flash then bled into the member's
-  # next page load — making the cancel flow look broken even though a real
-  # tap still worked.
   def show
     find_subscription
     authorize @subscription, :edit?
     redirect_to user_change_account_path(@subscription.subscribable)
-  rescue Pundit::NotAuthorizedError
-    redirect_to root_path
   end
 
   def create
