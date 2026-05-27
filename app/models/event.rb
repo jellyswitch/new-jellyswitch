@@ -25,6 +25,12 @@ class Event < ApplicationRecord
   belongs_to :location
   belongs_to :user
 
+  # Event has no operator_id column; route through the location. Lets
+  # Notifiable::Event piggyback on Notifiable::Default's shared
+  # `operator` / `apns_configured?` / bundle_id plumbing without
+  # overriding everything per-adapter.
+  delegate :operator, to: :location, allow_nil: true
+
   has_many :rsvps
 
   has_one_attached :image

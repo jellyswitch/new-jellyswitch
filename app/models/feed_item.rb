@@ -129,6 +129,8 @@ class FeedItem < ApplicationRecord
       "resumed their membership"
     when "demand-miss"
       "couldn't find an available room"
+    when "event-proposed"
+      "proposed an event"
     when "daily-digest"
       "Daily activity summary"
     end
