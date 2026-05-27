@@ -52,4 +52,28 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     delete subscription_path(@subscription), params: { subscription: { plan: "foobar" } }, env: default_env
     assert_response :redirect
   end
+
+  # The Cancel Membership CTA must render as a button_to form (POST +
+  # _method=delete hidden field), not a link_to with data-turbo-method=delete.
+  # The link variant has been getting routed as a plain GET through the iOS
+  # WKWebView wrapper's navigation interception — which after PR #452 lands
+  # at the new #show redirect, silently redirects to change_account, and
+  # never actually cancels. A real <form method="post"> survives every
+  # interception layer (Turbo Drive JS, Turbo Native, plain WKWebView).
+  test "cancel CTA on memberships page is a form submission, not a data-turbo-method link" do
+    get user_memberships_path(@user), env: default_env
+    assert_response :ok
+
+    # The page should include a form whose action is the subscription path
+    # and which carries the _method=delete override.
+    assert_select "form[action='#{subscription_path(@subscription)}'][method='post']" do
+      assert_select "input[type='hidden'][name='_method'][value='delete']", count: 1
+    end
+
+    # And it must NOT use the old link_to + data-turbo-method=delete shape
+    # for that same destination, since that's what was breaking in the
+    # wrapper. (We allow data-turbo-method elsewhere on the page — only the
+    # subscription DELETE link is the regression target.)
+    assert_select "a[href='#{subscription_path(@subscription)}'][data-turbo-method='delete']", count: 0
+  end
 end
