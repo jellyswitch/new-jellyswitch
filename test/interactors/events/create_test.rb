@@ -10,6 +10,8 @@ require "test_helper"
 # pending_approval forever, which silently broke the events list for
 # every web-flow admin submission.
 class Events::CreateTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     @operator = operators(:cowork_tahoe)
     @location = locations(:cowork_tahoe_location)
@@ -58,5 +60,31 @@ class Events::CreateTest < ActiveSupport::TestCase
     assert result.success?, result.message
     assert_nil result.event.approved_at,
       "member-proposed events must land pending so an admin can review"
+  end
+
+  test "member submissions drop a FeedItem so admins see them in the feed" do
+    # CreateNotificationsAsync enqueues SendNotificationsJob; flush
+    # inline so the FeedItem hits the DB during the test.
+    perform_enqueued_jobs do
+      assert_difference -> { FeedItem.where("blob ->> 'type' = ?", "event-proposed").count }, +1 do
+        Events::Create.call(
+          user: users(:cowork_tahoe_member),
+          location: @location,
+          event_params: ActionController::Parameters.new(base_params).permit!,
+        )
+      end
+    end
+  end
+
+  test "admin auto-approved submissions do not fan out a pending-event notification" do
+    perform_enqueued_jobs do
+      assert_no_difference -> { FeedItem.where("blob ->> 'type' = ?", "event-proposed").count } do
+        Events::Create.call(
+          user: users(:cowork_tahoe_admin),
+          location: @location,
+          event_params: ActionController::Parameters.new(base_params).permit!,
+        )
+      end
+    end
   end
 end

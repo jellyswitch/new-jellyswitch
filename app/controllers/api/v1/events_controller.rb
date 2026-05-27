@@ -75,6 +75,14 @@ class Api::V1::EventsController < Api::V1::BaseController
     end
 
     if event.save
+      # Member / lease-holder submissions land pending — push to the
+      # location's admins so they can review on AdminEvents + drop a
+      # FeedItem for the Today feed. Admin self-submissions auto-approve
+      # above and skip this fanout.
+      if event.approved_at.nil?
+        CreateNotificationsAsync.call(notifiable: event)
+      end
+
       render json: {
         id: event.id,
         title: event.title,

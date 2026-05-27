@@ -34,6 +34,14 @@ class Events::Create
 
     if event.save
       context.event = event
+
+      # Member / lease-holder submissions land pending (approved_at is
+      # nil) — ping the location's admins so they can review on
+      # AdminEvents and drop a FeedItem for the Today feed.
+      # Admin self-submissions auto-approve and don't need this fanout.
+      if event.approved_at.nil?
+        CreateNotificationsAsync.call(notifiable: event)
+      end
     else
       context.fail!(message: "Could not create event.")
     end

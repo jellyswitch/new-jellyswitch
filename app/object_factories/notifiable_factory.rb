@@ -11,6 +11,8 @@ class NotifiableFactory
       Notifiable::ChildcareReservation
     when "DayPass"
       Notifiable::DayPass
+    when "Event"
+      Notifiable::Event
     when "FeedItem"
       Notifiable::FeedItem
     when "FeedItemComment"
