@@ -174,7 +174,13 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
       duration: "#{r.minutes} min",
       minutes: r.minutes,
       paid: r.paid,
-      cancelled: r.cancelled
+      cancelled: r.cancelled,
+      # Same blast radius as the admin members#reservations fix: without
+      # this field the AdminReservationsScreen list rendered ended-early
+      # bookings identically to active ones (and offered Extend/Cancel
+      # buttons), so admins couldn't tell whether the room was actually
+      # still occupied.
+      ended_early: r.ended_early,
     }
   end
 end
