@@ -32,19 +32,51 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
   end
 
   def create
-    feedback = MemberFeedback.new(
-      comment: params[:body],
-      rating: params[:rating],
-      user: current_api_user,
-      operator: current_tenant,
-      location: current_location,
-    )
+    # Treat the conversation as ongoing: if the member already has a thread
+    # for this location (typically the auto-generated host-greeting created
+    # by MemberFeedback::EnsureHostGreeting on first dashboard view), append
+    # the new comment as a reply rather than spinning up a parallel
+    # MemberFeedback. The parallel-thread bug stranded the staff reply on
+    # the original (host-greeting) thread while the member's question was
+    # filed in a brand-new thread that nobody was watching — and showed up
+    # in the mobile inbox as two separate cards ("Open" and "Replied").
+    #
+    # Mirrors the same logic already in
+    # Operator::MemberFeedbacksController#create; the API path was missed
+    # when that fix landed.
+    existing = current_api_user.member_feedbacks
+      .where(location: current_location)
+      .order(updated_at: :desc)
+      .first
 
-    if feedback.save
-      CreateNotificationsAsync.call(notifiable: feedback)
-      render json: feedback_json(feedback), status: :created
+    if existing.present?
+      result = MemberFeedback::CreateReply.call(
+        member_feedback: existing,
+        user: current_api_user,
+        operator: current_tenant,
+        body: params[:body],
+      )
+
+      if result.success?
+        render json: feedback_json(existing.reload), status: :created
+      else
+        render_error(result.message)
+      end
     else
-      render_error(feedback.errors.full_messages.first)
+      feedback = MemberFeedback.new(
+        comment: params[:body],
+        rating: params[:rating],
+        user: current_api_user,
+        operator: current_tenant,
+        location: current_location,
+      )
+
+      if feedback.save
+        CreateNotificationsAsync.call(notifiable: feedback)
+        render json: feedback_json(feedback), status: :created
+      else
+        render_error(feedback.errors.full_messages.first)
+      end
     end
   end
 
