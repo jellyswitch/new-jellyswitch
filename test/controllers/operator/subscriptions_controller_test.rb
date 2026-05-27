@@ -24,4 +24,16 @@ class Operator::SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     get subscription_path(@subscription), env: default_env
     assert_redirected_to user_change_account_path(@subscription.subscribable)
   end
+
+  # iOS WKWebView's link-preview fetches a GET against the raw href before
+  # data-turbo-method=delete intercepts. That request usually carries no
+  # session cookies, so Pundit denied access, set the global "Whoops!
+  # That's not allowed" flash, and bounced to root — and the flash then
+  # bled into the member's next page load, making the cancel flow look
+  # broken even though a real tap still worked.
+  test "show does not surface the Pundit Whoops flash to anonymous link previews" do
+    get subscription_path(@subscription), env: default_env
+    assert_response :redirect
+    assert_nil flash[:alert], "anonymous preview must not trigger the Whoops flash"
+  end
 end
