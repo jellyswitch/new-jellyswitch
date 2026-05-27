@@ -30,12 +30,16 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Announcements", path: announcements_path}
     end
 
-    if policy(:post).enabled?
-      items << {title: "Bulletin Board", path: posts_path}
-    end
-
+    # One "Community" entry replaces the prior Bulletin Board + Events
+    # split. The community lander (events_path) shows both the Bulletin
+    # Board CTA and the events list, so there's no reason to surface them
+    # as two separate hamburger items. Falls back to posts_path if events
+    # are disabled but bulletin board isn't, so operators that turned
+    # events off still have a community front door.
     if policy(:event).enabled?
-      items << {title: "Events", path: events_path}
+      items << {title: "Community", path: events_path}
+    elsif policy(:post).enabled?
+      items << {title: "Community", path: posts_path}
     end
 
     items << {title: "People (CRM)", path: people_path}
@@ -87,12 +91,16 @@ class Navigation::Default < SimpleDelegator
       {title: "Home", path: root_path}
     ]
 
-    if policy(:post).enabled?
-      items << {title: "Bulletin Board", path: posts_path}
-    end
-
+    # One "Community" entry replaces the prior Bulletin Board + Events
+    # split. The community lander (events_path) shows both the Bulletin
+    # Board CTA and the events list, so there's no reason to surface them
+    # as two separate hamburger items. Falls back to posts_path if events
+    # are disabled but bulletin board isn't, so operators that turned
+    # events off still have a community front door.
     if policy(:event).enabled?
-      items << {title: "Events", path: events_path}
+      items << {title: "Community", path: events_path}
+    elsif policy(:post).enabled?
+      items << {title: "Community", path: posts_path}
     end
 
     if user.allowed_in?(location) && user.approved?
@@ -146,12 +154,16 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Announcements", path: announcements_path}
     end
 
-    if policy(:post).enabled?
-      items << {title: "Bulletin Board", path: posts_path}
-    end
-
+    # One "Community" entry replaces the prior Bulletin Board + Events
+    # split. The community lander (events_path) shows both the Bulletin
+    # Board CTA and the events list, so there's no reason to surface them
+    # as two separate hamburger items. Falls back to posts_path if events
+    # are disabled but bulletin board isn't, so operators that turned
+    # events off still have a community front door.
     if policy(:event).enabled?
-      items << {title: "Events", path: events_path}
+      items << {title: "Community", path: events_path}
+    elsif policy(:post).enabled?
+      items << {title: "Community", path: posts_path}
     end
 
     items << {title: "People (CRM)", path: people_path}
@@ -200,12 +212,16 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Announcements", path: announcements_path}
     end
 
-    if policy(:post).enabled?
-      items << {title: "Bulletin Board", path: posts_path}
-    end
-
+    # One "Community" entry replaces the prior Bulletin Board + Events
+    # split. The community lander (events_path) shows both the Bulletin
+    # Board CTA and the events list, so there's no reason to surface them
+    # as two separate hamburger items. Falls back to posts_path if events
+    # are disabled but bulletin board isn't, so operators that turned
+    # events off still have a community front door.
     if policy(:event).enabled?
-      items << {title: "Events", path: events_path}
+      items << {title: "Community", path: events_path}
+    elsif policy(:post).enabled?
+      items << {title: "Community", path: posts_path}
     end
 
     items << {title: "People (CRM)", path: people_path}

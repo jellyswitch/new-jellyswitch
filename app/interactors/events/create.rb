@@ -21,7 +21,17 @@ class Events::Create
     end
 
     event = Event.new(params)
-    
+
+    # Mirror Api::V1::EventsController#create: admin / manager / superadmin
+    # submissions auto-approve, member + lease-holder submissions land
+    # pending so an admin can review. Without this, every event created
+    # via the web flow was sitting in pending_approval — admins thought
+    # they were publishing live and couldn't figure out why nothing
+    # showed up on the member-facing list.
+    if user&.admin_or_manager?(location) || user&.superadmin?
+      event.approved_at ||= Time.current
+    end
+
     if event.save
       context.event = event
     else
