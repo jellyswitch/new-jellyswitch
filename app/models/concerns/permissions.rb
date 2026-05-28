@@ -64,8 +64,14 @@ module Permissions
     has_active_subscription_at_location?(location)
   end
 
+  # Paused subscriptions still have active=true on the AR row (the
+  # `paused` flag is separate so Stripe can resume them later without
+  # creating a new subscription). For ACCESS purposes — door punches,
+  # room reservations, the "is this person currently a member" gate —
+  # a paused sub should not count, otherwise members keep building
+  # access after pausing.
   def has_active_subscription_at_location?(location)
-    subscriptions.for_location(location).active.select do |sub|
+    subscriptions.for_location(location).active.where(paused: false).select do |sub|
       sub.has_days_left?
     end.count > 0
   end
@@ -95,8 +101,12 @@ module Permissions
     subscriptions.pending.count > 0
   end
 
+  # Paused subscriptions excluded — see has_active_subscription_at_location?
+  # for the full rationale. The `subscriptions.active` scope still
+  # exists for billing-side use (Stripe sync, cancel flows) where
+  # paused rows are still meaningful records.
   def has_active_subscription?
-    subscriptions.for_operator(operator).active.select do |sub|
+    subscriptions.for_operator(operator).active.where(paused: false).select do |sub|
       sub.has_days_left?
     end.count > 0
   end
@@ -114,7 +124,7 @@ module Permissions
   end
 
   def has_building_access_membership?
-    has_active_subscription? && subscriptions.active.any? do |subscription|
+    has_active_subscription? && subscriptions.active.where(paused: false).any? do |subscription|
       subscription.plan.always_allow_building_access?
     end
   end
@@ -192,7 +202,9 @@ module Permissions
   end
 
   def active_subscription_for_location(location)
-    subscriptions.active.joins(:plan).find_by(plans: { location_id: location.id })
+    # Paused excluded — a paused member booking a room shouldn't get
+    # their free-meeting-minutes allowance applied.
+    subscriptions.active.where(paused: false).joins(:plan).find_by(plans: { location_id: location.id })
   end
 
   # Returns charge info for subscription members booking meeting rooms.
