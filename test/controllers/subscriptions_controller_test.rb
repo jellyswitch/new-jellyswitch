@@ -76,4 +76,21 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     # subscription DELETE link is the regression target.)
     assert_select "a[href='#{subscription_path(@subscription)}'][data-turbo-method='delete']", count: 0
   end
+
+  # PATCH /subscriptions/:id used to bubble Stripe::InvalidRequestError
+  # ("Cannot update a subscription whose status is paused") as a 500
+  # when a paused member tried to switch plans. Now we short-circuit
+  # with a friendly flash before SwitchMembership talks to Stripe.
+  test "update on a paused subscription redirects with a friendly unpause-first message" do
+    @subscription.update!(paused: true)
+    patch subscription_path(@subscription),
+          params: { subscription: { plan_id: @full_time_plan.id } },
+          headers: { "HTTP_REFERER": "http://www.example.com/users/#{@user.slug}/memberships" },
+          env: default_env
+
+    assert_response :redirect
+    assert_match(/paused.*unpause/i, flash[:error] || "",
+      "expected an actionable 'unpause first' message instead of a 500")
+    assert @subscription.reload.paused?, "the paused sub must stay paused"
+  end
 end
