@@ -160,7 +160,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership scheduled for cancellation."
-      turbo_redirect(referrer_or_root)
+      turbo_redirect(post_cancel_choices_path)
     else
       flash[:error] = result.message
       turbo_redirect(referrer_or_root)
@@ -189,7 +189,7 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = "Membership cancelled."
-      turbo_redirect(referrer_or_root)
+      turbo_redirect(post_cancel_choices_path)
     else
       flash[:error] = result.message
       turbo_redirect(referrer_or_root)
@@ -201,6 +201,22 @@ class Operator::SubscriptionsController < Operator::BaseController
   end
 
   private
+
+  # After a successful cancel, land the member on the membership choices
+  # page so they can immediately pick a different plan (or leave). The
+  # prior `referrer_or_root` redirect dropped them back on the membership
+  # detail page they came from, which now showed an "X scheduled to cancel"
+  # status with no path forward except hunting through nav.
+  #
+  # Operators that use plan categories get the categories landing page;
+  # otherwise the flat plan-list at /subscriptions does the job.
+  def post_cancel_choices_path
+    if current_location&.has_categories?
+      plan_categories_path
+    else
+      subscriptions_path
+    end
+  end
 
   def subscription_params
     params.require(:subscription).permit(:plan_id)

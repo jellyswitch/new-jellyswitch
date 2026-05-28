@@ -24,18 +24,29 @@ class SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to controller: "operator/landing", action: "home"
   end
 
-  test "should set subscription to cancel to operator" do
-    delete subscription_path(@subscription), headers: { "HTTP_REFERER": "http://www.example.com/users/#{@user.slug}/memberships" }, env: default_env do
-      post feed_items_path( params: { feed_item: { text: "user canceled their membership" } }), env: default_env
+  # After cancel, the member should land on the membership choices page
+  # (plan_categories_path when the operator uses categories,
+  # subscriptions_path otherwise) so they can immediately pick a different
+  # plan or leave — instead of staying on the now-cancelled detail page
+  # with no path forward.
+  test "should set subscription to cancel and redirect to membership choices" do
+    delete subscription_path(@subscription),
+           headers: { "HTTP_REFERER": "http://www.example.com/users/#{@user.slug}/memberships" },
+           env: default_env do
+      post feed_items_path(params: { feed_item: { text: "user canceled their membership" } }), env: default_env
     end
-    assert_redirected_to user_memberships_path(@user)
+    expected = locations(:cowork_tahoe_location).has_categories? ? plan_categories_path : subscriptions_path
+    assert_redirected_to expected
   end
 
-  test "should cancel subscription now to operator" do
-    delete destroy_subscription_now_path(@subscription), headers: { "HTTP_REFERER": "http://www.example.com/users/#{@user.slug}/memberships" }, env: default_env do
-      post feed_items_path( params: { feed_item: { text: "user canceled their membership" } }), env: default_env
+  test "should cancel subscription now and redirect to membership choices" do
+    delete destroy_subscription_now_path(@subscription),
+           headers: { "HTTP_REFERER": "http://www.example.com/users/#{@user.slug}/memberships" },
+           env: default_env do
+      post feed_items_path(params: { feed_item: { text: "user canceled their membership" } }), env: default_env
     end
-    assert_redirected_to user_memberships_path(@user)
+    expected = locations(:cowork_tahoe_location).has_categories? ? plan_categories_path : subscriptions_path
+    assert_redirected_to expected
   end
 
   test "should get edit subscription page" do
