@@ -37,6 +37,40 @@ class Operator::BaseController < ApplicationController
     UserContext.new(current_user, current_tenant, current_location)
   end
 
+  # Defense-in-depth for the "&amp;-encoded query string" class of bug.
+  #
+  # When a link's href is built in JS and Turbo snapshots the page for its
+  # cache, the DOM is serialized via outerHTML — which HTML-escapes the
+  # href's `&` separators back into `&amp;`. On a WebView cache-restore +
+  # navigation the literal "amp;" can survive into the request query string,
+  # so Rails parses `...&amp;room_id=5927...` as a param key named
+  # "amp;room_id" and `params[:room_id]` comes back nil → RecordNotFound.
+  #
+  # Re-map any `amp;`-prefixed key back to its intended name (without
+  # clobbering a correctly-named key if both somehow arrive). Notify so we
+  # retain visibility into whether the upstream component fix fully stops it.
+  # Wired up via `prepend_before_action` in the controllers most exposed to
+  # this (the reservation flow, which builds multi-param hrefs in JS).
+  def recover_html_escaped_query_params
+    mangled = params.keys.select { |k| k.to_s.start_with?("amp;") }
+    return if mangled.empty?
+
+    mangled.each do |k|
+      real = k.to_s.sub(/\Aamp;/, "")
+      params[real] = params[k] unless params.key?(real)
+    end
+
+    Honeybadger.notify(
+      "Recovered &amp;-escaped query params",
+      context: {
+        controller: self.class.name,
+        action: action_name,
+        path: request.fullpath,
+        mangled_keys: mangled,
+      },
+    )
+  end
+
   # Telemetry-only handler: report the full request context to Honeybadger
   # before letting Rails handle the 404 as usual. Wired up via `rescue_from`
   # in specific controllers (currently the reservation flows) where blind

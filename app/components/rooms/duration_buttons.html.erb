@@ -22,7 +22,21 @@
     </div>
 
     <div class="mt-3">
-      <a href="<%= confirm_path_template %>" id="step-duration-confirm" class="btn btn-block btn-primary">
+      <%# href is built in JS from the data-* attributes below via
+          URLSearchParams — NOT a pre-baked query string in the attribute.
+          A query string in an href gets HTML-escaped (& → &amp;), and when
+          Turbo snapshots the page via outerHTML that escaping is re-applied
+          to any JS-set href, so the literal "amp;" can end up in the
+          request and break param parsing. Building the URL fresh at click
+          time sidesteps that entirely. %>
+      <a href="#"
+         id="step-duration-confirm"
+         class="btn btn-block btn-primary"
+         data-confirm-base="<%= confirm_reservations_path %>"
+         data-room-id="<%= room.id %>"
+         data-day="<%= day %>"
+         data-hour="<%= pretty_time(hour) %>"
+         data-user-id="<%= user.id %>">
         Continue
       </a>
     </div>
@@ -67,7 +81,6 @@
 
       var label = document.getElementById("step-duration-label");
       var confirmLink = document.getElementById("step-duration-confirm");
-      var pathTemplate = "<%= j confirm_path_template %>";
 
       function formatDuration(mins) {
         var h = Math.floor(mins / 60), m = mins % 60;
@@ -76,14 +89,37 @@
         return m + " minutes";
       }
 
+      // Build the confirm URL fresh from data-* attributes. URLSearchParams
+      // emits clean, properly-encoded `&` separators and never goes through
+      // an href attribute (which Turbo's outerHTML cache would re-escape to
+      // &amp;). See the comment on the <a> tag above.
+      function buildConfirmUrl(durationVal) {
+        var p = new URLSearchParams();
+        p.set("room_id", confirmLink.dataset.roomId);
+        p.set("day", confirmLink.dataset.day);
+        p.set("hour", confirmLink.dataset.hour);
+        p.set("duration", durationVal);
+        p.set("user_id", confirmLink.dataset.userId);
+        return confirmLink.dataset.confirmBase + "?" + p.toString();
+      }
+
       function updateSlider() {
         var val = parseInt(slider.value);
         label.textContent = formatDuration(val);
-        confirmLink.href = pathTemplate.replace("DURATION_PLACEHOLDER", val);
         document.querySelectorAll(".duration-quick-pick").forEach(function(chip) {
           chip.classList.toggle("selected", parseInt(chip.dataset.duration) === val);
         });
       }
+
+      confirmLink.addEventListener("click", function(e) {
+        e.preventDefault();
+        var url = buildConfirmUrl(parseInt(slider.value));
+        if (window.Turbo && typeof window.Turbo.visit === "function") {
+          window.Turbo.visit(url);
+        } else {
+          window.location.assign(url);
+        }
+      });
 
       slider.addEventListener("input", updateSlider);
 
