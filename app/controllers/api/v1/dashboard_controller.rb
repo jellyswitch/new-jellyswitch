@@ -28,11 +28,21 @@ class Api::V1::DashboardController < Api::V1::BaseController
     events = Event.where(location: location).approved.future.order(:starts_at).limit(5)
     user_rsvp_ids = user.rsvps.pluck(:event_id)
 
-    # Doors for unlock buttons — sorted by user's most-used first
-    doors = location ? location.doors.where(available: true) : []
-    doors = doors.where(private: false) unless user.admin?
-    door_usage = DoorPunch.where(user: user, door: doors).group(:door_id).count
-    doors = doors.sort_by { |d| -(door_usage[d.id] || 0) }
+    # Doors for unlock buttons — sorted by user's most-used first.
+    # Only surfaced if the user actually has building access right now;
+    # otherwise the dashboard rendered tappable "Open Lobby Door" buttons
+    # that would always 403 from /doors/:id/unlock — confusing UX, looks
+    # like a broken app. Matches the gating the unlock endpoint already
+    # does via DoorUnlocking#user_can_access_building?.
+    doors =
+      if location && user.has_building_access?(location)
+        scope = location.doors.where(available: true)
+        scope = scope.where(private: false) unless user.admin?
+        door_usage = DoorPunch.where(user: user, door: scope).group(:door_id).count
+        scope.sort_by { |d| -(door_usage[d.id] || 0) }
+      else
+        []
+      end
 
     # Unread admin replies waiting for the member. Uses MemberFeedback#last_read_at
     # vs feedback_replies.created_at — set in MemberFeedback#has_unread_replies?.
