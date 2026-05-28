@@ -5,6 +5,13 @@ class Api::V1::DoorsController < Api::V1::BaseController
     location = current_location
     return render json: [] unless location
 
+    # Mirror the gating PR #467 (d56bea15) put on the dashboard doors
+    # list. /doors/:id/unlock already 403s for users without access via
+    # `user_can_access_building?`, but the Keys tab was rendering
+    # tappable door rows for paused-membership-no-day-pass users that
+    # would always fail at punch time — UX looks broken. Hide them.
+    return render json: [] unless current_api_user.has_building_access?(location)
+
     doors = location.doors.where(available: true)
     doors = doors.where(private: false) unless current_api_user.admin?
 
