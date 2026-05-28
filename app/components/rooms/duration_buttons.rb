@@ -25,9 +25,11 @@ class Rooms::DurationButtons < ApplicationComponent
     [30, max_duration].min
   end
 
-  def confirm_path_template
-    confirm_reservations_path(room_id: room.id, day: day, hour: pretty_time(hour), duration: "DURATION_PLACEHOLDER", user_id: user.id)
-  end
+  # NOTE: the confirm URL is now assembled client-side via URLSearchParams
+  # in the template's <script> (from data-* attributes), so there's no
+  # `confirm_path_template` here anymore. Building it as a string and
+  # dropping it into an href let Turbo's outerHTML snapshot cache re-escape
+  # `&` → `&amp;`, which broke param parsing on WebView cache-restore.
 
   private
 

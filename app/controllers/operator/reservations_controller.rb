@@ -1,4 +1,9 @@
 class Operator::ReservationsController < Operator::BaseController
+  # Runs first: un-mangle any `amp;`-prefixed params before set_reserved_user
+  # or the actions try to read room_id/user_id. See
+  # Operator::BaseController#recover_html_escaped_query_params for the why.
+  prepend_before_action :recover_html_escaped_query_params
+
   before_action :require_authentication
   before_action :background_image, except: [:reserve_now, :reserve_now_price]
   before_action :set_reserved_user, only: [:choose_day, :choose_time_post, :choose_time, :choose_duration, :confirm, :create_reservation]
