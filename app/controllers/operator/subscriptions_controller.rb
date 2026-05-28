@@ -106,6 +106,18 @@ class Operator::SubscriptionsController < Operator::BaseController
   def update
     find_subscription
     authorize @subscription
+
+    # Pre-flight: SwitchMembership eventually calls
+    # Stripe::Subscription.update on the old sub, which raises
+    # Stripe::InvalidRequestError ("Cannot update a subscription whose
+    # status is paused") for paused rows — and the exception bubbles up
+    # as a 500 / Whoops flash. Return an actionable message instead.
+    if @subscription.paused?
+      flash[:error] = "Your membership is paused. Please unpause it first to switch plans."
+      turbo_redirect(user_memberships_path(current_user))
+      return
+    end
+
     @new_subscription = new_subscription
 
     result = UpdateMembership.call(

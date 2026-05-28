@@ -102,6 +102,19 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
   def upgrade
     old_sub = current_api_user.subscriptions.find(params[:id])
+
+    # Pre-flight: Stripe::Subscription.update on a paused subscription
+    # raises Stripe::InvalidRequestError ("Cannot update a subscription
+    # whose status is paused"), which used to bubble all the way up as
+    # a 500 / "Internal server error" alert on the mobile client.
+    # Return a friendly, actionable message instead.
+    if old_sub.paused?
+      return render_error(
+        "Your membership is paused. Please unpause it first to switch plans.",
+        status: :unprocessable_entity,
+      )
+    end
+
     new_plan = Plan.find(params[:plan_id])
 
     new_sub = Subscription.new(
