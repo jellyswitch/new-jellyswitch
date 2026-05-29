@@ -26,7 +26,7 @@ class Billing::Leasing::ChargeDeposit
         currency: "usd",
         description: "Deposit / Setup Fee for #{office_lease.office.name}"
       },
-      { stripe_account: location.stripe_user_id }
+      { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
     )
 
     # Create and finalize the invoice immediately
@@ -36,13 +36,13 @@ class Billing::Leasing::ChargeDeposit
         auto_advance: true,
         description: "Deposit for #{office_lease.office.name} lease"
       },
-      { stripe_account: location.stripe_user_id }
+      { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
     )
 
     Stripe::Invoice.finalize_invoice(
       stripe_invoice.id,
       {},
-      { stripe_account: location.stripe_user_id }
+      { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
     )
   rescue StandardError => e
     Honeybadger.notify(e)

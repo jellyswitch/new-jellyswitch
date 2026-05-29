@@ -29,7 +29,7 @@ class Api::V1::StripeController < Api::V1::BaseController
     begin
       setup_intent = Stripe::SetupIntent.create(
         { customer: customer_id, payment_method_types: ['card'] },
-        { stripe_account: location.stripe_user_id },
+        { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id },
       )
 
       render json: {

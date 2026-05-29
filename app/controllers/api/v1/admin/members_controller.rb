@@ -278,11 +278,11 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
 
       Stripe::InvoiceItem.create(
         { customer: customer_id, amount: amount_in_cents, currency: 'usd', description: description },
-        { stripe_account: current_location.stripe_user_id }
+        { api_key: current_location.stripe_secret_key, stripe_account: current_location.stripe_user_id }
       )
       stripe_invoice = Stripe::Invoice.create(
         { customer: customer_id },
-        { stripe_account: current_location.stripe_user_id }
+        { api_key: current_location.stripe_secret_key, stripe_account: current_location.stripe_user_id }
       )
 
       invoice = Invoice.create!(
