@@ -24,6 +24,10 @@ gem "honeybadger"
 gem "geocoder"
 gem "httparty"
 gem "icalendar"
+# Used by Kisi::Client to keep a warm HTTPS connection to api.kisi.io so the
+# TLS handshake isn't paid every door unlock (~300-500ms saved per unlock —
+# most of the perceived gap between Face ID and the door actually opening).
+gem "net-http-persistent"
 gem "image_processing", "~> 1.14"
 gem "importmap-rails"
 gem "interactor", "~> 3.0"

@@ -11,18 +11,12 @@ class KisiUnlockJob < ApplicationJob
       return unless punch
 
       begin
-        door = punch.door
-        response = HTTParty.post(
-          "https://api.kisi.io/locks/#{door.kisi_id}/unlock",
-          headers: {
-            "Authorization" => "KISI-LOGIN #{door.location.kisi_api_key}",
-            "Content-type"  => "application/json",
-            "Accept"        => "application/json",
-          },
-        )
+        # Persistent client reuses the HTTPS connection so we don't pay the
+        # TLS handshake on every unlock — see app/lib/kisi/client.rb.
+        result = Kisi::Client.unlock(punch.door)
         punch.update(
-          status: response.success? ? "unlocked" : "failed",
-          json:   response.parsed_response,
+          status: result[:success] ? "unlocked" : "failed",
+          json:   result[:parsed] || result[:body],
         )
       rescue => e
         Honeybadger.notify(e)

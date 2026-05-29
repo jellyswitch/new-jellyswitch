@@ -23,13 +23,11 @@ module Api::V1::DoorUnlocking
         .any?
   end
 
-  def call_kisi_unlock(door, location)
-    url = "https://api.kisi.io/locks/#{door.kisi_id}/unlock"
-    HTTParty.post(url, headers: {
-      "Authorization" => "KISI-LOGIN #{location.kisi_api_key}",
-      "Content-type"  => "application/json",
-      "Accept"        => "application/json",
-    }).parsed_response
+  def call_kisi_unlock(door, _location = nil)
+    # Routed through Kisi::Client so the manual /doors/:id/unlock path
+    # benefits from the same persistent connection the async job uses.
+    # `location` is ignored (Kisi::Client reads door.location internally).
+    Kisi::Client.unlock(door)[:parsed]
   end
 
   def perform_unlock(door:, user:, location:, method:)
