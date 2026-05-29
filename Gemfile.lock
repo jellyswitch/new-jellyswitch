@@ -312,7 +312,7 @@ GEM
       bigdecimal
       i18n (~> 1.9)
     msgpack (1.6.0)
-    multi_json (1.15.0)
+    multi_json (1.21.1)
     multi_xml (0.8.1)
       bigdecimal (>= 3.1, < 5)
     net-http (0.4.1)
@@ -339,14 +339,9 @@ GEM
       actionview
       octicons (= 17.9.0)
       railties
-    opensearch-api (2.1.0)
-      multi_json
-    opensearch-ruby (2.1.0)
-      opensearch-api (~> 2.1)
-      opensearch-transport (~> 2.0)
-    opensearch-transport (2.1.0)
+    opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
-      multi_json
+      multi_json (>= 1.0)
     os (1.1.4)
     ostruct (0.6.3)
     pagy (6.0.2)
