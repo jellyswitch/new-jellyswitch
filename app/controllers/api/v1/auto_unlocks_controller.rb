@@ -32,12 +32,17 @@ class Api::V1::AutoUnlocksController < Api::V1::BaseController
       }, status: :forbidden
     end
 
-    begin
-      perform_unlock(door: door, user: user, location: location, method: "auto")
-      render json: { success: true, door: door.name, message: "Door unlocked" }
-    rescue => e
-      render json: { success: false, door: door.name, message: e.message }
-    end
+    # Optimistic: log the attempt as pending, hand the slow Kisi round-trip
+    # to a background job, and return immediately. The member's tap +
+    # Face ID already happened in the foreground; making them wait on
+    # Kisi's 1-3s here is the latency they were feeling. KisiUnlockJob
+    # reconciles the punch to "unlocked"/"failed" and the admin
+    # beacon-health / activity feed surfaces any failures.
+    punch = DoorPunch.create!(
+      user: user, door: door, operator: current_tenant, method: "auto", status: "pending",
+    )
+    KisiUnlockJob.perform_later(punch.id)
+    render json: { success: true, door: door.name, message: "Unlocking #{door.name}…" }
   end
 
   private
