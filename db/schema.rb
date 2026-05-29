@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_26_185326) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_29_180113) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -339,8 +339,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_26_185326) do
     t.integer "operator_id", default: 1, null: false
     t.jsonb "json"
     t.string "method", default: "manual", null: false
+    t.string "status", default: "unlocked", null: false
     t.index ["method"], name: "index_door_punches_on_method"
     t.index ["operator_id"], name: "index_door_punches_on_operator_id"
+    t.index ["status"], name: "index_door_punches_on_status"
   end
 
   create_table "doors", force: :cascade do |t|

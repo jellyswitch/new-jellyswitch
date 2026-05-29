@@ -55,8 +55,8 @@ class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
     }.merge(overrides)
   end
 
-  test "active member triggers Kisi unlock and logs auto DoorPunch" do
-    assert_difference -> { DoorPunch.where(method: "auto").count }, 2 do
+  test "active member gets optimistic success and a pending DoorPunch" do
+    assert_difference -> { DoorPunch.where(method: "auto", status: "pending").count }, 1 do
       post "/api/v1/door/auto_unlock",
            params:  payload.to_json,
            headers: headers
@@ -64,9 +64,11 @@ class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     body = JSON.parse(response.body)
-    assert_equal true,         body["success"]
-    assert_equal @door.name,   body["door"]
-    assert_requested :post, @kisi_url, times: 1
+    assert_equal true,       body["success"]
+    assert_equal @door.name, body["door"]
+    # Kisi now runs in KisiUnlockJob, not synchronously in the request —
+    # that async hop is the whole point of the optimistic path.
+    assert_not_requested :post, @kisi_url
   end
 
   test "non-member is denied without calling Kisi" do
@@ -109,7 +111,9 @@ class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
 
     post "/api/v1/door/auto_unlock", params: body.to_json, headers: headers
     assert_response :conflict
-    assert_requested :post, @kisi_url, times: 1
+    # Only the first (accepted) request created a punch; the replay is
+    # rejected at the nonce gate before any unlock work.
+    assert_equal 1, DoorPunch.where(method: "auto").count
   end
 
   test "missing nonce returns 422" do
