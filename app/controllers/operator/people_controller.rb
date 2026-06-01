@@ -25,7 +25,15 @@ class Operator::PeopleController < Operator::BaseController
     @stage = params[:stage].presence_in(STAGE_LABELS.keys) || "all"
     @owned_by_me = ActiveModel::Type::Boolean.new.cast(params[:owned_by_me]) == true
 
-    base_scope = current_tenant.users.visible.non_superadmins
+    # Scope by current_location, not just current_tenant — otherwise a GM
+    # viewing the Fulton page sees every Untethered user across Lake Tahoe,
+    # Zephyr Cove, and Fulton (cross-location leak; matches the prior
+    # Today's Activity bug, fixed 2026-05-19). The rest of the operator UI
+    # uses `User.for_space(tenant).originally_at_location(loc)`; mirror that
+    # pattern here so admins jumping between location tabs see only the
+    # cohort that signed up at that location.
+    base_scope = current_tenant.users.originally_at_location(current_location)
+                                     .visible.non_superadmins
     base_scope = base_scope.in_stage(@stage) unless @stage == "all"
     base_scope = base_scope.where(point_of_contact_id: current_user.id) if @owned_by_me
 
@@ -58,7 +66,8 @@ class Operator::PeopleController < Operator::BaseController
       # unknown: no filter, don't error
     end
 
-    @available_states = current_tenant.users.visible.non_superadmins
+    @available_states = current_tenant.users.originally_at_location(current_location)
+                                      .visible.non_superadmins
                                       .where.not(home_state: nil)
                                       .distinct
                                       .pluck(:home_state).sort
