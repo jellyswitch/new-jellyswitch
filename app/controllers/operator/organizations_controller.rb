@@ -83,10 +83,14 @@ class Operator::OrganizationsController < Operator::BaseController
     find_organization(:organization_id)
     authorize @organization
 
-    if @organization.update(out_of_band: false)
+    # Also flips existing lease subscriptions back to charge_automatically in
+    # Stripe — toggling the flag alone left Stripe still invoicing/charging.
+    result = UnmarkCustomerAsOutOfBand.call(customer: @organization)
+
+    if result.success?
       flash[:success] = "Payment method updated."
     else
-      flash[:error] = "Could not update payment method."
+      flash[:error] = result.message
     end
 
     turbo_redirect(organization_path(@organization), action: "replace")
@@ -96,10 +100,14 @@ class Operator::OrganizationsController < Operator::BaseController
     find_organization(:organization_id)
     authorize @organization
 
-    if @organization.update(out_of_band: true)
+    # Also flips existing lease subscriptions to send_invoice in Stripe —
+    # toggling the flag alone left Stripe auto-charging the customer.
+    result = MarkCustomerAsOutOfBand.call(customer: @organization)
+
+    if result.success?
       flash[:success] = "Payment method updated."
     else
-      flash[:error] = "Could not update payment method."
+      flash[:error] = result.message
     end
 
     turbo_redirect(organization_path(@organization), action: "replace")

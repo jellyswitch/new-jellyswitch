@@ -203,6 +203,14 @@ RSpec.describe Operator::OrganizationsController, type: :controller do
       expect(organization.out_of_band).to be false
     end
 
+    it "syncs existing Stripe subscriptions back to charge_automatically" do
+      expect(UnmarkCustomerAsOutOfBand).to receive(:call)
+        .with(hash_including(customer: organization))
+        .and_return(OpenStruct.new(success?: true))
+
+      post :credit_card, params: { organization_id: organization.id }
+    end
+
     it "redirects to organization path" do
       post :credit_card, params: { organization_id: organization.id }
       expect(response).to redirect_to(organization_path(organization))
@@ -218,6 +226,14 @@ RSpec.describe Operator::OrganizationsController, type: :controller do
       post :out_of_band, params: { organization_id: organization.id }
       organization.reload
       expect(organization.out_of_band).to be true
+    end
+
+    it "syncs existing Stripe subscriptions to send_invoice" do
+      expect(MarkCustomerAsOutOfBand).to receive(:call)
+        .with(hash_including(customer: organization))
+        .and_return(OpenStruct.new(success?: true))
+
+      post :out_of_band, params: { organization_id: organization.id }
     end
 
     it "redirects to organization path" do

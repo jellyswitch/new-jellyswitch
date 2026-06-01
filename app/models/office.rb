@@ -37,6 +37,15 @@ class Office < ApplicationRecord
   extend FriendlyId
   friendly_id :name, use: :slugged
 
+  # Guard against accidental duplicate offices (e.g. double form submission).
+  # Scoped to the visible set so a name can be reused after archiving.
+  validates :name, presence: true
+  validates :name, uniqueness: {
+    scope: :location_id,
+    case_sensitive: false,
+    conditions: -> { where(visible: true) },
+  }, if: :visible?
+
   scope :visible, -> { where(visible: true) }
   scope :archived, -> { where(visible: false) }
 
@@ -54,7 +63,14 @@ class Office < ApplicationRecord
   def self.upcoming_renewals(num_days = OfficeLease::RENEWAL_WINDOW_DAYS)
     offices = visible.left_outer_joins(:office_leases)
 
-    offices.where("office_leases.end_date >= ? AND office_leases.end_date < ?", Time.current, Time.current + num_days.days).order("office_leases.end_date ASC").select { |o| o.active_lease.present? }
+    # `.distinct` collapses duplicate office rows produced by the join; ordering
+    # happens in Ruby because Postgres forbids SELECT DISTINCT ordered by a
+    # joined column that isn't in the select list.
+    offices.
+      where("office_leases.end_date >= ? AND office_leases.end_date < ?", Time.current, Time.current + num_days.days).
+      distinct.
+      select { |o| o.active_lease.present? }.
+      sort_by { |o| o.active_lease.end_date }
   end
 
   def self.occupied
