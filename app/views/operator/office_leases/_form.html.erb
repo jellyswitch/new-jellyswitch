@@ -223,19 +223,8 @@
       toggleEscalation(); // initialize on load
     }
 
-    // Convert dollar inputs to cents on form submit
-    var form = document.querySelector("form");
-    if (form) {
-      form.addEventListener("submit", function() {
-        var amountField = document.getElementById("lease-amount-dollars");
-        if (amountField && amountField.value) {
-          amountField.value = Math.round(parseFloat(amountField.value) * 100);
-        }
-        var depositField = document.getElementById("deposit-amount-dollars");
-        if (depositField && depositField.value) {
-          depositField.value = Math.round(parseFloat(depositField.value) * 100);
-        }
-      });
-    }
+    // NOTE: dollar→cents conversion for the lease amount and deposit happens
+    // server-side in Operator::OfficeLeasesController#convert_money_fields_to_cents.
+    // Do not convert here too, or amounts will be multiplied by 100 twice.
   })();
 </script>
