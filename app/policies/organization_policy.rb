@@ -23,8 +23,11 @@ class OrganizationPolicy < ApplicationPolicy
     (admin? || superadmin? || community_manager? || general_manager?)
   end
 
+  # Role gate only. The "must have a card on file" precondition is handled in
+  # the controller so a card-less org gets redirected to add one instead of a
+  # generic "not allowed" denial.
   def credit_card?
-    (admin? || user.organization_owner? || superadmin? || community_manager? || general_manager?) && record.card_added?
+    (admin? || user.organization_owner? || superadmin? || community_manager? || general_manager?)
   end
 
   def out_of_band?

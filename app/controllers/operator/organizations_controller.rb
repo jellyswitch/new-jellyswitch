@@ -83,6 +83,15 @@ class Operator::OrganizationsController < Operator::BaseController
     find_organization(:organization_id)
     authorize @organization
 
+    # Can't switch to card billing with no card on file. Send them to add one
+    # instead of the generic "not allowed" flash. For an org billed through a
+    # billing contact, the card lives on the contact (see OrganizationBillDecider).
+    unless billing_card_on_file?(@organization)
+      flash[:notice] = card_required_message(@organization)
+      turbo_redirect(card_entry_path_for(@organization))
+      return
+    end
+
     # Also flips existing lease subscriptions back to charge_automatically in
     # Stripe — toggling the flag alone left Stripe still invoicing/charging.
     result = UnmarkCustomerAsOutOfBand.call(customer: @organization)
@@ -150,6 +159,33 @@ class Operator::OrganizationsController < Operator::BaseController
 
   def organization_params
     params.require(:organization).permit(:name, :website, :owner_id, :billing_contact_id, :visible)
+  end
+
+  # Money for an org with a billing contact comes from the contact's card, not
+  # the org's own Stripe customer (OrganizationBillDecider). Resolve to whoever
+  # actually pays so the card check and "add a card" link point at the right place.
+  def effective_billable_for(organization)
+    organization.has_billing_contact? ? organization.billing_contact : organization
+  end
+
+  def billing_card_on_file?(organization)
+    effective_billable_for(organization).card_added_for_location?(current_location)
+  rescue StandardError
+    false
+  end
+
+  def card_entry_path_for(organization)
+    billable = effective_billable_for(organization)
+    billable.is_a?(User) ? user_billing_path(billable) : organization_billing_path(billable)
+  end
+
+  def card_required_message(organization)
+    billable = effective_billable_for(organization)
+    if billable.is_a?(User)
+      "Add a card for #{billable.name} (the billing contact) before switching #{organization.name} to card billing."
+    else
+      "Add a card before switching #{organization.name} to card billing."
+    end
   end
 
   def find_organization(key = :id)
