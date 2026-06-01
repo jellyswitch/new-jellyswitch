@@ -3,8 +3,28 @@ module Notifiable
     private
 
     def create_feed_item
-      # No feed item for replies — keep the thread private
-      Rails.logger.info("[FeedbackReply] create_feed_item (no-op)")
+      # Admin → member replies stay private (they're a notification to the
+      # member, not an action item for staff). But a member → staff reply IS
+      # an action item: since the host-greeting thread now pre-exists for
+      # everyone (MemberFeedback::EnsureHostGreeting), every real member
+      # message arrives here as a reply rather than a new MemberFeedback — so
+      # without this it never reaches the admin feed even though admins still
+      # get the push. See Notifiable::MemberFeedback#create_feed_item for the
+      # new-thread path; this mirrors it for the reply path.
+      if from_admin?
+        Rails.logger.info("[FeedbackReply] create_feed_item (no-op, admin reply)")
+        return
+      end
+
+      blob = {
+        type: "feedback",
+        member_feedback_id: member_feedback.id,
+        feedback_reply_id: id,
+        # Stash the reply text so the feed card shows THIS message — the
+        # parent MemberFeedback#comment is blank on greeting-first threads.
+        body: body,
+      }
+      FeedItemCreator.create_feed_item(operator, location, user, blob, created_at: created_at)
     end
 
     def deep_link_data

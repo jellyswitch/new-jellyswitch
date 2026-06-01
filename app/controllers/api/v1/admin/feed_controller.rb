@@ -168,7 +168,11 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
       fb = MemberFeedback.find_by(id: fi.blob['member_feedback_id'])
       base.merge(
         action_text: 'sent a message',
-        body: fb&.comment,
+        # Prefer the per-reply text captured in the blob (greeting-first
+        # threads leave MemberFeedback#comment blank; the message lives on
+        # the FeedbackReply). Fall back to the original comment for legacy
+        # new-thread feedback items.
+        body: fi.blob['body'].presence || fb&.comment,
         feedback_id: fb&.id,
         rating: fb&.rating,
       )
