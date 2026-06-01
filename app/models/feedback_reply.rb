@@ -22,7 +22,12 @@
 #  fk_rails_...  (user_id => users.id)
 #
 class FeedbackReply < ApplicationRecord
-  belongs_to :member_feedback
+  # touch: true bumps the parent thread's updated_at on every reply, no matter
+  # which path created it (member API, admin API, web, or the SaveReply
+  # interactor). The admin and member inboxes sort threads by updated_at so the
+  # most recently active conversation floats to the top — without this, threads
+  # sorted by their greeting-shell created_at and active chats sank out of view.
+  belongs_to :member_feedback, touch: true
   belongs_to :user
   belongs_to :operator
 

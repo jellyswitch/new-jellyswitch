@@ -142,7 +142,9 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   private
 
   def find_member_feedbacks
-    @member_feedbacks = MemberFeedback.for_location(current_location).order("created_at DESC").all
+    # Most recently active thread first (updated_at bumps on every reply) so
+    # active conversations stay at the top instead of sorting by thread birth.
+    @member_feedbacks = MemberFeedback.for_location(current_location).order("updated_at DESC").all
   end
 
   def find_member_feedback(key=:id)

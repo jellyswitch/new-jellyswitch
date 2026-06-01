@@ -1,7 +1,10 @@
 class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
   def index
+    # Sort by last activity (updated_at, bumped on every reply via
+    # FeedbackReply touch: true) so the most recently active thread is first —
+    # not by created_at, which is when the greeting shell was first created.
     feedbacks = MemberFeedback.where(operator: current_tenant)
-      .order(created_at: :desc).limit(30)
+      .order(updated_at: :desc).limit(30)
 
     render json: feedbacks.map { |f| feedback_json(f) }
   end

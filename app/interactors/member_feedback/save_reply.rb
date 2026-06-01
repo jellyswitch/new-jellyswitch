@@ -15,8 +15,9 @@ class MemberFeedback::SaveReply
       context.fail!(message: "Could not save reply.")
     end
 
-    # Touch the parent so updated_at sorts correctly
-    context.member_feedback.touch
+    # Parent updated_at is bumped automatically by FeedbackReply's
+    # `belongs_to :member_feedback, touch: true`, so the inboxes sort by
+    # last activity. No explicit touch needed here.
 
     context.notifiable = reply
   end
