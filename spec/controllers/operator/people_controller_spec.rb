@@ -32,6 +32,29 @@ RSpec.describe Operator::PeopleController, type: :controller do
         expect(response).to be_successful
       end
 
+      describe "cross-location scoping (Fulton vs Zephyr Cove leak)" do
+        # Reproduces the 2026-06-01 bug: GM browsing Untethered Fulton's
+        # People page was shown every Untethered user across Lake Tahoe,
+        # Zephyr Cove, AND Fulton. Mirrors the prior Today's Activity leak
+        # fix from 2026-05-19 — both stem from scoping on operator (tenant)
+        # without narrowing to current_location.
+        let!(:other_location) { create(:location, operator: operator) }
+        let!(:other_loc_member) do
+          create(:user,
+                 operator: operator,
+                 current_location: other_location,
+                 original_location: other_location,
+                 name: "Bob OtherLocation")
+        end
+
+        it "excludes users from a different location on the same operator" do
+          get :index
+          names = assigns(:people).map(&:name)
+          expect(names).to include("Alice Member", "Carol Tour")
+          expect(names).not_to include("Bob OtherLocation")
+        end
+      end
+
       it "assigns @people scoped to the current operator" do
         get :index
         expect(assigns(:people)).to include(member, tour_taker)
@@ -138,10 +161,13 @@ RSpec.describe Operator::PeopleController, type: :controller do
     let(:tahoe_loc) { create(:location, operator: operator2, city: "South Lake Tahoe", state: "CA") }
     let(:admin2)    { create(:user, operator: operator2, role: "superadmin", original_location: tahoe_loc, current_location: tahoe_loc) }
 
-    let!(:local_member) { create(:user, operator: operator2, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
-    let!(:reno_member)  { create(:user, operator: operator2, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
-    let!(:bay_member)   { create(:user, operator: operator2, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
-    let!(:no_geo)       { create(:user, operator: operator2, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
+    # original_location must be set explicitly: the People page scopes by
+    # original_location_id (so the GM sees only the cohort that signed up
+    # *at this location*). Production users always have it; tests must too.
+    let!(:local_member) { create(:user, operator: operator2, original_location: tahoe_loc, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
+    let!(:reno_member)  { create(:user, operator: operator2, original_location: tahoe_loc, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
+    let!(:bay_member)   { create(:user, operator: operator2, original_location: tahoe_loc, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
+    let!(:no_geo)       { create(:user, operator: operator2, original_location: tahoe_loc, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
 
     before do
       request.headers["X-Operator-Subdomain"] = operator2.subdomain
