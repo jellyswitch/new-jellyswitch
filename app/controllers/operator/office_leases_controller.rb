@@ -69,6 +69,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def create
+    convert_money_fields_to_cents
     @office_lease = current_location.office_leases.build(office_lease_params)
     @office_lease.subscription.plan.location_id = current_location.id
 
@@ -165,6 +166,24 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   private
+
+  # The lease form collects money in dollars (e.g. "579" or "579.00"). Convert
+  # to integer cents server-side rather than relying on client JS — a dropped
+  # conversion stores the amount 100x too small (e.g. $5.79 instead of $579).
+  # Mirrors the server-side conversion in #update_price.
+  def convert_money_fields_to_cents
+    lease = params[:office_lease]
+    return if lease.blank?
+
+    if lease[:deposit_amount_in_cents].present?
+      lease[:deposit_amount_in_cents] = (lease[:deposit_amount_in_cents].to_f * 100).round
+    end
+
+    plan = lease.dig(:subscription_attributes, :plan_attributes)
+    if plan.present? && plan[:amount_in_cents].present?
+      plan[:amount_in_cents] = (plan[:amount_in_cents].to_f * 100).round
+    end
+  end
 
   def find_office_lease(key = :id)
     @office_lease = OfficeLease.find(params[key])

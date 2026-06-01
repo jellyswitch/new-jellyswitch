@@ -52,4 +52,62 @@ RSpec.describe Operator::OfficeLeasesController, type: :controller do
       end
     end
   end
+
+  describe "#create" do
+    let(:location) { office_lease.location }
+    let(:organization) { office_lease.organization }
+    let(:office) { create(:office, location: location, operator: location.operator) }
+
+    before do
+      allow(controller).to receive(:current_location).and_return(location)
+      allow(controller).to receive(:current_tenant).and_return(location.operator)
+    end
+
+    def create_params(amount:, deposit:)
+      {
+        office_lease: {
+          organization_id: organization.id,
+          office_id: office.id,
+          start_date: Date.today,
+          end_date: Date.today + 1.year,
+          initial_invoice_date: Date.today + 1.day,
+          deposit_amount_in_cents: deposit,
+          subscription_attributes: {
+            plan_attributes: {
+              name: "Office Lease Plan",
+              plan_type: "lease",
+              interval: "monthly",
+              amount_in_cents: amount,
+            },
+          },
+        },
+      }
+    end
+
+    it "converts the dollar amount and deposit entered by the operator into cents" do
+      captured = nil
+      expect(Billing::Leasing::CreateOfficeLease).to receive(:call) do |args|
+        captured = args[:office_lease]
+        double(success?: true, office_lease: office_lease)
+      end
+
+      post :create, params: create_params(amount: "579", deposit: "250")
+
+      expect(captured.subscription.plan.amount_in_cents).to eq(57_900)
+      expect(captured.deposit_amount_in_cents).to eq(25_000)
+    end
+
+    it "handles fractional dollar amounts" do
+      captured = nil
+      expect(Billing::Leasing::CreateOfficeLease).to receive(:call) do |args|
+        captured = args[:office_lease]
+        double(success?: true, office_lease: office_lease)
+      end
+
+      post :create, params: create_params(amount: "579.50", deposit: "12.34")
+
+      expect(captured.subscription.plan.amount_in_cents).to eq(57_950)
+      expect(captured.deposit_amount_in_cents).to eq(1_234)
+    end
+  end
 end

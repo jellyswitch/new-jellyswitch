@@ -1,6 +1,13 @@
 <% if office.has_active_lease? %>
+  <% lease = office.active_lease %>
   <h6 class="col mb-0">
-    <span class="text-info"><%= office.active_lease.leasee_name %></span>
+    <% if local_assigns[:linkable] %>
+      <%= link_to lease.leasee_name,
+          lease.individual_lease? ? user_path(lease.user) : organization_path(lease.organization),
+          class: "text-info" %>
+    <% else %>
+      <span class="text-info"><%= lease.leasee_name %></span>
+    <% end %>
     <% if office.active_lease.eligible_for_renewal? %>
       <br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> Expiring <%= short_date(office.active_lease.end_date) %></small>
     <% end %>
