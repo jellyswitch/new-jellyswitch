@@ -19,7 +19,8 @@ RSpec.describe "Update Office Lease Price", type: :system do
 
       expect(page).to have_button("Update Pricing", disabled: true)
 
-      page.execute_script("var input = document.getElementById('office_lease_new_price'); input.value = 15000; input.dispatchEvent(new Event('input'))")
+      # Operator enters the price in dollars (not cents).
+      page.execute_script("var input = document.getElementById('office_lease_new_price'); input.value = 150; input.dispatchEvent(new Event('input'))")
 
       expect(page).to have_button("Update Pricing", disabled: false)
       click_on "Update Pricing"

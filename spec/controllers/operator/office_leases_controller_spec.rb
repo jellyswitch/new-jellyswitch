@@ -21,6 +21,22 @@ RSpec.describe Operator::OfficeLeasesController, type: :controller do
         expect(flash[:notice]).to eq("Lease price updated successfully.")
         expect(response).to redirect_to(office_lease_path(office_lease))
       end
+
+      it "converts the dollar amount entered by the operator into cents" do
+        expect(Billing::Leasing::UpdateLeasePrice).to receive(:call)
+          .with(hash_including(new_price_in_cents: 15000))
+          .and_return(result)
+
+        put :update_price, params: { office_lease_id: office_lease.id, office_lease: { new_price: "150" } }
+      end
+
+      it "handles fractional dollar amounts" do
+        expect(Billing::Leasing::UpdateLeasePrice).to receive(:call)
+          .with(hash_including(new_price_in_cents: 15050))
+          .and_return(result)
+
+        put :update_price, params: { office_lease_id: office_lease.id, office_lease: { new_price: "150.50" } }
+      end
     end
 
     context "when the update price is fails" do

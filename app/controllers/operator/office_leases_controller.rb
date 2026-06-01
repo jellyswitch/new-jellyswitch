@@ -55,7 +55,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     result = Billing::Leasing::UpdateLeasePrice.call(
       office_lease: @office_lease,
-      new_price_in_cents: params[:office_lease][:new_price].to_i,
+      new_price_in_cents: (params[:office_lease][:new_price].to_f * 100).round,
       operator: current_tenant,
     )
 

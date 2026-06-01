@@ -34,6 +34,33 @@ RSpec.describe Office, type: :model do
     it { should have_one_attached(:photo) }
   end
 
+  describe "validations" do
+    it "requires a name" do
+      office = build(:office, name: nil)
+      expect(office).not_to be_valid
+      expect(office.errors[:name]).to be_present
+    end
+
+    it "prevents a duplicate visible office name within the same location" do
+      existing = create(:office, name: "Conference Suite", visible: true)
+      dup = build(:office, name: "Conference Suite", location: existing.location, operator: existing.operator, visible: true)
+      expect(dup).not_to be_valid
+      expect(dup.errors[:name]).to be_present
+    end
+
+    it "is case-insensitive when detecting duplicates" do
+      existing = create(:office, name: "Conference Suite", visible: true)
+      dup = build(:office, name: "conference suite", location: existing.location, operator: existing.operator, visible: true)
+      expect(dup).not_to be_valid
+    end
+
+    it "allows the same name once the existing office is archived" do
+      create(:office, name: "Conference Suite", visible: false)
+      reused = build(:office, name: "Conference Suite", visible: true)
+      expect(reused).to be_valid
+    end
+  end
+
   describe "scopes" do
     let!(:visible_office) { create(:office, visible: true) }
     let!(:archived_office) { create(:office, visible: false) }

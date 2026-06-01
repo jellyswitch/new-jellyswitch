@@ -194,7 +194,9 @@ RSpec.describe Operator::OrganizationsController, type: :controller do
   describe "POST #credit_card" do
     before do
       allow(controller).to receive(:current_user).and_return(admin_user)
-      allow_any_instance_of(Organization).to receive(:card_added).and_return(true)
+      # The factory org has a billing contact, so the card lives on the contact.
+      allow_any_instance_of(User).to receive(:card_added_for_location?).and_return(true)
+      allow_any_instance_of(Organization).to receive(:card_added_for_location?).and_return(true)
     end
 
     it "updates organization payment method to credit card" do
@@ -203,9 +205,34 @@ RSpec.describe Operator::OrganizationsController, type: :controller do
       expect(organization.out_of_band).to be false
     end
 
+    it "syncs existing Stripe subscriptions back to charge_automatically" do
+      expect(UnmarkCustomerAsOutOfBand).to receive(:call)
+        .with(hash_including(customer: organization))
+        .and_return(OpenStruct.new(success?: true))
+
+      post :credit_card, params: { organization_id: organization.id }
+    end
+
     it "redirects to organization path" do
       post :credit_card, params: { organization_id: organization.id }
       expect(response).to redirect_to(organization_path(organization))
+    end
+
+    context "when there is no card on file" do
+      before do
+        allow_any_instance_of(User).to receive(:card_added_for_location?).and_return(false)
+        allow_any_instance_of(Organization).to receive(:card_added_for_location?).and_return(false)
+      end
+
+      it "does not flip billing and redirects to the billing contact's card page with a helpful notice" do
+        expect(UnmarkCustomerAsOutOfBand).not_to receive(:call)
+
+        post :credit_card, params: { organization_id: organization.id }
+
+        expect(response).to redirect_to(user_billing_path(organization.billing_contact))
+        expect(flash[:notice]).to match(/add a card/i)
+        expect(organization.reload.out_of_band).to be true
+      end
     end
   end
 
@@ -218,6 +245,14 @@ RSpec.describe Operator::OrganizationsController, type: :controller do
       post :out_of_band, params: { organization_id: organization.id }
       organization.reload
       expect(organization.out_of_band).to be true
+    end
+
+    it "syncs existing Stripe subscriptions to send_invoice" do
+      expect(MarkCustomerAsOutOfBand).to receive(:call)
+        .with(hash_including(customer: organization))
+        .and_return(OpenStruct.new(success?: true))
+
+      post :out_of_band, params: { organization_id: organization.id }
     end
 
     it "redirects to organization path" do

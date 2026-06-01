@@ -30,8 +30,8 @@
   $(document).ready(function() {
     // Update the modal content when it's about to be shown
     $('#update-price-confirm-modal').on('show.bs.modal', function (event) {
-      var newPrice = $('#office_lease_new_price').val();
-      $('#new-price-display').text('$' + parseFloat(newPrice / 100).toFixed(2));
+      var newPrice = parseFloat($('#office_lease_new_price').val()) || 0;
+      $('#new-price-display').text('$' + newPrice.toFixed(2));
     });
   });
 </script>

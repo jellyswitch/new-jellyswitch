@@ -18,9 +18,14 @@
       </div>
 
       <div class="form-group">
-        <%= form.label :new_price, "New #{@plan_interval} Price (in cents)", class: "text-capitalize" %>
-        <%= form.number_field :new_price, class: "form-control", step: "0.01", required: true, placeholder: @office_lease.subscription.plan.amount_in_cents %>
-        <small class="form-text text-muted">The new price will be charged in the next billing cycle.</small>
+        <%= form.label :new_price, "New #{@plan_interval} Price", class: "text-capitalize" %>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">$</span>
+          </div>
+          <%= form.number_field :new_price, class: "form-control", step: "0.01", min: "0", required: true, placeholder: ("%.2f" % (@office_lease.subscription.plan.amount_in_cents / 100.0)) %>
+        </div>
+        <small class="form-text text-muted">Enter the new price in dollars. It will be charged in the next billing cycle.</small>
       </div>
 
       <%= form.button "Update Pricing", id: "update-pricing-btn", class: "btn btn-primary", data: { toggle: "modal", target: "#update-price-confirm-modal" }, type: "button", disabled: true %>
