@@ -3,6 +3,22 @@ class  OnboardingController < ApplicationController
   end
 
   def create_user
+    # Honeypot: bots fill the hidden field; humans never see it. Silent drop
+    # back to the form so a bot can't tell it was caught.
+    return turbo_redirect(new_user_onboarding_index_path, action: "replace") if params[:_hp].present?
+
+    # Bot protection. Short-circuits to success when TURNSTILE_SECRET is unset
+    # (test/dev), so this is a no-op locally.
+    turnstile = Turnstile::Verifier.call(
+      token: params["cf-turnstile-response"],
+      remote_ip: request.remote_ip,
+      context: "operator_signup",
+    )
+    unless turnstile.success?
+      flash[:error] = "Please complete the captcha and try again."
+      return turbo_redirect(new_user_onboarding_index_path, action: "replace")
+    end
+
     result = Onboarding::CreateAccount.call(
       email:                 params[:email],
       password:              params[:password],

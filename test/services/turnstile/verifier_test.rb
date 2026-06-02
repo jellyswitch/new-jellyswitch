@@ -31,4 +31,23 @@ class Turnstile::VerifierTest < ActiveSupport::TestCase
     result = Turnstile::Verifier.call(token: "x", remote_ip: "1.2.3.4")
     refute result.success?
   end
+
+  test "logs a structured outcome line with the context and error codes on failure" do
+    ENV.stubs(:[]).with("TURNSTILE_SECRET").returns("test-secret")
+    stub_response = stub(body: { "success" => false, "error-codes" => ["invalid-input-response"] }.to_json)
+    Faraday.stubs(:post).returns(stub_response)
+    Rails.logger.expects(:info).with do |line|
+      line.include?("turnstile_verification") &&
+        line.include?("operator_signup") &&
+        line.include?("invalid-input-response") &&
+        line.include?("fail")
+    end
+    Turnstile::Verifier.call(token: "bad", remote_ip: "1.2.3.4", context: "operator_signup")
+  end
+
+  test "does not log when verification short-circuits (secret unset)" do
+    ENV.stubs(:[]).returns(nil)
+    Rails.logger.expects(:info).never
+    Turnstile::Verifier.call(token: "anything", remote_ip: "127.0.0.1", context: "operator_signup")
+  end
 end
