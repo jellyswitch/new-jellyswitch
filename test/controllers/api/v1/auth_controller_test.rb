@@ -52,4 +52,80 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
       assert loc["name"].present?
     end
   end
+
+  # --- Turnstile bot protection on member signup (LENIENT rollout phase) ---
+  #
+  # The endpoint must stay backward-compatible: store builds in the wild don't
+  # send a `cf-turnstile-response` token yet, and TURNSTILE_SECRET is set in
+  # production, so a hard requirement would break every existing mobile signup.
+  # Lenient contract: verify ONLY when a token is present; pass untokened
+  # requests straight through. In the test env TURNSTILE_SECRET is unset, so the
+  # Verifier short-circuits to success — to exercise the blocking path we stub
+  # it. Mirrors test/controllers/onboarding_controller_test.rb.
+
+  def signup_params(overrides = {})
+    {
+      subdomain: @operator.subdomain,
+      name: "New Member",
+      email: "new-member-#{SecureRandom.hex(4)}@example.com",
+      password: "password123",
+      phone: "5305551234",
+    }.merge(overrides)
+  end
+
+  test "signup without a Turnstile token creates the account and never verifies (lenient)" do
+    Turnstile::Verifier.expects(:call).never
+    assert_difference -> { User.count }, 1 do
+      post "/api/v1/auth/signup", params: signup_params
+    end
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert body["token"].present?
+  end
+
+  test "signup with a valid Turnstile token creates the account" do
+    Turnstile::Verifier.stubs(:call).returns(
+      Turnstile::Verifier::Result.new(success?: true, error_codes: [])
+    )
+    assert_difference -> { User.count }, 1 do
+      post "/api/v1/auth/signup", params: signup_params("cf-turnstile-response" => "good-token")
+    end
+    assert_response :created
+  end
+
+  test "signup with a failing Turnstile token creates no account and returns 422" do
+    Turnstile::Verifier.stubs(:call).returns(
+      Turnstile::Verifier::Result.new(success?: false, error_codes: ["invalid-input-response"])
+    )
+    assert_no_difference -> { User.count } do
+      post "/api/v1/auth/signup", params: signup_params("cf-turnstile-response" => "bad-token")
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "signup verifies with context mobile_signup when a token is present" do
+    Turnstile::Verifier.expects(:call).with(
+      has_entries(context: "mobile_signup", token: "some-token")
+    ).returns(Turnstile::Verifier::Result.new(success?: true, error_codes: []))
+    post "/api/v1/auth/signup", params: signup_params("cf-turnstile-response" => "some-token")
+    assert_response :created
+  end
+
+  test "signup with a filled honeypot creates no account and never verifies" do
+    Turnstile::Verifier.expects(:call).never
+    assert_no_difference -> { User.count } do
+      post "/api/v1/auth/signup", params: signup_params(_hp: "i am a bot")
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test "signup throttles after 5 requests per minute per IP" do
+    Rails.cache.clear
+
+    6.times { post "/api/v1/auth/signup", params: signup_params }
+    # 6th response should be 429 (Rack::Attack signup/ip throttle).
+    assert_response :too_many_requests
+  ensure
+    Rails.cache.clear
+  end
 end

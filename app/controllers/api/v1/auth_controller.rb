@@ -77,6 +77,35 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     set_current_tenant(operator)
 
+    # Honeypot: legitimate mobile builds never send `_hp`. A scripted client
+    # replaying the public web form (which has the hidden field) trips it.
+    # Silent generic failure so the caller can't tell it was flagged.
+    return render_error('Unable to sign up. Please try again.', status: :unprocessable_entity) if params[:_hp].present?
+
+    # Bot protection — LENIENT rollout phase (follow-up to web operator signup,
+    # PR #479). We can't hard-require a token yet: store builds in the wild do
+    # NOT send one, and TURNSTILE_SECRET is set in production, so requiring it
+    # would fail every existing mobile signup with `missing-input-response`.
+    #
+    # So: verify ONLY when the client actually sends `cf-turnstile-response`
+    # (i.e. a new build), and pass untokened requests through untouched. Every
+    # verification is logged via Turnstile::Verifier(context: "mobile_signup"),
+    # giving us per-error-code telemetry to watch token adoption climb before
+    # we flip this endpoint to strict enforcement (see the strict-cutover plan).
+    # The Verifier short-circuits to success when TURNSTILE_SECRET is blank
+    # (test/dev), so this is a no-op locally.
+    turnstile_token = params["cf-turnstile-response"]
+    if turnstile_token.present?
+      turnstile = Turnstile::Verifier.call(
+        token: turnstile_token,
+        remote_ip: request.remote_ip,
+        context: "mobile_signup",
+      )
+      unless turnstile.success?
+        return render_error('Captcha verification failed. Please try again.', status: :unprocessable_entity)
+      end
+    end
+
     # Use the same interactor chain as web signup. Default to the first
     # *visible* location so a signup with no location_id never auto-assigns
     # the new user to a hidden test/archived space.

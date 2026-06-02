@@ -19,6 +19,18 @@ class Rack::Attack
     req.ip if req.post? && req.path.start_with?("/embed/")
   end
 
+  ### Throttle signup POSTs to 5/minute per IP ###
+  # Cheap defense-in-depth in front of both the web operator signup form
+  # (POST /onboarding/create_user — the GET /signup page just renders it) and
+  # the mobile/API member signup (POST /api/v1/auth/signup), independent of
+  # Turnstile. A human signs up once; 5/min per IP leaves ample room for
+  # typo-retries while capping a credential-stuffing or account-spam loop.
+  # Matches the /embed/* limit above.
+  SIGNUP_POST_PATHS = ["/onboarding/create_user", "/api/v1/auth/signup"].freeze
+  throttle("signup/ip", limit: 5, period: 1.minute) do |req|
+    req.ip if req.post? && SIGNUP_POST_PATHS.include?(req.path)
+  end
+
   ### Throttle BLE auto-unlock POSTs to 30/minute per Bearer token ###
   # Members walk by repeatedly; 30/min comfortably covers normal traffic
   # while capping a hostile loop. Bearer token includes the user id so this

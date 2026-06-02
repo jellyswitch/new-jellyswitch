@@ -45,6 +45,18 @@ class Turnstile::VerifierTest < ActiveSupport::TestCase
     Turnstile::Verifier.call(token: "bad", remote_ip: "1.2.3.4", context: "operator_signup")
   end
 
+  test "logs a structured pass line tagged with the mobile_signup context" do
+    ENV.stubs(:[]).with("TURNSTILE_SECRET").returns("test-secret")
+    stub_response = stub(body: { "success" => true }.to_json)
+    Faraday.stubs(:post).returns(stub_response)
+    Rails.logger.expects(:info).with do |line|
+      line.include?("turnstile_verification") &&
+        line.include?("mobile_signup") &&
+        line.include?("pass")
+    end
+    Turnstile::Verifier.call(token: "good", remote_ip: "1.2.3.4", context: "mobile_signup")
+  end
+
   test "does not log when verification short-circuits (secret unset)" do
     ENV.stubs(:[]).returns(nil)
     Rails.logger.expects(:info).never
