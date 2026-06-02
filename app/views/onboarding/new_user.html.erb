@@ -14,6 +14,16 @@
       <%= f.label :password_confirmation, "Confirm password" %>
       <%= f.password_field :password_confirmation, placeholder: "Re-enter your password", class: "form-control", required: true, minlength: 6, autocomplete: "new-password" %>
     </div>
+    <%# Honeypot: bots fill it; humans don't see it. %>
+    <div style="position:absolute; left:-9999px; height:0; overflow:hidden;" aria-hidden="true">
+      <label>Leave this empty: <input type="text" name="_hp" tabindex="-1" autocomplete="off"></label>
+    </div>
+
+    <% if ENV["TURNSTILE_SITEKEY"].present? %>
+      <div class="cf-turnstile mb-3" data-sitekey="<%= ENV["TURNSTILE_SITEKEY"] %>"></div>
+      <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+    <% end %>
+
     <%= f.submit "Begin onboarding", class: "btn btn-primary btn-block", data: { turbo: "false", disable_with: "Starting..." } %>
   <% end %>
 <% end %>

@@ -30,6 +30,7 @@ module Embed
       turnstile = Turnstile::Verifier.call(
         token: params["cf-turnstile-response"],
         remote_ip: request.remote_ip,
+        context: "tour_request",
       )
       unless turnstile.success?
         flash.now[:error] = "Please retry the captcha."
