@@ -173,6 +173,26 @@ class UserTest < ActiveSupport::TestCase
     assert_equal User.relevant_admins_of_location(nil), []
   end
 
+  # Regression: a superadmin who MANAGES a location but is currently switched
+  # to a different location stopped receiving that location's notifications,
+  # because superadmins were matched only by current_location_id. (Prod: David
+  # managed Untethered's Tahoe location but was switched to Fulton, so day-pass
+  # / signup pushes never reached him.) Match superadmins by managed location.
+  test 'relevant_admins_of_location includes a superadmin managing the location even when switched elsewhere' do
+    loc = locations(:cowork_tahoe_location)
+    other = Location.create!(
+      name: "Sibling Location", operator: loc.operator, visible: true,
+      time_zone: "Pacific Time (US & Canada)", working_day_start: "09:00", working_day_end: "18:00",
+    )
+    superadmin = users(:cowork_tahoe_superadmin)
+    superadmin.update!(current_location: other)
+    LocationManagement.find_or_create_by!(user: superadmin, location: loc)
+
+    ids = User.relevant_admins_of_location(loc).map(&:id)
+    assert_includes ids, superadmin.id,
+      "a superadmin who manages the location should be notified even when current_location is elsewhere"
+  end
+
   # Regression: a user whose Operator record has been deleted (orphaned
   # operator_id) used to crash the after_commit :sync_to_mailchimp callback
   # with NoMethodError on nil — the destroy still committed, but the
