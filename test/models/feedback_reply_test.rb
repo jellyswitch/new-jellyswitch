@@ -20,6 +20,15 @@ class FeedbackReplyTest < ActiveSupport::TestCase
     assert_in_delta Time.current, @feedback.reload.updated_at, 5.seconds
   end
 
+  test "a new reply resurfaces a dismissed thread" do
+    @feedback.update!(dismissed_at: Time.current)
+    FeedbackReply.create!(
+      member_feedback: @feedback, user: @member, operator: @operator, body: "back",
+    )
+    assert_nil @feedback.reload.dismissed_at,
+      "any new reply should bring a dismissed conversation back to the inbox"
+  end
+
   test "threads sort by last activity, not thread creation" do
     # Older thread, but it gets a fresh reply → should sort first.
     other = MemberFeedback.create!(

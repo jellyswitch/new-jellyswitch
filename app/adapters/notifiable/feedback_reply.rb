@@ -24,7 +24,7 @@ module Notifiable
         # parent MemberFeedback#comment is blank on greeting-first threads.
         body: body,
       }
-      FeedItemCreator.create_feed_item(operator, location, user, blob, created_at: created_at)
+      FeedItemCreator.upsert_feedback_feed_item(operator, location, user, blob, created_at: created_at)
     end
 
     def deep_link_data
