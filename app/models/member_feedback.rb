@@ -30,6 +30,23 @@ class MemberFeedback < ApplicationRecord
 
   scope :recent, ->() { where('created_at > ?', Time.now - 7.days) }
 
+  # Not hidden from the admin conversations inbox.
+  scope :not_dismissed, -> { where(dismissed_at: nil) }
+
+  # Conversations the member actually engaged in — i.e. they sent at least one
+  # message. That's either a non-blank original comment (member-initiated) or a
+  # reply authored by the thread owner (the member). This deliberately excludes
+  # host-greeting-only threads (comment is nil and only the host has replied),
+  # which EnsureHostGreeting creates for every visitor.
+  scope :with_member_message, -> {
+    where(
+      "(member_feedbacks.comment IS NOT NULL AND member_feedbacks.comment <> '') " \
+      "OR EXISTS (SELECT 1 FROM feedback_replies fr " \
+      "WHERE fr.member_feedback_id = member_feedbacks.id " \
+      "AND fr.user_id = member_feedbacks.user_id)"
+    )
+  }
+
   def anonymous?
     self.anonymous == true
   end

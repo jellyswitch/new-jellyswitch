@@ -1,17 +1,25 @@
+<% latest_reply = member_feedback.feedback_replies.max_by(&:created_at) %>
+<% preview = member_feedback.comment.presence || latest_reply&.body %>
+<% reply_count = member_feedback.feedback_replies.size %>
 
-<%= link_to member_feedback_path(member_feedback), class: "list-group-item list-group-item-action" do %>
-  <div class="d-flex justify-content-between align-items-start">
-    <div>
-      <p class="lead mb-1"><%= truncate(member_feedback.comment, length: 100) %></p>
-      <small class="text-muted">
-        <%= time_ago_in_words(member_feedback.created_at) %> ago
-        <% if member_feedback.feedback_replies.any? %>
-          &middot; <%= member_feedback.feedback_replies.count %> <%= "reply".pluralize(member_feedback.feedback_replies.count) %>
-        <% end %>
-      </small>
-    </div>
-    <% if member_feedback.feedback_replies.any? %>
-      <span class="badge badge-primary badge-pill"><%= member_feedback.feedback_replies.count %></span>
-    <% end %>
-  </div>
-<% end %>
+<div id="<%= dom_id(member_feedback) %>" class="list-group-item d-flex justify-content-between align-items-center">
+  <%= link_to member_feedback_path(member_feedback), class: "text-decoration-none text-dark flex-grow-1 mr-3", style: "min-width: 0;" do %>
+    <div class="font-weight-bold mb-1 text-truncate"><%= member_feedback.user&.name %></div>
+    <p class="mb-1 text-truncate text-muted"><%= truncate(preview.to_s, length: 100) %></p>
+    <small class="text-muted">
+      <%= time_ago_in_words(member_feedback.updated_at) %> ago
+      <% if reply_count > 0 %>
+        &middot; <%= reply_count %> <%= "message".pluralize(reply_count) %>
+      <% end %>
+    </small>
+  <% end %>
+
+  <%= button_to dismiss_member_feedback_path(member_feedback),
+        method: :post,
+        class: "btn btn-sm btn-outline-secondary flex-shrink-0",
+        form_class: "mb-0",
+        title: "Dismiss conversation",
+        aria: { label: "Dismiss conversation" } do %>
+    <i class="fas fa-times"></i>
+  <% end %>
+</div>

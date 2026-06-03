@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_01_181934) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_03_123335) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -585,6 +585,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_01_181934) do
     t.datetime "updated_at", precision: nil, null: false
     t.integer "location_id"
     t.datetime "last_read_at"
+    t.datetime "dismissed_at"
     t.index ["location_id"], name: "index_member_feedbacks_on_location_id"
   end
 

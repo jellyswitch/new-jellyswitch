@@ -71,8 +71,14 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   def dismiss
     find_member_feedback
     authorize @member_feedback, :show?
+    @member_feedback.update(dismissed_at: Time.current)
     @member_feedback.mark_as_read!
-    turbo_redirect(home_path, action: restore_if_possible)
+
+    respond_to do |format|
+      # From the inbox: just pull the conversation's row out of the list.
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@member_feedback) }
+      format.html { turbo_redirect(member_feedbacks_path, action: restore_if_possible) }
+    end
   end
 
   def reply
@@ -142,9 +148,13 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   private
 
   def find_member_feedbacks
-    # Most recently active thread first (updated_at bumps on every reply) so
-    # active conversations stay at the top instead of sorting by thread birth.
-    @member_feedbacks = MemberFeedback.for_location(current_location).order("updated_at DESC").all
+    # The admin conversations inbox: only threads the member actually engaged
+    # in (excludes host-greeting-only threads), not dismissed, most recently
+    # active first (updated_at bumps on every reply).
+    @member_feedbacks = MemberFeedback.for_location(current_location)
+                                      .with_member_message
+                                      .not_dismissed
+                                      .order("updated_at DESC")
   end
 
   def find_member_feedback(key=:id)

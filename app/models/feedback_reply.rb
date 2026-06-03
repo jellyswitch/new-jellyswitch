@@ -35,6 +35,11 @@ class FeedbackReply < ApplicationRecord
 
   validates :body, presence: true
 
+  # Restarting a conversation (a new reply from either side) brings it back to
+  # the admin inbox if it had been dismissed. touch: true already bumps the
+  # thread's updated_at so it floats to the top.
+  after_create :resurface_dismissed_thread
+
   delegate :location, to: :member_feedback
 
   # "From staff" = anyone other than the member who originated the thread.
@@ -47,5 +52,12 @@ class FeedbackReply < ApplicationRecord
   # the requester is "staff" in the conversation.
   def from_admin?
     user_id != member_feedback.user_id
+  end
+
+  private
+
+  def resurface_dismissed_thread
+    return if member_feedback.nil? || member_feedback.dismissed_at.nil?
+    member_feedback.update_columns(dismissed_at: nil)
   end
 end

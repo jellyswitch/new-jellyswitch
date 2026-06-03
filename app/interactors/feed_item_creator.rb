@@ -21,6 +21,29 @@ module FeedItemCreator
     feed_item.save!
   end
 
+  # Collapse a member-feedback conversation into a SINGLE feed card. If a feed
+  # item already exists for this thread (same member_feedback_id), refresh it
+  # to the latest message and let the updated_at bump float it to the top of
+  # the feed — instead of stacking a brand-new card per reply.
+  def self.upsert_feedback_feed_item(operator, location, user, blob, options = {})
+    member_feedback_id = (blob[:member_feedback_id] || blob["member_feedback_id"]).to_s
+    return create_feed_item(operator, location, user, blob, options) if member_feedback_id.blank?
+
+    existing = FeedItem.unscoped
+                       .for_operator(operator)
+                       .where("blob->>'type' = ?", "feedback")
+                       .where("blob->>'member_feedback_id' = ?", member_feedback_id)
+                       .order(:created_at)
+                       .first
+
+    if existing
+      existing.update!(blob: blob, user: user, location: location)
+      existing
+    else
+      create_feed_item(operator, location, user, blob, options)
+    end
+  end
+
   def create_feed_item(operator, location, user, blob, options = {})
     return if user.class == Organization # don't create a feed item if the billable was an organization
 
