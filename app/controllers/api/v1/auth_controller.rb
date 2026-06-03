@@ -108,8 +108,18 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     # Use the same interactor chain as web signup. Default to the first
     # *visible* location so a signup with no location_id never auto-assigns
-    # the new user to a hidden test/archived space.
-    location_id = params[:location_id].present? ? params[:location_id] : operator.locations.visible.first&.id
+    # the new user to a hidden test/archived space — and reject a
+    # caller-supplied location_id that isn't a *visible* location of this
+    # operator (e.g. a stale link or cached build pointing at a deprecated
+    # space), which previously stranded self-signups on orphaned locations.
+    requested_location_id = params[:location_id].presence&.to_i
+    visible_location_ids = operator.locations.visible.pluck(:id)
+    location_id =
+      if requested_location_id && visible_location_ids.include?(requested_location_id)
+        requested_location_id
+      else
+        visible_location_ids.first
+      end
 
     result = Users::Create.call(
       params: {
