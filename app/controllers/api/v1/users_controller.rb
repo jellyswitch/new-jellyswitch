@@ -139,7 +139,12 @@ class Api::V1::UsersController < Api::V1::BaseController
   end
 
   def switch_location
-    location = current_tenant.locations.find(params[:location_id])
+    # Members may only switch to a *visible* location; admins/superadmins may
+    # target a hidden one (e.g. a deprecated or staff-only space). This stops
+    # a member from landing on an orphaned/hidden location via a raw id.
+    scope = (current_api_user.admin? || current_api_user.superadmin?) ?
+      current_tenant.locations : current_tenant.locations.visible
+    location = scope.find(params[:location_id])
     current_api_user.update(current_location: location)
     render json: { success: true, location: location.name }
   rescue ActiveRecord::RecordNotFound

@@ -9,6 +9,11 @@ require "test_helper"
 class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   setup do
     @operator = operators(:cowork_tahoe)
+    # Signup is Rack::Attack-throttled per IP (5/min). Tests share an IP, so
+    # without a reset the accumulated counter trips 429s in unrelated signup
+    # tests depending on run order. Start every test with a clean counter; the
+    # throttle test deliberately fires its own burst.
+    Rails.cache.clear
   end
 
   test "operators returns only the requesting brand when X-Operator-Subdomain is set" do
@@ -127,5 +132,36 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_response :too_many_requests
   ensure
     Rails.cache.clear
+  end
+
+  # --- Location hardening ---
+  # A member self-signup must never land on a hidden/orphan location.
+  # Regression for the phantom "Cowork Tahoe " (loc 1627, visible=false) under
+  # the Untethered operator, which stranded real signups on a deprecated space.
+
+  test "signup ignores a hidden location_id and falls back to a visible location" do
+    hidden = Location.create!(
+      name:              "Hidden Signup Space",
+      operator:          @operator,
+      visible:           false,
+      time_zone:         "Pacific Time (US & Canada)",
+      working_day_start: "09:00",
+      working_day_end:   "18:00",
+    )
+    visible = @operator.locations.visible.first
+
+    assert_difference -> { User.count }, 1 do
+      post "/api/v1/auth/signup", params: signup_params(location_id: hidden.id)
+    end
+    assert_response :created
+    assert_equal visible.id, User.order(:created_at).last.original_location_id,
+      "self-signup must not be assigned to a hidden location"
+  end
+
+  test "signup honors a valid visible location_id" do
+    visible = @operator.locations.visible.first
+    post "/api/v1/auth/signup", params: signup_params(location_id: visible.id)
+    assert_response :created
+    assert_equal visible.id, User.order(:created_at).last.original_location_id
   end
 end
