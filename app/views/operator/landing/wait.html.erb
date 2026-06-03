@@ -76,21 +76,25 @@
 
   <% can_buy_day_pass = current_tenant.day_passes_enabled? %>
   <% can_book_room = current_location.rentable_rooms_enabled? %>
-  <% if can_buy_day_pass || can_book_room %>
+  <% can_join = current_tenant.memberships_enabled? && current_location.plans.for_individuals.any? %>
+  <% membership_path = current_location.has_categories? ? plan_categories_path : subscriptions_path %>
+  <% if can_buy_day_pass || can_book_room || can_join %>
     <%= wide_card do %>
-      <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Need a space today?</h6>
-      <p class="text-muted small mb-3">
-        No need to wait for approval to get to work — grab a day pass or book a room whenever you need one.
-      </p>
+      <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Need something else?</h6>
       <div class="d-flex flex-wrap" style="gap: 8px;">
         <% if can_buy_day_pass %>
           <%= link_to new_day_pass_path, class: "btn btn-outline-primary btn-sm" do %>
-            <i class="fas fa-ticket-alt mr-1"></i> Buy another day pass
+            <i class="fas fa-ticket-alt mr-1"></i> Buy a day pass
           <% end %>
         <% end %>
         <% if can_book_room %>
           <%= link_to calendar_reservations_path, class: "btn btn-outline-primary btn-sm" do %>
             <i class="fas fa-calendar-alt mr-1"></i> Book a conference room
+          <% end %>
+        <% end %>
+        <% if can_join %>
+          <%= link_to membership_path, class: "btn btn-outline-primary btn-sm" do %>
+            <i class="fas fa-users mr-1"></i> Upgrade to a membership
           <% end %>
         <% end %>
       </div>
@@ -129,28 +133,9 @@
     <% end %>
   <% end %>
 
-  <% if current_tenant.contact_email.present? || current_tenant.contact_phone.present? %>
-    <%= wide_card do %>
-      <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Have a question?</h6>
-
-      <p class="text-muted small mb-3">
-        Need to get started right away or have a question for the team? Reach out — we're happy to help.
-      </p>
-
-      <div class="d-flex flex-wrap" style="gap: 8px;">
-        <% if current_tenant.contact_email.present? %>
-          <%= mail_to current_tenant.contact_email, class: "btn btn-outline-primary btn-sm" do %>
-            <i class="fas fa-envelope mr-1"></i>
-            <%= current_tenant.contact_name.presence || current_tenant.contact_email %>
-          <% end %>
-        <% end %>
-        <% if current_tenant.contact_phone.present? %>
-          <%= link_to "tel:#{current_tenant.contact_phone}", class: "btn btn-outline-primary btn-sm" do %>
-            <i class="fas fa-phone mr-1"></i>
-            <%= current_tenant.contact_phone %>
-          <% end %>
-        <% end %>
-      </div>
-    <% end %>
-  <% end %>
+  <%# "Have a question?" → the unified space-host chat card (host greeting +
+      reply box + My Messages + Call/Text/Email shortcuts). Same affordance as
+      the /choose Welcome screen, so members get one consistent way to reach
+      the team. Renders nothing when the location has no host. %>
+  <%= render "shared/space_host_chat_card" %>
 </div>
