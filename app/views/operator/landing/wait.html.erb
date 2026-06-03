@@ -74,13 +74,36 @@
     </div>
   <% end %>
 
+  <% can_buy_day_pass = current_tenant.day_passes_enabled? %>
+  <% can_book_room = current_location.rentable_rooms_enabled? %>
+  <% if can_buy_day_pass || can_book_room %>
+    <%= wide_card do %>
+      <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Need a space today?</h6>
+      <p class="text-muted small mb-3">
+        No need to wait for approval to get to work — grab a day pass or book a room whenever you need one.
+      </p>
+      <div class="d-flex flex-wrap" style="gap: 8px;">
+        <% if can_buy_day_pass %>
+          <%= link_to new_day_pass_path, class: "btn btn-outline-primary btn-sm" do %>
+            <i class="fas fa-ticket-alt mr-1"></i> Buy another day pass
+          <% end %>
+        <% end %>
+        <% if can_book_room %>
+          <%= link_to calendar_reservations_path, class: "btn btn-outline-primary btn-sm" do %>
+            <i class="fas fa-calendar-alt mr-1"></i> Book a conference room
+          <% end %>
+        <% end %>
+      </div>
+    <% end %>
+  <% end %>
+
   <%= wide_card do %>
     <h6 class="text-uppercase text-muted mb-3" style="font-size: 11px; letter-spacing: 0.5px;">While you wait</h6>
 
     <div class="d-flex align-items-start mb-3">
       <i class="fas fa-clock text-info mr-3 mt-1" style="width: 18px;"></i>
       <div>
-        <div>Approvals usually happen within a few business hours.</div>
+        <div>Approvals usually happen within a few minutes during business hours.</div>
         <small class="text-muted">You'll get an email and a push notification as soon as you're in.</small>
       </div>
     </div>

@@ -105,7 +105,12 @@ class Operator::DayPassesController < Operator::BaseController
       end
       flash.keep
       session[:should_track_pixels] = true
-      turbo_redirect(home_path)
+      # An unapproved member just buying their way in during onboarding should
+      # land on the "You're almost in!" confirmation (/wait) so the purchase is
+      # clearly acknowledged — not back on home_path, which resolves to the
+      # /choose Welcome screen and reads as "back to the purchase options".
+      # Already-approved members still go straight home.
+      turbo_redirect(approved? ? home_path : wait_path)
     else
       flash[:error] = result.message
       turbo_redirect(new_day_pass_path(day_pass_type_id: params.dig(:day_pass, :day_pass_type)))

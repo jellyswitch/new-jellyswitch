@@ -44,6 +44,38 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # Onboarding: an unapproved member who buys their way in should land on the
+  # "You're almost in!" (/wait) confirmation, not home_path (which resolves to
+  # the /choose Welcome screen and reads as "back to the purchase options").
+  test "unapproved member is redirected to the awaiting-approval screen after purchase" do
+    @user.update!(approved: false)
+    @date = Time.zone.today
+    result = OpenStruct.new(success?: true, day_pass: OpenStruct.new(today?: true, day: @date))
+
+    Billing::DayPasses::CreateDayPass.stub :call, result do
+      post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
+      assert_redirected_to wait_path
+    end
+  end
+
+  test "approved member still goes home after purchase" do
+    @user.update!(approved: true)
+    @date = Time.zone.today
+    result = OpenStruct.new(success?: true, day_pass: OpenStruct.new(today?: true, day: @date))
+
+    Billing::DayPasses::CreateDayPass.stub :call, result do
+      post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
+      assert_redirected_to home_path
+    end
+  end
+
+  test "awaiting-approval screen renders with updated copy and options" do
+    @user.update!(approved: false)
+    get wait_path, env: default_env
+    assert_response :success
+    assert_match "a few minutes during business hours", response.body
+  end
+
   test "should get new day pass path" do
     get new_day_pass_path, params: { day_pass_type_id: @day_pass_type.id }, env: default_env
     assert :success
