@@ -356,12 +356,18 @@ class User < ApplicationRecord
   scope :originally_at_location, ->(location) { location.present? ? where(original_location_id: location.id) : all }
   scope :currently_at_location, ->(location) { location.present? ? where(current_location_id: location.id) : all }
 
-  # TODO: support multiple locations per admin
   scope :relevant_admins_of_location, ->(location) {
     if location.present?
+      # An admin is relevant to a location they manage (location_managements).
+      # A superadmin is relevant to a location they manage OR the one they're
+      # currently switched to. Previously superadmins matched ONLY by
+      # current_location_id, so a superadmin who manages location A but is
+      # currently switched to a sibling location B silently stopped receiving
+      # A's notifications (e.g. a multi-location operator's owner). Match
+      # superadmins by managed location too.
       left_joins(:location_managements)
-        .where("(users.role = ? AND users.current_location_id = ?) OR (users.role = ? AND location_managements.location_id = ?)",
-              User::SUPERADMIN, location.id, User::ADMIN, location.id)
+        .where("(users.role = ? AND (users.current_location_id = ? OR location_managements.location_id = ?)) OR (users.role = ? AND location_managements.location_id = ?)",
+              User::SUPERADMIN, location.id, location.id, User::ADMIN, location.id)
         .distinct
     else
       none
