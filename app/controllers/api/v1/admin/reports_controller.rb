@@ -172,7 +172,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   end
 
   def member_csv
-    MemberCsvExportJob.perform_later(current_tenant.id, current_api_user.id)
+    MemberCsvExportJob.perform_later(current_tenant.id, nil, current_api_user.email)
     render json: { success: true, message: "CSV export queued. You will receive it by email." }
   end
 
