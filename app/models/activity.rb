@@ -56,7 +56,16 @@ class Activity < ApplicationRecord
   scope :recent, -> { order(occurred_at: :desc) }
 
   after_create :assign_default_point_of_contact_on_tour
-  after_create :notify_point_of_contact
+  # after_create_commit (not after_create): the alert enqueues a Sidekiq job
+  # that reloads this Activity by GlobalID. Activities are logged from inside
+  # other models' transactions (User#log_signup_activity,
+  # Subscription#log_subscription_ended_if_deactivated, ...), so enqueuing in
+  # after_create pushed the job to Redis before the surrounding transaction
+  # committed — a worker could deserialize Activity.find(id) before the row was
+  # visible, or after a rollback, raising ActiveJob::DeserializationError.
+  # Deferring to commit guarantees the row exists and skips the enqueue entirely
+  # on rollback.
+  after_create_commit :notify_point_of_contact
 
   def self.log(**kwargs)
     ActivityLogger.log(**kwargs)

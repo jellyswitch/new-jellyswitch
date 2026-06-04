@@ -27,10 +27,39 @@
 require 'test_helper'
 
 class ActivityTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   test "tour_request is a valid Activity kind" do
     user = users(:cowork_tahoe_member)
     operator = user.operator
     activity = Activity.new(user: user, operator: operator, kind: :tour_request, occurred_at: Time.current, payload: {})
     assert activity.valid?, activity.errors.full_messages.inspect
+  end
+
+  # The point-of-contact alert enqueues SendNotificationsJob, which reloads the
+  # Activity by GlobalID. It must fire only AFTER the transaction commits, or a
+  # Sidekiq worker can run Activity.find before the row is visible / after a
+  # rollback -> ActiveJob::DeserializationError in production.
+  test "significant Activity enqueues the point-of-contact alert after commit" do
+    user = users(:cowork_tahoe_member)
+    user.update_column(:point_of_contact_id, users(:cowork_tahoe_admin).id)
+
+    assert_enqueued_with(job: SendNotificationsJob) do
+      Activity.create!(user: user, operator: user.operator, kind: :subscription_ended,
+                       occurred_at: Time.current, payload: {})
+    end
+  end
+
+  test "does NOT enqueue the alert when the surrounding transaction rolls back" do
+    user = users(:cowork_tahoe_member)
+    user.update_column(:point_of_contact_id, users(:cowork_tahoe_admin).id)
+
+    assert_no_enqueued_jobs only: SendNotificationsJob do
+      ActiveRecord::Base.transaction do
+        Activity.create!(user: user, operator: user.operator, kind: :subscription_ended,
+                         occurred_at: Time.current, payload: {})
+        raise ActiveRecord::Rollback
+      end
+    end
   end
 end
