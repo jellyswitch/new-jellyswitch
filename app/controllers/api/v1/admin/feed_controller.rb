@@ -97,6 +97,30 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     end
   end
 
+  # The charge shown on a 'reservation' feed card, in cents (nil = free).
+  #
+  # The card's amount used to be derived from room.hourly_rate_in_cents, which
+  # is $0 for free meeting rooms — so a day-passer (or subscription member) who
+  # exceeds their included meeting-room minutes on a free room showed $0 in the
+  # admin feed even though they were charged an overage. Use the actual charge
+  # instead: the captured amount if settled, else the authorized hold, else the
+  # expected charge from the same ChargeCalculator that CaptureHold/AuthorizeHold
+  # use (covers far-future bookings whose hold is deferred). A stored
+  # charge_amount_in_cents (set on newer items) wins outright.
+  def reservation_charge_in_cents(fi, res)
+    stored = fi.blob['charge_amount_in_cents']
+    return stored if stored.present?
+    return nil unless res
+
+    cents = res.captured_amount_in_cents ||
+            res.authorized_amount_in_cents ||
+            Billing::Reservations::ChargeCalculator.call(reservation: res, minutes: res.minutes)
+    cents.to_i.positive? ? cents.to_i : nil
+  rescue => e
+    Rails.logger.warn("[feed] reservation charge calc failed for ##{res&.id}: #{e.class}: #{e.message}")
+    nil
+  end
+
   def feed_item_json(fi)
     type = fi.blob['type']
     user = fi.user
@@ -152,7 +176,7 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         room_name: res&.room&.name,
         when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
         duration: res ? "#{res.minutes} min" : nil,
-        amount: res&.paid? ? (res.hours * res.room.hourly_rate_in_cents).round : nil,
+        amount: reservation_charge_in_cents(fi, res),
       )
     when 'paid-room-reservation', 'paid_room_reservation'
       res = Reservation.find_by(id: fi.blob['reservation_id'])
