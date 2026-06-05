@@ -27,7 +27,7 @@
             alt: host.name %>
     <% else %>
       <div class="rounded-circle flex-shrink-0 d-flex align-items-center justify-content-center"
-           style="width: 44px; height: 44px; background: var(--brand-color, #76b82a); color: #fff; font-weight: 600;">
+           style="width: 44px; height: 44px; background: var(--brand-color, #007bff); color: #fff; font-weight: 600;">
         <%= host.name.to_s.split.map(&:first).first(2).join.upcase %>
       </div>
     <% end %>

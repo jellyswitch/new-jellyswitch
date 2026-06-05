@@ -70,13 +70,13 @@
     <%# Paid Room Bookings %>
     <% if @paid_reservations.any? %>
       <div class="px-3 pt-3 pb-1">
-        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: #5a8a30;">
+        <small class="text-uppercase font-weight-bold" style="letter-spacing: 0.5px; color: var(--brand-color-hover);">
           <i class="fas fa-dollar-sign"></i> Paid Bookings (<%= @paid_reservations.count %>)
         </small>
       </div>
       <% @paid_reservations.each do |reservation| %>
         <div class="mx-3 mb-2">
-          <div class="card border-success" style="border-left: 4px solid #7ab648 !important;">
+          <div class="card border-success" style="border-left: 4px solid var(--brand-color) !important;">
             <div class="card-body py-2 px-3">
               <div class="d-flex justify-content-between align-items-start">
                 <div>
