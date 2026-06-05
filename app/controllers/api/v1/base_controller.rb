@@ -2,6 +2,7 @@ class Api::V1::BaseController < ApplicationController
   skip_before_action :verify_authenticity_token, raise: false
   before_action :authenticate_api_v1
   before_action :set_tenant_from_header
+  before_action :enforce_tenant_scope!
   around_action :disable_search_indexing
 
   def disable_search_indexing
@@ -34,6 +35,19 @@ class Api::V1::BaseController < ApplicationController
     elsif current_api_user
       ActsAsTenant.current_tenant = current_api_user.operator
     end
+  end
+
+  # Cross-tenant boundary for the whole API: an authenticated user may only
+  # operate within their own operator, regardless of the X-Operator-Subdomain
+  # header. Platform staff (the `superadmin` *boolean*) may cross operators; the
+  # per-operator "superadmin" role may not. Unauthenticated actions (login,
+  # signup, operator lookup) have no user yet and pass through.
+  def enforce_tenant_scope!
+    return if current_api_user.nil?
+    return if current_api_user.superadmin == true
+    return if current_tenant && current_api_user.operator_id == current_tenant.id
+
+    render json: { error: 'Forbidden' }, status: :forbidden
   end
 
   def current_tenant
