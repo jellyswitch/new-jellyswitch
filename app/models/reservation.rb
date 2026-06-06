@@ -150,6 +150,23 @@ class Reservation < ApplicationRecord
     room_price + amenity_price
   end
 
+  # What this reservation actually costs the member, in cents — for display
+  # (admin feed, receipts UI). `charge_amount` is derived from the room's
+  # hourly rate, so it returns $0 for a free meeting room even when a day-pass
+  # or subscription member is charged a meeting-room overage (the overage is
+  # priced by ChargeCalculator and lives on the Stripe hold/capture, not the
+  # room rate). Take the largest of the booked price, the authorized hold, the
+  # settled capture, and a fresh ChargeCalculator estimate so overages show up
+  # without under-reporting paid rooms (whose amenities live in charge_amount).
+  def effective_charge_in_cents
+    [
+      charge_amount.to_i,
+      authorized_amount_in_cents.to_i,
+      captured_amount_in_cents.to_i,
+      Billing::Reservations::ChargeCalculator.call(reservation: self, minutes: minutes).to_i,
+    ].max
+  end
+
   def charge_description
     "#{room.location.operator.name} room reservation for #{pretty_datetime}"
   end

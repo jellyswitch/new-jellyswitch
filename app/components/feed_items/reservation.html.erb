@@ -32,7 +32,7 @@
       Amount
     </dt>
     <dd class="col">
-      <%= number_to_currency(feed_item.reservation.charge_amount.to_f / 100.0) %>
+      <%= number_to_currency(feed_item.reservation.effective_charge_in_cents.to_f / 100.0) %>
     </dd>
   <% end %>
 
