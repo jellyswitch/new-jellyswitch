@@ -6,7 +6,9 @@ RSpec.describe Operator::OnboardingController, type: :controller do
   let(:admin)    { create(:user, operator: operator, role: "superadmin", original_location: location, current_location: location) }
 
   before do
+    request.host = "#{operator.subdomain}.lvh.me" # activates the tenant via the subdomain filter
     request.headers["X-Operator-Subdomain"] = operator.subdomain
+    ActionMailer::Base.default_url_options[:host] = "test.example.com" # for reset-email rendering
     ActsAsTenant.current_tenant = operator
     allow(controller).to receive(:current_user).and_return(admin)
     allow(controller).to receive(:current_location).and_return(location)

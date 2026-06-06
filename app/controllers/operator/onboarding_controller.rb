@@ -182,6 +182,10 @@ class Operator::OnboardingController < Operator::BaseController
       original_location_id: current_location.id,
       current_location_id: current_location.id
     )
+    # Admin is importing these members — bypass the self-signup-only validations
+    # (phone presence + terms acceptance). Stripe customers often have no phone on
+    # file; without this the save fails silently and no user is created.
+    user.admin_created = true
 
     user.user_payment_profiles.new(
       location_id: current_location.id,
