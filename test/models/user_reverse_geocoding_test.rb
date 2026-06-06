@@ -7,7 +7,7 @@ class UserReverseGeocodingTest < ActiveSupport::TestCase
   end
 
   test "fills home_city and home_state when lat/lng set" do
-    fake_place = Struct.new(:city, :state_code).new("South Lake Tahoe", "CA")
+    fake_place = Struct.new(:city, :state_code, :postal_code).new("South Lake Tahoe", "CA", "96150")
 
     Geocoder.stub(:search, ->(*_args) { [fake_place] }) do
       @user.home_latitude = 38.9399
@@ -18,10 +18,11 @@ class UserReverseGeocodingTest < ActiveSupport::TestCase
     @user.reload
     assert_equal "South Lake Tahoe", @user.home_city
     assert_equal "CA",               @user.home_state
+    assert_equal "96150",            @user.home_zip
   end
 
   test "does NOT reverse-geocode when lat/lng unchanged" do
-    Geocoder.stub(:search, ->(*_args) { [Struct.new(:city, :state_code).new("Tahoe", "CA")] }) do
+    Geocoder.stub(:search, ->(*_args) { [Struct.new(:city, :state_code, :postal_code).new("Tahoe", "CA", "96150")] }) do
       @user.update!(home_latitude: 38.9399, home_longitude: -119.9772)
     end
 

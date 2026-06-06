@@ -11,6 +11,14 @@ require_relative "./stripe_helper"
 require "sidekiq/testing"
 Sidekiq::Testing.fake!
 
+# Never hit the geocoding network in tests. Tests that need specific results
+# stub Geocoder.search directly; everything else (e.g. creating a Location,
+# whose address auto-geocodes) gets an empty result instead of a real request
+# to nominatim, which WebMock blocks.
+require "geocoder"
+Geocoder.configure(lookup: :test, ip_lookup: :test)
+Geocoder::Lookup::Test.set_default_stub([])
+
 class ActiveSupport::TestCase
   include StripeHelper
   include FactoryBot::Syntax::Methods
@@ -33,6 +41,14 @@ class ActiveSupport::TestCase
 
   teardown do
     WebMock.reset!
+    # Reset tenant state between tests. current_tenant is per-request; a request
+    # without a subdomain header keeps the prior tenant. default_tenant is a
+    # PERSISTENT fallback (set by clearance_helper's sign_in and some controller
+    # tests) that current_tenant returns when unset — so without clearing it, a
+    # signed-in test leaks its operator into later tests (e.g. auth#operators,
+    # which expects no tenant => []).
+    ActsAsTenant.current_tenant = nil
+    ActsAsTenant.default_tenant = nil
   end
 
   WebMock.disable_net_connect!(

@@ -118,6 +118,12 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
         "title": @notifiable.send(:message),
         "body": @notifiable.send(:message)
       },
+      "android": {
+        "notification": {
+          "sound": "default",
+          "channel_id": "default",
+        }
+      },
       "data" => @notifiable.send(:deep_link_data).transform_values(&:to_s)
     }).times(recipients.count)
     
