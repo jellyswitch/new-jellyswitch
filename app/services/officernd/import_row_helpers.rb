@@ -65,5 +65,32 @@ module Officernd
     def existing_invoice?(stripe_invoice_id, number, billable)
       existing_invoice(stripe_invoice_id, number, billable).present?
     end
+
+    # Resolve a User (day passes belong to a person, not an organization).
+    def resolve_user(stripe_customer_id, email)
+      if stripe_customer_id.present?
+        user = User.find_by_stripe_customer_id(stripe_customer_id)
+        return user if user
+      end
+      return nil if email.blank?
+
+      @operator.users.where("lower(email) = ?", email).first
+    end
+
+    TRUTHY = %w[true yes y 1 t comp complimentary free].freeze
+
+    def parse_bool(value)
+      return false if value.blank?
+
+      TRUTHY.include?(value.to_s.strip.downcase)
+    end
+
+    def parse_date(value)
+      return nil if value.blank?
+
+      Date.parse(value.to_s)
+    rescue ArgumentError
+      nil
+    end
   end
 end

@@ -55,17 +55,23 @@ class Operator::OfficerndImportsController < Operator::BaseController
   def update_mapping
     @import.update!(column_mapping: clean_mapping(params[:column_mapping]))
 
-    if @import.members? && @import.membership_values.any?
+    if @import.category_values.any?
       redirect_to sort_officernd_import_path(@import)
     else
       redirect_to preview_officernd_import_path(@import)
     end
   end
 
-  # Step 3 (members only) — map distinct membership values to Plans.
+  # Step 3 (members + day passes) — map distinct category values to Plans / DayPassTypes.
   def sort
-    @membership_values = @import.membership_values
-    @plans = current_tenant.plans.individual.order(:name)
+    @category_values = @import.category_values
+    if @import.day_passes?
+      @category_label = "day pass type"
+      @category_options = current_tenant.day_pass_types.order(:name).map { |t| [t.name, t.id] }
+    else
+      @category_label = "plan"
+      @category_options = current_tenant.plans.individual.order(:name).map { |p| [p.name, p.id] }
+    end
   end
 
   def update_sort
@@ -117,16 +123,22 @@ class Operator::OfficerndImportsController < Operator::BaseController
   end
 
   def build_preview
-    if @import.invoices?
+    case @import.kind
+    when "invoices"
       Onboarding::Import::BuildInvoicePreview.call(preview_args)
+    when "day_passes"
+      Onboarding::Import::BuildDayPassPreview.call(preview_args.merge(type_mapping: @import.plan_mapping))
     else
       Onboarding::Import::BuildPreview.call(preview_args.merge(plan_mapping: @import.plan_mapping))
     end
   end
 
   def run_commit
-    if @import.invoices?
+    case @import.kind
+    when "invoices"
       Onboarding::Import::ImportInvoices.call(preview_args)
+    when "day_passes"
+      Onboarding::Import::ImportDayPasses.call(preview_args.merge(type_mapping: @import.plan_mapping))
     else
       Onboarding::Import::Commit.call(preview_args.merge(plan_mapping: @import.plan_mapping))
     end

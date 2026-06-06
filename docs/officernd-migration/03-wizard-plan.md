@@ -56,13 +56,17 @@ Hotwire/Stimulus + `interactor` gem + ActiveStorage + Sidekiq).
 > test` invocations (they deadlock on the shared test DB). RSpec runs single-process.
 
 ## Still open (future enhancements)
-- "Sort" step for day-pass types (members "sort" covers memberships→Plans today).
 - Optional Stimulus controller for live column-mapping preview (plain forms work now).
 
 ## Done
 - Prior-imports / audit history screen — `index` action + view listing every
   `OfficerndImport` (status, row count, outcome summary, who ran it) with a resume/view
   link per status. Linked from the upload and result pages.
+- **Day-pass import** — third `kind` ("day_passes"). `DayPassColumnDetector`,
+  `BuildDayPassPreview` + `ImportDayPasses` (sets `DayPass#imported` to skip the
+  welcome-drip + activity-feed side effects; idempotent by user+day+type). The "sort"
+  step is generalized (`category_field`/`category_values`) to map type values →
+  DayPassTypes. Rake: `officernd:day_passes_dry_run` / `import_day_passes` (`TYPE_MAPPING`).
 
 ## State handling
 

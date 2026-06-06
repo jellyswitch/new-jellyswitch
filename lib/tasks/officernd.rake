@@ -170,4 +170,72 @@ namespace :officernd do
       end
     end
   end
+
+  desc "DRY RUN: preview a historical day-pass backfill. " \
+       "Usage: bin/rails 'officernd:day_passes_dry_run[/path/day_passes.csv, <location_id>]'"
+  task :day_passes_dry_run, %i[csv_path location_id] => :environment do |_t, args|
+    csv_path = args[:csv_path]
+    location_id = args[:location_id]
+    abort "Usage: officernd:day_passes_dry_run[csv_path, location_id]" if csv_path.blank? || location_id.blank?
+    abort "File not found: #{csv_path}" unless File.exist?(csv_path)
+
+    location = Location.find(location_id)
+
+    ActsAsTenant.with_tenant(location.operator) do
+      parsed = Officernd::CsvParser.parse(File.read(csv_path))
+      column_mapping = Officernd::DayPassColumnDetector.detect(parsed.headers)
+
+      puts "Rows: #{parsed.row_count}"
+      puts "Detected column mapping:"
+      column_mapping.each { |field, header| puts "  #{field.to_s.ljust(20)} <- #{header}" }
+      puts "NOTE: map day-pass type values to DayPassType ids when importing (TYPE_MAPPING)."
+      puts
+
+      result = Onboarding::Import::BuildDayPassPreview.call(
+        location: location, rows: parsed.rows, column_mapping: column_mapping,
+      )
+      abort "Preview failed: #{result.message}" unless result.success?
+
+      s = result.preview[:summary]
+      puts "=== DRY RUN SUMMARY (no records written) ==="
+      puts "  New day passes:     #{s[:new]}"
+      puts "  Already imported:   #{s[:existing]}"
+      puts "  Rows with errors:   #{s[:errors]}"
+      puts
+      puts "Distinct day-pass type values (map these to DayPassTypes):"
+      result.preview[:type_values].each { |t| puts "  #{t[:count].to_s.rjust(4)}x  #{t[:value]}" }
+    end
+  end
+
+  desc "COMMIT: backfill historical day passes (idempotent, no Stripe, no welcome-drip/feed side effects). " \
+       "TYPE_MAPPING env is JSON of {\"Type Value\": day_pass_type_id}. " \
+       "Usage: TYPE_MAPPING='{\"Day Pass\":7}' bin/rails 'officernd:import_day_passes[/path/day_passes.csv, <location_id>]'"
+  task :import_day_passes, %i[csv_path location_id] => :environment do |_t, args|
+    csv_path = args[:csv_path]
+    location_id = args[:location_id]
+    abort "Usage: officernd:import_day_passes[csv_path, location_id]" if csv_path.blank? || location_id.blank?
+    abort "File not found: #{csv_path}" unless File.exist?(csv_path)
+
+    location = Location.find(location_id)
+    type_mapping = ENV["TYPE_MAPPING"].present? ? JSON.parse(ENV["TYPE_MAPPING"]) : {}
+
+    ActsAsTenant.with_tenant(location.operator) do
+      parsed = Officernd::CsvParser.parse(File.read(csv_path))
+      column_mapping = Officernd::DayPassColumnDetector.detect(parsed.headers)
+
+      result = Onboarding::Import::ImportDayPasses.call(
+        location: location, rows: parsed.rows, column_mapping: column_mapping, type_mapping: type_mapping,
+      )
+      abort "Import failed: #{result.message}" unless result.success?
+
+      puts "=== DAY-PASS IMPORT COMPLETE ==="
+      result.report[:summary].sort.each { |k, v| puts "  #{k.to_s.ljust(20)} #{v}" }
+
+      skipped = result.report[:rows].select { |r| r[:action] == :skipped }
+      if skipped.any?
+        puts "\nSkipped rows (first 20):"
+        skipped.first(20).each { |r| puts "  row #{r[:row_number]}: #{r[:notes]}" }
+      end
+    end
+  end
 end

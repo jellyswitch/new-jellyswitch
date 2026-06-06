@@ -36,6 +36,10 @@ class DayPass < ApplicationRecord
   acts_as_tenant :operator
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
 
+  # Set on historical imports to skip member-lifecycle side effects (welcome drip,
+  # activity-feed entries) that should not fire for back-dated records.
+  attr_accessor :imported
+
   # Scopes
   scope :today, -> { where(day: Time.current) }
   scope :for_day, -> (date) { where(day: date) }
@@ -45,8 +49,8 @@ class DayPass < ApplicationRecord
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
 
-  after_create :log_activity
-  after_create :enroll_user_in_welcome_drip
+  after_create :log_activity, unless: :imported
+  after_create :enroll_user_in_welcome_drip, unless: :imported
 
   # Instance methods
   def log_activity

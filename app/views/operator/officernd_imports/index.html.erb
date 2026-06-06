@@ -28,6 +28,8 @@
     next "" if s.blank?
     if imp.invoices?
       "#{s['invoices_created'].to_i} created, #{s['invoices_updated'].to_i} updated, #{s['skipped'].to_i} skipped"
+    elsif imp.day_passes?
+      "#{s['day_passes_created'].to_i} created, #{s['skipped'].to_i} skipped"
     else
       "#{s['users_created'].to_i} created, #{s['users_updated'].to_i} updated, #{s['subscriptions_created'].to_i} subs"
     end

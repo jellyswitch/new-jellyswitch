@@ -17,6 +17,9 @@
       <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New invoices</small></div>
       <div class="col"><h2><%= s[:existing] %></h2><small class="text-muted">Already imported</small></div>
       <div class="col"><h2><%= number_to_currency(s[:total_amount_due_cents] / 100.0) %></h2><small class="text-muted">Total due</small></div>
+    <% elsif @import.day_passes? %>
+      <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New day passes</small></div>
+      <div class="col"><h2><%= s[:existing] %></h2><small class="text-muted">Already imported</small></div>
     <% else %>
       <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New members</small></div>
       <div class="col"><h2><%= s[:matched_existing] %></h2><small class="text-muted">Matched existing</small></div>
@@ -37,6 +40,20 @@
               <td><%= r[:billable_match] == :none ? "—" : "#{r[:billable_type]} ##{r[:billable_id]}" %></td>
               <td><%= number_to_currency(r[:amount_due_cents].to_i / 100.0) %></td>
               <td><%= r[:status] %><%= " · already imported" if r[:exists] %></td>
+              <td class="text-muted small"><%= r[:error] || r[:warnings].join("; ") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      <% elsif @import.day_passes? %>
+        <thead><tr><th>#</th><th>Email</th><th>Day pass type</th><th>Date</th><th>Comp?</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% @preview[:rows].first(200).each do |r| %>
+            <tr class="<%= 'table-danger' if r[:error] %>">
+              <td><%= r[:row_number] %></td>
+              <td><%= r[:email] %></td>
+              <td><%= r[:day_pass_type] %><%= " → type ##{r[:mapped_type_id]}" if r[:mapped_type_id] %></td>
+              <td><%= r[:day] %><%= " · already imported" if r[:exists] %></td>
+              <td><%= "✓" if r[:complimentary] %></td>
               <td class="text-muted small"><%= r[:error] || r[:warnings].join("; ") %></td>
             </tr>
           <% end %>

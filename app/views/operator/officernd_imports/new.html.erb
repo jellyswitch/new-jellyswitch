@@ -18,7 +18,7 @@
     <div class="form-group">
       <label for="kind">What are you importing?</label>
       <%= select_tag :kind,
-            options_for_select([["Members", "members"], ["Invoices (historical)", "invoices"]], @import.kind),
+            options_for_select([["Members", "members"], ["Invoices (historical)", "invoices"], ["Day passes (historical)", "day_passes"]], @import.kind),
             class: "form-control" %>
     </div>
 

@@ -115,4 +115,28 @@ RSpec.describe Operator::OfficerndImportsController, type: :controller do
       expect(json["redirect"]).to eq(result_officernd_import_path(import))
     end
   end
+
+  describe "day-pass import routing" do
+    let(:day_pass_csv) { fixture_file_upload("spec/fixtures/officernd_day_passes.csv", "text/csv") }
+
+    it "detects the day-pass-type column on upload" do
+      post :create, params: { kind: "day_passes", csv: day_pass_csv }
+
+      import = OfficerndImport.last
+      expect(import.kind).to eq("day_passes")
+      expect(import.column_mapping["day_pass_type"]).to eq("Pass Type")
+      expect(response).to redirect_to(map_officernd_import_path(import))
+    end
+
+    it "PATCH #update_mapping routes day passes to the sort step" do
+      import = operator.officernd_imports.create!(kind: "day_passes", location_id: location.id)
+      import.csv.attach(day_pass_csv)
+      import.update!(headers: import.parsed.headers, row_count: import.parsed.row_count)
+
+      patch :update_mapping, params: { id: import.id,
+        column_mapping: { email: "Email", day_pass_type: "Pass Type", day: "Date" } }
+
+      expect(response).to redirect_to(sort_officernd_import_path(import))
+    end
+  end
 end

@@ -32,8 +32,11 @@ class OfficerndImportJob < ApplicationJob
       amount_format: import.amount_format,
     }
 
-    if import.invoices?
+    case import.kind
+    when "invoices"
       Onboarding::Import::ImportInvoices.call(args)
+    when "day_passes"
+      Onboarding::Import::ImportDayPasses.call(args.merge(type_mapping: import.plan_mapping))
     else
       Onboarding::Import::Commit.call(args.merge(plan_mapping: import.plan_mapping))
     end
