@@ -65,6 +65,20 @@ class Plan < ApplicationRecord
   scope :uncategorized, -> { where(plan_category_id: nil) }
   scope :for_category, ->(plan_category) { where(plan_category_id: plan_category.id) }
 
+  # Plans an active member on `current_plan` may switch to. Grandfathering:
+  # tiers are matched by name, and an active member keeps their price, so we
+  # drop their current plan and any SAME-NAME plan priced above it (e.g. a
+  # member on the $200 "Flex Membership" never sees the $225 "Flex Membership").
+  # Switching to a genuinely different tier is still allowed. Passing nil (a
+  # member with no active plan, e.g. signing up fresh) applies no exclusions.
+  scope :switchable_from, ->(current_plan) {
+    next all unless current_plan
+
+    where.not(id: current_plan.id)
+      .where.not("plans.name = ? AND plans.amount_in_cents > ?",
+                 current_plan.name, current_plan.amount_in_cents.to_i)
+  }
+
   PLAN_TYPES = %w(individual lease).freeze
 
   def stripe_plan
@@ -149,6 +163,18 @@ class Plan < ApplicationRecord
   end
 
   # Instance methods
+
+  # Should a switch from `current_plan` to this plan be blocked? True for the
+  # member's own plan (no-op) and for a same-name plan priced above it — an
+  # active member keeps their grandfathered price, so they can't be moved to a
+  # costlier version of the tier they already hold. Different tiers are allowed.
+  def blocks_switch_from?(current_plan)
+    return false unless current_plan
+
+    id == current_plan.id ||
+      (name == current_plan.name && amount_in_cents.to_i > current_plan.amount_in_cents.to_i)
+  end
+
   def pretty_name
     "#{name} (#{pretty_price})"
   end

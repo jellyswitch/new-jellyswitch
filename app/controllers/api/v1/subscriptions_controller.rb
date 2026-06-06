@@ -4,6 +4,9 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     plans = Plan.where(operator: current_tenant, available: true, visible: true, plan_type: 'individual')
       .where(location: current_location)
       .order(:amount_in_cents)
+      # Grandfathering: an active member never sees a costlier same-name version
+      # of the tier they already hold (keeps their locked-in price).
+      .switchable_from(current_api_user.subscriptions.where(active: true).first&.plan)
 
     render json: {
       categories: categories.map { |c| { id: c.id, name: c.name } },
@@ -116,6 +119,16 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     end
 
     new_plan = Plan.find(params[:plan_id])
+
+    # Grandfathering guard: block switching to the plan they're already on (a
+    # no-op) or to a costlier same-name version of their tier (which would lose
+    # their locked-in price). Switching to a different tier is still allowed.
+    if new_plan.blocks_switch_from?(old_sub.plan)
+      return render_error(
+        "You're already on the #{old_sub.plan.name} plan at your current price.",
+        status: :unprocessable_entity,
+      )
+    end
 
     new_sub = Subscription.new(
       plan: new_plan,

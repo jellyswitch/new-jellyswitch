@@ -120,10 +120,20 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     @new_subscription = new_subscription
 
+    # Grandfathering guard: block switching to the plan they're already on (a
+    # no-op that churns a fresh row + a confusing "Flex to Flex" feed item) or
+    # to a costlier same-name version of their tier, which would silently lose
+    # their locked-in price. Switching to a different tier is still allowed.
+    if @new_subscription.plan.blocks_switch_from?(@subscription.plan)
+      flash[:notice] = "You're already on the #{@subscription.plan.name} plan at your current price. Choose a different plan to switch."
+      turbo_redirect(admin? ? user_path(@subscription.subscribable) : user_memberships_path(current_user))
+      return
+    end
+
     result = UpdateMembership.call(
       old_subscription: @subscription,
       new_subscription: @new_subscription,
-      blob: { text: "#{@subscription.subscribable.name} switched their membership from #{@subscription.plan.name}, to #{@new_subscription.plan.name} ", type: "membership_updated" },
+      blob: { text: "#{@subscription.subscribable.name} switched their membership from #{plan_label(@subscription.plan)} to #{plan_label(@new_subscription.plan)}", type: "membership_updated" },
       user: current_location.users.admins.first,
       operator: current_tenant,
       location: current_location,
@@ -227,6 +237,13 @@ class Operator::SubscriptionsController < Operator::BaseController
     subscription.subscribable = current_user
     subscription.active = true
     subscription
+  end
+
+  # Price + interval so same-named plans are distinguishable in the feed — a
+  # member on an older/archived "Flex" who moves to the current "Flex" otherwise
+  # logs a confusing "switched from Flex to Flex" that reads like a no-op.
+  def plan_label(plan)
+    "#{plan.name} (#{plan.pretty_amount}/#{plan.interval})"
   end
 
   def find_plan(key=:plan_id)
