@@ -1,0 +1,48 @@
+<% title "Branding" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Branding</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Your branding</h4>
+  <p class="lead text-center">
+    Your logo, short description, and terms show up in member emails and screens.
+  </p>
+
+  <%= form_with model: @operator, url: create_branding_operator_onboarding_index_path,
+                method: :patch, html: { multipart: true } do |f| %>
+    <%= render "shared/error_messages", model: @operator %>
+
+    <div class="form-group">
+      <%= f.label :logo_image, "Logo" %>
+      <% if @operator.logo_image.attached? %>
+        <div class="mb-2"><%= image_tag @operator.logo_image, width: 88 %></div>
+      <% end %>
+      <%= f.file_field :logo_image, accept: "image/*", class: "form-control-file" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :snippet, "Short description" %>
+      <%= f.text_field :snippet, class: "form-control", placeholder: "A friendly one-liner about your space" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :membership_text, "Membership info" %>
+      <%= f.text_area :membership_text, rows: 4, class: "form-control" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :terms_of_service, "Terms of service (PDF)" %>
+      <% if @operator.terms_of_service.attached? %>
+        <div class="mb-2"><%= link_to "Current terms", url_for(@operator.terms_of_service), target: "_blank" %></div>
+      <% end %>
+      <%= f.file_field :terms_of_service, class: "form-control-file" %>
+    </div>
+
+    <%= f.submit "Save branding", class: "btn btn-block btn-primary mt-3" %>
+  <% end %>
+
+  <%= link_to "Back to onboarding", new_operator_onboarding_path, class: "btn btn-block btn-link mt-2" %>
+<% end %>

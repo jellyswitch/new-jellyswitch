@@ -182,4 +182,42 @@ RSpec.describe Operator::OnboardingController, type: :controller do
       expect(operator.users.find_by(email: params[:email]).approved).to be(true)
     end
   end
+
+  describe "Branding step" do
+    it "GET #new_branding renders" do
+      get :new_branding
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "PATCH #create_branding saves the logo + snippet and returns to onboarding" do
+      logo = fixture_file_upload("spec/fixtures/test.jpg", "image/jpeg")
+      patch :create_branding, params: { operator: { snippet: "Cozy spot downtown", logo_image: logo } }
+
+      operator.reload
+      expect(operator.snippet).to eq("Cozy spot downtown")
+      expect(operator.logo_image).to be_attached
+      expect(response).to redirect_to(new_operator_onboarding_path)
+    end
+  end
+
+  describe "Settings step" do
+    it "GET #new_settings renders" do
+      get :new_settings
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "PATCH #create_settings updates feature modules and policies" do
+      patch :create_settings, params: { operator: {
+        rooms_enabled: "1", approval_required: "0",
+        day_pass_cost: "30.00", cancellation_window_hours: "48",
+      } }
+
+      operator.reload
+      expect(operator.rooms_enabled).to be(true)
+      expect(operator.approval_required).to be(false)
+      expect(operator.day_pass_cost_in_cents).to eq(3000)
+      expect(operator.cancellation_window_hours).to eq(48)
+      expect(response).to redirect_to(new_operator_onboarding_path)
+    end
+  end
 end

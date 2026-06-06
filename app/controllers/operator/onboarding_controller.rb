@@ -14,6 +14,38 @@ class Operator::OnboardingController < Operator::BaseController
                            current_tenant.snippet == "Generic snippet about the space"
   end
 
+  # Branding step — collect logo, "about" snippet, and terms inline.
+  def new_branding
+    @operator = current_tenant
+  end
+
+  def create_branding
+    @operator = current_tenant
+    if @operator.update(branding_params)
+      flash[:success] = "Branding saved."
+      turbo_redirect(new_operator_onboarding_path, action: "replace")
+    else
+      flash.now[:error] = errors_for(@operator)
+      render :new_branding, status: 422
+    end
+  end
+
+  # Settings step — feature modules + core policies inline.
+  def new_settings
+    @operator = current_tenant
+  end
+
+  def create_settings
+    @operator = current_tenant
+    if @operator.update(settings_params)
+      flash[:success] = "Settings saved."
+      turbo_redirect(new_operator_onboarding_path, action: "replace")
+    else
+      flash.now[:error] = errors_for(@operator)
+      render :new_settings, status: 422
+    end
+  end
+
   def new_stripe_connect
     session[:onboarding_in_progress] = true
   end
@@ -235,5 +267,21 @@ class Operator::OnboardingController < Operator::BaseController
 
   def authorize_onboarding
     authorize :onboarding, :show?
+  end
+
+  def branding_params
+    params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service)
+  end
+
+  def settings_params
+    params.require(:operator).permit(
+      # Modules
+      :announcements_enabled, :events_enabled, :door_integration_enabled,
+      :rooms_enabled, :offices_enabled, :bulletin_board_enabled,
+      :credits_enabled, :childcare_enabled, :crm_enabled,
+      # Policies
+      :day_pass_cost, :refund_fee_percent, :cancellation_window_hours,
+      :renewal_reminder_days, :approval_required, :checkin_required,
+    )
   end
 end

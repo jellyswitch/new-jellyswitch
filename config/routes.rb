@@ -629,6 +629,10 @@ Rails.application.routes.draw do
     collection do
       get  :new_stripe_connect
       post :complete_stripe_connect
+      get   :new_branding
+      patch :create_branding
+      get   :new_settings
+      patch :create_settings
       get :new_membership_plan
       post :create_membership_plan
       get :new_day_pass_type
