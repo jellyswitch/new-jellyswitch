@@ -15,7 +15,7 @@ class OfficerndImport < ApplicationRecord
   validates :status, inclusion: { in: STATUSES }
   validates :amount_format, inclusion: { in: AMOUNT_FORMATS }
 
-  scope :recent, -> { order(created_at: :desc) }
+  scope :recent, -> { order(created_at: :desc, id: :desc) }
 
   def members?
     kind == "members"

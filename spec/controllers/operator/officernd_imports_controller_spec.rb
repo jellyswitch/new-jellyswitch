@@ -22,6 +22,18 @@ RSpec.describe Operator::OfficerndImportsController, type: :controller do
     end
   end
 
+  describe "GET #index" do
+    it "lists the operator's past imports, most recent first" do
+      older = operator.officernd_imports.create!(kind: "members", location_id: location.id, status: "committed")
+      newer = operator.officernd_imports.create!(kind: "invoices", location_id: location.id, status: "previewed")
+
+      get :index
+
+      expect(response).to have_http_status(:ok)
+      expect(assigns(:imports).to_a).to eq([newer, older])
+    end
+  end
+
   describe "POST #create" do
     it "stores the CSV, detects headers/columns, and advances to the map step" do
       expect {

@@ -2,6 +2,11 @@ class Operator::OfficerndImportsController < Operator::BaseController
   before_action :authorize_onboarding
   before_action :set_import, only: %i[map update_mapping sort update_sort preview commit processing status result]
 
+  # Audit history of past imports for this operator.
+  def index
+    @imports = current_tenant.officernd_imports.recent
+  end
+
   # Step 1 — choose kind + upload the CSV.
   def new
     @import = OfficerndImport.new(kind: params[:kind].presence || "members")

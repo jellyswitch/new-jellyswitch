@@ -648,7 +648,7 @@ Rails.application.routes.draw do
       get :skip
     end
   end
-  resources :officernd_imports, controller: "operator/officernd_imports", only: %i[new create] do
+  resources :officernd_imports, controller: "operator/officernd_imports", only: %i[index new create] do
     member do
       get  :map
       patch :update_mapping

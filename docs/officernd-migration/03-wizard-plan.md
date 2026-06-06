@@ -58,7 +58,11 @@ Hotwire/Stimulus + `interactor` gem + ActiveStorage + Sidekiq).
 ## Still open (future enhancements)
 - "Sort" step for day-pass types (members "sort" covers memberships→Plans today).
 - Optional Stimulus controller for live column-mapping preview (plain forms work now).
-- Show prior imports / audit history (the `OfficerndImport` records already capture it).
+
+## Done
+- Prior-imports / audit history screen — `index` action + view listing every
+  `OfficerndImport` (status, row count, outcome summary, who ran it) with a resume/view
+  link per status. Linked from the upload and result pages.
 
 ## State handling
 
