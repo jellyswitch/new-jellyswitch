@@ -1,0 +1,5 @@
+Full Name,Email Address,Phone,Company,Membership,Status,Stripe Customer
+Ada Lovelace,ada@example.com,555-0100,,Full Time,active,cus_ExampleAAA111
+Grace Hopper,grace@example.com,555-0101,Navy Yard,Full Time,active,cus_ExampleBBB222
+Alan Turing,alan@example.com,555-0102,Bletchley,Part Time,active,cus_ExampleCCC333
+Katherine Johnson,katherine@example.com,555-0103,Bletchley,Day Pass,inactive,
