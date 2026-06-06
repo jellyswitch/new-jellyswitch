@@ -112,10 +112,8 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     return stored if stored.present?
     return nil unless res
 
-    cents = res.captured_amount_in_cents ||
-            res.authorized_amount_in_cents ||
-            Billing::Reservations::ChargeCalculator.call(reservation: res, minutes: res.minutes)
-    cents.to_i.positive? ? cents.to_i : nil
+    cents = res.effective_charge_in_cents.to_i
+    cents.positive? ? cents : nil
   rescue => e
     Rails.logger.warn("[feed] reservation charge calc failed for ##{res&.id}: #{e.class}: #{e.message}")
     nil
