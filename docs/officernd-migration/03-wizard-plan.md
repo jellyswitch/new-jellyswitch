@@ -32,7 +32,12 @@ Hotwire/Stimulus + `interactor` gem + ActiveStorage + Sidekiq).
 | Rake | `officernd:dry_run[csv,location_id]` | ✅ done |
 | Interactor | `Onboarding::Import::Commit` (transactional, no-Stripe) | ✅ done |
 | Rake | `officernd:import[csv,location_id]` (+ `PLAN_MAPPING` env) | ✅ done |
-| Model | `OfficerndImport` (ActiveStorage attach + session/state, audit log) | ▢ next |
+| Model | `OfficerndImport` (ActiveStorage csv + mapping json + audit) | ✅ done |
+| Controller | `Operator::OfficerndImportsController` (new/create/map/sort/preview/commit) | ✅ done |
+| Views | upload → map → sort → preview → result (ERB, Bootstrap) | ✅ done |
+| Routes | `officernd_imports` resource + member steps | ✅ done |
+| Entry point | "Import from an OfficeRnD CSV" button on onboarding Add Members | ✅ done |
+| Tests | controller spec (upload→map→preview→commit) — **7 passing** | ✅ done |
 | Job | `OfficerndImportJob` (Sidekiq, wraps Commit) | ▢ next |
 | Controller | new steps in `operator/onboarding_controller.rb` | ▢ next |
 | Routes | `upload_csv`, `map_columns`, `sort_categories`, `preview_import`, `commit_import` | ▢ next |
@@ -46,7 +51,13 @@ Hotwire/Stimulus + `interactor` gem + ActiveStorage + Sidekiq).
 
 > **Running the tests:** use `PARALLEL_WORKERS=1` — at >50 tests Rails forks worker
 > processes and the `pg` native gem segfaults on macOS. Never run overlapping `rails
-> test` invocations (they deadlock on the shared test DB).
+> test` invocations (they deadlock on the shared test DB). RSpec runs single-process.
+
+## Still open (future enhancements)
+- Move `commit` onto a Sidekiq job (`OfficerndImportJob`) + poll for large dumps
+  (currently runs inline in the request — fine for typical onboarding sizes).
+- "Sort" step for day-pass types (members "sort" covers memberships→Plans today).
+- Optional Stimulus controller for live column-mapping preview (plain forms work now).
 
 ## State handling
 

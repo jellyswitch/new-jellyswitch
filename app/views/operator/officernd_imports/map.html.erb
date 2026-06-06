@@ -1,0 +1,50 @@
+<% title "Map columns" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Import from OfficeRnD", new_officernd_import_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Map columns</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Map your columns</h4>
+  <p class="lead text-center">
+    <%= pluralize(@import.row_count, "row") %> · <%= @import.kind.titleize %> import.
+    We auto-matched what we could — adjust anything below.
+  </p>
+
+  <%= form_with url: update_mapping_officernd_import_path(@import), method: :patch do %>
+    <table class="table">
+      <thead><tr><th>Jellyswitch field</th><th>CSV column</th></tr></thead>
+      <tbody>
+        <% @import.canonical_fields.each do |field| %>
+          <% selected = @import.column_mapping[field.to_s] %>
+          <tr>
+            <td class="align-middle"><code><%= field %></code></td>
+            <td>
+              <%= select_tag "column_mapping[#{field}]",
+                    options_for_select([["— skip —", ""]] + @import.headers.map { |h| [h, h] }, selected),
+                    class: "form-control" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= submit_tag "Continue", class: "btn btn-block btn-primary" %>
+  <% end %>
+
+  <% if @sample_rows.any? %>
+    <h6 class="mt-4 text-muted">First rows in your file</h6>
+    <div class="table-responsive">
+      <table class="table table-sm table-bordered">
+        <thead><tr><% @import.headers.each { |h| %><th><%= h %></th><% } %></tr></thead>
+        <tbody>
+          <% @sample_rows.each do |row| %>
+            <tr><% @import.headers.each { |h| %><td><%= row[h] %></td><% } %></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>
