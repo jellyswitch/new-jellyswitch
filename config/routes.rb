@@ -656,6 +656,9 @@ Rails.application.routes.draw do
       patch :update_sort
       get  :preview
       post :commit
+      get  :processing
+      get  :status
+      get  :result
     end
   end
   resources :offices, controller: "operator/offices" do

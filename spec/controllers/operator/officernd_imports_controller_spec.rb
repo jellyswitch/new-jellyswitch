@@ -74,14 +74,33 @@ RSpec.describe Operator::OfficerndImportsController, type: :controller do
       expect(assigns(:preview)[:total_rows]).to eq(2)
     end
 
-    it "POST #commit imports the members and marks the import committed" do
+    it "POST #commit enqueues the import job and redirects to the processing page" do
       import.update!(column_mapping: { "email" => "Email Address", "name" => "Full Name" })
+
       expect {
         post :commit, params: { id: import.id }
-      }.to change { operator.users.where("email in (?)", %w[ada@example.com grace@example.com]).count }.by(2)
+      }.to have_enqueued_job(OfficerndImportJob).with(import.id)
 
-      expect(import.reload.status).to eq("committed")
-      expect(response).to render_template(:result)
+      expect(import.reload.status).to eq("committing")
+      expect(response).to redirect_to(processing_officernd_import_path(import))
+    end
+
+    it "GET #status reports progress as JSON" do
+      import.update!(status: "committing")
+      get :status, params: { id: import.id }
+
+      json = JSON.parse(response.body)
+      expect(json["status"]).to eq("committing")
+      expect(json["done"]).to be(false)
+    end
+
+    it "GET #status points at the result once committed" do
+      import.update!(status: "committed", result_log: { "summary" => {} })
+      get :status, params: { id: import.id }
+
+      json = JSON.parse(response.body)
+      expect(json["done"]).to be(true)
+      expect(json["redirect"]).to eq(result_officernd_import_path(import))
     end
   end
 end

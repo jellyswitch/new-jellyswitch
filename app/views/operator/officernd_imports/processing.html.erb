@@ -1,0 +1,23 @@
+<% title "Importing…" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Importing</li>
+<% end %>
+
+<%= wide_card do %>
+  <div data-controller="officernd-import-poll"
+       data-officernd-import-poll-url-value="<%= status_officernd_import_path(@import) %>">
+    <h4 class="display-4 text-center mt-4">Importing your <%= @import.kind %>…</h4>
+    <p class="lead text-center mt-3">
+      This runs in the background — you can leave this page open. It'll jump to the
+      results automatically when it's done.
+    </p>
+    <div class="text-center my-4">
+      <div class="spinner-border" role="status"><span class="sr-only">Working…</span></div>
+    </div>
+    <p class="text-center text-muted small">
+      Importing <%= pluralize(@import.row_count, "row") %>.
+    </p>
+  </div>
+<% end %>

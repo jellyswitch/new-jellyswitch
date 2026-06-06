@@ -8,7 +8,7 @@ class OfficerndImport < ApplicationRecord
   has_one_attached :csv
 
   KINDS = %w[members invoices].freeze
-  STATUSES = %w[pending previewed committed failed].freeze
+  STATUSES = %w[pending previewed committing committed failed].freeze
   AMOUNT_FORMATS = %w[dollars cents].freeze
 
   validates :kind, inclusion: { in: KINDS }

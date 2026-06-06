@@ -19,7 +19,7 @@
     </tbody>
   </table>
 
-  <% skipped = (@report[:rows] || []).select { |r| r[:action] == :skipped } %>
+  <% skipped = (@report[:rows] || []).select { |r| r[:action].to_s == "skipped" } %>
   <% if skipped.any? %>
     <h6 class="mt-4 text-muted">Skipped rows (<%= skipped.length %>)</h6>
     <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">

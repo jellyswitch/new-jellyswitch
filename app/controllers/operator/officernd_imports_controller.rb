@@ -1,6 +1,6 @@
 class Operator::OfficerndImportsController < Operator::BaseController
   before_action :authorize_onboarding
-  before_action :set_import, only: %i[map update_mapping sort update_sort preview commit]
+  before_action :set_import, only: %i[map update_mapping sort update_sort preview commit processing status result]
 
   # Step 1 — choose kind + upload the CSV.
   def new
@@ -74,20 +74,35 @@ class Operator::OfficerndImportsController < Operator::BaseController
     @preview = build_preview.preview
   end
 
+  # Kick off the import in the background so large dumps don't time out the request.
   def commit
-    result = run_commit
+    @import.update!(status: "committing", result_log: {})
+    OfficerndImportJob.perform_later(@import.id)
+    redirect_to processing_officernd_import_path(@import)
+  end
 
-    if result.success?
-      @import.update!(status: "committed", result_log: result.report)
-      @report = result.report
-      flash.now[:success] = "Import complete."
-      render :result
-    else
-      @import.update!(status: "failed", result_log: { error: result.message })
-      flash.now[:error] = result.message
-      @preview = build_preview.preview
-      render :preview, status: 422
-    end
+  # Polling page shown while the job runs.
+  def processing
+    return redirect_to result_officernd_import_path(@import) if @import.status == "committed"
+    return redirect_to preview_officernd_import_path(@import) if @import.status == "failed"
+    # otherwise render the processing view, which polls #status
+  end
+
+  # JSON endpoint the processing page polls.
+  def status
+    done = %w[committed failed].include?(@import.status)
+    redirect =
+      case @import.status
+      when "committed" then result_officernd_import_path(@import)
+      when "failed" then preview_officernd_import_path(@import)
+      end
+
+    render json: { status: @import.status, done: done, redirect: redirect }
+  end
+
+  # Final result, rendered from the persisted audit log.
+  def result
+    @report = @import.result_log.deep_symbolize_keys
   end
 
   private
