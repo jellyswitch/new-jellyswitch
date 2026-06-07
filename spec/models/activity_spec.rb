@@ -36,9 +36,9 @@ RSpec.describe Activity, type: :model do
   end
 
   describe 'KINDS' do
-    it 'enumerates the 15 Day-1 activity kinds from CONTEXT.md' do
+    it 'enumerates the Day-1 activity kinds from CONTEXT.md plus tour_request' do
       expect(Activity::KINDS).to contain_exactly(
-        'signup', 'tour', 'checkin', 'door_punch', 'reservation', 'day_pass',
+        'signup', 'tour', 'tour_request', 'checkin', 'door_punch', 'reservation', 'day_pass',
         'subscription_started', 'subscription_ended',
         'payment_succeeded', 'payment_failed',
         'note',

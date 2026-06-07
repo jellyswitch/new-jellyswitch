@@ -33,10 +33,24 @@ begin
 rescue ActiveRecord::PendingMigrationError => e
   abort e.to_s.strip
 end
+# Never hit the geocoding network in specs (mirrors test/test_helper.rb for the
+# Minitest suite). Building a Location auto-geocodes its address; without this
+# the RSpec suite makes real requests to nominatim and gets rate-limited (429).
+require "geocoder"
+Geocoder.configure(lookup: :test, ip_lookup: :test)
+Geocoder::Lookup::Test.set_default_stub([])
+
 RSpec.configure do |config|
   # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
   config.fixture_paths = [Rails.root.join("test/fixtures")]
   config.global_fixtures = :operators, :locations
+
+  # Reset tenant state between examples. default_tenant is a persistent fallback;
+  # leaving it set leaks one example's operator into the next.
+  config.after(:each) do
+    ActsAsTenant.current_tenant = nil
+    ActsAsTenant.default_tenant = nil
+  end
 
   # If you're not using ActiveRecord, or you'd prefer not to run each of your
   # examples within a transaction, remove the following line or assign false

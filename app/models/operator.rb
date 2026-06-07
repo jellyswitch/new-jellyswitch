@@ -103,6 +103,7 @@ class Operator < ApplicationRecord
   has_many :invoices
   has_many :leads
   has_many :member_feedbacks
+  has_many :notes, dependent: :destroy
   has_many :operator_surveys
   has_many :organizations
   has_many :plan_categories

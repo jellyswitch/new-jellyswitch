@@ -18,9 +18,12 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
     end
 
     let!(:template) do
-      ProductEmailTemplate.create!(operator: operator, location: location,
-                                   product_type: "day_pass", email_type: "re_engagement",
-                                   subject: "Come back!", enabled: true)
+      # Location auto-seeds a day_pass/re_engagement template on create; update
+      # that seeded row instead of inserting a duplicate (unique per
+      # operator+location+product_type+email_type).
+      ProductEmailTemplate.find_or_initialize_by(operator: operator, location: location,
+                                                 product_type: "day_pass", email_type: "re_engagement")
+                          .tap { |t| t.update!(subject: "Come back!", enabled: true) }
     end
 
     let!(:day_pass) do
@@ -64,9 +67,12 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
                                 config: { "days_after" => 14 }, enabled: true)
     end
     let!(:template) do
-      ProductEmailTemplate.create!(operator: operator, location: location,
-                                   product_type: "day_pass", email_type: "re_engagement",
-                                   subject: "Come back!", enabled: true)
+      # Location auto-seeds a day_pass/re_engagement template on create; update
+      # that seeded row instead of inserting a duplicate (unique per
+      # operator+location+product_type+email_type).
+      ProductEmailTemplate.find_or_initialize_by(operator: operator, location: location,
+                                                 product_type: "day_pass", email_type: "re_engagement")
+                          .tap { |t| t.update!(subject: "Come back!", enabled: true) }
     end
     let!(:day_pass) do
       create(:day_pass, user: member_user, billable: member_user, operator: operator,

@@ -8,6 +8,8 @@ RSpec.describe Api::V1::UsersController, type: :controller do
 
     before do
       ActsAsTenant.current_tenant = operator
+      # Bypass JWT auth (no token in a controller spec); we stub the user directly.
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
       allow(controller).to receive(:current_api_user).and_return(user)
     end
 

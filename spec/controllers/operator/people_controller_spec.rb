@@ -15,7 +15,11 @@ RSpec.describe Operator::PeopleController, type: :controller do
   end
 
   let!(:tour_taker) do
-    create(:user, operator: operator, current_location: location, name: "Carol Tour")
+    u = create(:user, operator: operator, current_location: location, name: "Carol Tour")
+    # tour_taker stage now requires an actual `tour` Activity (User.in_stage was
+    # changed so it's no longer the catch-all fallback for users with no tour).
+    Activity.create!(user: u, operator: operator, kind: "tour", occurred_at: Time.current, subject: u)
+    u
   end
 
   before do
@@ -222,6 +226,16 @@ RSpec.describe Operator::PeopleController, type: :controller do
     end
 
     describe "search query q" do
+      # These exercise the top-level member/tour_taker (Alice/Carol), who live on
+      # `operator`/`location`. The enclosing "from filter" context views a
+      # different operator (operator2/tahoe_loc), which would scope them out — so
+      # point the controller back at operator1's admin + location here.
+      before do
+        allow(controller).to receive(:current_tenant).and_return(operator)
+        allow(controller).to receive(:current_user).and_return(admin_user)
+        allow(controller).to receive(:current_location).and_return(location)
+      end
+
       it "filters by name (case-insensitive partial match)" do
         get :index, params: { q: "alice" }, format: :json
         names = JSON.parse(response.body)["people"].map { |p| p["name"] }
@@ -269,6 +283,15 @@ RSpec.describe Operator::PeopleController, type: :controller do
     end
 
     describe "person_json includes home_zip" do
+      # Exercises the top-level member (operator/location); see the search-q
+      # block above — the enclosing context views operator2, which scopes Alice
+      # out, so re-point the controller at operator1.
+      before do
+        allow(controller).to receive(:current_tenant).and_return(operator)
+        allow(controller).to receive(:current_user).and_return(admin_user)
+        allow(controller).to receive(:current_location).and_return(location)
+      end
+
       it "surfaces home_zip in the JSON response" do
         member.update!(home_zip: "96150")
         get :index, format: :json

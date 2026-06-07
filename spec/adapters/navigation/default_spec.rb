@@ -7,7 +7,7 @@ RSpec.describe Navigation::Default do
   shared_examples "People umbrella in nav" do |role_method|
     it "includes the People top-level item" do
       titles = nav.public_send(role_method).map { |i| i[:title] }
-      expect(titles).to include("People")
+      expect(titles).to include("People (CRM)")
     end
 
     it "does not include Members & Groups (replaced by People)" do
@@ -31,7 +31,7 @@ RSpec.describe Navigation::Default do
     end
 
     it "links People at people_path" do
-      people = nav.public_send(role_method).find { |i| i[:title] == "People" }
+      people = nav.public_send(role_method).find { |i| i[:title] == "People (CRM)" }
       expect(people[:path]).to eq("/people")
     end
 

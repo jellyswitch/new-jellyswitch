@@ -153,7 +153,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
 
     it "renders day pass price input in dollars" do
       operator.update!(day_pass_cost_in_cents: 2599)
-      get :policies
+      get :policies_tab
       expect(response.body).to include("name=\"operator[day_pass_cost]\"")
       expect(response.body).to include("25.99")
       expect(response.body).to include("step=\"0.01\"")
