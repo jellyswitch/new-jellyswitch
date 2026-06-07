@@ -103,6 +103,7 @@ class Operator < ApplicationRecord
   has_many :invoices
   has_many :leads
   has_many :member_feedbacks
+  has_many :notes, dependent: :destroy
   has_many :operator_surveys
   has_many :organizations
   has_many :plan_categories
@@ -111,6 +112,7 @@ class Operator < ApplicationRecord
   has_many :users
   has_many :offices
   has_many :office_leases
+  has_many :officernd_imports, dependent: :destroy
   has_many :locations
   accepts_nested_attributes_for :locations, allow_destroy: false
   has_many :weekly_updates

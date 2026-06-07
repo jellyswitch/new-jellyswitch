@@ -110,7 +110,7 @@ class Location < ApplicationRecord
   has_many :invoices
   has_many :users, class_name: "User", foreign_key: "original_location_id"
   has_many :current_users, class_name: "User", foreign_key: "current_location_id"
-  has_many :product_email_templates
+  has_many :product_email_templates, dependent: :destroy
   has_many :lease_renewal_requests
   has_many :tracking_pixels
   accepts_nested_attributes_for :tracking_pixels, allow_destroy: true, reject_if: ->(attributes) { attributes['name'].blank? || attributes['script'].blank? }

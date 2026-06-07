@@ -1,0 +1,42 @@
+<% title "Import from OfficeRnD" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Add Members", add_members_operator_onboarding_index_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Import from OfficeRnD</li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Import from OfficeRnD</h4>
+  <p class="lead text-center mt-3">
+    Upload a CSV exported from OfficeRnD. You'll map the columns and preview everything
+    before anything is saved. Nothing is charged — historical billing stays anchored to
+    your connected Stripe account.
+  </p>
+
+  <%= form_with url: officernd_imports_path, method: :post, multipart: true do %>
+    <div class="form-group">
+      <label for="kind">What are you importing?</label>
+      <%= select_tag :kind,
+            options_for_select([["Members", "members"], ["Invoices (historical)", "invoices"], ["Day passes (historical)", "day_passes"]], @import.kind),
+            class: "form-control" %>
+    </div>
+
+    <div class="form-group">
+      <label for="amount_format">For invoices — are amounts in dollars or cents?</label>
+      <%= select_tag :amount_format,
+            options_for_select([["Dollars (e.g. 25.00)", "dollars"], ["Cents (e.g. 2500)", "cents"]], "dollars"),
+            class: "form-control" %>
+      <small class="form-text text-muted">Ignored for member imports.</small>
+    </div>
+
+    <div class="form-group">
+      <label for="csv">CSV file</label>
+      <%= file_field_tag :csv, accept: ".csv,text/csv", class: "form-control-file" %>
+    </div>
+
+    <%= submit_tag "Upload & continue", class: "btn btn-block btn-primary mt-3" %>
+  <% end %>
+
+  <%= link_to "View past imports", officernd_imports_path, class: "btn btn-block btn-link mt-2" %>
+<% end %>

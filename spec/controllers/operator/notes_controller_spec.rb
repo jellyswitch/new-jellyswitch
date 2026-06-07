@@ -44,10 +44,11 @@ RSpec.describe Operator::NotesController, type: :controller do
     context "as a non-admin member" do
       before { allow(controller).to receive(:current_user).and_return(member_user) }
 
-      it "rejects with Pundit::NotAuthorizedError" do
+      it "denies the create (ApplicationController rescues Pundit and redirects)" do
         expect {
           post :create, params: { notable_type: "User", notable_id: noted_person.id, note: { body: "hi" } }
-        }.to raise_error(Pundit::NotAuthorizedError)
+        }.not_to change(Note, :count)
+        expect(response).to be_redirect
       end
     end
   end
@@ -66,8 +67,9 @@ RSpec.describe Operator::NotesController, type: :controller do
     context "when current_user is a non-admin member" do
       before { allow(controller).to receive(:current_user).and_return(member_user) }
 
-      it "rejects with Pundit::NotAuthorizedError" do
-        expect { delete :destroy, params: { id: note.id } }.to raise_error(Pundit::NotAuthorizedError)
+      it "denies the destroy (ApplicationController rescues Pundit and redirects)" do
+        expect { delete :destroy, params: { id: note.id } }.not_to change(Note, :count)
+        expect(response).to be_redirect
       end
     end
   end

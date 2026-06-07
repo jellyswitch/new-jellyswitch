@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_03_123335) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_05_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -627,6 +627,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_03_123335) do
     t.index ["organization_id"], name: "index_office_leases_on_organization_id"
     t.index ["subscription_id"], name: "index_office_leases_on_subscription_id"
     t.index ["user_id"], name: "index_office_leases_on_user_id"
+  end
+
+  create_table "officernd_imports", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.bigint "created_by_id"
+    t.string "kind", default: "members", null: false
+    t.string "status", default: "pending", null: false
+    t.string "amount_format", default: "dollars", null: false
+    t.jsonb "headers", default: [], null: false
+    t.jsonb "column_mapping", default: {}, null: false
+    t.jsonb "plan_mapping", default: {}, null: false
+    t.integer "row_count", default: 0, null: false
+    t.jsonb "result_log", default: {}, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_officernd_imports_on_location_id"
+    t.index ["operator_id"], name: "index_officernd_imports_on_operator_id"
   end
 
   create_table "offices", force: :cascade do |t|

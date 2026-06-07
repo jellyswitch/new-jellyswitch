@@ -14,6 +14,8 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
 
     it "returns the operator with backward-compat keys and new primary_* + locations[]" do
+      # #operators is scoped to the requested brand's subdomain (commit d6419f60).
+      request.headers["X-Operator-Subdomain"] = "cwt-test"
       get :operators
       expect(response).to have_http_status(:ok)
       body = JSON.parse(response.body)
@@ -47,7 +49,7 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     before do
       request.headers["X-Operator-Subdomain"] = "signup-test"
       allow(Geocoder).to receive(:search).and_return([
-        Struct.new(:city, :state_code).new("Tahoe", "CA")
+        Struct.new(:city, :state_code, :postal_code).new("Tahoe", "CA", "96150")
       ])
       # Stub Stripe so tests don't require Stripe Connect configuration
       stripe_result = double("stripe_result", success?: true, message: nil)

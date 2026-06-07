@@ -1,0 +1,37 @@
+<% title "Match #{@category_label.pluralize}" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Map columns", map_officernd_import_path(@import) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Match <%= @category_label.pluralize %></li>
+<% end %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Match to <%= @category_label.pluralize %></h4>
+  <p class="lead text-center">
+    These are the values found in your file. Point each one at a Jellyswitch
+    <%= @category_label %>, or leave it unmatched to skip those rows.
+  </p>
+
+  <%= form_with url: update_sort_officernd_import_path(@import), method: :patch do %>
+    <table class="table">
+      <thead><tr><th>OfficeRnD value</th><th>Rows</th><th>Jellyswitch <%= @category_label %></th></tr></thead>
+      <tbody>
+        <% @category_values.each do |value, count| %>
+          <% selected = @import.plan_mapping[value] %>
+          <tr>
+            <td class="align-middle"><strong><%= value %></strong></td>
+            <td class="align-middle"><%= count %></td>
+            <td>
+              <%= select_tag "plan_mapping[#{value}]",
+                    options_for_select([["— don't import these —", ""]] + @category_options, selected),
+                    class: "form-control" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+
+    <%= submit_tag "Continue to preview", class: "btn btn-block btn-primary" %>
+  <% end %>
+<% end %>

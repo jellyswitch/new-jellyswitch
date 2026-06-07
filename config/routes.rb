@@ -629,6 +629,10 @@ Rails.application.routes.draw do
     collection do
       get  :new_stripe_connect
       post :complete_stripe_connect
+      get   :new_branding
+      patch :create_branding
+      get   :new_settings
+      patch :create_settings
       get :new_membership_plan
       post :create_membership_plan
       get :new_day_pass_type
@@ -646,6 +650,19 @@ Rails.application.routes.draw do
       post :create_door
       post :destroy_door
       get :skip
+    end
+  end
+  resources :officernd_imports, controller: "operator/officernd_imports", only: %i[index new create] do
+    member do
+      get  :map
+      patch :update_mapping
+      get  :sort
+      patch :update_sort
+      get  :preview
+      post :commit
+      get  :processing
+      get  :status
+      get  :result
     end
   end
   resources :offices, controller: "operator/offices" do

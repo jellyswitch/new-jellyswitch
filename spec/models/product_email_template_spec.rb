@@ -187,6 +187,12 @@ RSpec.describe ProductEmailTemplate, type: :model do
   end
 
   describe "before_save disable_when_body_blank" do
+    # Creating the location auto-seeds default templates (Location
+    # after_create_commit :seed_email_templates), which collide with the
+    # explicit day_pass/onboarding templates these examples build. Clear them
+    # so each example controls its own row.
+    before { ProductEmailTemplate.where(operator: operator, location: location).delete_all }
+
     it "forces enabled=false when saving with a blank body" do
       template = ProductEmailTemplate.new(operator: operator, location: location,
                                            product_type: "day_pass", email_type: "onboarding",

@@ -1,0 +1,89 @@
+<% title "Preview import" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item"><%= link_to "Map columns", map_officernd_import_path(@import) %></li>
+  <li class="breadcrumb-item active" aria-current="page">Preview</li>
+<% end %>
+
+<% s = @preview[:summary] %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Preview — nothing saved yet</h4>
+  <p class="lead text-center"><%= pluralize(@preview[:total_rows], "row") %> · <%= @import.kind.titleize %></p>
+
+  <div class="row text-center my-4">
+    <% if @import.invoices? %>
+      <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New invoices</small></div>
+      <div class="col"><h2><%= s[:existing] %></h2><small class="text-muted">Already imported</small></div>
+      <div class="col"><h2><%= number_to_currency(s[:total_amount_due_cents] / 100.0) %></h2><small class="text-muted">Total due</small></div>
+    <% elsif @import.day_passes? %>
+      <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New day passes</small></div>
+      <div class="col"><h2><%= s[:existing] %></h2><small class="text-muted">Already imported</small></div>
+    <% else %>
+      <div class="col"><h2><%= s[:new] %></h2><small class="text-muted">New members</small></div>
+      <div class="col"><h2><%= s[:matched_existing] %></h2><small class="text-muted">Matched existing</small></div>
+    <% end %>
+    <div class="col"><h2 class="<%= 'text-danger' if s[:errors].to_i.positive? %>"><%= s[:errors] %></h2><small class="text-muted">Errors</small></div>
+    <div class="col"><h2 class="<%= 'text-warning' if s[:warnings].to_i.positive? %>"><%= s[:warnings] %></h2><small class="text-muted">Warnings</small></div>
+  </div>
+
+  <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+    <table class="table table-sm">
+      <% if @import.invoices? %>
+        <thead><tr><th>#</th><th>Invoice</th><th>Billable</th><th>Amount due</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% @preview[:rows].first(200).each do |r| %>
+            <tr class="<%= 'table-danger' if r[:error] %>">
+              <td><%= r[:row_number] %></td>
+              <td><%= r[:stripe_invoice_id] || r[:number] %></td>
+              <td><%= r[:billable_match] == :none ? "—" : "#{r[:billable_type]} ##{r[:billable_id]}" %></td>
+              <td><%= number_to_currency(r[:amount_due_cents].to_i / 100.0) %></td>
+              <td><%= r[:status] %><%= " · already imported" if r[:exists] %></td>
+              <td class="text-muted small"><%= r[:error] || r[:warnings].join("; ") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      <% elsif @import.day_passes? %>
+        <thead><tr><th>#</th><th>Email</th><th>Day pass type</th><th>Date</th><th>Comp?</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% @preview[:rows].first(200).each do |r| %>
+            <tr class="<%= 'table-danger' if r[:error] %>">
+              <td><%= r[:row_number] %></td>
+              <td><%= r[:email] %></td>
+              <td><%= r[:day_pass_type] %><%= " → type ##{r[:mapped_type_id]}" if r[:mapped_type_id] %></td>
+              <td><%= r[:day] %><%= " · already imported" if r[:exists] %></td>
+              <td><%= "✓" if r[:complimentary] %></td>
+              <td class="text-muted small"><%= r[:error] || r[:warnings].join("; ") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      <% else %>
+        <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Match</th><th>Membership</th><th>Notes</th></tr></thead>
+        <tbody>
+          <% @preview[:rows].first(200).each do |r| %>
+            <tr class="<%= 'table-danger' if r[:error] %>">
+              <td><%= r[:row_number] %></td>
+              <td><%= r[:name] %></td>
+              <td><%= r[:email] %></td>
+              <td><%= r[:match_type].to_s.sub("existing_", "existing: ") %></td>
+              <td><%= r[:membership] %><%= " → plan ##{r[:mapped_plan_id]}" if r[:mapped_plan_id] %></td>
+              <td class="text-muted small"><%= r[:error] || r[:warnings].join("; ") %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      <% end %>
+    </table>
+    <% if @preview[:rows].length > 200 %>
+      <p class="text-muted small">Showing first 200 of <%= @preview[:rows].length %> rows.</p>
+    <% end %>
+  </div>
+
+  <div class="mt-4">
+    <%= form_with url: commit_officernd_import_path(@import), method: :post do %>
+      <%= submit_tag "Import these now", class: "btn btn-block btn-success",
+            data: { confirm: "Import #{@import.kind} into your workspace? Existing records are matched, not duplicated." } %>
+    <% end %>
+    <%= link_to "Back to column mapping", map_officernd_import_path(@import), class: "btn btn-block btn-outline-secondary" %>
+  </div>
+<% end %>

@@ -1,0 +1,42 @@
+<% title "Import complete" %>
+
+<%= breadcrumb do %>
+  <li class="breadcrumb-item"><%= link_to "Onboarding", new_operator_onboarding_path %></li>
+  <li class="breadcrumb-item active" aria-current="page">Import complete</li>
+<% end %>
+
+<% summary = (@report[:summary] || {}) %>
+
+<%= wide_card do %>
+  <h4 class="display-4 text-center mt-4">Import complete ✅</h4>
+  <p class="lead text-center"><%= @import.kind.titleize %> import finished.</p>
+
+  <table class="table table-sm w-auto mx-auto mt-4">
+    <tbody>
+      <% summary.sort.each do |key, value| %>
+        <tr><th class="pr-4"><%= key.to_s.humanize %></th><td><%= value %></td></tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <% skipped = (@report[:rows] || []).select { |r| r[:action].to_s == "skipped" } %>
+  <% if skipped.any? %>
+    <h6 class="mt-4 text-muted">Skipped rows (<%= skipped.length %>)</h6>
+    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+      <table class="table table-sm">
+        <thead><tr><th>#</th><th>Reason</th></tr></thead>
+        <tbody>
+          <% skipped.each do |r| %>
+            <tr><td><%= r[:row_number] %></td><td class="small"><%= r[:notes] %></td></tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+
+  <div class="mt-4">
+    <%= link_to "Import another file", new_officernd_import_path, class: "btn btn-block btn-primary" %>
+    <%= link_to "View all imports", officernd_imports_path, class: "btn btn-block btn-outline-secondary" %>
+    <%= link_to "Back to onboarding", new_operator_onboarding_path, class: "btn btn-block btn-outline-secondary" %>
+  </div>
+<% end %>

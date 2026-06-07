@@ -189,11 +189,13 @@ RSpec.describe Sendgrid::EventsController, type: :controller do
     end
 
     it "renders a friendly label for engagement activities" do
-      Activity.create!(user: user, operator: operator, kind: "email_opened",
+      # email_opened is intentionally a bare "Opened email" (see
+      # activity_timeline_helper_spec); email_clicked surfaces the subject.
+      Activity.create!(user: user, operator: operator, kind: "email_clicked",
                        occurred_at: 1.minute.ago, subject: user,
                        payload: { "subject" => "Hello there" })
-      label = ApplicationController.helpers.activity_label(Activity.where(user: user, kind: "email_opened").last)
-      expect(label).to eq("Opened: Hello there")
+      label = ApplicationController.helpers.activity_label(Activity.where(user: user, kind: "email_clicked").last)
+      expect(label).to eq("Clicked: Hello there")
     end
   end
 end
