@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_05_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_08_030642) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -733,6 +733,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_05_000001) do
     t.integer "cancellation_window_hours", default: 24, null: false
     t.boolean "tour_widget_enabled", default: false, null: false
     t.string "tour_widget_thank_you_url"
+    t.string "primary_color"
+    t.string "accent_color"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

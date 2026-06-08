@@ -93,6 +93,10 @@ class Operator < ApplicationRecord
               message: "must start with http:// or https://"
             }
 
+  BRAND_HEX_COLOR = /\A#?[0-9a-fA-F]{6}\z/
+  validates :primary_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+  validates :accent_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+
   has_many :announcements
   has_many :automated_workflows
   has_many :day_passes
@@ -132,6 +136,7 @@ class Operator < ApplicationRecord
   has_one_attached :terms_of_service
   has_one_attached :push_notification_certificate
   has_one_attached :android_push_notification_key
+  has_one_attached :app_icon_image
 
   delegate :create_stripe_customer,
            :retrieve_stripe_customer,
