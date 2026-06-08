@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_08_034248) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_08_050000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1070,6 +1070,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_034248) do
     t.datetime "updated_at", precision: nil, null: false
     t.jsonb "previous_blob"
     t.integer "location_id"
+    t.index ["location_id", "week_start"], name: "idx_weekly_updates_location_week_unique", unique: true
     t.index ["location_id"], name: "index_weekly_updates_on_location_id"
   end
 
