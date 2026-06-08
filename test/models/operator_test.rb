@@ -94,4 +94,34 @@ class OperatorTest < ActiveSupport::TestCase
     operator.tour_widget_thank_you_url = "https://example.com/thanks"
     assert operator.valid?
   end
+
+  test "accepts valid hex brand colors" do
+    op = operators(:cowork_tahoe)
+    op.primary_color = "#436541"
+    op.accent_color = "#C9A23A"
+    assert op.valid?, op.errors.full_messages.to_sentence
+  end
+
+  test "rejects malformed hex brand colors" do
+    op = operators(:cowork_tahoe)
+    op.primary_color = "not-a-color"
+    refute op.valid?
+    assert_includes op.errors[:primary_color], "is invalid"
+  end
+
+  test "allows blank brand colors (legacy operators)" do
+    op = operators(:cowork_tahoe)
+    op.primary_color = nil
+    op.accent_color = ""
+    assert op.valid?, op.errors.full_messages.to_sentence
+  end
+
+  test "app_icon_image can be attached" do
+    op = operators(:cowork_tahoe)
+    op.app_icon_image.attach(
+      io: File.open(Rails.root.join("test/fixtures/files/app_icon.png")),
+      filename: "app_icon.png", content_type: "image/png"
+    )
+    assert op.app_icon_image.attached?
+  end
 end
