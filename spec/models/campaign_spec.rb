@@ -51,6 +51,18 @@ RSpec.describe Campaign, type: :model do
 
     let!(:recently_emailed) do
       u = create(:user, operator: operator, original_location: location, current_location: location)
+      # A recent *marketing* send (product nudge) trips the cool-down without
+      # being an active-series enrollment.
+      ProductEmailSend.create!(operator: operator, user: u, sendable: u,
+                               email_type: "nudge", status: "sent",
+                               sent_at: 5.days.ago, created_at: 5.days.ago, updated_at: 5.days.ago)
+      u
+    end
+
+    let!(:recently_emailed_transactional_only) do
+      u = create(:user, operator: operator, original_location: location, current_location: location)
+      # Only a transactional email (e.g. signup confirmation / receipt). This
+      # must NOT exclude them — the cool-down throttles marketing, not all mail.
       Activity.create!(user: u, operator: operator, kind: "email_sent",
                        occurred_at: 5.days.ago, subject: u)
       u
@@ -62,9 +74,14 @@ RSpec.describe Campaign, type: :model do
       expect(ids).not_to include(in_drip.id)
     end
 
-    it "excludes users recently emailed by this operator" do
+    it "excludes users recently emailed (marketing) by this operator" do
       ids = campaign.build_recipient_query(location).pluck(:id)
       expect(ids).not_to include(recently_emailed.id)
+    end
+
+    it "does NOT exclude users whose only recent email was transactional" do
+      ids = campaign.build_recipient_query(location).pluck(:id)
+      expect(ids).to include(recently_emailed_transactional_only.id)
     end
 
     it "the raw query (apply_spam_guard: false) still includes them" do
