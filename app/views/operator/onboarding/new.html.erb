@@ -111,5 +111,16 @@
       <%= link_to "Add your branding", new_branding_operator_onboarding_index_path, class: "btn btn-sm btn-primary mt-2" %>
     </div>
   <% end %>
+
+  <% if !@branding_incomplete %>
+    <div class="mt-4">
+      <% if current_tenant.mobile_app_requested_at.present? %>
+        <p class="text-muted">Mobile app requested on <%= current_tenant.mobile_app_requested_at.to_date %>.</p>
+      <% else %>
+        <%= button_to "Create mobile app", request_mobile_app_operator_onboarding_index_path,
+              method: :post, class: "btn btn-outline-primary" %>
+      <% end %>
+    </div>
+  <% end %>
   </div>
 <% end %>

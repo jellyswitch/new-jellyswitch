@@ -651,6 +651,7 @@ Rails.application.routes.draw do
       post :create_door
       post :destroy_door
       get :skip
+      post :request_mobile_app
     end
   end
   resources :officernd_imports, controller: "operator/officernd_imports", only: %i[index new create] do
