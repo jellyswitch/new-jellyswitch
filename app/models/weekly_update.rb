@@ -25,12 +25,14 @@ class WeeklyUpdate < ApplicationRecord
 
   store_accessor :blob, :day_passes, :checkins, :new_active_members, :new_free_members,
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations,
+    :paid_reservations, :member_reservations,
     :active_member_count, :free_member_count, :active_lease_member_count,
     :management_notes, :questions, :unanswered_questions, :admins,
     :room_demand_misses
 
   [:day_passes, :checkins, :new_active_members, :new_free_members,
     :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations,
+    :paid_reservations, :member_reservations,
     :active_member_count, :free_member_count, :active_lease_member_count,
     :management_notes, :questions, :unanswered_questions].each do |attr|
       define_method :"prev_#{attr.to_s}" do
@@ -66,6 +68,8 @@ class WeeklyUpdate < ApplicationRecord
     w.active_lease_member_count = report.active_lease_member_count
 
     w.reservations = report.reservations
+    w.paid_reservations = report.paid_reservations
+    w.member_reservations = report.member_reservations
 
     w.rooms = report.rooms
 

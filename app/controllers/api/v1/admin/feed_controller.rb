@@ -257,14 +257,24 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
       # FeedScreen renders inline.
       wu = WeeklyUpdate.find_by(id: fi.blob['weekly_update_id'])
       if wu
-        revenue_dollars = wu.revenue.to_i / 100
-        stats = [
-          "Day passes: #{wu.day_passes.to_i}",
-          "Check-ins: #{wu.checkins.to_i}",
-          "New members: #{wu.new_active_members.to_i}",
-          "Revenue: $#{revenue_dollars.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}",
-          "Reservations: #{wu.reservations.to_i}",
-        ].join("\n")
+        # wu.revenue is already stored in dollars (paid_invoices.sum(:amount_due)
+        # / 100.0). The old code divided by 100 a SECOND time, so $500 showed as
+        # $5. Round to whole dollars and add thousands separators.
+        revenue_dollars = wu.revenue.to_f.round
+        stats = ["Day passes: #{wu.day_passes.to_i}"]
+        # Check-ins only mean something where hourly drop-in access is enabled.
+        stats << "Check-ins: #{wu.checkins.to_i}" if wu.location&.hourly_enabled?
+        stats << "New members: #{wu.new_active_members.to_i}"
+        stats << "Revenue: $#{revenue_dollars.to_s.reverse.gsub(/(\d{3})(?=\d)/, '\\1,').reverse}"
+        # Split paid (charged) vs member (covered) reservations. Older updates
+        # predate the split, so fall back to the single total for them.
+        if wu.paid_reservations || wu.member_reservations
+          stats << "Paid reservations: #{wu.paid_reservations.to_i}"
+          stats << "Member reservations: #{wu.member_reservations.to_i}"
+        else
+          stats << "Reservations: #{wu.reservations.to_i}"
+        end
+        stats = stats.join("\n")
         header = "Week of #{wu.week_start&.strftime('%b %-d')} – #{wu.week_end&.strftime('%b %-d, %Y')}"
         base.merge(
           user_name: nil,
