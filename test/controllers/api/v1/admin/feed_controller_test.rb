@@ -98,4 +98,30 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert item
     assert_nil item["amount"]
   end
+
+  test "paid-room-reservation card shows the full live charge, not a stale snapshot" do
+    @operator.update!(paid_room_reservation_notifications: true)
+    feed_item = nil
+
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      room   = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 4000) # $40/hr
+      # 3-hour booking → full charge is $120. A stale one-hour snapshot is $40.
+      reservation = create(:reservation, user: member, room: room, minutes: 180, paid: true)
+
+      feed_item = FeedItem.create!(
+        operator: @operator, location: @location, user: member,
+        blob: {
+          "type" => "paid-room-reservation",
+          "reservation_id" => reservation.id,
+          "user_name" => member.name,
+          "charge_amount_in_cents" => 4000, # stale snapshot from booking time
+        },
+      )
+    end
+
+    item = fetch_item(feed_item)
+    assert item, "paid-room-reservation feed item should be present"
+    assert_equal 12000, item["amount"] # full duration, not the $40 snapshot
+  end
 end

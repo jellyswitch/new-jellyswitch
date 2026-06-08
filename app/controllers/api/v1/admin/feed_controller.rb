@@ -97,26 +97,27 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     end
   end
 
-  # The charge shown on a 'reservation' feed card, in cents (nil = free).
+  # The charge shown on a 'reservation' / 'paid-room-reservation' feed card, in
+  # cents (nil = free).
   #
-  # The card's amount used to be derived from room.hourly_rate_in_cents, which
-  # is $0 for free meeting rooms — so a day-passer (or subscription member) who
-  # exceeds their included meeting-room minutes on a free room showed $0 in the
-  # admin feed even though they were charged an overage. Use the actual charge
-  # instead: the captured amount if settled, else the authorized hold, else the
-  # expected charge from the same ChargeCalculator that CaptureHold/AuthorizeHold
-  # use (covers far-future bookings whose hold is deferred). A stored
-  # charge_amount_in_cents (set on newer items) wins outright.
+  # Always prefer the LIVE charge — reservation.effective_charge_in_cents — which
+  # is the same value the web feed shows: room rate × the full booked duration,
+  # plus amenities, and it picks up day-pass/subscription overages and the
+  # settled capture. The stored blob['charge_amount_in_cents'] is only a snapshot
+  # taken at booking time (reservation.charge_amount); it goes stale after an
+  # extension and under-reports overages, so it's used only as a fallback when
+  # the reservation row is gone (e.g. deleted) and we can't recompute.
   def reservation_charge_in_cents(fi, res)
-    stored = fi.blob['charge_amount_in_cents']
-    return stored if stored.present?
-    return nil unless res
+    if res
+      cents = res.effective_charge_in_cents.to_i
+      return cents if cents.positive?
+    end
 
-    cents = res.effective_charge_in_cents.to_i
-    cents.positive? ? cents : nil
+    stored = fi.blob['charge_amount_in_cents']
+    stored.present? ? stored.to_i : nil
   rescue => e
     Rails.logger.warn("[feed] reservation charge calc failed for ##{res&.id}: #{e.class}: #{e.message}")
-    nil
+    fi.blob['charge_amount_in_cents'].presence&.to_i
   end
 
   def feed_item_json(fi)
@@ -183,7 +184,10 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         room_name: res&.room&.name,
         when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
         duration: res ? "#{res.minutes} min" : nil,
-        amount: fi.blob['charge_amount_in_cents'] || (res&.hours.to_f * res&.room&.hourly_rate_in_cents.to_i).round,
+        # Same live calc as the 'reservation' card and the web feed — not the
+        # stale booking-time snapshot, which showed only the room's hourly-rate
+        # estimate instead of the full booking total.
+        amount: reservation_charge_in_cents(fi, res),
         requires_approval: true,
       )
     when 'feedback'
