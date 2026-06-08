@@ -91,7 +91,10 @@ class Operator::FeedItemsController < Operator::BaseController
     authorize FeedItem.new
 
     result = FeedItems::Create.call(
-      blob: { text: strip_tags(feed_item_params[:text]), type: "post" },
+      # to_plain_text (not strip_tags): decodes HTML entities and turns block
+      # elements into newlines, so blob['text'] reads cleanly everywhere
+      # (notably the mobile feed). The full rich text is stored separately below.
+      blob: { text: ActionText::Content.new(feed_item_params[:text].to_s).to_plain_text, type: "post" },
       text: feed_item_params[:text],
       user: current_user,
       operator: current_tenant,

@@ -1,7 +1,7 @@
 class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   def index
     items = FeedItem.where(operator: current_tenant)
-                    .includes(:user, :feed_item_comments)
+                    .includes(:user, :feed_item_comments, :rich_text_text)
                     .order(created_at: :desc)
 
     items = apply_filter(items, params[:filter]) if params[:filter].present?
@@ -120,6 +120,21 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     fi.blob['charge_amount_in_cents'].presence&.to_i
   end
 
+  # Plain-text body for a 'post' (management note), rendered to match the web.
+  #
+  # Web-created notes stored blob['text'] via strip_tags(html), which keeps HTML
+  # entities encoded ("&amp;") and drops block-level line breaks — so the mobile
+  # card showed "&amp;" and ran paragraphs together. The full rich text is kept
+  # on the FeedItem (has_rich_text :text), so render THAT to plain text:
+  # to_plain_text decodes entities and turns <div>/<p>/<br> into newlines. Falls
+  # back to the stored blob for the rare note with no rich text.
+  def post_body(fi)
+    plain = fi.text&.to_plain_text
+    return plain if plain.present?
+
+    fi.blob['body'].presence || fi.blob['text']
+  end
+
   def feed_item_json(fi)
     type = fi.blob['type']
     user = fi.user
@@ -219,7 +234,7 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     when 'post'
       base.merge(
         action_text: fi.expense? ? 'posted an expense' : 'posted a note',
-        body: fi.blob['body'] || fi.blob['text'],
+        body: post_body(fi),
         amount: fi.expense? ? fi.blob['amount'] : nil,
       )
     when 'membership_cancellation'

@@ -170,4 +170,23 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     body = weekly_update_card
     assert_includes body, "Check-ins: 7"
   end
+
+  test "note body decodes HTML entities and keeps line breaks (web/mobile parity)" do
+    @operator.update!(post_notifications: true)
+    feed_item = nil
+
+    ActsAsTenant.with_tenant(@operator) do
+      feed_item = FeedItem.create!(
+        operator: @operator, location: @location, user: @admin,
+        # The full rich text is what the web renders correctly.
+        text: "<div>Dailies &amp; walk (checked conf rooms)</div><div>Unpacked snacks</div>",
+        # The legacy strip_tags value: entities encoded, no line breaks.
+        blob: { "type" => "post", "text" => "Dailies &amp; walk (checked conf rooms)Unpacked snacks" },
+      )
+    end
+
+    body = fetch_item(feed_item)["body"]
+    assert_equal "Dailies & walk (checked conf rooms)\nUnpacked snacks", body
+    refute_includes body, "&amp;"
+  end
 end
