@@ -12,6 +12,11 @@
     </div>
 
     <div class="row mb-3">
+      <%= f.text_field :subdomain, placeholder: "yourspace (your .jellyswitch.com address)", class: "form-control col" %>
+      <small class="form-text text-muted col">Lowercase letters, numbers, hyphens. This is permanent — choose carefully. Leave blank to use your company name.</small>
+    </div>
+
+    <div class="row mb-3">
       <%= f.text_field :name, placeholder: "Your name", class: "form-control col" %>
     </div>
 

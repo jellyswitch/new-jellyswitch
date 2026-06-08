@@ -7,7 +7,8 @@ class Onboarding::UpdateOperatorName
   def call
     operator = user.operator
     operator.name = operator_name
-    operator.subdomain = operator_name.parameterize
+    chosen = context.subdomain.presence || operator_name
+    operator.subdomain = chosen.parameterize
     context.operator = operator
     unless operator.save
       context.fail!(message: errors_for(operator))
