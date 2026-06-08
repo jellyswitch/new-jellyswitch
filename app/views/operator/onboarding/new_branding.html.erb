@@ -24,6 +24,24 @@
     </div>
 
     <div class="form-group">
+      <%= f.label :app_icon_image, "App icon (square, ≥1024px, transparent PNG preferred)" %>
+      <% if @operator.app_icon_image.attached? %>
+        <div class="mb-2"><%= image_tag @operator.app_icon_image, width: 88 %></div>
+      <% end %>
+      <%= f.file_field :app_icon_image, accept: "image/*", class: "form-control-file" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :primary_color, "Primary brand color" %>
+      <%= f.color_field :primary_color, value: (@operator.primary_color.presence || "#000000"), class: "form-control form-control-color" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :accent_color, "Accent color" %>
+      <%= f.color_field :accent_color, value: (@operator.accent_color.presence || "#000000"), class: "form-control form-control-color" %>
+    </div>
+
+    <div class="form-group">
       <%= f.label :snippet, "Short description" %>
       <%= f.text_field :snippet, class: "form-control", placeholder: "A friendly one-liner about your space" %>
     </div>

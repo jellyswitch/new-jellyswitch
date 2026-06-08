@@ -11,7 +11,9 @@ class Operator::OnboardingController < Operator::BaseController
     @branding_incomplete = !current_tenant.logo_image.attached? ||
                            !current_tenant.terms_of_service.attached? ||
                            current_tenant.snippet.blank? ||
-                           current_tenant.snippet == "Generic snippet about the space"
+                           current_tenant.snippet == "Generic snippet about the space" ||
+                           current_tenant.primary_color.blank? ||
+                           !current_tenant.app_icon_image.attached?
   end
 
   # Branding step — collect logo, "about" snippet, and terms inline.
@@ -274,7 +276,8 @@ class Operator::OnboardingController < Operator::BaseController
   end
 
   def branding_params
-    params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service)
+    params.require(:operator).permit(:logo_image, :snippet, :membership_text, :terms_of_service,
+                                     :primary_color, :accent_color, :app_icon_image)
   end
 
   def settings_params
