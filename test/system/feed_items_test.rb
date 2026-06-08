@@ -14,7 +14,11 @@ class FeedItemsTest < ApplicationSystemTestCase
     # Bootstrap data-toggle modal races jQuery binding in CI — same flake as
     # update_price_spec. Trigger via .modal('show') as an idempotent fallback.
     page.execute_script("$('#newModal').modal('show')")
-    click_on 'Post a management note'
+    # Modal action relabeled "Management note" (links to the new-feed-item page).
+    # Scope to the modal so we don't match the "Management notes" feed-filter link.
+    within '#newModal' do
+      click_on 'Management note'
+    end
     find('trix-editor').click.set('Test Note')
     find('#submit').click
 

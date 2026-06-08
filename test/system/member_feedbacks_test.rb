@@ -24,7 +24,7 @@ class MemberFeedbacksTest < ApplicationSystemTestCase
     page.execute_script("$('#submit').prop('disabled', false)")
     click_on "Notify a staff member"
 
-    assert_text "Thank you for your feedback!"
+    assert_text "Thank you — staff will reply right here."
 
     # admin sees the feedback in the feeds
     visit feed_items_path

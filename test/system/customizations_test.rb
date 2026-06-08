@@ -1,70 +1,46 @@
 require 'application_system_test_case'
 
+# The legacy per-location "Customize Jellyswitch" surface (with its "Manage
+# <location>" links) was removed. `customization_path` is now a 301
+# legacy_redirect to the new Settings area (Operator::SettingsController), which
+# is gated to admins/superadmins by #require_admin_or_superadmin!. These tests
+# assert that gate — the current behavior — rather than the removed UI.
 class CustomizationsTest < ApplicationSystemTestCase
-  test "superadmin viewing customizations" do
+  test "superadmin is redirected from legacy customization into settings" do
     user = users(:cowork_tahoe_admin)
     user.update role: User::SUPERADMIN
     log_in(user)
 
-    operator = operators(:cowork_tahoe)
-    location = operator.locations.first
-    other_location = create(:location, operator: operator, name: "Other Location")
-
     visit customization_path
 
-    click_on "Customize Jellyswitch"
-
-    assert page.has_link?("Manage #{location.name}")
-    assert page.has_link?("Manage #{other_location.name}")
-    assert page.has_link?("Customize Jellyswitch")
+    assert_current_path settings_branding_path
+    assert_button "Save Branding"
   end
 
-  test "admin viewing customizations" do
-    user = users(:cowork_tahoe_admin)
-    log_in(user)
-
-    operator = operators(:cowork_tahoe)
-    # operator.locations.first is non-deterministic with parallel-test
-    # location creation; use the fixture explicitly.
-    location = locations(:cowork_tahoe_location)
-    other_location = create(:location, operator: operator, name: "Other Location")
+  test "admin is redirected from legacy customization into settings" do
+    log_in(users(:cowork_tahoe_admin))
 
     visit customization_path
 
-    click_on "Customize Jellyswitch"
-
-    assert page.has_link?("Manage #{location.name}")
-    assert !page.has_link?("Manage #{other_location.name}")
-    assert !page.has_link?("Customize Jellyswitch")
+    assert_current_path settings_branding_path
+    assert_button "Save Branding"
   end
 
-  test "general manager viewing customizations" do
-    user = users(:cowork_tahoe_general_manager)
-    log_in(user)
-
-    operator = operators(:cowork_tahoe)
-    location = operator.locations.first
-    other_location = create(:location, operator: operator, name: "Other Location")
+  test "general manager is denied access to settings" do
+    log_in(users(:cowork_tahoe_general_manager))
 
     visit customization_path
 
-    click_on "Customize Jellyswitch"
-
-    assert page.has_link?("Manage #{location.name}")
-    assert !page.has_link?("Manage #{other_location.name}")
-    assert !page.has_link?("Customize Jellyswitch")
+    assert_text "Admins only."
+    assert_no_button "Save Branding"
   end
 
-  test "community manager viewing customizations" do
-    user = users(:cowork_tahoe_community_manager)
-    log_in(user)
-
-    operator = operators(:cowork_tahoe)
-    location = operator.locations.first
-    other_location = create(:location, operator: operator, name: "Other Location")
+  test "community manager is denied access to settings" do
+    log_in(users(:cowork_tahoe_community_manager))
 
     visit customization_path
 
-    assert_text "Whoops! That's not allowed."
+    assert_text "Admins only."
+    assert_no_button "Save Branding"
   end
 end
