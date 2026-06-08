@@ -29,6 +29,7 @@ Rails.application.routes.draw do
       post 'auth/refresh', to: 'auth#refresh'
       post 'auth/lookup_operators', to: 'auth#lookup_operators'
       get 'auth/operators', to: 'auth#operators'
+      get 'brand_spec', to: 'brand_specs#show'
 
       get 'me', to: 'users#me'
       patch 'me', to: 'users#update'
