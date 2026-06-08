@@ -93,6 +93,16 @@ class Operator < ApplicationRecord
               message: "must start with http:// or https://"
             }
 
+  RESERVED_SUBDOMAINS = %w[app www api admin mail ftp smtp staging demo support help status assets cdn dashboard root].freeze
+  SUBDOMAIN_FORMAT = /\A[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/
+
+  validates :subdomain, presence: true
+  validates :subdomain,
+            format: { with: SUBDOMAIN_FORMAT, message: "must be lowercase letters, numbers, and hyphens (no leading/trailing hyphen)" },
+            uniqueness: { case_sensitive: false },
+            exclusion: { in: RESERVED_SUBDOMAINS, message: "is reserved" },
+            if: :will_save_change_to_subdomain?
+
   BRAND_HEX_COLOR = /\A#?[0-9a-fA-F]{6}\z/
   validates :primary_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
   validates :accent_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
