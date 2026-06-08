@@ -35,12 +35,7 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
 
   def switch_to_location(location)
     visit root_path
-    if page.has_link?("Change Location")
-      click_on "Change Location"
-    else
-      find(".navbar-toggler").click
-      click_on "Change Location"
-    end
+    open_change_location
     # When already at target, the only matching button is disabled
     # ("You're at <location>") — no-op rather than failing.
     begin
@@ -48,6 +43,23 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
       wait_for_turbo
     rescue Capybara::ElementNotFound
       # Already at this location; nothing to do.
+    end
+  end
+
+  # The member nav shows "Change Location" directly, but the desktop admin nav
+  # keeps it inside a collapsed Bootstrap navbar (no `navbar-expand-*` class, so
+  # it stays collapsed at every width). Expand the collapse via jQuery — the
+  # same idempotent JS-race workaround the suite uses for Bootstrap modals —
+  # before clicking, falling back to the hamburger toggle if jQuery isn't ready.
+  def open_change_location
+    return click_on("Change Location") if page.has_link?("Change Location", visible: true, wait: 1)
+
+    page.execute_script("if (window.jQuery) { jQuery('.navbar-collapse').collapse('show'); }")
+    if page.has_link?("Change Location", visible: true, wait: 2)
+      click_on "Change Location"
+    else
+      find(".navbar-toggler").click
+      click_on "Change Location"
     end
   end
 

@@ -12,7 +12,13 @@ class ManagementNotesTest < ApplicationSystemTestCase
     # update_price_spec + feed_items_test. Trigger via .modal('show') as
     # an idempotent fallback.
     page.execute_script("$('#newModal').modal('show')")
-    click_on "Post a management note"
+    # The modal "What would you like to do?" now labels the note action
+    # "Management note" (it links to the new-feed-item page, whose own heading
+    # is still "Post a management note"). Scope to the modal so we don't match
+    # the "Management notes" feed-filter link behind the overlay.
+    within "#newModal" do
+      click_on "Management note"
+    end
     find("trix-editor").click.set("Test Note")
     find("#submit").click
 

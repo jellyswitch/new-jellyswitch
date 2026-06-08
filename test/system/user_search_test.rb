@@ -20,8 +20,9 @@ class UserSearchTest < ApplicationSystemTestCase
   test "performing a search" do
     visit users_path
 
-    fill_in "query", with: @user.name
-    find('button.search-btn').click
+    # The search box is now a button-less GET form that submits on Enter
+    # (posts to search_users_path).
+    fill_in("query", with: @user.name).send_keys(:return)
 
     assert_text @user.name
   end
@@ -29,9 +30,8 @@ class UserSearchTest < ApplicationSystemTestCase
   test "search with no results" do
     visit users_path
 
-    fill_in "query", with: "nonexistentuser"
-    find('button.search-btn').click
+    fill_in("query", with: "nonexistentuser").send_keys(:return)
 
-    assert_text "No users found."
+    assert_text 'No members match "nonexistentuser"'
   end
 end

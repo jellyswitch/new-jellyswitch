@@ -15,6 +15,13 @@ class CheckinTest < ApplicationSystemTestCase
   end
 
   test "user accesses a location via its checkin" do
+    # QUARANTINED (stale, tracked in SYSTEM_TEST_CLEANUP.md): drives the real
+    # Stripe Elements card form via find("iframe[name^='__privateStripeFrame']").
+    # That iframe only exists once Stripe.js loads from js.stripe.com, which the
+    # test WebMock config blocks (allow-list is chromedriver/storage/fcm only) —
+    # so it can't render here or in CI. Needs a rewrite that stubs Stripe Elements
+    # or swaps to a card-token path that doesn't depend on the live iframe.
+    skip "Depends on live Stripe Elements iframe (js.stripe.com is network-blocked in tests)"
     operator = operators(:cowork_tahoe)
     other_location = create(:location, operator: operator, name: "Other Location", allow_hourly: true, hourly_rate_in_cents: 500, working_day_start: "00:00", working_day_end: "23:59", open_saturday: true, open_sunday: true)
     switch_to_location(other_location)
