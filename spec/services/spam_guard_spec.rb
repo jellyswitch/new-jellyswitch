@@ -16,29 +16,40 @@ RSpec.describe SpamGuard do
       expect(SpamGuard.eligible?(user, sender: nil, cool_down_days: 30)).to be true
     end
 
-    context "with cool-down" do
-      it "returns false if user received an email from sender within cool_down_days" do
-        Activity.create!(user: user, operator: operator, kind: "email_sent",
-                         occurred_at: 5.days.ago, subject: user)
+    context "with cool-down (marketing sends only)" do
+      def marketing_product_send(created, op: operator)
+        ProductEmailSend.create!(operator: op, user: user, sendable: user,
+                                 email_type: "follow_up", status: "sent",
+                                 sent_at: created, created_at: created, updated_at: created)
+      end
+
+      it "returns false if user got a marketing email from sender within cool_down_days" do
+        marketing_product_send(5.days.ago)
         expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be false
       end
 
-      it "returns true if user received an email from sender before the cool-down window" do
-        Activity.create!(user: user, operator: operator, kind: "email_sent",
-                         occurred_at: 45.days.ago, subject: user)
+      it "returns true if the marketing email is older than the cool-down window" do
+        marketing_product_send(45.days.ago)
         expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
       end
 
-      it "ignores emails from a different operator" do
-        Activity.create!(user: user, operator: other_operator, kind: "email_sent",
-                         occurred_at: 5.days.ago, subject: user)
+      it "ignores marketing emails from a different operator" do
+        marketing_product_send(5.days.ago, op: other_operator)
         expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
       end
 
       it "honors cool_down_days: 0 as 'no cool-down'" do
-        Activity.create!(user: user, operator: operator, kind: "email_sent",
-                         occurred_at: 1.day.ago, subject: user)
+        marketing_product_send(1.day.ago)
         expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 0)).to be true
+      end
+
+      it "counts a recent campaign send as marketing contact (even a one-off)" do
+        campaign = Campaign.create!(operator: operator, name: "Promo",
+                                    campaign_type: "single", status: "active", segment: {})
+        step = CampaignStep.create!(campaign: campaign, position: 0, subject: "Hi", body: "Body")
+        CampaignSend.create!(campaign: campaign, campaign_step: step, user: user,
+                             status: "sent", sent_at: 3.days.ago, created_at: 3.days.ago)
+        expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be false
       end
     end
 
@@ -72,33 +83,48 @@ RSpec.describe SpamGuard do
         expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be false
       end
 
-      it "returns true if the campaign is paused / completed (not active)" do
+      # These assert the active-series invariant directly. (eligible? would still
+      # be false because the recent campaign send trips the marketing cool-down —
+      # correct anti-fatigue behavior — so we check in_active_drip? in isolation.)
+      it "is not an active-drip enrollment when the campaign is paused / completed" do
         campaign.update!(status: "completed")
         CampaignSend.create!(campaign: campaign, campaign_step: campaign_step,
                              user: user, status: "sent", sent_at: 5.days.ago)
-        expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
+        expect(SpamGuard.in_active_drip?(user, operator)).to be false
       end
 
-      it "returns true if the campaign is type single (not drip)" do
+      it "is not an active-drip enrollment when the campaign is type single (not drip)" do
         campaign.update!(campaign_type: "single")
         CampaignSend.create!(campaign: campaign, campaign_step: campaign_step,
                              user: user, status: "sent", sent_at: 5.days.ago)
-        expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
+        expect(SpamGuard.in_active_drip?(user, operator)).to be false
       end
     end
   end
 
-  describe "transactional bypass" do
-    it "is not consulted when a transactional mailer fires (caller responsibility)" do
-      # Transactional emails (password resets, booking confirms) DO log :email_sent
-      # Activities — so they affect the cool-down check at the next eligibility
-      # call. But SpamGuard itself isn't part of their send path. This is the
-      # invariant: SpamGuard only blocks when callers consult it.
+  describe "transactional mail does not trip the cool-down" do
+    # The whole point of the marketing-only cool-down: an operationally-required
+    # email (account confirmation, receipt, password reset) must never suppress a
+    # drip/nudge. A confirmation email goes out to EVERY new signup, so counting
+    # it would silently kill the signup nudge the cool-down was meant to start.
+    it "ignores a transactional email_sent Activity (e.g. signup confirmation)" do
       Activity.create!(user: user, operator: operator, kind: "email_sent",
                        occurred_at: 1.minute.ago, subject: user,
                        payload: { "transactional" => true })
-      # The transactional mailer itself didn't call SpamGuard — it just sent.
-      # But a subsequent marketing send WOULD be blocked by the cool-down.
+      expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
+    end
+
+    it "ignores a transactional onboarding product email" do
+      ProductEmailSend.create!(operator: operator, user: user, sendable: user,
+                               email_type: "onboarding", status: "sent",
+                               sent_at: 1.day.ago, created_at: 1.day.ago, updated_at: 1.day.ago)
+      expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be true
+    end
+
+    it "still blocks when the recent email WAS marketing (regression guard)" do
+      ProductEmailSend.create!(operator: operator, user: user, sendable: user,
+                               email_type: "nudge", status: "sent",
+                               sent_at: 1.day.ago, created_at: 1.day.ago, updated_at: 1.day.ago)
       expect(SpamGuard.eligible?(user, sender: operator, cool_down_days: 30)).to be false
     end
   end
