@@ -1,6 +1,6 @@
 class Jellyswitch::WeeklyReport
   include ActionView::Helpers::NumberHelper
-  attr_reader :week_start, :week_end, :report, :operator, :location, :day_passes, :checkins, :new_active_members, :new_free_members, :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, :management_notes, :questions, :unanswered_questions, :admins, :room_demand_misses
+  attr_reader :week_start, :week_end, :report, :operator, :location, :day_passes, :checkins, :new_active_members, :new_free_members, :rooms, :paid_invoices, :unpaid_invoices, :revenue, :reservations, :paid_reservations, :member_reservations, :management_notes, :questions, :unanswered_questions, :admins, :room_demand_misses
 
   delegate :active_member_count, :free_member_count, :active_lease_member_count, to: :report
 
@@ -20,7 +20,12 @@ class Jellyswitch::WeeklyReport
     @new_free_members = Subscription.where(plan: location.plans.individual.free, active: true)
       .for_week(@week_start, @week_end).select(:subscribable_id).distinct.count
 
-    @reservations = Reservation.where(room: location.rooms).for_week(@week_start, @week_end).distinct.count
+    reservations_scope = Reservation.where(room: location.rooms).for_week(@week_start, @week_end)
+    @reservations = reservations_scope.distinct.count
+    # paid: true  → charged out-of-pocket (generated room revenue)
+    # paid: false → covered by membership / free room
+    @paid_reservations = reservations_scope.where(paid: true).distinct.count
+    @member_reservations = reservations_scope.where(paid: false).distinct.count
 
     room_counts = Reservation.where(room: location.rooms)
       .for_week(@week_start, @week_end)

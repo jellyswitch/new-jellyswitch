@@ -30,9 +30,11 @@
     <div class="row">
       <strong class="col-9">Day Passes:</strong><span class="col"><%= comparison_tag(weekly_update.day_passes, weekly_update.prev_day_passes) %></span>
     </div>
-    <div class="row">
-      <strong class="col-9">Checkins:</strong><span class="col"><%= comparison_tag(weekly_update.checkins, weekly_update.prev_checkins) %></span>
-    </div>
+    <% if weekly_update.location&.hourly_enabled? %>
+      <div class="row">
+        <strong class="col-9">Checkins:</strong><span class="col"><%= comparison_tag(weekly_update.checkins, weekly_update.prev_checkins) %></span>
+      </div>
+    <% end %>
   </li>
 
   <li class="list-group-item">
@@ -63,6 +65,10 @@
       <p class="col">
         Your members made a total of <strong><%= weekly_update.reservations %> room reservations</strong> <%= up_down_arrow(weekly_update.reservations, weekly_update.prev_reservations).html_safe %> last week:
         <ul>
+          <% if weekly_update.paid_reservations || weekly_update.member_reservations %>
+            <li><strong><%= weekly_update.paid_reservations.to_i %></strong> paid reservations</li>
+            <li><strong><%= weekly_update.member_reservations.to_i %></strong> member reservations</li>
+          <% end %>
           <% weekly_update.rooms.each do |room| %>
             <li>
               <%= number_to_percentage(room['percent'].to_f * 100, precision: 0) %> of which were in <%= room['name'] %>

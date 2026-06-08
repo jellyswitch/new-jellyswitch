@@ -124,4 +124,50 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert item, "paid-room-reservation feed item should be present"
     assert_equal 12000, item["amount"] # full duration, not the $40 snapshot
   end
+
+  def weekly_update_card(blob_overrides = {})
+    feed_item = nil
+    ActsAsTenant.with_tenant(@operator) do
+      wu = WeeklyUpdate.create!(
+        operator: @operator, location: @location,
+        week_start: Time.current.beginning_of_week - 1.week,
+        week_end: Time.current.end_of_week - 1.week,
+        blob: {
+          "day_passes" => 3, "checkins" => 7, "new_active_members" => 2,
+          "revenue" => 500.0, "reservations" => 10,
+          "paid_reservations" => 4, "member_reservations" => 6,
+        }.merge(blob_overrides),
+      )
+      feed_item = FeedItem.create!(
+        operator: @operator, location: @location, user: @admin,
+        blob: { "type" => "weekly-update", "weekly_update_id" => wu.id },
+      )
+    end
+    fetch_item(feed_item)["body"]
+  end
+
+  test "weekly-update revenue is shown in real dollars, not divided by 100 twice" do
+    @location.update!(allow_hourly: true)
+    body = weekly_update_card
+    assert_includes body, "Revenue: $500" # was "$5" before the fix
+  end
+
+  test "weekly-update splits paid vs member reservations" do
+    body = weekly_update_card
+    assert_includes body, "Paid reservations: 4"
+    assert_includes body, "Member reservations: 6"
+    refute_includes body, "Reservations: 10" # the single total line is replaced
+  end
+
+  test "weekly-update hides check-ins when hourly access is disabled" do
+    @location.update!(allow_hourly: false)
+    body = weekly_update_card
+    refute_includes body, "Check-ins:"
+  end
+
+  test "weekly-update shows check-ins when hourly access is enabled" do
+    @location.update!(allow_hourly: true)
+    body = weekly_update_card
+    assert_includes body, "Check-ins: 7"
+  end
 end
