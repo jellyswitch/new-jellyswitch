@@ -116,6 +116,24 @@ class OperatorTest < ActiveSupport::TestCase
     assert op.valid?, op.errors.full_messages.to_sentence
   end
 
+  test "subdomain rejects bad format, reserved words, and blank" do
+    op = operators(:cowork_tahoe)
+    op.subdomain = "Bad Sub"      # spaces + uppercase
+    refute op.valid?
+    op.subdomain = "-leadinghyphen"
+    refute op.valid?
+    op.subdomain = "app"          # reserved
+    refute op.valid?
+    op.subdomain = ""
+    refute op.valid?
+  end
+
+  test "subdomain accepts a clean value" do
+    op = operators(:cowork_tahoe)
+    op.subdomain = "tahoelonghouse"
+    assert op.valid?, op.errors.full_messages.to_sentence
+  end
+
   test "app_icon_image can be attached" do
     op = operators(:cowork_tahoe)
     op.app_icon_image.attach(

@@ -45,6 +45,7 @@ class  OnboardingController < ApplicationController
       password: params[:password],
       phone: params[:phone],
       operator_name: params[:operator_name],
+      subdomain: params[:subdomain],
       logo: params[:logo_image]
     )
 
