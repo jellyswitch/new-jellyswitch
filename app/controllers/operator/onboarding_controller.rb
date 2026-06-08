@@ -8,12 +8,7 @@ class Operator::OnboardingController < Operator::BaseController
   include UsersHelper
 
   def new
-    @branding_incomplete = !current_tenant.logo_image.attached? ||
-                           !current_tenant.terms_of_service.attached? ||
-                           current_tenant.snippet.blank? ||
-                           current_tenant.snippet == "Generic snippet about the space" ||
-                           current_tenant.primary_color.blank? ||
-                           !current_tenant.app_icon_image.attached?
+    @branding_incomplete = !branding_complete?(current_tenant)
   end
 
   # Branding step — collect logo, "about" snippet, and terms inline.
@@ -30,6 +25,19 @@ class Operator::OnboardingController < Operator::BaseController
       flash.now[:error] = errors_for(@operator)
       render :new_branding, status: 422
     end
+  end
+
+  def request_mobile_app
+    if current_tenant.mobile_app_requested_at.present?
+      flash[:notice] = "Mobile app already requested."
+    elsif !branding_complete?(current_tenant)
+      flash[:error] = "Complete branding (logo, app icon, colors, description, terms) first."
+    else
+      current_tenant.update!(mobile_app_requested_at: Time.current)
+      MobileApp::RequestScaffoldJob.perform_later(current_tenant.id)
+      flash[:success] = "Mobile app build requested — a developer will review the PR."
+    end
+    turbo_redirect(new_operator_onboarding_path, action: "replace")
   end
 
   # Settings step — feature modules + core policies inline.
@@ -273,6 +281,15 @@ class Operator::OnboardingController < Operator::BaseController
 
   def authorize_onboarding
     authorize :onboarding, :show?
+  end
+
+  def branding_complete?(operator)
+    operator.logo_image.attached? &&
+      operator.terms_of_service.attached? &&
+      operator.app_icon_image.attached? &&
+      operator.snippet.present? &&
+      operator.snippet != "Generic snippet about the space" &&
+      operator.primary_color.present?
   end
 
   def branding_params
