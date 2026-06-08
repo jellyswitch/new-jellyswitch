@@ -85,6 +85,20 @@ class Operator::SettingsController < Operator::BaseController
       render :hours_and_address, status: :unprocessable_entity
     end
   end
+  def update_subdomain
+    @location = selected_location
+    unless superadmin?
+      return redirect_to settings_hours_and_address_path(location_id: @location.id), alert: "Not authorized."
+    end
+
+    if current_operator.update(subdomain: subdomain_params[:subdomain])
+      redirect_to settings_hours_and_address_path(location_id: @location.id),
+        notice: "Subdomain updated to #{current_operator.subdomain}.jellyswitch.com."
+    else
+      redirect_to settings_hours_and_address_path(location_id: @location.id),
+        alert: current_operator.errors.full_messages.to_sentence
+    end
+  end
   def update_wifi_and_pixels
     @location = selected_location
     if @location.update(wifi_and_pixels_params)
@@ -153,6 +167,10 @@ class Operator::SettingsController < Operator::BaseController
       :building_access_instructions,
       :contact_name, :contact_email, :contact_phone
     )
+  end
+
+  def subdomain_params
+    params.require(:operator).permit(:subdomain)
   end
 
   def branding_params

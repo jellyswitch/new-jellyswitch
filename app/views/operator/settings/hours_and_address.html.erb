@@ -80,4 +80,17 @@
 
     <%= f.submit "Save Hours & Address", class: "btn btn-primary" %>
   <% end %>
+
+  <% if superadmin? %>
+    <hr>
+    <h5>Subdomain <span class="badge badge-secondary">super admin</span></h5>
+    <%= form_with model: current_operator, url: settings_update_subdomain_path, method: :patch do |f| %>
+      <div class="form-group">
+        <%= f.label :subdomain %>
+        <%= f.text_field :subdomain, class: "form-control" %>
+        <small class="form-text text-muted">Changing this changes the operator's address, API base, and the mobile app's brand key. Coordinate with the mobile build.</small>
+      </div>
+      <%= f.submit "Update subdomain", class: "btn btn-outline-warning" %>
+    <% end %>
+  <% end %>
 <% end %>

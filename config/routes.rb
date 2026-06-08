@@ -815,6 +815,7 @@ Rails.application.routes.draw do
     post "import_doors",               to: "operator/settings#import_doors",               as: :import_doors
     get  "hours_and_address",          to: "operator/settings#hours_and_address",          as: :hours_and_address
     patch "update_hours_and_address",  to: "operator/settings#update_hours_and_address",   as: :update_hours_and_address
+    patch "update_subdomain",          to: "operator/settings#update_subdomain",           as: :update_subdomain
     get  "wifi_and_pixels",            to: "operator/settings#wifi_and_pixels",            as: :wifi_and_pixels
     patch "update_wifi_and_pixels",    to: "operator/settings#update_wifi_and_pixels",     as: :update_wifi_and_pixels
     get  "notifications",              to: "operator/settings#notifications",              as: :notifications
