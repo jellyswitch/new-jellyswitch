@@ -17,13 +17,21 @@ class Api::V1::RoomsController < Api::V1::BaseController
       .where("datetime_in::date = ?", date)
       .order(:datetime_in)
 
+    org_mate_ids = current_api_user&.organization ? current_api_user.organization.users.pluck(:id) : []
+
     render json: {
       room: room_json(room),
       date: date.to_s,
       reservations: reservations.map { |r| {
         start: r.datetime_in.strftime("%H:%M"),
         end: r.datetime_out.strftime("%H:%M"),
+        start_label: r.datetime_in.strftime("%l:%M %p").strip,
+        end_label: r.datetime_out.strftime("%l:%M %p").strip,
         user: r.user.name,
+        # Flag bookings by the viewer or their org-mates so the picker can show
+        # "your team already has this" instead of an unexplained gap.
+        mine: r.user_id == current_api_user&.id,
+        is_teammate: r.user_id != current_api_user&.id && org_mate_ids.include?(r.user_id),
       }},
     }
   end

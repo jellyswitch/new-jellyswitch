@@ -13,6 +13,9 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       ongoing: ongoing.map { |r| reservation_json(r) },
       upcoming: upcoming.map { |r| reservation_json(r) },
       past: past.map { |r| reservation_json(r) },
+      # Upcoming room bookings made by the user's ORG-MATES (same company), so a
+      # member can see what their team already has reserved and not double-book.
+      team: team_reservations(user).map { |r| reservation_json(r).merge(booked_by: r.user&.name) },
     }
   end
 
@@ -301,6 +304,22 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   end
 
   private
+
+  # Upcoming, non-cancelled room reservations made by the current user's
+  # org-mates (everyone in the same organization, excluding the user). Scoped to
+  # the same operator implicitly (org members all belong to one operator).
+  def team_reservations(user)
+    org = user.organization
+    return Reservation.none unless org
+
+    mate_ids = org.users.where.not(id: user.id).pluck(:id)
+    return Reservation.none if mate_ids.empty?
+
+    Reservation.where(user_id: mate_ids, cancelled: false)
+               .where("datetime_in > ?", Time.current)
+               .order(:datetime_in)
+               .limit(25)
+  end
 
   def reservation_json(r)
     now = Time.current
