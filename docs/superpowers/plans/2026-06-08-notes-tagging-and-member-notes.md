@@ -1,5 +1,29 @@
 # Notes: Tagging + Member-Scoped Notes Implementation Plan
 
+> **⚠️ STATUS: IMPLEMENTED — DESIGN REVISED (2026-06-08).** All six items shipped.
+> The original design below (a new `feed_items.subject_user_id` column + widening
+> `User.taggable`) was **abandoned after discovering existing infrastructure**.
+> What was actually built:
+> - **#1** Web submit: removed Trix-incompatible disable gate + server empty-guard. (`9efe0818`)
+> - **#2/#4** Tagging: a new **`User.mentionable`** scope (staff **+** approved members) and
+>   **`GET /api/v1/admin/feed/mentionable_users`**; mobile now sources @mentions from it
+>   instead of filtering page 1 of `/admin/members` to admin roles (the real "tagging
+>   admins broken" cause). `notify_mentioned_users` regex replaced with name-matching.
+>   `taggable` left **staff-only** (the profile dropdown uses it). (web `3672e2d0`, mobile `9f677bc`)
+> - **#3** Mobile submit "does nothing": `keyboardShouldPersistTaps="handled"` on the feed
+>   ScrollView (the keyboard ate the first tap). (mobile `9f677bc`)
+> - **#5/#6** Member notes use the **existing `Note` model** (polymorphic `notable`, rich body,
+>   auto-logs to the person timeline) via the existing `POST /admin/members/:id/add_note` —
+>   **no new column**. Added a compose box on the member page's Notes tab (mobile `4c722e7`),
+>   plus a **Chat tab** backed by new **`GET /admin/members/:id/conversations`** (member's
+>   `MemberFeedback` threads + replies). (web `22891767`, mobile `d12ad63`)
+> - Backend covered by tests (`User.mentionable` scope, mentionable_users endpoint,
+>   conversations endpoint): 31 runs, 0 failures.
+> - **Not done:** the *web* member detail page (`operator/users/show`) does not yet show
+>   the notes/chat surface — mobile was the focus. Optional follow-up.
+>
+> The original task-by-task plan is kept below for historical context only.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Make management notes fully usable — fix @tagging of admins, fix mobile note posting, let notes tag members too, and let staff create + view per-member notes (plus past chat) on a member's admin detail page.
