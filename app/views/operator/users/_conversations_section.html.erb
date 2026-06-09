@@ -1,0 +1,41 @@
+<%#
+  #6 (web): a member's past chat/feedback threads on their admin profile page.
+  Mirrors the mobile member "Chat" tab. Admin-only; each thread links to the
+  existing conversation show page.
+
+  Required local:
+    user - the User whose conversations to list
+%>
+<% return unless policy(:member_feedback).index? %>
+
+<% conversations = user.member_feedbacks.includes(:feedback_replies).order(updated_at: :desc) %>
+<div class="card mb-3" data-testid="conversations-section">
+  <div class="card-header bg-light">
+    <strong>Chat</strong>
+    <span class="text-muted small">— past conversations with <%= user.name %></span>
+  </div>
+  <div class="card-body">
+    <% if conversations.any? %>
+      <div class="list-group list-group-flush" data-testid="conversations-list">
+        <% conversations.each do |thread| %>
+          <%= link_to member_feedback_path(thread),
+                class: "list-group-item list-group-item-action px-0",
+                data: { conversation_id: thread.id } do %>
+            <div class="d-flex justify-content-between align-items-start">
+              <div class="flex-grow-1" style="min-width: 0;">
+                <div class="text-truncate"><%= thread.comment.presence || "(no message)" %></div>
+                <div class="text-muted small mt-1">
+                  <%= pluralize(thread.feedback_replies.size, "reply") %>
+                  · updated <%= time_ago_in_words(thread.updated_at) %> ago
+                </div>
+              </div>
+              <i class="fas fa-chevron-right text-muted ml-2 mt-1"></i>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-muted small mb-0">No conversations yet.</p>
+    <% end %>
+  </div>
+</div>
