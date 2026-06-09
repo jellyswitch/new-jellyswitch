@@ -13,7 +13,11 @@ class Api::V1::DoorsController < Api::V1::BaseController
     return render json: [] unless current_api_user.has_building_access?(location)
 
     doors = location.doors.where(available: true)
-    doors = doors.where(private: false) unless current_api_user.admin?
+    # `private` is opt-in (a door is admin-only only when explicitly true). Treat
+    # an unset/NULL flag as public — `where(private: false)` drops NULL rows in
+    # SQL, which silently hid never-flagged doors from members. Matches the
+    # NULL-tolerant filter used in the web/landing/door-access controllers.
+    doors = doors.where(private: [false, nil]) unless current_api_user.admin?
 
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   end

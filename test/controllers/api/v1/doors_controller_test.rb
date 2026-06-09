@@ -54,4 +54,22 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :forbidden
     assert_not_requested :post, @kisi_url
   end
+
+  test "door list shows public doors (incl. unflagged) and hides private ones" do
+    # @door has the default private=false — the case that used to be NULL and
+    # got silently dropped from the member list by `where(private: false)`.
+    public_door  = @door
+    private_door = Door.create!(
+      name: "Server Room", slug: "srv-#{SecureRandom.hex(4)}",
+      location: @location, operator: @operator, kisi_id: 99099,
+      available: true, private: true,
+    )
+
+    get "/api/v1/doors", headers: headers(@member)
+    assert_response :success
+    ids = JSON.parse(response.body).map { |d| d["id"] }
+
+    assert_includes ids, public_door.id, "member should see the public door"
+    refute_includes ids, private_door.id, "member should not see the private door"
+  end
 end

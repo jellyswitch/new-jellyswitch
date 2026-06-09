@@ -37,7 +37,8 @@ class Api::V1::DashboardController < Api::V1::BaseController
     doors =
       if location && user.has_building_access?(location)
         scope = location.doors.where(available: true)
-        scope = scope.where(private: false) unless user.admin?
+        # Treat unset/NULL private as public (see Api::V1::DoorsController#index).
+        scope = scope.where(private: [false, nil]) unless user.admin?
         door_usage = DoorPunch.where(user: user, door: scope).group(:door_id).count
         scope.sort_by { |d| -(door_usage[d.id] || 0) }
       else
