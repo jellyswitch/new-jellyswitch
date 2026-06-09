@@ -349,6 +349,14 @@ class User < ApplicationRecord
   scope :community_managers, -> { where(role: User::COMMUNITY_MANAGER) }
   scope :general_managers, -> { where(role: User::GENERAL_MANAGER) }
   scope :taggable, -> { admins.or(general_managers.or(community_managers)) }
+  # Who can be @mentioned in a note: all staff PLUS approved, non-archived
+  # members. (Distinct from :taggable, which stays staff-only because the
+  # profile "managed by" dropdown uses it — we don't want every member there.)
+  scope :mentionable, -> {
+    base = where(archived: [false, nil])
+    base.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER])
+        .or(base.where(role: User::UNASSIGNED, approved: true))
+  }
   scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
   scope :superadmins, -> { where(role: User::SUPERADMIN) }

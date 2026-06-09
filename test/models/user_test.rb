@@ -76,6 +76,32 @@ class UserTest < ActiveSupport::TestCase
     office_leases(:office_23b_lease).delete
   end
 
+  # :mentionable backs note @mentions — staff PLUS approved, non-archived
+  # members (so notes can tag members, not just admins). Distinct from
+  # :taggable, which stays staff-only for the profile "managed by" dropdown.
+  test "User.mentionable includes staff and approved members" do
+    op = operators(:cowork_tahoe)
+    names = op.users.mentionable.pluck(:name)
+
+    assert_includes names, "Dave Paola",        "admin (staff) should be mentionable"
+    assert_includes names, "General Manager",   "GM (staff) should be mentionable"
+    assert_includes names, "Community Manager", "CM (staff) should be mentionable"
+    assert_includes names, "Tim C",             "approved member should be mentionable (#4)"
+  end
+
+  test "User.mentionable excludes archived and unapproved members, and superadmins" do
+    op = operators(:cowork_tahoe)
+    member = users(:cowork_tahoe_member) # "Tim C"
+
+    member.update!(archived: true)
+    refute_includes op.users.mentionable.pluck(:name), "Tim C", "archived member excluded"
+
+    member.update!(archived: false, approved: false)
+    refute_includes op.users.mentionable.pluck(:name), "Tim C", "unapproved member excluded"
+
+    refute_includes op.users.mentionable.pluck(:name), "Superadmin", "superadmin excluded"
+  end
+
   test 'User#should_charge_for_reservation?(location) returns false if user is an admin (role)' do
     user = users(:cowork_tahoe_admin)
 

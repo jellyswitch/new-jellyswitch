@@ -161,6 +161,9 @@ Rails.application.routes.draw do
       namespace :admin do
         # Feed
         get 'feed', to: 'feed#index'
+        # @mention autocomplete source: staff + approved members. Declared
+        # before 'feed/:id/...' routes so the literal path isn't shadowed.
+        get 'feed/mentionable_users', to: 'feed#mentionable_users'
         post 'feed', to: 'feed#create'
         post 'feed/:id/comments', to: 'feed#comment'
         delete 'feed/:id', to: 'feed#destroy'

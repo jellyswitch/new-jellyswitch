@@ -51,6 +51,18 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     render_error(e.message)
   end
 
+  # Source for the mobile @mention autocomplete. Returns staff + approved
+  # members so notes can tag teammates AND members. The old mobile code built
+  # this list by filtering the first page of /admin/members down to admin
+  # roles, so any admin past page 1 (and every member) was invisible — that's
+  # why "tagging admins was broken." Here the server returns the full list.
+  def mentionable_users
+    users = current_tenant.users.mentionable.order(:name)
+    render json: users.map { |u|
+      { id: u.id, name: u.name, email: u.email, role: u.role }
+    }
+  end
+
   def comment
     feed_item = FeedItem.find(params[:id])
     body = params[:body]
@@ -313,15 +325,18 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
 
   def notify_mentioned_users(text, feed_item, sender)
     return if text.blank?
+    return unless text.include?("@")
 
-    # Extract @mentions — matches "@First Last" or "@First"
-    mentioned_names = text.scan(/@([A-Z][a-z]+ ?[A-Z]?[a-z]*)/).flatten
-    return if mentioned_names.empty?
-
-    mentioned_names.each do |name|
-      user = current_tenant.users.where("name ILIKE ?", name.strip).first
-      next unless user
+    # Resolve mentions by matching each mentionable user's actual name against
+    # "@Name" in the text. This replaces a brittle /@([A-Z][a-z]+...)/ regex
+    # that only caught Capitalized single/double names — it silently dropped
+    # lowercase, hyphenated, apostrophed, and 3+ word names, and (since it only
+    # queried by name) never reached members. The negative lookahead stops
+    # "@Jo" from also matching "@John".
+    current_tenant.users.mentionable.find_each do |user|
+      next if user.name.blank?
       next if user.id == sender.id # Don't notify yourself
+      next unless text.match?(/@#{Regexp.escape(user.name)}(?![[:alnum:]])/)
 
       # Send push notification
       begin
