@@ -47,7 +47,7 @@ class Operator::UsersController < Operator::BaseController
     render :archived
   end
 
-  TIMELINE_TABS = %w[recent emails tours reservations payments notes].freeze
+  TIMELINE_TABS = %w[recent emails tours reservations payments notes doors].freeze
 
   def show
     find_user

@@ -80,4 +80,27 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Thanks — bumped the thermostat 2°.", thread["replies"].first["body"]
     assert_equal true, thread["replies"].first["is_admin"]
   end
+
+  # "Recent" hides door-punch noise (keeps only the first after each
+  # join/payment); the dedicated "doors" tab shows the full history.
+  test "activities: recent hides door-punch noise, doors tab shows all" do
+    @member.activities.delete_all
+    t = Time.utc(2026, 1, 1, 9, 0)
+    Activity.create!(user: @member, operator: @operator, kind: "subscription_started", occurred_at: t)
+    milestone = Activity.create!(user: @member, operator: @operator, kind: "door_punch", occurred_at: t + 1.hour)
+    noise     = Activity.create!(user: @member, operator: @operator, kind: "door_punch", occurred_at: t + 2.hours)
+
+    get "/api/v1/admin/members/#{@member.id}/activities", params: { tab: "recent" }, headers: headers
+    assert_response :success
+    recent_ids = JSON.parse(response.body)["activities"].map { |a| a["id"] }
+    assert_includes recent_ids, milestone.id
+    refute_includes recent_ids, noise.id, "non-milestone door punch should be hidden from Recent"
+
+    get "/api/v1/admin/members/#{@member.id}/activities", params: { tab: "doors" }, headers: headers
+    assert_response :success
+    doors = JSON.parse(response.body)["activities"].map { |a| a["id"] }
+    assert_includes doors, milestone.id
+    assert_includes doors, noise.id
+    assert_equal [milestone.id, noise.id].sort, doors.sort, "doors tab shows every door punch"
+  end
 end

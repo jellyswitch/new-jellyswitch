@@ -89,6 +89,7 @@ module ActivityTimelineHelper
     { key: "reservations", label: "Reservations" },
     { key: "payments",     label: "Payments" },
     { key: "notes",        label: "Notes" },
+    { key: "doors",        label: "Doors" },
   ].freeze
 
   KIND_GROUPS = {
@@ -97,6 +98,7 @@ module ActivityTimelineHelper
     "reservations" => %w[reservation],
     "payments"     => %w[payment_succeeded payment_failed],
     "notes"        => %w[note],
+    "doors"        => %w[door_punch],
   }.freeze
 
   def activity_timeline_pretty_time(activity)

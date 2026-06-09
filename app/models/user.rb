@@ -150,6 +150,38 @@ class User < ApplicationRecord
 
   has_many :activities, dependent: :destroy
 
+  # Door access ("door_punch") events flood the activity timeline, so the
+  # "Recent" feed hides them — EXCEPT the first door access after each
+  # join/payment milestone (subscription start, day pass, or payment), which is
+  # a meaningful "they've started using the space" signal worth surfacing. The
+  # full history lives in the dedicated "Doors" tab.
+  DOOR_MILESTONE_ANCHOR_KINDS = %w[subscription_started day_pass payment_succeeded].freeze
+
+  # IDs of the door_punch activities to keep inline in the Recent feed: the
+  # earliest punch at/after each anchor event.
+  def milestone_door_punch_ids
+    anchors = activities.where(kind: DOOR_MILESTONE_ANCHOR_KINDS).order(:occurred_at).pluck(:occurred_at)
+    return [] if anchors.empty?
+
+    punches = activities.where(kind: "door_punch").order(:occurred_at).pluck(:id, :occurred_at)
+    return [] if punches.empty?
+
+    anchors.filter_map { |t| (pair = punches.bsearch { |p| p[1] >= t }) && pair[0] }.uniq
+  end
+
+  # The "Recent" activity feed with door-punch noise removed (keeps only the
+  # milestone punches). Shared by the web timeline and the mobile API.
+  def recent_timeline_activities(limit: 50)
+    keep = milestone_door_punch_ids
+    scope = activities.recent
+    scope = if keep.empty?
+              scope.where.not(kind: "door_punch")
+            else
+              scope.where("activities.kind <> 'door_punch' OR activities.id IN (?)", keep)
+            end
+    scope.limit(limit)
+  end
+
   # Lifecycle stage — derived at query time, never stored (ADR-0002).
   # Grace days reads from current_location.past_member_grace_days, falling
   # back to DEFAULT_PAST_MEMBER_GRACE_DAYS when the user has no current_location.

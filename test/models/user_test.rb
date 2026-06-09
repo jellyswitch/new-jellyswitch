@@ -102,6 +102,49 @@ class UserTest < ActiveSupport::TestCase
     refute_includes op.users.mentionable.pluck(:name), "Superadmin", "superadmin excluded"
   end
 
+  # Door punches flood the timeline. "Recent" should hide them EXCEPT the first
+  # punch after each join/payment milestone; the full history lives in "Doors".
+  test "recent_timeline_activities keeps only the first door punch after each join/payment" do
+    op   = operators(:cowork_tahoe)
+    user = users(:cowork_tahoe_member)
+    user.activities.delete_all
+
+    t = Time.utc(2026, 1, 1, 9, 0)
+    mk = ->(kind, offset) { Activity.create!(user: user, operator: op, kind: kind, occurred_at: t + offset) }
+
+    early    = mk.call("door_punch", 0)             # before any anchor → hidden
+    sub      = mk.call("subscription_started", 1.hour)
+    first1   = mk.call("door_punch", 2.hours)       # first after membership → MILESTONE
+    noise1   = mk.call("door_punch", 3.hours)       # hidden
+    pay      = mk.call("payment_succeeded", 4.hours)
+    first2   = mk.call("door_punch", 5.hours)       # first after payment → MILESTONE
+    noise2   = mk.call("door_punch", 6.hours)       # hidden
+
+    ids = user.milestone_door_punch_ids
+    assert_includes ids, first1.id
+    assert_includes ids, first2.id
+    [early, noise1, noise2].each { |a| refute_includes ids, a.id }
+
+    recent_ids = user.recent_timeline_activities.map(&:id)
+    # Milestone punches + all non-door activities are present…
+    [first1, first2, sub, pay].each { |a| assert_includes recent_ids, a.id }
+    # …and the door-punch noise is hidden.
+    [early, noise1, noise2].each { |a| refute_includes recent_ids, a.id }
+  end
+
+  test "recent_timeline_activities hides ALL door punches when there is no join/payment anchor" do
+    op   = operators(:cowork_tahoe)
+    user = users(:cowork_tahoe_member)
+    user.activities.delete_all
+    t = Time.utc(2026, 1, 1, 9, 0)
+    punch = Activity.create!(user: user, operator: op, kind: "door_punch", occurred_at: t)
+    tour  = Activity.create!(user: user, operator: op, kind: "tour", occurred_at: t + 1.hour)
+
+    recent_ids = user.recent_timeline_activities.map(&:id)
+    assert_includes recent_ids, tour.id
+    refute_includes recent_ids, punch.id
+  end
+
   test 'User#should_charge_for_reservation?(location) returns false if user is an admin (role)' do
     user = users(:cowork_tahoe_admin)
 

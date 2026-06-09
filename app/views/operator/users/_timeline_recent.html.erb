@@ -1,4 +1,6 @@
-<% activities = user.activities.recent.limit(50) %>
+<%# Door punches are hidden here (kept only at each join/payment milestone) to
+    cut the noise — the full history is in the "Doors" tab. %>
+<% activities = user.recent_timeline_activities(limit: 50) %>
 <% if activities.any? %>
   <% activities.each do |activity| %>
     <%= render "timeline_activity_row", activity: activity %>

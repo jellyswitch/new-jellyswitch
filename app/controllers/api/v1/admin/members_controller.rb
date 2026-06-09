@@ -414,20 +414,23 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     }
   end
 
-  ACTIVITY_TABS = %w[recent emails tours reservations payments notes].freeze
+  ACTIVITY_TABS = %w[recent emails tours reservations payments notes doors].freeze
 
   def activities
     user = current_tenant.users.find(params[:id])
     tab = ACTIVITY_TABS.include?(params[:tab]) ? params[:tab] : "recent"
 
-    scope = user.activities.recent
-    if tab != "recent"
-      scope = scope.where(kind: ActivityTimelineHelper::KIND_GROUPS.fetch(tab))
-    end
+    scope =
+      if tab == "recent"
+        # Hides door_punch noise (keeps only milestone punches). See User.
+        user.recent_timeline_activities(limit: 50)
+      else
+        user.activities.recent.where(kind: ActivityTimelineHelper::KIND_GROUPS.fetch(tab)).limit(50)
+      end
 
     render json: {
       tab: tab,
-      activities: scope.limit(50).map { |a| activity_json(a) },
+      activities: scope.map { |a| activity_json(a) },
     }
   end
 

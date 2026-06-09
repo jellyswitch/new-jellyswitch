@@ -28,6 +28,12 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
       # unknown: no filter
     end
 
+    # Free-text search by name or email (the mobile People search bar).
+    query = params[:q].to_s.strip
+    if query.present?
+      base = base.where("users.name ILIKE :q OR users.email ILIKE :q", q: "%#{query}%")
+    end
+
     available_states = current_tenant.users.visible.non_superadmins
                                      .where.not(home_state: nil)
                                      .distinct
@@ -45,6 +51,7 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
       stage: stage,
       owned_by_me: owned_by_me,
       from: from,
+      q: query,
       primary_city: primary_city_val,
       available_states: available_states,
       page: page,
