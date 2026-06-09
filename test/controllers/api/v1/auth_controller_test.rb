@@ -164,4 +164,39 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
     assert_equal visible.id, User.order(:created_at).last.original_location_id
   end
+
+  # --- Terms of Service consent (web parity) ---
+
+  test "operators exposes the TOS url + flag when a TOS is attached" do
+    @operator.terms_of_service.attach(
+      io: File.open(Rails.root.join("spec/fixtures/test.jpg")),
+      filename: "terms.pdf", content_type: "application/pdf",
+    )
+    get "/api/v1/auth/operators", headers: { "X-Operator-Subdomain" => @operator.subdomain }
+    op = JSON.parse(response.body)["operators"].first
+    assert_equal true, op["has_terms_of_service"]
+    assert op["terms_of_service_url"].present?, "expected a terms_of_service_url"
+  end
+
+  test "operators reports no TOS when none is attached" do
+    @operator.terms_of_service.purge if @operator.terms_of_service.attached?
+    get "/api/v1/auth/operators", headers: { "X-Operator-Subdomain" => @operator.subdomain }
+    op = JSON.parse(response.body)["operators"].first
+    assert_equal false, op["has_terms_of_service"]
+    assert_nil op["terms_of_service_url"]
+  end
+
+  test "signup records consent only when terms_accepted is sent (no longer hard-coded)" do
+    post "/api/v1/auth/signup", params: signup_params(terms_accepted: true)
+    assert_response :created
+    assert User.order(:created_at).last.terms_accepted_at.present?,
+      "terms_accepted_at should be set when the member actually agreed"
+  end
+
+  test "signup leaves consent unrecorded when terms_accepted is absent/false" do
+    post "/api/v1/auth/signup", params: signup_params(terms_accepted: false)
+    assert_response :created
+    assert_nil User.order(:created_at).last.terms_accepted_at,
+      "must not fabricate consent the member never gave"
+  end
 end
