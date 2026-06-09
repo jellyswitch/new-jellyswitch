@@ -7,19 +7,16 @@
     <i class="fas fa-at"></i> Type <code>@</code> to mention a teammate.
   </p>
   <div class="form-group row m-0 p-0">
+    <%# No client-side enable/disable gate: the old shared/disable_button bound
+        keyup/input on the hidden field, but this is a Trix rich-text editor
+        which fires `trix-change` on the <trix-editor> — so the gate left the
+        button permanently disabled and notes couldn't be posted. The button is
+        always submittable (ActionText's default UX); an empty note is rejected
+        server-side. %>
     <button class="form-control btn btn-primary col" id="submit" data-disable-with="Posting...">
-      <span class="show-when-enabled">
-        <i class="fas fa-edit"></i>
-        &nbsp;
-        Post management note
-      </span>
-      <span class="show-when-disabled">
-        <i class="fas fa-edit"></i>
-        &nbsp;
-        Posting...
-      </span>
+      <i class="fas fa-edit"></i>
+      &nbsp;
+      Post management note
     </button>
   </div>
 <%- end %>
-
-<%= render "shared/disable_button", submit_id: "#submit", text_id: "#text" %>

@@ -90,6 +90,13 @@ class Operator::FeedItemsController < Operator::BaseController
   def create
     authorize FeedItem.new
 
+    # The button no longer client-side-gates on content (that broke with Trix),
+    # so guard empty notes here instead.
+    if ActionText::Content.new(feed_item_params[:text].to_s).to_plain_text.strip.blank?
+      flash[:error] = "Write something before posting a note."
+      return turbo_redirect(new_feed_item_path, action: restore_if_possible)
+    end
+
     result = FeedItems::Create.call(
       # to_plain_text (not strip_tags): decodes HTML entities and turns block
       # elements into newlines, so blob['text'] reads cleanly everywhere

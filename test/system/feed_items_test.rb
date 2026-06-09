@@ -10,16 +10,14 @@ class FeedItemsTest < ApplicationSystemTestCase
   test "creating a new management note" do
     log_in(users(:cowork_tahoe_admin))
 
-    find('#new-management-note').click
-    # Bootstrap data-toggle modal races jQuery binding in CI — same flake as
-    # update_price_spec. Trigger via .modal('show') as an idempotent fallback.
-    page.execute_script("$('#newModal').modal('show')")
-    # Modal action relabeled "Management note" (links to the new-feed-item page).
-    # Scope to the modal so we don't match the "Management notes" feed-filter link.
-    within '#newModal' do
-      click_on 'Management note'
-    end
-    find('trix-editor').click.set('Test Note')
+    # Go straight to the note form — the "What would you like to do?" modal is a
+    # Bootstrap data-toggle that flakes on navigation in headless Chrome.
+    visit new_feed_item_path
+
+    assert_selector 'trix-editor'
+    # Drive Trix via its editor API; Capybara's .set/send_keys don't reliably
+    # reach the <trix-editor> contenteditable here.
+    page.execute_script("document.querySelector('trix-editor').editor.insertString('Test Note')")
     find('#submit').click
 
     assert_text 'Test Note'
