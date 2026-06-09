@@ -453,6 +453,36 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     }, status: :created
   end
 
+  # #6: a member's past chat/feedback threads, surfaced on their admin page.
+  # Replies are inlined so the mobile Chat tab renders full threads in one call.
+  def conversations
+    user = current_tenant.users.find(params[:id])
+
+    feedbacks = MemberFeedback
+      .where(operator: current_tenant, user_id: user.id)
+      .order(updated_at: :desc)
+      .limit(50)
+
+    render json: feedbacks.map { |f|
+      {
+        id: f.id,
+        body: f.comment,
+        rating: f.rating,
+        created_at: f.created_at.iso8601,
+        updated_at: f.updated_at.iso8601,
+        replies: f.feedback_replies.order(:created_at).map { |r|
+          {
+            id: r.id,
+            body: r.body,
+            author: r.user&.name,
+            is_admin: r.from_admin?,
+            created_at: r.created_at.iso8601,
+          }
+        },
+      }
+    }
+  end
+
   def add_note
     user = current_tenant.users.find(params[:id])
 

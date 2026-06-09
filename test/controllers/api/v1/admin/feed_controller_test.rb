@@ -189,4 +189,21 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Dailies & walk (checked conf rooms)\nUnpacked snacks", body
     refute_includes body, "&amp;"
   end
+
+  # The @mention source for mobile notes. Mobile used to build this list by
+  # filtering the first page of /admin/members down to admin roles, so admins
+  # past page 1 — and all members — were invisible ("tagging admins broken").
+  # The endpoint returns staff + approved members directly.
+  test "GET mentionable_users returns staff and approved members" do
+    get "/api/v1/admin/feed/mentionable_users", headers: headers
+    assert_response :success
+
+    body  = JSON.parse(response.body)
+    names = body.map { |u| u["name"] }
+
+    assert_includes names, "Dave Paola",        "admin should be returned"
+    assert_includes names, "Community Manager", "CM should be returned"
+    assert_includes names, "Tim C",             "approved member should be returned (#4)"
+    assert body.all? { |u| u.key?("id") && u.key?("name") && u.key?("role") }, "shape has id/name/role"
+  end
 end

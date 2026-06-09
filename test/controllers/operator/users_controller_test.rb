@@ -54,4 +54,26 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_template :index
   end
+
+  # #6 (web): the admin profile view surfaces a member's past chat threads
+  # alongside the internal notes section (#5, already shipped).
+  test "admin profile page shows a member's chat conversations and notes" do
+    admin = users(:cowork_tahoe_admin)
+    admin.update(password: "password")
+    ActsAsTenant.default_tenant = admin.operator
+    post login_path(params: { session: { email: admin.email, password: "password" } }), env: default_env
+
+    member = users(:cowork_tahoe_member)
+    MemberFeedback.create!(
+      operator: operators(:cowork_tahoe),
+      user: member,
+      comment: "The wifi keeps dropping",
+    )
+
+    get user_path(member), env: default_env
+    assert_response :success
+    assert_select "[data-testid='conversations-section']"
+    assert_select "[data-testid='notes-section']"
+    assert_match "The wifi keeps dropping", response.body
+  end
 end
