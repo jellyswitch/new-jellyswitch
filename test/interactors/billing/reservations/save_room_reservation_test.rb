@@ -29,7 +29,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
 
   test "sets paid to true if user should be charged and room price is more than 0" do
     @room.update(hourly_rate_in_cents: 100)
-    @user.stubs(:should_charge_for_reservation?).returns(true)
+    @user.stubs(:should_charge_for_room?).returns(true)
 
     result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
 
@@ -38,7 +38,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
   end
 
   test "sets paid to false if user should not be charged" do
-    @user.stubs(:should_charge_for_reservation?).returns(false)
+    @user.stubs(:should_charge_for_room?).returns(false)
 
     result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
 
@@ -48,7 +48,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
 
   test "sets paid to false if the room is free" do
     @room.update(hourly_rate_in_cents: 0)
-    @user.stubs(:should_charge_for_reservation?).returns(false)
+    @user.stubs(:should_charge_for_room?).returns(false)
 
     result = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
 
@@ -71,7 +71,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
 
   test "fails when user should be charged but has no payment method" do
     @room.update(hourly_rate_in_cents: 100)
-    @user.stubs(:should_charge_for_reservation?).returns(true)
+    @user.stubs(:should_charge_for_room?).returns(true)
     @user.stubs(:payment_method).returns("None")
 
     context = Billing::Reservations::SaveRoomReservation.call(
@@ -85,7 +85,7 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
 
   test "succeeds when user should be charged and has payment method" do
     @room.update(hourly_rate_in_cents: 100)
-    @user.stubs(:should_charge_for_reservation?).returns(true)
+    @user.stubs(:should_charge_for_room?).returns(true)
     @user.stubs(:payment_method).returns("card")
 
     context = Billing::Reservations::SaveRoomReservation.call(

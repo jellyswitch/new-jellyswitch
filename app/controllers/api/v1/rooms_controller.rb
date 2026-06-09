@@ -123,14 +123,16 @@ class Api::V1::RoomsController < Api::V1::BaseController
                            user.has_active_subscription? &&
                            user.has_active_subscription_at_location?(location)
 
-    # Members, day-pass holders, leaseholders, and staff/owners are never
-    # charged the hourly rate for a priced (premium) room at booking time —
-    # should_charge_for_reservation? is the same gate SaveRoomReservation
-    # uses to set `paid`. Without consulting it here the endpoint quotes a
-    # full hourly charge to an admin/owner, and the mobile app shows a
-    # phantom payment step for a room that actually books free. Mirrors the
-    # exemption already applied in #reserve_now.
-    exempt_from_room_charge = !user.should_charge_for_reservation?(location, date)
+    # Members, leaseholders, and staff/owners are never charged the hourly rate
+    # for a priced (premium) room — should_charge_for_room? is the SAME gate
+    # SaveRoomReservation uses to set `paid`, so the quote always matches what's
+    # actually charged. NOTE: day-pass holders are NOT exempt for premium rooms
+    # (a day pass doesn't cover them) — they must see + pay the hourly rate.
+    exempt_from_room_charge = if room.hourly_rate_in_cents.to_i > 0
+      !user.should_charge_for_room?(room, date)            # premium room: day-passers pay
+    else
+      !user.should_charge_for_reservation?(location, date) # free room: unchanged
+    end
 
     base = if subscriber_unlimited
       {

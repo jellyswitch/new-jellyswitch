@@ -65,4 +65,22 @@ class Api::V1::RoomsPricingTest < ActionDispatch::IntegrationTest
       "a guest with no coverage must still be charged the hourly rate"
     assert_not body["included_in_plan"]
   end
+
+  # A day pass covers free rooms + included minutes, NOT premium hourly rooms —
+  # so a day-passer must be quoted (and charged) the hourly rate. Previously the
+  # day-pass exemption zeroed this out, letting day-passers book premium rooms
+  # for free.
+  test "a day-passer is quoted the full hourly charge for a premium room" do
+    create(:day_pass, user: @non_member, operator: @operator) # complimentary:false => purchased day pass for today
+
+    get "/api/v1/rooms/#{@priced_room.id}/pricing",
+        params: { date: Date.current.to_s, minutes: 60 },
+        headers: headers_for(@non_member)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal 5000, body["estimated_cost"],
+      "a day-passer must be quoted the hourly rate for a premium room (no free coverage)"
+    assert_not body["included_in_plan"]
+  end
 end

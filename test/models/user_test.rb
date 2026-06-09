@@ -102,6 +102,23 @@ class UserTest < ActiveSupport::TestCase
     refute_includes op.users.mentionable.pluck(:name), "Superadmin", "superadmin excluded"
   end
 
+  # A day pass covers free rooms + included minutes, NOT premium hourly rooms.
+  # should_charge_for_room? must charge day-passers for premium rooms while still
+  # exempting members/staff and never charging for free rooms.
+  test "should_charge_for_room? charges day-passers for premium rooms, exempts staff/free" do
+    op = operators(:cowork_tahoe)
+    op.update!(billing_state: "production")
+    premium   = rooms(:large_meeting_room); premium.update!(hourly_rate_in_cents: 5000)
+    free_room = rooms(:small_meeting_room); free_room.update!(hourly_rate_in_cents: 0)
+
+    day_passer = users(:cowork_tahoe_non_member)
+    create(:day_pass, user: day_passer, operator: op) # complimentary:false => purchased day pass for today
+
+    assert day_passer.should_charge_for_room?(premium),    "day-passer must pay for a premium room (the leak fix)"
+    refute day_passer.should_charge_for_room?(free_room),  "free rooms are never charged hourly"
+    refute users(:cowork_tahoe_admin).should_charge_for_room?(premium), "admin/staff are comped"
+  end
+
   # Door punches flood the timeline. "Recent" should hide them EXCEPT the first
   # punch after each join/payment milestone; the full history lives in "Doors".
   test "recent_timeline_activities keeps only the first door punch after each join/payment" do

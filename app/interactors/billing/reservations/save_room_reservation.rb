@@ -5,7 +5,10 @@ class Billing::Reservations::SaveRoomReservation
   def call
     reservation = Reservation.new(context.reservation_params)
 
-    should_charge = context.user.should_charge_for_reservation?(reservation.room.location, reservation.datetime_in.to_date) && reservation.room.hourly_rate_in_cents > 0
+    # Premium/paid rooms charge everyone except members/leaseholders/staff.
+    # Day-passers are NOT exempt here (a day pass doesn't cover premium rooms) —
+    # should_charge_for_room? bakes in the rate>0 check + production gate.
+    should_charge = context.user.should_charge_for_room?(reservation.room, reservation.datetime_in.to_date)
 
     # Day pass overage check: if user is a day pass holder with meeting room limits
     if !should_charge && context.day_pass_charge_info && context.day_pass_charge_info[:charge_type] == :partial_overage

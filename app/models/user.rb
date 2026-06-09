@@ -440,6 +440,7 @@ class User < ApplicationRecord
            :has_active_reservation?,
            :allowed_in?,
            :should_charge_for_reservation?,
+           :should_charge_for_room?,
            :can_see_all_rooms?,
            :member_at_location?,
            :admin_of_location?,

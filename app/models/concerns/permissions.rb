@@ -27,6 +27,22 @@ module Permissions
     end
   end
 
+  # Whether this user must pay the hourly rate for a specific ROOM at booking
+  # time. Free rooms (rate 0) are never charged hourly. For premium/paid rooms
+  # everyone pays EXCEPT members, leaseholders, and staff — note day-pass
+  # holders are intentionally NOT exempt: a day pass covers free rooms +
+  # included meeting-room minutes, not premium hourly rooms. (Same production
+  # gate + exemptions as should_charge_for_reservation?, minus the day pass.)
+  def should_charge_for_room?(room, day = Time.current)
+    return false unless room.hourly_rate_in_cents.to_i > 0
+    location = room.location
+    if operator.production? || operator.subdomain == "southlakecoworking"
+      !(member?(location) || has_active_lease? || admin_of_location?(location) || superadmin? || general_manager_of_location?(location) || community_manager_of_location?(location))
+    else
+      false
+    end
+  end
+
   def can_see_all_rooms?(location, day = Time.current)
     if operator.production? || operator.subdomain == "southlakecoworking"
       member?(location) ||
