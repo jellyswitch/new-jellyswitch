@@ -76,4 +76,29 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_select "[data-testid='notes-section']"
     assert_match "The wifi keeps dropping", response.body
   end
+
+  # Web timeline: door punches hidden from Recent (except milestones), full
+  # history under the Doors tab.
+  test "web timeline hides door-punch noise in recent and shows it under doors" do
+    admin = users(:cowork_tahoe_admin)
+    admin.update(password: "password")
+    ActsAsTenant.default_tenant = admin.operator
+    post login_path(params: { session: { email: admin.email, password: "password" } }), env: default_env
+
+    member = users(:cowork_tahoe_member)
+    member.activities.delete_all
+    t = Time.utc(2026, 1, 1, 9, 0)
+    Activity.create!(user: member, operator: operators(:cowork_tahoe), kind: "subscription_started", occurred_at: t)
+    Activity.create!(user: member, operator: operators(:cowork_tahoe), kind: "door_punch", occurred_at: t + 1.hour)  # milestone
+    Activity.create!(user: member, operator: operators(:cowork_tahoe), kind: "door_punch", occurred_at: t + 2.hours) # noise
+
+    get user_path(member, tab: "recent"), env: default_env
+    assert_response :success
+    # Exactly one door row in Recent (the milestone), not both.
+    assert_equal 1, response.body.scan(/Entered/).size, "Recent should show only the milestone door punch"
+
+    get user_path(member, tab: "doors"), env: default_env
+    assert_response :success
+    assert_equal 2, response.body.scan(/Entered/).size, "Doors tab should show every door punch"
+  end
 end
