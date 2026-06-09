@@ -43,6 +43,15 @@ class Api::V1::AuthController < Api::V1::BaseController
           primary_state:         primary&.state,
           primary_latitude:      primary&.latitude,
           primary_longitude:     primary&.longitude,
+          # Terms of Service — exposed pre-login so the mobile signup screen can
+          # show a real "I agree" checkbox + viewable TOS (web parity). Null when
+          # the operator hasn't uploaded a TOS, so the client hides the checkbox.
+          has_terms_of_service: op.terms_of_service.attached?,
+          terms_of_service_url: (
+            op.terms_of_service.attached? ?
+              Rails.application.routes.url_helpers.rails_blob_url(op.terms_of_service, host: request.host_with_port) :
+              nil
+          ),
           locations: visible_locations.map { |l|
             { id: l.id, name: l.name, latitude: l.latitude, longitude: l.longitude }
           },
@@ -128,7 +137,13 @@ class Api::V1::AuthController < Api::V1::BaseController
         password: params[:password],
         phone: params[:phone],
         original_location_id: location_id,
-        terms_accepted: "1",
+        # Record the member's ACTUAL consent instead of hard-coding "1". The app
+        # only sends terms_accepted=true after they check the TOS box; if the
+        # operator has no TOS, the box is hidden and this stays falsey (nothing
+        # to consent to). Users::Save sets terms_accepted_at only when "1", so a
+        # missing/false value never blocks signup — it just isn't recorded as
+        # consent (accurate, and far safer than fabricating agreement).
+        terms_accepted: (ActiveModel::Type::Boolean.new.cast(params[:terms_accepted]) ? "1" : "0"),
         marketing_consent: params[:marketing_opt_in] != false,
         home_latitude:  params[:home_latitude],
         home_longitude: params[:home_longitude],
