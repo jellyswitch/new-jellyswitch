@@ -52,4 +52,32 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     refute_nil match
     assert_equal false, match["ended_early"]
   end
+
+  # #6: a member's past chat threads (with replies) on their admin page.
+  test "conversations returns the member's feedback threads with replies inline" do
+    feedback = MemberFeedback.create!(
+      operator: @operator, user: @member, comment: "AC is too cold in the lounge",
+    )
+    feedback.feedback_replies.create!(
+      operator: @operator, user: @admin, body: "Thanks — bumped the thermostat 2°.",
+    )
+    # A thread from a DIFFERENT member must not leak into this member's page.
+    other = users(:cowork_tahoe_non_member)
+    MemberFeedback.create!(operator: @operator, user: other, comment: "Where's the printer?")
+
+    get "/api/v1/admin/members/#{@member.id}/conversations", headers: headers
+    assert_response :success
+
+    body = JSON.parse(response.body)
+    ids  = body.map { |c| c["id"] }
+    assert_includes ids, feedback.id
+    refute_includes body.map { |c| c["body"] }, "Where's the printer?",
+      "another member's thread must not appear on this member's page"
+
+    thread = body.find { |c| c["id"] == feedback.id }
+    assert_equal "AC is too cold in the lounge", thread["body"]
+    assert_equal 1, thread["replies"].length
+    assert_equal "Thanks — bumped the thermostat 2°.", thread["replies"].first["body"]
+    assert_equal true, thread["replies"].first["is_admin"]
+  end
 end

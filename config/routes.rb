@@ -204,6 +204,8 @@ Rails.application.routes.draw do
         get 'members/:id/checkins', to: 'members#checkins'
         get 'members/:id/usage', to: 'members#usage'
         get 'members/:id/activities', to: 'members#activities'
+        # Past chat/feedback threads for this member, with replies inline (#6).
+        get 'members/:id/conversations', to: 'members#conversations'
         post 'members/:id/log_tour', to: 'members#log_tour'
         post 'members/:id/add_note', to: 'members#add_note'
 
