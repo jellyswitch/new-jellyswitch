@@ -113,12 +113,23 @@ class Subscription < ApplicationRecord
   end
 
   def current_billing_period
-    return [start_date.beginning_of_day, Time.current] unless has_stripe_subscription?
+    return monthly_anniversary_window unless has_stripe_subscription?
 
     sub = stripe_subscription
     [Time.at(sub.current_period_start), Time.at(sub.current_period_end)]
   rescue StandardError => e
-    [start_date.beginning_of_day, Time.current]
+    monthly_anniversary_window
+  end
+
+  # Non-Stripe (comp/manual) subscriptions have no Stripe billing cycle, so
+  # derive the CURRENT monthly window from the start_date day-of-month
+  # anniversary. Previously this returned [start_date, Time.current] — an
+  # ever-growing window that let a comped member's "monthly" meeting-room
+  # allowance accumulate from signup forever instead of resetting each month.
+  def monthly_anniversary_window(now = Time.current)
+    period_start = start_date.to_time.beginning_of_day
+    period_start += 1.month while period_start + 1.month <= now
+    [period_start, period_start + 1.month]
   end
 
   def has_end_date?

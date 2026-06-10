@@ -237,9 +237,17 @@ module Permissions
     period_start, period_end = subscription.current_billing_period
     return nil unless period_start
 
-    # Sum non-cancelled reservation minutes in this billing cycle
-    used_minutes = Reservation.where(user_id: id, cancelled: false)
+    # Sum non-cancelled reservation minutes in this billing cycle.
+    # Only FREE (standard) rooms at THIS location burn the included pool:
+    #   - paid/premium rooms are charged hourly separately, so their minutes
+    #     must not eat the free allowance (mirrors the day-pass path), and
+    #   - the allowance is location-specific, so bookings at the operator's
+    #     other locations don't count against it.
+    used_minutes = Reservation.joins(:room)
+                              .where(user_id: id, cancelled: false)
                               .where(datetime_in: period_start..period_end)
+                              .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
+                              .where(rooms: { location_id: location.id })
                               .sum(:minutes)
 
     remaining_free = [plan.included_meeting_room_minutes - used_minutes, 0].max

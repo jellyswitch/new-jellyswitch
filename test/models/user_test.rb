@@ -119,6 +119,54 @@ class UserTest < ActiveSupport::TestCase
     refute users(:cowork_tahoe_admin).should_charge_for_room?(premium), "admin/staff are comped"
   end
 
+  # --- Per-plan monthly meeting-room limit (included_meeting_room_minutes) ---
+  # The included-minutes pool covers FREE standard rooms at THIS location only.
+
+  # Gap A: premium/paid rooms are billed hourly separately, so their minutes
+  # must NOT also burn the free allowance (mirrors the day-pass path).
+  test "subscription_reservation_charge_info excludes paid-room minutes from the used pool (Gap A)" do
+    member = users(:cowork_tahoe_member)
+    Reservation.where(user_id: member.id).delete_all
+    plans(:cowork_tahoe_full_time_plan).update!(
+      included_meeting_room_minutes: 120, overage_rate_in_cents: 6000, location_id: @location.id,
+    )
+    free_room = rooms(:small_meeting_room); free_room.update!(hourly_rate_in_cents: 0, location: @location)
+    paid_room = rooms(:large_meeting_room); paid_room.update!(hourly_rate_in_cents: 5000, location: @location)
+
+    Reservation.create!(user: member, room: free_room, datetime_in: 1.day.from_now.change(hour: 9),  minutes: 60, cancelled: false)
+    Reservation.create!(user: member, room: paid_room, datetime_in: 1.day.from_now.change(hour: 14), minutes: 60, cancelled: false)
+
+    info = member.subscription_reservation_charge_info(@location, 30)
+    assert_equal 60, info[:used_minutes],   "only the free-room 60 min should burn the pool; the paid room is billed hourly"
+    assert_equal 60, info[:remaining_free], "remaining = 120 included - 60 free-room minutes used"
+  end
+
+  # Gap C: the allowance is location-specific, so a member's bookings at the
+  # operator's OTHER locations must not count against this location's pool.
+  test "subscription_reservation_charge_info is scoped to the location's rooms (Gap C)" do
+    member = users(:cowork_tahoe_member)
+    Reservation.where(user_id: member.id).delete_all
+    plans(:cowork_tahoe_full_time_plan).update!(
+      included_meeting_room_minutes: 120, overage_rate_in_cents: 6000, location_id: @location.id,
+    )
+    here = rooms(:small_meeting_room); here.update!(hourly_rate_in_cents: 0, location: @location)
+
+    other_loc = Location.create!(
+      name: "Sibling Location", operator: @location.operator, visible: true,
+      time_zone: "Pacific Time (US & Canada)", working_day_start: "09:00", working_day_end: "18:00",
+    )
+    there = Room.create!(
+      name: "Other-Loc Room", operator: @location.operator, location: other_loc,
+      hourly_rate_in_cents: 0, visible: true, rentable: true,
+    )
+
+    Reservation.create!(user: member, room: here,  datetime_in: 1.day.from_now.change(hour: 9),  minutes: 60, cancelled: false)
+    Reservation.create!(user: member, room: there, datetime_in: 1.day.from_now.change(hour: 14), minutes: 60, cancelled: false)
+
+    info = member.subscription_reservation_charge_info(@location, 30)
+    assert_equal 60, info[:used_minutes], "only the 60 min booked at THIS location should count against its pool"
+  end
+
   # Door punches flood the timeline. "Recent" should hide them EXCEPT the first
   # punch after each join/payment milestone; the full history lives in "Doors".
   test "recent_timeline_activities keeps only the first door punch after each join/payment" do
