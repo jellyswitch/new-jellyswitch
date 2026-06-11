@@ -149,6 +149,26 @@ class UserMailer < ApplicationMailer
          from: from_address, reply_to: operator.contact_email
   end
 
+  # Sent when a member cancels their membership -- either immediately
+  # (immediate: true) or scheduled for the end of the current billing
+  # period (immediate: false). A cancelling member must get this instead
+  # of the renewal reminder, which previously still fired because a
+  # cancel-at-period-end subscription stays active: true until the period ends.
+  def membership_cancellation_email(user, operator, subscription, location = nil, immediate: false)
+    @user = user
+    @operator = operator
+    @subscription = subscription
+    @location = location
+    @immediate = immediate
+    # For a scheduled cancel, access continues through the paid period.
+    # current_period_end reads from Stripe and is nil for $0/no-Stripe plans.
+    @ends_on = immediate ? nil : subscription.current_period_end
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    subject = immediate ? "Your membership has been canceled" : "Your membership cancellation is confirmed"
+    mail to: user.email, subject: subject, from: from_address, reply_to: operator.contact_email
+  end
+
   def lease_renewal_proposal_email(user, operator, renewal_request, location = nil)
     @user = user
     @operator = operator

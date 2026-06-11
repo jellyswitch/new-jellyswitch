@@ -39,6 +39,10 @@ class Subscription < ApplicationRecord
   # Scopes
   scope :active, -> { where(active: true) }
   scope :pending, -> { where(pending: true) }
+  # Subscriptions eligible for a renewal reminder. Excludes those scheduled to
+  # cancel at period end -- those stay active: true until the period ends, so
+  # without this filter they'd wrongly get "your membership renews soon."
+  scope :renewal_reminder_candidates, -> { where(active: true, cancelling_at_end_of_billing_period: false) }
   scope :for_operator, ->(operator) { joins(:plan).where(plans: { operator_id: operator.id }) }
   scope :for_location, ->(location) do
           joins(:plan).where(plans: { id: Plan.for_location(location).map(&:id) })
