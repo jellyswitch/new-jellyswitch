@@ -1,10 +1,19 @@
 # Puma can serve each request in a thread from an internal thread pool.
 # The `threads` method setting takes two numbers: a minimum and maximum.
 # Any libraries that use thread pools should be configured to match
-# the maximum value specified for Puma. Default is set to 5 threads for minimum
-# and maximum; this matches the default thread size of Active Record.
+# the maximum value specified for Puma.
 #
-max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 9 }
+# DB CONNECTION BUDGET (production Postgres = essential-1, hard cap 20 connections):
+# the DB pool (config/database.yml) == RAILS_MAX_THREADS, and each puma worker
+# opens up to `pool` connections, so total demand =
+#   web:    WEB_CONCURRENCY × RAILS_MAX_THREADS × (web dyno count)
+#   worker: ~RAILS_MAX_THREADS (Sidekiq is pool-capped)
+# With WEB_CONCURRENCY=2, RAILS_MAX_THREADS=3, 2 web dynos + 1 worker:
+#   2×3×2 + 3 = 15 < 20  → leaves headroom for deploys + one-off `heroku run`.
+# RAILS_MAX_THREADS was 9 (→ 36+ demand, perpetual "too many connections" on
+# deploy). Do NOT raise it without upgrading the Postgres plan. See ADR-less
+# note / memory reference_prod_pg_connection_ceiling.
+max_threads_count = ENV.fetch("RAILS_MAX_THREADS") { 3 }
 min_threads_count = ENV.fetch("RAILS_MIN_THREADS") { max_threads_count }
 threads min_threads_count, max_threads_count
 
