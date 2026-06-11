@@ -110,6 +110,12 @@ class Operator::FeedItemsController < Operator::BaseController
     )
 
     if result.success?
+      # Cross-post the note onto any tagged CUSTOMER's record (silent). See ADR 0006.
+      Crm::CrossPostFeedTags.call(
+        text: ActionText::Content.new(feed_item_params[:text].to_s).to_plain_text,
+        source: result.feed_item,
+        author: current_user,
+      )
       flash[:success] = "Posted!"
       turbo_redirect(feed_items_path, action: restore_if_possible)
     else

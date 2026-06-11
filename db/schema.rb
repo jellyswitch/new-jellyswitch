@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_11_165145) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_11_174609) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -614,10 +614,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_11_165145) do
     t.bigint "author_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "source_type"
+    t.bigint "source_id"
     t.index ["author_id"], name: "index_notes_on_author_id"
     t.index ["notable_type", "notable_id"], name: "index_notes_on_notable"
     t.index ["operator_id", "created_at"], name: "index_notes_on_operator_id_and_created_at"
     t.index ["operator_id"], name: "index_notes_on_operator_id"
+    t.index ["source_type", "source_id"], name: "index_notes_on_source"
   end
 
   create_table "office_leases", force: :cascade do |t|

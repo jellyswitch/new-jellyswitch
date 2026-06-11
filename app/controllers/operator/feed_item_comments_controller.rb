@@ -11,6 +11,13 @@ class Operator::FeedItemCommentsController < Operator::BaseController
     )
 
     if result.success?
+      # Cross-post the comment onto any tagged CUSTOMER's record (silent). See ADR 0006.
+      Crm::CrossPostFeedTags.call(
+        text: feed_item_comment_params[:comment].to_s,
+        source: @feed_item,
+        author: current_user,
+      )
+
       # If this is a feedback-type feed item, also create a FeedbackReply
       # so the member sees the reply in their Messages thread and gets notified
       bridge_feedback_reply if @feed_item.type == "feedback"

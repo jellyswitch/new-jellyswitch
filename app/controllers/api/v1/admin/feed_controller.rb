@@ -43,8 +43,10 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     feed_item.text = body
     feed_item.save!
 
-    # Send push notifications to @mentioned users
+    # Notify @mentioned STAFF (push); cross-post the note onto any tagged
+    # CUSTOMER's record (silent — no push). See ADR 0006.
     notify_mentioned_users(body, feed_item, current_api_user)
+    Crm::CrossPostFeedTags.call(text: body, source: feed_item, author: current_api_user)
 
     render json: feed_item_json(feed_item), status: :created
   rescue ActiveRecord::RecordInvalid => e
@@ -72,8 +74,9 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
       user: current_api_user
     )
 
-    # Send push notifications to @mentioned users
+    # Notify @mentioned STAFF; cross-post onto tagged CUSTOMERS' records (silent).
     notify_mentioned_users(body, feed_item, current_api_user)
+    Crm::CrossPostFeedTags.call(text: body, source: feed_item, author: current_api_user)
 
     render json: {
       id: comment.id,
@@ -336,6 +339,10 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     current_tenant.users.mentionable.find_each do |user|
       next if user.name.blank?
       next if user.id == sender.id # Don't notify yourself
+      # Only STAFF get a push. Tagged CUSTOMERS are handled by
+      # Crm::CrossPostFeedTags (cross-post to their record, NO push) — a member
+      # must never be pinged about an internal note discussing them (ADR 0006).
+      next unless User::STAFF_ROLES.include?(user.role)
       next unless text.match?(/@#{Regexp.escape(user.name)}(?![[:alnum:]])/)
 
       # Send push notification

@@ -92,6 +92,13 @@ A timestamped event in a Person's history. Stored as one row in the `activities`
 
 Activities are what drive the **per-person timeline** — the central "I get it" surface of the CRM. Every email a Person receives, every interaction the operator has with them, every transaction, appears in this single feed on the Person view.
 
+### Mention vs Customer Tag
+Both use the same `@` autocomplete in the **team Feed** (posts and comments), but the effect depends on who is tagged:
+- **Mention** — tagging a **staff** teammate. Sends them a "X mentioned you" push notification (it's directed *at* them).
+- **Customer Tag** — tagging a **member/customer**. Mirrors the note onto that customer's client record (their notes/timeline) and is **silent to the customer** — no push. It's an internal note *about* them, never a message *to* them.
+
+A customer must never receive a push for an internal note that merely discusses them.
+
 ### Campaign
 A single email or a series of emails sent to a defined audience. Two types:
 - **Single** — one email to one audience, fires once when activated

@@ -28,6 +28,9 @@ class Note < ApplicationRecord
   belongs_to :operator
   belongs_to :notable, polymorphic: true
   belongs_to :author, class_name: "User"
+  # Provenance for notes auto-created by tagging a customer in the team Feed
+  # (the source FeedItem/comment). nil for hand-written notes. See ADR 0006.
+  belongs_to :source, polymorphic: true, optional: true
 
   has_rich_text :body
   validates :body, presence: true
