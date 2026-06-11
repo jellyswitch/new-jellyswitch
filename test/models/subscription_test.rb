@@ -146,6 +146,23 @@ class SubscriptionTest < ActiveSupport::TestCase
     assert sub.has_days_left?
   end
 
+  # Explicit guard for the user's concern: an UNLIMITED plan (has_day_limit
+  # false) must never be gated by the Day Pool, no matter how many door punches
+  # the member racks up.
+  test "an unlimited plan is never day-gated, even with many door punches" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.update!(stripe_subscription_id: nil, start_date: 5.days.ago)
+    sub.plan.update!(has_day_limit: false, day_limit: 0,
+                     always_allow_building_access: true, location_id: locations(:cowork_tahoe_location).id)
+    member = sub.subscribable
+    door = door_at(locations(:cowork_tahoe_location))
+    (1..5).each { |d| punch!(member, door, d.days.ago.change(hour: 9)) }
+
+    assert_equal 0, sub.day_pool_used, "no limit → the day pool isn't even counted"
+    assert sub.has_days_left?, "no limit → has_days_left? is always true"
+    assert member.has_building_access_membership?, "unlimited member keeps building access regardless of entries"
+  end
+
   test "has_days_left? is always true for an organization subscription (no door punches as an entity)" do
     sub = day_limited_sub(limit: 1) # valid, day-limited plan
     org = organizations(:sierra_nevada_organization)
