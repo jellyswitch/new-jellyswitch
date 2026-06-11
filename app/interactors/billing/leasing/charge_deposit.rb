@@ -5,15 +5,20 @@ class Billing::Leasing::ChargeDeposit
 
   def call
     return unless office_lease.deposit_amount_in_cents.to_i > 0
+    return if office_lease.deposit_invoiced_at.present? # idempotent — already done
 
     subscription = office_lease.subscription
-    subscribable = subscription.subscribable
     location = office_lease.location
 
-    stripe_customer_id = if subscribable.respond_to?(:stripe_customer_id)
-      subscribable.stripe_customer_id
-    elsif subscribable.respond_to?(:stripe_customer_id_for_location)
-      subscribable.stripe_customer_id_for_location(location)
+    # Use the SAME customer the subscription bills (location-scoped), not the
+    # plain stripe_customer_id column — that column is often nil for a brand-new
+    # individual lessee, which silently skipped the deposit. See ADR-less note /
+    # the lease "Generate deposit invoice" recovery action.
+    payer = subscription.billable || subscription.subscribable
+    stripe_customer_id = if payer.respond_to?(:stripe_customer_id_for_location)
+      payer.stripe_customer_id_for_location(location)
+    elsif payer.respond_to?(:stripe_customer_id)
+      payer.stripe_customer_id
     end
 
     return unless stripe_customer_id.present?
@@ -44,6 +49,11 @@ class Billing::Leasing::ChargeDeposit
       {},
       { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
     )
+
+    # Mark the deposit as invoiced so the lease page stops flagging it and the
+    # charge can't run twice. A nil value = "deposit owed but not yet invoiced",
+    # which the lease screen surfaces with Generate / Mark-as-invoiced actions.
+    office_lease.update!(deposit_invoiced_at: Time.current)
   rescue StandardError => e
     Honeybadger.notify(e)
     Rails.logger.error("ChargeDeposit failed: #{e.class}: #{e.message}")

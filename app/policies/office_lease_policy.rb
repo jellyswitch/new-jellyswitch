@@ -44,6 +44,14 @@ class OfficeLeasePolicy < ApplicationPolicy
     enabled? && (admin? || general_manager?) && record.individual_lease? && record.active?
   end
 
+  def charge_deposit?
+    enabled? && (admin? || general_manager?)
+  end
+
+  def mark_deposit_invoiced?
+    charge_deposit?
+  end
+
   private
 
   def owner?

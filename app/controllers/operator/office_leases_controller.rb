@@ -165,6 +165,34 @@ class Operator::OfficeLeasesController < Operator::BaseController
     turbo_redirect(office_lease_path(@office_lease), action: "replace")
   end
 
+  # Recovery for a deposit that wasn't auto-invoiced at lease creation (silent
+  # ChargeDeposit failure, or a deposit added later). Idempotent — ChargeDeposit
+  # no-ops if deposit_invoiced_at is already set. See the lease show page.
+  def charge_deposit
+    find_office_lease(:office_lease_id)
+    authorize @office_lease
+
+    Billing::Leasing::ChargeDeposit.call(office_lease: @office_lease, operator: current_tenant)
+
+    if @office_lease.reload.deposit_invoiced_at.present?
+      flash[:success] = "Deposit invoice generated."
+    else
+      flash[:error] = "Couldn't generate the deposit invoice — check the member's billing setup and try again, or mark it as already invoiced."
+    end
+    turbo_redirect(office_lease_path(@office_lease))
+  end
+
+  # For deposits collected out-of-band (cash, a manual Stripe invoice, waived):
+  # clear the "deposit not invoiced" flag WITHOUT charging.
+  def mark_deposit_invoiced
+    find_office_lease(:office_lease_id)
+    authorize @office_lease
+
+    @office_lease.update!(deposit_invoiced_at: Time.current)
+    flash[:success] = "Deposit marked as already invoiced."
+    turbo_redirect(office_lease_path(@office_lease))
+  end
+
   private
 
   # The lease form collects money in dollars (e.g. "579" or "579.00"). Convert

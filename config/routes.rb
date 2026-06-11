@@ -695,6 +695,8 @@ Rails.application.routes.draw do
     get :edit_price, to: "operator/office_leases#edit_price"
     patch :update_price, to: "operator/office_leases#update_price"
     post :convert_to_organization, to: "operator/office_leases#convert_to_organization"
+    post :charge_deposit, to: "operator/office_leases#charge_deposit"
+    post :mark_deposit_invoiced, to: "operator/office_leases#mark_deposit_invoiced"
   end
   delete "destroy_office_lease_now/:id", to: "operator/office_leases#destroy_office_lease_now", as: "destroy_office_lease_now"
   resources :organizations, controller: "operator/organizations" do

@@ -59,7 +59,24 @@
     <% if @office_lease.deposit_amount_in_cents.to_i > 0 %>
       <dl class="row">
         <dt class="col-sm-3">Deposit / Setup Fee</dt>
-        <dd class="col-sm"><%= number_to_currency(@office_lease.deposit_amount_in_cents / 100.0) %></dd>
+        <dd class="col-sm">
+          <%= number_to_currency(@office_lease.deposit_amount_in_cents / 100.0) %>
+          <% if @office_lease.deposit_invoiced_at.present? %>
+            <span class="badge badge-success">Invoiced <%= @office_lease.deposit_invoiced_at.to_date.strftime("%b %-d, %Y") %></span>
+          <% else %>
+            <span class="badge badge-warning">Not yet invoiced</span>
+            <% if policy(@office_lease).charge_deposit? %>
+              <div class="mt-2">
+                <%= button_to "Generate deposit invoice", office_lease_charge_deposit_path(@office_lease),
+                      method: :post, class: "btn btn-sm btn-primary",
+                      form: { data: { turbo_confirm: "Charge a #{number_to_currency(@office_lease.deposit_amount_in_cents / 100.0)} deposit to this member now?" } } %>
+                <%= button_to "Mark as already invoiced", office_lease_mark_deposit_invoiced_path(@office_lease),
+                      method: :post, class: "btn btn-sm btn-outline-secondary",
+                      form: { data: { turbo_confirm: "Mark this deposit as already invoiced (no charge)?" } } %>
+              </div>
+            <% end %>
+          <% end %>
+        </dd>
       </dl>
     <% end %>
 

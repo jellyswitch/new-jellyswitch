@@ -110,4 +110,36 @@ RSpec.describe Operator::OfficeLeasesController, type: :controller do
       expect(captured.deposit_amount_in_cents).to eq(1_234)
     end
   end
+
+  describe "#mark_deposit_invoiced" do
+    it "stamps deposit_invoiced_at without charging anything" do
+      expect(Billing::Leasing::ChargeDeposit).not_to receive(:call)
+
+      post :mark_deposit_invoiced, params: { office_lease_id: office_lease.id }
+
+      expect(office_lease.reload.deposit_invoiced_at).to be_present
+      expect(flash[:success]).to be_present
+    end
+  end
+
+  describe "#charge_deposit" do
+    it "runs ChargeDeposit and reports success once the deposit is invoiced" do
+      expect(Billing::Leasing::ChargeDeposit).to receive(:call) do |args|
+        args[:office_lease].update!(deposit_invoiced_at: Time.current)
+      end
+
+      post :charge_deposit, params: { office_lease_id: office_lease.id }
+
+      expect(flash[:success]).to match(/deposit invoice/i)
+    end
+
+    it "reports a recoverable error when the deposit still wasn't invoiced" do
+      allow(Billing::Leasing::ChargeDeposit).to receive(:call) # no-op → stays nil
+
+      post :charge_deposit, params: { office_lease_id: office_lease.id }
+
+      expect(office_lease.reload.deposit_invoiced_at).to be_nil
+      expect(flash[:error]).to be_present
+    end
+  end
 end
