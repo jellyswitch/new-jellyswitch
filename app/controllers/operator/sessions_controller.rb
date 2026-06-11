@@ -9,6 +9,14 @@ class Operator::SessionsController < Operator::BaseController
   def create
     authorize :session, :create?
 
+    # Bots/scanners POST to /login with no (or an empty) `session` param,
+    # which Rails drops entirely — guard so we redirect instead of 500ing on nil.
+    if params[:session].blank?
+      flash[:error] = "Please enter your email and password."
+      turbo_redirect(login_path, action: "replace")
+      return
+    end
+
     @email = params[:session][:email].downcase
     @operator = current_tenant
 
