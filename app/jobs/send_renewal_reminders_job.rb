@@ -4,7 +4,7 @@ class SendRenewalRemindersJob < ApplicationJob
   def perform
     Operator.find_each do |operator|
       ActsAsTenant.with_tenant(operator) do
-        Subscription.where(active: true).find_each do |subscription|
+        Subscription.renewal_reminder_candidates.find_each do |subscription|
           next unless subscription.has_stripe_subscription?
 
           begin

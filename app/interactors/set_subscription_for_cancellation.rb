@@ -4,6 +4,7 @@ class SetSubscriptionForCancellation
 
   organize(
     FeedItems::Create,
-    Billing::Subscription::SetStripeSubscriptionForCancellation
+    Billing::Subscription::SetStripeSubscriptionForCancellation,
+    Billing::Subscription::SendCancellationConfirmation
   )
 end

@@ -7,5 +7,6 @@ class Billing::Subscription::CancelSubscriptionNow
     Billing::Credits::Reset,
     CreateNotifications,
     Billing::Subscription::CancelStripeSubscription,
+    Billing::Subscription::SendCancellationConfirmation
     )
 end
