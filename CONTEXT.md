@@ -6,6 +6,36 @@ For architectural decisions (the *why* behind the vocabulary), see `docs/adr/`.
 
 ---
 
+## Membership Usage Limits
+
+A plan can cap how much a member consumes per period. There are two independent caps, each backed by its own monthly "pool":
+
+### Day Pool
+The number of **distinct days a member may physically use the space** within a period, set by `Plan.day_limit` (gated by `Plan.has_day_limit`). Operator-facing label: **"Monthly Limit"** ("Limit number of days per month to:"). A *day is used* when the member **opens the door** (a door punch) **at the plan's location** on that calendar day — multiple entries on one day still count as one day. Check-ins and reservations do **not** burn a Day Pool day; a no-show (booked but never entered) costs no day. Enforced at building-access / door-open time, not at booking time. Location-scoped: an entry at one location does not draw from a plan tied to another location.
+_Avoid_: "visit limit", "day cap" — say **Day Pool** for the allowance and **Monthly Limit** for the operator-facing setting.
+
+### Day Credit
+A manual, admin-granted adjustment that returns one (or more) used days to a member for the current period — for door malfunctions, goodwill, etc. Increases the member's remaining Day Pool. Auditable (who granted it, when, why).
+
+### Hour Pool
+The number of free **meeting-room minutes** a member gets per period, set by `Plan.included_meeting_room_minutes`, with `Plan.overage_rate_in_cents` charged beyond it. Only **free/standard** rooms (not premium/paid rooms) draw from this pool, and only at the plan's own location.
+_Avoid_: "minute pool", "room credits" — say **Hour Pool**.
+
+### Billing Period
+The monthly window a pool is measured against. For Stripe-billed subscriptions it is the Stripe `current_period_start..current_period_end`; for comp/manual subscriptions it is the `start_date` day-of-month anniversary window (`Subscription#monthly_anniversary_window`).
+
+## Relationships
+
+- A **Plan** may define a **Day Pool** and/or an **Hour Pool**; both are measured per **Billing Period**.
+- A **Reservation** draws from the **Hour Pool** of the **Billing Period it falls in** — booking for next month draws from next month's Hour Pool, not the current one. The charge is *date-aware*, evaluated against the reservation's date, not "now".
+- A **door punch** draws from the **Day Pool** of the **Billing Period the entry falls in**.
+- Exhausting the **Day Pool** revokes a member's *building access* only — it does **not** revoke membership identity (they remain a Member, still billed, still rendered as active). The day-limit gate lives on the building-access path, never inside `has_active_subscription?`.
+- A **Day Credit** offsets door-punch days within a period, raising the member's remaining Day Pool.
+
+## Flagged ambiguities
+
+- "pool" was used loosely for both the day allowance and the meeting-room-minute allowance — resolved: **Day Pool** (distinct days) and **Hour Pool** (free room minutes) are distinct caps with separate fields.
+
 ## CRM / Marketing
 
 ### Person

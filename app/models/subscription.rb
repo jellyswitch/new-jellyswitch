@@ -102,14 +102,68 @@ class Subscription < ApplicationRecord
     end
   end
 
-  def has_days_left?
-    return true # ignore day limits for now
-    !plan.has_day_limit? || days_left > 0
+  # ---- Day Pool (per-plan monthly day limit) ----------------------------
+  # A "day used" is a calendar day on which the member opened the door (a door
+  # punch) at the plan's location, counted within the current billing period,
+  # net of admin-granted comp days. Reservations/check-ins never burn a day.
+  # Exhausting the pool gates BUILDING ACCESS only — it does not revoke
+  # membership identity (see app/models/concerns/permissions.rb). That coupling
+  # was the bug behind the 2020 `return true` workaround; see ADR 0004.
+
+  # The location the day limit is scoped to. A door punch resolves to a
+  # location via its door, so the pool only counts entries at this location.
+  def day_pool_location
+    plan.location
   end
 
-  def days_left
-    report = Jellyswitch::UsageReport.new(subscribable)
-    plan.day_limit - report.days_used_count
+  # Distinct door-punch days at the plan's location within the current billing
+  # period, minus comp days, floored at 0.
+  def day_pool_used
+    return 0 unless plan.has_day_limit? && subscribable.is_a?(User) && day_pool_location
+    period_start, period_end = current_billing_period
+    return 0 unless period_start
+
+    punch_days = subscribable.door_punches
+                             .joins(:door)
+                             .where(doors: { location_id: day_pool_location.id })
+                             .where(created_at: period_start...period_end)
+                             .group_by_day("door_punches.created_at").count.keys.count
+
+    comps = CompDay.for_period(period_start, period_end)
+                   .where(user_id: subscribable_id, location_id: day_pool_location.id)
+                   .count
+
+    [punch_days - comps, 0].max
+  rescue StandardError => e
+    0 # fail open: never lock a paying member out over a counting error
+  end
+
+  # Days remaining in the pool, floored at 0 — for display / API.
+  def day_pool_remaining
+    [plan.day_limit - day_pool_used, 0].max
+  end
+  alias_method :days_left, :day_pool_remaining
+
+  # Building-access gate: does the member have a day left to enter today?
+  # Same-day re-entry is always free (today is already a counted day).
+  def has_days_left?(now = Time.current)
+    return true unless plan.has_day_limit?
+    return true unless subscribable.is_a?(User)
+    return true if used_day_today?(now)
+    day_pool_remaining > 0
+  end
+
+  # Did the member already open the door at the plan's location today? Used so
+  # a member who hits their cap mid-day is not locked out on re-entry.
+  def used_day_today?(now = Time.current)
+    return false unless day_pool_location
+    subscribable.door_punches
+                .joins(:door)
+                .where(doors: { location_id: day_pool_location.id })
+                .where(created_at: now.beginning_of_day..now.end_of_day)
+                .exists?
+  rescue StandardError => e
+    false
   end
 
   def current_billing_period
@@ -119,6 +173,22 @@ class Subscription < ApplicationRecord
     [Time.at(sub.current_period_start), Time.at(sub.current_period_end)]
   rescue StandardError => e
     monthly_anniversary_window
+  end
+
+  # The billing-period window CONTAINING `date`. For the current period this is
+  # exactly current_billing_period; for other periods it rolls the monthly
+  # window from the current anchor. Lets usage be attributed to the period a
+  # reservation FALLS IN, so booking for next month draws from next month's
+  # fresh pool rather than the current (possibly exhausted) one.
+  def billing_period_for(date = Time.current)
+    cur_start, cur_end = current_billing_period
+    return monthly_anniversary_window(date) unless cur_start
+    return [cur_start, cur_end] if date >= cur_start && date < cur_end
+
+    start = cur_start
+    start -= 1.month while date < start
+    start += 1.month while date >= start + 1.month
+    [start, start + 1.month]
   end
 
   # Non-Stripe (comp/manual) subscriptions have no Stripe billing cycle, so

@@ -86,10 +86,12 @@ module Permissions
   # room reservations, the "is this person currently a member" gate —
   # a paused sub should not count, otherwise members keep building
   # access after pausing.
+  # Membership identity at a location. Deliberately NOT gated on the day-pool
+  # limit (has_days_left?): a member who has used up their monthly days is still
+  # a member with room access — running out of days revokes building access
+  # only, on the access path below. See ADR 0004.
   def has_active_subscription_at_location?(location)
-    subscriptions.for_location(location).active.where(paused: false).select do |sub|
-      sub.has_days_left?
-    end.count > 0
+    subscriptions.for_location(location).active.where(paused: false).count > 0
   end
 
   # PLEEEASE REFRAIN FROM USING THIS METHOD, only when there is no location to be checked
@@ -121,10 +123,10 @@ module Permissions
   # for the full rationale. The `subscriptions.active` scope still
   # exists for billing-side use (Stripe sync, cancel flows) where
   # paused rows are still meaningful records.
+  # Membership identity, operator-wide. NOT gated on the day-pool limit — see
+  # has_active_subscription_at_location? and ADR 0004.
   def has_active_subscription?
-    subscriptions.for_operator(operator).active.where(paused: false).select do |sub|
-      sub.has_days_left?
-    end.count > 0
+    subscriptions.for_operator(operator).active.where(paused: false).count > 0
   end
 
   def has_building_access?(location)
@@ -139,9 +141,15 @@ module Permissions
     has_active_day_pass_at_location?(location)
   end
 
+  # Building access via membership. This is where the day-pool limit gates:
+  # a subscription only grants access while it has days left (has_days_left? is
+  # itself scoped to the subscription's own location, so this stays correct for
+  # members who roam between an operator's locations). A member out of days on
+  # their only plan is blocked; a member with any other always-allow plan that
+  # still has days left keeps access.
   def has_building_access_membership?
-    has_active_subscription? && subscriptions.active.where(paused: false).any? do |subscription|
-      subscription.plan.always_allow_building_access?
+    subscriptions.active.where(paused: false).any? do |subscription|
+      subscription.plan.always_allow_building_access? && subscription.has_days_left?
     end
   end
 
@@ -226,15 +234,18 @@ module Permissions
   # Returns charge info for subscription members booking meeting rooms.
   # Returns nil if user has no active subscription or plan has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.
-  def subscription_reservation_charge_info(location, requested_minutes, room: nil)
+  def subscription_reservation_charge_info(location, requested_minutes, room: nil, at: Time.current)
     subscription = active_subscription_for_location(location)
     return nil unless subscription
 
     plan = subscription.plan
     return nil unless plan.has_meeting_room_limit?
 
-    # Determine current billing cycle dates from Stripe
-    period_start, period_end = subscription.current_billing_period
+    # Bill against the period the reservation FALLS IN (date-aware), so a
+    # booking for next month draws from next month's fresh pool, not the
+    # current one. Defaults to the current period for callers that don't
+    # supply the reservation's date.
+    period_start, period_end = subscription.billing_period_for(at)
     return nil unless period_start
 
     # Sum non-cancelled reservation minutes in this billing cycle.

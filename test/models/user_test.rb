@@ -167,6 +167,65 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 60, info[:used_minutes], "only the 60 min booked at THIS location should count against its pool"
   end
 
+  # ---- Day Pool gates BUILDING ACCESS only, not membership identity (ADR 0004) ----
+
+  def setup_day_limited_member(limit:, punch_days:)
+    member = users(:cowork_tahoe_member)
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.update!(stripe_subscription_id: nil, start_date: 5.days.ago)
+    sub.plan.update!(has_day_limit: true, day_limit: limit,
+                     always_allow_building_access: true, location_id: @location.id)
+    door = Door.create!(name: "D#{SecureRandom.hex(3)}", slug: "d-#{SecureRandom.hex(4)}",
+                        operator: operators(:cowork_tahoe), location: @location)
+    punch_days.each do |d|
+      p = DoorPunch.create!(user: member, door: door, operator: operators(:cowork_tahoe))
+      p.update_column(:created_at, d.days.ago.change(hour: 9))
+    end
+    member
+  end
+
+  test "exhausting the day pool keeps membership but drops membership building access" do
+    member = setup_day_limited_member(limit: 2, punch_days: [1, 2]) # 2 of 2 used, none today
+
+    assert member.has_active_subscription?,
+      "still a Member when out of days — identity must not be revoked"
+    assert member.has_active_subscription_at_location?(@location),
+      "room visibility / membership at location stays intact"
+    refute member.has_building_access_membership?,
+      "but membership no longer grants building access — the day pool is exhausted"
+  end
+
+  test "a day-limited member under the limit keeps membership building access" do
+    member = setup_day_limited_member(limit: 5, punch_days: [1]) # 1 of 5 used
+
+    assert member.has_active_subscription?
+    assert member.has_building_access_membership?
+  end
+
+  # Hour Pool is date-aware: a reservation draws from the pool of the billing
+  # period it FALLS IN, not the period it was booked in. Booking for next month
+  # sees next month's fresh pool even if this month's pool is exhausted.
+  test "subscription_reservation_charge_info draws from the period the reservation falls in (date-aware)" do
+    member = users(:cowork_tahoe_member)
+    Reservation.where(user_id: member.id).delete_all
+    subscriptions(:cowork_tahoe_subscription).update!(stripe_subscription_id: nil, start_date: 5.days.ago)
+    plans(:cowork_tahoe_full_time_plan).update!(
+      included_meeting_room_minutes: 120, overage_rate_in_cents: 6000, location_id: @location.id,
+    )
+    free_room = rooms(:small_meeting_room); free_room.update!(hourly_rate_in_cents: 0, location: @location)
+
+    # Exhaust THIS period (120 of 120 used).
+    Reservation.create!(user: member, room: free_room, datetime_in: 1.day.from_now.change(hour: 9), minutes: 120, cancelled: false)
+
+    this_period = member.subscription_reservation_charge_info(@location, 60, room: free_room, at: 1.day.from_now)
+    assert_equal 120, this_period[:used_minutes], "this period is exhausted"
+    assert_equal :partial_overage, this_period[:charge_type]
+
+    next_period = member.subscription_reservation_charge_info(@location, 60, room: free_room, at: 40.days.from_now)
+    assert_equal 0, next_period[:used_minutes], "next period's pool is fresh — this period's bookings don't count"
+    assert_equal :free, next_period[:charge_type]
+  end
+
   # Door punches flood the timeline. "Recent" should hide them EXCEPT the first
   # punch after each join/payment milestone; the full history lives in "Doors".
   test "recent_timeline_activities keeps only the first door punch after each join/payment" do

@@ -99,7 +99,9 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     end
 
     day_pass_charge_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
-    subscription_charge_info = user.subscription_reservation_charge_info(location, minutes, room: room)
+    # Date-aware: bill against the period this reservation falls in, so booking
+    # for next month draws from next month's fresh meeting-room pool.
+    subscription_charge_info = user.subscription_reservation_charge_info(location, minutes, room: room, at: datetime_in)
 
     result = Billing::Reservations::CreateRoomReservation.call(
       reservation_params: {

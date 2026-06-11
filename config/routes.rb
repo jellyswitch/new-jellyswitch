@@ -836,6 +836,7 @@ Rails.application.routes.draw do
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
+    resources :comp_days, only: [:create], controller: "operator/comp_days"
     collection do
       get "add_member", to: "operator/users#add_member"
       get :archived, to: "operator/users#archived"

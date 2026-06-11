@@ -22,7 +22,7 @@ class AuthorizeReservationHoldJob < ApplicationJob
       room: reservation.room,
     ) rescue nil
     subscription_charge_info = user.subscription_reservation_charge_info(
-      location, reservation.minutes, room: reservation.room,
+      location, reservation.minutes, room: reservation.room, at: reservation.datetime_in,
     ) rescue nil
 
     result = Billing::Reservations::AuthorizeHold.call(

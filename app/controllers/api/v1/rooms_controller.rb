@@ -113,7 +113,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       }
     end
 
-    sub_info = user.subscription_reservation_charge_info(location, minutes, room: room)
+    sub_info = user.subscription_reservation_charge_info(location, minutes, room: room, at: date.in_time_zone)
     dp_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
 
     # Active subscriber on a plan with no meeting-room limit → rooms are

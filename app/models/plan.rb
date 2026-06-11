@@ -49,6 +49,9 @@ class Plan < ApplicationRecord
   friendly_id :name, use: :slugged
 
   validates :amount_in_cents, numericality: { greater_than_or_equal_to: 0 }
+  # A day-limited plan must allow at least one day; otherwise enabling the limit
+  # would lock every member out (see the Day Pool, ADR 0004).
+  validates :day_limit, numericality: { greater_than_or_equal_to: 1 }, if: :has_day_limit?
 
   # Scopes
   scope :available, -> { where(available: true) }

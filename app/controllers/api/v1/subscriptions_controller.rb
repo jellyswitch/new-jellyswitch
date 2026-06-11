@@ -225,6 +225,9 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       paused: sub.try(:paused?) || false,
       cancelling: sub.cancelling_at_end_of_billing_period?,
       days_left: plan.try(:has_day_limit?) ? sub.try(:days_left) : nil,
+      day_limit: plan.try(:has_day_limit?) ? plan.day_limit : nil,
+      days_used: plan.try(:has_day_limit?) ? sub.try(:day_pool_used) : nil,
+      # Day Pool resets with the billing period; period_end_date above is that date.
       included_meeting_minutes: plan.try(:included_meeting_room_minutes),
       billed_to: sub.subscribable_type == 'Organization' ? 'organization' : 'user',
     }

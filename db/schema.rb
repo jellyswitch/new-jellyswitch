@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_08_070000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_11_024700) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -260,6 +260,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_070000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "capacity", default: 0, null: false
+  end
+
+  create_table "comp_days", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.bigint "location_id", null: false
+    t.bigint "granted_by_id"
+    t.bigint "subscription_id"
+    t.date "occurred_on", null: false
+    t.string "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["granted_by_id"], name: "index_comp_days_on_granted_by_id"
+    t.index ["location_id"], name: "index_comp_days_on_location_id"
+    t.index ["operator_id"], name: "index_comp_days_on_operator_id"
+    t.index ["subscription_id"], name: "index_comp_days_on_subscription_id"
+    t.index ["user_id", "location_id", "occurred_on"], name: "index_comp_days_on_user_id_and_location_id_and_occurred_on"
+    t.index ["user_id"], name: "index_comp_days_on_user_id"
   end
 
   create_table "day_pass_types", force: :cascade do |t|
@@ -1086,6 +1104,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_08_070000) do
   add_foreign_key "campaign_sends", "campaign_steps"
   add_foreign_key "campaign_sends", "campaigns"
   add_foreign_key "campaign_steps", "campaigns"
+  add_foreign_key "comp_days", "locations"
+  add_foreign_key "comp_days", "subscriptions"
+  add_foreign_key "comp_days", "users"
+  add_foreign_key "comp_days", "users", column: "granted_by_id"
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"
