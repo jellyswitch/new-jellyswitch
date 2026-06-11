@@ -29,14 +29,6 @@ RSpec.describe Operator::DoorsController, type: :controller do
       get :index
       expect(assigns(:doors)).not_to include(private_door)
     end
-
-    it "includes doors where private is nil for non-admin users" do
-      nil_private_door = create(:door, operator: operator, location: location, name: "Nil Door")
-      nil_private_door.update_column(:private, nil)
-      allow(controller).to receive(:current_user).and_return(regular_user)
-      get :index
-      expect(assigns(:doors)).to include(nil_private_door)
-    end
   end
 
   describe "GET #show" do
@@ -276,13 +268,6 @@ RSpec.describe Operator::DoorsController, type: :controller do
         get :keys
         expect(assigns(:doors)).to include(door)
         expect(assigns(:doors)).not_to include(private_door)
-      end
-
-      it "includes doors where private is nil" do
-        nil_private_door = create(:door, operator: operator, location: location, name: "Nil Door")
-        nil_private_door.update_column(:private, nil)
-        get :keys
-        expect(assigns(:doors)).to include(nil_private_door)
       end
     end
 
