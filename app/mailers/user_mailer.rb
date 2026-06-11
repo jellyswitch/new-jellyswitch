@@ -135,6 +135,20 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Your membership renews soon", from: from_address, reply_to: operator.contact_email
   end
 
+  # Commitment-term renewal notice: sent `commitment_notice_days` (default 30)
+  # before a committed membership's term re-arms — the member's opt-out window.
+  def commitment_renewal_email(user, operator, subscription, location = nil)
+    @user = user
+    @operator = operator
+    @subscription = subscription
+    @location = location
+    @ends_on = subscription.commitment_term_end
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Your membership commitment renews soon",
+         from: from_address, reply_to: operator.contact_email
+  end
+
   def lease_renewal_proposal_email(user, operator, renewal_request, location = nil)
     @user = user
     @operator = operator

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Your membership commitment renews soon</title>
+  </head>
+  <body style="font-family: Helvetica, sans-serif; -webkit-font-smoothing: antialiased; font-size: 14px; line-height: 1.5; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f6f6f6;">
+      <tr>
+        <td align="center" style="padding: 24px;">
+          <table border="0" cellpadding="0" cellspacing="0" width="600" style="max-width: 600px; background: #ffffff; border-radius: 8px;">
+            <tr>
+              <td style="padding: 28px;">
+                <% if @operator.logo_image.attached? %>
+                  <div style="text-align:center; margin-bottom: 20px;">
+                    <img src="<%= polymorphic_url(@operator.logo_image, subdomain: @operator.subdomain) %>" width="70" alt="<%= @operator.name %>" style="border:none; max-width:100%;">
+                  </div>
+                <% end %>
+
+                <p>Hi <%= @user.name.presence || "there" %>,</p>
+
+                <p>
+                  Your <strong><%= @subscription.plan.name %></strong> commitment at
+                  <strong><%= @location&.name || @operator.name %></strong>
+                  <% if @ends_on %>renews on <strong><%= @ends_on.to_date.strftime("%B %-d, %Y") %></strong><% else %>renews soon<% end %>.
+                </p>
+
+                <p>
+                  Unless you make a change before then, your membership will continue for another
+                  <strong><%= @subscription.plan.commitment_interval %> <%= @subscription.plan.display_interval.pluralize(@subscription.plan.commitment_interval) %></strong>
+                  at the same rate. There's nothing you need to do to stay.
+                </p>
+
+                <p>
+                  Want to change or end your membership? You can manage it in the app, or just reply to
+                  this email and we'll take care of it.
+                </p>
+
+                <p style="margin-top: 24px;">— The <%= @operator.name %> team</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
