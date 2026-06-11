@@ -14,6 +14,11 @@ class AuthenticationCheckTest < ApplicationSystemTestCase
   end
 
   test "non logged in user need to login" do
+    # Capybara's between-test session reset occasionally doesn't clear a prior
+    # test's login (a leaked session made this assert the logged-out copy
+    # against a logged-in page). Force a clean, logged-out session up front.
+    Capybara.reset_sessions!
+
     user = users(:cowork_tahoe_admin)
     operator = operators(:cowork_tahoe)
 

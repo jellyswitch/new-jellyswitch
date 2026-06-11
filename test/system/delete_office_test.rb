@@ -18,7 +18,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
 
     visit office_path(@office_no_lease)
 
-    click_on "Delete this office"
+    open_modal "Delete this office", "delete-office-modal"
 
     within "#delete-office-modal" do
       assert_text "This action cannot be undone. Deleting this office will permanently remove:"
@@ -39,7 +39,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
 
     visit office_path(@office_with_active_lease)
 
-    click_on "Delete this office"
+    open_modal "Delete this office", "delete-office-modal"
 
     within "#delete-office-modal" do
       assert_text "Note: This office cannot be deleted because it has an active lease."
@@ -53,7 +53,7 @@ class DeleteOfficeTest < ApplicationSystemTestCase
 
     visit office_path(@office_with_past_lease)
 
-    click_on "Delete this office"
+    open_modal "Delete this office", "delete-office-modal"
 
     within "#delete-office-modal" do
       click_on "Confirm"
