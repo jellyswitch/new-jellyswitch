@@ -6,11 +6,20 @@ class SessionsController < ApplicationController
 
   def create
     authorize :session, :create?
+
+    # Bots/scanners POST to /login with no (or an empty) `session` param,
+    # which Rails drops entirely — guard so we redirect instead of 500ing on nil.
+    if params[:session].blank?
+      flash[:error] = "Please enter your email and password."
+      turbo_redirect(operator_login_path, action: "replace")
+      return
+    end
+
     users = User.where(email: params[:session][:email].downcase, admin: true)
 
     if users.count < 1
       flash[:error] = "No such user found."
-      turbo_redirect(new_session_path)
+      turbo_redirect(operator_login_path)
     elsif users.count == 1
       if users.first.superadmin?
         # redirect to password form
@@ -38,12 +47,21 @@ class SessionsController < ApplicationController
     @user = User.find_by(email: email, superadmin: true)
     if @user.blank?
       flash[:error] = "No such user."
-      turbo_redirect(new_session_path)
+      turbo_redirect(operator_login_path)
     end
   end
 
   def real_create
     # for admins only
+
+    # Same nil-param guard as `create` — a POST to /real_login with no
+    # `session` param would otherwise raise on `params[:session][:email]`.
+    if params[:session].blank?
+      flash[:error] = "Please enter your email and password."
+      turbo_redirect(password_form_path, action: "replace")
+      return
+    end
+
     user = User.find_by(email: params[:session][:email].downcase, superadmin: true)
     if user && user.authenticate(params[:session][:password])
       log_in(user)
