@@ -123,11 +123,14 @@ class Subscription < ApplicationRecord
     period_start, period_end = current_billing_period
     return 0 unless period_start
 
+    # group_by_day fills the date range with zero-count entries for gap days,
+    # so reject the empties before counting distinct days (mirrors UsageReport).
     punch_days = subscribable.door_punches
                              .joins(:door)
                              .where(doors: { location_id: day_pool_location.id })
                              .where(created_at: period_start...period_end)
-                             .group_by_day("door_punches.created_at").count.keys.count
+                             .group_by_day("door_punches.created_at").count
+                             .count { |_day, n| n.positive? }
 
     comps = CompDay.for_period(period_start, period_end)
                    .where(user_id: subscribable_id, location_id: day_pool_location.id)

@@ -60,6 +60,19 @@ class SubscriptionTest < ActiveSupport::TestCase
     assert_equal 7, sub.day_pool_remaining
   end
 
+  # Regression: Groupdate's group_by_day(...).count FILLS the date range with
+  # zero-count entries for gap days, so .keys over-counts when punch days aren't
+  # consecutive. Only days that actually have a punch may count.
+  test "day_pool_used counts only days WITH a punch, not the gaps between them" do
+    sub = day_limited_sub(limit: 10)
+    member = sub.subscribable
+    door = door_at(locations(:cowork_tahoe_location))
+    punch!(member, door, 1.day.ago.change(hour: 9))
+    punch!(member, door, 5.days.ago.change(hour: 9)) # gap: days 2,3,4 have no punch
+
+    assert_equal 2, sub.day_pool_used, "only the 2 punched days count, not the empty gap days"
+  end
+
   test "day_pool_used ignores door punches at OTHER locations" do
     sub = day_limited_sub(limit: 10)
     member = sub.subscribable
