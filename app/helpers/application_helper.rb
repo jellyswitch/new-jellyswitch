@@ -61,7 +61,12 @@ module ApplicationHelper
     when "untethered"             then "#1B3A4B"  # Untethered Space navy
     when "choosefolsomworkspace"  then "#4A5568"  # Choose Folsom slate
     when "studio"                 then "#8B2252"  # The Studio burgundy
-    else "#007bff"  # default Bootstrap blue
+    else
+      # Self-serve brands set their own color during onboarding. Normalize to a
+      # leading "#" so the CSS var and brand_color_hover's hex slicing stay valid
+      # (the model allows the hex with or without a leading "#").
+      color = operator.try(:primary_color).to_s.strip
+      color.present? ? (color.start_with?("#") ? color : "##{color}") : "#007bff"
     end
   end
 
