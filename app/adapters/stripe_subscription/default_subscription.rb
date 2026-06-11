@@ -40,19 +40,12 @@ module StripeSubscription
     end
 
     def cancel_at
-      if subscription.plan.plan_type == "lease"
-        if lease.present?
-          lease.end_date.to_time.to_i
-        else
-          nil
-        end
-      else
-        if subscription.plan.has_commitment_interval?
-          (subscription.start_date + subscription.plan.commitment_duration).to_time.to_i
-        else
-          nil
-        end
-      end
+      # Only a fixed-end LEASE gets a Stripe cancel_at. A Commitment is a
+      # minimum term on an ONGOING subscription — it must NOT auto-cancel at the
+      # term boundary (that was the original bug, see ADR 0005). Early-cancel
+      # enforcement during a commitment lives in the cancel flow instead.
+      return nil unless subscription.plan.plan_type == "lease"
+      lease&.end_date&.to_time&.to_i
     end
   end
 end

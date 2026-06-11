@@ -170,4 +170,57 @@ class SubscriptionTest < ActiveSupport::TestCase
                 billable: org, billable_type: "Organization")
     assert sub.has_days_left?, "day limits apply to individual (User) subscriptions only"
   end
+
+  # ---- Commitment Length (minimum term, re-arming) ----
+
+  test "commitment_term_end is the first term boundary after now, advancing across re-arms" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.plan.update!(interval: "monthly", commitment_interval: 6)
+    sub.update!(start_date: 8.months.ago.to_date) # past the first 6-mo term → re-armed into the 2nd
+    term = 6.months
+
+    e = sub.commitment_term_end
+    assert e > Time.current, "the current term boundary must be in the future"
+    assert (e - term) <= Time.current, "it must be the FIRST boundary after now (term re-armed, not the original)"
+  end
+
+  test "commitment_term_end within the first term returns that term's end" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.plan.update!(interval: "monthly", commitment_interval: 6)
+    sub.update!(start_date: 2.months.ago.to_date)
+
+    e = sub.commitment_term_end
+    assert_in_delta (2.months.ago.to_date.to_time + 6.months).to_i, e.to_i, 3.days.to_i
+  end
+
+  test "commitment_term_end is nil without a commitment" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.plan.update!(commitment_interval: nil)
+    assert_nil sub.commitment_term_end
+  end
+
+  test "in_commitment? is true within a term and false without a commitment" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.plan.update!(interval: "monthly", commitment_interval: 6)
+    sub.update!(start_date: 2.months.ago.to_date)
+    assert sub.in_commitment?
+
+    sub.plan.update!(commitment_interval: nil)
+    refute sub.in_commitment?
+  end
+
+  test "schedule_commitment_cancellation! ends at the term boundary and flags cancelling" do
+    sub = subscriptions(:cowork_tahoe_subscription)
+    sub.plan.update!(interval: "monthly", commitment_interval: 6)
+    sub.update!(start_date: 2.months.ago.to_date, cancelling_at_end_of_billing_period: false)
+
+    captured = nil
+    sub.stub(:set_end_date!, ->(d) { captured = d }) do
+      sub.schedule_commitment_cancellation!
+    end
+
+    assert_equal sub.commitment_term_end.to_i, captured.to_i, "Stripe cancel_at set to the commitment boundary"
+    assert sub.reload.cancelling_at_end_of_billing_period, "subscription flagged as scheduled-to-cancel"
+    assert sub.active?, "stays active until the boundary"
+  end
 end

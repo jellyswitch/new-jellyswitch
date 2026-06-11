@@ -6,6 +6,13 @@ For architectural decisions (the *why* behind the vocabulary), see `docs/adr/`.
 
 ---
 
+## Commitment
+
+A **minimum term** a member agrees to when subscribing to a plan, set by `Plan.commitment_interval` (a count of the plan's billing intervals — e.g. `6` on a monthly plan = 6 months). Operator-facing label: **"Commitment Length."** The member cannot freely cancel before the term ends; the operator's incentive to offer it is usually a discounted price for committing.
+
+A Commitment is a **floor on an ongoing subscription, not a one-off fixed-length contract** — the subscription does **not** end when the term is reached. Instead the commitment **re-arms for another term of the same length** unless the member opts out before the boundary (prompted by an expiry notification). Cancellation during a term always takes effect at the **current term's boundary**, never mid-term (admins can override and cancel immediately).
+_Avoid_: "contract" / "lease" (a **Lease** is a distinct office-tenancy concept) and "fixed term" (a Commitment auto-renews into successive terms, it doesn't end after one).
+
 ## Membership Usage Limits
 
 A plan can cap how much a member consumes per period. There are two independent caps, each backed by its own monthly "pool":

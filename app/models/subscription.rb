@@ -205,6 +205,33 @@ class Subscription < ApplicationRecord
     [period_start, period_start + 1.month]
   end
 
+  # The end of the member's CURRENT commitment term — the first term boundary
+  # after `now`, walking forward by the full commitment_duration from start_date.
+  # Because a commitment re-arms each term (ADR 0005), this advances across
+  # renewals (term 2's end once term 1 has passed, etc.). nil if no commitment.
+  def commitment_term_end(now = Time.current)
+    return nil unless plan.has_commitment_interval?
+    term = plan.commitment_duration
+    boundary = start_date.to_time.beginning_of_day + term
+    boundary += term while boundary <= now
+    boundary
+  end
+
+  # Is the member currently inside a (re-arming) commitment term?
+  def in_commitment?(now = Time.current)
+    e = commitment_term_end(now)
+    e.present? && e > now
+  end
+
+  # Member-initiated cancellation during a commitment: don't end immediately —
+  # schedule the membership to end at the current term's boundary (Stripe
+  # cancel_at), keeping access + billing through the term they committed to.
+  # Admins bypass this and cancel immediately (see members_controller).
+  def schedule_commitment_cancellation!
+    set_end_date!(commitment_term_end)
+    update!(cancelling_at_end_of_billing_period: true)
+  end
+
   def has_end_date?
     sub = stripe_subscription
     sub.present? && sub.cancel_at.present?

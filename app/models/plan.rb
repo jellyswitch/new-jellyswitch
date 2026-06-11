@@ -52,6 +52,8 @@ class Plan < ApplicationRecord
   # A day-limited plan must allow at least one day; otherwise enabling the limit
   # would lock every member out (see the Day Pool, ADR 0004).
   validates :day_limit, numericality: { greater_than_or_equal_to: 1 }, if: :has_day_limit?
+  # Commitment Length: a positive integer count of billing periods, or unset.
+  validates :commitment_interval, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
 
   # Scopes
   scope :available, -> { where(available: true) }
@@ -219,16 +221,22 @@ class Plan < ApplicationRecord
   end
 
   def has_commitment_interval?
-    commitment_interval.present?
+    # 0 (and nil) mean "no commitment". `0.present?` is true in Ruby, which made
+    # an unset 0 read as committed and set cancel_at = start_date — guard on >= 1.
+    commitment_interval.to_i >= 1
   end
 
+  # The full commitment as a duration = commitment_interval billing periods.
+  # Keyed by the plan's billing interval; covers every real INTERVAL_OPTIONS
+  # value (daily was missing → nil → crashed subscription creation; weekly is
+  # not a selectable interval so it's dropped).
   def commitment_duration
     {
-      "weekly" => commitment_interval.weeks,
-      "monthly" => commitment_interval.months,
-      "quarterly" => commitment_interval.months * 3,
-      "biannually" => commitment_interval.months * 3 * 2,
-      "annually" => commitment_interval.years,
+      "daily"      => commitment_interval.days,
+      "monthly"    => commitment_interval.months,
+      "quarterly"  => (commitment_interval * 3).months,
+      "biannually" => (commitment_interval * 6).months,
+      "annually"   => commitment_interval.years,
     }[interval]
   end
 end

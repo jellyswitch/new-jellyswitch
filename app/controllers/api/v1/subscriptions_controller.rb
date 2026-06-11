@@ -156,6 +156,20 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
   def cancel_now
     sub = current_api_user.subscriptions.find(params[:id])
+
+    # A committed member can't cancel immediately — schedule the end at their
+    # current commitment boundary instead. Admins override via the operator API.
+    if sub.in_commitment?
+      sub.schedule_commitment_cancellation!
+      ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
+      return render json: {
+        success: true,
+        scheduled: true,
+        ends_on: ends_on,
+        message: "Your membership is committed through #{ends_on} and will end then.",
+      }
+    end
+
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: sub,
       blob: { text: "Cancelled #{sub.plan.name} membership immediately via mobile app.", type: "membership_cancellation" },
