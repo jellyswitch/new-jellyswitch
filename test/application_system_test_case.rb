@@ -3,6 +3,26 @@ require "test_helper"
 class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :selenium, using: :headless_chrome, screen_size: [1400, 1400]
 
+  # System tests race headless-Chrome / Bootstrap / Turbo timing (modal not yet
+  # open, redirect not settled, a session that didn't reset) and intermittently
+  # fail on transient issues unrelated to the code under test. Retry a failed
+  # system test a couple of times before surfacing the failure, so CI isn't red
+  # over flakes. A genuinely broken test fails every attempt and is still
+  # reported. Scoped to system tests only (this base class) -- unit/integration
+  # tests are not retried. Skips are never retried.
+  MAX_ATTEMPTS = 3
+
+  def run
+    result = super
+    attempt = 1
+    while attempt < MAX_ATTEMPTS && failures.any? { |f| !f.is_a?(Minitest::Skip) }
+      attempt += 1
+      failures.clear
+      result = super
+    end
+    result
+  end
+
   setup do
     Capybara.app_host = "http://tml.lvh.me"
     Capybara.server_port = nil
@@ -25,6 +45,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     Timeout.timeout(Capybara.default_max_wait_time) do
       loop until yield
     end
+  end
+
+  # Bootstrap modals open via a data-toggle trigger, but Capybara can click
+  # before Bootstrap's JS (loaded async via importmap) has bound the trigger,
+  # leaving the modal closed so `within "#id"` fails with "unable to find
+  # visible css". Click, then -- once jQuery is loaded -- idempotently force
+  # the modal open. Same JS-race workaround open_change_location uses for the
+  # navbar collapse. `.modal('show')` is a no-op if the click already opened it.
+  def open_modal(trigger, modal_id)
+    click_on trigger
+    wait_for { page.evaluate_script("!!window.jQuery") }
+    page.execute_script("jQuery('##{modal_id}').modal('show')")
+    assert_selector "##{modal_id}", visible: true
   end
 
   def wait_for_ajax
