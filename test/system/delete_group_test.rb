@@ -25,7 +25,7 @@ class DeleteGroupTest < ApplicationSystemTestCase
 
     visit organization_path(@group_no_lease)
 
-    click_on "Delete this group"
+    open_modal "Delete this group", "delete-group-modal"
 
     within "#delete-group-modal" do
       assert_text "Warning: This action cannot be undone. Deleting this group will permanently remove:"
@@ -46,7 +46,7 @@ class DeleteGroupTest < ApplicationSystemTestCase
 
     visit organization_path(@group_with_active_lease)
 
-    click_on "Delete this group"
+    open_modal "Delete this group", "delete-group-modal"
 
     within "#delete-group-modal" do
       assert_text "Note: This group cannot be deleted because it has at least one active office lease or subscription."
@@ -60,7 +60,7 @@ class DeleteGroupTest < ApplicationSystemTestCase
 
     visit organization_path(@group_with_active_subscription)
 
-    click_on "Delete this group"
+    open_modal "Delete this group", "delete-group-modal"
 
     within "#delete-group-modal" do
       assert_text "Note: This group cannot be deleted because it has at least one active office lease or subscription."
@@ -74,7 +74,7 @@ class DeleteGroupTest < ApplicationSystemTestCase
 
     visit organization_path(@group_with_past_lease)
 
-    click_on "Delete this group"
+    open_modal "Delete this group", "delete-group-modal"
 
     within "#delete-group-modal" do
       click_on "Confirm"

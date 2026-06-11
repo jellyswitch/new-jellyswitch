@@ -27,6 +27,19 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
     end
   end
 
+  # Bootstrap modals open via a data-toggle trigger, but Capybara can click
+  # before Bootstrap's JS (loaded async via importmap) has bound the trigger,
+  # leaving the modal closed so `within "#id"` fails with "unable to find
+  # visible css". Click, then -- once jQuery is loaded -- idempotently force
+  # the modal open. Same JS-race workaround open_change_location uses for the
+  # navbar collapse. `.modal('show')` is a no-op if the click already opened it.
+  def open_modal(trigger, modal_id)
+    click_on trigger
+    wait_for { page.evaluate_script("!!window.jQuery") }
+    page.execute_script("jQuery('##{modal_id}').modal('show')")
+    assert_selector "##{modal_id}", visible: true
+  end
+
   def wait_for_ajax
     Timeout.timeout(Capybara.default_max_wait_time) do
       loop until finished_all_ajax_requests?
