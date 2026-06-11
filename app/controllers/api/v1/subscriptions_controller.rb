@@ -241,6 +241,10 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       days_left: plan.try(:has_day_limit?) ? sub.try(:days_left) : nil,
       day_limit: plan.try(:has_day_limit?) ? plan.day_limit : nil,
       days_used: plan.try(:has_day_limit?) ? sub.try(:day_pool_used) : nil,
+      # Commitment (minimum term) — lets the app show "Committed through {date}"
+      # and frame the cancel action as scheduling an end at the boundary.
+      in_commitment: sub.try(:in_commitment?) || false,
+      commitment_ends_on: (sub.commitment_term_end&.strftime("%B %e, %Y") if sub.try(:in_commitment?)),
       # Day Pool resets with the billing period; period_end_date above is that date.
       included_meeting_minutes: plan.try(:included_meeting_room_minutes),
       billed_to: sub.subscribable_type == 'Organization' ? 'organization' : 'user',

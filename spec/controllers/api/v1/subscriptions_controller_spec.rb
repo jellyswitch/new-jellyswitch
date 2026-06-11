@@ -41,6 +41,29 @@ RSpec.describe Api::V1::SubscriptionsController, type: :controller do
     end
   end
 
+  describe "#subscription_json commitment fields" do
+    it "exposes in_commitment and commitment_ends_on for a committed plan" do
+      plan = create(:plan, operator: operator, location: location, interval: "monthly", commitment_interval: 6)
+      sub  = create(:subscription, plan: plan, subscribable: member, billable: member,
+                    start_date: 2.months.ago.to_date, stripe_subscription_id: nil)
+
+      json = controller.send(:subscription_json, sub)
+
+      expect(json[:in_commitment]).to be true
+      expect(json[:commitment_ends_on]).to be_present
+    end
+
+    it "leaves commitment fields empty when there is no commitment" do
+      plan = create(:plan, operator: operator, location: location, commitment_interval: nil)
+      sub  = create(:subscription, plan: plan, subscribable: member, billable: member, stripe_subscription_id: nil)
+
+      json = controller.send(:subscription_json, sub)
+
+      expect(json[:in_commitment]).to be false
+      expect(json[:commitment_ends_on]).to be_nil
+    end
+  end
+
   describe "#subscription_json Day Pool fields" do
     it "exposes day_limit, days_used and days_left for a day-limited plan" do
       plan = create(:plan, operator: operator, location: location, has_day_limit: true, day_limit: 10)
