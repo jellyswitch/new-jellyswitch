@@ -71,7 +71,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       operator: current_tenant,
       user: current_api_user,
       notifiable: sub,
-      blob: "Paused for #{days} days via mobile app",
+      blob: { text: "Paused for #{days} days via mobile app", type: "membership_paused" },
     )
 
     if result.success?
@@ -91,7 +91,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       operator: current_tenant,
       user: current_api_user,
       notifiable: sub,
-      blob: "Unpaused via mobile app",
+      blob: { text: "Unpaused via mobile app", type: "membership_unpaused" },
     )
 
     if result.success?
@@ -138,7 +138,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     result = UpdateMembership.call(
       old_subscription: old_sub,
       new_subscription: new_sub,
-      blob: "Upgraded via mobile app",
+      blob: { text: "Upgraded via mobile app", type: "membership_updated" },
       user: current_api_user,
       operator: current_tenant,
       location: current_location,
@@ -193,7 +193,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     sub = current_api_user.subscriptions.find(params[:id])
     result = SetSubscriptionForCancellation.call(
       subscription: sub,
-      blob: "Cancelled via mobile app",
+      blob: { text: "Cancelled via mobile app", type: "membership_cancellation" },
       user: current_api_user,
       operator: current_tenant,
       location: current_location,
