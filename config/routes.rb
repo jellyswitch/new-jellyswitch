@@ -412,6 +412,10 @@ Rails.application.routes.draw do
   # Privacy Policy
   get "/privacy-policy", to: "operator/landing#privacy_policy"
 
+  # Stable, public-facing data-deletion link for app stores. Sends a signed-in
+  # member to the Delete Account section of their account page; otherwise to login.
+  get "/delete-account", to: "users#delete_account"
+
   # Operator root
   root "operator/landing#index"
 
