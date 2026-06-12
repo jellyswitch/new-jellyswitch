@@ -30,11 +30,11 @@
     <a href="<%= feed_items_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.95rem; font-weight: 600; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px;" data-turbo-action="<%= restore_if_possible %>">
       <%- if current_tenant.logo_image.attached? %>
         <%= image_tag current_tenant.logo_image, width: 44, height: 44, style: "border-radius: 6px;" %>
-      <%- else %>
-        <%= current_tenant.name %>
       <%- end %>
-      <% if current_location&.city.present? %>
-        <%= current_location.city %>
+      <% if current_location %>
+        <%= current_location.name %>
+      <% else %>
+        <%= current_tenant.name %>
       <% end %>
     </a>
     <button onclick="document.getElementById('ios-admin-nav-menu').style.display = document.getElementById('ios-admin-nav-menu').style.display === 'none' ? 'block' : 'none'" style="flex-shrink: 0; padding: 10px; background: none; border: none; cursor: pointer; -webkit-tap-highlight-color: transparent;" aria-label="Toggle menu">
@@ -65,11 +65,11 @@
     <a class="navbar-brand" href="<%= feed_items_path %>" data-turbo-action="<%= restore_if_possible %>">
       <%- if current_tenant.logo_image.attached? %>
         <%= image_tag current_tenant.logo_image, width: 44, height: 44 %>
-      <%- else %>
-        <%= current_tenant.name %>
       <%- end %>
-      <% if current_location&.city.present? %>
-        <%= current_location.city %>
+      <% if current_location %>
+        <%= current_location.name %>
+      <% else %>
+        <%= current_tenant.name %>
       <% end %>
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
