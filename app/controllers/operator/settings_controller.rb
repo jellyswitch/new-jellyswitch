@@ -35,7 +35,10 @@ class Operator::SettingsController < Operator::BaseController
     @operator = current_operator
   end
   def modules
-    @operator = current_operator
+    # Module flags are location-scoped: every module policy reads
+    # location.<module>_enabled, so the form must bind to the location (the
+    # source of truth), not the operator.
+    @location = current_location
   end
   # Renamed from `policies` to avoid shadowing `Pundit::Authorization#policies`.
   # Pundit 2.5.2 calls `policies` internally when building its cache_store
@@ -125,8 +128,16 @@ class Operator::SettingsController < Operator::BaseController
     end
   end
   def update_modules
-    @operator = current_operator
-    if @operator.update(modules_params)
+    @location = current_location
+
+    # Mirror the per-module guard on the /modules page: don't strand active
+    # leases by turning the Offices module off underneath them.
+    if disabling?(:offices_enabled) && @location.has_active_office_leases?
+      flash.now[:error] = "Terminate active office leases before disabling Offices & Leases."
+      return render :modules, status: :unprocessable_entity
+    end
+
+    if @location.update(modules_params)
       redirect_to settings_modules_path, notice: "Modules saved."
     else
       render :modules, status: :unprocessable_entity
@@ -188,11 +199,17 @@ class Operator::SettingsController < Operator::BaseController
   end
 
   def modules_params
-    params.require(:operator).permit(
+    params.require(:location).permit(
       :announcements_enabled, :events_enabled, :door_integration_enabled,
       :rooms_enabled, :offices_enabled, :bulletin_board_enabled,
       :credits_enabled, :childcare_enabled, :crm_enabled
     )
+  end
+
+  # A checkbox submits "0" when unchecked. We're disabling a module only when
+  # it's currently on and the form turns it off.
+  def disabling?(flag)
+    modules_params[flag].to_s == "0" && @location.public_send(flag)
   end
 
   def wifi_and_pixels_params

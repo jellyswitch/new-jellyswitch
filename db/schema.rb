@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_11_190120) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -571,7 +571,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_11_190120) do
     t.boolean "offices_enabled", default: false, null: false
     t.boolean "bulletin_board_enabled", default: false, null: false
     t.boolean "credits_enabled", default: false, null: false
-    t.boolean "childcare_enabled", default: true, null: false
+    t.boolean "childcare_enabled", default: false, null: false
     t.boolean "crm_enabled", default: true, null: false
     t.string "sender_email"
     t.string "google_reviews_url"
