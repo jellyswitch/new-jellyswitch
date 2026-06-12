@@ -1,6 +1,6 @@
 <%= render layout: "operator/settings/tab_layout", locals: { active: :modules } do %>
-  <%= form_with model: @operator, url: settings_update_modules_path, method: :patch do |f| %>
-    <%= render "shared/error_messages", model: @operator %>
+  <%= form_with model: @location, url: settings_update_modules_path, method: :patch do |f| %>
+    <%= render "shared/error_messages", model: @location %>
     <p class="text-muted">Turn product modules on or off for your space.</p>
 
     <% [
