@@ -41,7 +41,21 @@ class ApplicationController < ActionController::Base
   end
 
   def referrer_or_root
-    request.referrer || root_path
+    referrer = request.referrer
+    # Never bounce back to the page we're already on. When a Pundit-denied
+    # page (e.g. /beacons for an operator whose location has door integration
+    # off) is reached by reload or Turbo nav, the Referer is that same URL —
+    # redirecting there re-triggers the denial and produces an infinite 302
+    # loop (ERR_TOO_MANY_REDIRECTS). Fall back to root in that case.
+    return root_path if referrer.blank? || same_path?(referrer, request.url)
+
+    referrer
+  end
+
+  def same_path?(url_a, url_b)
+    URI.parse(url_a).path == URI.parse(url_b).path
+  rescue URI::InvalidURIError
+    url_a == url_b
   end
 
   def turbo_redirect(path, action: "replace")

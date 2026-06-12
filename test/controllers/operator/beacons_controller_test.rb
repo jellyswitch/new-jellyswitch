@@ -24,6 +24,19 @@ class Operator::BeaconsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  # Regression: when a Pundit-denied page is reached with a Referer equal to
+  # that same page (reload / Turbo nav), the denial handler used to redirect
+  # back to the Referer — i.e. straight back to the denied page — producing an
+  # infinite 302 loop (ERR_TOO_MANY_REDIRECTS, prod incident on /beacons for a
+  # location with door integration disabled). It must redirect to root instead.
+  test "denied page does not redirect back to itself (no redirect loop)" do
+    log_in @member
+    get beacons_path, env: default_env.merge("HTTP_REFERER" => "https://tml.jellyswitch.com#{beacons_path}")
+    assert_response :redirect
+    assert_redirected_to root_path
+    assert_no_match %r{/beacons}, response.headers["Location"].to_s
+  end
+
   test "admin can create a beacon" do
     log_in @admin
     assert_difference -> { Beacon.count }, 1 do
