@@ -8,7 +8,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      if blob&.dig("type") == "daily-digest"
+      if daily_digest?
         true
       else
         operator.post_notifications?
@@ -16,7 +16,7 @@ module Notifiable
     end
 
     def message
-      if blob&.dig("type") == "daily-digest"
+      if daily_digest?
         dp = blob["day_pass_count"].to_i
         res = blob["reservation_count"].to_i
         revenue = blob["total_revenue_cents"].to_i / 100.0
@@ -34,6 +34,16 @@ module Notifiable
 
     def recipients
       operator.users.relevant_admins_of_location(location)
+    end
+
+    private
+
+    # jsonb stores a bare String (e.g. legacy mobile pause/cancel blobs) as a
+    # scalar, so `blob` can come back as a String rather than a Hash. Guard the
+    # type lookup so a non-Hash blob is simply "not a digest" instead of raising
+    # NoMethodError on #dig.
+    def daily_digest?
+      blob.is_a?(Hash) && blob["type"] == "daily-digest"
     end
   end
 end
