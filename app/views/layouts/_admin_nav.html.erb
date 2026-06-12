@@ -29,7 +29,7 @@
   <div style="display: flex !important; flex-wrap: nowrap !important; align-items: center; padding: 10px 16px; padding-top: calc(env(safe-area-inset-top, 0px) + 10px); background-color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.08);">
     <a href="<%= feed_items_path %>" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1 1 0px; min-width: 0; font-size: 0.95rem; font-weight: 600; color: #333; text-decoration: none; display: flex; align-items: center; gap: 10px;" data-turbo-action="<%= restore_if_possible %>">
       <%- if current_tenant.logo_image.attached? %>
-        <%= image_tag current_tenant.logo_image, width: 44, height: 44, style: "border-radius: 6px;" %>
+        <%= image_tag current_tenant.logo_image, style: "height: 40px; width: auto; max-width: 180px; object-fit: contain; border-radius: 6px;" %>
       <%- else %>
         <%= current_tenant.name %>
       <%- end %>
@@ -64,7 +64,7 @@
   <nav class="navbar navbar-light bg-light">
     <a class="navbar-brand" href="<%= feed_items_path %>" data-turbo-action="<%= restore_if_possible %>">
       <%- if current_tenant.logo_image.attached? %>
-        <%= image_tag current_tenant.logo_image, width: 44, height: 44 %>
+        <%= image_tag current_tenant.logo_image, style: "height: 40px; width: auto; max-width: 180px; object-fit: contain;" %>
       <%- else %>
         <%= current_tenant.name %>
       <%- end %>
