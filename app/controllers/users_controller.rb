@@ -1,5 +1,16 @@
 
 class UsersController < ApplicationController
+  # Stable URL used as the data-deletion link on app-store listings.
+  # Redirects a signed-in member to the Delete Account section of their
+  # account page; sends everyone else to login first.
+  def delete_account
+    if current_user
+      redirect_to user_path(current_user, anchor: "delete-account")
+    else
+      redirect_to "/login"
+    end
+  end
+
   def index
     find_approved_users
     authorize @users
