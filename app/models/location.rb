@@ -125,6 +125,30 @@ class Location < ApplicationRecord
 
   normalizes :kisi_api_key, with: ->(v) { v.blank? ? nil : v }
 
+  # Working-hours times are consumed verbatim by the `working_hours` gem, which
+  # only accepts zero-padded 24h "HH:MM". A value like "5:00" (easy to type into
+  # the free-text Settings > Hours field) raised WorkingHours::InvalidConfiguration
+  # and 500'd the operator dashboard. Normalize on assignment so common typos
+  # self-heal ("5:00" -> "05:00", "5" -> "05:00", seconds dropped); the format
+  # validation below rejects anything still malformed.
+  WORKING_TIME_FORMAT = /\A(?:[01]\d|2[0-3]):[0-5]\d\z|\A24:00\z/
+
+  def self.normalize_working_time(value)
+    return value if value.blank?
+
+    s = value.to_s.strip
+    if (m = s.match(/\A(\d{1,2}):(\d{2})(?::\d{2})?\z/))
+      format("%02d:%02d", m[1].to_i, m[2].to_i)
+    elsif s.match?(/\A\d{1,2}\z/)
+      format("%02d:00", s.to_i)
+    else
+      s
+    end
+  end
+
+  normalizes :working_day_start, with: ->(v) { Location.normalize_working_time(v) }
+  normalizes :working_day_end, with: ->(v) { Location.normalize_working_time(v) }
+
   # CRM is always on for every location. See Operator#crm_enabled? — the DB
   # column is kept for history but the predicate short-circuits to true.
   def crm_enabled?
@@ -135,6 +159,8 @@ class Location < ApplicationRecord
 
   validates :working_day_start, presence: true
   validates :working_day_end, presence: true
+  validates :working_day_start, format: { with: WORKING_TIME_FORMAT }, allow_blank: true
+  validates :working_day_end, format: { with: WORKING_TIME_FORMAT }, allow_blank: true
   validates :past_member_grace_days,
             presence: true,
             numericality: { only_integer: true, greater_than_or_equal_to: 120, less_than_or_equal_to: 365 }

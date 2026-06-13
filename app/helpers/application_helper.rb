@@ -149,9 +149,17 @@ module ApplicationHelper
   end
 
   def active_working_hours?(location)
-    WorkingHours::Config.with_config(working_hours: working_hours_config(location), holidays: [], time_zone: Time.zone.name) do
+    config = working_hours_config(location)
+    return false if config.blank?
+
+    WorkingHours::Config.with_config(working_hours: config, holidays: [], time_zone: Time.zone.name) do
       Time.current.in_working_hours?
     end
+  rescue WorkingHours::InvalidConfiguration => e
+    # This drives a display-only "open now?" indicator — it must never take down
+    # the page. Bad hours data (e.g. legacy un-padded "5:00") degrades to "closed".
+    Rails.logger.warn("active_working_hours? skipped invalid config for location=#{location.try(:id)}: #{e.message}")
+    false
   end
 
   def has_building_access?(user)
