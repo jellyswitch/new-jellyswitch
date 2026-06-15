@@ -114,33 +114,36 @@ RSpec.describe Operator::SettingsController, type: :controller do
 
   describe "GET #modules" do
     render_views
+    # Module flags are LOCATION-scoped (PR #504): the form is `form_with model:
+    # @location`, so the toggles render as `location[...]`.
     it "renders all 9 module toggles + credits dormant warning" do
       get :modules
       expect(response).to have_http_status(:ok)
       %w[announcements_enabled events_enabled door_integration_enabled rooms_enabled
          offices_enabled bulletin_board_enabled credits_enabled childcare_enabled crm_enabled].each do |attr|
-        expect(response.body).to include("operator[#{attr}]"), "missing toggle: #{attr}"
+        expect(response.body).to include("location[#{attr}]"), "missing toggle: #{attr}"
       end
       expect(response.body).to include("dormant")
     end
   end
 
   describe "PATCH #update_modules" do
+    # update_modules writes the LOCATION's module flags, not the operator's.
     it "saves module toggles" do
       patch :update_modules, params: {
-        operator: { announcements_enabled: "0", rooms_enabled: "1" }
+        location: { announcements_enabled: "0", rooms_enabled: "1" }
       }
       expect(response).to redirect_to(settings_modules_path)
-      operator.reload
-      expect(operator.announcements_enabled).to be false
-      expect(operator.rooms_enabled).to be true
+      location.reload
+      expect(location.announcements_enabled).to be false
+      expect(location.rooms_enabled).to be true
     end
 
     it "rejects params outside the modules whitelist" do
-      original_snippet = operator.snippet
-      patch :update_modules, params: { operator: { snippet: "should not change" } }
-      operator.reload
-      expect(operator.snippet).to eq(original_snippet)
+      original_name = location.name
+      patch :update_modules, params: { location: { name: "should not change", rooms_enabled: "1" } }
+      location.reload
+      expect(location.name).to eq(original_name)
     end
   end
 
