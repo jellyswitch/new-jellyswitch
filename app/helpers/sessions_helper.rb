@@ -72,29 +72,31 @@ module SessionsHelper
 
     return nil unless current_tenant
 
-    if (location_id = session[:location_id]) # if there is a current location in the session, use it
-      @current_location ||= current_tenant.locations.find_by(id: location_id)
-    elsif (location_id = cookies.signed[:location_id]) # same, but for an encrypted cookie
-      found_location = current_tenant.locations.find_by(id: location_id)
-      if found_location
-        set_location(found_location)
-        @current_location = found_location
-      else
-        cookies.delete(:location_id)
-        nil
-      end
-    elsif current_user&.current_location_id # persisted user preference — survives session/cookie loss
-      user_loc = current_tenant.locations.find_by(id: current_user.current_location_id)
-      if user_loc
-        set_location(user_loc)
-        @current_location = user_loc
-      end
-    elsif current_tenant.locations.count == 1 # if I only have one location, use it automatically
-      set_location(current_tenant.locations.first)
-      @current_location = current_tenant.locations.first
-    elsif current_user
-      # Multi-location operator with no location selected yet — this is expected.
-      # The user will be redirected to select a location by reset_location in BaseController.
+    # Resolve from the most specific signal available — session, then signed
+    # cookie, then the user's persisted preference — but ONLY accept a location
+    # that belongs to the current tenant. A stale or cross-operator id (a deleted
+    # location, or a preference pointing at another operator) must not "win" its
+    # branch and block resolution: previously a present-but-unresolvable id
+    # short-circuited the single-location fallback, so current_location returned
+    # nil and reset_location logged the user out (the Tahoe Longhouse incident).
+    resolved =
+      current_tenant.locations.find_by(id: session[:location_id]) ||
+      current_tenant.locations.find_by(id: cookies.signed[:location_id]) ||
+      current_tenant.locations.find_by(id: current_user&.current_location_id)
+
+    # Single-location operators always resolve to their only location — there is
+    # nothing to choose, so never fall through to the picker.
+    resolved ||= current_tenant.locations.first if current_tenant.locations.count == 1
+
+    if resolved
+      # Persist the resolution (and self-heal a stale session/cookie) unless the
+      # session already points at it.
+      set_location(resolved) unless session[:location_id] == resolved.id
+      @current_location = resolved
+    else
+      # Multi-location operator with no valid selection — expected. Clean up any
+      # dangling cookie; reset_location will route the user to the picker.
+      cookies.delete(:location_id) if cookies.signed[:location_id].present?
       nil
     end
   end

@@ -299,3 +299,20 @@ cowork_tahoe_general_manager:
   role: general-manager
   original_location: cowork_tahoe_location
   current_location: cowork_tahoe_location
+
+# Freshly-onboarded operator admin: has the admin role but NO location_managements
+# row (onboarding never creates one). Models the Tahoe Longhouse lockout where an
+# operator admin could not update rooms because admin_of_location? was false.
+unscoped_admin:
+  name: Unscoped Admin
+  email: unscoped-admin@jellyswitch.com
+  password_digest: $2a$10$qWxhVhwU1d.MXRSb3qJbPeFZ0dcqjnVgFFrl3dGsuctsoF7TjRLNu
+  admin: true
+  slug: unscoped-admin
+  approved: true
+  operator: cowork_tahoe
+  superadmin: false
+  role: admin
+  email_confirmed: true
+  original_location: cowork_tahoe_location
+  current_location: cowork_tahoe_location

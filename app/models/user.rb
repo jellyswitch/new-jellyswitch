@@ -744,7 +744,21 @@ class User < ApplicationRecord
   end
 
   def manages_location?(location)
-    managed_location_ids.include?(location&.id)
+    return false if location.nil?
+
+    # Explicit scoping wins: a manager assigned specific locations manages only
+    # those. With no explicit assignment, a manager manages every location of
+    # their own operator. This is the safe default for a freshly-onboarded
+    # operator whose admin has no location_managements row yet — onboarding
+    # never creates one (only the one-time set_location_managers backfill and
+    # the manual admin user-edit form do), which previously left new operator
+    # admins unable to manage rooms/doors/etc. Never crosses operator
+    # boundaries; superadmins bypass this via admin_of_location?.
+    if managed_location_ids.any?
+      managed_location_ids.include?(location.id)
+    else
+      location.operator_id == operator_id
+    end
   end
 
   def admin_of_location?(location)

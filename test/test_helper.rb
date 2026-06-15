@@ -73,6 +73,7 @@ class ActiveSupport::TestCase
     @community_manager = UserContext.new(users(:cowork_tahoe_community_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @general_manager = UserContext.new(users(:cowork_tahoe_general_manager), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
     @superadmin = UserContext.new(users(:cowork_tahoe_superadmin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
+    @unscoped_admin = UserContext.new(users(:unscoped_admin), operators(:cowork_tahoe), locations(:cowork_tahoe_location))
   end
 
   def setup_stripe
