@@ -801,4 +801,34 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe "#subscription_reservation_charge_info — paid-room guard" do
+    # Mirror of day_pass_reservation_charge_info's guard: a paid room
+    # (hourly_rate_in_cents > 0) must not trigger subscription overage.
+    let(:prod_operator) { create(:operator, billing_state: "production") }
+    let(:prod_location) { create(:location, operator: prod_operator) }
+    let(:metered_plan) do
+      create(:plan,
+        operator: prod_operator,
+        location: prod_location,
+        included_meeting_room_minutes: 60,
+        overage_rate_in_cents: 10)
+    end
+    let(:member_user) { create(:user, operator: prod_operator) }
+    let!(:subscription) do
+      create(:subscription,
+        subscribable: member_user,
+        billable: member_user,
+        plan: metered_plan,
+        active: true,
+        paused: false,
+        start_date: 1.month.ago.to_date)
+    end
+    let(:paid_room) { create(:room, operator: prod_operator, location: prod_location, hourly_rate_in_cents: 2000) }
+
+    it "returns nil for a paid room even when the pool is exhausted (no overage added)" do
+      result = member_user.subscription_reservation_charge_info(prod_location, 120, room: paid_room)
+      expect(result).to be_nil
+    end
+  end
+
 end

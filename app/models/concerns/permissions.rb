@@ -235,6 +235,9 @@ module Permissions
   # Returns nil if user has no active subscription or plan has no meeting room limit.
   # Otherwise returns a hash describing whether the booking is free or has overage.
   def subscription_reservation_charge_info(location, requested_minutes, room: nil, at: Time.current)
+    # Priced rooms (hourly_rate > 0) don't count toward subscription allowance.
+    return nil if room && room.hourly_rate_in_cents.to_i > 0
+
     subscription = active_subscription_for_location(location)
     return nil unless subscription
 

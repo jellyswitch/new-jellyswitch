@@ -22,12 +22,6 @@ class Billing::Reservations::SaveRoomReservation
       context.overage_charge_amount = context.subscription_charge_info[:overage_amount_in_cents]
     end
 
-    # A paid add-on (orderable amenity) makes even a free room chargeable.
-    # Checked in Ruby on the just-assigned association — no DB sum on an
-    # unsaved record. The member-vs-non-member rate is applied later by
-    # amenity_price; here we only need to know "is anything chargeable".
-    should_charge ||= reservation.amenities.to_a.any?(&:orderable?)
-
     if should_charge && context.user.payment_method == "None"
       context.fail!(message: "Please provide payment method!")
     end
