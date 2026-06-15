@@ -93,7 +93,11 @@ class Api::V1::Admin::BaseControllerScopeTest < ActionDispatch::IntegrationTest
   test "any superadmin? bypasses location scoping within their operator" do
     other_location = create_unmanaged_location
     @owner.update!(original_location: nil, current_location: other_location)
-    refute @owner.manages_location?(other_location)
+    # No explicit location_managements row for this location — the success below
+    # is purely the superadmin bypass, not location management. (manages_location?
+    # now treats an admin with no explicit scoping as managing all of their own
+    # operator's locations, so assert the explicit join here.)
+    refute @owner.managed_location_ids.include?(other_location.id)
 
     assert_enqueued_with(job: MemberCsvExportJob, args: [@operator.id, nil, @owner.email]) do
       post_member_csv(@owner, @operator.subdomain)
