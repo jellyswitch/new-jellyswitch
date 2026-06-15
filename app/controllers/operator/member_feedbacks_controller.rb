@@ -44,7 +44,9 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       background_image
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -134,7 +136,9 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       flash[:error] = save_result.message
       turbo_redirect(member_feedback_path(@member_feedback), action: "replace")
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(member_feedback_path(@member_feedback), action: "replace")

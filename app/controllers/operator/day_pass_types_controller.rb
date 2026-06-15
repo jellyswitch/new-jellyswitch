@@ -37,7 +37,9 @@ class Operator::DayPassTypesController < Operator::BaseController
       flash[:error] = result.message
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -52,7 +54,9 @@ class Operator::DayPassTypesController < Operator::BaseController
     else
       render :edit, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

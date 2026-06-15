@@ -100,7 +100,7 @@ class User < ApplicationRecord
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
 
-  has_many :location_managements
+  has_many :location_managements, dependent: :destroy
   has_many :managed_locations, through: :location_managements, source: :location
 
   has_many :user_payment_profiles, dependent: :destroy
@@ -147,6 +147,7 @@ class User < ApplicationRecord
   after_commit :sync_to_mailchimp, if: -> { operator&.mailchimp_api_key.present? && saved_change_to_approved? }
   after_create :assign_default_point_of_contact!
   after_create :log_signup_activity
+  after_create :link_default_managed_locations
 
   has_many :activities, dependent: :destroy
 
@@ -741,6 +742,25 @@ class User < ApplicationRecord
 
   def user_permissions
     @user_permissions ||= UserPermissions.new(self)
+  end
+
+  # On creation, link a manager (admin/GM/CM) with no explicit location scoping
+  # to all of their operator's locations. This keeps direct readers of
+  # managed_location_ids (e.g. the admin API's enforce_location_scope!) correct
+  # and consistent with the manages_location? fallback. Onboarding previously
+  # created no location_managements row at all, which locked new operator admins
+  # out of room/door/etc. admin. Subsequent scoping changes go through the admin
+  # user-edit form, which sets managed_location_ids explicitly. Pure superadmins
+  # (no admin role/flag) are skipped — they bypass location scoping anyway.
+  def link_default_managed_locations
+    return unless operator
+    return unless admin? || general_manager? || community_manager?
+    return if managed_location_ids.any?
+
+    ids = operator.location_ids
+    return if ids.blank?
+
+    self.managed_location_ids = ids
   end
 
   def manages_location?(location)

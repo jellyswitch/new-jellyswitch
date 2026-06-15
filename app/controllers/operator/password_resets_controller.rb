@@ -17,7 +17,9 @@ class Operator::PasswordResetsController < Operator::BaseController
       flash[:error] = "Email address not found."
       turbo_redirect(new_password_reset_path, action: "replace")
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -42,7 +44,9 @@ class Operator::PasswordResetsController < Operator::BaseController
     else
       render 'edit'                                     # Case (2)
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

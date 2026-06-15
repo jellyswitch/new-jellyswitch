@@ -254,7 +254,9 @@ class Operator::ReservationsController < Operator::BaseController
       flash[:error] = "This reservation has already ended and can no longer be cancelled."
       turbo_redirect(referrer_or_root)
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

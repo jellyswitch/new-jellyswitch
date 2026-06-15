@@ -400,4 +400,38 @@ class UserTest < ActiveSupport::TestCase
       user.destroy
     end
   end
+
+  # A freshly-created operator admin must be linked to their operator's
+  # location(s) so direct readers of managed_location_ids (e.g. the admin API's
+  # location scoping) work. Onboarding previously created no location_managements
+  # row, which locked new operator admins out of room/door admin.
+  test "a newly created admin is auto-linked to all of their operator's locations" do
+    operator = operators(:cowork_tahoe)
+    loc1 = operator.locations.first
+    loc2 = create(:location, operator: operator, name: "Second Location",
+                  working_day_start: "00:00", working_day_end: "23:59")
+
+    admin = create(:user, operator: operator, role: "admin", email: "fresh-admin@example.com")
+
+    assert_equal [loc1.id, loc2.id].sort, admin.managed_location_ids.sort
+  end
+
+  test "a newly created member is not auto-linked to any location" do
+    operator = operators(:cowork_tahoe)
+    member = create(:user, operator: operator, role: "unassigned", email: "fresh-member@example.com")
+
+    assert_empty member.managed_location_ids
+  end
+
+  test "an admin created with explicit managed locations is not overwritten" do
+    operator = operators(:cowork_tahoe)
+    loc1 = operator.locations.first
+    create(:location, operator: operator, name: "Second Location",
+           working_day_start: "00:00", working_day_end: "23:59")
+
+    admin = create(:user, operator: operator, role: "admin",
+                   managed_locations: [loc1], email: "scoped-admin@example.com")
+
+    assert_equal [loc1.id], admin.managed_location_ids
+  end
 end

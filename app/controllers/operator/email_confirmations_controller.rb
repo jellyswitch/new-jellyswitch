@@ -24,7 +24,9 @@ class Operator::EmailConfirmationsController < Operator::BaseController
       flash[:error] = "Invalid confirmation link. Please request a new one."
       turbo_redirect(login_path, action: "replace")
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred. Please try again."
     turbo_redirect(root_path, action: "replace")
@@ -43,7 +45,9 @@ class Operator::EmailConfirmationsController < Operator::BaseController
     end
 
     turbo_redirect(login_path, action: "replace")
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred. Please try again."
     turbo_redirect(root_path, action: "replace")
