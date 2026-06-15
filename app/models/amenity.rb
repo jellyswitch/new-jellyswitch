@@ -29,6 +29,21 @@ class Amenity < ApplicationRecord
   AV_EQUIPMENT = "AV Equipment".freeze
   WHITEBOARD = "Whiteboard".freeze
 
+  # An amenity's behavior is derived from its rates, not a stored type
+  # (see docs/adr/0007-amenity-behavior-derived-from-rate.md):
+  #   both rates 0  -> a passive room feature (informational, never charged)
+  #   any rate > 0  -> an orderable add-on (selectable per reservation, charged)
+  scope :add_ons, -> { where("price > 0 OR membership_price > 0") }
+  scope :features, -> { where(price: 0, membership_price: 0) }
+
+  def orderable?
+    [price.to_f, membership_price.to_f].max > 0
+  end
+
+  def feature?
+    !orderable?
+  end
+
   def price=(value)
     super(value.present? ? value : 0)
   end

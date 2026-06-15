@@ -74,4 +74,29 @@ RSpec.describe Amenity, type: :model do
       expect(amenity.price).to eq(0)
     end
   end
+
+  describe "feature vs add-on (derived from rate)" do
+    let(:room) { create(:room) }
+
+    it "is a feature when both rates are zero" do
+      a = create(:amenity, room: room, name: "Whiteboard", price: 0, membership_price: 0)
+      expect(a.feature?).to be(true)
+      expect(a.orderable?).to be(false)
+    end
+
+    it "is an orderable add-on when any rate is positive" do
+      paid = create(:amenity, room: room, name: "Catering", price: 50, membership_price: 35)
+      free_for_members = create(:amenity, room: room, name: "Parking", price: 20, membership_price: 0)
+      expect(paid.orderable?).to be(true)
+      expect(free_for_members.orderable?).to be(true)
+      expect(paid.feature?).to be(false)
+    end
+
+    it "scopes partition the association" do
+      create(:amenity, room: room, name: "Monitor", price: 0, membership_price: 0)
+      create(:amenity, room: room, name: "Catering", price: 50, membership_price: 35)
+      expect(room.amenities.features.pluck(:name)).to eq(["Monitor"])
+      expect(room.amenities.add_ons.pluck(:name)).to eq(["Catering"])
+    end
+  end
 end
