@@ -100,7 +100,7 @@ class User < ApplicationRecord
   has_many :rsvps
   has_many :visits, class_name: "Ahoy::Visit"
 
-  has_many :location_managements
+  has_many :location_managements, dependent: :destroy
   has_many :managed_locations, through: :location_managements, source: :location
 
   has_many :user_payment_profiles, dependent: :destroy
