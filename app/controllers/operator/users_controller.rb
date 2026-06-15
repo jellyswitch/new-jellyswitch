@@ -259,7 +259,9 @@ class Operator::UsersController < Operator::BaseController
         render :new, status: 422
       end
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -282,7 +284,9 @@ class Operator::UsersController < Operator::BaseController
     else
       render :edit, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -305,7 +309,9 @@ class Operator::UsersController < Operator::BaseController
     else
       render :change_password, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -324,7 +330,9 @@ class Operator::UsersController < Operator::BaseController
       @usage_report = Jellyswitch::UsageReport.new(@user)
       render :show, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -571,7 +579,9 @@ class Operator::UsersController < Operator::BaseController
       flash[:success] = "User account deleted"
       log_out
       turbo_redirect(signup_path)
-    rescue Exception => e
+    rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+      raise
+    rescue => e
       flash[:error] = "Something went wrong: #{e.message}"
       turbo_redirect(referrer_or_root)
     end

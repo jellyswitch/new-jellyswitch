@@ -39,7 +39,9 @@ class Operator::FeedItemCommentsController < Operator::BaseController
       flash[:error] = result.message
       turbo_redirect(feed_item_path(@feed_item))
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

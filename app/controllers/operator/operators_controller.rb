@@ -25,7 +25,9 @@ class Operator::OperatorsController < Operator::BaseController
       end
     end
     redirect_to operator_path(@operator, subdomain: @operator.subdomain)
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

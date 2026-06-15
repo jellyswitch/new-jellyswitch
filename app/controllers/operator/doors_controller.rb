@@ -29,7 +29,9 @@ class Operator::DoorsController < Operator::BaseController
       background_image
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -85,7 +87,9 @@ class Operator::DoorsController < Operator::BaseController
       background_image
       render :edit, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

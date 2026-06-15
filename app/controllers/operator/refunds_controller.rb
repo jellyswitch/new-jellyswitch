@@ -16,7 +16,9 @@ class Operator::RefundsController < Operator::BaseController
     end
 
     turbo_redirect(invoices_path, action: "replace")
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)

@@ -139,7 +139,9 @@ class Operator::FeedItemsController < Operator::BaseController
       flash[:error] = "Unable to delete that item."
       turbo_redirect(referrer_or_root)
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
