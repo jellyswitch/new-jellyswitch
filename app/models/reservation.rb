@@ -150,6 +150,17 @@ class Reservation < ApplicationRecord
     room_price + amenity_price
   end
 
+  # The MAX amount to authorize (hold) at booking, in cents: the room/overage
+  # base plus amenity add-ons. For a paid room, overage_cents is nil and
+  # charge_amount already carries room+amenity. For a free room with a plan/
+  # day-pass overage, room_price is 0 so charge_amount carries only the
+  # amenity, and the overage rides on top. (Overage and a paid room are
+  # mutually exclusive.) CaptureHold settles the actual amount via
+  # ChargeCalculator, capped at this hold.
+  def authorizable_charge_in_cents(overage_cents: nil)
+    overage_cents.to_i + charge_amount
+  end
+
   # What this reservation actually costs the member, in cents — for display
   # (admin feed, receipts UI). `charge_amount` is derived from the room's
   # hourly rate, so it returns $0 for a free meeting room even when a day-pass

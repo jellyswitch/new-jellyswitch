@@ -16,22 +16,7 @@ class Billing::Reservations::ChargeCalculator
 
   def call
     return 0 if minutes <= 0
-
-    if room.hourly_rate_in_cents.to_i > 0
-      return ((room.hourly_rate_in_cents * minutes) / 60.0).round
-    end
-
-    day_pass = user.day_passes.where(day: date).first
-    if day_pass && day_pass.day_pass_type&.has_meeting_room_limit?
-      return day_pass_overage_cents(day_pass)
-    end
-
-    sub = user.active_subscription_for_location(location)
-    if sub && sub.plan&.has_meeting_room_limit?
-      return subscription_overage_cents(sub)
-    end
-
-    0
+    base_room_or_overage + amenity_cents
   end
 
   private
@@ -52,6 +37,31 @@ class Billing::Reservations::ChargeCalculator
 
   def date
     @date ||= reservation.datetime_in.to_date
+  end
+
+  # The room/overage portion — unchanged from the original `call` logic.
+  def base_room_or_overage
+    if room.hourly_rate_in_cents.to_i > 0
+      return ((room.hourly_rate_in_cents * minutes) / 60.0).round
+    end
+
+    day_pass = user.day_passes.where(day: date).first
+    if day_pass && day_pass.day_pass_type&.has_meeting_room_limit?
+      return day_pass_overage_cents(day_pass)
+    end
+
+    sub = user.active_subscription_for_location(location)
+    if sub && sub.plan&.has_meeting_room_limit?
+      return subscription_overage_cents(sub)
+    end
+
+    0
+  end
+
+  # Flat add-on cost (member vs non-member aware), independent of minutes.
+  # Mirrors Reservation#amenity_price so the hold and the capture agree.
+  def amenity_cents
+    reservation.amenity_price
   end
 
   def day_pass_overage_cents(day_pass)
