@@ -47,7 +47,13 @@ class Operator::RoomsController < Operator::BaseController
     else
       render :new, status: 422
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    # Let the framework handle these: Pundit denials go to user_not_authorized
+    # (clean "Whoops" flash) and missing records become a 404. Swallowing them
+    # here leaked the raw "not allowed to RoomPolicy#update? this Room" message
+    # to the operator (the Tahoe Longhouse incident).
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
@@ -87,7 +93,11 @@ class Operator::RoomsController < Operator::BaseController
       flash[:error] = @room.errors.full_messages.to_sentence
       turbo_redirect(referrer_or_root)
     end
-  rescue Exception => e
+  rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+    # See create: let authorization denials and missing records reach the
+    # framework's clean handlers instead of leaking internals to the operator.
+    raise
+  rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred: #{e.message}"
     turbo_redirect(referrer_or_root)
