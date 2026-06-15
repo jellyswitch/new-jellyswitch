@@ -39,9 +39,28 @@ The monthly window a pool is measured against. For Stripe-billed subscriptions i
 - Exhausting the **Day Pool** revokes a member's *building access* only — it does **not** revoke membership identity (they remain a Member, still billed, still rendered as active). The day-limit gate lives on the building-access path, never inside `has_active_subscription?`.
 - A **Day Credit** offsets door-punch days within a period, raising the member's remaining Day Pool.
 
+## Amenity
+
+A bookable add-on attached to a specific **Room** (e.g. AV equipment, whiteboard, catering). An amenity is selected per **Reservation** and adds to that booking's charge. Each amenity carries **two independent rates**:
+
+- **Non-member rate** (`amenities.price`) — charged to anyone **without** an active membership at the room's location (drop-ins, day-passers, non-members).
+- **Member rate** (`amenities.membership_price`) — charged to **active members** at that location.
+
+An amenity is **free** for an audience when that audience's rate is `0`. The two rates are independent, so an amenity may be free for members but paid for non-members (and vice-versa). Which rate a given booking pays is decided **server-side** by `User#should_charge_for_reservation?` and summed in `Reservation#amenity_price` — the charge is computed at booking time, never trusted from the client.
+
+**Behavior is derived from the rate, not a stored type:**
+
+- **Both rates 0** → a passive **room feature** (e.g. whiteboard, monitor). Rendered as an informational chip, never selected, never creates a join row, never charged.
+- **Any rate > 0** → an **orderable add-on** (e.g. catering). Selectable per Reservation, creates the `amenities_reservations` join row, and is charged at the booker's applicable rate.
+
+There is no "free but must request" case — every free amenity is a non-selectable feature.
+
+_Avoid_: "Regular price" / "Membership price" in user-facing UI — say **Non-member rate** and **Member rate**. (The DB columns remain `price` / `membership_price`; note that the bare `price` column **is** the non-member rate.)
+
 ## Flagged ambiguities
 
 - "pool" was used loosely for both the day allowance and the meeting-room-minute allowance — resolved: **Day Pool** (distinct days) and **Hour Pool** (free room minutes) are distinct caps with separate fields.
+- "Regular" vs "Membership" amenity pricing was opaque (and collided with the bare `price` column) — resolved: **Non-member rate** (`price`) and **Member rate** (`membership_price`). See **Amenity**.
 
 ## CRM / Marketing
 
