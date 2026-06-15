@@ -170,4 +170,26 @@ RSpec.describe Room, type: :model do
       end
     end
   end
+
+  describe "#amenity_add_ons / #amenity_feature_names" do
+    let(:room) { create(:room) }
+
+    before do
+      create(:amenity, room: room, name: "Whiteboard", price: 0, membership_price: 0)
+      create(:amenity, room: room, name: "Catering", price: 50, membership_price: 35)
+    end
+
+    it "returns priced add-ons as structured hashes in cents" do
+      expect(room.reload.amenity_add_ons).to eq([
+        { id: room.amenities.find_by(name: "Catering").id,
+          name: "Catering",
+          non_member_rate_cents: 5000,
+          member_rate_cents: 3500 },
+      ])
+    end
+
+    it "returns free amenities as plain feature names" do
+      expect(room.reload.amenity_feature_names).to eq(["Whiteboard"])
+    end
+  end
 end

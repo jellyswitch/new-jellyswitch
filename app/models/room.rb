@@ -204,4 +204,22 @@ class Room < ApplicationRecord
   def has_whiteboard?
     amenities.exists?(name: Amenity::WHITEBOARD)
   end
+
+  # API serialization for the member-facing room card. Free amenities render as
+  # informational chips (names only); priced amenities render as selectable
+  # add-ons carrying both rates in cents. Rates are stored as float dollars.
+  def amenity_add_ons
+    amenities.add_ons.map do |a|
+      {
+        id: a.id,
+        name: a.name,
+        non_member_rate_cents: (a.price.to_f * 100).round,
+        member_rate_cents: (a.membership_price.to_f * 100).round,
+      }
+    end
+  end
+
+  def amenity_feature_names
+    amenities.features.map(&:name)
+  end
 end
