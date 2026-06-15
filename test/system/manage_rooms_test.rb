@@ -3,6 +3,7 @@ require "application_system_test_case"
 class ManageRoomsTest < ApplicationSystemTestCase
   NAME_INDEX = 0.freeze
   PRICE_INDEX = 1.freeze
+  MEMBERSHIP_PRICE_INDEX = 2.freeze
 
   setup do
     @room = rooms(:small_meeting_room)
@@ -21,6 +22,10 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
   def price_input
     all("input")[PRICE_INDEX]
+  end
+
+  def membership_price_input
+    all("input")[MEMBERSHIP_PRICE_INDEX]
   end
 
   test "should show room's amenities" do
@@ -110,7 +115,8 @@ class ManageRoomsTest < ApplicationSystemTestCase
 
     within all("#amenities .nested-fields")[0] do
       name_input.set("Coffee")
-      price_input.set("15.00")
+      price_input.set("15.00")             # non-member rate
+      membership_price_input.set("5.00")   # member rate
     end
 
     click_on "+ Add More"
@@ -118,14 +124,7 @@ class ManageRoomsTest < ApplicationSystemTestCase
     within all("#amenities .nested-fields")[1] do
       name_input.set("Projector")
       price_input.set("30.00")
-    end
-
-    within ".amenity-type-price" do
-      find(".form-check-label", text: "Membership").click
-    end
-
-    within all("#amenities .nested-fields")[0] do
-      price_input.set("5.00")
+      # member rate left blank → 0
     end
 
     click_on "Update room"
