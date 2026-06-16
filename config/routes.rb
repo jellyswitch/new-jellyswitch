@@ -98,6 +98,7 @@ Rails.application.routes.draw do
         collection do
           post :redeem
           post :apply_code
+          post :redeem_today
         end
       end
 
