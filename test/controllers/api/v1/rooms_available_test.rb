@@ -46,4 +46,14 @@ class Api::V1::RoomsAvailableTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, @room.id
   end
+
+  test "returns 422 for a malformed time" do
+    get "/api/v1/rooms/available", params: { date: @date, time: "25:99", minutes: 60 }, headers: headers
+    assert_response :unprocessable_entity
+  end
+
+  test "returns 422 for a blank time" do
+    get "/api/v1/rooms/available", params: { date: @date, minutes: 60 }, headers: headers
+    assert_response :unprocessable_entity
+  end
 end

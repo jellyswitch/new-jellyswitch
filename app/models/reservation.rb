@@ -122,9 +122,10 @@ class Reservation < ApplicationRecord
     start_at > Time.current
   end
 
-  # datetime_in is stored as `timestamp without time zone` but the stored
-  # wall-clock is actually the location's local time. Read it back through the
-  # location's TZ so comparisons against Time.current land on the right instant.
+  # `datetime_in` is a timestamptz (a true UTC instant). The reader above
+  # presents it in the location zone without changing the instant; this
+  # re-derivation round-trips to the same absolute instant and exists only
+  # for callers that want the zone made explicit.
   def start_at
     tz = room&.location&.time_zone.presence || 'UTC'
     ActiveSupport::TimeZone[tz].local_to_utc(datetime_in)

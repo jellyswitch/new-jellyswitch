@@ -407,7 +407,11 @@ class Api::V1::RoomsController < Api::V1::BaseController
     minutes = (params[:minutes] || 60).to_i
     return render_error('Invalid duration') if minutes <= 0
 
-    start_time = ActiveSupport::TimeZone[zone].parse("#{date} #{params[:time]}")
+    raw_time = params[:time].to_s
+    unless raw_time.match?(/\A\d{1,2}:\d{2}\z/)
+      return render_error('Invalid time')
+    end
+    start_time = (ActiveSupport::TimeZone[zone].parse("#{date} #{raw_time}") rescue nil)
     return render_error('Invalid time') if start_time.nil?
     except_id = params[:exclude_reservation_id].presence
 
