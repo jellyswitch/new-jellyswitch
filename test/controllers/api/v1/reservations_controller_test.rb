@@ -58,4 +58,93 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal true,  row["is_teammate"], "org-mate booking should be flagged is_teammate"
     assert_equal false, row["mine"]
   end
+
+  # --- PATCH /api/v1/reservations/:id (edit an upcoming reservation) ----------
+
+  test "update moves an upcoming reservation's start time and duration" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 2.days.from_now.change(hour: 10, min: 0), minutes: 60)
+    new_start = 3.days.from_now.change(hour: 14, min: 0)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: new_start.iso8601, minutes: 90 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :success
+    res.reload
+    assert_equal 90, res.minutes
+    assert_equal new_start.to_i, res.start_at.to_i, "start moved to the requested instant"
+    assert_equal 90, JSON.parse(response.body)["minutes"]
+  end
+
+  test "update can change duration alone, keeping the same start" do
+    start = 2.days.from_now.change(hour: 9, min: 0)
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: start, minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: start.iso8601, minutes: 30 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :success
+    assert_equal 30, res.reload.minutes
+  end
+
+  test "update rejects a move that overlaps a different reservation" do
+    res     = Reservation.create!(user: @viewer, room: @room, datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+    blocker = Reservation.create!(user: @mate,   room: @room, datetime_in: 4.days.from_now.change(hour: 13), minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: blocker.datetime_in.iso8601, minutes: 60 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_match(/conflict/i, JSON.parse(response.body)["error"])
+    # Original window is untouched on failure.
+    assert_equal 60, res.reload.minutes
+    assert_equal 2.days.from_now.change(hour: 10).to_i, res.start_at.to_i
+  end
+
+  test "update lets a reservation keep its own slot (overlap excludes self)" do
+    start = 2.days.from_now.change(hour: 11, min: 0)
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: start, minutes: 60)
+
+    # Same start, longer — only conflicts with itself, which is allowed.
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: start.iso8601, minutes: 120 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :success
+    assert_equal 120, res.reload.minutes
+  end
+
+  test "update refuses a reservation that has already started" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 30.minutes.ago, minutes: 120)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: 1.hour.from_now.iso8601, minutes: 60 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_equal 120, res.reload.minutes
+  end
+
+  test "update rejects a non-positive duration" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { datetime_in: res.datetime_in.iso8601, minutes: 0 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_equal 60, res.reload.minutes
+  end
+
+  test "update 404s for another user's reservation" do
+    other = Reservation.create!(user: @mate, room: @room, datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+
+    patch "/api/v1/reservations/#{other.id}",
+      params: { reservation: { datetime_in: 3.days.from_now.iso8601, minutes: 60 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :not_found
+  end
 end

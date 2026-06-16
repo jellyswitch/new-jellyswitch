@@ -77,8 +77,12 @@ class Api::V1::RoomsController < Api::V1::BaseController
       current_time = min_start if current_time < min_start
     end
 
+    # When editing a reservation, exclude it from the overlap check so its
+    # own slot shows as available (the backend overlap check excludes self too).
+    except_id = params[:exclude_reservation_id].presence
+
     while current_time < end_time
-      available = room.available?(start_time: current_time, duration: 15)
+      available = room.available?(start_time: current_time, duration: 15, except: except_id)
       slots << {
         time: current_time.strftime("%H:%M"),
         hour: current_time.hour,
