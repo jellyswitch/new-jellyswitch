@@ -41,24 +41,11 @@ class Api::V1::RoomsController < Api::V1::BaseController
     date = Date.parse(params[:date]) rescue Date.current
     location = current_location
 
-    # Generate 15-min slots from open to close
-    # working_day_start/end may be stored as strings like "06:00" or integers
-    parse_hour = ->(val, default) {
-      return default if val.nil?
-      val.is_a?(String) ? val.split(':').first.to_i : val.to_i
-    }
-    start_hour = parse_hour.call(location&.working_day_start, 8)
-    end_hour = parse_hour.call(location&.working_day_end, 18)
-
-    # Members (active subscription or lease at this location), and superadmins
-    # for ops/off-hours bookings, can book outside the posted working hours.
-    # Posted hours bound day-pass guests and the public only — paying members
-    # get 24/7 self-service access, so an evening start isn't silently capped
-    # at the close time. See the Drew Bray 30-min booking incident, 2026-06.
-    if current_api_user&.books_outside_posted_hours?(location)
-      start_hour = 0
-      end_hour = 24
-    end
+    # Generate 15-min slots from open to close. The role-gated hour bounds
+    # (members get the full 24h window, non-members are bounded by posted
+    # working hours) are computed by start_hour_bounds — shared with
+    # booking_times. See the Drew Bray 30-min booking incident, 2026-06.
+    start_hour, end_hour = start_hour_bounds(location)
 
     zone = location&.time_zone || 'UTC'
     slots = []
@@ -407,7 +394,117 @@ class Api::V1::RoomsController < Api::V1::BaseController
     }
   end
 
+  # GET /api/v1/rooms/available?date=&time=HH:MM&minutes=&exclude_reservation_id=
+  # Rooms free for an explicit future window (when-first booking). `time` is
+  # the location-local start (24h "HH:MM"); minutes is the duration.
+  def available
+    location = current_location
+    return render json: { available_rooms: [], unavailable_rooms: [], no_rooms_available: true } unless location
+
+    user = current_api_user
+    zone = location.time_zone.presence || 'UTC'
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    minutes = (params[:minutes] || 60).to_i
+    return render_error('Invalid duration') if minutes <= 0
+
+    raw_time = params[:time].to_s
+    unless raw_time.match?(/\A\d{1,2}:\d{2}\z/)
+      return render_error('Invalid time')
+    end
+    start_time = (ActiveSupport::TimeZone[zone].parse("#{date} #{raw_time}") rescue nil)
+    return render_error('Invalid time') if start_time.nil?
+    except_id = params[:exclude_reservation_id].presence
+
+    rooms = location.rooms.visible
+    rooms = (rooms.rentable rescue rooms) unless user.can_see_all_rooms?(location, date)
+
+    avail, unavail = rooms.to_a.partition do |r|
+      r.available?(start_time: start_time, duration: minutes, except: except_id)
+    end
+
+    # Client computes per-room price = hourly_rate × duration, or uses the
+    # plan/day-pass context — identical to the reserve_now contract.
+    sub_info = (user.subscription_reservation_charge_info(location, minutes, at: start_time) rescue nil)
+    dp_info  = (user.day_pass_reservation_charge_info(location, date, minutes) rescue nil)
+    included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
+    overage_rate = sub_info&.dig(:overage_rate_in_cents) || dp_info&.dig(:overage_rate_in_cents)
+
+    end_time = start_time + minutes.minutes
+    render json: {
+      start_time: start_time.iso8601,
+      start_time_label: start_time.strftime("%-l:%M %p").strip,
+      minutes: minutes,
+      no_rooms_available: avail.empty?,
+      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true) },
+      unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
+      pricing_context: {
+        has_plan: sub_info.present? || dp_info.present?,
+        minutes_remaining: included_minutes_remaining.to_i,
+        overage_rate_per_hour_cents: overage_rate.to_i,
+        subscriber_unlimited: user.has_active_subscription_at_location?(location) && sub_info.nil?,
+        plan_label: sub_info ? 'plan' : (dp_info ? 'day pass' : nil),
+      },
+    }
+  end
+
+  # GET /api/v1/rooms/booking_times?date=  → role-gated 15-min start times.
+  def booking_times
+    location = current_location
+    return render json: { times: [] } unless location
+    date = Date.parse(params[:date]) rescue Date.current
+    zone = location&.time_zone || 'UTC'
+    start_hour, end_hour = start_hour_bounds(location)
+
+    day_start = date.in_time_zone(zone).beginning_of_day
+    current_time = day_start + start_hour.hours
+    end_time = day_start + end_hour.hours
+
+    now_in_zone = Time.current.in_time_zone(zone)
+    if date == now_in_zone.to_date
+      floor = now_in_zone.change(min: (now_in_zone.min / 15).floor * 15, sec: 0)
+      min_start = floor + 15.minutes
+      current_time = min_start if current_time < min_start
+    end
+
+    times = []
+    while current_time < end_time
+      times << { time: current_time.strftime("%H:%M"), hour: current_time.hour,
+                 label: current_time.strftime("%l:%M %p").strip }
+      current_time += 15.minutes
+    end
+    render json: { date: date.to_s, times: times }
+  end
+
   private
+
+  # Role-gated bookable hour bounds for a location. Members with 24/7 access
+  # (active subscription/lease) and superadmins get the full 0..24 window;
+  # everyone else is bounded by posted working hours. Mirrors time_slots.
+  def start_hour_bounds(location)
+    parse_hour = ->(val, default) {
+      return default if val.nil?
+      val.is_a?(String) ? val.split(':').first.to_i : val.to_i
+    }
+    start_hour = parse_hour.call(location&.working_day_start, 8)
+    end_hour   = parse_hour.call(location&.working_day_end, 18)
+    if current_api_user&.books_outside_posted_hours?(location)
+      [0, 24]
+    else
+      [start_hour, end_hour]
+    end
+  end
+
+  def room_card(room, is_available, available_at = nil)
+    room_json(room).merge(available: is_available, available_at: available_at,
+                          preferred: room.id == current_api_user.preferred_room_id)
+  end
+
+  def next_free_at(room, start_time, end_time, zone)
+    overlap = room.reservations.where(cancelled: false)
+                  .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
+                  .order(:datetime_in).first
+    overlap&.datetime_out&.in_time_zone(zone)&.strftime("%-l:%M %p")&.strip
+  end
 
   # Prefer the day pass type explicitly marked as the default for room
   # bookings. Fall back to cheapest non-free, non-Day-Office type.

@@ -59,6 +59,10 @@ Rails.application.routes.draw do
           get :time_slots
           get :pricing
         end
+        collection do
+          get :available
+          get :booking_times
+        end
       end
       get 'reserve_now', to: 'rooms#reserve_now'
 
