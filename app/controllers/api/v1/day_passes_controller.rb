@@ -143,6 +143,39 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
   end
 
+  # POST /api/v1/day_passes/redeem_today
+  # Member self-redeems one bundle pass to get access today without tapping a door.
+  # Reuses ConsumeOnEntry (idempotent, same logic as door entry) and maps its
+  # outcome to a clear API response so the app can show a meaningful message.
+  #
+  # Outcomes:
+  #   redeemed          → burned one pass; today now covered    → 200 { status: "redeemed", passes_remaining: N }
+  #   already_covered   → already had access for today (sub / lease / reservation
+  #                        / non-bundle day pass / bundle already burned)
+  #                                                              → 200 { status: "already_active_today" }
+  #   no_bundle         → no active bundle and no other coverage → 422 render_error
+  #   nil               → NoPassesRemaining rescued inside interactor (race)  → 422 render_error
+  def redeem_today
+    result = Billing::DayPassBundles::ConsumeOnEntry.call(
+      user:     current_api_user,
+      location: current_location,
+    )
+
+    case result.outcome
+    when :redeemed
+      bundle = current_api_user.day_pass_bundles.active.where(location: current_location).first
+      render json: {
+        status:          "redeemed",
+        passes_remaining: bundle&.passes_remaining,
+      }
+    when :already_covered
+      render json: { status: "already_active_today" }
+    else
+      # :no_bundle or nil (NoPassesRemaining race)
+      render_error("You don't have any day passes left.")
+    end
+  end
+
   # Legacy redeem endpoint — forwards to apply_code.
   def redeem
     apply_code

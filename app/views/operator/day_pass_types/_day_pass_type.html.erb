@@ -72,10 +72,17 @@
       </div>
     <% end %>
 
-    <% if view %>
-      <%= link_to 'View', day_pass_type_path(day_pass_type), class: "btn btn-block btn-primary mt-3" %>
-    <% else %>
-      <%= link_to "Edit", edit_day_pass_type_path(day_pass_type), class: "btn btn-block btn-info mt-3 "%>
-    <% end %>
+    <div class="row mt-3">
+      <div class="col">
+        <%= link_to "Edit", edit_day_pass_type_path(day_pass_type), class: "btn btn-block btn-info" %>
+      </div>
+      <% if day_pass_type.available? %>
+        <div class="col">
+          <%= link_to "Archive", day_pass_type_path(day_pass_type),
+                data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to archive #{day_pass_type.name}?" },
+                class: "btn btn-block btn-outline-danger" %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </ul>
