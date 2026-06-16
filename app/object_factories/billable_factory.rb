@@ -13,6 +13,8 @@ class BillableFactory
       Billable::Default
     when "DayPass"
       Billable::Default
+    when "DayPassBundle"
+      Billable::Default
     else
       raise "Cannot determine billable for #{invoiceable.class.name}"
     end.new(billable: invoiceable)

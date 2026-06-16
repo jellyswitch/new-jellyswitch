@@ -1,6 +1,41 @@
 require "rails_helper"
 
 RSpec.describe Api::V1::DayPassesController, type: :controller do
+  describe "GET #types" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:user) { create(:user, operator: operator, current_location: location) }
+
+    before do
+      ActsAsTenant.current_tenant = operator
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(user)
+      allow(controller).to receive(:current_tenant).and_return(operator)
+      allow(controller).to receive(:current_location).and_return(location)
+    end
+
+    it "includes quantity for each type" do
+      single = create(:day_pass_type, operator: operator, location: location,
+                      name: "Single Pass", amount_in_cents: 1500,
+                      quantity: 1, visible: true, available: true)
+      npack  = create(:day_pass_type, operator: operator, location: location,
+                      name: "5-Pack", amount_in_cents: 6000,
+                      quantity: 5, visible: true, available: true)
+
+      get :types
+      body = JSON.parse(response.body)
+      expect(response).to have_http_status(:ok)
+
+      single_json = body.find { |t| t["id"] == single.id }
+      npack_json  = body.find { |t| t["id"] == npack.id }
+
+      expect(single_json).not_to be_nil
+      expect(single_json["quantity"]).to eq(1)
+      expect(npack_json).not_to be_nil
+      expect(npack_json["quantity"]).to eq(5)
+    end
+  end
+
   describe "POST #apply_code (fallback to DayPassType)" do
     let(:operator) { create(:operator) }
     let(:location) { create(:location, operator: operator) }

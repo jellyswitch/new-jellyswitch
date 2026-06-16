@@ -125,6 +125,27 @@ RSpec.describe DayPass, type: :model do
     end
   end
 
+  describe "bundle-sourced scopes" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:user) { create(:user, operator: operator) }
+    let(:type) { create(:day_pass_type, operator: operator, location: location, quantity: 5) }
+    let(:bundle) do
+      DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                            day_pass_type: type, quantity_purchased: 5, passes_remaining: 5, purchased_at: Time.current)
+    end
+
+    it "partitions plain vs bundle-sourced day passes" do
+      plain = DayPass.create!(user: user, billable: user, operator: operator, location: location, day_pass_type: type, day: Date.current)
+      sourced = DayPass.create!(user: user, billable: user, operator: operator, location: location, day_pass_type: type, day: Date.current)
+      bundle.redemptions.create!(operator: operator, kind: "entry", performed_by: user, day_pass: sourced, redeemed_at: Time.current)
+
+      expect(DayPass.bundle_sourced).to contain_exactly(sourced)
+      expect(DayPass.not_bundle_sourced).to include(plain)
+      expect(DayPass.not_bundle_sourced).not_to include(sourced)
+    end
+  end
+
   describe "activity logging" do
     let(:user) { create(:user) }
 

@@ -97,6 +97,27 @@ RSpec.describe Operator::DayPassTypesController, type: :controller do
         expect(response).to render_template(:new)
       end
     end
+
+    context "quantity param" do
+      let(:non_ca_location) { create(:location, operator: operator, state: "NV") }
+
+      before do
+        allow(controller).to receive(:current_location).and_return(non_ca_location)
+      end
+
+      it "persists quantity when creating with quantity: 5" do
+        created_type = nil
+        allow(CreateDayPassType).to receive(:call) do |args|
+          created_type = DayPassType.create!(
+            args[:params].merge(operator: operator, location: non_ca_location, name: "Bundle Pass", amount_in_cents: 1000)
+          )
+          OpenStruct.new(success?: true, day_pass_type: created_type)
+        end
+
+        post :create, params: valid_params.deep_merge(day_pass_type: { quantity: 5 })
+        expect(created_type.quantity).to eq(5)
+      end
+    end
   end
 
   describe "PUT #update" do
@@ -138,6 +159,46 @@ RSpec.describe Operator::DayPassTypesController, type: :controller do
       it "renders edit template" do
         put :update, params: invalid_params
         expect(response).to render_template(:edit)
+      end
+    end
+
+    context "quantity field" do
+      let(:non_ca_location) { create(:location, operator: operator, state: "NV") }
+      let(:non_ca_type) { create(:day_pass_type, operator: operator, location: non_ca_location) }
+
+      before do
+        allow(controller).to receive(:current_location).and_return(non_ca_location)
+      end
+
+      it "persists quantity when updated to 5" do
+        put :update, params: { id: non_ca_type.id, day_pass_type: { quantity: 5 } }
+        expect(non_ca_type.reload.quantity).to eq(5)
+      end
+    end
+
+    context "expires_after_days field" do
+      context "at a non-restricted location (NV)" do
+        let(:non_ca_location) { create(:location, operator: operator, state: "NV") }
+        let(:non_ca_type) { create(:day_pass_type, operator: operator, location: non_ca_location) }
+
+        before do
+          allow(controller).to receive(:current_location).and_return(non_ca_location)
+        end
+
+        it "persists expires_after_days: 365" do
+          put :update, params: { id: non_ca_type.id, day_pass_type: { expires_after_days: 365 } }
+          expect(non_ca_type.reload.expires_after_days).to eq(365)
+        end
+      end
+
+      context "at a CA (restricted) location" do
+        # location factory defaults to state: "CA" which is expiration-restricted
+        let(:ca_type) { create(:day_pass_type, operator: operator, location: location) }
+
+        it "does NOT persist expires_after_days (model validation rejects it)" do
+          put :update, params: { id: ca_type.id, day_pass_type: { expires_after_days: 365 } }
+          expect(ca_type.reload.expires_after_days).to be_nil
+        end
       end
     end
   end

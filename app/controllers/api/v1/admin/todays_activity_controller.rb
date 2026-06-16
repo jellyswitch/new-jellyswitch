@@ -18,6 +18,10 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     # Today's day passes — scoped to this location, not the operator.
     todays_day_passes = DayPass.where(location: location, day: today)
 
+    # IDs of those minted by burning a prepaid bundle on entry — surfaced as
+    # visits but with $0 cost (pack already paid for once at purchase).
+    bundle_sourced_ids = todays_day_passes.bundle_sourced.ids.to_set
+
     # Today's new subscriptions (catches converted day-passers: their User
     # record may be old, but the subscription started today). Scoped to
     # plans tied to this location.
@@ -28,8 +32,12 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       .where(created_at: today.beginning_of_day..today.end_of_day)
 
     # Revenue total — all three pillars in cents.
+    # `not_bundle_sourced` excludes entry passes minted by burning a prepaid
+    # bundle — their day_pass_type.amount_in_cents is the full N-Pack price
+    # (recognized once at purchase), so summing it per entry would double-count
+    # the one-time bundle purchase as recurring day-pass revenue.
     revenue_cents = paid_bookings.sum { |r| r.room_price } +
-                    todays_day_passes.joins(:day_pass_type).sum('day_pass_types.amount_in_cents') +
+                    todays_day_passes.not_bundle_sourced.joins(:day_pass_type).sum('day_pass_types.amount_in_cents') +
                     todays_new_subscriptions.sum('plans.amount_in_cents')
 
     # New members — anyone whose ACTIVE subscription started in the last
@@ -106,7 +114,11 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
           user_id: dp.user_id,
           user_name: dp.user.name,
           type_name: dp.day_pass_type_name,
-          cost: dp.day_pass_type&.amount_in_cents || 0,
+          # Bundle entries show as visits but cost 0 here — the pack price was
+          # recognized once at purchase, not per entry (kept out of `revenue`
+          # above via `not_bundle_sourced`). Showing the pack price per row
+          # would not reconcile with the day's revenue total.
+          cost: bundle_sourced_ids.include?(dp.id) ? 0 : (dp.day_pass_type&.amount_in_cents || 0),
           first_timer: first_timer?(dp.user, today)
         }
       },

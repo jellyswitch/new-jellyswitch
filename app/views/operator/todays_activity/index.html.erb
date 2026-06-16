@@ -126,10 +126,17 @@
                     <div class="text-muted" style="font-size: 11px;"><%= day_pass.user.organization.name %></div>
                   <% end %>
                 </div>
-                <% amount = day_pass.day_pass_type&.amount_in_cents.to_i %>
-                <span class="<%= amount > 0 ? 'text-success' : 'text-muted' %> font-weight-bold" style="font-size: 15px;">
-                  <%= amount > 0 ? number_to_currency(amount / 100.0) : "Free" %>
-                </span>
+                <%# Bundle entries carry the full pack price in their type, but
+                    that revenue was recognized once at purchase — show "Bundle"
+                    here, not the pack price, so the row reconciles with the total. %>
+                <% if @bundle_sourced_day_pass_ids.include?(day_pass.id) %>
+                  <span class="text-muted font-weight-bold" style="font-size: 15px;">Bundle</span>
+                <% else %>
+                  <% amount = day_pass.day_pass_type&.amount_in_cents.to_i %>
+                  <span class="<%= amount > 0 ? 'text-success' : 'text-muted' %> font-weight-bold" style="font-size: 15px;">
+                    <%= amount > 0 ? number_to_currency(amount / 100.0) : "Free" %>
+                  </span>
+                <% end %>
               </div>
             </div>
           </div>

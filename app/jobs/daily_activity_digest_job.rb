@@ -17,7 +17,10 @@ class DailyActivityDigestJob < ApplicationJob
 
     # Calculate revenue
     paid_revenue = paid_reservations.sum { |r| r.room.hourly_rate_in_cents * (r.minutes / 60.0) / 100.0 }
-    day_pass_revenue = day_passes.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
+    # Exclude bundle-sourced entry passes: their day_pass_type.amount_in_cents
+    # is the full N-Pack price (recognized once at purchase), so counting it per
+    # entry would inflate day-pass revenue by the whole pack price each day.
+    day_pass_revenue = day_passes.not_bundle_sourced.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
     total_revenue = paid_revenue + day_pass_revenue
 
     # Build names list for day passers

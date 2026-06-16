@@ -180,6 +180,7 @@ class AutomatedWorkflowsJob < ApplicationJob
     return unless template&.enabled?
 
     DayPass.where(operator: operator, location: location, day: target_date)
+           .not_bundle_sourced
            .includes(:user)
            .find_each do |day_pass|
       user = day_pass.user

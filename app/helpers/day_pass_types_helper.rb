@@ -10,7 +10,7 @@ module DayPassTypesHelper
   end
 
   def day_pass_type_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
     # Convert hours input to minutes
@@ -31,7 +31,7 @@ module DayPassTypesHelper
 
 
   def day_pass_type_update_params
-    p = params.require(:day_pass_type).permit(:code, :description, :included_meeting_room_minutes, :overage_rate_in_cents)
+    p = params.require(:day_pass_type).permit(:code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days)
     # Convert hours input to minutes
     if p[:included_meeting_room_minutes].present?
       p[:included_meeting_room_minutes] = (p[:included_meeting_room_minutes].to_f * 60).to_i

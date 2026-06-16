@@ -55,6 +55,64 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :post, @kisi_url
   end
 
+  # ---------------------------------------------------------------------------
+  # Bundle-pass consumption tests — manual unlock path
+  # ---------------------------------------------------------------------------
+
+  # Build a bundle-only user: no subscription, no day pass, no lease,
+  # no reservation — only an active DayPassBundle with passes.
+  def bundle_user
+    users(:cowork_tahoe_non_member)
+  end
+
+  def create_active_bundle(user, passes: 5)
+    DayPassBundle.create!(
+      user:               user,
+      billable:           user,
+      operator:           @operator,
+      location:           @location,
+      day_pass_type:      day_pass_type(:cowork_tahoe_day_pass_type),
+      quantity_purchased: passes,
+      passes_remaining:   passes,
+      purchased_at:       Time.current,
+    )
+  end
+
+  test "bundle-only user unlocking the door burns exactly one pass" do
+    user   = bundle_user
+    bundle = create_active_bundle(user)
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+
+    assert_response :success
+    assert_equal passes_before = 5, bundle.passes_remaining   # sanity
+    assert_equal 4, bundle.reload.passes_remaining
+    assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+  end
+
+  test "bundle-only user unlocking twice the same day burns only one pass total (idempotent)" do
+    user   = bundle_user
+    bundle = create_active_bundle(user)
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+    assert_response :success
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+    assert_response :success
+
+    assert_equal 4, bundle.reload.passes_remaining, "second unlock must not burn another pass"
+  end
+
+  test "member (active subscription) unlocking does NOT burn a bundle pass" do
+    user   = users(:cowork_tahoe_member)   # has cowork_tahoe_subscription fixture
+    bundle = create_active_bundle(user)
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+
+    assert_response :success
+    assert_equal 5, bundle.reload.passes_remaining, "subscription-covered user must not spend a pass"
+  end
+
   test "door list shows public doors (incl. unflagged) and hides private ones" do
     # @door has the default private=false — the case that used to be NULL and
     # got silently dropped from the member list by `where(private: false)`.

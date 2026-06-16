@@ -155,6 +155,17 @@ class Location < ApplicationRecord
     true
   end
 
+  # Editable data list — states where expiration on prepaid passes is restricted
+  # or prohibited. Add states here as counsel advises; this is data, not logic.
+  EXPIRATION_RESTRICTED_STATES = ["CA", "CALIFORNIA"].freeze
+
+  # Fail-safe: unknown/blank state is treated as restricted (no expiration).
+  def expiration_restricted?
+    norm = state.to_s.strip.upcase
+    return true if norm.blank?
+    EXPIRATION_RESTRICTED_STATES.include?(norm)
+  end
+
   after_create_commit :seed_email_templates
 
   validates :working_day_start, presence: true
@@ -295,6 +306,25 @@ class Location < ApplicationRecord
 
   def address_changed?
     building_address_changed? || city_changed? || state_changed? || zip_changed?
+  end
+
+  # The [start, end) timestamps of the business-day period containing `at`,
+  # using day_pass_period_start as the rollover in this location's time zone.
+  # An entry any time within one window counts as the same "day" for bundle
+  # burning, so an evening session crossing midnight burns one pass.
+  def business_day_window(at = Time.current)
+    tz = ActiveSupport::TimeZone[time_zone.presence || "UTC"]
+    local = at.in_time_zone(tz)
+    h, m = (day_pass_period_start.presence || "04:00").split(":").map(&:to_i)
+    # Guard against a malformed value (e.g. "9am") that yields only one token;
+    # m will be nil in that case. Fall back to the 04:00 default so the burn
+    # path never raises.
+    h, m = 4, 0 if m.nil?
+    period_start_str = format("%02d:%02d", h, m)
+    offset = (h * 3600) + (m * 60)
+    day = (local - offset).to_date
+    start = tz.parse("#{day} #{period_start_str}")
+    [start, start + 1.day]
   end
 
   private

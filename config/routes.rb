@@ -101,6 +101,11 @@ Rails.application.routes.draw do
         end
       end
 
+      # Day Pass Bundles
+      resources :day_pass_bundles, only: [:index] do
+        member { post :check_in_guest }
+      end
+
       # Bulletin Board / Posts
       resources :posts, only: [:index, :show, :create] do
         resources :replies, only: [:create], controller: 'post_replies'
@@ -843,6 +848,7 @@ Rails.application.routes.draw do
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"
   resources :users, controller: "operator/users" do
     resources :comp_days, only: [:create], controller: "operator/comp_days"
+    resources :day_pass_bundle_restores, only: [:create], controller: "operator/day_pass_bundle_restores"
     collection do
       get "add_member", to: "operator/users#add_member"
       get :archived, to: "operator/users#archived"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_16_134935) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -280,6 +280,43 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
     t.index ["user_id"], name: "index_comp_days_on_user_id"
   end
 
+  create_table "day_pass_bundle_redemptions", force: :cascade do |t|
+    t.bigint "day_pass_bundle_id", null: false
+    t.bigint "operator_id", default: 1, null: false
+    t.string "kind", null: false
+    t.bigint "performed_by_id"
+    t.bigint "day_pass_id"
+    t.string "guest_name"
+    t.datetime "redeemed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["day_pass_bundle_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_bundle_id"
+    t.index ["day_pass_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_id"
+    t.index ["performed_by_id"], name: "index_day_pass_bundle_redemptions_on_performed_by_id"
+  end
+
+  create_table "day_pass_bundles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "day_pass_type_id", null: false
+    t.bigint "location_id"
+    t.bigint "operator_id", default: 1, null: false
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.integer "quantity_purchased", null: false
+    t.integer "passes_remaining", null: false
+    t.datetime "expires_at"
+    t.datetime "purchased_at", null: false
+    t.bigint "invoice_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["billable_type", "billable_id"], name: "index_day_pass_bundles_on_billable_type_and_billable_id"
+    t.index ["day_pass_type_id"], name: "index_day_pass_bundles_on_day_pass_type_id"
+    t.index ["invoice_id"], name: "index_day_pass_bundles_on_invoice_id"
+    t.index ["location_id"], name: "index_day_pass_bundles_on_location_id"
+    t.index ["operator_id"], name: "index_day_pass_bundles_on_operator_id"
+    t.index ["user_id"], name: "index_day_pass_bundles_on_user_id"
+  end
+
   create_table "day_pass_types", force: :cascade do |t|
     t.string "name", null: false
     t.integer "operator_id", null: false
@@ -294,6 +331,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
     t.integer "included_meeting_room_minutes"
     t.integer "overage_rate_in_cents", default: 0, null: false
     t.boolean "default_for_room_booking", default: false, null: false
+    t.integer "quantity", default: 1, null: false
+    t.integer "expires_after_days"
     t.index ["location_id"], name: "index_day_pass_types_on_location_id"
     t.index ["operator_id", "location_id", "default_for_room_booking"], name: "index_dpt_on_op_loc_default"
   end
@@ -580,6 +619,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
     t.decimal "longitude", precision: 10, scale: 7
     t.integer "past_member_grace_days", default: 180, null: false
     t.bigint "space_host_id"
+    t.string "day_pass_period_start", default: "04:00", null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["space_host_id"], name: "index_locations_on_space_host_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
@@ -1113,6 +1153,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_12_160000) do
   add_foreign_key "comp_days", "subscriptions"
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
+  add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"
