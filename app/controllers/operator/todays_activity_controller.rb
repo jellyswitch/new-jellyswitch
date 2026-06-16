@@ -6,6 +6,12 @@ class Operator::TodaysActivityController < Operator::BaseController
     # Today's day passes (scheduled for today)
     @day_passes = current_location.day_passes.today.includes(:user, :day_pass_type)
 
+    # IDs of today's passes that were minted by burning a prepaid bundle on
+    # entry. These show as visits ("who's here") but carry $0 cost — the pack
+    # was already paid for once at purchase. Precomputed as a Set so the view
+    # can flag rows without an N+1. See `not_bundle_sourced` used for revenue.
+    @bundle_sourced_day_pass_ids = @day_passes.bundle_sourced.ids.to_set
+
     # Today's reservations grouped by paid/free
     @all_reservations = Reservation.where(room: current_location.rooms)
       .today
@@ -70,7 +76,12 @@ class Operator::TodaysActivityController < Operator::BaseController
     # today's new subscription plan amounts (catches converted day-passers
     # whose User row is older than today but whose sub started today).
     @paid_reservation_revenue = @paid_reservations.sum { |r| r.room.hourly_rate_in_cents * (r.minutes / 60.0) / 100.0 }
-    @day_pass_revenue = @day_passes.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
+    # Exclude bundle-sourced entry passes from revenue: their
+    # day_pass_type.amount_in_cents is the full N-Pack price (recognized once
+    # at purchase), so counting it per daily entry would inflate day-pass
+    # revenue by the whole pack price each time the member walks in. The list
+    # above (@day_passes) still shows the entry as a real visit.
+    @day_pass_revenue = @day_passes.not_bundle_sourced.sum { |dp| dp.day_pass_type&.amount_in_cents.to_i / 100.0 }
     @new_subscription_revenue = Subscription.joins(:plan)
       .where(plans: { operator_id: current_tenant.id, location_id: current_location.id })
       .where(active: true, pending: [false, nil])

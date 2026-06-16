@@ -37,13 +37,24 @@ class Billing::DayPassBundles::ConsumeOnEntry
                       .exists?
       next if already
 
+      # `imported: true` skips DayPass member-lifecycle side effects
+      # (welcome-drip enrollment + activity-feed "bought a day pass" entry).
+      # This minted pass is an internal accounting artifact of burning a
+      # prepaid bundle, not a fresh day-pass purchase — the burn is already
+      # recorded as a DayPassBundleRedemption. Firing those side effects on
+      # every building entry would mis-log the event and re-enroll the member
+      # daily. NOT marked `complimentary` — the pass is prepaid, not comped,
+      # and must still count toward `DayPass.purchased` (door-access check).
+      # Bundle revenue is recognized once at purchase; these entry passes are
+      # excluded from day-pass revenue via the `not_bundle_sourced` scope.
       day_pass = DayPass.create!(
         user:          user,
         billable:      user,
         operator:      bundle.operator,
         location:      location,
         day_pass_type: bundle.day_pass_type,
-        day:           today
+        day:           today,
+        imported:      true
       )
       bundle.burn_locked!(kind: :entry, performed_by: user, day_pass: day_pass)
     end

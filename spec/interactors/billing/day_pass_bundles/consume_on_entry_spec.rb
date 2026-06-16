@@ -23,6 +23,40 @@ RSpec.describe Billing::DayPassBundles::ConsumeOnEntry do
     expect(r.day_pass).to eq(DayPass.where(user: user, location: location).order(:id).last)
   end
 
+  # The minted entry pass is an internal accounting artifact of burning a
+  # prepaid bundle — its day_pass_type.amount_in_cents is the full N-Pack
+  # price, so revenue reports must exclude it via `not_bundle_sourced`.
+  it "mints an entry pass that DayPass.not_bundle_sourced excludes from revenue" do
+    active_bundle
+    consume
+    minted = DayPass.where(user: user, location: location, day: Date.current).order(:id).last
+    expect(DayPass.not_bundle_sourced).not_to include(minted)
+    expect(DayPass.bundle_sourced).to include(minted)
+  end
+
+  # The entry pass is prepaid, not comped, and must still count toward
+  # door-access checks (DayPass.purchased), so it is NOT complimentary.
+  it "does NOT mark the minted entry pass complimentary" do
+    active_bundle
+    consume
+    minted = DayPass.where(user: user, location: location, day: Date.current).order(:id).last
+    expect(minted.complimentary).to be_falsey
+  end
+
+  # `imported: true` skips the DayPass member-lifecycle side effects: a bundle
+  # entry must not re-enroll the member in the welcome drip on every visit, and
+  # must not log a misleading "bought a day pass" activity-feed entry.
+  it "does NOT enroll the member in the welcome drip on entry" do
+    active_bundle
+    expect_any_instance_of(User).not_to receive(:enroll_in_welcome_drip!)
+    consume
+  end
+
+  it "does NOT log a day-pass activity-feed entry on entry" do
+    active_bundle
+    expect { consume }.not_to change { Activity.where(kind: :day_pass).count }
+  end
+
   it "is idempotent — a second entry the same calendar day does NOT burn again" do
     b = active_bundle
     consume
