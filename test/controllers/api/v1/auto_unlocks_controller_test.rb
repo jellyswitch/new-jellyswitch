@@ -132,4 +132,66 @@ class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :unauthorized
   end
+
+  # ---------------------------------------------------------------------------
+  # Bundle-pass consumption tests — BLE auto-unlock path
+  # ---------------------------------------------------------------------------
+
+  def bundle_user
+    users(:cowork_tahoe_non_member)
+  end
+
+  def create_active_bundle(user, passes: 5)
+    DayPassBundle.create!(
+      user:               user,
+      billable:           user,
+      operator:           @operator,
+      location:           @location,
+      day_pass_type:      day_pass_type(:cowork_tahoe_day_pass_type),
+      quantity_purchased: passes,
+      passes_remaining:   passes,
+      purchased_at:       Time.current,
+    )
+  end
+
+  test "bundle-only user auto-unlocking burns exactly one pass" do
+    user   = bundle_user
+    bundle = create_active_bundle(user)
+    token  = jwt_for(user)
+
+    post "/api/v1/door/auto_unlock",
+         params:  payload.to_json,
+         headers: headers(token)
+
+    assert_response :success
+    assert_equal 4, bundle.reload.passes_remaining
+    assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+  end
+
+  test "bundle-only user auto-unlocking twice the same day burns only one pass (idempotent)" do
+    user   = bundle_user
+    bundle = create_active_bundle(user)
+    token  = jwt_for(user)
+
+    post "/api/v1/door/auto_unlock", params: payload.to_json, headers: headers(token)
+    assert_response :success
+
+    post "/api/v1/door/auto_unlock", params: payload(nonce: SecureRandom.hex(16)).to_json, headers: headers(token)
+    assert_response :success
+
+    assert_equal 4, bundle.reload.passes_remaining, "second entry same day must not burn again"
+  end
+
+  test "member (active subscription) auto-unlocking does NOT burn a bundle pass" do
+    user   = users(:cowork_tahoe_member)
+    bundle = create_active_bundle(user)
+    token  = jwt_for(user)
+
+    post "/api/v1/door/auto_unlock",
+         params:  payload.to_json,
+         headers: headers(token)
+
+    assert_response :success
+    assert_equal 5, bundle.reload.passes_remaining, "subscription-covered user must not spend a pass"
+  end
 end

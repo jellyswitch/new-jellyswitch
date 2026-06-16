@@ -41,6 +41,12 @@ class Api::V1::AutoUnlocksController < Api::V1::BaseController
     punch = DoorPunch.create!(
       user: user, door: door, operator: current_tenant, method: "auto", status: "pending",
     )
+    begin
+      Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
+    rescue => e
+      Rails.logger.error("[AutoUnlock] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e) rescue nil
+    end
     KisiUnlockJob.perform_later(punch.id)
     render json: { success: true, door: door.name, message: "Unlocking #{door.name}…" }
   end

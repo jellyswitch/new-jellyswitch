@@ -33,6 +33,12 @@ module Api::V1::DoorUnlocking
 
   def perform_unlock(door:, user:, location:, method:)
     DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method)
+    begin
+      Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
+    rescue => e
+      Rails.logger.error("[DoorUnlocking] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e) rescue nil
+    end
     response = call_kisi_unlock(door, location)
     DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response)
     response
