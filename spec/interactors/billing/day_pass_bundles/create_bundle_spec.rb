@@ -74,6 +74,39 @@ RSpec.describe Billing::DayPassBundles::CreateBundle do
     expect(ctx).to be_success
     expect(ctx.day_pass_bundle.expires_at).to be_nil
   end
+
+  it "does NOT set expires_at when the type's location is in a restricted state (fail-safe), even if expires_after_days is set" do
+    # Simulate a location that became CA *after* the type was configured with an expiry.
+    # We bypass DayPassType's own validation (which would normally block this at config time)
+    # using save!(validate: false) + update_column — mirroring a real stale-config scenario.
+    ca_loc = create(:location, operator: operator, state: "CA")
+    ca_user = create(:user, operator: operator, out_of_band: true).tap do |u|
+      u.update_stripe_customer_id_for_location(ca_loc, "cus_test_bundle_ca")
+    end
+    t = build(:day_pass_type, operator: operator, location: ca_loc, quantity: 5, amount_in_cents: 10_000)
+    t.save!(validate: false)
+    t.update_column(:expires_after_days, 90) # stale/bypassed config
+    ctx = described_class.call(
+      params: { day_pass_type: t.id },
+      user_id: ca_user.id, operator: operator, location: ca_loc, out_of_band: true
+    )
+    expect(ctx).to be_success
+    expect(ctx.day_pass_bundle.expires_at).to be_nil
+  end
+
+  it "still sets expires_at for a non-restricted (NV) location" do
+    nv_loc = create(:location, operator: operator, state: "NV")
+    nv_user = create(:user, operator: operator, out_of_band: true).tap do |u|
+      u.update_stripe_customer_id_for_location(nv_loc, "cus_test_bundle_nv2")
+    end
+    t = create(:day_pass_type, operator: operator, location: nv_loc, quantity: 5, amount_in_cents: 10_000, expires_after_days: 30)
+    ctx = described_class.call(
+      params: { day_pass_type: t.id },
+      user_id: nv_user.id, operator: operator, location: nv_loc, out_of_band: true
+    )
+    expect(ctx).to be_success
+    expect(ctx.day_pass_bundle.expires_at).to be_within(1.minute).of(Time.current + 30.days)
+  end
 end
 
 RSpec.describe Billing::DayPassBundles::UpdatePaymentAndCreateBundle do

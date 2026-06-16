@@ -24,7 +24,7 @@ class Billing::DayPassBundles::SaveBundle
       quantity_purchased: day_pass_type.quantity,
       passes_remaining: day_pass_type.quantity,
       purchased_at: now,
-      expires_at: day_pass_type.expires_after_days.present? ? now + day_pass_type.expires_after_days.days : nil
+      expires_at: day_pass_type.expires_after_days.present? && !location.expiration_restricted? ? now + day_pass_type.expires_after_days.days : nil
     )
     bundle.billable = BillableFactory.for(bundle).billable
 
