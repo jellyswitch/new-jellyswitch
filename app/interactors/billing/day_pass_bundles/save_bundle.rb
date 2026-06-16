@@ -15,6 +15,7 @@ class Billing::DayPassBundles::SaveBundle
       context.fail!(message: "Invalid day pass type.")
     end
 
+    now = Time.current
     bundle = DayPassBundle.new(
       user: user,
       operator: operator,
@@ -22,7 +23,8 @@ class Billing::DayPassBundles::SaveBundle
       day_pass_type: day_pass_type,
       quantity_purchased: day_pass_type.quantity,
       passes_remaining: day_pass_type.quantity,
-      purchased_at: Time.current
+      purchased_at: now,
+      expires_at: day_pass_type.expires_after_days.present? ? now + day_pass_type.expires_after_days.days : nil
     )
     bundle.billable = BillableFactory.for(bundle).billable
 

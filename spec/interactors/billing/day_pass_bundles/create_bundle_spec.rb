@@ -57,4 +57,21 @@ RSpec.describe Billing::DayPassBundles::CreateBundle do
       expect(ctx.day_pass_bundle.billable).to eq(user)
     }.to change(DayPassBundle, :count).by(1).and change(DayPass, :count).by(0)
   end
+
+  it "sets expires_at from the product's expires_after_days when present" do
+    nv_loc = create(:location, operator: operator, state: "NV")
+    nv_user = create(:user, operator: operator, out_of_band: true).tap do |u|
+      u.update_stripe_customer_id_for_location(nv_loc, "cus_test_bundle_nv")
+    end
+    t = create(:day_pass_type, operator: operator, location: nv_loc, quantity: 5, amount_in_cents: 10_000, expires_after_days: 30)
+    ctx = described_class.call(params: { day_pass_type: t.id }, user_id: nv_user.id, operator: operator, location: nv_loc, out_of_band: true)
+    expect(ctx).to be_success
+    expect(ctx.day_pass_bundle.expires_at).to be_within(1.minute).of(Time.current + 30.days)
+  end
+
+  it "leaves expires_at nil (perpetual) when the product has no expiry policy" do
+    ctx = described_class.call(params: { day_pass_type: type.id }, user_id: user.id, operator: operator, location: location, out_of_band: true)
+    expect(ctx).to be_success
+    expect(ctx.day_pass_bundle.expires_at).to be_nil
+  end
 end
