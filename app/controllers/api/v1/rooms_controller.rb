@@ -41,24 +41,11 @@ class Api::V1::RoomsController < Api::V1::BaseController
     date = Date.parse(params[:date]) rescue Date.current
     location = current_location
 
-    # Generate 15-min slots from open to close
-    # working_day_start/end may be stored as strings like "06:00" or integers
-    parse_hour = ->(val, default) {
-      return default if val.nil?
-      val.is_a?(String) ? val.split(':').first.to_i : val.to_i
-    }
-    start_hour = parse_hour.call(location&.working_day_start, 8)
-    end_hour = parse_hour.call(location&.working_day_end, 18)
-
-    # Members (active subscription or lease at this location), and superadmins
-    # for ops/off-hours bookings, can book outside the posted working hours.
-    # Posted hours bound day-pass guests and the public only — paying members
-    # get 24/7 self-service access, so an evening start isn't silently capped
-    # at the close time. See the Drew Bray 30-min booking incident, 2026-06.
-    if current_api_user&.books_outside_posted_hours?(location)
-      start_hour = 0
-      end_hour = 24
-    end
+    # Generate 15-min slots from open to close. The role-gated hour bounds
+    # (members get the full 24h window, non-members are bounded by posted
+    # working hours) are computed by start_hour_bounds — shared with
+    # booking_times. See the Drew Bray 30-min booking incident, 2026-06.
+    start_hour, end_hour = start_hour_bounds(location)
 
     zone = location&.time_zone || 'UTC'
     slots = []
@@ -456,7 +443,52 @@ class Api::V1::RoomsController < Api::V1::BaseController
     }
   end
 
+  # GET /api/v1/rooms/booking_times?date=  → role-gated 15-min start times.
+  def booking_times
+    location = current_location
+    return render json: { times: [] } unless location
+    date = Date.parse(params[:date]) rescue Date.current
+    zone = location&.time_zone || 'UTC'
+    start_hour, end_hour = start_hour_bounds(location)
+
+    day_start = date.in_time_zone(zone).beginning_of_day
+    current_time = day_start + start_hour.hours
+    end_time = day_start + end_hour.hours
+
+    now_in_zone = Time.current.in_time_zone(zone)
+    if date == now_in_zone.to_date
+      floor = now_in_zone.change(min: (now_in_zone.min / 15).floor * 15, sec: 0)
+      min_start = floor + 15.minutes
+      current_time = min_start if current_time < min_start
+    end
+
+    times = []
+    while current_time < end_time
+      times << { time: current_time.strftime("%H:%M"), hour: current_time.hour,
+                 label: current_time.strftime("%l:%M %p").strip }
+      current_time += 15.minutes
+    end
+    render json: { date: date.to_s, times: times }
+  end
+
   private
+
+  # Role-gated bookable hour bounds for a location. Members with 24/7 access
+  # (active subscription/lease) and superadmins get the full 0..24 window;
+  # everyone else is bounded by posted working hours. Mirrors time_slots.
+  def start_hour_bounds(location)
+    parse_hour = ->(val, default) {
+      return default if val.nil?
+      val.is_a?(String) ? val.split(':').first.to_i : val.to_i
+    }
+    start_hour = parse_hour.call(location&.working_day_start, 8)
+    end_hour   = parse_hour.call(location&.working_day_end, 18)
+    if current_api_user&.books_outside_posted_hours?(location)
+      [0, 24]
+    else
+      [start_hour, end_hour]
+    end
+  end
 
   def room_card(room, is_available, available_at = nil)
     room_json(room).merge(available: is_available, available_at: available_at,
