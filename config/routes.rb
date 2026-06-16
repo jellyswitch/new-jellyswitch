@@ -101,6 +101,11 @@ Rails.application.routes.draw do
         end
       end
 
+      # Day Pass Bundles
+      resources :day_pass_bundles, only: [:index] do
+        member { post :check_in_guest }
+      end
+
       # Bulletin Board / Posts
       resources :posts, only: [:index, :show, :create] do
         resources :replies, only: [:create], controller: 'post_replies'
