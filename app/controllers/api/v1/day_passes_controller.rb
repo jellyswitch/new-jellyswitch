@@ -36,7 +36,6 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
   def create
     day_pass_type = DayPassType.find(params[:day_pass_type_id])
-    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
     token = params[:stripe_token]
     discount_code = params[:discount_code]
 
@@ -58,6 +57,32 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       return render_error('This day pass is not available.') unless matches_access_code
     end
     return render_error('Free day passes cannot be purchased directly.') if day_pass_type.amount_in_cents.to_i <= 0
+
+    # N-Pack: route to bundle flow (no date needed; passes are redeemed later)
+    if day_pass_type.bundle?
+      result = Billing::DayPassBundles::CreateBundle.call(
+        user_id: current_api_user.id,
+        operator: current_tenant,
+        location: current_location,
+        params: { day_pass_type: day_pass_type.id.to_s }
+      )
+
+      if result.success?
+        b = result.day_pass_bundle
+        render json: {
+          success: true,
+          id: b.id,
+          passes_remaining: b.passes_remaining,
+          day_pass_type_name: b.day_pass_type.name
+        }, status: :created
+      else
+        render_error(result.message || "Unable to create day pass bundle")
+      end
+      return
+    end
+
+    # Single day pass — existing path unchanged
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
 
     # Use the same interactor chain as the web app
     interactor = token.present? ?

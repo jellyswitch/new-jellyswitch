@@ -35,6 +35,15 @@ class DayPassBundle < ApplicationRecord
     end
   end
 
+  # Mirrors DayPass#subscribable — used by BillableFactory to resolve billable.
+  def subscribable
+    user
+  end
+
+  def charge_description
+    "#{operator.name} #{day_pass_type.quantity}-Pack Day Pass Bundle"
+  end
+
   # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.
   def restore!(by:, reason: nil)
     with_lock do
