@@ -10,6 +10,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         id: t.id,
         name: t.name,
         price: t.amount_in_cents,
+        quantity: t.quantity,
         included_meeting_minutes: t.try(:included_meeting_room_minutes),
       }
     }
