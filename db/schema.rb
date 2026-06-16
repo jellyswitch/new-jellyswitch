@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_15_120001) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_15_120002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -278,6 +278,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_15_120001) do
     t.index ["subscription_id"], name: "index_comp_days_on_subscription_id"
     t.index ["user_id", "location_id", "occurred_on"], name: "index_comp_days_on_user_id_and_location_id_and_occurred_on"
     t.index ["user_id"], name: "index_comp_days_on_user_id"
+  end
+
+  create_table "day_pass_bundle_redemptions", force: :cascade do |t|
+    t.bigint "day_pass_bundle_id", null: false
+    t.bigint "operator_id", default: 1, null: false
+    t.string "kind", null: false
+    t.bigint "performed_by_id"
+    t.bigint "day_pass_id"
+    t.string "guest_name"
+    t.datetime "redeemed_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["day_pass_bundle_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_bundle_id"
+    t.index ["day_pass_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_id"
+    t.index ["performed_by_id"], name: "index_day_pass_bundle_redemptions_on_performed_by_id"
   end
 
   create_table "day_pass_bundles", force: :cascade do |t|
@@ -1136,6 +1151,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_15_120001) do
   add_foreign_key "comp_days", "subscriptions"
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
+  add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"

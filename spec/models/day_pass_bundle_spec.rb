@@ -36,4 +36,30 @@ RSpec.describe DayPassBundle do
     bundle(expires_at: 1.day.ago)
     expect(DayPassBundle.active).to contain_exactly(live)
   end
+
+  describe "#burn! / #restore!" do
+    it "burn! decrements and logs a redemption of the given kind" do
+      b = bundle(passes_remaining: 3)
+      expect { b.burn!(kind: :guest, performed_by: user, guest_name: "Sam") }
+        .to change { b.reload.passes_remaining }.from(3).to(2)
+      r = b.redemptions.last
+      expect(r.kind).to eq("guest")
+      expect(r.guest_name).to eq("Sam")
+      expect(r.performed_by).to eq(user)
+    end
+
+    it "burn! raises and does not go negative when empty" do
+      b = bundle(passes_remaining: 0)
+      expect { b.burn!(kind: :entry, performed_by: user) }.to raise_error(DayPassBundle::NoPassesRemaining)
+      expect(b.reload.passes_remaining).to eq(0)
+    end
+
+    it "restore! increments and logs an admin_restore" do
+      b = bundle(passes_remaining: 1)
+      admin = create(:user, operator: operator)
+      expect { b.restore!(by: admin, reason: "accidental") }
+        .to change { b.reload.passes_remaining }.from(1).to(2)
+      expect(b.redemptions.last.kind).to eq("admin_restore")
+    end
+  end
 end

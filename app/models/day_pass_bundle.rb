@@ -1,4 +1,6 @@
 class DayPassBundle < ApplicationRecord
+  class NoPassesRemaining < StandardError; end
+
   belongs_to :user
   belongs_to :day_pass_type
   belongs_to :location, optional: true
@@ -20,5 +22,25 @@ class DayPassBundle < ApplicationRecord
 
   def active?
     passes_remaining.to_i > 0 && !expired?
+  end
+
+  # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest.
+  # entry redemptions also pass the minted DayPass; guest redemptions pass guest_name.
+  def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil)
+    with_lock do
+      raise NoPassesRemaining if passes_remaining.to_i <= 0
+      update!(passes_remaining: passes_remaining - 1)
+      redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
+                          guest_name: guest_name, day_pass: day_pass, redeemed_at: Time.current)
+    end
+  end
+
+  # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.
+  def restore!(by:, reason: nil)
+    with_lock do
+      update!(passes_remaining: passes_remaining + 1)
+      redemptions.create!(operator: operator, kind: "admin_restore", performed_by: by,
+                          guest_name: reason, redeemed_at: Time.current)
+    end
   end
 end
