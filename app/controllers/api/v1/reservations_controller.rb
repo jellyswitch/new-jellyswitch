@@ -144,8 +144,16 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       parse_local_datetime(params[:reservation][:datetime_in], reservation.room) :
       reservation.datetime_in
 
+    new_room = if params.dig(:reservation, :room_id).present?
+      current_tenant.rooms.find_by(id: params[:reservation][:room_id]) ||
+        (return render_error('Room not found', status: :not_found))
+    else
+      reservation.room
+    end
+
     result = Billing::Reservations::UpdateRoomReservation.call(
       reservation: reservation,
+      new_room: new_room,
       new_datetime_in: new_datetime_in,
       new_minutes: new_minutes,
       user: current_api_user,

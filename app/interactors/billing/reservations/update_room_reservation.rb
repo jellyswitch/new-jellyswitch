@@ -20,6 +20,7 @@ class Billing::Reservations::UpdateRoomReservation
     # slot is fine; clashing with a *different* booking fails the save and
     # leaves the persisted row untouched (assign_attributes is in-memory).
     reservation.assign_attributes(
+      room: context.new_room || reservation.room,
       datetime_in: context.new_datetime_in,
       minutes: context.new_minutes,
     )

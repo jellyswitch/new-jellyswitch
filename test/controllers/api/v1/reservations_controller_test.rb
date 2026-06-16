@@ -147,4 +147,31 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  test "update can move a reservation to a different available room" do
+    other_room = rooms(:large_meeting_room) # also at the operator, free
+    other_room.reservations.delete_all
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { room_id: other_room.id, datetime_in: res.datetime_in.iso8601, minutes: 60 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :success
+    assert_equal other_room.id, res.reload.room_id
+  end
+
+  test "update rejects a room change that collides on the new room" do
+    other_room = rooms(:large_meeting_room)
+    other_room.reservations.delete_all
+    res     = Reservation.create!(user: @viewer, room: @room,      datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+    blocker = Reservation.create!(user: @mate,   room: other_room, datetime_in: 2.days.from_now.change(hour: 10), minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+      params: { reservation: { room_id: other_room.id, datetime_in: res.datetime_in.iso8601, minutes: 60 } }.to_json,
+      headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_equal @room.id, res.reload.room_id
+  end
 end
