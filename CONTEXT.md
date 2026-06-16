@@ -57,10 +57,27 @@ There is no "free but must request" case — every free amenity is a non-selecta
 
 _Avoid_: "Regular price" / "Membership price" in user-facing UI — say **Non-member rate** and **Member rate**. (The DB columns remain `price` / `membership_price`; note that the bare `price` column **is** the non-member rate.)
 
+## Day Pass
+
+A pay-per-day building-access product for non-members. Concretely, a **`DayPass` row is one day of access**, bound to a single calendar `day` — `has_active_day_pass?(day)` grants access when such a row exists for that day. A **`DayPassType`** is the sellable product (name, price, location, optional included meeting-room minutes). A Day Pass is distinct from the **Day Pool** (a *member's* monthly day allowance) — see Membership Usage Limits.
+
+## Day Pass Bundle
+
+A prepaid quantity of day passes a buyer redeems over time (operator-facing: **"5-Pack", "10-Pack",** etc. — collectively a **Bundle**). The pack size is the **`quantity`** on a `DayPassType` (`quantity: 1` is an ordinary single Day Pass; `quantity: N` is an N-Pack priced as a bundle — the volume discount is simply the SKU's price). Buying an N-Pack creates a Bundle holding **N passes**; the operator/member sees **"passes remaining."**
+
+- **A pass is spent by entering — "burn on entry."** Opening the door mints a `DayPass` for *today* and decrements the bundle by one. A bundle pass is burned **only when nothing else already grants access** (membership, a day pass already held for today, a lease, or a reservation take precedence), and **at most once per calendar day** (a second entry rides on the day's existing `DayPass`). There is **no scheduling** — passes are not assigned to future dates.
+- **Guest pass.** A bundle holder can spend a pass on a **self-attested guest** (name only, no account) from a dedicated "Bring a guest" surface — the host opens the door for them, so the guest needs no app or credential. This is **separate from the `Checkin` model** (a guest never authenticates, so it needs none of Checkin's access/billing machinery). It is the *only* way one account spends more than one pass on the same day — the holder's own auto-burn stays capped at once/day.
+- **Redemption ledger.** Every pass leaving a bundle is a logged **Redemption** (`kind: entry | guest | admin_restore`): an `entry` redemption (door auto-burn) also mints today's `DayPass`; a `guest` redemption records the guest; an `admin_restore` reverses one. `passes_remaining` is a counter; the ledger is the audit trail for the prepaid value (who, when, why).
+- **Admin restore.** An admin can add a burned pass back to a bundle (an `admin_restore` redemption — auditable: who/when/why) for accidental or glitched entries.
+- **Expiration defaults to perpetual.** Prepaid passes are stored value; some states (e.g. California, Civil Code §1749.5) prohibit expiration on such instruments, so bundles **never expire by default**. Expiration is an optional per-product (`DayPassType`) setting, measured from purchase, off unless explicitly enabled behind a legal disclaimer, and **hard-blocked for products whose location is in an expiration-restricted state** (a maintainable data list, California included). See `docs/adr/0008-day-pass-bundle-expiration-opt-in-state-restricted.md`.
+
+_Avoid_: **"credits"** for bundle passes — "Room Credits" is a separate stored-value concept. Say **pass / passes remaining / Bundle / N-Pack**.
+
 ## Flagged ambiguities
 
 - "pool" was used loosely for both the day allowance and the meeting-room-minute allowance — resolved: **Day Pool** (distinct days) and **Hour Pool** (free room minutes) are distinct caps with separate fields.
 - "Regular" vs "Membership" amenity pricing was opaque (and collided with the bare `price` column) — resolved: **Non-member rate** (`price`) and **Member rate** (`membership_price`). See **Amenity**.
+- "credits" is overloaded — **Room Credits** (existing stored value) vs day-pass **Bundle passes** (new). Day-pass packs use **pass / passes remaining**, never "credits".
 
 ## CRM / Marketing
 
