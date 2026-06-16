@@ -79,6 +79,7 @@ class User < ApplicationRecord
   has_many :child_profiles
   has_many :childcare_reservations, through: :child_profiles
   has_many :day_passes
+  has_many :day_pass_bundles
   has_many :door_punches
   has_many :events
   has_many :feed_items
@@ -430,6 +431,7 @@ class User < ApplicationRecord
            :has_building_access_membership?,
            :has_active_day_pass?,
            :has_building_access_day_pass?,
+           :has_active_day_pass_bundle?,
            :has_active_lease?,
            :has_building_access_lease?,
            :organization_owner?,

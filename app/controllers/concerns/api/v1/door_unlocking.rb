@@ -13,6 +13,7 @@ module Api::V1::DoorUnlocking
 
     return true if user.has_active_subscription?
     return true if user.day_passes.where(day: today).any?
+    return true if location && user.has_active_day_pass_bundle?(location)
     return true if location && user.has_active_lease?(location)
 
     day_start = today.in_time_zone(zone).beginning_of_day

@@ -4,6 +4,7 @@ module Permissions
   def allowed_in?(location)
     has_building_access_membership? ||
     has_active_day_pass_at_location?(location) ||
+    has_active_day_pass_bundle?(location) ||
     checked_in?(location) ||
     has_active_lease? ||
     admin_of_location?(location) ||
@@ -163,6 +164,11 @@ module Permissions
 
   def has_active_day_pass_at_location?(location, day = Time.current)
     day_passes.for_location(location).for_day(day).count > 0
+  end
+
+  def has_active_day_pass_bundle?(location)
+    return false unless location
+    day_pass_bundles.active.where(location: location).exists?
   end
 
   def has_building_access_day_pass?
