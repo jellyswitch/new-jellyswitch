@@ -54,6 +54,12 @@ RSpec.describe DayPassBundle do
       expect(b.reload.passes_remaining).to eq(0)
     end
 
+    it "burn! raises and does not decrement when the bundle is expired" do
+      b = bundle(passes_remaining: 3, expires_at: 1.day.ago)
+      expect { b.burn!(kind: :entry, performed_by: user) }.to raise_error(DayPassBundle::NoPassesRemaining)
+      expect(b.reload.passes_remaining).to eq(3)
+    end
+
     it "restore! increments and logs an admin_restore" do
       b = bundle(passes_remaining: 1)
       admin = create(:user, operator: operator)

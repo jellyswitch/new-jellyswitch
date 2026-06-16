@@ -27,12 +27,15 @@ class DayPassBundle < ApplicationRecord
   # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest.
   # entry redemptions also pass the minted DayPass; guest redemptions pass guest_name.
   def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil)
-    with_lock do
-      raise NoPassesRemaining if passes_remaining.to_i <= 0
-      update!(passes_remaining: passes_remaining - 1)
-      redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
-                          guest_name: guest_name, day_pass: day_pass, redeemed_at: Time.current)
-    end
+    with_lock { burn_locked!(kind: kind, performed_by: performed_by, guest_name: guest_name, day_pass: day_pass) }
+  end
+
+  # Assumes the caller already holds the row lock (with_lock). Decrements + logs.
+  def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil)
+    raise NoPassesRemaining if passes_remaining.to_i <= 0 || expired?
+    update!(passes_remaining: passes_remaining - 1)
+    redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
+                        guest_name: guest_name, day_pass: day_pass, redeemed_at: Time.current)
   end
 
   # Mirrors DayPass#subscribable — used by BillableFactory to resolve billable.

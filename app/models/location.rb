@@ -297,6 +297,20 @@ class Location < ApplicationRecord
     building_address_changed? || city_changed? || state_changed? || zip_changed?
   end
 
+  # The [start, end) timestamps of the business-day period containing `at`,
+  # using day_pass_period_start as the rollover in this location's time zone.
+  # An entry any time within one window counts as the same "day" for bundle
+  # burning, so an evening session crossing midnight burns one pass.
+  def business_day_window(at = Time.current)
+    tz = ActiveSupport::TimeZone[time_zone.presence || "UTC"]
+    local = at.in_time_zone(tz)
+    h, m = (day_pass_period_start.presence || "04:00").split(":").map(&:to_i)
+    offset = (h * 3600) + (m * 60)
+    day = (local - offset).to_date
+    start = tz.parse("#{day} #{day_pass_period_start.presence || '04:00'}")
+    [start, start + 1.day]
+  end
+
   private
 
   def seed_email_templates
