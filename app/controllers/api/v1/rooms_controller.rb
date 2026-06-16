@@ -50,11 +50,12 @@ class Api::V1::RoomsController < Api::V1::BaseController
     start_hour = parse_hour.call(location&.working_day_start, 8)
     end_hour = parse_hour.call(location&.working_day_end, 18)
 
-    # Superadmins can book outside posted working hours — useful for ops
-    # tests, off-hours member coverage, and ad-hoc bookings the location
-    # admin needs to make manually. Regular admins are still bound by the
-    # location's working hours.
-    if current_api_user&.superadmin?
+    # Members (active subscription or lease at this location), and superadmins
+    # for ops/off-hours bookings, can book outside the posted working hours.
+    # Posted hours bound day-pass guests and the public only — paying members
+    # get 24/7 self-service access, so an evening start isn't silently capped
+    # at the close time. See the Drew Bray 30-min booking incident, 2026-06.
+    if current_api_user&.books_outside_posted_hours?(location)
       start_hour = 0
       end_hour = 24
     end

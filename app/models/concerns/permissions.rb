@@ -80,6 +80,18 @@ module Permissions
     has_active_subscription_at_location?(location)
   end
 
+  # Who may book a room outside the location's posted working hours
+  # (working_day_start/end). Members get 24/7 self-service access — the
+  # posted hours bound day-pass guests and the public, not paying members
+  # or leaseholders. Superadmins are included for ops/off-hours bookings.
+  # Used by the time_slots picker so an evening start isn't silently capped
+  # at the close time. See the Drew Bray 30-min booking incident, 2026-06.
+  def books_outside_posted_hours?(location)
+    superadmin? ||
+      has_active_subscription_at_location?(location) ||
+      has_active_lease?(location)
+  end
+
   # Paused subscriptions still have active=true on the AR row (the
   # `paused` flag is separate so Stripe can resume them later without
   # creating a new subscription). For ACCESS purposes — door punches,

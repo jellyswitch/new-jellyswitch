@@ -418,6 +418,7 @@ class User < ApplicationRecord
   # Permissions
   delegate :member_at_operator?,
            :member?,
+           :books_outside_posted_hours?,
            :has_active_subscription_at_location?,
            :admin?,
            :superadmin?,
