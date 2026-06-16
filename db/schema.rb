@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_15_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_15_120001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -278,6 +278,28 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_15_120000) do
     t.index ["subscription_id"], name: "index_comp_days_on_subscription_id"
     t.index ["user_id", "location_id", "occurred_on"], name: "index_comp_days_on_user_id_and_location_id_and_occurred_on"
     t.index ["user_id"], name: "index_comp_days_on_user_id"
+  end
+
+  create_table "day_pass_bundles", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "day_pass_type_id", null: false
+    t.bigint "location_id"
+    t.bigint "operator_id", default: 1, null: false
+    t.string "billable_type"
+    t.bigint "billable_id"
+    t.integer "quantity_purchased", null: false
+    t.integer "passes_remaining", null: false
+    t.datetime "expires_at"
+    t.datetime "purchased_at", null: false
+    t.bigint "invoice_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["billable_type", "billable_id"], name: "index_day_pass_bundles_on_billable_type_and_billable_id"
+    t.index ["day_pass_type_id"], name: "index_day_pass_bundles_on_day_pass_type_id"
+    t.index ["invoice_id"], name: "index_day_pass_bundles_on_invoice_id"
+    t.index ["location_id"], name: "index_day_pass_bundles_on_location_id"
+    t.index ["operator_id"], name: "index_day_pass_bundles_on_operator_id"
+    t.index ["user_id"], name: "index_day_pass_bundles_on_user_id"
   end
 
   create_table "day_pass_types", force: :cascade do |t|
