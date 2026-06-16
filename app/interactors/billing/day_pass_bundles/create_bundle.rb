@@ -4,6 +4,7 @@ class Billing::DayPassBundles::CreateBundle
   organize(
     Billing::DayPassBundles::SaveBundle,
     Billing::DayPassBundles::CreateStripeInvoiceForBundle,
-    Billing::DayPassBundles::ChargeBundleInvoice
+    Billing::DayPassBundles::ChargeBundleInvoice,
+    Billing::DayPassBundles::CreateNotifications
   )
 end
