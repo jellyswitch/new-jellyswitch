@@ -73,4 +73,28 @@ RSpec.describe DayPassType, type: :model do
       expect(t.errors[:quantity]).to be_present
     end
   end
+
+  describe "expiration (ADR 0008)" do
+    let(:expiration_operator) { create(:operator) }
+    def type_in(state, expires_after_days: 365)
+      loc = create(:location, operator: expiration_operator, state: state)
+      build(:day_pass_type, operator: expiration_operator, location: loc, quantity: 5, expires_after_days: expires_after_days)
+    end
+
+    it "allows expiration for a non-restricted state" do
+      expect(type_in("NV")).to be_valid
+    end
+    it "blocks expiration for California (abbrev or full name)" do
+      expect(type_in("CA")).not_to be_valid
+      expect(type_in("California")).not_to be_valid
+      t = type_in("CA"); t.valid?; expect(t.errors[:expires_after_days]).to be_present
+    end
+    it "blocks expiration when the location state is blank/unknown (fail-safe)" do
+      expect(type_in("")).not_to be_valid
+      expect(type_in(nil)).not_to be_valid
+    end
+    it "permits a perpetual (nil expires_after_days) product anywhere, including CA" do
+      expect(type_in("CA", expires_after_days: nil)).to be_valid
+    end
+  end
 end

@@ -155,6 +155,17 @@ class Location < ApplicationRecord
     true
   end
 
+  # Editable data list — states where expiration on prepaid passes is restricted
+  # or prohibited. Add states here as counsel advises; this is data, not logic.
+  EXPIRATION_RESTRICTED_STATES = ["CA", "CALIFORNIA"].freeze
+
+  # Fail-safe: unknown/blank state is treated as restricted (no expiration).
+  def expiration_restricted?
+    norm = state.to_s.strip.upcase
+    return true if norm.blank?
+    EXPIRATION_RESTRICTED_STATES.include?(norm)
+  end
+
   after_create_commit :seed_email_templates
 
   validates :working_day_start, presence: true

@@ -60,6 +60,20 @@ class DayPassType < ApplicationRecord
 
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
 
+  # Presented wherever expiration can be enabled. NOT legal advice.
+  EXPIRATION_DISCLAIMER =
+    "Expiration on prepaid passes is restricted or prohibited in many states, " \
+    "including California (Civil Code §1749.5). It can't be enabled for this location.".freeze
+
+  validate :expiration_allowed_for_location
+
+  def expiration_allowed_for_location
+    return if expires_after_days.blank?
+    if location.nil? || location.expiration_restricted?
+      errors.add(:expires_after_days, EXPIRATION_DISCLAIMER)
+    end
+  end
+
   # A quantity > 1 product is an N-Pack (a Day Pass Bundle); quantity 1 is a
   # single day pass. See CONTEXT.md → Day Pass Bundle.
   def bundle?
