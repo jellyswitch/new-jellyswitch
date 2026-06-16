@@ -71,4 +71,22 @@ class Api::V1::RoomsTimeSlotsTest < ActionDispatch::IntegrationTest
     assert hours.max < 20,
       "a non-member's last start slot must fall before the 8 PM close, got hour #{hours.max}"
   end
+
+  # When editing a reservation, exclude_reservation_id hides the booking
+  # being edited so its own slot reads as available again.
+  test "exclude_reservation_id frees up the edited reservation's own slot" do
+    @room.reservations.delete_all
+    start = Date.parse(@date).in_time_zone(@location.time_zone).change(hour: 10, min: 0)
+    res = Reservation.create!(user: @member, room: @room, datetime_in: start, minutes: 60)
+
+    avail = ->(params) {
+      get "/api/v1/rooms/#{@room.id}/time_slots", params: params, headers: headers_for(@member)
+      assert_response :success
+      JSON.parse(response.body)["slots"].find { |s| s["time"] == "10:00" }["available"]
+    }
+
+    refute avail.call(date: @date), "own booking blocks the 10:00 slot without exclusion"
+    assert avail.call(date: @date, exclude_reservation_id: res.id),
+      "excluding the edited reservation frees its own slot"
+  end
 end

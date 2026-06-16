@@ -21,19 +21,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
 
   def create
     room = Room.find(params[:reservation][:room_id])
-    # Parse the incoming datetime in the room/location's local time zone
-    # unless the string already carries an explicit offset (ISO w/ Z or
-    # +HH:MM). Mobile clients that send "2026-04-22T07:15:00" without a
-    # zone would otherwise be interpreted as UTC and the booking would
-    # land 7 hours off in Pacific time.
-    raw_dt = params[:reservation][:datetime_in].to_s
-    has_explicit_zone = raw_dt =~ /(Z|[+\-]\d\d:?\d\d)$/
-    tz = room.location&.time_zone.presence || 'UTC'
-    datetime_in = if has_explicit_zone
-      Time.parse(raw_dt)
-    else
-      ActiveSupport::TimeZone[tz].parse(raw_dt)
-    end
+    datetime_in = parse_local_datetime(params[:reservation][:datetime_in], room)
     minutes = params[:reservation][:minutes].to_i
     date = datetime_in.to_date
 
@@ -131,6 +119,47 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   end
 
   CANCEL_CUTOFF = 1.minute
+
+  # PATCH /api/v1/reservations/:id
+  # Body: { reservation: { datetime_in: <iso8601>, minutes: <int> } }
+  # Adjusts an upcoming reservation's start time and/or duration. Either
+  # field may be omitted to keep its current value. Re-validates the slot
+  # (overlap check excludes this reservation itself) and re-prices the hold.
+  def update
+    reservation = current_api_user.reservations.find(params[:id])
+
+    # Same editability window as cancel: once a reservation is about to
+    # start (or has been captured) it's committed and can't be moved.
+    if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
+      return render_error('This reservation can no longer be changed — it starts within a minute.')
+    end
+    if reservation.captured_at.present?
+      return render_error('This reservation can no longer be changed — it has already been charged.')
+    end
+
+    new_minutes = params.dig(:reservation, :minutes).present? ? params[:reservation][:minutes].to_i : reservation.minutes
+    return render_error('Invalid duration') if new_minutes <= 0
+
+    new_datetime_in = params.dig(:reservation, :datetime_in).present? ?
+      parse_local_datetime(params[:reservation][:datetime_in], reservation.room) :
+      reservation.datetime_in
+
+    result = Billing::Reservations::UpdateRoomReservation.call(
+      reservation: reservation,
+      new_datetime_in: new_datetime_in,
+      new_minutes: new_minutes,
+      user: current_api_user,
+      location: current_location,
+    )
+
+    if result.success?
+      render json: reservation_json(reservation.reload)
+    else
+      render_error(result.error || 'Could not update reservation')
+    end
+  rescue ActiveRecord::RecordNotFound
+    render_error('Reservation not found', status: :not_found)
+  end
 
   def destroy
     # Reservation has default_scope cancelled: false, so a re-cancel of
@@ -313,6 +342,21 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   end
 
   private
+
+  # Parse an incoming datetime in the room/location's local time zone
+  # unless the string already carries an explicit offset (ISO w/ Z or
+  # +HH:MM). Mobile clients that send "2026-04-22T07:15:00" without a
+  # zone would otherwise be interpreted as UTC and the booking would
+  # land 7 hours off in Pacific time.
+  def parse_local_datetime(raw, room)
+    raw = raw.to_s
+    tz = room.location&.time_zone.presence || 'UTC'
+    if raw =~ /(Z|[+\-]\d\d:?\d\d)$/
+      Time.parse(raw)
+    else
+      ActiveSupport::TimeZone[tz].parse(raw)
+    end
+  end
 
   # Upcoming, non-cancelled room reservations made by the current user's
   # org-mates (everyone in the same organization, excluding the user). Scoped to

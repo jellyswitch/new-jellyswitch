@@ -77,10 +77,14 @@ class Room < ApplicationRecord
     reservations.for_time(timestamp.beginning_of_half_hour).blank?
   end
 
-  def available?(start_time:, duration:)
+  # `except:` skips a reservation id from the overlap check — used when
+  # editing a reservation so its own slot doesn't read as "taken".
+  def available?(start_time:, duration:, except: nil)
     end_time = start_time.in_time_zone + duration.minutes
 
-    !reservations.overlapping(start_time, end_time).exists?
+    scope = reservations.overlapping(start_time, end_time)
+    scope = scope.where.not(id: except) if except.present?
+    !scope.exists?
   end
 
   def calculate_available_durations(start_time:)
