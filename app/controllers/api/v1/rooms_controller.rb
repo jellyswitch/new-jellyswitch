@@ -407,7 +407,68 @@ class Api::V1::RoomsController < Api::V1::BaseController
     }
   end
 
+  # GET /api/v1/rooms/available?date=&time=HH:MM&minutes=&exclude_reservation_id=
+  # Rooms free for an explicit future window (when-first booking). `time` is
+  # the location-local start (24h "HH:MM"); minutes is the duration.
+  def available
+    location = current_location
+    return render json: { available_rooms: [], unavailable_rooms: [], no_rooms_available: true } unless location
+
+    user = current_api_user
+    zone = location.time_zone.presence || 'UTC'
+    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    minutes = (params[:minutes] || 60).to_i
+    return render_error('Invalid duration') if minutes <= 0
+
+    start_time = ActiveSupport::TimeZone[zone].parse("#{date} #{params[:time]}")
+    return render_error('Invalid time') if start_time.nil?
+    except_id = params[:exclude_reservation_id].presence
+
+    rooms = location.rooms.visible
+    rooms = (rooms.rentable rescue rooms) unless user.can_see_all_rooms?(location, date)
+
+    avail, unavail = rooms.to_a.partition do |r|
+      r.available?(start_time: start_time, duration: minutes, except: except_id)
+    end
+
+    # Client computes per-room price = hourly_rate × duration, or uses the
+    # plan/day-pass context — identical to the reserve_now contract.
+    sub_info = (user.subscription_reservation_charge_info(location, minutes, at: start_time) rescue nil)
+    dp_info  = (user.day_pass_reservation_charge_info(location, date, minutes) rescue nil)
+    included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
+    overage_rate = sub_info&.dig(:overage_rate_in_cents) || dp_info&.dig(:overage_rate_in_cents)
+
+    end_time = start_time + minutes.minutes
+    render json: {
+      start_time: start_time.iso8601,
+      start_time_label: start_time.strftime("%-l:%M %p").strip,
+      minutes: minutes,
+      no_rooms_available: avail.empty?,
+      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true) },
+      unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
+      pricing_context: {
+        has_plan: sub_info.present? || dp_info.present?,
+        minutes_remaining: included_minutes_remaining.to_i,
+        overage_rate_per_hour_cents: overage_rate.to_i,
+        subscriber_unlimited: user.has_active_subscription_at_location?(location) && sub_info.nil?,
+        plan_label: sub_info ? 'plan' : (dp_info ? 'day pass' : nil),
+      },
+    }
+  end
+
   private
+
+  def room_card(room, is_available, available_at = nil)
+    room_json(room).merge(available: is_available, available_at: available_at,
+                          preferred: room.id == current_api_user.preferred_room_id)
+  end
+
+  def next_free_at(room, start_time, end_time, zone)
+    overlap = room.reservations.where(cancelled: false)
+                  .where("datetime_in < ? AND (datetime_in + minutes * interval '1 minute') > ?", end_time, start_time)
+                  .order(:datetime_in).first
+    overlap&.datetime_out&.in_time_zone(zone)&.strftime("%-l:%M %p")&.strip
+  end
 
   # Prefer the day pass type explicitly marked as the default for room
   # bookings. Fall back to cheapest non-free, non-Day-Office type.
