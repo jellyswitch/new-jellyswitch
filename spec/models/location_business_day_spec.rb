@@ -54,4 +54,28 @@ RSpec.describe Location, "#business_day_window" do
     # Window should start on Monday 04:00, not Tuesday 04:00
     expect(window[0]).to eq(pacific("2026-06-15", "04:00"))
   end
+
+  context "when day_pass_period_start is malformed or blank" do
+    it "falls back to 04:00 and does not raise when value is garbage (e.g. '9am')" do
+      location.update_column(:day_pass_period_start, "9am")
+      at = pacific("2026-06-15", "14:30")
+      start, finish = nil, nil
+      expect { start, finish = location.business_day_window(at) }.not_to raise_error
+      # window must be 24 h wide (i.e. the fallback produced a valid window)
+      expect(finish - start).to eq(1.day)
+      # window start must be on the 04:00 fallback for the day containing 14:30
+      expected_start = pacific("2026-06-15", "04:00")
+      expect(start).to eq(expected_start)
+    end
+
+    it "falls back to 04:00 and does not raise when value is an empty string" do
+      location.update_column(:day_pass_period_start, "")
+      at = pacific("2026-06-15", "14:30")
+      start, finish = nil, nil
+      expect { start, finish = location.business_day_window(at) }.not_to raise_error
+      expect(finish - start).to eq(1.day)
+      expected_start = pacific("2026-06-15", "04:00")
+      expect(start).to eq(expected_start)
+    end
+  end
 end

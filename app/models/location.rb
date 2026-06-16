@@ -316,9 +316,14 @@ class Location < ApplicationRecord
     tz = ActiveSupport::TimeZone[time_zone.presence || "UTC"]
     local = at.in_time_zone(tz)
     h, m = (day_pass_period_start.presence || "04:00").split(":").map(&:to_i)
+    # Guard against a malformed value (e.g. "9am") that yields only one token;
+    # m will be nil in that case. Fall back to the 04:00 default so the burn
+    # path never raises.
+    h, m = 4, 0 if m.nil?
+    period_start_str = format("%02d:%02d", h, m)
     offset = (h * 3600) + (m * 60)
     day = (local - offset).to_date
-    start = tz.parse("#{day} #{day_pass_period_start.presence || '04:00'}")
+    start = tz.parse("#{day} #{period_start_str}")
     [start, start + 1.day]
   end
 
