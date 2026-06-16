@@ -8,6 +8,8 @@
   </div>
 
   <% if @day_pass_type.available? %>
-    <%= link_to "Archive", day_pass_type_path(@day_pass_type), method: :delete, class: "btn btn-outline-danger btn-block mt-3", data: { confirm: "Are you sure you want to archive #{@day_pass_type.name}?" } %>
+    <%= link_to "Archive", day_pass_type_path(@day_pass_type),
+          data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to archive #{@day_pass_type.name}?" },
+          class: "btn btn-outline-danger btn-block mt-3" %>
   <% end %>
 <% end %>

@@ -132,10 +132,17 @@ RSpec.describe Operator::DayPassTypesController, type: :controller do
     end
 
     context "with valid params" do
-      it "updates the day pass type" do
+      it "updates the day pass type code" do
         put :update, params: update_params
         day_pass_type.reload
         expect(day_pass_type.code).to eq("NEWCODE")
+      end
+
+      it "updates amount_in_cents (price is editable)" do
+        # update_params passes amount_in_cents: 3000 (dollars input); helper converts to cents
+        put :update, params: update_params
+        day_pass_type.reload
+        expect(day_pass_type.amount_in_cents).to eq(300_000)
       end
 
       it "redirects to day pass type path" do
@@ -204,15 +211,67 @@ RSpec.describe Operator::DayPassTypesController, type: :controller do
   end
 
   describe "DELETE #destroy" do
-    it "archives the day pass type" do
-      delete :destroy, params: { id: day_pass_type.id }
-      day_pass_type.reload
-      expect(day_pass_type.available).to be false
+    context "single day pass type (quantity 1)" do
+      it "archives the day pass type" do
+        delete :destroy, params: { id: day_pass_type.id }
+        day_pass_type.reload
+        expect(day_pass_type.available).to be false
+      end
+
+      it "redirects to day pass types url" do
+        delete :destroy, params: { id: day_pass_type.id }
+        expect(response).to redirect_to(day_pass_types_url)
+      end
+
+      it "sets a success flash message" do
+        delete :destroy, params: { id: day_pass_type.id }
+        expect(flash[:success]).to be_present
+      end
     end
 
-    it "redirects to day pass types url" do
-      delete :destroy, params: { id: day_pass_type.id }
-      expect(response).to redirect_to(day_pass_types_url)
+    context "bundle day pass type (quantity > 1)" do
+      let(:bundle_type) { create(:day_pass_type, operator: operator, location: location, quantity: 5) }
+
+      it "archives the bundle" do
+        delete :destroy, params: { id: bundle_type.id }
+        bundle_type.reload
+        expect(bundle_type.available).to be false
+      end
+
+      it "redirects to day pass types url" do
+        delete :destroy, params: { id: bundle_type.id }
+        expect(response).to redirect_to(day_pass_types_url)
+      end
+
+      it "sets a success flash message" do
+        delete :destroy, params: { id: bundle_type.id }
+        expect(flash[:success]).to be_present
+      end
+    end
+  end
+
+  describe "GET #edit" do
+    context "single day pass type" do
+      it "renders the edit template" do
+        get :edit, params: { id: day_pass_type.id }
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "bundle day pass type (quantity > 1)" do
+      let(:bundle_type) { create(:day_pass_type, operator: operator, location: location, quantity: 5) }
+
+      it "renders the edit template for a bundle" do
+        get :edit, params: { id: bundle_type.id }
+        expect(response).to have_http_status(:ok)
+      end
+    end
+  end
+
+  describe "GET #index" do
+    it "renders the index template" do
+      get :index
+      expect(response).to have_http_status(:ok)
     end
   end
 
