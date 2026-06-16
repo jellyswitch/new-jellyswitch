@@ -58,6 +58,14 @@ class DayPassType < ApplicationRecord
     end
   end
 
+  validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+
+  # A quantity > 1 product is an N-Pack (a Day Pass Bundle); quantity 1 is a
+  # single day pass. See CONTEXT.md → Day Pass Bundle.
+  def bundle?
+    quantity.to_i > 1
+  end
+
   def free?
     amount_in_cents == 0
   end

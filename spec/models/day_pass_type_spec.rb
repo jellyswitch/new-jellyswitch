@@ -54,4 +54,23 @@ RSpec.describe DayPassType, type: :model do
       expect { DayPassType.for_code(nil).to_a }.not_to raise_error
     end
   end
+
+  describe "quantity / bundles" do
+    it "defaults quantity to 1 and is not a bundle" do
+      t = create(:day_pass_type, operator: create(:operator))
+      expect(t.quantity).to eq(1)
+      expect(t.bundle?).to be(false)
+    end
+
+    it "is a bundle when quantity > 1" do
+      t = create(:day_pass_type, operator: create(:operator), quantity: 5)
+      expect(t.bundle?).to be(true)
+    end
+
+    it "rejects quantity < 1" do
+      t = build(:day_pass_type, operator: create(:operator), quantity: 0)
+      expect(t).not_to be_valid
+      expect(t.errors[:quantity]).to be_present
+    end
+  end
 end
