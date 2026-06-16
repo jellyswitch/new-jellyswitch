@@ -58,6 +58,43 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
         described_class.new.perform
       }.not_to change { ProductEmailSend.count }
     end
+
+    context "when the day pass is bundle-sourced" do
+      let!(:type) { create(:day_pass_type, operator: operator, location: location) }
+      let!(:bundle) do
+        DayPassBundle.create!(user: member_user, billable: member_user, operator: operator,
+                              location: location, day_pass_type: type,
+                              quantity_purchased: 5, passes_remaining: 5, purchased_at: Time.current)
+      end
+      let!(:bundle_sourced_pass) do
+        # Create the pass at exactly target_date so it would normally trigger the followup
+        pass = create(:day_pass, user: member_user, billable: member_user, operator: operator,
+                                 location: location, day: 14.days.ago.to_date)
+        bundle.redemptions.create!(operator: operator, kind: "entry", performed_by: member_user,
+                                   day_pass: pass, redeemed_at: Time.current)
+        pass
+      end
+
+      before do
+        # Remove the plain day_pass so this user's only 14-days-ago pass is bundle-sourced
+        day_pass.destroy
+      end
+
+      it "does NOT send the follow-up for a bundle-sourced day pass" do
+        expect {
+          described_class.new.perform
+        }.not_to change { ProductEmailSend.where(email_type: "day_passer_followup_#{bundle_sourced_pass.id}").count }
+      end
+
+      it "still sends the follow-up for a plain (non-bundle) day pass" do
+        plain_user = create(:user, operator: operator, current_location: location, original_location: location)
+        plain_pass = create(:day_pass, user: plain_user, billable: plain_user, operator: operator,
+                                       location: location, day: 14.days.ago.to_date)
+        expect {
+          described_class.new.perform
+        }.to change { ProductEmailSend.where(email_type: "day_passer_followup_#{plain_pass.id}").count }.by(1)
+      end
+    end
   end
 
   describe "Spam Guard gating (Phase 6.3)" do

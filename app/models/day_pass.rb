@@ -41,6 +41,12 @@ class DayPass < ApplicationRecord
   attr_accessor :imported
 
   # Scopes
+  scope :bundle_sourced, -> {
+    where(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+  }
+  scope :not_bundle_sourced, -> {
+    where.not(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+  }
   scope :today, -> { where(day: Time.current) }
   scope :for_day, -> (date) { where(day: date) }
   scope :purchased, -> { where(complimentary: [false, nil]) }
