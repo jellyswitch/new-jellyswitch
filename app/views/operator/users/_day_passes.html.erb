@@ -6,6 +6,34 @@
   </div>
 </div>
 
+<% bundles = user.day_pass_bundles.order(purchased_at: :desc) %>
+<% if bundles.any? %>
+  <h5 class="display-5 text-center mt-3">Day Pass Bundles:</h5>
+  <ul class="list-group list-group-flush mb-3">
+    <% bundles.each do |bundle| %>
+      <li class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong><%= bundle.day_pass_type.name %></strong>
+            &mdash; <%= bundle.passes_remaining %> / <%= bundle.quantity_purchased %> passes remaining
+            <% if bundle.expires_at.present? %>
+              <span class="text-muted small">(expires <%= bundle.expires_at.to_date %>)</span>
+            <% end %>
+          </div>
+          <div>
+            <%= button_to "Restore a pass",
+                  user_day_pass_bundle_restores_path(user),
+                  method: :post,
+                  params: { day_pass_bundle_id: bundle.id, reason: "admin restore" },
+                  class: "btn btn-sm btn-outline-secondary",
+                  data: { confirm: "Restore one pass to this bundle?" } %>
+          </div>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+
 <% if @user.day_passes.count < 1 %>
   <div class="row">
     <div class="col text-center">
