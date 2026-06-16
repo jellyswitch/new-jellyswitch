@@ -67,5 +67,22 @@ RSpec.describe DayPassBundle do
         .to change { b.reload.passes_remaining }.from(1).to(2)
       expect(b.redemptions.last.kind).to eq("admin_restore")
     end
+
+    it "restore! is a no-op (no increment, no redemption) when already at quantity_purchased" do
+      b = bundle(passes_remaining: 5, quantity_purchased: 5)
+      admin = create(:user, operator: operator)
+      expect { b.restore!(by: admin, reason: "over-restore attempt") }
+        .not_to change { b.reload.passes_remaining }
+      # No new redemption row should be created
+      expect(b.redemptions.count).to eq(0)
+    end
+
+    it "restore! still increments when below quantity_purchased (regression)" do
+      b = bundle(passes_remaining: 3, quantity_purchased: 5)
+      admin = create(:user, operator: operator)
+      expect { b.restore!(by: admin, reason: "undo") }
+        .to change { b.reload.passes_remaining }.from(3).to(4)
+      expect(b.redemptions.last.kind).to eq("admin_restore")
+    end
   end
 end

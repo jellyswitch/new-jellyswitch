@@ -48,8 +48,10 @@ class DayPassBundle < ApplicationRecord
   end
 
   # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.
+  # No-op if passes_remaining is already at quantity_purchased (prevents over-credit).
   def restore!(by:, reason: nil)
     with_lock do
+      return if passes_remaining.to_i >= quantity_purchased.to_i
       update!(passes_remaining: passes_remaining + 1)
       redemptions.create!(operator: operator, kind: "admin_restore", performed_by: by,
                           guest_name: reason, redeemed_at: Time.current)
