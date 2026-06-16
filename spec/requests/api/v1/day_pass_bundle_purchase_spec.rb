@@ -120,6 +120,39 @@ RSpec.describe "API v1 day pass bundle purchase", type: :request do
     end
   end
 
+  describe "POST /api/v1/day_passes with a bundle type + stripe_token (first-time buyer)" do
+    # First-time buyer has NO stripe customer for the location.
+    # They supply a stripe_token; UpdatePaymentAndCreateBundle should create the
+    # customer (stubbed) and succeed — the token bypass in SaveBundle allows the
+    # record to be persisted before UpdateUserPayment runs.
+    let(:first_time_buyer) { create(:user, operator: operator) }
+
+    before do
+      # Stub UpdateUserPayment's call! (organizer path) to materialise a customer.
+      allow(Billing::Payment::UpdateUserPayment).to receive(:call!) do |ctx|
+        ctx.user.update_stripe_customer_id_for_location(ctx.location, "cus_first_time_buyer")
+      end
+      stub_stripe_for_bundle("cus_first_time_buyer")
+      # Stub ChargeInvoice so no real Stripe network call is made for charging.
+      allow(Billing::Invoices::ChargeInvoice).to receive(:call).and_return(
+        OpenStruct.new(success?: true)
+      )
+    end
+
+    it "creates a DayPassBundle for a first-time buyer who supplies a card token" do
+      expect {
+        post "/api/v1/day_passes",
+             params: { day_pass_type_id: bundle_type.id, stripe_token: "tok_visa" },
+             headers: auth_headers_for(first_time_buyer)
+      }.to change(DayPassBundle, :count).by(1).and change(DayPass, :count).by(0)
+
+      expect(response).to have_http_status(:created)
+      body = JSON.parse(response.body)
+      expect(body["success"]).to be true
+      expect(body["passes_remaining"]).to eq(5)
+    end
+  end
+
   describe "POST /api/v1/day_passes with a quantity:1 single type (regression)" do
     it "still creates a DayPass and zero DayPassBundle rows" do
       stub_stripe_for_single("cus_single_req_test")

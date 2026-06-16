@@ -61,10 +61,15 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     # N-Pack: route to bundle flow (no date needed; passes are redeemed later)
     if day_pass_type.bundle?
-      result = Billing::DayPassBundles::CreateBundle.call(
+      bundle_interactor = token.present? ?
+        Billing::DayPassBundles::UpdatePaymentAndCreateBundle :
+        Billing::DayPassBundles::CreateBundle
+
+      result = bundle_interactor.call(
         user_id: current_api_user.id,
         operator: current_tenant,
         location: current_location,
+        token: token,
         params: { day_pass_type: day_pass_type.id.to_s }
       )
 

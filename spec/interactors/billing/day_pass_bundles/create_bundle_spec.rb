@@ -75,3 +75,65 @@ RSpec.describe Billing::DayPassBundles::CreateBundle do
     expect(ctx.day_pass_bundle.expires_at).to be_nil
   end
 end
+
+RSpec.describe Billing::DayPassBundles::UpdatePaymentAndCreateBundle do
+  let(:operator) { create(:operator) }
+  let(:location) { create(:location, operator: operator) }
+
+  # First-time buyer: NO stripe customer for the location yet, no out_of_band.
+  # UpdateUserPayment (stubbed) creates the customer; we mirror that by calling
+  # update_stripe_customer_id_for_location inside the stub, exactly as
+  # create_or_update_customer_payment does in production.
+  let(:user) { create(:user, operator: operator) }
+  let(:type) { create(:day_pass_type, operator: operator, location: location, quantity: 5, amount_in_cents: 10_000) }
+
+  before do
+    # Stub UpdateUserPayment: succeed and materialise a Stripe customer on the
+    # user for this location so CreateStripeInvoiceForBundle can bill them.
+    # Organizers invoke sub-interactors via .call!(context), so stub call!.
+    # SaveBundle runs first and sets context.user; stub reads it from context.
+    allow(Billing::Payment::UpdateUserPayment).to receive(:call!) do |ctx|
+      ctx.user.update_stripe_customer_id_for_location(ctx.location, "cus_token_buyer_123")
+    end
+
+    fake_stripe_inv = double("stripe_invoice",
+      id: "in_test_token_bundle_1",
+      customer: "cus_token_buyer_123",
+      amount_due: 10_000,
+      amount_paid: 0,
+      number: "INV-T001",
+      created: Time.current.to_i,
+      due_date: nil,
+      status: "draft"
+    )
+    allow(Stripe::InvoiceItem).to receive(:create).and_return(double("item", id: "ii_t1"))
+    allow(Stripe::Invoice).to receive(:create).and_return(fake_stripe_inv)
+    allow(CreateInvoice).to receive(:call) do |_args|
+      inv = Invoice.create!(
+        billable: user,
+        operator_id: operator.id,
+        amount_due: 10_000,
+        amount_paid: 0,
+        stripe_invoice_id: "in_test_token_bundle_1",
+        date: Time.current,
+        status: "draft",
+        location_id: location.id
+      )
+      OpenStruct.new(success?: true, invoice: inv)
+    end
+    # Stub ChargeBundleInvoice (via ChargeInvoice) to avoid hitting Stripe network.
+    # Mirrors the approach in spec/requests/api/v1/day_pass_bundle_purchase_spec.rb.
+    allow(Billing::Invoices::ChargeInvoice).to receive(:call).and_return(
+      OpenStruct.new(success?: true)
+    )
+  end
+
+  it "creates a bundle for a first-time buyer who provides a card token" do
+    ctx = described_class.call(
+      params: { day_pass_type: type.id }, user_id: user.id,
+      operator: operator, location: location, token: "tok_visa"
+    )
+    expect(ctx).to be_success
+    expect(ctx.day_pass_bundle.passes_remaining).to eq(type.quantity)
+  end
+end

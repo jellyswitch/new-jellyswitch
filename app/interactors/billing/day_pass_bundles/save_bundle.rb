@@ -1,7 +1,7 @@
 class Billing::DayPassBundles::SaveBundle
   include Interactor
 
-  delegate :operator, :location, :params, :user_id, to: :context
+  delegate :operator, :location, :params, :user_id, :token, to: :context
 
   def call
     user = User.find_by(id: user_id)
@@ -28,7 +28,7 @@ class Billing::DayPassBundles::SaveBundle
     )
     bundle.billable = BillableFactory.for(bundle).billable
 
-    unless bundle.billable.has_stripe_customer_for_location?(location)
+    unless token.present? || bundle.billable.has_stripe_customer_for_location?(location)
       context.fail!(message: "Cannot create paid day pass bundle for user without billing info.")
     end
 
