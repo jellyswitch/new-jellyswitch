@@ -61,6 +61,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     # N-Pack: route to bundle flow (no date needed; passes are redeemed later)
     if day_pass_type.bundle?
+      return render_error("Discount codes can't be applied to day pass bundles.") if discount_code.present?
+
       bundle_interactor = token.present? ?
         Billing::DayPassBundles::UpdatePaymentAndCreateBundle :
         Billing::DayPassBundles::CreateBundle

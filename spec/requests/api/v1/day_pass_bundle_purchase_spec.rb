@@ -168,4 +168,30 @@ RSpec.describe "API v1 day pass bundle purchase", type: :request do
       expect(body["success"]).to be true
     end
   end
+
+  describe "POST /api/v1/day_passes with a bundle type + discount_code" do
+    it "returns 422 and creates NO DayPassBundle when a discount_code is supplied" do
+      expect {
+        post "/api/v1/day_passes",
+             params: { day_pass_type_id: bundle_type.id, discount_code: "SAVE10" },
+             headers: auth_headers_for(bundle_user)
+      }.not_to change(DayPassBundle, :count)
+
+      expect(response).to have_http_status(:unprocessable_entity)
+      body = JSON.parse(response.body)
+      expect(body["error"]).to match(/discount codes/i)
+    end
+
+    it "still succeeds without a discount_code (regression)" do
+      stub_stripe_for_bundle("cus_bundle_req_test")
+
+      expect {
+        post "/api/v1/day_passes",
+             params: { day_pass_type_id: bundle_type.id },
+             headers: auth_headers_for(bundle_user)
+      }.to change(DayPassBundle, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+    end
+  end
 end
