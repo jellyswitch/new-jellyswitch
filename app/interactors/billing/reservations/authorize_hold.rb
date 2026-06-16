@@ -81,7 +81,7 @@ class Billing::Reservations::AuthorizeHold
       )
     end
 
-    base = context.overage_charge_amount || reservation.charge_amount
+    base = reservation.authorizable_charge_in_cents(overage_cents: context.overage_charge_amount)
 
     discount_code = context.discount_code
     if discount_code.present? && base.positive?

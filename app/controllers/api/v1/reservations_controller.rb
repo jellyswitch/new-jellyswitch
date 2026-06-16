@@ -103,12 +103,19 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # for next month draws from next month's fresh meeting-room pool.
     subscription_charge_info = user.subscription_reservation_charge_info(location, minutes, room: room, at: datetime_in)
 
+    # Add-on amenities: accept only ids that are orderable add-ons on THIS
+    # room. Free features, other rooms' amenities, and bogus ids are dropped —
+    # the server never trusts client-supplied prices or memberships.
+    requested_amenity_ids = Array(params.dig(:reservation, :amenity_ids)).map(&:to_i)
+    amenity_ids = room.amenities.add_ons.where(id: requested_amenity_ids).pluck(:id)
+
     result = Billing::Reservations::CreateRoomReservation.call(
       reservation_params: {
         datetime_in: datetime_in,
         hours: minutes / 60.0,
         minutes: minutes,
         room: room,
+        amenity_ids: amenity_ids,
       },
       user: current_api_user,
       location: current_location,
