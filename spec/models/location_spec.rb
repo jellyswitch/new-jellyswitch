@@ -103,6 +103,33 @@ RSpec.describe Location, type: :model do
     it { should validate_presence_of(:working_day_end) }
   end
 
+  describe 'working-time self-healing' do
+    # Rows written before `normalizes` shipped (Tahoe Longhouse onboarded the
+    # day before it did), or via any path that bypasses it, can hold an
+    # un-normalized value like "5:00". That fails the format validation on
+    # EVERY save, silently blocking UNRELATED settings forms (e.g. WiFi).
+    it 'normalizes a legacy un-normalized working time so the record stays saveable' do
+      loc = create(:location)
+      # Raw SQL to plant the un-normalized value exactly as a pre-`normalizes`
+      # row would hold it — update_columns/assignment would cast (normalize) it.
+      loc.class.connection.update(
+        "UPDATE locations SET working_day_start = '5:00' WHERE id = #{loc.id}"
+      )
+      loc.reload
+      expect(loc.working_day_start).to eq('5:00') # legacy value loads un-normalized, as on prod
+
+      loc.wifi_name = 'New Network' # unrelated change, like the WiFi & Pixels form
+      expect(loc.save).to be true
+      expect(loc.reload.working_day_start).to eq('05:00')
+    end
+
+    it 'still rejects genuinely invalid working times' do
+      loc = build(:location, working_day_start: '9am')
+      expect(loc).not_to be_valid
+      expect(loc.errors[:working_day_start]).to include('is invalid')
+    end
+  end
+
   describe 'attachments' do
     it { should have_one_attached(:background_image) }
     it { should have_one_attached(:photo) }

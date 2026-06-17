@@ -149,6 +149,15 @@ class Location < ApplicationRecord
   normalizes :working_day_start, with: ->(v) { Location.normalize_working_time(v) }
   normalizes :working_day_end, with: ->(v) { Location.normalize_working_time(v) }
 
+  # `normalizes` only runs on cast (assignment/write), NOT on read — so a row
+  # written before it shipped (Tahoe Longhouse onboarded 2026-06-11, one day
+  # before the normalizer) loads its raw "5:00" and then fails the format
+  # validation on EVERY save. That silently blocks UNRELATED settings forms
+  # (the WiFi & Pixels save runs full Location validation). Re-normalize before
+  # validation so such legacy/bypass values self-heal; genuinely invalid input
+  # (e.g. "9am") still normalizes to itself and is correctly rejected.
+  before_validation :renormalize_working_times
+
   # CRM is always on for every location. See Operator#crm_enabled? — the DB
   # column is kept for history but the predicate short-circuits to true.
   def crm_enabled?
@@ -328,6 +337,11 @@ class Location < ApplicationRecord
   end
 
   private
+
+  def renormalize_working_times
+    self.working_day_start = self.class.normalize_working_time(working_day_start)
+    self.working_day_end = self.class.normalize_working_time(working_day_end)
+  end
 
   def seed_email_templates
     ProductEmailTemplate.seed_defaults_for(operator, location: self)
