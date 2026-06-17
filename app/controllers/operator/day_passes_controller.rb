@@ -20,6 +20,16 @@ class Operator::DayPassesController < Operator::BaseController
   def create
     authorize DayPass.new
 
+    # N-Pack SKUs are prepaid bundles, not single dated day passes. The web
+    # checkout below (date picker, duplicate-by-date guard, single-pass
+    # interactor) only models a single pass — so without this branch, buying a
+    # 2-Pack here silently minted ONE dated DayPass and charged the full bundle
+    # price (two real Cowork Tahoe customers hit exactly this). Route bundle
+    # SKUs to the same flow the mobile API uses; the picked date is irrelevant
+    # because bundle passes are redeemed later.
+    bundle_type = current_location&.day_pass_types&.find_by(id: params.dig(:day_pass, :day_pass_type))
+    return create_bundle(bundle_type) if bundle_type&.bundle?
+
     # Duplicate-purchase guard: when the member already has a day pass for
     # the same date at this location, render an interstitial confirm page
     # rather than silently charging again. They may legitimately be buying
@@ -198,6 +208,44 @@ class Operator::DayPassesController < Operator::BaseController
   def find_day_pass(key=:id)
     # Maybe needs to show at another location so we don't use current_location
     @day_pass = DayPass.find(params[:id])
+  end
+
+  # Mirrors the mobile API's bundle branch (Api::V1::DayPassesController#create):
+  # one charge for the N-Pack SKU price, no DayPass minted — passes are burned
+  # later at the door / via redeem. Token present => attach card first.
+  def create_bundle(day_pass_type)
+    if params[:discount_code].present?
+      flash[:error] = "Discount codes can't be applied to day pass bundles."
+      return turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
+    end
+
+    token = params[:stripeToken]
+    interactor = token.present? ?
+      Billing::DayPassBundles::UpdatePaymentAndCreateBundle :
+      Billing::DayPassBundles::CreateBundle
+
+    result = interactor.call(
+      user_id: current_user.id,
+      operator: current_tenant,
+      location: current_location,
+      token: token,
+      params: { day_pass_type: day_pass_type.id.to_s }
+    )
+
+    if result.success?
+      bundle = result.day_pass_bundle
+      flash[:success] = "Thanks! #{bundle.passes_remaining} day passes added to your account."
+      flash.keep
+      session[:should_track_pixels] = true
+      turbo_redirect(approved? ? home_path : wait_path)
+    else
+      flash[:error] = result.message
+      turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
+    end
+  rescue => e
+    Honeybadger.notify(e)
+    flash[:error] = "An error occurred: #{e.message}"
+    turbo_redirect(referrer_or_root)
   end
 
   def day_pass_params
