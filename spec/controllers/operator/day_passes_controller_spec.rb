@@ -108,6 +108,63 @@ RSpec.describe Operator::DayPassesController, type: :controller do
     end
   end
 
+  describe "POST #create with an N-Pack (bundle) day pass type" do
+    let(:bundle_type) do
+      create(:day_pass_type, operator: operator, location: location, quantity: 2, amount_in_cents: 7000)
+    end
+    let(:bundle_params) do
+      { day_pass: { day: Date.current, day_pass_type: bundle_type.id } }
+    end
+    let(:bundle_result) do
+      OpenStruct.new(
+        success?: true,
+        day_pass_bundle: OpenStruct.new(id: 1, passes_remaining: 2, day_pass_type: bundle_type),
+      )
+    end
+
+    before do
+      allow(controller).to receive(:current_user).and_return(regular_user)
+    end
+
+    context "with a stripe token" do
+      it "routes to the bundle flow, NOT the single day-pass factory" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        expect(Billing::DayPassBundles::UpdatePaymentAndCreateBundle)
+          .to receive(:call).and_return(bundle_result)
+        post :create, params: bundle_params.merge(stripeToken: "tok_visa")
+      end
+
+      it "does not mint a single dated day pass" do
+        allow(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).to receive(:call).and_return(bundle_result)
+        expect { post :create, params: bundle_params.merge(stripeToken: "tok_visa") }
+          .not_to change(DayPass, :count)
+      end
+
+      it "shows a passes-added success message" do
+        allow(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).to receive(:call).and_return(bundle_result)
+        post :create, params: bundle_params.merge(stripeToken: "tok_visa")
+        expect(flash[:success]).to match(/passes added/i)
+      end
+    end
+
+    context "without a token (customer already on file)" do
+      it "uses CreateBundle" do
+        expect(Billing::DayPassBundles::CreateBundle).to receive(:call).and_return(bundle_result)
+        post :create, params: bundle_params
+      end
+    end
+
+    context "with a discount code" do
+      it "rejects it and does not create a bundle" do
+        expect(Billing::DayPassBundles::CreateBundle).not_to receive(:call)
+        expect(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).not_to receive(:call)
+        post :create, params: bundle_params.merge(discount_code: "SAVE10")
+        expect(flash[:error]).to match(/can't be applied/i)
+        expect(response).to redirect_to(new_day_pass_path(day_pass_type_id: bundle_type.id))
+      end
+    end
+  end
+
   describe "GET #code" do
     before do
       allow(controller).to receive(:current_user).and_return(regular_user)
