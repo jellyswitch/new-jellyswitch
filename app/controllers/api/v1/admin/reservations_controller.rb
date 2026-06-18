@@ -59,7 +59,10 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     if result.success?
       render json: reservation_json(result.reservation), status: :created
     else
-      render_error(result.error || 'Booking failed')
+      # Billing interactors fail with `context.message` (e.g. an overlap
+      # conflict). Surface that so the admin sees the real reason rather
+      # than a blanket "Booking failed".
+      render_error(result.message || result.error || 'Booking failed')
     end
   end
 
