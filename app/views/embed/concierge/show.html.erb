@@ -156,8 +156,8 @@
 
   function chooseOption(opt) {
     say(opt.label, "user");
-    // Single day pass is fully self-serve on the web — go straight to checkout.
-    if (opt.intent === "day_pass" && opt.product && opt.product.id && checkoutUrl) {
+    // Day pass + bundle are fully self-serve on the web — go straight to checkout.
+    if ((opt.intent === "day_pass" || opt.intent === "day_pass_bundle") && opt.product && opt.product.id && checkoutUrl) {
       say(opt.product.name + " — " + price(opt.product.price_cents) + ". Let's get you set up 👇", "bot");
       clearActions();
       button("Buy now — " + price(opt.product.price_cents), function () {

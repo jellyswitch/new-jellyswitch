@@ -18,7 +18,7 @@ module Concierge
       end
 
       user = create_account(email)
-      purchase_day_pass(user)
+      context.day_pass_type.bundle? ? purchase_bundle(user) : purchase_day_pass(user)
 
       context.user = user
     end
@@ -53,6 +53,18 @@ module Concierge
       # retry payment. Surfacing a clear error beats a silent half-purchase.
       context.fail!(error: "payment", message: result.message) unless result.success?
       context.day_pass = result.day_pass
+    end
+
+    def purchase_bundle(user)
+      result = Billing::DayPassBundles::UpdatePaymentAndCreateBundle.call(
+        user_id: user.id,
+        token: context.token,
+        operator: context.operator,
+        location: context.location,
+        params: { day_pass_type: context.day_pass_type.id.to_s },
+      )
+      context.fail!(error: "payment", message: result.message) unless result.success?
+      context.day_pass_bundle = result.day_pass_bundle
     end
   end
 end

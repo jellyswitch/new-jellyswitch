@@ -37,6 +37,22 @@ RSpec.describe Concierge::PublicDayPassCheckout do
       .with(hash_including(user_id: user.id, token: "tok_visa", location: location))
   end
 
+  it "routes a bundle SKU (quantity > 1) to the bundle purchase interactor" do
+    bundle_type = create(:day_pass_type, operator: operator, location: location, quantity: 5, amount_in_cents: 10_000)
+    user = create(:user, operator: operator)
+    bundle = create(:day_pass_bundle, user: user, day_pass_type: bundle_type, operator: operator, location: location)
+    stub_account_creation(user)
+    allow(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).to receive(:call)
+      .and_return(double(success?: true, day_pass_bundle: bundle, message: nil))
+
+    result = described_class.call(args.merge(day_pass_type: bundle_type, email: "bundler@x.com"))
+
+    expect(result).to be_success
+    expect(result.day_pass_bundle).to eq(bundle)
+    expect(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).to have_received(:call)
+      .with(hash_including(user_id: user.id, token: "tok_visa"))
+  end
+
   it "refuses (without creating) when the email already has an account" do
     create(:user, operator: operator, email: "new@visitor.com")
     expect(Users::Create).not_to receive(:call)
