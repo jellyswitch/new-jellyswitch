@@ -1,7 +1,6 @@
-<% content_for :title, "Concierge (Chat Widget)" %>
+<% provide(:title, "AI Concierge") %>
 
-<div class="container py-4" style="max-width: 760px;">
-  <h2>Concierge — your website chat widget</h2>
+<%= render "tab_layout", active: :concierge do %>
   <p class="text-muted">
     The Concierge greets visitors on your site, figures out what they need, recommends the right
     option at your real price, and captures them into your CRM. It automatically uses your
@@ -110,4 +109,4 @@
   <h5>Live preview</h5>
   <iframe src="<%= preview_url %>" width="380" height="560"
           style="border: 1px solid #ddd; border-radius: 8px;" title="Concierge preview"></iframe>
-</div>
+<% end %>
