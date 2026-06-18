@@ -38,13 +38,17 @@
 
   <hr />
   <h5>Follow-Up Emails</h5>
-  <p class="text-muted small">Sent after a configurable delay to solicit feedback and reviews.</p>
+  <p class="text-muted small">Sent to solicit feedback and reviews. Most fire after a configurable delay; the Day Pass Bundle review fires after the buyer's first visit.</p>
   <dl>
     <% @follow_up_templates.each do |template| %>
       <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
         <strong><%= template.product_label %></strong>
         <span class="text-muted ml-2"><%= template.subject %></span>
-        <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <% if template.has_delay? && template.follow_up_delay_days.present? %>
+          <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <% elsif template.product_type == "day_pass_bundle" %>
+          <span class="badge badge-info ml-1">after first visit</span>
+        <% end %>
         <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
       <% end %>
     <% end %>
@@ -87,6 +91,20 @@
         <strong><%= template.product_label %></strong>
         <span class="text-muted ml-2"><%= template.subject %></span>
         <span class="badge badge-secondary ml-1"><%= pluralize(template.follow_up_delay_days, "day") %> delay</span>
+        <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
+      <% end %>
+    <% end %>
+  </dl>
+
+  <hr />
+  <h5>Replenishment Emails</h5>
+  <p class="text-muted small">Sent when a Day Pass Bundle holder uses their last pass — a nudge to buy another pack (and a chance to pitch a membership).</p>
+  <dl>
+    <% @replenishment_templates.each do |template| %>
+      <%= render(OnOffSwitch.new(predicate: template.enabled?, path: toggle_enabled_product_email_template_path(template))) do %>
+        <strong><%= template.product_label %></strong>
+        <span class="text-muted ml-2"><%= template.subject %></span>
+        <span class="badge badge-info ml-1">at zero balance</span>
         <%= link_to "Edit", edit_product_email_template_path(template), class: "btn btn-sm btn-outline-primary ml-2" %>
       <% end %>
     <% end %>

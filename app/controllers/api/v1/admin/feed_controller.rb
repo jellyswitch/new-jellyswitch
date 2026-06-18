@@ -198,6 +198,16 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         day: dp&.day&.strftime("%B %e, %Y"),
         requires_approval: true,
       )
+    when 'day-pass-bundle'
+      bundle = DayPassBundle.find_by(id: fi.blob['day_pass_bundle_id'])
+      base.merge(
+        action_text: "bought a #{bundle&.quantity_purchased}-Pack",
+        day_pass_type: bundle&.day_pass_type&.name,
+        # Flat pack price = the one-time charge (ADR 0009); same field the
+        # day-pass item above uses, so feed + revenue always agree.
+        amount: bundle&.day_pass_type&.amount_in_cents,
+        requires_approval: true,
+      )
     when 'reservation'
       res = Reservation.find_by(id: fi.blob['reservation_id'])
       base.merge(

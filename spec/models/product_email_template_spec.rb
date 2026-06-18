@@ -35,6 +35,61 @@ RSpec.describe ProductEmailTemplate, type: :model do
     it "includes re_engagement and past_member_recovery" do
       expect(ProductEmailTemplate::EMAIL_TYPES).to include("re_engagement", "past_member_recovery")
     end
+
+    it "includes replenishment (the bundle zero-balance email)" do
+      expect(ProductEmailTemplate::EMAIL_TYPES).to include("replenishment")
+    end
+  end
+
+  describe "day_pass_bundle product type" do
+    it "is a valid product type" do
+      expect(ProductEmailTemplate::PRODUCT_TYPES).to include("day_pass_bundle")
+    end
+
+    it "labels as 'Day Pass Bundle'" do
+      tmpl = ProductEmailTemplate.new(product_type: "day_pass_bundle", email_type: "onboarding")
+      expect(tmpl.product_label).to eq("Day Pass Bundle")
+    end
+
+    describe ".seed_defaults_for" do
+      before { ProductEmailTemplate.seed_defaults_for(operator, location: location) }
+
+      it "seeds onboarding, follow_up (review) and replenishment templates" do
+        %w[onboarding follow_up replenishment].each do |etype|
+          expect(
+            ProductEmailTemplate.find_by(operator: operator, location: location,
+                                         product_type: "day_pass_bundle", email_type: etype)
+          ).to be_present, "expected a day_pass_bundle #{etype} template"
+        end
+      end
+
+      it "does not seed a re_engagement template for bundles (buyers are customers, not leads)" do
+        expect(
+          ProductEmailTemplate.find_by(operator: operator, location: location,
+                                       product_type: "day_pass_bundle", email_type: "re_engagement")
+        ).to be_nil
+      end
+    end
+
+    describe ".replace_merge_tags with a DayPassBundle sendable" do
+      let(:pack_type) { create(:day_pass_type, operator: operator, location: location, name: "10-Pack") }
+      let(:bundle) do
+        create(:day_pass_bundle, user: user, day_pass_type: pack_type, operator: operator,
+                                 quantity_purchased: 10, passes_remaining: 7,
+                                 expires_at: Time.zone.local(2026, 12, 31))
+      end
+
+      it "resolves bundle-specific tags and leaves {{date}} untouched" do
+        body = "{{quantity}} passes, {{passes_remaining}} left, expires {{expires_at}} on {{date}}"
+        result = ProductEmailTemplate.replace_merge_tags(
+          body, user: user, operator: operator, location: location, sendable: bundle
+        )
+        expect(result).to include("10 passes")
+        expect(result).to include("7 left")
+        expect(result).to include("December 31, 2026")
+        expect(result).to include("{{date}}") # bundle has no single day; tag stays literal
+      end
+    end
   end
 
   describe ".seed_defaults_for" do

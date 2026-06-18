@@ -36,6 +36,22 @@ class DayPassBundle < ApplicationRecord
     update!(passes_remaining: passes_remaining - 1)
     redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
                         guest_name: guest_name, day_pass: day_pass, redeemed_at: Time.current)
+    enqueue_lifecycle_emails(kind)
+  end
+
+  # Event-fired buyer emails (see CONTEXT.md / ADR 0009 family). The job gates
+  # on the template being enabled and de-dupes per (bundle, email_type), so it
+  # is safe to enqueue optimistically here.
+  #   - review (follow_up): the holder's FIRST entry burn — "how was your visit?"
+  #   - replenishment: the pass that empties the pack — "grab another / go unlimited"
+  def enqueue_lifecycle_emails(kind)
+    if kind.to_s == "entry" && redemptions.where(kind: "entry").count == 1
+      SendProductEmailJob.perform_later(self.class.name, id, operator_id, "day_pass_bundle", "follow_up", user_id)
+    end
+
+    if passes_remaining.to_i.zero?
+      SendProductEmailJob.perform_later(self.class.name, id, operator_id, "day_pass_bundle", "replenishment", user_id)
+    end
   end
 
   # Mirrors DayPass#subscribable — used by BillableFactory to resolve billable.

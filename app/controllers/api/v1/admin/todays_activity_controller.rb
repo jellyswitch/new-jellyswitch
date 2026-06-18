@@ -31,14 +31,23 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
       .where(active: true, pending: [false, nil])
       .where(created_at: today.beginning_of_day..today.end_of_day)
 
-    # Revenue total — all three pillars in cents.
+    # Bundle SALES recognized today (ADR 0009: cash basis — the pack price is
+    # recognized once, on the purchase day, at the flat day_pass_type.amount_in_cents;
+    # the burn above is $0). Scoped to this location, mirroring the new-subscription
+    # window. This is the other half of the bundle picture from `not_bundle_sourced`.
+    todays_bundle_sales = DayPassBundle
+      .where(operator: current_tenant, location: location)
+      .where(purchased_at: today.beginning_of_day..today.end_of_day)
+
+    # Revenue total — all pillars in cents.
     # `not_bundle_sourced` excludes entry passes minted by burning a prepaid
     # bundle — their day_pass_type.amount_in_cents is the full N-Pack price
     # (recognized once at purchase), so summing it per entry would double-count
     # the one-time bundle purchase as recurring day-pass revenue.
     revenue_cents = paid_bookings.sum { |r| r.room_price } +
                     todays_day_passes.not_bundle_sourced.joins(:day_pass_type).sum('day_pass_types.amount_in_cents') +
-                    todays_new_subscriptions.sum('plans.amount_in_cents')
+                    todays_new_subscriptions.sum('plans.amount_in_cents') +
+                    todays_bundle_sales.joins(:day_pass_type).sum('day_pass_types.amount_in_cents')
 
     # New members — anyone whose ACTIVE subscription started in the last
     # 7 days. Previously filtered on `users.created_at`, which silently

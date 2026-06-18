@@ -137,7 +137,7 @@ class FeedItem < ApplicationRecord
   end
 
   def requires_approval?
-    ["subscription", "day-pass", "new-user", "reservation", "paid-room-reservation"].any? {|t| type == t}
+    ["subscription", "day-pass", "day-pass-bundle", "new-user", "reservation", "paid-room-reservation"].any? {|t| type == t}
   end
 
   def weekly_update?
@@ -226,6 +226,10 @@ class FeedItem < ApplicationRecord
 
   def day_pass
     blob_relation("day_pass_id", DayPass.unscoped)
+  end
+
+  def day_pass_bundle
+    blob_relation("day_pass_bundle_id", DayPassBundle.unscoped)
   end
 
   def subscription

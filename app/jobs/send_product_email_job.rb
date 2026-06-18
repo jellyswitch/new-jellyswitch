@@ -35,8 +35,11 @@ class SendProductEmailJob < ApplicationJob
                    Reservation.where(user: user).any?
       end
 
-      # For follow-ups: skip if sendable is cancelled/inactive
-      if email_type == "follow_up"
+      # For follow-ups: skip if sendable is cancelled/inactive. A bundle is
+      # exempt — its active?/passes_remaining state is not a cancellation: a
+      # small pack can be emptied on the very first visit, and we still want to
+      # send the "how was your visit?" review.
+      if email_type == "follow_up" && !sendable.is_a?(DayPassBundle)
         return if sendable.respond_to?(:cancelled?) && sendable.cancelled?
         return if sendable.respond_to?(:active?) && !sendable.active?
       end
@@ -60,7 +63,9 @@ class SendProductEmailJob < ApplicationJob
         case email_type
         when "onboarding"
           UserMailer.product_onboarding_email(user, operator, template, sendable, location).deliver_now
-        when "follow_up"
+        when "follow_up", "replenishment"
+          # Bundle review + replenishment reuse the follow-up mailer (subject +
+          # body come from the template; the merge tags differ per product type).
           UserMailer.product_follow_up_email(user, operator, template, sendable, location).deliver_now
         when "nudge"
           UserMailer.signup_nudge_email(user, operator, template, location).deliver_now
@@ -95,7 +100,7 @@ class SendProductEmailJob < ApplicationJob
 
   def resolve_location(sendable, user)
     case sendable
-    when DayPass
+    when DayPass, DayPassBundle
       sendable.location
     when Reservation
       sendable.room&.location

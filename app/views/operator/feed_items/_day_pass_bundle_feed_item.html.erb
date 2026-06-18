@@ -1,0 +1,26 @@
+<% if feed_item.day_pass_bundle&.day_pass_type.present? %>
+  <% bundle = feed_item.day_pass_bundle %>
+  <% day_pass_type = bundle.day_pass_type %>
+
+  <dl class="row">
+    <dt class="col-6">Pack:</dt>
+    <dd class="col"><%= bundle.quantity_purchased %>-Pack</dd>
+
+    <dt class="col-6">Type:</dt>
+    <dd class="col"><%= day_pass_type.name %></dd>
+
+    <dt class="col-6">Amount:</dt>
+    <dd class="col">
+      <span class="text-success">
+        <% if day_pass_type.free? %>
+          FREE
+        <% else %>
+          <%= number_to_currency(day_pass_type.amount_in_cents.to_f / 100.0) %>
+        <% end %>
+      </span>
+    </dd>
+
+    <dt class="col-6">Expires:</dt>
+    <dd class="col"><%= bundle.expires_at.present? ? l(bundle.expires_at.to_date, format: :long) : "Never" %></dd>
+  </dl>
+<% end %>

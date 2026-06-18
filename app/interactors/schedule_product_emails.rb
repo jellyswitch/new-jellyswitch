@@ -36,6 +36,10 @@ class ScheduleProductEmails
       )
     end
 
+    # Day Pass Bundle follow-up emails (review + replenishment) are event-fired
+    # from the burn path, never on a purchase-time delay — so stop here for them.
+    return if product_type == "day_pass_bundle"
+
     # Schedule follow-up email (delayed — timed from usage, not purchase)
     follow_up_template = ProductEmailTemplate.find_by(
       operator: operator,
@@ -67,7 +71,7 @@ class ScheduleProductEmails
 
   def resolve_location(sendable, user)
     case sendable
-    when DayPass
+    when DayPass, DayPassBundle
       sendable.location
     when Reservation
       sendable.room&.location
@@ -82,7 +86,7 @@ class ScheduleProductEmails
 
   def resolve_operator(sendable, location, user)
     case sendable
-    when DayPass, Subscription, OfficeLease
+    when DayPass, DayPassBundle, Subscription, OfficeLease
       sendable.operator
     when Reservation
       sendable.room&.location&.operator

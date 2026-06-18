@@ -95,6 +95,11 @@ RSpec.describe FeedItem, type: :model do
         feed_item.blob = { type: 'announcement' }
         expect(feed_item.requires_approval?).to be false
       end
+
+      it 'returns true for a day pass bundle purchase (so a new buyer can be approved from the feed)' do
+        feed_item.blob = { type: 'day-pass-bundle' }
+        expect(feed_item.requires_approval?).to be true
+      end
     end
 
     describe '#parse_amount' do
