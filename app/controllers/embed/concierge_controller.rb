@@ -13,7 +13,7 @@ module Embed
 
     before_action :load_operator
     before_action :require_concierge_active_or_preview, only: [:show]
-    before_action :require_concierge_active,            only: [:create]
+    before_action :require_concierge_active, only: [:create, :start_conversation, :post_message, :poll_messages]
     after_action  :allow_framing
 
     helper_method :admin_previewing?
@@ -34,6 +34,46 @@ module Embed
         font: @operator.embed_font_family,
       }
       render :show
+    end
+
+    # Live chat: start a conversation. During open hours we greet + alert staff;
+    # off-hours the widget shows the capture fallback (open_now: false).
+    def start_conversation
+      location = @operator.locations.find_by(id: params[:location_id]) ||
+                 @operator.locations.where(visible: true).order(:name).first
+      convo = ConciergeConversation.create!(operator: @operator, location: location)
+      open_now = location&.open_now? || false
+
+      if open_now
+        convo.messages.create!(operator: @operator, role: "bot",
+                               body: "You're chatting with the #{@operator.concierge_display_name} team 👋 — usually just a few minutes.")
+        alert_staff(convo)
+      end
+
+      render json: { token: convo.session_token, open_now: open_now, status: convo.status,
+                     messages: serialize(convo.messages) }
+    end
+
+    def post_message
+      convo = find_conversation
+      return head(:not_found) unless convo
+
+      msg = convo.messages.create!(operator: @operator, role: "visitor", body: params[:body].to_s)
+      convo.update!(last_visitor_message_at: Time.current)
+      alert_staff(convo) if convo.location&.open_now? && !convo.staff_alerted?
+
+      render json: { ok: true, message: serialize_message(msg),
+                     awaiting_staff_timeout: convo.awaiting_staff_timeout? }
+    end
+
+    def poll_messages
+      convo = find_conversation
+      return head(:not_found) unless convo
+
+      after = params[:after].to_i
+      msgs = convo.messages.where("id > ?", after)
+      render json: { messages: serialize(msgs), status: convo.status,
+                     awaiting_staff_timeout: convo.awaiting_staff_timeout? }
     end
 
     def create
@@ -104,6 +144,26 @@ module Embed
           "referrer" => request.referer,
         },
       )
+    end
+
+    def find_conversation
+      ConciergeConversation.where(operator: @operator).find_by(session_token: params[:token])
+    end
+
+    def alert_staff(convo)
+      SendNotificationsJob.perform_later(convo, "ConciergeChatAlert")
+      convo.update!(staff_alerted: true)
+    end
+
+    def serialize(messages)
+      messages.map { |m| serialize_message(m) }
+    end
+
+    def serialize_message(message)
+      {
+        id: message.id, role: message.role, body: message.body,
+        author: message.author&.name, at: message.created_at.iso8601,
+      }
     end
 
     def load_operator

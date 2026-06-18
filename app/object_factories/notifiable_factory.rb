@@ -49,6 +49,10 @@ class NotifiableFactory
       Notifiable::PointOfContactAlert
     when "TourRequestAlert"
       Notifiable::TourRequestAlert
+    when "ConciergeAlert"
+      Notifiable::ConciergeAlert
+    when "ConciergeChatAlert"
+      Notifiable::ConciergeChatAlert
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)
