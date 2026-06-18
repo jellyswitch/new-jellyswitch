@@ -12,14 +12,16 @@
 
 Goal: a themeable widget an operator embeds; it runs the scripted needs flow, recommends the right product at the operator's real price, captures the Person, routes them, and the operator can see chatter-vs-non-chatter lift. **No live staff, no AI yet.**
 
-### 1.1 — Operator settings + embed snippet + theming
-- New `Operator` fields: `concierge_enabled` (bool), `concierge_greeting` (string), `concierge_offer_text` (string, optional — the day-pass promo hook), `concierge_promo_code` (string, optional), `concierge_color` (string hex), `concierge_font` (string). Migration (see `migrations` skill — additive, nullable).
-- Settings page `/operator/settings/concierge` mirroring `tour_widget.html.erb`: enable toggle, greeting + offer copy, color/font pickers, **copy-paste embed snippet**, live preview iframe (reuse the signed-preview-token pattern).
-- Theming renders into the widget's CSS (color → accent vars; font → `font-family`).
+### 1.1 — Brand inheritance, shared embed-theme, settings + embed snippet
+- **Inherit brand identity (zero config):** the widget reads the operator's existing `name`, `primary_color`, `accent_color`, `logo_image`, app-store links, and each location's `working_day_start/end` + `time_zone`. No re-asking what the records already hold.
+- **Shared `EmbedTheme`:** extract one theming layer (inherited `primary_color`/`accent_color` + a configurable **font** from a curated dropdown — iframes can't inherit the host page's font + an optional **accent override**). **Both** the Concierge **and** the existing tour widget consume it → consistent look, built once. *(Retrofit: add font + accent to `tour_widget.html.erb` + the tour embed view via the shared theme.)*
+- **New `Operator` fields (lean — additive, nullable migration per the `migrations` skill):** `concierge_enabled` (bool), `concierge_assistant_name` (default brand name), `concierge_assistant_avatar` (attachment, default `logo_image`), `concierge_greeting`, `concierge_offer_text` + `concierge_promo_code` (optional day-pass promo hook), `concierge_off_hours_message`, `embed_font`, `embed_accent_override`. All seeded with sensible defaults so a brand is on-brand on day one.
+- Settings page `/operator/settings/concierge` mirroring `tour_widget.html.erb`: enable toggle, the lean copy fields, font/accent pickers, **copy-paste embed snippet**, live preview iframe (reuse the signed-preview-token pattern).
 
 ### 1.2 — The embeddable widget (public, framed)
 - `Embed::ConciergeController#show` under the `Embed` namespace, served at `/embed/concierge/:operator_subdomain` (+ `/locations/:location_id` pinning, like the tour widget). `X-Frame-Options: ALLOWALL` + CSP strip (copy the tour controller's after-action).
 - The widget UI: a corner bubble + **proactive teaser** (appears after ~5s / on scroll / on exit-intent — *not* an auto-open modal; smaller/later on mobile) surfacing `concierge_greeting`/`concierge_offer_text`.
+- **Hybrid persona (honest):** the scripted/off-hours brain presents as the **branded assistant** (`concierge_assistant_name` + avatar, default brand name + `logo_image`) — never a fake human. (Real staff identity is swapped in only when a human joins — Phase 2.)
 - It is a small JS app inside the iframe driving the scripted flow (button choices + free-text capture). State machine, not an LLM.
 
 ### 1.3 — The scripted needs-recommender
@@ -74,8 +76,9 @@ Goal: during business hours, a real person answers in the widget; off-hours stay
 - Widget polls `GET /embed/concierge/:subdomain/conversations/:token/messages?since=…` every few seconds for new staff/bot messages. **No websockets** (fine at this scale; ActionCable is bare).
 - `POST …/messages` for visitor messages (Rack::Attack throttled).
 
-### 2.4 — Staff inbox — web
+### 2.4 — Staff inbox — web + the persona swap
 - An operator inbox view (list of open conversations + a thread view + reply box) under `/operator/...`. Push alert deep-links here.
+- **Persona swap on join:** when a staffer sends their first reply, the widget surfaces their **real name + profile avatar** ("**{staff name} from {brand} joined**") — the honest half of the hybrid persona. Their identity comes from their `User` record.
 
 ### 2.5 — Staff inbox — mobile (`jellyswitch-mobile`)
 - A "Chats" screen + thread/reply view in the admin app (phone-first staff). New `conciergeAPI` (list conversations, fetch messages, send reply). Push notification on new visitor message routes to the thread (reuse the deep-link routing pattern).

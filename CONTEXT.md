@@ -202,4 +202,8 @@ The visitor-facing thing is always "the Concierge"; what *answers* behind it is 
 
 **Conversion lift** is the Concierge's headline metric: of Persons who have a Concierge `chat` Activity, what share go on to a purchase, versus Persons who never chatted — a ratio derived entirely from the **Activity** timeline (no separate analytics pipeline). Anonymous top-of-funnel (web visitors who never became a Person) is **out of scope until V2**.
 
+**Branding is inherited, not re-configured.** The Concierge reads the operator's existing identity (`name`, `primary_color`, `accent_color`, `logo_image`, hours) so every brand is on-brand with zero config. A shared **embed-theme** (the inherited colors + a configurable font + optional accent override) themes **both** the Concierge and the **tour widget** consistently. Per-brand config is deliberately lean (assistant name/avatar, greeting, offer, off-hours message); everything else is inherited or auto-derived from the real catalog.
+
+The persona is **hybrid and honest**: the scripted brain presents as the **branded assistant** (default brand name + logo — never a fake human), and a real staffer's **actual name + avatar** is surfaced only when they join during business hours.
+
 _Avoid_: calling it a "support chat" or "live chat" — it is a **Concierge** whose job is conversion, and the human is only one of its (hours-gated) brains. A captured Concierge visitor is a **Person** (never a resurrected **Lead** — see [[Lifecycle Stage]]).
