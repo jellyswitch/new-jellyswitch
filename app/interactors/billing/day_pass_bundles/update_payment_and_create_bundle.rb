@@ -6,6 +6,7 @@ class Billing::DayPassBundles::UpdatePaymentAndCreateBundle
     Billing::Payment::UpdateUserPayment,
     Billing::DayPassBundles::CreateStripeInvoiceForBundle,
     Billing::DayPassBundles::ChargeBundleInvoice,
-    Billing::DayPassBundles::CreateNotifications
+    Billing::DayPassBundles::CreateNotifications,
+    Billing::DayPassBundles::ScheduleBundleEmails
   )
 end
