@@ -31,8 +31,8 @@ class ProductEmailTemplate < ApplicationRecord
 
   has_rich_text :body
 
-  PRODUCT_TYPES = %w[day_pass reservation office_lease membership signup_nudge].freeze
-  EMAIL_TYPES = %w[onboarding follow_up nudge re_engagement past_member_recovery].freeze
+  PRODUCT_TYPES = %w[day_pass day_pass_bundle reservation office_lease membership signup_nudge].freeze
+  EMAIL_TYPES = %w[onboarding follow_up nudge re_engagement past_member_recovery replenishment].freeze
 
   # (product_type, email_type) combos that re_engagement and past_member_recovery
   # apply to. Onboarding/follow_up/nudge use the original cross-product matrix.
@@ -43,6 +43,9 @@ class ProductEmailTemplate < ApplicationRecord
     "day_pass_onboarding" => "Welcome! Here's what you need to know",
     "day_pass_follow_up" => "How was your visit?",
     "day_pass_re_engagement" => "Come back and see us",
+    "day_pass_bundle_onboarding" => "Your pack is ready — here's how it works",
+    "day_pass_bundle_follow_up" => "How was your visit?",
+    "day_pass_bundle_replenishment" => "You're out of passes — grab another pack",
     "reservation_onboarding" => "Your reservation is confirmed!",
     "reservation_follow_up" => "How was your reservation?",
     "reservation_re_engagement" => "Ready for your next booking?",
@@ -75,6 +78,7 @@ class ProductEmailTemplate < ApplicationRecord
   scope :nudge, -> { where(email_type: "nudge") }
   scope :re_engagement, -> { where(email_type: "re_engagement") }
   scope :past_member_recovery, -> { where(email_type: "past_member_recovery") }
+  scope :replenishment, -> { where(email_type: "replenishment") }
   scope :enabled, -> { where(enabled: true) }
   scope :for_product, ->(type) { where(product_type: type) }
   scope :for_location, ->(location) { where(location: location) }
@@ -90,6 +94,13 @@ class ProductEmailTemplate < ApplicationRecord
         delay = etype == "follow_up" ? DEFAULT_DELAYS[product] : nil
         seed_template(operator, location, product, etype, delay)
       end
+    end
+
+    # Day Pass Bundle lifecycle — event-fired (no time delay): onboarding on
+    # purchase, follow_up (review) on first burn, replenishment at zero balance.
+    # Bundles are NOT in RE_ENGAGEMENT_PRODUCTS (buyers are customers, not leads).
+    %w[onboarding follow_up replenishment].each do |etype|
+      seed_template(operator, location, "day_pass_bundle", etype, nil)
     end
 
     # Signup nudge
@@ -141,6 +152,7 @@ class ProductEmailTemplate < ApplicationRecord
   def product_label
     case product_type
     when "day_pass" then "Day Pass"
+    when "day_pass_bundle" then "Day Pass Bundle"
     when "reservation" then "Conference Room Reservation"
     when "office_lease" then "Office Lease"
     when "membership" then "Membership"
@@ -155,10 +167,15 @@ class ProductEmailTemplate < ApplicationRecord
     when "nudge" then "Nudge"
     when "re_engagement" then "Re-Engagement"
     when "past_member_recovery" then "Past-Member Recovery"
+    when "replenishment" then "Replenishment"
     end
   end
 
   def has_delay?
+    # Bundle emails are event-fired (purchase / first burn / zero balance), so
+    # none of them use a time delay.
+    return false if product_type == "day_pass_bundle"
+
     email_type.in?(%w[follow_up nudge re_engagement past_member_recovery])
   end
 
@@ -197,6 +214,13 @@ class ProductEmailTemplate < ApplicationRecord
       tags += [
         { tag: "{{date}}", label: "Date", description: "Day pass date" },
         { tag: "{{day_pass_type}}", label: "Day Pass Type", description: "Type of day pass" }
+      ]
+    when "day_pass_bundle"
+      tags += [
+        { tag: "{{quantity}}", label: "Pack Size", description: "Number of passes in the pack (e.g. 5)" },
+        { tag: "{{passes_remaining}}", label: "Passes Remaining", description: "Passes left in the bundle right now" },
+        { tag: "{{expires_at}}", label: "Expires", description: "Bundle expiration date (blank if it never expires)" },
+        { tag: "{{day_pass_type}}", label: "Pack Type", description: "Name of the pack" }
       ]
     when "reservation"
       tags += [
@@ -298,6 +322,12 @@ class ProductEmailTemplate < ApplicationRecord
       case sendable
       when DayPass
         result = result.gsub("{{date}}", sendable.day&.strftime("%B %-d, %Y").to_s)
+        result = result.gsub("{{day_pass_type}}", sendable.day_pass_type&.name.to_s)
+      when DayPassBundle
+        # A bundle has no single day, so {{date}} is intentionally left untouched.
+        result = result.gsub("{{quantity}}", sendable.quantity_purchased.to_s)
+        result = result.gsub("{{passes_remaining}}", sendable.passes_remaining.to_s)
+        result = result.gsub("{{expires_at}}", sendable.expires_at&.strftime("%B %-d, %Y").to_s)
         result = result.gsub("{{day_pass_type}}", sendable.day_pass_type&.name.to_s)
       when Reservation
         result = result.gsub("{{date}}", sendable.datetime_in&.strftime("%B %-d, %Y").to_s)

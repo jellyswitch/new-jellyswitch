@@ -37,6 +37,48 @@ module WelcomeDripSeed
       <div><em>Note: day-pass purchases are non-refundable, but if your plans change, contact us as soon as possible and we'll reschedule.</em></div>
     HTML
 
+    %w[day_pass_bundle onboarding] => <<~HTML.strip,
+      <div>Hi {{first_name}},&nbsp;<br><br>Thank you for buying a {{quantity}}-Pack at {{space_name}}! You have <strong>{{passes_remaining}} passes</strong> ready to use.</div>
+      <div><br></div>
+      <div>Here's how your pack works:</div>
+      <ul>
+        <li>There's <strong>nothing to schedule</strong> — just come in any day you like. One pass is used automatically the first time you open the door that day.</li>
+        <li>Visiting more than once in a day? You're still only charged a single pass per day.</li>
+        <li>Bringing someone? Use the app's <em>"Bring a guest"</em> option to spend a pass on a guest.</li>
+        <li>Passes remaining and expiration are always visible in the app.</li>
+      </ul>
+      <div>Please download our mobile app to open doors, check your balance, and find wifi:<br><br>{{app_store_badge}}<br>{{play_store_badge}}</div>
+      <ul>
+        <li><strong>Address:</strong> {{location_address}}</li>
+        <li>The doors <strong>are kept locked at all times</strong>. Open them from the app: <em>"Building Access" &gt; "Open Lobby Door"</em>.</li>
+      </ul>
+      <div><br>Any questions, just hit reply.</div>
+      <div><br></div>
+      <div>The {{space_name}} team</div>
+    HTML
+
+    %w[day_pass_bundle follow_up] => <<~HTML.strip,
+      <div>Hi {{first_name}},&nbsp;<br><br>Thanks for coming in to {{space_name}} — we hope your first visit on your pack went great!</div>
+      <div><br></div>
+      <div>If you have a moment, we'd really appreciate a quick review:</div>
+      <div><br></div>
+      <div>{{google_review_button}}</div>
+      <div><br></div>
+      <div>You've still got passes left — come back any time, no booking needed. Questions? Just reply.</div>
+      <div><br></div>
+      <div>The {{space_name}} team</div>
+    HTML
+
+    %w[day_pass_bundle replenishment] => <<~HTML.strip,
+      <div>Hi {{first_name}},&nbsp;<br><br>You've used the last pass on your {{quantity}}-Pack at {{space_name}} — nice work making the most of it!</div>
+      <div><br></div>
+      <div>Ready for more days? Grab another pack any time from the app.</div>
+      <div><br></div>
+      <div>And if you're coming in regularly, a <strong>membership</strong> may be the better deal — unlimited access plus member perks, often cheaper than buying packs. Reply to this email and we'll help you compare.</div>
+      <div><br></div>
+      <div>The {{space_name}} team</div>
+    HTML
+
     %w[membership onboarding] => <<~HTML.strip,
       <div>Hi {{first_name}},&nbsp;</div>
       <div><br></div>
