@@ -3,9 +3,10 @@ module Embed
   # JSON. Mirrors the tour-request widget's perimeter (no auth, CSRF-skipped,
   # honeypot, Turnstile, framing) and CRM capture (find/create User + Activity).
   class ConciergeController < ActionController::Base
-    # Intents the operator handles by hand (rooms aren't automated, office needs
-    # a tour) — these ping staff. Self-serve intents capture silently.
-    ADMIN_HANDLED_INTENTS = %w[day_office conference_room office].freeze
+    # Self-serve intents go to checkout. Everything else (questions, room/office
+    # requests, "message the team") becomes a MemberFeedback so it lands in the
+    # operator's existing Feedback/Messages channel + alerts staff there.
+    SELF_SERVE_INTENTS = %w[day_pass day_pass_bundle membership].freeze
 
     layout "embed"
 
@@ -13,7 +14,7 @@ module Embed
 
     before_action :load_operator
     before_action :require_concierge_active_or_preview, only: [:show]
-    before_action :require_concierge_active, only: [:create, :start_conversation, :post_message, :poll_messages, :checkout, :purchase]
+    before_action :require_concierge_active, only: [:create, :checkout, :purchase]
     after_action  :allow_framing
 
     helper_method :admin_previewing?
@@ -66,45 +67,6 @@ module Embed
       end
     end
 
-    # Live chat: start a conversation. During open hours we greet + alert staff;
-    # off-hours the widget shows the capture fallback (open_now: false).
-    def start_conversation
-      location = @operator.locations.find_by(id: params[:location_id]) ||
-                 @operator.locations.where(visible: true).order(:name).first
-      convo = ConciergeConversation.create!(operator: @operator, location: location)
-      open_now = location&.open_now? || false
-
-      if open_now
-        convo.messages.create!(operator: @operator, role: "bot",
-                               body: "You're chatting with the #{@operator.concierge_display_name} team 👋 — usually just a few minutes.")
-        alert_staff(convo)
-      end
-
-      render json: { token: convo.session_token, open_now: open_now, status: convo.status,
-                     messages: serialize(convo.messages) }
-    end
-
-    def post_message
-      convo = find_conversation
-      return head(:not_found) unless convo
-
-      msg = convo.messages.create!(operator: @operator, role: "visitor", body: params[:body].to_s)
-      convo.update!(last_visitor_message_at: Time.current)
-      alert_staff(convo) if convo.location&.open_now? && !convo.staff_alerted?
-
-      render json: { ok: true, message: serialize_message(msg),
-                     awaiting_staff_timeout: convo.awaiting_staff_timeout? }
-    end
-
-    def poll_messages
-      convo = find_conversation
-      return head(:not_found) unless convo
-
-      after = params[:after].to_i
-      msgs = convo.messages.where("id > ?", after)
-      render json: { messages: serialize(msgs), status: convo.status,
-                     awaiting_staff_timeout: convo.awaiting_staff_timeout? }
-    end
 
     def create
       return head(:ok) if params[:_hp].present? # honeypot
@@ -117,7 +79,7 @@ module Embed
       return render(json: { ok: false, error: "captcha" }, status: :unprocessable_entity) unless turnstile.success?
 
       permitted = params.permit(:name, :email, :phone, :intent, :recommended_product,
-                                :location_id, :marketing_opt_in, transcript: [])
+                                :message, :location_id, :marketing_opt_in, transcript: [])
 
       if permitted[:email].blank?
         return render(json: { ok: false, error: "email_required" }, status: :unprocessable_entity)
@@ -125,17 +87,15 @@ module Embed
 
       location = @operator.locations.find_by(id: permitted[:location_id])
       user = upsert_person(permitted, location)
-      activity = log_chat(user, permitted, location)
+      log_chat(user, permitted, location) # keeps the conversion-lift metric working
 
-      if ADMIN_HANDLED_INTENTS.include?(permitted[:intent].to_s)
-        SendNotificationsJob.perform_later(activity, "ConciergeAlert")
-      end
+      self_serve = SELF_SERVE_INTENTS.include?(permitted[:intent].to_s)
+      route_to_feedback(user, permitted, location) unless self_serve
 
       render json: {
         ok: true,
         intent: permitted[:intent],
-        self_serve: !ADMIN_HANDLED_INTENTS.include?(permitted[:intent].to_s),
-        # Interim CTA until the public web checkout (Phase 3) exists.
+        self_serve: self_serve,
         app: { ios: @operator.ios_url, android: @operator.android_url },
       }
     end
@@ -176,8 +136,25 @@ module Embed
       )
     end
 
-    def find_conversation
-      ConciergeConversation.where(operator: @operator).find_by(session_token: params[:token])
+    # A question / room request / "message the team" becomes a MemberFeedback so
+    # it shows up in the operator's existing Feedback/Messages inbox and pings
+    # staff there (CreateNotificationsAsync), instead of a separate channel.
+    def route_to_feedback(user, permitted, location)
+      feedback = MemberFeedback.new(
+        comment: feedback_comment(permitted[:intent].to_s, permitted[:message]),
+        user: user, operator: @operator, location: location,
+      )
+      CreateNotificationsAsync.call(notifiable: feedback) if feedback.save
+    end
+
+    def feedback_comment(intent, message)
+      label = {
+        "day_office" => "Day office request",
+        "conference_room" => "Conference room request",
+        "office" => "Office / long-term request",
+      }[intent]
+      parts = [label, message.to_s.strip.presence].compact
+      parts.empty? ? "Question from the website Concierge" : parts.join(": ")
     end
 
     def checkout_location
@@ -194,22 +171,6 @@ module Embed
         @operator.day_pass_types.available.visible
                  .where(location_id: checkout_location&.id).find_by(id: params[:day_pass_type_id])
       end
-    end
-
-    def alert_staff(convo)
-      SendNotificationsJob.perform_later(convo, "ConciergeChatAlert")
-      convo.update!(staff_alerted: true)
-    end
-
-    def serialize(messages)
-      messages.map { |m| serialize_message(m) }
-    end
-
-    def serialize_message(message)
-      {
-        id: message.id, role: message.role, body: message.body,
-        author: message.author&.name, at: message.created_at.iso8601,
-      }
     end
 
     def load_operator

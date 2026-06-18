@@ -69,7 +69,6 @@ class Navigation::Default < SimpleDelegator
     [
       {title: "Data", path: reports_path},
       {title: "Settings", path: settings_branding_path},
-      {title: "Concierge Chats", path: concierge_conversations_path},
       {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
@@ -190,7 +189,6 @@ class Navigation::Default < SimpleDelegator
     [
       {title: "Data", path: reports_path},
       {title: "Settings", path: settings_branding_path},
-      {title: "Concierge Chats", path: concierge_conversations_path},
       {title: "My Messages", path: my_feedback_member_feedbacks_path},
       {title: "My Account", path: user_path(user)},
       {title: "Member Dashboard", path: home_path}
