@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_18_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_18_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -278,6 +278,37 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_18_000002) do
     t.index ["subscription_id"], name: "index_comp_days_on_subscription_id"
     t.index ["user_id", "location_id", "occurred_on"], name: "index_comp_days_on_user_id_and_location_id_and_occurred_on"
     t.index ["user_id"], name: "index_comp_days_on_user_id"
+  end
+
+  create_table "concierge_conversations", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.bigint "user_id"
+    t.string "session_token", null: false
+    t.string "status", default: "open", null: false
+    t.datetime "last_visitor_message_at"
+    t.datetime "last_staff_message_at"
+    t.boolean "staff_alerted", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_concierge_conversations_on_location_id"
+    t.index ["operator_id", "status"], name: "index_concierge_conversations_on_operator_id_and_status"
+    t.index ["operator_id"], name: "index_concierge_conversations_on_operator_id"
+    t.index ["session_token"], name: "index_concierge_conversations_on_session_token", unique: true
+    t.index ["user_id"], name: "index_concierge_conversations_on_user_id"
+  end
+
+  create_table "concierge_messages", force: :cascade do |t|
+    t.bigint "concierge_conversation_id", null: false
+    t.bigint "operator_id", null: false
+    t.bigint "author_id"
+    t.string "role", null: false
+    t.text "body", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["author_id"], name: "index_concierge_messages_on_author_id"
+    t.index ["concierge_conversation_id"], name: "index_concierge_messages_on_concierge_conversation_id"
+    t.index ["operator_id"], name: "index_concierge_messages_on_operator_id"
   end
 
   create_table "day_pass_bundle_redemptions", force: :cascade do |t|
@@ -1161,6 +1192,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_18_000002) do
   add_foreign_key "comp_days", "subscriptions"
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
+  add_foreign_key "concierge_conversations", "locations"
+  add_foreign_key "concierge_conversations", "operators"
+  add_foreign_key "concierge_conversations", "users"
+  add_foreign_key "concierge_messages", "concierge_conversations"
+  add_foreign_key "concierge_messages", "operators"
+  add_foreign_key "concierge_messages", "users", column: "author_id"
   add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
