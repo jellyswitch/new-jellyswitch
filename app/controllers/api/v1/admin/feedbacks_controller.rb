@@ -4,6 +4,7 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
     # FeedbackReply touch: true) so the most recently active thread is first —
     # not by created_at, which is when the greeting shell was first created.
     feedbacks = MemberFeedback.where(operator: current_tenant)
+      .not_dismissed
       .order(updated_at: :desc).limit(30)
 
     render json: feedbacks.map { |f| feedback_json(f) }
@@ -49,7 +50,7 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
 
   def dismiss
     feedback = MemberFeedback.find(params[:id])
-    feedback.mark_as_read!
+    feedback.dismiss!
     render json: { success: true }
   end
 
