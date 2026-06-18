@@ -187,3 +187,19 @@ These two rules together mean: a single recipient receives at most one operator-
 The CRM build introduces a new top-level **People** umbrella that absorbs three existing top-level items (Leads, Automated Emails, Campaigns) and renames "Members & Groups" → "People." Net top-level item count: 16 → 13. A wider nav cleanup (consolidating Spaces, Community, Money) is **deferred to a separate sprint** to keep the CRM PR reviewable.
 
 People sub-tabs: Members · Leads · Automations · Campaigns · Templates.
+
+### Concierge
+The operator's embeddable, themeable **chat widget** — the conversational front door on their own coworking website. It engages an anonymous visitor, figures out **what they need**, recommends the **right product from the operator's real catalog**, captures them as a **Person**, and routes them onward. It is a *lead-capture + product-recommender + conversion surface*, not a support tool.
+
+The visitor-facing thing is always "the Concierge"; what *answers* behind it is a **swappable brain**, gated by the location's business hours:
+- **Live staff** during business hours — a real person replies from the web or mobile admin inbox (with a **5-minute safety valve**: if no staffer replies, the conversation degrades to capture, "someone will get back to you").
+- **Scripted recommender** off-hours — a guided, button-driven needs flow (no AI) that recommends a product and captures the Person.
+- **AI concierge** — *deferred to V2*; an LLM brain that answers free-form questions, grounded in real data + the operator's docs, behind a per-operator API budget. See the V2 notes.
+
+**Need → product (the recommender's job).** The Concierge's core is matching a stated need to a product:
+- *Drop-in for a day* → **Day Pass** · *a few days / a week* → **Day Pass Bundle** · *ongoing workspace* → **Membership** — these three are **self-serve**: the Concierge captures the Person, creates the account/lead, and hands off to the existing checkout.
+- *Private office for a day* (**Day Office**) · *team meeting* (**Conference Room**) · *long-term private office* (**Office Lease**) — these are **admin-handled**: the Concierge captures the need and pings staff (room bookings aren't automated). Office also routes to a **tour** (must meet before a long-term agreement).
+
+**Conversion lift** is the Concierge's headline metric: of Persons who have a Concierge `chat` Activity, what share go on to a purchase, versus Persons who never chatted — a ratio derived entirely from the **Activity** timeline (no separate analytics pipeline). Anonymous top-of-funnel (web visitors who never became a Person) is **out of scope until V2**.
+
+_Avoid_: calling it a "support chat" or "live chat" — it is a **Concierge** whose job is conversion, and the human is only one of its (hours-gated) brains. A captured Concierge visitor is a **Person** (never a resurrected **Lead** — see [[Lifecycle Stage]]).
