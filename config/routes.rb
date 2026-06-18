@@ -856,6 +856,8 @@ Rails.application.routes.draw do
     patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
     get   "tour_widget",               to: "operator/settings#tour_widget",                as: :tour_widget
     patch "update_tour_widget",        to: "operator/settings#update_tour_widget",         as: :update_tour_widget
+    get   "concierge",                 to: "operator/settings#concierge",                  as: :concierge
+    patch "update_concierge",          to: "operator/settings#update_concierge",           as: :update_concierge
   end
   get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"

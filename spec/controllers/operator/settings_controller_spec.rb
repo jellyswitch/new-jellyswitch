@@ -374,4 +374,27 @@ RSpec.describe Operator::SettingsController, type: :controller do
       )
     end
   end
+
+  describe "Concierge tab" do
+    it "GET #concierge returns 200" do
+      get :concierge
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "PATCH #update_concierge saves the lean per-brand settings" do
+      patch :update_concierge, params: { operator: {
+        concierge_enabled: "1",
+        concierge_assistant_name: "Tahoe Concierge",
+        concierge_greeting: "Hey there 👋",
+        concierge_offer_text: "First day 50% off",
+        embed_accent_override: "ff0000",
+      } }
+
+      expect(response).to redirect_to(settings_concierge_path)
+      operator.reload
+      expect(operator.concierge_enabled).to be true
+      expect(operator.concierge_assistant_name).to eq("Tahoe Concierge")
+      expect(operator.embed_accent_override).to eq("ff0000")
+    end
+  end
 end

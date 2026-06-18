@@ -29,8 +29,9 @@ module Embed
                   @operator.locations.where(visible: true).order(:name).first
       @options = Concierge::Recommender.new(operator: @operator, location: @location).options
       @theme = {
-        primary: @operator.primary_color.presence || "#111827",
-        accent: @operator.accent_color.presence || "#2563eb",
+        primary: @operator.embed_primary_color,
+        accent: @operator.embed_accent_color,
+        font: @operator.embed_font_family,
       }
       render :show
     end

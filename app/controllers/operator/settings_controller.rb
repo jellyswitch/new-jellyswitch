@@ -34,6 +34,18 @@ class Operator::SettingsController < Operator::BaseController
   def tour_widget
     @operator = current_operator
   end
+  def concierge
+    @operator = current_operator
+  end
+  def update_concierge
+    @operator = current_operator
+    if @operator.update(concierge_params)
+      redirect_to settings_concierge_path, notice: "Concierge settings saved."
+    else
+      flash.now[:error] = @operator.errors.full_messages.to_sentence
+      render :concierge, status: :unprocessable_entity
+    end
+  end
   def modules
     # Module flags are location-scoped: every module policy reads
     # location.<module>_enabled, so the form must bind to the location (the
@@ -242,6 +254,19 @@ class Operator::SettingsController < Operator::BaseController
       :tour_widget_enabled,
       :tour_widget_thank_you_url,
       :tour_widget_intro_html,
+    )
+  end
+
+  def concierge_params
+    params.require(:operator).permit(
+      :concierge_enabled,
+      :concierge_assistant_name,
+      :concierge_greeting,
+      :concierge_offer_text,
+      :concierge_promo_code,
+      :concierge_off_hours_message,
+      :embed_font,
+      :embed_accent_override,
     )
   end
 

@@ -1,6 +1,7 @@
 <%
-  assistant_name = @operator.name
-  greeting = "Hi 👋 Welcome to #{@operator.name}. What brings you in today?"
+  assistant_name = @operator.concierge_display_name
+  greeting = @operator.concierge_greeting_text
+  offer = @operator.concierge_offer_text.presence
 %>
 <div id="cx"
      data-capture-url="<%= embed_concierge_capture_path(operator_subdomain: @operator.subdomain) %>"
@@ -22,6 +23,9 @@
 
   <div id="cx-thread" class="cx-thread">
     <div class="cx-msg cx-bot"><%= greeting %></div>
+    <% if offer %>
+      <div class="cx-msg cx-bot cx-offer">🎁 <%= offer %></div>
+    <% end %>
   </div>
 
   <div id="cx-actions" class="cx-actions"></div>
@@ -30,7 +34,8 @@
 <script type="application/json" id="cx-options"><%= raw @options.to_json %></script>
 
 <style>
-  body { margin: 0; font-family: <%= @operator.try(:embed_font).presence || "system-ui, -apple-system, Segoe UI, Roboto, sans-serif" %>; }
+  body { margin: 0; font-family: <%= @theme[:font] %>; }
+  .cx-offer { background: #ecfdf5; }
   #cx { display: flex; flex-direction: column; height: 100vh; max-height: 100vh; color: #111827; }
   .cx-preview { background: #fffbeb; color: #92400e; font-size: 12px; padding: 6px 12px; text-align: center; }
   .cx-head { display: flex; align-items: center; gap: 8px; padding: 12px 14px; background: var(--cx-primary); color: #fff; }
