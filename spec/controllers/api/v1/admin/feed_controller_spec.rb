@@ -32,4 +32,36 @@ RSpec.describe Api::V1::Admin::FeedController, type: :controller do
       }.not_to change(Note, :count)
     end
   end
+
+  describe "GET #index — day pass bundle purchase" do
+    let(:buyer)     { create(:user, operator: operator, role: "unassigned", approved: false, name: "Penny Pack") }
+    let(:pack_type) { create(:day_pass_type, operator: operator, name: "5-Pack", amount_in_cents: 20_000) }
+    let(:bundle) do
+      create(:day_pass_bundle, user: buyer, day_pass_type: pack_type, operator: operator,
+                               quantity_purchased: 5, passes_remaining: 5)
+    end
+
+    before do
+      FeedItem.create!(
+        operator: operator, user: buyer,
+        blob: { type: "day-pass-bundle", day_pass_bundle_id: bundle.id, user_name: buyer.name,
+                message: "#{buyer.name} purchased a 5-Pack" }
+      )
+    end
+
+    subject(:item) do
+      get :index
+      JSON.parse(response.body).find { |i| i["type"] == "day-pass-bundle" }
+    end
+
+    it "emits the pack price as amount, the approval fields, the type name and pack size" do
+      expect(item).to be_present
+      expect(item["amount"]).to eq(20_000)            # flat pack price (ADR 0009)
+      expect(item["requires_approval"]).to be true    # new buyer approvable from the feed
+      expect(item["user_approved"]).to be false
+      expect(item["user_id"]).to eq(buyer.id)
+      expect(item["day_pass_type"]).to eq("5-Pack")
+      expect(item["action_text"]).to include("5-Pack")
+    end
+  end
 end
