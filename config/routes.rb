@@ -12,10 +12,12 @@ Rails.application.routes.draw do
       get  "/thank_you",              to: "tour_requests#thank_you", as: :tour_request_thank_you
     end
 
-    # Public embeddable Concierge widget. `create` is the capture endpoint
-    # (JSON — the widget is a JS app). `show`/widget UI lands in a later slice.
+    # Public embeddable Concierge widget. `show` serves the in-iframe scripted
+    # conversation UI; `create` is the JSON capture endpoint.
     scope "concierge/:operator_subdomain" do
-      post "/capture", to: "concierge#create", as: :concierge_capture
+      get  "/",                       to: "concierge#show", as: :concierge
+      get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
+      post "/capture",                to: "concierge#create", as: :concierge_capture
     end
   end
 

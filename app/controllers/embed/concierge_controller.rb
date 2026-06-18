@@ -7,11 +7,33 @@ module Embed
     # a tour) — these ping staff. Self-serve intents capture silently.
     ADMIN_HANDLED_INTENTS = %w[day_office conference_room office].freeze
 
+    layout "embed"
+
     skip_before_action :verify_authenticity_token, raise: false
 
     before_action :load_operator
-    before_action :require_concierge_active
+    before_action :require_concierge_active_or_preview, only: [:show]
+    before_action :require_concierge_active,            only: [:create]
     after_action  :allow_framing
+
+    helper_method :admin_previewing?
+
+    # Short-lived signed token so the settings-page preview iframe can render the
+    # widget without depending on session cookies crossing the embed boundary.
+    def self.verifier
+      Rails.application.message_verifier(:concierge_preview)
+    end
+
+    def show
+      @location = @operator.locations.find_by(id: params[:location_id]) ||
+                  @operator.locations.where(visible: true).order(:name).first
+      @options = Concierge::Recommender.new(operator: @operator, location: @location).options
+      @theme = {
+        primary: @operator.primary_color.presence || "#111827",
+        accent: @operator.accent_color.presence || "#2563eb",
+      }
+      render :show
+    end
 
     def create
       return head(:ok) if params[:_hp].present? # honeypot
@@ -91,6 +113,24 @@ module Embed
 
     def require_concierge_active
       head :not_found unless @operator.concierge_active?
+    end
+
+    def require_concierge_active_or_preview
+      return if @operator.concierge_active?
+      return if admin_previewing?
+      head :not_found
+    end
+
+    # Operator-scoped signed token (1h) lets the settings preview show the
+    # widget even while it's disabled — the moment they most want to look.
+    def admin_previewing?
+      token = params[:preview_token]
+      return false if token.blank?
+
+      payload = self.class.verifier.verify(token).with_indifferent_access
+      payload[:operator_id] == @operator.id && payload[:exp].to_i > Time.current.to_i
+    rescue ActiveSupport::MessageVerifier::InvalidSignature
+      false
     end
 
     def allow_framing
