@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_16_134935) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_18_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -799,6 +799,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_16_134935) do
     t.string "accent_color"
     t.datetime "mobile_app_requested_at"
     t.integer "commitment_notice_days", default: 30, null: false
+    t.boolean "concierge_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

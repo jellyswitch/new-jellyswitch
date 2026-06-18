@@ -184,6 +184,10 @@ class Operator < ApplicationRecord
     tour_widget_enabled? && locations.where(visible: true).exists?
   end
 
+  def concierge_active?
+    concierge_enabled? && locations.where(visible: true).exists?
+  end
+
   def has_mobile_app_links?
     ios_url.present? && android_url.present?
   end
