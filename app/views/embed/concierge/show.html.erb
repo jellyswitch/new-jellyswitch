@@ -5,9 +5,7 @@
 %>
 <div id="cx"
      data-capture-url="<%= embed_concierge_capture_path(operator_subdomain: @operator.subdomain) %>"
-     data-convo-url="<%= embed_concierge_conversations_path(operator_subdomain: @operator.subdomain) %>"
      data-checkout-url="<%= embed_concierge_checkout_path(operator_subdomain: @operator.subdomain) %>"
-     data-open-now="<%= @location&.open_now? ? "true" : "false" %>"
      data-location-id="<%= @location&.id %>"
      data-ios="<%= @operator.ios_url %>"
      data-android="<%= @operator.android_url %>"
@@ -61,15 +59,9 @@
   var actions = document.getElementById("cx-actions");
   var options = JSON.parse(document.getElementById("cx-options").textContent || "[]");
   var captureUrl = root.dataset.captureUrl;
-  var convoUrl = root.dataset.convoUrl;
   var checkoutUrl = root.dataset.checkoutUrl;
-  var openNow = root.dataset.openNow === "true";
   var locationId = root.dataset.locationId;
   var transcript = [];
-
-  // Live-chat state (Phase 2).
-  var liveToken = null, lastId = 0, pollTimer = null, fellBack = false;
-  var headers = { "Content-Type": "application/x-www-form-urlencoded" };
 
   function price(cents) { return "$" + (Number(cents || 0) / 100).toFixed(2); }
   function say(text, who) {
@@ -90,68 +82,7 @@
 
   function renderOptions() {
     clearActions();
-    button(openNow ? "💬 Chat with the team" : "💬 Leave a message for the team", startLiveChat);
     options.forEach(function (opt) { button(opt.label, function () { chooseOption(opt); }); });
-  }
-
-  // ----- Live chat (talk to a real person during open hours) -----
-  function renderRemote(m) {
-    if (m.id > lastId) lastId = m.id;
-    say(m.body, m.role === "visitor" ? "user" : "bot");
-  }
-
-  function startLiveChat() {
-    say(openNow ? "Chat with the team" : "Leave a message", "user");
-    clearActions();
-    fetch(convoUrl, { method: "POST", headers: headers, body: new URLSearchParams({ location_id: locationId || "" }) })
-      .then(function (r) { return r.json(); })
-      .then(function (data) {
-        liveToken = data.token;
-        (data.messages || []).forEach(renderRemote);
-        if (data.open_now) {
-          liveInput();
-          startPolling();
-        } else {
-          say("We're closed right now — leave your email and we'll get back to you when we're back in the office.", "bot");
-          captureForm({ intent: "question", product: null });
-        }
-      })
-      .catch(function () { say("Hmm, something went wrong — please try again.", "bot"); });
-  }
-
-  function liveInput() {
-    clearActions();
-    var input = document.createElement("input");
-    input.className = "cx-input"; input.type = "text"; input.placeholder = "Type a message…";
-    actions.appendChild(input);
-    button("Send", function () {
-      var v = (input.value || "").trim();
-      if (!v || !liveToken) { input.focus(); return; }
-      input.value = "";
-      say(v, "user");
-      fetch(convoUrl + "/" + encodeURIComponent(liveToken) + "/messages",
-            { method: "POST", headers: headers, body: new URLSearchParams({ body: v }) })
-        .then(function (r) { return r.json(); })
-        .then(function (d) { if (d.message && d.message.id > lastId) lastId = d.message.id; });
-    });
-    input.focus();
-  }
-
-  function startPolling() {
-    pollTimer = setInterval(function () {
-      fetch(convoUrl + "/" + encodeURIComponent(liveToken) + "/messages?after=" + lastId)
-        .then(function (r) { return r.json(); })
-        .then(function (d) {
-          (d.messages || []).forEach(renderRemote);
-          if (d.awaiting_staff_timeout && !fellBack) {
-            fellBack = true;
-            clearInterval(pollTimer);
-            say("The team's tied up right now — leave your email and we'll get right back to you.", "bot");
-            captureForm({ intent: "question", product: null });
-          }
-        })
-        .catch(function () {});
-    }, 4000);
   }
 
   function chooseOption(opt) {
@@ -173,30 +104,34 @@
                                 : (p.name + " — " + price(p.price_cents));
       say("Great choice. " + line + ". Pop in your email and I'll get you set up.", "bot");
     } else if (opt.intent === "question") {
-      say("Happy to help — what's your question? Leave your email and we'll reply.", "bot");
+      say("Happy to help — type your question and your email, and we'll reply.", "bot");
     } else {
-      say("Got it — that's one our team sets up personally. Leave your email and they'll reach out.", "bot");
+      say("Got it — our team sets that up personally. Leave a note + your email and they'll reach out.", "bot");
     }
     captureForm(opt);
   }
 
   function captureForm(opt) {
     clearActions();
+    var msg = document.createElement("textarea");
+    msg.className = "cx-input"; msg.rows = 2; msg.placeholder = "Your question or message…";
+    actions.appendChild(msg);
     var email = document.createElement("input");
     email.className = "cx-input"; email.type = "email"; email.placeholder = "you@email.com";
     actions.appendChild(email);
-    button("Continue", function () {
-      var val = (email.value || "").trim();
-      if (!val) { email.focus(); return; }
-      say(val, "user");
-      submit(opt, val);
+    button("Send", function () {
+      var e = (email.value || "").trim();
+      if (!e) { email.focus(); return; }
+      var m = (msg.value || "").trim();
+      if (m) say(m, "user");
+      submit(opt, e, m);
     });
   }
 
-  function submit(opt, email) {
+  function submit(opt, email, message) {
     clearActions();
     var body = new URLSearchParams({
-      email: email, intent: opt.intent,
+      email: email, intent: opt.intent, message: message || "",
       recommended_product: (opt.product && opt.product.name) || "",
       location_id: locationId || "",
     });

@@ -18,10 +18,6 @@ Rails.application.routes.draw do
       get  "/",                       to: "concierge#show", as: :concierge
       get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
       post "/capture",                to: "concierge#create", as: :concierge_capture
-      # Live-chat (Phase 2): start a conversation, post visitor messages, poll for replies.
-      post "/conversations",                  to: "concierge#start_conversation", as: :concierge_conversations
-      post "/conversations/:token/messages",  to: "concierge#post_message",       as: :concierge_conversation_messages
-      get  "/conversations/:token/messages",  to: "concierge#poll_messages"
       # Public checkout (Phase 3): create account + buy a day pass, no login.
       get  "/checkout", to: "concierge#checkout", as: :concierge_checkout
       post "/checkout", to: "concierge#purchase"
@@ -199,11 +195,6 @@ Rails.application.routes.draw do
 
         # Today's Activity
         get 'todays_activity', to: 'todays_activity#index'
-
-        # Concierge live-chat inbox (staff side)
-        get  'concierge_conversations',           to: 'concierge_conversations#index'
-        get  'concierge_conversations/:id',       to: 'concierge_conversations#show'
-        post 'concierge_conversations/:id/reply', to: 'concierge_conversations#reply'
 
         # Members
         get 'members', to: 'members#index'
@@ -511,12 +502,6 @@ Rails.application.routes.draw do
     end
   end
   resources :announcements, controller: "operator/announcements"
-  resources :concierge_conversations, controller: "operator/concierge_conversations", only: [:index, :show] do
-    member do
-      post :reply
-      get :messages
-    end
-  end
   resources :app_configs, controller: "operator/app_configs"
   resources :checkins, controller: "operator/checkins" do
     collection do

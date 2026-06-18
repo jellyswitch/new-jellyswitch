@@ -38,17 +38,28 @@ RSpec.describe "Embed::Concierge capture", type: :request do
     expect(activity.subject).to eq(location)
   end
 
-  it "does NOT alert staff for a self-serve intent" do
+  it "does NOT create feedback for a self-serve (checkout) intent" do
     expect {
       capture(base.merge(intent: "membership"))
-    }.not_to have_enqueued_job(SendNotificationsJob)
+    }.not_to change(MemberFeedback, :count)
+    expect(JSON.parse(response.body)["self_serve"]).to be true
   end
 
-  it "alerts staff for an admin-handled intent (conference room)" do
+  it "routes a question into the Feedback channel (MemberFeedback) and alerts staff" do
     expect {
-      capture(base.merge(intent: "conference_room"))
-    }.to have_enqueued_job(SendNotificationsJob).with(an_instance_of(Activity), "ConciergeAlert")
+      capture(base.merge(intent: "question", message: "Do you have parking?"))
+    }.to change(MemberFeedback, :count).by(1)
+      .and have_enqueued_job(SendNotificationsJob).with(an_instance_of(MemberFeedback))
+
+    fb = MemberFeedback.last
+    expect(fb.comment).to eq("Do you have parking?")
+    expect(fb.user.email).to eq("jo@example.com")
     expect(JSON.parse(response.body)["self_serve"]).to be false
+  end
+
+  it "routes a room request to feedback with a labeled comment" do
+    capture(base.merge(intent: "conference_room", message: "Friday 2pm for 6?"))
+    expect(MemberFeedback.last.comment).to eq("Conference room request: Friday 2pm for 6?")
   end
 
   it "reuses an existing Person instead of duplicating" do
