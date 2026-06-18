@@ -60,4 +60,46 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
     refute_nil match
     assert_equal false, match["ended_early"]
   end
+
+  test "admin can create a reservation for a member in a free, available room" do
+    locations(:cowork_tahoe_location).update!(credits_enabled: false)
+    room = rooms(:small_meeting_room) # visible, rentable, free
+    when_time = 1.day.from_now.change(hour: 14, min: 0, sec: 0)
+
+    post "/api/v1/admin/reservations",
+      params: {
+        user_id: @member.id,
+        room_id: room.id,
+        datetime_in: when_time.iso8601,
+        minutes: 60,
+      }.to_json,
+      headers: headers
+
+    assert_response :created
+  end
+
+  # When the booking is rejected, the admin must see WHY. The create action
+  # used to render `result.error` — but the billing interactors fail with
+  # `context.message`, so every failure collapsed to the generic
+  # "Booking failed", hiding (e.g.) an overlap conflict from the admin.
+  test "create surfaces the real failure reason instead of a generic message" do
+    locations(:cowork_tahoe_location).update!(credits_enabled: false)
+    room = rooms(:small_meeting_room)
+    when_time = 1.day.from_now.change(hour: 14, min: 0, sec: 0)
+
+    # Pre-book the room for that exact window so the admin's booking conflicts.
+    Reservation.create!(user: @member, room: room, datetime_in: when_time, minutes: 60)
+
+    post "/api/v1/admin/reservations",
+      params: {
+        user_id: @member.id,
+        room_id: room.id,
+        datetime_in: when_time.iso8601,
+        minutes: 60,
+      }.to_json,
+      headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/conflicts with an existing reservation/i, JSON.parse(response.body)["error"])
+  end
 end
