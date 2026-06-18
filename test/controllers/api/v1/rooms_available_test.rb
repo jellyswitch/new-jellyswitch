@@ -90,4 +90,36 @@ class Api::V1::RoomsAvailableTest < ActionDispatch::IntegrationTest
     assert_response :success
     refute_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, room.id
   end
+
+  # --- should_charge in pricing_context ---
+  # The when-first room list computes each room's price client-side from
+  # pricing_context. For a PRICED room an exempt user (admin/member/
+  # leaseholder) books free, but the list showed the hourly charge because
+  # pricing_context carried no should_charge signal — only subscriber_unlimited.
+  # Mirror #reserve_now: surface should_charge so the chips read Free.
+  test "pricing_context carries should_charge=false for an exempt user" do
+    @operator.update!(billing_state: "production")
+    admin = users(:cowork_tahoe_admin)
+    token = JWT.encode({ user_id: admin.id, operator_id: @operator.id, exp: 30.days.from_now.to_i },
+                       Rails.application.secret_key_base, "HS256")
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60 },
+        headers: { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => @operator.subdomain }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal false, body.dig("pricing_context", "should_charge"),
+      "an admin/owner must read as exempt so priced rooms show Free in the list"
+  end
+
+  test "pricing_context carries should_charge=true for a non-exempt user" do
+    @operator.update!(billing_state: "production")
+    non_member = users(:cowork_tahoe_non_member)
+    token = JWT.encode({ user_id: non_member.id, operator_id: @operator.id, exp: 30.days.from_now.to_i },
+                       Rails.application.secret_key_base, "HS256")
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60 },
+        headers: { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => @operator.subdomain }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body.dig("pricing_context", "should_charge"),
+      "a non-member must still be charged the hourly rate for a priced room"
+  end
 end
