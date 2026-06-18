@@ -508,6 +508,12 @@ Rails.application.routes.draw do
     end
   end
   resources :announcements, controller: "operator/announcements"
+  resources :concierge_conversations, controller: "operator/concierge_conversations", only: [:index, :show] do
+    member do
+      post :reply
+      get :messages
+    end
+  end
   resources :app_configs, controller: "operator/app_configs"
   resources :checkins, controller: "operator/checkins" do
     collection do
