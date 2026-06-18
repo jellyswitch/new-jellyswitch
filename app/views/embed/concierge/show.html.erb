@@ -6,6 +6,7 @@
 <div id="cx"
      data-capture-url="<%= embed_concierge_capture_path(operator_subdomain: @operator.subdomain) %>"
      data-convo-url="<%= embed_concierge_conversations_path(operator_subdomain: @operator.subdomain) %>"
+     data-checkout-url="<%= embed_concierge_checkout_path(operator_subdomain: @operator.subdomain) %>"
      data-open-now="<%= @location&.open_now? ? "true" : "false" %>"
      data-location-id="<%= @location&.id %>"
      data-ios="<%= @operator.ios_url %>"
@@ -61,6 +62,7 @@
   var options = JSON.parse(document.getElementById("cx-options").textContent || "[]");
   var captureUrl = root.dataset.captureUrl;
   var convoUrl = root.dataset.convoUrl;
+  var checkoutUrl = root.dataset.checkoutUrl;
   var openNow = root.dataset.openNow === "true";
   var locationId = root.dataset.locationId;
   var transcript = [];
@@ -154,6 +156,16 @@
 
   function chooseOption(opt) {
     say(opt.label, "user");
+    // Single day pass is fully self-serve on the web — go straight to checkout.
+    if (opt.intent === "day_pass" && opt.product && opt.product.id && checkoutUrl) {
+      say(opt.product.name + " — " + price(opt.product.price_cents) + ". Let's get you set up 👇", "bot");
+      clearActions();
+      button("Buy now — " + price(opt.product.price_cents), function () {
+        window.location.href = checkoutUrl + "?day_pass_type_id=" + encodeURIComponent(opt.product.id) +
+                               "&location_id=" + encodeURIComponent(locationId || "");
+      });
+      return;
+    }
     if (opt.self_serve && opt.product) {
       var p = opt.product;
       var line = p.quantity > 1 ? (p.name + " — " + price(p.price_cents) + " for the pack")
