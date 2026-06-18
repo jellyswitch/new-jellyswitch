@@ -22,6 +22,9 @@ Rails.application.routes.draw do
       post "/conversations",                  to: "concierge#start_conversation", as: :concierge_conversations
       post "/conversations/:token/messages",  to: "concierge#post_message",       as: :concierge_conversation_messages
       get  "/conversations/:token/messages",  to: "concierge#poll_messages"
+      # Public checkout (Phase 3): create account + buy a day pass, no login.
+      get  "/checkout", to: "concierge#checkout", as: :concierge_checkout
+      post "/checkout", to: "concierge#purchase"
     end
   end
 

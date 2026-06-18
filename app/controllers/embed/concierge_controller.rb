@@ -13,7 +13,7 @@ module Embed
 
     before_action :load_operator
     before_action :require_concierge_active_or_preview, only: [:show]
-    before_action :require_concierge_active, only: [:create, :start_conversation, :post_message, :poll_messages]
+    before_action :require_concierge_active, only: [:create, :start_conversation, :post_message, :poll_messages, :checkout, :purchase]
     after_action  :allow_framing
 
     helper_method :admin_previewing?
@@ -34,6 +34,37 @@ module Embed
         font: @operator.embed_font_family,
       }
       render :show
+    end
+
+    # Public day-pass checkout page (Stripe Elements). Pre-selected product.
+    def checkout
+      @location = checkout_location
+      @day_pass_type = @operator.day_pass_types.available.visible
+                                .where(location_id: @location&.id).find_by(id: params[:day_pass_type_id])
+      return head(:not_found) unless @day_pass_type && @location&.stripe_publishable_key.present?
+      render :checkout
+    end
+
+    # Create account + charge, reusing the existing billing chain.
+    def purchase
+      return head(:ok) if params[:_hp].present? # honeypot
+      location = checkout_location
+      day_pass_type = @operator.day_pass_types.find_by(id: params[:day_pass_type_id])
+      unless location && day_pass_type
+        return render(json: { ok: false, error: "invalid" }, status: :unprocessable_entity)
+      end
+
+      result = Concierge::PublicDayPassCheckout.call(
+        operator: @operator, location: location, day_pass_type: day_pass_type,
+        email: params[:email], name: params[:name], password: params[:password],
+        token: params[:stripe_token],
+      )
+
+      if result.success?
+        render json: { ok: true, app: { ios: @operator.ios_url, android: @operator.android_url } }
+      else
+        render json: { ok: false, error: result.error, message: result.message }, status: :unprocessable_entity
+      end
     end
 
     # Live chat: start a conversation. During open hours we greet + alert staff;
@@ -148,6 +179,11 @@ module Embed
 
     def find_conversation
       ConciergeConversation.where(operator: @operator).find_by(session_token: params[:token])
+    end
+
+    def checkout_location
+      @operator.locations.find_by(id: params[:location_id]) ||
+        @operator.locations.where(visible: true).order(:name).first
     end
 
     def alert_staff(convo)
