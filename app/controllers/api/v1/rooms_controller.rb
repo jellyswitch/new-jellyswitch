@@ -415,7 +415,13 @@ class Api::V1::RoomsController < Api::V1::BaseController
     return render_error('Invalid time') if start_time.nil?
     except_id = params[:exclude_reservation_id].presence
 
-    rooms = location.rooms.visible
+    # `include_hidden` is an admin-only carveout (e.g. Choose Folsom's
+    # auditorium is an intentionally-hidden room only admins may book). Gated
+    # on admin_of_location? so members can never surface hidden rooms by
+    # passing the flag.
+    include_hidden = user.admin_of_location?(location) &&
+                     ActiveModel::Type::Boolean.new.cast(params[:include_hidden])
+    rooms = include_hidden ? location.rooms.active : location.rooms.visible
     rooms = (rooms.rentable rescue rooms) unless user.can_see_all_rooms?(location, date)
 
     avail, unavail = rooms.to_a.partition do |r|
