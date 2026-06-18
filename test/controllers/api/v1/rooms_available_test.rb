@@ -56,4 +56,38 @@ class Api::V1::RoomsAvailableTest < ActionDispatch::IntegrationTest
     get "/api/v1/rooms/available", params: { date: @date, minutes: 60 }, headers: headers
     assert_response :unprocessable_entity
   end
+
+  # --- include_hidden (admin-only carveout, e.g. Choose Folsom's auditorium) ---
+
+  def admin_headers
+    token = JWT.encode({ user_id: users(:cowork_tahoe_superadmin).id, operator_id: @operator.id, exp: 30.days.from_now.to_i },
+                       Rails.application.secret_key_base, "HS256")
+    { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => @operator.subdomain }
+  end
+
+  def hidden_room!
+    Room.create!(name: "Auditorium", operator: @operator, location: @location,
+                 visible: false, rentable: true, hourly_rate_in_cents: 0, capacity: 50)
+  end
+
+  test "hidden rooms are excluded by default even for an admin" do
+    room = hidden_room!
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60 }, headers: admin_headers
+    assert_response :success
+    refute_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, room.id
+  end
+
+  test "include_hidden surfaces hidden rooms for an admin" do
+    room = hidden_room!
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60, include_hidden: true }, headers: admin_headers
+    assert_response :success
+    assert_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, room.id
+  end
+
+  test "include_hidden is ignored for non-admins" do
+    room = hidden_room!
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60, include_hidden: true }, headers: headers
+    assert_response :success
+    refute_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, room.id
+  end
 end
