@@ -43,6 +43,17 @@
     <%= f.submit "Save Template", class: "btn btn-primary btn-block" %>
   <% end %>
 
+  <% if @template.product_type == "day_pass_bundle" && %w[onboarding follow_up].include?(@template.email_type) %>
+    <div class="mt-3">
+      <%= button_to "Prefill from my Day Pass #{@template.email_type_label} email",
+            copy_from_day_pass_product_email_template_path(@template),
+            method: :post,
+            class: "btn btn-outline-info btn-block",
+            form: { data: { turbo_confirm: "Replace the current body with a copy of your Day Pass #{@template.email_type_label} email? You'll still edit the bundle-specific points afterward." } } %>
+      <small class="form-text text-muted">Starts the bundle email from your Day Pass copy. You'll still adjust the bundle-specific points (passes, expiry) and remove the {{date}} tag.</small>
+    </div>
+  <% end %>
+
   <div class="mt-3">
     <%= link_to "Back to Automated Emails", product_email_templates_path(location_id: @location&.id), class: "btn btn-outline-secondary btn-block" %>
   </div>

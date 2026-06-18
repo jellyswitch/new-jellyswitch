@@ -476,6 +476,7 @@ Rails.application.routes.draw do
   resources :product_email_templates, controller: "operator/product_email_templates", only: [:index, :edit, :update] do
     member do
       get :toggle_enabled
+      post :copy_from_day_pass
     end
     collection do
       get :send_log
