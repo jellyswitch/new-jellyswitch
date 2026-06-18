@@ -376,9 +376,10 @@ RSpec.describe Operator::SettingsController, type: :controller do
   end
 
   describe "Concierge tab" do
-    it "GET #concierge returns 200" do
+    it "GET #concierge returns 200 and computes the conversion-lift report" do
       get :concierge
       expect(response).to have_http_status(:ok)
+      expect(assigns(:report)).to include(:chatters, :non_chatters, :lift)
     end
 
     it "PATCH #update_concierge saves the lean per-brand settings" do

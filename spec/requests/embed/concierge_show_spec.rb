@@ -15,6 +15,8 @@ RSpec.describe "Embed::Concierge show", type: :request do
     expect(response.body).to include("Coworking Day Pass") # catalog-driven option
     expect(response.body).to include("My team needs to meet") # admin-handled option
     expect(response.body).to include("--cx-primary: 112233")  # inherited brand color
+    # Shared embed-theme block in the layout (also themes the tour widget).
+    expect(response.body).to include("body.embed-tour-request form button")
     expect(response.headers["X-Frame-Options"]).to eq("ALLOWALL")
   end
 

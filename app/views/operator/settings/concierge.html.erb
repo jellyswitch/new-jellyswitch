@@ -8,6 +8,35 @@
     <strong>brand name, logo, colors, and hours</strong> — you only tune the copy below.
   </p>
 
+  <% if @report %>
+    <% chat = @report[:chatters]; no_chat = @report[:non_chatters] %>
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title">Conversion lift</h5>
+        <% if chat[:count].zero? %>
+          <p class="text-muted mb-0">No chats yet — once visitors start using the Concierge, you'll see how much more they convert here.</p>
+        <% else %>
+          <div class="row text-center">
+            <div class="col">
+              <div class="h4 mb-0"><%= number_to_percentage(chat[:rate] * 100, precision: 0) %></div>
+              <small class="text-muted">Chatted (<%= chat[:converted] %>/<%= chat[:count] %> bought)</small>
+            </div>
+            <div class="col">
+              <div class="h4 mb-0"><%= number_to_percentage(no_chat[:rate] * 100, precision: 0) %></div>
+              <small class="text-muted">Didn't chat (<%= no_chat[:converted] %>/<%= no_chat[:count] %> bought)</small>
+            </div>
+            <div class="col">
+              <div class="h4 mb-0 text-success">
+                <%= @report[:lift].positive? ? "#{number_with_precision(@report[:lift], precision: 1)}×" : "—" %>
+              </div>
+              <small class="text-muted">Lift from chatting</small>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <%= form_with(model: @operator, url: settings_update_concierge_path, method: :patch, local: true) do |f| %>
     <%= render "shared/error_messages", model: @operator rescue nil %>
 

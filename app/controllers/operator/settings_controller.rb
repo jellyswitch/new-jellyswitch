@@ -36,6 +36,7 @@ class Operator::SettingsController < Operator::BaseController
   end
   def concierge
     @operator = current_operator
+    @report = Concierge::ConversionReport.new(operator: @operator).call
   end
   def update_concierge
     @operator = current_operator

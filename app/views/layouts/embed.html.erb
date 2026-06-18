@@ -3,8 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Request a tour — <%= @operator.name %></title>
+    <title><%= @operator&.name %></title>
     <%= stylesheet_link_tag "embed", "data-turbo-track": "reload" %>
+    <% if @operator %>
+      <%# Shared embed-theme — inherited brand font + accent applied to both the
+          tour widget and the Concierge so they look consistent on a brand's site. %>
+      <style>
+        body { font-family: <%= @operator.embed_font_family %>; }
+        body.embed-tour-request form button { background: <%= @operator.embed_accent_color %>; }
+        body.embed-tour-request form button:hover { filter: brightness(0.92); }
+      </style>
+    <% end %>
   </head>
   <body class="embed-tour-request">
     <%= yield %>
