@@ -27,9 +27,11 @@ RSpec.describe Api::V1::Admin::TodaysActivityController, type: :controller do
     create(:day_pass, user: individual, billable: individual, operator: operator,
                       location: location, day_pass_type: single_type, day: Date.current)
 
-    # A 10-Pack bundle burned on entry today → mints a $200-type DayPass.
+    # A 10-Pack bundle bought on a PRIOR day, burned on entry today → mints a
+    # $200-type DayPass today. The sale is outside today's window, so this row
+    # isolates the burn: it must contribute $0 to today's revenue.
     DayPassBundle.create!(user: bundler, billable: bundler, operator: operator, location: location,
-                          day_pass_type: pack_type, quantity_purchased: 10, passes_remaining: 10, purchased_at: Time.current)
+                          day_pass_type: pack_type, quantity_purchased: 10, passes_remaining: 10, purchased_at: 1.day.ago)
     Billing::DayPassBundles::ConsumeOnEntry.call(user: bundler, location: location)
   end
 
@@ -42,8 +44,30 @@ RSpec.describe Api::V1::Admin::TodaysActivityController, type: :controller do
       expect(rows[bundler.id]["cost"]).to eq(0)
     end
 
-    it "counts only the individual pass in the revenue total, not the pack price" do
-      # $25 individual pass only — the $200 pack is not recurring revenue.
+    it "excludes a prior-day bundle's burn from today's revenue (burn is $0)" do
+      # $25 individual pass only — burning a pack bought earlier is not revenue today.
+      expect(body["revenue"]).to eq(2_500)
+    end
+
+    it "counts a bundle purchased TODAY at its pack price (cash basis — ADR 0009)" do
+      # Sales Sally buys a $200 10-Pack today and has not entered. The sale is
+      # real money in today, so it joins the revenue total; the burn-only
+      # bundle above still contributes nothing.
+      sally = create(:user, operator: operator, name: "Sales Sally")
+      DayPassBundle.create!(user: sally, billable: sally, operator: operator, location: location,
+                            day_pass_type: pack_type, quantity_purchased: 10, passes_remaining: 10,
+                            purchased_at: Time.current)
+
+      expect(body["revenue"]).to eq(2_500 + 20_000)
+    end
+
+    it "does not count a bundle purchased at a different location" do
+      other_location = create(:location, operator: operator, name: "Other")
+      other_user = create(:user, operator: operator, name: "Elsewhere Ed")
+      DayPassBundle.create!(user: other_user, billable: other_user, operator: operator,
+                            location: other_location, day_pass_type: pack_type,
+                            quantity_purchased: 10, passes_remaining: 10, purchased_at: Time.current)
+
       expect(body["revenue"]).to eq(2_500)
     end
   end
