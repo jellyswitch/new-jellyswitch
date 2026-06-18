@@ -17,6 +17,9 @@ RSpec.describe "Embed::Concierge show", type: :request do
     expect(response.body).to include("--cx-primary: 112233")  # inherited brand color
     # Shared embed-theme block in the layout (also themes the tour widget).
     expect(response.body).to include("body.embed-tour-request form button")
+    # Live-chat wiring (Phase 2): conversations endpoint + the talk-to-team entry.
+    expect(response.body).to include("data-convo-url")
+    expect(response.body).to include("Chat with the team")
     expect(response.headers["X-Frame-Options"]).to eq("ALLOWALL")
   end
 
