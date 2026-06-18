@@ -156,12 +156,13 @@
 
   function chooseOption(opt) {
     say(opt.label, "user");
-    // Day pass + bundle are fully self-serve on the web — go straight to checkout.
-    if ((opt.intent === "day_pass" || opt.intent === "day_pass_bundle") && opt.product && opt.product.id && checkoutUrl) {
+    // Day pass / bundle / membership are self-serve on the web — go to checkout.
+    var checkoutParam = { day_pass: "day_pass_type_id", day_pass_bundle: "day_pass_type_id", membership: "plan_id" }[opt.intent];
+    if (checkoutParam && opt.product && opt.product.id && checkoutUrl) {
       say(opt.product.name + " — " + price(opt.product.price_cents) + ". Let's get you set up 👇", "bot");
       clearActions();
       button("Buy now — " + price(opt.product.price_cents), function () {
-        window.location.href = checkoutUrl + "?day_pass_type_id=" + encodeURIComponent(opt.product.id) +
+        window.location.href = checkoutUrl + "?" + checkoutParam + "=" + encodeURIComponent(opt.product.id) +
                                "&location_id=" + encodeURIComponent(locationId || "");
       });
       return;

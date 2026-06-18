@@ -34,7 +34,7 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
     let(:params) { { day_pass_type_id: pass_type.id, location_id: location.id, email: "a@b.com", name: "A", password: "x", stripe_token: "tok_visa" } }
 
     it "runs the checkout orchestration and returns ok on success" do
-      allow(Concierge::PublicDayPassCheckout).to receive(:call)
+      allow(Concierge::PublicCheckout).to receive(:call)
         .and_return(double(success?: true, error: nil, message: nil))
       post url, params: params
       expect(response).to have_http_status(:ok)
@@ -42,7 +42,7 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
     end
 
     it "surfaces a payment error from the orchestration" do
-      allow(Concierge::PublicDayPassCheckout).to receive(:call)
+      allow(Concierge::PublicCheckout).to receive(:call)
         .and_return(double(success?: false, error: "payment", message: "Your card was declined."))
       post url, params: params
       expect(response).to have_http_status(:unprocessable_entity)

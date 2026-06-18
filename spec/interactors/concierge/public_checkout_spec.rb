@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Concierge::PublicDayPassCheckout do
+RSpec.describe Concierge::PublicCheckout do
   let(:operator)  { create(:operator) }
   let(:location)  { create(:location, operator: operator) }
   let(:pass_type) { create(:day_pass_type, operator: operator, location: location, amount_in_cents: 2_500) }
@@ -51,6 +51,26 @@ RSpec.describe Concierge::PublicDayPassCheckout do
     expect(result.day_pass_bundle).to eq(bundle)
     expect(Billing::DayPassBundles::UpdatePaymentAndCreateBundle).to have_received(:call)
       .with(hash_including(user_id: user.id, token: "tok_visa"))
+  end
+
+  it "routes a membership (plan) to the subscription interactor" do
+    plan = create(:plan, operator: operator, location: location, plan_type: "individual",
+                         name: "Resident", amount_in_cents: 20_000, available: true, visible: true)
+    user = create(:user, operator: operator)
+    subscription = build_stubbed(:subscription)
+    stub_account_creation(user)
+    allow(Billing::Subscription::UpdatePaymentAndCreateSubscription).to receive(:call)
+      .and_return(double(success?: true, subscription: subscription, message: nil))
+
+    result = described_class.call(
+      operator: operator, location: location, plan: plan,
+      email: "member@x.com", name: "Mem", password: "sup3rsecret", token: "tok_visa"
+    )
+
+    expect(result).to be_success
+    expect(result.subscription).to eq(subscription)
+    expect(Billing::Subscription::UpdatePaymentAndCreateSubscription).to have_received(:call)
+      .with(hash_including(user: user, token: "tok_visa"))
   end
 
   it "refuses (without creating) when the email already has an account" do
