@@ -44,7 +44,8 @@ Goal: a themeable widget an operator embeds; it runs the scripted needs flow, re
 - Transcript renders in the existing **CRM Activity timeline** (`activity_timeline_helper.rb` — add `chat` to a bucket).
 
 ### 1.5 — Routing
-- **Self-serve (day pass / bundle / membership):** capture → create lead `User` → route to the existing signup/purchase flow **pre-filled** with email + selected product. *(Build note: verify a public web path to signup+buy exists; if app-only today, wire a thin public entry — this is the one real gap; it can also slip to Phase 3.)*
+- **VERIFIED GAP (2026-06-18):** there is **no public web signup or checkout** today — `operator/day_passes`, `landing/choose`, etc. are all behind `Operator::BaseController#reset_location` (anonymous → bounced to login); member signup is mobile-API-only (`api/v1/auth#signup`). So a self-serve *web* purchase requires the new public checkout in **Phase 3** (medium-high build; not a wrapper). The interactors are reusable, the subdomain/embed pattern is proven — but the public page itself is net-new.
+- **Self-serve products in Phase 1 (before the public checkout exists):** capture → create lead `User` + `chat` Activity → route to **"get the app to finish"** (the app *can* purchase today) as the interim CTA. The conversion-lift metric still works (account-created + downstream sale, wherever the sale happens). Phase 3 replaces this with in-browser checkout.
 - **Admin-handled (day office / conference room / office):** capture → `SendNotificationsJob.perform_later(activity, "ConciergeAlert")` → push/email to location managers (mirror `TourRequestAlert`). Office also creates the existing tour-request path.
 
 ### 1.6 — Conversion-lift metric
@@ -85,13 +86,16 @@ Goal: during business hours, a real person answers in the widget; off-hours stay
 
 ---
 
-## Phase 3 — Self-serve checkout handoff (smooth the buy)
+## Phase 3 — Public web checkout (the real build; turns "route to app" into an in-browser sale)
 
-Goal: make the self-serve products genuinely 1-tap-to-purchase from the recommendation.
+Goal: a no-login, in-browser **create-account + buy** flow the Concierge hands off to. **Verified as net-new and medium-high** (not a wrapper) — but it reuses all billing.
 
-- Verify/wire the **public web account-creation → checkout** path for day pass (then bundle, then membership) — pre-fill email + product, finalize password + payment on the existing checkout. Reuse `Users::Create` + `Billing::DayPasses::CreateDayPass` + the bundle/subscription interactors (no new billing).
-- "Get the app" as the **secondary** CTA after purchase.
-- Confirm the conversion metric now captures widget-attributed sales end-to-end.
+- **New public checkout controller**, outside `Operator::BaseController` (so it's *not* auth-gated) — mirror the `Embed` namespace + `:operator_subdomain` resolution the tour widget proves. `skip` the login/`reset_location` filters.
+- **Flow:** collect email + product (+ optional promo code) + password + Stripe payment → `Users::Create.call(params:, operator:, admin_created: false)` → `log_in(user)` (establish web session) → the matching purchase interactor: `Billing::DayPasses::CreateDayPass` / `Billing::DayPassBundles::CreateBundle` / subscription. **No new billing logic.**
+- **Sequence:** day pass first (simplest single charge), then bundle, then membership (approval-gated).
+- **Edge cases:** email already exists → offer login; payment declined; duplicate day pass for the date.
+- "Get the app" becomes the **post-purchase** secondary CTA.
+- Confirm the conversion metric now captures widget-attributed *web* sales end-to-end.
 
 ---
 
