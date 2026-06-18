@@ -11,6 +11,21 @@ Rails.application.routes.draw do
       post "/",                       to: "tour_requests#create"
       get  "/thank_you",              to: "tour_requests#thank_you", as: :tour_request_thank_you
     end
+
+    # Public embeddable Concierge widget. `show` serves the in-iframe scripted
+    # conversation UI; `create` is the JSON capture endpoint.
+    scope "concierge/:operator_subdomain" do
+      get  "/",                       to: "concierge#show", as: :concierge
+      get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
+      post "/capture",                to: "concierge#create", as: :concierge_capture
+      # Live-chat (Phase 2): start a conversation, post visitor messages, poll for replies.
+      post "/conversations",                  to: "concierge#start_conversation", as: :concierge_conversations
+      post "/conversations/:token/messages",  to: "concierge#post_message",       as: :concierge_conversation_messages
+      get  "/conversations/:token/messages",  to: "concierge#poll_messages"
+      # Public checkout (Phase 3): create account + buy a day pass, no login.
+      get  "/checkout", to: "concierge#checkout", as: :concierge_checkout
+      post "/checkout", to: "concierge#purchase"
+    end
   end
 
   namespace :api do
@@ -184,6 +199,11 @@ Rails.application.routes.draw do
 
         # Today's Activity
         get 'todays_activity', to: 'todays_activity#index'
+
+        # Concierge live-chat inbox (staff side)
+        get  'concierge_conversations',           to: 'concierge_conversations#index'
+        get  'concierge_conversations/:id',       to: 'concierge_conversations#show'
+        post 'concierge_conversations/:id/reply', to: 'concierge_conversations#reply'
 
         # Members
         get 'members', to: 'members#index'
@@ -491,6 +511,12 @@ Rails.application.routes.draw do
     end
   end
   resources :announcements, controller: "operator/announcements"
+  resources :concierge_conversations, controller: "operator/concierge_conversations", only: [:index, :show] do
+    member do
+      post :reply
+      get :messages
+    end
+  end
   resources :app_configs, controller: "operator/app_configs"
   resources :checkins, controller: "operator/checkins" do
     collection do
@@ -848,6 +874,8 @@ Rails.application.routes.draw do
     patch "update_policies",           to: "operator/settings#update_policies",            as: :update_policies
     get   "tour_widget",               to: "operator/settings#tour_widget",                as: :tour_widget
     patch "update_tour_widget",        to: "operator/settings#update_tour_widget",         as: :update_tour_widget
+    get   "concierge",                 to: "operator/settings#concierge",                  as: :concierge
+    patch "update_concierge",          to: "operator/settings#update_concierge",           as: :update_concierge
   end
   get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"

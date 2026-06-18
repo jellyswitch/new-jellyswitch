@@ -184,6 +184,33 @@ class Operator < ApplicationRecord
     tour_widget_enabled? && locations.where(visible: true).exists?
   end
 
+  def concierge_active?
+    concierge_enabled? && locations.where(visible: true).exists?
+  end
+
+  # Concierge copy — sensible brand-derived defaults so it works pre-config.
+  def concierge_display_name
+    concierge_assistant_name.presence || name
+  end
+
+  def concierge_greeting_text
+    concierge_greeting.presence || "Hi 👋 Welcome to #{name}. What brings you in today?"
+  end
+
+  # Shared embed-theme — inherited brand identity + optional overrides. Used by
+  # BOTH the Concierge and the tour widget so the two always look consistent.
+  def embed_primary_color
+    primary_color.presence || "#111827"
+  end
+
+  def embed_accent_color
+    embed_accent_override.presence || accent_color.presence || "#2563eb"
+  end
+
+  def embed_font_family
+    embed_font.presence || "system-ui, -apple-system, Segoe UI, Roboto, sans-serif"
+  end
+
   def has_mobile_app_links?
     ios_url.present? && android_url.present?
   end
