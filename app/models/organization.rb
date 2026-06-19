@@ -66,7 +66,7 @@ class Organization < ApplicationRecord
   def self.options_for_select(location)
     Organization.for_location(location).all.map do |org|
       [org.name, org.id]
-    end.prepend(["", nil])
+    end.prepend(["— No group —", nil])
   end
 
   def has_active_lease?(location = nil)

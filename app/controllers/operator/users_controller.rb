@@ -321,10 +321,17 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
 
-    @user.update(user_organization_params)
-
-    if @user.save
-      flash[:success] = "Updated organization."
+    if @user.update(user_organization_params)
+      @user.reload
+      # Report the actual resulting state. A blank selection writes nil
+      # (removal) — the old generic "Updated organization." hid that, so an
+      # accidental blank submit looked like a successful add.
+      flash[:success] =
+        if @user.organization
+          "Added #{@user.name} to #{@user.organization.name}."
+        else
+          "#{@user.name} is not in a group."
+        end
       turbo_redirect(user_path(@user))
     else
       @usage_report = Jellyswitch::UsageReport.new(@user)
