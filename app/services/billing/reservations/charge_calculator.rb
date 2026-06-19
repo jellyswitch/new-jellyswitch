@@ -42,6 +42,13 @@ class Billing::Reservations::ChargeCalculator
   # The room/overage portion — unchanged from the original `call` logic.
   def base_room_or_overage
     if room.hourly_rate_in_cents.to_i > 0
+      # Members/leaseholders/staff are exempt from priced-room hourly charges —
+      # the same gate the create path applies via should_charge_for_room?.
+      # Without this, editing or extending a booking (which re-prices through
+      # here via AuthorizeHold) places a hold + flips paid=true on an exempt
+      # member's reservation, wrongly charging them.
+      return 0 unless user.should_charge_for_room?(room, date)
+
       return ((room.hourly_rate_in_cents * minutes) / 60.0).round
     end
 
