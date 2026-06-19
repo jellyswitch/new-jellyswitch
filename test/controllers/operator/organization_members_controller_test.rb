@@ -27,4 +27,26 @@ class Operator::OrganizationMembersControllerTest < ActionDispatch::IntegrationT
          params: { user: { ids: [""] } }, env: default_env
     assert_response :redirect
   end
+
+  # Cross-tenant write guard: the add-member form is correctly tenant-scoped
+  # (`current_tenant.users` in add_member_options), but the controller update
+  # must be too. An operator admin POSTing a user id belonging to ANOTHER
+  # operator must not be able to pull that user into their organization —
+  # User has no acts_as_tenant, so an unscoped `User.where(id: ids)` would
+  # silently reassign the foreign user's organization_id.
+  test "cannot move a user from another operator into this org" do
+    other_operator = create(:operator)
+    other_location = create(:location, operator: other_operator)
+    foreign_user = create(:user,
+      operator: other_operator,
+      original_location: other_location,
+      organization_id: nil)
+
+    log_in @admin # scoped to @operator (cowork_tahoe) via ActsAsTenant.default_tenant
+    post organization_add_member_path(@org),
+         params: { user: { ids: [foreign_user.id] } }, env: default_env
+
+    assert_nil foreign_user.reload.organization_id,
+      "operator admin must not be able to add a foreign-operator user to their org"
+  end
 end
