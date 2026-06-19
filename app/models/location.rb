@@ -336,26 +336,7 @@ class Location < ApplicationRecord
     [start, start + 1.day]
   end
 
-  # Is this location within its posted working hours right now? Gates the
-  # Concierge between live staff (open) and the scripted brain (closed).
-  # Defensive against malformed working_day_* values (like business_day_window).
-  def open_now?(at = Time.current)
-    tz = ActiveSupport::TimeZone[time_zone.presence || "UTC"]
-    local = at.in_time_zone(tz)
-    now_min = (local.hour * 60) + local.min
-    start_min = working_minutes(working_day_start, 9 * 60)
-    end_min = working_minutes(working_day_end, 18 * 60)
-    return now_min >= start_min if end_min <= start_min # misconfig/overnight → open from start
-    now_min >= start_min && now_min < end_min
-  end
-
   private
-
-  def working_minutes(str, default_min)
-    h, m = str.to_s.split(":").map(&:to_i)
-    return default_min if h.nil?
-    (h * 60) + (m || 0)
-  end
 
   def renormalize_working_times
     self.working_day_start = self.class.normalize_working_time(working_day_start)
