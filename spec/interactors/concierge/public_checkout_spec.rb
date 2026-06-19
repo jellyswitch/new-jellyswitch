@@ -7,7 +7,8 @@ RSpec.describe Concierge::PublicCheckout do
 
   let(:args) do
     { operator: operator, location: location, day_pass_type: pass_type,
-      email: "New@Visitor.com", name: "New Visitor", password: "sup3rsecret", token: "tok_visa" }
+      email: "New@Visitor.com", name: "New Visitor", password: "sup3rsecret",
+      phone: "555-0100", terms_accepted: "1", token: "tok_visa" }
   end
 
   # Stub the reused billing interactors (their own specs cover Stripe).
@@ -32,7 +33,9 @@ RSpec.describe Concierge::PublicCheckout do
     expect(result).to be_success
     expect(result.user).to eq(user)
     expect(result.day_pass).to eq(day_pass)
-    expect(Users::Create).to have_received(:call).with(hash_including(operator: operator, admin_created: false))
+    expect(Users::Create).to have_received(:call)
+      .with(hash_including(operator: operator, admin_created: false,
+                           params: hash_including(phone: "555-0100", terms_accepted: "1")))
     expect(Billing::DayPasses::UpdatePaymentAndCreateDayPass).to have_received(:call)
       .with(hash_including(user_id: user.id, token: "tok_visa", location: location))
   end

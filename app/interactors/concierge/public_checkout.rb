@@ -37,8 +37,14 @@ module Concierge
 
     def create_account(email)
       result = Users::Create.call(
-        params: { email: email, name: context.name.presence || email,
-                  password: context.password, original_location_id: context.location.id },
+        params: {
+          email: email, name: context.name.presence || email,
+          password: context.password, phone: context.phone,
+          original_location_id: context.location.id,
+          # Virtual attr on User — Users::Save stamps terms_accepted_at when "1".
+          # The checkout form requires the TOS checkbox before submit.
+          terms_accepted: context.terms_accepted,
+        },
         operator: context.operator,
         admin_created: false,
       )
