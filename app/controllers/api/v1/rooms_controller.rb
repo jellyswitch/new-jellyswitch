@@ -434,6 +434,12 @@ class Api::V1::RoomsController < Api::V1::BaseController
     dp_info  = (user.day_pass_reservation_charge_info(location, date, minutes) rescue nil)
     included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
     overage_rate = sub_info&.dig(:overage_rate_in_cents) || dp_info&.dig(:overage_rate_in_cents)
+    # Exempt members/admins/leaseholders are never charged the hourly rate,
+    # even for a priced room. Surface it (as #reserve_now does) so the room
+    # list reads Free instead of quoting hourly_rate × duration.
+    should_charge = (user.should_charge_for_reservation?(location, start_time.to_date) rescue true)
+    should_charge ||= sub_info&.dig(:charge_type) == :partial_overage
+    should_charge ||= dp_info&.dig(:charge_type) == :partial_overage
 
     end_time = start_time + minutes.minutes
     render json: {
@@ -444,6 +450,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true) },
       unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
       pricing_context: {
+        should_charge: should_charge,
         has_plan: sub_info.present? || dp_info.present?,
         minutes_remaining: included_minutes_remaining.to_i,
         overage_rate_per_hour_cents: overage_rate.to_i,
