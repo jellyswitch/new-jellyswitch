@@ -18,10 +18,15 @@
   <p class="muted"><%= price %> · <%= @location.name %></p>
 
   <form id="cxco-form">
-    <input name="name" type="text" placeholder="Your name" autocomplete="name">
+    <input name="name" type="text" placeholder="Your name" autocomplete="name" required>
     <input name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
+    <input name="phone" type="tel" placeholder="Phone number" autocomplete="tel" required>
     <input name="password" type="password" placeholder="Create a password" autocomplete="new-password" required>
     <div id="card-element"></div>
+    <label class="terms">
+      <input id="terms" name="terms_accepted" type="checkbox" value="1" required>
+      I agree to the <a href="<%= @operator.terms_of_service.attached? ? rails_blob_path(@operator.terms_of_service, only_path: true) : "#" %>" target="_blank">Terms of Service</a>.
+    </label>
     <div style="position:absolute;left:-5000px;" aria-hidden="true"><input name="_hp" tabindex="-1" autocomplete="off"></div>
     <button id="pay" type="submit">Pay <%= price %></button>
     <div id="cxco-msg" class="msg"></div>
@@ -37,6 +42,8 @@
   #card-element { padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; }
   #pay { padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
   #pay:disabled { opacity: .6; }
+  .terms { font-size: 13px; color: #4b5563; display: flex; align-items: flex-start; gap: 8px; }
+  .terms a { color: var(--accent); }
   .msg { font-size: 14px; min-height: 18px; }
   .msg.err { color: #b91c1c; }
   .msg.ok { color: #047857; }
@@ -66,7 +73,9 @@
       var body = new URLSearchParams({
         stripe_token: res.token.id,
         location_id: root.dataset.locationId,
-        name: form.name.value, email: form.email.value, password: form.password.value,
+        name: form.name.value, email: form.email.value, phone: form.phone.value,
+        password: form.password.value,
+        terms_accepted: document.getElementById("terms").checked ? "1" : "0",
         _hp: form._hp.value,
       });
       body.append(root.dataset.productParam, root.dataset.productId);

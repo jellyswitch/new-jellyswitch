@@ -56,7 +56,8 @@ module Embed
       end
 
       args = { operator: @operator, location: location, email: params[:email],
-               name: params[:name], password: params[:password], token: params[:stripe_token] }
+               name: params[:name], password: params[:password], phone: params[:phone],
+               terms_accepted: params[:terms_accepted], token: params[:stripe_token] }
       args[product.is_a?(Plan) ? :plan : :day_pass_type] = product
       result = Concierge::PublicCheckout.call(args)
 
