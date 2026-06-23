@@ -187,3 +187,31 @@ These two rules together mean: a single recipient receives at most one operator-
 The CRM build introduces a new top-level **People** umbrella that absorbs three existing top-level items (Leads, Automated Emails, Campaigns) and renames "Members & Groups" → "People." Net top-level item count: 16 → 13. A wider nav cleanup (consolidating Spaces, Community, Money) is **deferred to a separate sprint** to keep the CRM PR reviewable.
 
 People sub-tabs: Members · Leads · Automations · Campaigns · Templates.
+
+## Reservation (room booking)
+
+A booking of one **Room** for one time window. Pricing is decided **server-side at booking** by `ChargeCalculator`, and the charge is **captured then, not at start** (ADR 0010). A Reservation grants a time-bounded **Access window** around its slot — **not** all-day building access (ADR 0013). A priced (group) **Meeting room** is bookable standalone — no Day Pass required.
+_Avoid_: treating a Reservation as a Day Pass. Booking a room neither mints nor requires one. (The retired "comp pass" minted a free Day Pass on paid bookings, and its included minutes mis-priced later edits — see ADR 0012/0013.)
+
+## Call room vs Meeting room
+
+Two kinds of bookable **Room**, distinguished by `hourly_rate_in_cents`:
+- **Call room** — a $0 room (`hourly_rate_in_cents == 0`), for an individual taking calls. Covered by a **Day Pass**'s included allowance, then the location **Overage / add-on** rate. Whether a room draws on the day-pass bucket is the per-room **`include_with_day_pass`** flag (defaults to "true when the rate is $0", preserving today's behavior).
+- **Meeting room** — a priced room (`rate > 0`), for a **group up to its `capacity`**. Always billed at its own hourly rate, captured at booking; **never** drawn from the day-pass bucket (ADR 0012).
+
+## Access window
+
+The span around a **Reservation** during which the booker may unlock the building on that reservation alone: `Operator.building_access_window_minutes` before start to the same number of minutes after end (default 60). Outside it, the reservation grants no access. Replaces the prior behavior where any reservation granted all-day access (ADR 0013). Day Pass / membership / lease access are unaffected.
+
+## Capture-at-booking
+
+Reservation money is **charged at booking and the invoice committed then**, not deferred to a hold-and-settle at start (ADR 0010). Exempt bookers (member / leaseholder / staff) and **demo operators** (`billing_state != "production"`) move no money. Supersedes the retired authorize-hold → capture-on-settle lifecycle (`AuthorizeHold` / `SettleReservationJob` / `CaptureHold`).
+_Avoid_: "hold" / "authorize" / "settle" for the new path — those name the retired model.
+
+## Overage / add-on meeting room time
+
+A single **per-location** per-minute rate (operator-facing label: **"Overage / add-on meeting room time"**) charged for **call-room ($0 room) time not covered by a Day Pass allowance** — both a day-passer past their included minutes *and* a booker with no day-pass coverage at all. Lives at the **Location** so it applies even when there is no Day Pass to read a rate from. Distinct from a subscription **plan**'s own overage rate, which is unchanged.
+
+## Cancellation window & refund fee
+
+Operator policy on a **Reservation** cancel (`Operator.cancellation_window_hours`, `Operator.refund_fee_percent`): cancelling **inside** the window (closer to start than the set hours) **forfeits** the charge; **outside** the window **refunds minus the fee %**; a **no-show** (never cancels) → the charge stands (ADR 0011). Binary, not tiered. Member-initiated *reductions* (shorten / end early / switch to a cheaper room) do **not** auto-refund — only a cancel does. An admin may refund or re-price for an operator-forced change (e.g. a room closed for maintenance).
