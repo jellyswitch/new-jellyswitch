@@ -42,9 +42,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     # Guardrails — only allow self-serve purchase of customer-facing,
     # paid day pass types. Free types (comp passes, discount-grants) are
-    # created by the server (via GrantFreeDayPass / DayPassCode-style
-    # flows) or by an admin through the admin endpoint, not by members
-    # directly.
+    # created by the server (DayPassCode-style flows) or by an admin through
+    # the admin endpoint, not by members directly.
     # Hidden (visible:false) day pass types may be purchased only when the
     # request carries a matching access code — that's the whole point of the
     # access_code field. Without this bypass, the inline "have a code?" flow

@@ -19,14 +19,17 @@ class ReservationEffectiveChargeTest < ActiveSupport::TestCase
   test "day-pass overage on a free room is reflected even with no hold/capture yet" do
     ActsAsTenant.with_tenant(@operator) do
       member = fresh_member
+      # Overage RATE is location-scoped now (ADR 0012); the day-pass type only
+      # defines the included allowance.
+      @location.update!(overage_rate_in_cents: 6000)
       room = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 0)
       dpt  = create(:day_pass_type, operator: @operator, location: @location,
-                    included_meeting_room_minutes: 60, overage_rate_in_cents: 6000)
+                    included_meeting_room_minutes: 60, overage_rate_in_cents: 0)
       reservation = create(:reservation, user: member, room: room, minutes: 120, paid: true)
       create(:day_pass, user: member, billable: member, day: reservation.datetime_in.to_date,
              day_pass_type: dpt, operator: @operator, location: @location)
 
-      # 120 used − 60 included = 60 min over; $60/hr ⇒ 6000¢
+      # 120 used − 60 included = 60 min over; location $60/hr ⇒ 6000¢
       assert_equal 6000, reservation.effective_charge_in_cents
     end
   end

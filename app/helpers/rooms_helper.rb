@@ -10,6 +10,7 @@ module RoomsHelper
       :visible,
       :rentable,
       :hourly_rate_in_cents,
+      :include_with_day_pass,
       :credit_cost,
       amenities_attributes: [:id, :name, :price, :membership_price, :_destroy],
     )

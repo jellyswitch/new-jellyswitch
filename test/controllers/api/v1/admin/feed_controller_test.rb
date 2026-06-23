@@ -51,9 +51,12 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
 
     ActsAsTenant.with_tenant(@operator) do
       member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      # Overage RATE is location-scoped now (ADR 0012); the day-pass type only
+      # defines the included allowance.
+      @location.update!(overage_rate_in_cents: 6000)
       room   = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 0)
       dpt    = create(:day_pass_type, operator: @operator, location: @location,
-                      included_meeting_room_minutes: 60, overage_rate_in_cents: 6000)
+                      included_meeting_room_minutes: 60, overage_rate_in_cents: 0)
       reservation = create(:reservation, user: member, room: room, minutes: 120, paid: true)
       create(:day_pass, user: member, billable: member, day: reservation.datetime_in.to_date,
              day_pass_type: dpt, operator: @operator, location: @location)

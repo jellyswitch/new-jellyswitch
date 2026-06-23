@@ -843,6 +843,7 @@ Rails.application.routes.draw do
     get  "branding",                   to: "operator/settings#branding",                   as: :branding
     patch "update_branding",           to: "operator/settings#update_branding",            as: :update_branding
     get  "payments",                   to: "operator/settings#payments",                   as: :payments
+    patch "update_payments",           to: "operator/settings#update_payments",            as: :update_payments
     get  "doors",                      to: "operator/settings#doors",                      as: :doors
     patch "update_doors",              to: "operator/settings#update_doors",               as: :update_doors
     post "import_doors",               to: "operator/settings#import_doors",               as: :import_doors

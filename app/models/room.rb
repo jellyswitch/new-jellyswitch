@@ -10,6 +10,7 @@
 #  description                        :text
 #  features                           :text             default([]), is an Array
 #  hourly_rate_in_cents               :integer          default(0), not null
+#  include_with_day_pass              :boolean          default(FALSE), not null
 #  name                               :string           not null
 #  rentable                           :boolean          default(FALSE), not null
 #  slug                               :string
@@ -199,6 +200,13 @@ class Room < ApplicationRecord
 
   def paid_room?
     rentable? && hourly_rate_in_cents > 0
+  end
+
+  # Whether this room draws from a booker's day-pass included-minutes bucket
+  # (a "call room"). Explicit column as of ADR 0012 — previously inferred from
+  # hourly_rate_in_cents == 0. Backfilled true for every $0 room.
+  def counts_toward_day_pass?
+    include_with_day_pass?
   end
 
   def has_av?
