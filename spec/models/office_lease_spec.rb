@@ -196,5 +196,26 @@ RSpec.describe OfficeLease, type: :model do
         expect(office_lease.current_period_end).to eq(1704067200)
       end
     end
+
+    describe "#termination_options" do
+      it "offers full options (cycle + now) when the subscription is active" do
+        allow(office_lease).to receive(:subscription_active?).and_return(true)
+        expect(office_lease.termination_options).to eq(:full)
+      end
+
+      it "offers immediate-only for a zombie lease: running but subscription inactive" do
+        allow(office_lease).to receive(:subscription_active?).and_return(false)
+        office_lease.start_date = Date.today - 1.month
+        office_lease.end_date   = Date.today + 1.month
+        expect(office_lease.termination_options).to eq(:now)
+      end
+
+      it "offers none when the lease is no longer active" do
+        allow(office_lease).to receive(:subscription_active?).and_return(false)
+        office_lease.start_date = Date.today - 2.months
+        office_lease.end_date   = Date.today - 1.month
+        expect(office_lease.termination_options).to eq(:none)
+      end
+    end
   end
 end
