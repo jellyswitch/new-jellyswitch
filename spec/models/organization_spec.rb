@@ -71,7 +71,10 @@ RSpec.describe Organization, type: :model do
 
       it "returns array of organization names and ids with blank option" do
         options = Organization.options_for_select(location)
-        expect(options).to include(["", nil], ["Org A", org1.id], ["Org B", org2.id])
+        # The blank option's label was changed from "" to "— No group —" in
+        # 392e85d2 (operator "Update group" UX); this model spec was left
+        # asserting the old empty label and has been red on main since.
+        expect(options).to include(["— No group —", nil], ["Org A", org1.id], ["Org B", org2.id])
       end
     end
   end
