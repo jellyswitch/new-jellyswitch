@@ -67,4 +67,26 @@ class HoneybadgerNoiseFilterTest < ActiveSupport::TestCase
   test "does NOT suppress an ordinary application error" do
     refute HoneybadgerNoiseFilter.suppress?(notice(RuntimeError.new("a real bug")))
   end
+
+  # Regression: a refund committed, then an inline OpenSearch reindex of the
+  # feed item 502'd (Honeybadger #131903124, operator/refunds#create) and was
+  # reported as a real error even though money had already moved.
+  test "suppresses OpenSearch cluster 5xx transients" do
+    errors = OpenSearch::Transport::Transport::Errors
+    %i[BadGateway ServiceUnavailable GatewayTimeout InternalServerError].each do |name|
+      next unless errors.const_defined?(name)
+      ex = errors.const_get(name).new("[5xx] cluster transient")
+      assert HoneybadgerNoiseFilter.suppress?(notice(ex)), "expected #{name} to be suppressed"
+    end
+  end
+
+  # A 4xx is a real query/mapping bug — keep alerting on it.
+  test "does NOT suppress OpenSearch 4xx (bad query / mapping)" do
+    errors = OpenSearch::Transport::Transport::Errors
+    %i[BadRequest NotFound].each do |name|
+      next unless errors.const_defined?(name)
+      ex = errors.const_get(name).new("[4xx] bad request")
+      refute HoneybadgerNoiseFilter.suppress?(notice(ex)), "expected #{name} to NOT be suppressed"
+    end
+  end
 end
