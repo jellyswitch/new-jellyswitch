@@ -47,7 +47,31 @@ module HoneybadgerNoiseFilter
     # unaffected by this filter.
     return true if notice.component == "at_exit" && notice.action.nil?
 
+    # OpenSearch cluster transients (5xx) from the managed search cluster:
+    # BadGateway/ServiceUnavailable/GatewayTimeout/InternalServerError when a
+    # node is restarting or briefly unreachable. FeedItem indexes async now
+    # (ADR 0014), so these no longer ride a request hot path, but searchkick
+    # reindex jobs (and any remaining inline writes) can still raise them. The
+    # feed renders from Postgres, so a transient reindex failure is recoverable
+    # noise, not an app bug. A 4xx (bad query / mapping mismatch) is a real
+    # problem and is deliberately NOT suppressed.
+    return true if opensearch_transient?(exception)
+
     false
+  end
+
+  # OpenSearch server-side transients (HTTP 5xx). The opensearch-transport gem
+  # raises a distinct class per status under OpenSearch::Transport::Transport::Errors
+  # (e.g. BadGateway = 502). Enumerate the 5xx family via const lookup so this
+  # is robust to which classes the loaded gem version defines, and so it does
+  # NOT match 4xx (BadRequest/NotFound) which represent real query bugs.
+  def self.opensearch_transient?(exception)
+    return false unless defined?(OpenSearch::Transport::Transport::Errors)
+
+    errors = OpenSearch::Transport::Transport::Errors
+    %i[BadGateway ServiceUnavailable GatewayTimeout InternalServerError].any? do |name|
+      errors.const_defined?(name) && exception.is_a?(errors.const_get(name))
+    end
   end
 
   # Transient connection/timeout errors from either Redis client layer:

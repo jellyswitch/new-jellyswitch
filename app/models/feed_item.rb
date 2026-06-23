@@ -22,7 +22,13 @@ class FeedItem < ApplicationRecord
   include HasLocation
 
   MONTHS = [["Select Month", ""], ["January", 1], ["February", 2], ["March", 3], ["April", 4], ["May", 5], ["June", 6], ["July", 7], ["August", 8], ["September", 9], ["Octobor", 10], ["November", 11], ["December", 12]]
-  searchkick
+  # Index out-of-band (Sidekiq) instead of inline. A FeedItem is created on the
+  # hot path of financial actions (e.g. refunds), and an inline OpenSearch call
+  # that 502s on save would otherwise fail an already-committed refund and page
+  # Honeybadger. The feed renders from Postgres, so a brief search-index lag is
+  # harmless; financial side effects must not depend on the search cluster.
+  # See ADR 0014. Scoped to FeedItem deliberately — not a global index_mode change.
+  searchkick callbacks: :async
   has_many_attached :photos
   # Relationships
   belongs_to :operator
