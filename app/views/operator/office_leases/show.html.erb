@@ -137,8 +137,17 @@
       </div>
     <% end %>
 
-    <% if @office_lease.subscription_active? %>
+    <% case @office_lease.termination_options %>
+    <% when :full %>
       <%= link_to "Terminate Lease (end of billing cycle)", office_lease_path(@office_lease), data: { turbo_method: :delete }, class: "btn btn-block btn-danger" %>
+      <%= link_to "Terminate Lease (now)", destroy_office_lease_now_path(@office_lease), data: { turbo_method: :delete }, class: "btn btn-block btn-danger" %>
+    <% when :now %>
+      <%# Zombie lease: the subscription was already cancelled (e.g. the member
+          self-cancelled or downgraded in the app) but the lease is still
+          running. "End of billing cycle" is meaningless with no live billing,
+          so offer the immediate end — otherwise admins are stuck with a lease
+          they can't terminate at all. %>
+      <p class="text-muted small mb-2">This lease's subscription is no longer active, but the lease is still running.</p>
       <%= link_to "Terminate Lease (now)", destroy_office_lease_now_path(@office_lease), data: { turbo_method: :delete }, class: "btn btn-block btn-danger" %>
     <% end %>
 
