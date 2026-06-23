@@ -105,6 +105,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
   def upgrade
     old_sub = current_api_user.subscriptions.find(params[:id])
+    return if reject_office_lease_change(old_sub)
 
     # Pre-flight: Stripe::Subscription.update on a paused subscription
     # raises Stripe::InvalidRequestError ("Cannot update a subscription
@@ -156,6 +157,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
   def cancel_now
     sub = current_api_user.subscriptions.find(params[:id])
+    return if reject_office_lease_change(sub)
 
     # A committed member can't cancel immediately — schedule the end at their
     # current commitment boundary instead. Admins override via the operator API.
@@ -191,6 +193,8 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
   def destroy
     sub = current_api_user.subscriptions.find(params[:id])
+    return if reject_office_lease_change(sub)
+
     result = SetSubscriptionForCancellation.call(
       subscription: sub,
       blob: { text: "Cancelled via mobile app", type: "membership_cancellation" },
@@ -210,6 +214,21 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
   end
 
   private
+
+  # Office leases are fixed-term contracts — a member can't self-cancel or
+  # downgrade the subscription backing one from the app (only an admin
+  # terminates via the office-lease flow). Returns true (and renders 403) when
+  # the action should be blocked, so callers do `return if reject_...`.
+  def reject_office_lease_change(sub)
+    return false unless sub&.backs_office_lease?
+
+    render_error(
+      "This subscription is part of an office lease — a fixed-term agreement. " \
+      "Please contact your host to make changes to it.",
+      status: :forbidden,
+    )
+    true
+  end
 
   def plan_json(plan)
     {
@@ -245,6 +264,9 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       # and frame the cancel action as scheduling an end at the boundary.
       in_commitment: sub.try(:in_commitment?) || false,
       commitment_ends_on: (sub.commitment_term_end&.strftime("%B %e, %Y") if sub.try(:in_commitment?)),
+      # Office leases are admin-managed contracts — the app hides the
+      # cancel/change-plan affordances when this is true (server still enforces).
+      is_office_lease: sub.try(:backs_office_lease?) || false,
       # Day Pool resets with the billing period; period_end_date above is that date.
       included_meeting_minutes: plan.try(:included_meeting_room_minutes),
       billed_to: sub.subscribable_type == 'Organization' ? 'organization' : 'user',
