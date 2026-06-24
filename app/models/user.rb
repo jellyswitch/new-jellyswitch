@@ -139,6 +139,10 @@ class User < ApplicationRecord
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
+  # Front-door spam defense: reject disposable/throwaway email providers at
+  # self-signup. Skipped for admin-created members and only on :create (mirrors
+  # the phone rule below, so a member's existing email is never re-blocked).
+  validates :email, disposable_email: true, unless: :admin_created, on: :create
   validates :name, presence: true
   validates :phone, presence: true, unless: :admin_created, on: :create
   # Front-door spam defense: reject self-signups whose email domain can't
