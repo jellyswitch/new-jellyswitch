@@ -35,6 +35,8 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
 
   def teardown
     SendUpcomingReservationReminderJob.unstub :set
+    SendReservationReminderJob.unstub :set
+    SendReservationStartedJob.unstub :set
   end
 
   test "schedules reminder job 10 minutes before future reservation time" do
@@ -66,5 +68,37 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
     result = Reservations::ScheduleUpcomingReservationReminder.call(reservation: @past_reservation)
 
     assert result.success?
+  end
+
+  # Phase 6: the booker "come back" push fires when door access opens —
+  # building_access_window_minutes before start (ADR 0013), NOT a fixed 15 min.
+  test "schedules the booker arrival push building_access_window_minutes before start" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    arrival = @future_reservation.datetime_in - 60.minutes
+    job_mock = Minitest::Mock.new
+    SendReservationReminderJob.expects(:set).with(wait_until: arrival).returns(job_mock)
+    job_mock.expect(:perform_later, nil, [@future_reservation.id])
+
+    Reservations::ScheduleUpcomingReservationReminder.call(reservation: @future_reservation)
+
+    job_mock.verify
+  end
+
+  test "schedules the started push at start when the access window is wide enough" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    job_mock = Minitest::Mock.new
+    SendReservationStartedJob.expects(:set).with(wait_until: @future_reservation.datetime_in).returns(job_mock)
+    job_mock.expect(:perform_later, nil, [@future_reservation.id])
+
+    Reservations::ScheduleUpcomingReservationReminder.call(reservation: @future_reservation)
+
+    job_mock.verify
+  end
+
+  test "does NOT schedule the started push when the access window is narrow" do
+    @room.location.operator.update!(building_access_window_minutes: 10)
+    SendReservationStartedJob.expects(:set).never
+
+    Reservations::ScheduleUpcomingReservationReminder.call(reservation: @future_reservation)
   end
 end

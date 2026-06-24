@@ -97,6 +97,7 @@ class Billing::Reservations::ChargeAtBooking
     )
     create_feed_item(invoice)
     send_receipt
+    notify_charged
   rescue Stripe::CardError => e
     context.fail!(message: "Card error: #{e.message}")
   rescue Stripe::InvalidRequestError => e
@@ -188,6 +189,16 @@ class Billing::Reservations::ChargeAtBooking
     UserMailer.meeting_room_charged(reservation.id, amount).deliver_later
   rescue => e
     Rails.logger.error("ChargeAtBooking receipt email failed: #{e.class}: #{e.message}")
+    Honeybadger.notify(e, context: { reservation_id: reservation.id })
+  end
+
+  # Member-facing charge push (Phase 6), alongside the receipt email. Best-effort
+  # and only on the capture path (this method isn't called for net-30 send_invoice,
+  # which Stripe receipts itself). Demo/exempt are already excluded upstream.
+  def notify_charged
+    SendNotificationsJob.perform_later(reservation, "ReservationCharged")
+  rescue => e
+    Rails.logger.error("ChargeAtBooking charge push failed: #{e.class}: #{e.message}")
     Honeybadger.notify(e, context: { reservation_id: reservation.id })
   end
 

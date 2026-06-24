@@ -10,6 +10,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::RedeemBundlePass,
       Billing::Reservations::ChargeAtBooking,
+      Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,
       SendAdminNotificationForPaidRoom,
       Billing::Reservations::ScheduleReservationEmails

@@ -47,6 +47,13 @@ RSpec.describe Billing::Reservations::ChargeAtBooking do
       )
     end
 
+    it "dispatches a member-facing charge push on capture (Phase 6)" do
+      stub_card!
+      r = reservation_for
+      expect(SendNotificationsJob).to receive(:perform_later).with(r, "ReservationCharged")
+      described_class.call(reservation: r)
+    end
+
     it "is idempotent — a second call does not charge again" do
       stub_card!
       r = reservation_for
@@ -77,6 +84,8 @@ RSpec.describe Billing::Reservations::ChargeAtBooking do
       allow(Stripe::InvoiceItem).to receive(:create).and_return(double("ii", id: "ii_1"))
       allow(Stripe::Invoice).to receive(:create).and_return(double("inv", id: "in_1"))
       expect(Stripe::PaymentIntent).not_to receive(:create)
+      # No member charge push on the net-30 path — Stripe emails its own invoice.
+      expect(SendNotificationsJob).not_to receive(:perform_later)
 
       r = reservation_for
       result = described_class.call(reservation: r)
