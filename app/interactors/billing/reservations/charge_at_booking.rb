@@ -23,10 +23,16 @@ class Billing::Reservations::ChargeAtBooking
   def call
     return if reservation.captured_at.present? # already billed — idempotent
 
+    # Demo operators move no real money on ANY path. The should_charge_* gates in
+    # ChargeCalculator already zero most demo bookings, but the metered day-pass /
+    # subscription overage branches aren't billing_state-gated — so gate here too
+    # (defense in depth) before any Stripe call. (ADR 0010.)
+    return unless reservation.room.location.operator.billing_state == "production"
+
     @amount = Billing::Reservations::ChargeCalculator.call(
       reservation: reservation, minutes: reservation.minutes
     )
-    return if @amount <= 0 # free / exempt / demo — no money moves
+    return if @amount <= 0 # free / exempt — no money moves
 
     if reservation.user.out_of_band?
       charge_via_send_invoice

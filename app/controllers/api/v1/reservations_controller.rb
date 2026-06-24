@@ -51,7 +51,10 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # organizer step) spends one prepaid pass to cover the booking — so DON'T
     # auto-purchase a fresh day pass on top of it here.
     use_bundle_pass = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_bundle_pass))
-    redeeming_bundle = use_bundle_pass && user.has_active_day_pass_bundle?(location)
+    # Check the bundle at the ROOM's location (RedeemBundlePass resolves it off
+    # room.location) — not the user's home location — so a cross-location booking
+    # doesn't both auto-purchase a pass AND burn a bundle pass.
+    redeeming_bundle = use_bundle_pass && user.has_active_day_pass_bundle?(room.location)
     # Paid rooms already charge an hourly rate that covers access —
     # don't bundle a day pass on top.
     is_priced_room = room.hourly_rate_in_cents.to_i > 0

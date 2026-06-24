@@ -9,13 +9,19 @@ class Billing::Reservations::RedeemBundlePass
   # access — pricing/permissions recognize bundles only via a DayPass.
   #
   # Runs after SaveRoomReservation (validated, persisted reservation) and before
-  # ChargeAtBooking (so the minted pass zeroes the charge). One pass per
-  # business-day period: deduped on "a DayPass for that location+date already
-  # exists" — which also reconciles with the door (ConsumeOnEntry Guard 4 short-
-  # circuits on this minted pass before its own burn), so the door never
-  # double-burns and this needs no change to the door dedupe. Paid rooms are
-  # never covered. No demo gate needed — a prepaid pass is state-agnostic, and
-  # the pricing path already moves no money in demo.
+  # ChargeAtBooking (so the minted pass zeroes the charge). Paid rooms are never
+  # covered, and members/leaseholders are already covered (mirrors ConsumeOnEntry
+  # guards 1-2) so they never spend a pass.
+  #
+  # ONE pass per booker per business-day period, reconciled with the door: the
+  # burn dedupe keys on the redemption ledger within the reservation's
+  # business-day window (Location#business_day_window, 4am rollover), counting
+  # both door "entry" and reserve "reservation" burns. The reserve burn stamps
+  # redeemed_at at the reservation's start so the door sees it on the booking's
+  # business day — including future-dated bookings and bookings that straddle the
+  # rollover. The checks run again inside the bundle row lock to close the
+  # door/reserve race. No demo gate needed — a prepaid pass is state-agnostic;
+  # the pricing path (gated in ChargeAtBooking) moves no money in demo.
 
   delegate :reservation, :user, :use_bundle_pass, to: :context
 
@@ -27,17 +33,22 @@ class Billing::Reservations::RedeemBundlePass
     return if room.hourly_rate_in_cents.to_i > 0 # paid rooms aren't covered by passes
 
     location = room.location
+    return if user.has_active_subscription?     # already covered — never spend a pass
+    return if user.has_active_lease?(location)
+
     day = reservation.datetime_in.to_date
-    # Already covered for that day (a purchased pass, a prior reservation burn, or
-    # a door entry) → don't burn a second pass.
-    return if user.day_passes.for_location(location).for_day(day).exists?
+    window_start, window_end = location.business_day_window(reservation.datetime_in)
+
+    return if covered_for_day?(location, day)
+    return if burned_in_window?(location, window_start, window_end)
 
     bundle = user.day_pass_bundles.active.where(location: location).first
     return unless bundle # no bundle / out of passes → fall through to normal pricing
 
     bundle.with_lock do
-      # Re-check under the lock in case coverage landed concurrently.
-      next if user.day_passes.for_location(location).for_day(day).exists?
+      # Re-check under the lock to close the concurrent door/reserve race.
+      next if covered_for_day?(location, day)
+      next if burned_in_window?(location, window_start, window_end)
 
       day_pass = DayPass.create!(
         user:          user,
@@ -48,21 +59,20 @@ class Billing::Reservations::RedeemBundlePass
         day:           day,
         imported:      true,
       )
-      bundle.burn_locked!(kind: "reservation", performed_by: user, day_pass: day_pass, reservation: reservation)
+      bundle.burn_locked!(kind: "reservation", performed_by: user, day_pass: day_pass,
+                          reservation: reservation, redeemed_at: reservation.datetime_in)
 
       context.redeemed_bundle = bundle
       context.bundle_redemption_day_pass = day_pass
       context.outcome = :redeemed
     end
   rescue DayPassBundle::NoPassesRemaining
-    # Emptied between the active-bundle check and the locked burn — leave it to
-    # the pricing path (the booker simply isn't covered by a pass this time).
     Rails.logger.info("RedeemBundlePass: bundle emptied for reservation #{reservation&.id}; falling through to pricing")
   end
 
   # If a later organizer step fails, undo the burn so a never-committed booking
-  # doesn't silently spend a pass. Direct reversal (not restore!) — no
-  # admin_restore audit row for a booking that never happened.
+  # doesn't silently spend a pass. Capped refund (refund_pass_locked!) — never
+  # over the pack size.
   def rollback
     bundle = context.redeemed_bundle
     day_pass = context.bundle_redemption_day_pass
@@ -71,10 +81,27 @@ class Billing::Reservations::RedeemBundlePass
     bundle.with_lock do
       bundle.redemptions.where(day_pass_id: day_pass.id, kind: "reservation").destroy_all
       day_pass.destroy
-      bundle.update!(passes_remaining: bundle.passes_remaining + 1)
+      bundle.refund_pass_locked!
     end
   rescue => e
     Rails.logger.error("RedeemBundlePass rollback failed for reservation #{reservation&.id}: #{e.class}: #{e.message}")
     Honeybadger.notify(e) rescue nil
+  end
+
+  private
+
+  # A purchased day pass or a prior bundle mint already covers that calendar day.
+  def covered_for_day?(location, day)
+    user.day_passes.for_location(location).for_day(day).exists?
+  end
+
+  # The booker already burned a pass (door entry OR another reservation) in the
+  # reservation's business-day window — even across the 4am rollover where the
+  # calendar dates of the two minted passes would differ.
+  def burned_in_window?(location, window_start, window_end)
+    DayPassBundleRedemption
+      .where(day_pass_bundle: user.day_pass_bundles.where(location: location))
+      .where(kind: %w[entry reservation], redeemed_at: window_start...window_end)
+      .exists?
   end
 end

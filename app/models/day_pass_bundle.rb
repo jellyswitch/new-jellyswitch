@@ -27,17 +27,20 @@ class DayPassBundle < ApplicationRecord
   # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest |
   # :reservation. entry/reservation redemptions also pass the minted DayPass
   # (and reservation links the booking that spent it); guest passes guest_name.
-  def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil)
-    with_lock { burn_locked!(kind: kind, performed_by: performed_by, guest_name: guest_name, day_pass: day_pass, reservation: reservation) }
+  # redeemed_at defaults to now; reserve-time burns stamp the reservation's start
+  # so the once-per-business-day-window dedupe (which keys on redeemed_at) lines
+  # up across the door and the booking — including future-dated reservations.
+  def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil, redeemed_at: Time.current)
+    with_lock { burn_locked!(kind: kind, performed_by: performed_by, guest_name: guest_name, day_pass: day_pass, reservation: reservation, redeemed_at: redeemed_at) }
   end
 
   # Assumes the caller already holds the row lock (with_lock). Decrements + logs.
-  def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil)
+  def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil, redeemed_at: Time.current)
     raise NoPassesRemaining if passes_remaining.to_i <= 0 || expired?
     update!(passes_remaining: passes_remaining - 1)
     redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
                         guest_name: guest_name, day_pass: day_pass, reservation: reservation,
-                        redeemed_at: Time.current)
+                        redeemed_at: redeemed_at)
     enqueue_lifecycle_emails(kind)
   end
 
@@ -63,6 +66,14 @@ class DayPassBundle < ApplicationRecord
 
   def charge_description
     "#{operator.name} #{day_pass_type.quantity}-Pack Day Pass Bundle"
+  end
+
+  # Give one pass back when UNDOING a booking-time burn (rollback / pre-coverage
+  # cancel) — capped at the pack size so an interleaved admin_restore can't push
+  # the count over quantity_purchased. Assumes the caller holds the row lock and
+  # destroys the redemption + minted day pass itself.
+  def refund_pass_locked!
+    update!(passes_remaining: [passes_remaining.to_i + 1, quantity_purchased.to_i].min)
   end
 
   # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.

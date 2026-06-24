@@ -109,6 +109,34 @@ RSpec.describe Billing::Reservations::ChargeAtBooking do
       expect(r.invoices).to be_empty
     end
 
+    # The day-pass overage branch in ChargeCalculator is NOT billing_state-gated,
+    # so it can return a positive amount even for a demo operator. ChargeAtBooking
+    # must still move no money (the demo gate covers every path).
+    it "demo operator with a metered day-pass overage → still no charge" do
+      demo_operator = create(:operator, billing_state: "demo")
+      ActsAsTenant.with_tenant(demo_operator) do
+        demo_location = create(:location, operator: demo_operator, overage_rate_in_cents: 1200)
+        demo_room = create(:room, operator: demo_operator, location: demo_location, hourly_rate_in_cents: 0)
+        demo_user = create(:user, operator: demo_operator)
+        dpt = create(:day_pass_type, operator: demo_operator, location: demo_location,
+                     included_meeting_room_minutes: 30, overage_rate_in_cents: 9999)
+        r = Reservation.new(room: demo_room, user: demo_user, datetime_in: 2.days.from_now.change(hour: 12), minutes: 60)
+        r.save!(validate: false)
+        create(:day_pass, user: demo_user, billable: demo_user, operator: demo_operator,
+                          location: demo_location, day_pass_type: dpt, day: r.datetime_in.to_date)
+        # ChargeCalculator WOULD bill the overage (branch isn't billing_state-gated)...
+        expect(Billing::Reservations::ChargeCalculator.call(reservation: r, minutes: 60)).to be > 0
+        # ...but ChargeAtBooking's demo gate prevents any real charge.
+        expect(Stripe::PaymentIntent).not_to receive(:create)
+
+        result = described_class.call(reservation: r)
+
+        expect(result).to be_a_success
+        expect(r.reload.captured_at).to be_nil
+        expect(r.invoices).to be_empty
+      end
+    end
+
     it "exempt member → no charge" do
       member = create(:user, operator: operator)
       plan = create(:plan, operator: operator, location: location, amount_in_cents: 30000)

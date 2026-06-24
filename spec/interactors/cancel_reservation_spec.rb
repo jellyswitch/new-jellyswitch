@@ -152,5 +152,42 @@ RSpec.describe CancelReservation do
       expect(bundle.reload.passes_remaining).to eq(4) # still spent — the day was live
       expect(DayPassBundleRedemption.where(reservation_id: r.id, kind: "reservation")).to be_present
     end
+
+    it "keeps the pass spent when another same-day reservation still relies on the minted pass" do
+      bundle = DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                                     day_pass_type: bundle_type, quantity_purchased: 5, passes_remaining: 5,
+                                     purchased_at: Time.current)
+      day = 3.days.from_now.to_date
+      a = Reservation.new(room: call_room, user: user, datetime_in: day.to_time.change(hour: 10), minutes: 60); a.save!(validate: false)
+      b = Reservation.new(room: call_room, user: user, datetime_in: day.to_time.change(hour: 15), minutes: 60); b.save!(validate: false)
+      Billing::Reservations::RedeemBundlePass.call(reservation: a, user: user, use_bundle_pass: true)
+      Billing::Reservations::RedeemBundlePass.call(reservation: b, user: user, use_bundle_pass: true)
+      expect(bundle.reload.passes_remaining).to eq(4) # one pass covers both
+
+      described_class.call(reservation: a, mode: :member)
+
+      # B still relies on the minted pass → pass stays spent, DayPass survives,
+      # and the ledger row is re-pointed to the surviving reservation.
+      expect(bundle.reload.passes_remaining).to eq(4)
+      expect(user.day_passes.for_day(day)).to be_present
+      expect(DayPassBundleRedemption.where(reservation_id: b.id, kind: "reservation")).to be_present
+      expect(DayPassBundleRedemption.where(reservation_id: a.id, kind: "reservation")).to be_empty
+    end
+
+    it "restores a wholly-future midnight booking cancelled the prior calendar day" do
+      bundle = DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                                     day_pass_type: bundle_type, quantity_purchased: 5, passes_remaining: 5,
+                                     purchased_at: Time.current)
+      # Tomorrow 01:00 — its 4am business window opened "today", but the booking's
+      # calendar day is still future, so a cancel today must restore the pass.
+      r = Reservation.new(room: call_room, user: user, datetime_in: 1.day.from_now.change(hour: 1, min: 0), minutes: 60)
+      r.save!(validate: false)
+      Billing::Reservations::RedeemBundlePass.call(reservation: r, user: user, use_bundle_pass: true)
+      expect(bundle.reload.passes_remaining).to eq(4)
+
+      described_class.call(reservation: r, mode: :member)
+
+      expect(bundle.reload.passes_remaining).to eq(5)
+    end
   end
 end

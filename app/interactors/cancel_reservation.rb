@@ -52,30 +52,56 @@ class CancelReservation
 
   # If this reservation redeemed a bundle pass (ADR 0015) and its coverage day
   # hasn't started yet, give the pass back and drop the minted day pass — the
-  # member never had a chance to use the day. Once the day has begun the access
-  # was live, so the pass stays spent. Independent of the money refund window
-  # (a bundle-covered $0 booking carries no invoice) and of billing_state (a
-  # prepaid pass is state-agnostic). Best-effort — never fails the cancel.
+  # member never had a chance to use the day. Once the coverage day has arrived
+  # the pass may have granted access, so it stays spent. Independent of the money
+  # refund window (a bundle-covered $0 booking carries no invoice) and of
+  # billing_state (a prepaid pass is state-agnostic). Best-effort — never fails
+  # the cancel.
   def restore_redeemed_bundle_passes(reservation)
     redemptions = DayPassBundleRedemption.where(reservation_id: reservation.id, kind: "reservation")
     return if redemptions.empty?
 
     location = reservation.room.location
-    window_start, = location.business_day_window(reservation.datetime_in)
-    return if Time.current >= window_start # coverage day already started — pass is spent
+    tz = ActiveSupport::TimeZone[location.time_zone.presence || "UTC"]
+    # The minted pass covers the reservation's CALENDAR day (DayPass.day) — the
+    # same basis it was minted on. Only restore while that day is wholly future.
+    return if Time.current.in_time_zone(tz).to_date >= reservation.datetime_in.to_date
 
     redemptions.each do |redemption|
       bundle = redemption.day_pass_bundle
       day_pass = redemption.day_pass
       bundle.with_lock do
-        redemption.destroy
-        day_pass&.destroy
-        bundle.update!(passes_remaining: bundle.passes_remaining + 1)
+        # A single minted pass covers EVERY same-day $0 booking by this user. If
+        # another non-cancelled reservation still relies on it, keep the pass
+        # spent and the DayPass alive — just re-point the ledger row to a
+        # survivor so a later cancel can still restore it. Only the last booking
+        # relying on the pass triggers a real refund.
+        survivor = other_live_reservation_sharing(reservation, day_pass)
+        if survivor
+          redemption.update!(reservation_id: survivor.id)
+        else
+          redemption.destroy
+          day_pass&.destroy
+          bundle.refund_pass_locked!
+        end
       end
     rescue => e
       Rails.logger.error("CancelReservation bundle-pass restore failed for reservation #{reservation.id}: #{e.class}: #{e.message}")
       Honeybadger.notify(e, context: { reservation_id: reservation.id, redemption_id: redemption.id }) rescue nil
     end
+  end
+
+  # Another non-cancelled $0-room reservation by the same user, at the minted
+  # pass's location, on the pass's calendar day — i.e. one still covered by it.
+  def other_live_reservation_sharing(reservation, day_pass)
+    return nil unless day_pass
+    Reservation.joins(:room)
+               .where(user_id: reservation.user_id)
+               .where.not(id: reservation.id)
+               .where(rooms: { location_id: day_pass.location_id })
+               .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
+               .where(datetime_in: (day_pass.day - 1).beginning_of_day..(day_pass.day + 1).end_of_day)
+               .find { |r| r.datetime_in.to_date == day_pass.day }
   end
 
   def refund_reservation_invoices(reservation, mode)
