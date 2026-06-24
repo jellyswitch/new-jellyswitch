@@ -596,6 +596,15 @@ class User < ApplicationRecord
   end
 
   # Email confirmation
+
+  # True for a self-signup member who hasn't yet confirmed their email. Staff
+  # roles are never UNASSIGNED, so they're excluded. Drives the persistent
+  # "verify your email" nudge shown after we softened the login gate (we no
+  # longer block these users — see Operator::SessionsController#create).
+  def needs_email_confirmation?
+    !email_confirmed? && role == UNASSIGNED
+  end
+
   def generate_confirmation_token
     self.raw_confirmation_token = User.new_token
     update_attribute(:confirmation_token, User.digest(raw_confirmation_token))

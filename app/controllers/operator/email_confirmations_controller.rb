@@ -44,12 +44,27 @@ class Operator::EmailConfirmationsController < Operator::BaseController
       flash[:error] = "Could not resend confirmation email."
     end
 
-    turbo_redirect(login_path, action: "replace")
+    # A logged-in member resending from the persistent verify-email banner
+    # should land back where they were, not on the login page. Only honor a
+    # safe, internal relative path (no scheme/host) to avoid an open redirect.
+    turbo_redirect(safe_return_path || login_path, action: "replace")
   rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
     raise
   rescue => e
     Honeybadger.notify(e)
     flash[:error] = "An error occurred. Please try again."
     turbo_redirect(root_path, action: "replace")
+  end
+
+  private
+
+  # Accept only a single-segment-rooted relative path ("/foo", "/foo/bar"),
+  # rejecting absolute URLs and protocol-relative "//evil.com" so the resend
+  # button can never be turned into an open redirect.
+  def safe_return_path
+    path = params[:return_to].to_s
+    return nil unless path.start_with?("/")
+    return nil if path.start_with?("//")
+    path
   end
 end

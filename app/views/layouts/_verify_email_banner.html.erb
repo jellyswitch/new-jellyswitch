@@ -1,0 +1,21 @@
+<%# Persistent "verify your email" nudge for members we now let in without a
+    confirmed email (the login gate used to hard-block them — see
+    Operator::SessionsController#create). Mirrors the unread-replies banner
+    chassis. Resend posts back to the same page so the member isn't bounced. %>
+<% if logged_in? && current_user.needs_email_confirmation? %>
+  <div style="background: #fff8e1; border-bottom: 1px solid #ffe082; color: #6b4f00; padding: 10px 16px; font-size: 14px;">
+    <div style="max-width: 720px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+      <span>
+        <i class="fas fa-envelope" style="margin-right: 8px;"></i>
+        Please verify your email — we sent a confirmation link to <strong><%= current_user.email %></strong>.
+      </span>
+      <%= button_to resend_confirmation_path,
+            params: { email: current_user.email, return_to: request.fullpath },
+            class: "btn btn-sm",
+            style: "background: #6b4f00; color: #fff; border: none; white-space: nowrap;",
+            data: { "turbo-action" => "replace" } do %>
+        Resend link
+      <% end %>
+    </div>
+  </div>
+<% end %>

@@ -88,6 +88,38 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
   end
 
+  describe "POST #login" do
+    let!(:operator) { create(:operator, subdomain: "login-test") }
+    let!(:location) { create(:location, operator: operator) }
+
+    before { request.headers["X-Operator-Subdomain"] = "login-test" }
+
+    it "lets an unconfirmed member log in and flags the verify nudge" do
+      create(:user, operator: operator, original_location: location,
+                    email: "unconfirmed@example.com", password: "password123",
+                    role: User::UNASSIGNED, email_confirmed: false)
+
+      post :login, params: { subdomain: "login-test", email: "unconfirmed@example.com", password: "password123" }
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["token"]).to be_present
+      expect(body["user"]["email_confirmed"]).to eq(false)
+      expect(body["user"]["needs_email_confirmation"]).to eq(true)
+    end
+
+    it "does not flag the nudge for a confirmed member" do
+      create(:user, operator: operator, original_location: location,
+                    email: "confirmed@example.com", password: "password123",
+                    role: User::UNASSIGNED, email_confirmed: true)
+
+      post :login, params: { subdomain: "login-test", email: "confirmed@example.com", password: "password123" }
+
+      body = JSON.parse(response.body)
+      expect(body["user"]["needs_email_confirmation"]).to eq(false)
+    end
+  end
+
   describe "POST #lookup_operators" do
     # `:user` factory requires `original_location` to be settable from
     # `operator.locations.first`, so each operator needs at least one location.

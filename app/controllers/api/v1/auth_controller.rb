@@ -247,6 +247,11 @@ class Api::V1::AuthController < Api::V1::BaseController
       role: user.role,
       admin: user.admin?,
       superadmin: user.superadmin?,
+      # Surfaced so the app can show a "verify your email" nudge on login —
+      # parity with the web layout banner (neither path blocks unconfirmed
+      # members anymore).
+      email_confirmed: user.email_confirmed?,
+      needs_email_confirmation: user.needs_email_confirmation?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
