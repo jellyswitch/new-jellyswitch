@@ -43,10 +43,40 @@ class CancelReservation
       return
     end
 
-    refund_reservation_invoices(reservation, mode) unless raced
+    return if raced
+    refund_reservation_invoices(reservation, mode)
+    restore_redeemed_bundle_passes(reservation)
   end
 
   private
+
+  # If this reservation redeemed a bundle pass (ADR 0015) and its coverage day
+  # hasn't started yet, give the pass back and drop the minted day pass — the
+  # member never had a chance to use the day. Once the day has begun the access
+  # was live, so the pass stays spent. Independent of the money refund window
+  # (a bundle-covered $0 booking carries no invoice) and of billing_state (a
+  # prepaid pass is state-agnostic). Best-effort — never fails the cancel.
+  def restore_redeemed_bundle_passes(reservation)
+    redemptions = DayPassBundleRedemption.where(reservation_id: reservation.id, kind: "reservation")
+    return if redemptions.empty?
+
+    location = reservation.room.location
+    window_start, = location.business_day_window(reservation.datetime_in)
+    return if Time.current >= window_start # coverage day already started — pass is spent
+
+    redemptions.each do |redemption|
+      bundle = redemption.day_pass_bundle
+      day_pass = redemption.day_pass
+      bundle.with_lock do
+        redemption.destroy
+        day_pass&.destroy
+        bundle.update!(passes_remaining: bundle.passes_remaining + 1)
+      end
+    rescue => e
+      Rails.logger.error("CancelReservation bundle-pass restore failed for reservation #{reservation.id}: #{e.class}: #{e.message}")
+      Honeybadger.notify(e, context: { reservation_id: reservation.id, redemption_id: redemption.id }) rescue nil
+    end
+  end
 
   def refund_reservation_invoices(reservation, mode)
     location = reservation.room.location

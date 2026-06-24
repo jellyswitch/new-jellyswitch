@@ -41,11 +41,16 @@ class DayPass < ApplicationRecord
   attr_accessor :imported
 
   # Scopes
+  # A pass is bundle-sourced if a bundle redemption minted it (day_pass_id set).
+  # Only DayPass-minting redemptions — door "entry" and reserve-time "reservation"
+  # (ADR 0015) — set day_pass_id (guest/admin_restore don't), so the kind-agnostic
+  # `day_pass_id IS NOT NULL` filter excludes both from day-pass revenue (bundle
+  # money is recognized once at sale — ADR 0009).
   scope :bundle_sourced, -> {
-    where(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+    where(id: DayPassBundleRedemption.where.not(day_pass_id: nil).select(:day_pass_id))
   }
   scope :not_bundle_sourced, -> {
-    where.not(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+    where.not(id: DayPassBundleRedemption.where.not(day_pass_id: nil).select(:day_pass_id))
   }
   scope :today, -> { where(day: Time.current) }
   scope :for_day, -> (date) { where(day: date) }

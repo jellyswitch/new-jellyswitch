@@ -1,0 +1,57 @@
+require "rails_helper"
+
+# Phase 5 (ADR 0015) end-to-end: a bundle holder opting in covers a $0 booking
+# with one prepaid pass instead of being auto-charged a fresh day pass.
+RSpec.describe "API v1 reserve-time bundle redemption", type: :request do
+  let(:operator) { create(:operator, billing_state: "production") }
+  let(:location) { create(:location, operator: operator, credits_enabled: false) }
+  let(:call_room) { create(:room, operator: operator, location: location, hourly_rate_in_cents: 0, rentable: true) }
+  let(:bundle_type) { create(:day_pass_type, operator: operator, location: location, quantity: 5, amount_in_cents: 10_000) }
+  let(:user) { create(:user, operator: operator, original_location: location) }
+  let!(:bundle) do
+    DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                          day_pass_type: bundle_type, quantity_purchased: 5, passes_remaining: 5,
+                          purchased_at: Time.current)
+  end
+
+  def auth_headers_for(u)
+    payload = { user_id: u.id, operator_id: u.operator_id, exp: 1.hour.from_now.to_i }
+    token = JWT.encode(payload, Rails.application.secret_key_base, "HS256")
+    { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => u.operator.subdomain }
+  end
+
+  def book(use_bundle_pass:)
+    post "/api/v1/reservations",
+         params: { reservation: { room_id: call_room.id, minutes: 60, use_bundle_pass: use_bundle_pass,
+                                  datetime_in: 2.days.from_now.change(hour: 10, min: 0).iso8601 } },
+         headers: auth_headers_for(user)
+  end
+
+  it "redeems one bundle pass and books free (no auto-purchased day pass)" do
+    expect(Billing::DayPasses::CreateDayPass).not_to receive(:call) # auto-purchase must not fire
+
+    book(use_bundle_pass: true)
+
+    expect(response).to have_http_status(:created)
+    expect(bundle.reload.passes_remaining).to eq(4)
+    reservation = Reservation.find(JSON.parse(response.body)["id"])
+    expect(reservation.paid).to be_falsey
+    # Exactly the minted bundle pass — and it's revenue-excluded (ADR 0009).
+    expect(user.day_passes.count).to eq(1)
+    expect(DayPass.bundle_sourced).to include(user.day_passes.first)
+    redemption = DayPassBundleRedemption.find_by(reservation_id: reservation.id, kind: "reservation")
+    expect(redemption).to be_present
+  end
+
+  it "does not touch the bundle when the booker doesn't opt in" do
+    # Member (so the booking succeeds via membership, not the bundle) who also
+    # holds a bundle — without opting in, the bundle must stay untouched.
+    plan = create(:plan, operator: operator, location: location, amount_in_cents: 30_000)
+    create(:subscription, subscribable: user, plan: plan, active: true, paused: false)
+
+    book(use_bundle_pass: false)
+
+    expect(response).to have_http_status(:created)
+    expect(bundle.reload.passes_remaining).to eq(5)
+  end
+end

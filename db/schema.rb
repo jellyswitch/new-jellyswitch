@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_000004) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_23_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -290,9 +290,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_000004) do
     t.datetime "redeemed_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "reservation_id"
     t.index ["day_pass_bundle_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_bundle_id"
     t.index ["day_pass_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_id"
     t.index ["performed_by_id"], name: "index_day_pass_bundle_redemptions_on_performed_by_id"
+    t.index ["reservation_id"], name: "index_day_pass_bundle_redemptions_on_reservation_id"
   end
 
   create_table "day_pass_bundles", force: :cascade do |t|

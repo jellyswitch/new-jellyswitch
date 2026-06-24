@@ -8,6 +8,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
   organize(
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
+    Billing::Reservations::RedeemBundlePass,
     Billing::Reservations::ChargeAtBooking,
     CreateNotificationsAsync,
     SendAdminNotificationForPaidRoom,

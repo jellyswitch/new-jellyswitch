@@ -15,6 +15,7 @@ class Billing::Reservations::CreateRoomReservation
   organize(
     Billing::Reservations::SaveRoomReservation,
     Billing::Reservations::ChargeCredits,
+    Billing::Reservations::RedeemBundlePass,
     Billing::Reservations::ChargeAtBooking,
     Reservations::ScheduleUpcomingReservationReminder,
     CreateNotificationsAsync,

@@ -113,4 +113,44 @@ RSpec.describe CancelReservation do
     expect { described_class.call(reservation: r, mode: :admin) }.not_to raise_error
     expect(r.reload.cancelled?).to be(true)
   end
+
+  # ADR 0015: cancelling a reservation that redeemed a bundle pass restores the
+  # pass + drops the minted day pass — but only if the coverage day hasn't begun.
+  describe "bundle-pass restore on cancel" do
+    let(:call_room) { create(:room, operator: operator, location: location, hourly_rate_in_cents: 0) }
+    let(:bundle_type) { create(:day_pass_type, operator: operator, location: location) }
+
+    def redeemed_reservation(hours_from_now)
+      r = Reservation.new(room: call_room, user: user, datetime_in: hours_from_now.hours.from_now, minutes: 60)
+      r.save!(validate: false)
+      DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                            day_pass_type: bundle_type, quantity_purchased: 5, passes_remaining: 5,
+                            purchased_at: Time.current)
+      Billing::Reservations::RedeemBundlePass.call(reservation: r, user: user, use_bundle_pass: true)
+      r
+    end
+
+    it "restores the pass and destroys the minted day pass when the coverage day hasn't started" do
+      r = redeemed_reservation(72) # 3 days out
+      bundle = user.day_pass_bundles.first
+      expect(bundle.reload.passes_remaining).to eq(4)
+
+      described_class.call(reservation: r, mode: :member)
+
+      expect(bundle.reload.passes_remaining).to eq(5)
+      expect(user.day_passes.for_day(r.datetime_in.to_date)).to be_empty
+      expect(DayPassBundleRedemption.where(reservation_id: r.id, kind: "reservation")).to be_empty
+    end
+
+    it "keeps the pass spent when the coverage day has already started" do
+      r = redeemed_reservation(2) # today (the 4am window has begun)
+      bundle = user.day_pass_bundles.first
+      expect(bundle.reload.passes_remaining).to eq(4)
+
+      described_class.call(reservation: r, mode: :member)
+
+      expect(bundle.reload.passes_remaining).to eq(4) # still spent — the day was live
+      expect(DayPassBundleRedemption.where(reservation_id: r.id, kind: "reservation")).to be_present
+    end
+  end
 end

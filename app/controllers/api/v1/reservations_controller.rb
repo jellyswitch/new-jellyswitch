@@ -46,10 +46,17 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # the "you booked for free without a day pass" gap closed.
     user = current_api_user
     location = current_location
+    # Opt-in reserve-time bundle redemption (ADR 0015): "use 1 pass for today".
+    # When the booker has an active bundle and opts in, RedeemBundlePass (an
+    # organizer step) spends one prepaid pass to cover the booking — so DON'T
+    # auto-purchase a fresh day pass on top of it here.
+    use_bundle_pass = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_bundle_pass))
+    redeeming_bundle = use_bundle_pass && user.has_active_day_pass_bundle?(location)
     # Paid rooms already charge an hourly rate that covers access —
     # don't bundle a day pass on top.
     is_priced_room = room.hourly_rate_in_cents.to_i > 0
     needs_cov = !is_priced_room &&
+                !redeeming_bundle &&
                 !user.has_active_subscription? &&
                 !user.has_active_day_pass?(date) &&
                 !user.has_active_lease?(location) &&
@@ -109,6 +116,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       location: current_location,
       day_pass_charge_info: day_pass_charge_info,
       subscription_charge_info: subscription_charge_info,
+      use_bundle_pass: use_bundle_pass,
     )
 
     if result.success?
