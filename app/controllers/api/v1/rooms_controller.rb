@@ -365,6 +365,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
         photo_url: (r.photo.attached? ? url_for(r.photo) : nil rescue nil),
+        charge: room_charge(r, user, location, start_time.to_date, effective_minutes, sub_info, dp_info),
       }
     }
 
@@ -458,7 +459,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       start_time_label: start_time.strftime("%-l:%M %p").strip,
       minutes: minutes,
       no_rooms_available: avail.empty?,
-      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true) },
+      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true).merge(charge: room_charge(r, user, location, date, minutes, sub_info, dp_info)) },
       unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
       pricing_context: {
         should_charge: should_charge,
@@ -516,6 +517,43 @@ class Api::V1::RoomsController < Api::V1::BaseController
     else
       [start_hour, end_hour]
     end
+  end
+
+  # Per-room charge + coverage label for the room LIST, computed with the SAME
+  # rules as the /rooms/:id/pricing summary so the list can never disagree with
+  # it. Priced rooms use should_charge_for_room? (day-passers DO pay premium
+  # rooms — a day pass covers free rooms + included minutes, not hourly rooms);
+  # $0 rooms use should_charge_for_reservation? plus any plan/day-pass overage.
+  # Returns { cents:, label: } — when label is present the client shows it
+  # ("Included with …"); otherwise it shows the dollar amount.
+  def room_charge(room, user, location, day, minutes, sub_info = nil, dp_info = nil)
+    if room.hourly_rate_in_cents.to_i > 0
+      if user.should_charge_for_room?(room, day)
+        { cents: (room.hourly_rate_in_cents.to_i * minutes / 60.0).round, label: nil }
+      else
+        { cents: 0, label: included_with_label(user, location, day) }
+      end
+    elsif !user.should_charge_for_reservation?(location, day)
+      { cents: 0, label: included_with_label(user, location, day) }
+    else
+      info = sub_info || dp_info
+      over = info&.dig(:overage_amount_in_cents).to_i
+      if info && over > 0
+        { cents: over, label: nil }
+      elsif info
+        { cents: 0, label: included_with_label(user, location, day) }
+      else
+        { cents: 0, label: "Day pass required" }
+      end
+    end
+  end
+
+  # Why a room reads as covered, for the list label.
+  def included_with_label(user, location, day)
+    return "Included with membership" if user.member?(location)
+    return "Included with office" if user.has_active_lease?
+    return "Included with day pass" if user.has_active_day_pass?(day)
+    "Free"
   end
 
   def room_card(room, is_available, available_at = nil)

@@ -354,14 +354,23 @@ class Operator::ReservationsController < Operator::BaseController
       duration = params[:duration].to_i
       date = Time.zone.parse(params[:date])
 
-      should_charge = current_user.should_charge_for_reservation?(current_location, date)
+      # Priced (premium) rooms charge everyone EXCEPT members/leaseholders/staff —
+      # day-passers are NOT exempt (a day pass covers free rooms + included minutes,
+      # not hourly rooms). $0 rooms use reservation-level coverage. Matches
+      # should_charge_for_room? + the actual booking charge, so the quote can never
+      # read "Free" for a room the booker is charged for.
+      priced_room = room.hourly_rate_in_cents.to_i > 0
+      should_charge = priced_room ?
+        current_user.should_charge_for_room?(room, date) :
+        current_user.should_charge_for_reservation?(current_location, date)
 
       hourly_price = room.hourly_rate_in_cents / 100.0
-      reservation_price = room.hourly_rate_in_cents / 100.0 * (duration / 60.0)
+      reservation_price = should_charge ? (room.hourly_rate_in_cents / 100.0 * (duration / 60.0)) : 0
 
-      # Check day pass overage for day pass holders
+      # Day-pass / subscription included-minutes never cover a premium hourly room,
+      # so skip those adjustments for priced rooms (they'd wrongly re-zero them).
       begin
-        day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
+        day_pass_charge_info = priced_room ? nil : current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
       rescue => e
         Rails.logger.error("day_pass_reservation_charge_info error: #{e.class}: #{e.message}")
         Honeybadger.notify(e)
@@ -375,6 +384,11 @@ class Operator::ReservationsController < Operator::BaseController
         capacity: room.capacity,
         reservation_price: reservation_price,
         should_charge: should_charge,
+        coverage_label: (should_charge ? nil : (
+          current_user.member?(current_location) ? "Included with membership" :
+          current_user.has_active_lease? ? "Included with office" :
+          current_user.has_active_day_pass?(date.to_date) ? "Included with day pass" : "Free"
+        )),
         is_day_pass_overage: false,
         amenities: room.amenities,
       }
@@ -396,7 +410,7 @@ class Operator::ReservationsController < Operator::BaseController
 
       # Check subscription meeting room overage for members
       begin
-        subscription_charge_info = current_user.subscription_reservation_charge_info(current_location, duration)
+        subscription_charge_info = priced_room ? nil : current_user.subscription_reservation_charge_info(current_location, duration)
       rescue => e
         Rails.logger.error("subscription_reservation_charge_info error: #{e.class}: #{e.message}")
         Honeybadger.notify(e)

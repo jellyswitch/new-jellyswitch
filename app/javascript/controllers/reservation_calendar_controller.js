@@ -851,7 +851,7 @@ export default class extends Controller {
 
     const hourlyPriceText = should_charge
       ? this.USDollar.format(room.hourly_price)
-      : "Free";
+      : (room.coverage_label || "Free");
     const reservationPriceText = this.USDollar.format(room.reservation_price);
 
     $(".room-details .hourly-price .details-value").text(hourlyPriceText);
