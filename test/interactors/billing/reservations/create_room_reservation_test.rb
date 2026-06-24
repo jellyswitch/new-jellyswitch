@@ -1,14 +1,14 @@
 require "test_helper"
 
 class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
-  # GrantFreeDayPass is intentionally absent (ADR 0012): paid bookings mint no
-  # complimentary day pass. This locks the "Brad bug" fix at the organizer level.
+  # Captured at booking (ADR 0010): ChargeAtBooking replaces the hold/settle
+  # pair (AuthorizeHoldOrSchedule + ScheduleSettleReservation). GrantFreeDayPass
+  # stays absent (ADR 0012) — paid bookings mint no complimentary day pass.
   def test_organized_interactors
     expected_organized = [
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
-      Billing::Reservations::AuthorizeHoldOrSchedule,
-      Reservations::ScheduleSettleReservation,
+      Billing::Reservations::ChargeAtBooking,
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,
       SendAdminNotificationForPaidRoom,

@@ -233,7 +233,9 @@ class Operator::ReservationsController < Operator::BaseController
     find_reservation
     authorize @reservation, :cancel?
 
-    result = CancelReservation.call(reservation: @reservation)
+    # Operator/staff cancel = admin mode: refunds all the reservation's invoices
+    # regardless of the member cancellation window (ADR 0011).
+    result = CancelReservation.call(reservation: @reservation, mode: :admin)
 
     if result.success?
       flash[:notice] = "Reservation cancelled."

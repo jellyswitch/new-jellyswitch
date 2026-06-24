@@ -128,13 +128,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   def update
     reservation = current_api_user.reservations.find(params[:id])
 
-    # Same editability window as cancel: once a reservation is about to
-    # start (or has been captured) it's committed and can't be moved.
+    # Editable until the 1-minute cutoff before start. (Capture now happens AT
+    # BOOKING, so captured_at is set immediately and is no longer an editability
+    # signal — an edit re-prices via a delta charge; ADR 0010.)
     if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
       return render_error('This reservation can no longer be changed — it starts within a minute.')
-    end
-    if reservation.captured_at.present?
-      return render_error('This reservation can no longer be changed — it has already been charged.')
     end
 
     new_minutes = params.dig(:reservation, :minutes).present? ? params[:reservation][:minutes].to_i : reservation.minutes
@@ -179,64 +177,25 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       return render_error('This reservation can no longer be cancelled — it starts within a minute.')
     end
 
-    # Operator's cancellation policy. Within window-hours-of-start the
-    # member forfeits the hold entirely; outside the window we still
-    # capture refund_fee_percent (processing fee + booking time) and
-    # release the rest.
+    # Capture-at-booking (ADR 0010/0011): the money was taken at booking, so a
+    # cancel is now a REFUND, not a hold release. Inside the cancellation window
+    # the member forfeits the charge (no refund); outside, CancelReservation
+    # refunds all the reservation's invoices minus refund_fee_percent.
+    # fee_charged_in_cents reports what the member is OUT (kept by the operator),
+    # preserving the response contract the app already reads.
     op = current_tenant
     window_hours = op&.try(:cancellation_window_hours).to_i
     fee_pct = op&.try(:refund_fee_percent).to_i
     inside_window = window_hours > 0 && (reservation.datetime_in - Time.current) < window_hours.hours
 
-    # Atomic cancel + hold-release: take the row lock so we don't race
-    # the SettleReservationJob firing at datetime_in. Re-check captured_at
-    # under the lock — if the capture beat us, the slot is committed and
-    # the user owes the charge.
-    fee_charged_cents = 0
-    reservation.with_lock do
-      Reservation.unscoped { reservation.reload }
-      if reservation.captured_at.present?
-        return render_error('This reservation can no longer be cancelled — it has already been charged.')
-      end
+    charged = reservation.captured_amount_in_cents.to_i
+    fee_charged_cents = inside_window ? charged : (charged * fee_pct / 100.0).round
 
-      pi_id = reservation.stripe_payment_intent_id
-      authorized = reservation.authorized_amount_in_cents.to_i
-
-      capture_cents = if pi_id.blank? || authorized <= 0
-        0
-      elsif inside_window
-        authorized # forfeit — full capture
-      else
-        (authorized * fee_pct / 100.0).round # cancellation fee only
-      end
-
-      reservation.update!(cancelled: true)
-
-      if pi_id.present?
-        location = reservation.room.location
-        creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
-
-        if capture_cents > 0
-          begin
-            Stripe::PaymentIntent.capture(pi_id, { amount_to_capture: capture_cents }, creds)
-            reservation.update!(captured_amount_in_cents: capture_cents, captured_at: Time.current)
-            fee_charged_cents = capture_cents
-          rescue Stripe::InvalidRequestError => e
-            # Most likely failure: capture amount below Stripe's $0.50
-            # minimum, or PI already cancelled. Fall back to voiding.
-            Rails.logger.warn("Cancel-fee capture failed (#{e.message}) reservation=#{reservation.id}; voiding")
-            begin
-              Stripe::PaymentIntent.cancel(pi_id, {}, creds)
-            rescue Stripe::InvalidRequestError; end
-          end
-        else
-          begin
-            Stripe::PaymentIntent.cancel(pi_id, {}, creds)
-          rescue Stripe::InvalidRequestError => e
-            Rails.logger.warn("Cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
-          end
-        end
-      end
+    result = CancelReservation.call(
+      reservation: reservation, mode: :member, current_user: current_api_user,
+    )
+    unless result.success?
+      return render_error(result.message || 'Could not cancel reservation')
     end
 
     render json: {

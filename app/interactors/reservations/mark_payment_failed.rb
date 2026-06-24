@@ -6,10 +6,10 @@ class Reservations::MarkPaymentFailed
   # management feed, and emails the member with a "please update your
   # card" nudge. Idempotent — bails if payment_failed_at is already set.
   #
-  # Called from:
-  #   * AuthorizeReservationHoldJob (deferred-auth path failure)
-  #   * Webhooks (Stripe upstream auto-cancel / payment-method failure)
-  #   * CaptureHold (rescue branch on capture failure)
+  # Called from Webhooks (Stripe upstream auto-cancel / payment-method failure).
+  # Under capture-at-booking a card decline fails the booking synchronously
+  # (ChargeAtBooking → rollback destroys the reservation), so the booking-time
+  # path no longer routes through here.
   delegate :reservation, :reason, to: :context
 
   def call
