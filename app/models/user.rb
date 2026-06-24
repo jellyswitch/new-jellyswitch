@@ -141,6 +141,11 @@ class User < ApplicationRecord
   validates :email, uniqueness: { scope: :operator_id }, presence: true
   validates :name, presence: true
   validates :phone, presence: true, unless: :admin_created, on: :create
+  # Front-door spam defense: reject self-signups whose email domain can't
+  # receive mail (no MX / A / AAAA). Network-gated (ENV["VALIDATE_EMAIL_MX"])
+  # and fail-open — see MxRecordValidator. Skipped for admin-created members and
+  # only on :create (mirrors the phone rule above).
+  validates :email, mx_record: true, unless: :admin_created, on: :create
   validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
   validate :terms_must_be_accepted, on: :create
   has_secure_password
