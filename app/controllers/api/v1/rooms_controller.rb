@@ -365,7 +365,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
         photo_url: (r.photo.attached? ? url_for(r.photo) : nil rescue nil),
-        charge: room_charge(r, user, location, start_time.to_date, effective_minutes, sub_info, dp_info),
+        charge: room_charge(r, user, location, start_time.to_date, effective_minutes, start_time),
       }
     }
 
@@ -459,7 +459,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       start_time_label: start_time.strftime("%-l:%M %p").strip,
       minutes: minutes,
       no_rooms_available: avail.empty?,
-      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true).merge(charge: room_charge(r, user, location, date, minutes, sub_info, dp_info)) },
+      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true).merge(charge: room_charge(r, user, location, date, minutes, start_time)) },
       unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
       pricing_context: {
         should_charge: should_charge,
@@ -526,21 +526,25 @@ class Api::V1::RoomsController < Api::V1::BaseController
   # $0 rooms use should_charge_for_reservation? plus any plan/day-pass overage.
   # Returns { cents:, label: } — when label is present the client shows it
   # ("Included with …"); otherwise it shows the dollar amount.
-  def room_charge(room, user, location, day, minutes, sub_info = nil, dp_info = nil)
+  def room_charge(room, user, location, day, minutes, at = nil)
     if room.hourly_rate_in_cents.to_i > 0
       if user.should_charge_for_room?(room, day)
         { cents: (room.hourly_rate_in_cents.to_i * minutes / 60.0).round, label: nil }
       else
         { cents: 0, label: included_with_label(user, location, day) }
       end
-    elsif !user.should_charge_for_reservation?(location, day)
-      { cents: 0, label: included_with_label(user, location, day) }
     else
+      # $0 room. Compute coverage the SAME way the /pricing summary does — per
+      # room, with the booking's minutes — so a plan/day-pass OVERAGE (included
+      # meeting-room minutes exceeded) surfaces as a real charge FIRST, instead of
+      # wrongly reading "Included" while the booker is actually billed the overage.
+      sub_info = (user.subscription_reservation_charge_info(location, minutes, room: room, at: at) rescue nil)
+      dp_info  = (user.day_pass_reservation_charge_info(location, day, minutes, room: room) rescue nil)
       info = sub_info || dp_info
       over = info&.dig(:overage_amount_in_cents).to_i
-      if info && over > 0
+      if over > 0
         { cents: over, label: nil }
-      elsif info
+      elsif !user.should_charge_for_reservation?(location, day) || info
         { cents: 0, label: included_with_label(user, location, day) }
       else
         { cents: 0, label: "Day pass required" }
