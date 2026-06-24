@@ -53,6 +53,31 @@ class UserMailer < ApplicationMailer
     }.to_json
   end
 
+  # Passwordless "login code" (OTP) — ADR 0016. Transactional, so it's exempt
+  # from the Spam Guard cool-down (ADR 0003) and always sends. Click/open
+  # tracking disabled (a 6-digit code email has no links worth tracking, and we
+  # don't want SendGrid rewriting it).
+  def login_code(user, operator, code)
+    @user = user
+    @operator = operator
+    @code = code
+    mail to: user.email, subject: "Your #{@operator.name} login code: #{@code}", from: @operator.sender_from_address, reply_to: @operator.contact_email,
+    'X-SMTPAPI' => {
+      "filters" => {
+        "clicktrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        },
+        "opentrack" => {
+          "settings" => {
+            "enable" => 0
+          }
+        }
+      }
+    }.to_json
+  end
+
   def event_registration(user, password, event)
     @user = user
     @password = password

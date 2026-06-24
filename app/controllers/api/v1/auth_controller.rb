@@ -1,5 +1,5 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators]
+  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators, :request_login_code, :verify_login_code]
 
   # GET /api/v1/auth/operators
   #
@@ -76,6 +76,49 @@ class Api::V1::AuthController < Api::V1::BaseController
       }
     else
       render_error('Invalid email or password', status: :unauthorized)
+    end
+  end
+
+  # Passwordless login, step 1 — email a single-use Login Code (ADR 0016).
+  # Always reports success so the response never reveals whether the email has
+  # an account (mirrors #forgot_password). Rate-limited at the Rack layer.
+  def request_login_code
+    subdomain = params[:subdomain]&.downcase
+    operator = Operator.find_by(subdomain: subdomain)
+    return render_error('Space not found', status: :not_found) unless operator
+
+    set_current_tenant(operator)
+
+    user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
+    if user
+      begin
+        user.generate_login_code
+        user.send_login_code_email
+      rescue => e
+        Rails.logger.error("Login code email failed: #{e.message}")
+      end
+    end
+
+    render json: { success: true, message: "If an account exists with that email, we've sent a login code." }
+  end
+
+  # Passwordless login, step 2 — verify the code and issue the same credential
+  # as password login. A successful verify also confirms the email (see
+  # User#verify_login_code). Generic failure so a wrong/expired code reveals
+  # nothing; the per-code attempt cap + Rack throttle bound brute force.
+  def verify_login_code
+    subdomain = params[:subdomain]&.downcase
+    operator = Operator.find_by(subdomain: subdomain)
+    return render_error('Space not found', status: :not_found) unless operator
+
+    set_current_tenant(operator)
+
+    user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
+    if user&.verify_login_code(params[:code])
+      token = generate_token(user)
+      render json: { token: token, user: user_json(user) }
+    else
+      render_error('Invalid or expired login code', status: :unauthorized)
     end
   end
 

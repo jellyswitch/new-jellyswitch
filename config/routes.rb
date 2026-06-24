@@ -34,6 +34,8 @@ Rails.application.routes.draw do
 
     namespace :v1 do
       post 'auth/login', to: 'auth#login'
+      post 'auth/request_login_code', to: 'auth#request_login_code'
+      post 'auth/verify_login_code', to: 'auth#verify_login_code'
       post 'auth/signup', to: 'auth#signup'
       post 'auth/forgot_password', to: 'auth#forgot_password'
       post 'auth/reset_password', to: 'auth#reset_password'
