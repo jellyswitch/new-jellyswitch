@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_23_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -494,8 +494,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_000002) do
     t.string "description"
     t.datetime "refunded_at"
     t.integer "refund_amount_in_cents"
+    t.bigint "reservation_id"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_invoices_on_location_id"
+    t.index ["reservation_id"], name: "index_invoices_on_reservation_id"
     t.index ["stripe_payment_intent_id"], name: "index_invoices_on_stripe_payment_intent_id"
   end
 

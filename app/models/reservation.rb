@@ -35,6 +35,10 @@ class Reservation < ApplicationRecord
   belongs_to :recurring_reservation, optional: true
   has_and_belongs_to_many :amenities
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
+  # Booking-capture + extension-delta invoices (ADR 0010/0011). A cancel refunds
+  # all of them. nullify on destroy keeps the financial record after the
+  # reservation row goes away.
+  has_many :invoices, dependent: :nullify
 
   validates_with ReservationValidator
 
