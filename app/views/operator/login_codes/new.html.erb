@@ -1,0 +1,33 @@
+<%- title "Log In with a Code" %>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-4 pt-4">
+      <h4 class="display-4 text-center mt-4">Email me a login code</h4>
+      <p class="lead text-center mb-3 mt-3">We'll email a 6-digit code so you can sign in to <%= current_tenant.name %> — no password needed.</p>
+
+      <%= form_tag(login_code_path, method: :post) do %>
+        <div class="form-group row">
+          <div class="col-1"></div>
+          <%= email_field_tag :email, @email, placeholder: "Email", class: "form-control col", required: true, autofocus: true, autocomplete: "email" %>
+          <div class="col-1"></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-1"></div>
+          <%= submit_tag "Send me a code", class: "form-control btn btn-primary col", data: { disable_with: "Sending..." } %>
+          <div class="col-1"></div>
+        </div>
+      <% end %>
+
+      <div class="form-group row">
+        <div class="col-1"></div>
+        <div class="col-sm-7 text-center">
+          <small><%= link_to "Back to password login", login_path, data: { "turbo-action" => "replace" } %></small>
+        </div>
+        <div class="col-1"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>

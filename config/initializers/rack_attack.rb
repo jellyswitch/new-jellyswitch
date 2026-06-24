@@ -37,12 +37,14 @@ class Rack::Attack
   # per-code 5-attempt cap by rapidly re-requesting fresh codes, and a victim
   # whose address someone is poking can't be email-bombed. 3 codes / 15 min is
   # ample for a real person mistyping or not seeing the first email.
-  REQUEST_LOGIN_CODE_PATH = "/api/v1/auth/request_login_code".freeze
+  # Both the API (mobile) and the web form route through these throttles.
+  REQUEST_LOGIN_CODE_PATHS = ["/api/v1/auth/request_login_code", "/login/code"].freeze
+  VERIFY_LOGIN_CODE_PATHS = ["/api/v1/auth/verify_login_code", "/login/code/verify"].freeze
   throttle("login_code_request/ip", limit: 5, period: 1.minute) do |req|
-    req.ip if req.post? && req.path == REQUEST_LOGIN_CODE_PATH
+    req.ip if req.post? && REQUEST_LOGIN_CODE_PATHS.include?(req.path)
   end
   throttle("login_code_request/email", limit: 3, period: 15.minutes) do |req|
-    if req.post? && req.path == REQUEST_LOGIN_CODE_PATH
+    if req.post? && REQUEST_LOGIN_CODE_PATHS.include?(req.path)
       email = req.params["email"].to_s.downcase.strip
       email.presence
     end
@@ -52,7 +54,7 @@ class Rack::Attack
   # Defense-in-depth behind the per-code 5-attempt cap — bounds raw guessing
   # velocity against the 6-digit space.
   throttle("login_code_verify/ip", limit: 10, period: 1.minute) do |req|
-    req.ip if req.post? && req.path == "/api/v1/auth/verify_login_code"
+    req.ip if req.post? && VERIFY_LOGIN_CODE_PATHS.include?(req.path)
   end
 
   ### Throttle BLE auto-unlock POSTs to 30/minute per Bearer token ###
