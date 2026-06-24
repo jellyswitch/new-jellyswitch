@@ -135,7 +135,7 @@ class User < ApplicationRecord
   friendly_id :name, use: :slugged
 
   # Auth stuff
-  attr_accessor :remember_token, :reset_token, :raw_confirmation_token, :terms_accepted, :admin_created
+  attr_accessor :remember_token, :reset_token, :raw_confirmation_token, :terms_accepted, :admin_created, :login_code
   before_save { self.email = email.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id }, presence: true
@@ -631,6 +631,64 @@ class User < ApplicationRecord
   def valid_confirmation_token?(token)
     return false if confirmation_token.nil?
     BCrypt::Password.new(confirmation_token).is_password?(token)
+  end
+
+  # Login Code (passwordless OTP) — ADR 0016. A single-use 6-digit code stored
+  # only as a bcrypt digest (like reset_digest), valid for LOGIN_CODE_TTL, and
+  # burned after LOGIN_CODE_MAX_ATTEMPTS wrong guesses. One active code per user:
+  # generating a new one overwrites the old.
+  LOGIN_CODE_TTL = 10.minutes
+  LOGIN_CODE_MAX_ATTEMPTS = 5
+
+  # Mints a fresh code, stashing the raw value on the instance (like reset_token)
+  # so send_login_code_email can deliver it; only the digest is persisted.
+  def generate_login_code
+    self.login_code = format("%06d", SecureRandom.random_number(1_000_000))
+    update_columns(
+      login_code_digest: User.digest(login_code),
+      login_code_sent_at: Time.zone.now,
+      login_code_attempts: 0,
+    )
+    login_code
+  end
+
+  def send_login_code_email
+    UserMailer.login_code(self, operator, login_code).deliver_now
+  end
+
+  def login_code_expired?
+    login_code_sent_at.nil? || login_code_sent_at < LOGIN_CODE_TTL.ago
+  end
+
+  def login_code_active?
+    login_code_digest.present? && !login_code_expired? && login_code_attempts < LOGIN_CODE_MAX_ATTEMPTS
+  end
+
+  # Single-use verification. On success: consume the code AND confirm the email
+  # (receiving the code proves inbox control). On failure: count the attempt and
+  # burn the code once the cap is hit, so the only recovery is requesting a new
+  # one. Returns a boolean; the caller issues the session/JWT exactly as for
+  # password login.
+  def verify_login_code(code)
+    return false unless login_code_active?
+
+    if BCrypt::Password.new(login_code_digest).is_password?(code.to_s)
+      clear_login_code!
+      confirm_email! unless email_confirmed?
+      true
+    else
+      next_attempts = login_code_attempts + 1
+      if next_attempts >= LOGIN_CODE_MAX_ATTEMPTS
+        clear_login_code!
+      else
+        update_columns(login_code_attempts: next_attempts)
+      end
+      false
+    end
+  end
+
+  def clear_login_code!
+    update_columns(login_code_digest: nil, login_code_sent_at: nil, login_code_attempts: 0)
   end
 
   # Form and view helpers

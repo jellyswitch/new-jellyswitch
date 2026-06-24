@@ -34,6 +34,8 @@ Rails.application.routes.draw do
 
     namespace :v1 do
       post 'auth/login', to: 'auth#login'
+      post 'auth/request_login_code', to: 'auth#request_login_code'
+      post 'auth/verify_login_code', to: 'auth#verify_login_code'
       post 'auth/signup', to: 'auth#signup'
       post 'auth/forgot_password', to: 'auth#forgot_password'
       post 'auth/reset_password', to: 'auth#reset_password'
@@ -394,6 +396,13 @@ Rails.application.routes.draw do
     delete "/logout", to: "sessions#destroy", as: :logout
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
+
+    # Passwordless login via emailed Login Code (ADR 0016) — member types the
+    # code, no deep link. Mirrors the password_resets two-step web flow.
+    get  "/login/code",        to: "operator/login_codes#new",         as: :new_login_code
+    post "/login/code",        to: "operator/login_codes#create",      as: :login_code
+    get  "/login/code/verify", to: "operator/login_codes#verify_form", as: :login_code_verify
+    post "/login/code/verify", to: "operator/login_codes#verify"
     get "/signup", to: "onboarding#new_user", as: :operator_signup
     get "/choose_operator", to: "sessions#choose_operator", as: :choose_operator
     get "/password_form", to: "sessions#password_form", as: :password_form

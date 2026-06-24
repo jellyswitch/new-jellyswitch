@@ -1,0 +1,38 @@
+<%- title "Enter Your Code" %>
+
+<div class="row mt-3">
+  <div class="col-sm-3"></div>
+  <div class="col-sm">
+    <div class="jumbotron bg-white pb-4 pt-4">
+      <h4 class="display-4 text-center mt-4">Enter your login code</h4>
+      <p class="lead text-center mb-3 mt-3">
+        If an account exists for <strong><%= @email %></strong>, we've sent it a 6-digit code. It expires in 10 minutes.
+      </p>
+
+      <%= form_tag(login_code_verify_path, method: :post) do %>
+        <%= hidden_field_tag :email, @email %>
+        <div class="form-group row">
+          <div class="col-1"></div>
+          <%= text_field_tag :code, nil, placeholder: "6-digit code", class: "form-control col text-center",
+                required: true, autofocus: true, inputmode: "numeric", autocomplete: "one-time-code",
+                pattern: "[0-9]*", maxlength: 6, style: "letter-spacing: 4px; font-size: 1.4rem;" %>
+          <div class="col-1"></div>
+        </div>
+        <div class="form-group row">
+          <div class="col-1"></div>
+          <%= submit_tag "Sign In", class: "form-control btn btn-primary col", data: { disable_with: "Signing in..." } %>
+          <div class="col-1"></div>
+        </div>
+      <% end %>
+
+      <div class="form-group row">
+        <div class="col-1"></div>
+        <div class="col-sm-7 text-center">
+          <small>Didn't get it? <%= link_to "Send a new code", new_login_code_path, data: { "turbo-action" => "replace" } %></small>
+        </div>
+        <div class="col-1"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-3"></div>
+</div>

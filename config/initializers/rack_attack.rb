@@ -31,6 +31,32 @@ class Rack::Attack
     req.ip if req.post? && SIGNUP_POST_PATHS.include?(req.path)
   end
 
+  ### Throttle passwordless Login Code requests (ADR 0016) ###
+  # Issuing a code emails the user, so cap it two ways: per IP (mirrors the
+  # signup limit) and per email address, so an attacker can't defeat the
+  # per-code 5-attempt cap by rapidly re-requesting fresh codes, and a victim
+  # whose address someone is poking can't be email-bombed. 3 codes / 15 min is
+  # ample for a real person mistyping or not seeing the first email.
+  # Both the API (mobile) and the web form route through these throttles.
+  REQUEST_LOGIN_CODE_PATHS = ["/api/v1/auth/request_login_code", "/login/code"].freeze
+  VERIFY_LOGIN_CODE_PATHS = ["/api/v1/auth/verify_login_code", "/login/code/verify"].freeze
+  throttle("login_code_request/ip", limit: 5, period: 1.minute) do |req|
+    req.ip if req.post? && REQUEST_LOGIN_CODE_PATHS.include?(req.path)
+  end
+  throttle("login_code_request/email", limit: 3, period: 15.minutes) do |req|
+    if req.post? && REQUEST_LOGIN_CODE_PATHS.include?(req.path)
+      email = req.params["email"].to_s.downcase.strip
+      email.presence
+    end
+  end
+
+  ### Throttle Login Code verification to 10/minute per IP ###
+  # Defense-in-depth behind the per-code 5-attempt cap — bounds raw guessing
+  # velocity against the 6-digit space.
+  throttle("login_code_verify/ip", limit: 10, period: 1.minute) do |req|
+    req.ip if req.post? && VERIFY_LOGIN_CODE_PATHS.include?(req.path)
+  end
+
   ### Throttle BLE auto-unlock POSTs to 30/minute per Bearer token ###
   # Members walk by repeatedly; 30/min comfortably covers normal traffic
   # while capping a hostile loop. Bearer token includes the user id so this
