@@ -42,3 +42,30 @@ RSpec.describe Reservation, "#access_window_open?" do
     expect(reservation.access_window_open?(start - 45.minutes, window_minutes: 60)).to be(true)
   end
 end
+
+# Phase 7 mobile surfacing: the same window, exposed as a member-facing
+# "when can I get in" instant + width.
+RSpec.describe Reservation, "access-window labels" do
+  let(:operator) { create(:operator, billing_state: "production", building_access_window_minutes: 60) }
+  let(:location) { create(:location, operator: operator) }
+  let(:room) { create(:room, operator: operator, location: location) }
+  let(:user) { create(:user, operator: operator) }
+  let(:start) { 2.days.from_now.change(hour: 12, min: 0) }
+  let(:reservation) do
+    r = Reservation.new(room: room, user: user, datetime_in: start, minutes: 60)
+    r.save!(validate: false)
+    r
+  end
+
+  it "reads the operator's configured window width" do
+    expect(reservation.building_access_window_minutes).to eq(60)
+    operator.update!(building_access_window_minutes: 30)
+    expect(reservation.building_access_window_minutes).to eq(30)
+  end
+
+  it "opens access the window's minutes before the slot starts" do
+    expect(reservation.access_opens_at).to be_within(1.second).of(start - 60.minutes)
+    operator.update!(building_access_window_minutes: 90)
+    expect(reservation.access_opens_at).to be_within(1.second).of(start - 90.minutes)
+  end
+end

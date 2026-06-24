@@ -370,6 +370,8 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       datetime_in: r.datetime_in.iso8601,
       datetime_out: ends_at.iso8601,
       end_time_label: ends_at.strftime("%-l:%M %p").strip,
+      access_opens_label: r.access_opens_at.strftime("%l:%M %p").strip,
+      access_window_minutes: r.building_access_window_minutes,
       duration: "#{r.minutes} min",
       minutes: r.minutes,
       minutes_remaining: minutes_remaining,

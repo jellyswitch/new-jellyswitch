@@ -241,6 +241,17 @@ class Api::V1::RoomsController < Api::V1::BaseController
       base[:needs_day_pass] = false
     end
 
+    # Reserve-time bundle redemption (Phase 5 / ADR 0015): offer "use 1 pass for
+    # today" when the booking would otherwise auto-add a day pass (needs_cov ⇒ $0
+    # room + uncovered + not subscribed/leased/admin — the same coarse guards as
+    # RedeemBundlePass) and the booker holds prepaid bundle passes. The finer
+    # once-per-business-day-window burn check stays in the interactor (idempotent),
+    # so an optimistic flag here can never double-spend a pass.
+    bundle_passes_remaining = user.day_pass_bundles.active.where(location: location)
+                                  .map { |b| b.passes_remaining.to_i }.sum
+    base[:bundle_passes_remaining] = bundle_passes_remaining
+    base[:bundle_pass_redeemable] = needs_cov && bundle_passes_remaining > 0
+
     render json: base
   end
 

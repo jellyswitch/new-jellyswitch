@@ -133,6 +133,19 @@ class Reservation < ApplicationRecord
     (datetime_in - window) <= at && at <= (datetime_out + window)
   end
 
+  # The operator's door-access window width (ADR 0013), read the SAME way as
+  # access_window_open? above and the Phase 6 arrival push, so the member-facing
+  # "you can get in from…" promise can't drift from when the door actually opens.
+  def building_access_window_minutes
+    (room&.location&.operator&.building_access_window_minutes || 60).to_i
+  end
+
+  # The instant door access opens for this reservation. datetime_in is presented
+  # in the location zone, so this stays room-local for a member-facing label.
+  def access_opens_at
+    datetime_in - building_access_window_minutes.minutes
+  end
+
   def future?
     start_at > Time.current
   end

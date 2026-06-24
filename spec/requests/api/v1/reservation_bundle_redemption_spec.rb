@@ -54,4 +54,41 @@ RSpec.describe "API v1 reserve-time bundle redemption", type: :request do
     expect(response).to have_http_status(:created)
     expect(bundle.reload.passes_remaining).to eq(5)
   end
+
+  # Phase 7: the mobile app surfaces the "use 1 pass" opt-in off a server-computed
+  # eligibility flag on /pricing — never inferred client-side.
+  describe "GET /rooms/:id/pricing (bundle_pass_redeemable flag)" do
+    def pricing(room_id: call_room.id)
+      get "/api/v1/rooms/#{room_id}/pricing",
+          params: { date: 2.days.from_now.to_date.to_s, minutes: 60 },
+          headers: auth_headers_for(user)
+      JSON.parse(response.body)
+    end
+
+    it "is redeemable and reports passes remaining for an uncovered bundle holder" do
+      body = pricing
+      expect(body["bundle_pass_redeemable"]).to be(true)
+      expect(body["bundle_passes_remaining"]).to eq(5)
+    end
+
+    it "is NOT redeemable once the booker is already covered (active subscription)" do
+      plan = create(:plan, operator: operator, location: location, amount_in_cents: 30_000)
+      create(:subscription, subscribable: user, plan: plan, active: true, paused: false)
+      body = pricing
+      expect(body["bundle_pass_redeemable"]).to be(false)
+      expect(body["bundle_passes_remaining"]).to eq(5) # still owns passes, just doesn't need one
+    end
+
+    it "is NOT redeemable for a priced room (a pass doesn't cover it)" do
+      priced = create(:room, operator: operator, location: location, hourly_rate_in_cents: 5_000, rentable: true)
+      expect(pricing(room_id: priced.id)["bundle_pass_redeemable"]).to be(false)
+    end
+
+    it "is NOT redeemable with no passes left" do
+      bundle.update!(passes_remaining: 0)
+      body = pricing
+      expect(body["bundle_pass_redeemable"]).to be(false)
+      expect(body["bundle_passes_remaining"]).to eq(0)
+    end
+  end
 end

@@ -62,6 +62,8 @@ class Api::V1::DashboardController < Api::V1::BaseController
         room_name: next_reservation.room.name,
         date: next_reservation.datetime_in.strftime("%B %e, %Y"),
         time: next_reservation.datetime_in.strftime("%l:%M %p").strip,
+        access_opens_label: next_reservation.access_opens_at.strftime("%l:%M %p").strip,
+        access_window_minutes: next_reservation.building_access_window_minutes,
         duration: "#{next_reservation.minutes} min",
       } : nil,
       announcements: announcements.map { |a| { body: a.body.to_s.truncate(200), date: a.created_at.strftime("%b %e") } },
