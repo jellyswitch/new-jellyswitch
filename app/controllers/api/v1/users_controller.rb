@@ -14,6 +14,11 @@ class Api::V1::UsersController < Api::V1::BaseController
       role: user.role,
       admin: user.admin?,
       superadmin: user.superadmin?,
+      # Email-confirmation state so the app can show the same persistent
+      # "verify your email" nudge the web layout shows (we no longer block
+      # unconfirmed members from logging in).
+      email_confirmed: user.email_confirmed?,
+      needs_email_confirmation: user.needs_email_confirmation?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,

@@ -1,5 +1,5 @@
 class Api::V1::AuthController < Api::V1::BaseController
-  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators]
+  skip_before_action :authenticate_api_v1, only: [:login, :signup, :forgot_password, :reset_password, :lookup_operators, :operators, :request_login_code, :verify_login_code]
 
   # GET /api/v1/auth/operators
   #
@@ -76,6 +76,49 @@ class Api::V1::AuthController < Api::V1::BaseController
       }
     else
       render_error('Invalid email or password', status: :unauthorized)
+    end
+  end
+
+  # Passwordless login, step 1 — email a single-use Login Code (ADR 0016).
+  # Always reports success so the response never reveals whether the email has
+  # an account (mirrors #forgot_password). Rate-limited at the Rack layer.
+  def request_login_code
+    subdomain = params[:subdomain]&.downcase
+    operator = Operator.find_by(subdomain: subdomain)
+    return render_error('Space not found', status: :not_found) unless operator
+
+    set_current_tenant(operator)
+
+    user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
+    if user
+      begin
+        user.generate_login_code
+        user.send_login_code_email
+      rescue => e
+        Rails.logger.error("Login code email failed: #{e.message}")
+      end
+    end
+
+    render json: { success: true, message: "If an account exists with that email, we've sent a login code." }
+  end
+
+  # Passwordless login, step 2 — verify the code and issue the same credential
+  # as password login. A successful verify also confirms the email (see
+  # User#verify_login_code). Generic failure so a wrong/expired code reveals
+  # nothing; the per-code attempt cap + Rack throttle bound brute force.
+  def verify_login_code
+    subdomain = params[:subdomain]&.downcase
+    operator = Operator.find_by(subdomain: subdomain)
+    return render_error('Space not found', status: :not_found) unless operator
+
+    set_current_tenant(operator)
+
+    user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
+    if user&.verify_login_code(params[:code])
+      token = generate_token(user)
+      render json: { token: token, user: user_json(user) }
+    else
+      render_error('Invalid or expired login code', status: :unauthorized)
     end
   end
 
@@ -235,6 +278,23 @@ class Api::V1::AuthController < Api::V1::BaseController
     render json: { token: token, user: user_json(current_api_user) }
   end
 
+  # Authenticated resend of the email-confirmation link, powering the app's
+  # "verify your email" nudge (we no longer block unconfirmed members from
+  # logging in). Scoped to the token's own user, so there's no enumeration
+  # surface. Always reports success to keep the response uniform.
+  def resend_confirmation
+    user = current_api_user
+    if user && !user.email_confirmed?
+      user.generate_confirmation_token
+      user.send_confirmation_email
+    end
+    render json: { success: true, message: "If your email needs confirming, we've sent a fresh link. Please check your inbox." }
+  rescue => e
+    Rails.logger.error("API resend confirmation failed: #{e.message}")
+    Honeybadger.notify(e) if defined?(Honeybadger)
+    render json: { success: true, message: "If your email needs confirming, we've sent a fresh link. Please check your inbox." }
+  end
+
   private
 
   def user_json(user)
@@ -247,6 +307,11 @@ class Api::V1::AuthController < Api::V1::BaseController
       role: user.role,
       admin: user.admin?,
       superadmin: user.superadmin?,
+      # Surfaced so the app can show a "verify your email" nudge on login —
+      # parity with the web layout banner (neither path blocks unconfirmed
+      # members anymore).
+      email_confirmed: user.email_confirmed?,
+      needs_email_confirmation: user.needs_email_confirmation?,
       location: user.original_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,

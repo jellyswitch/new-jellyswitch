@@ -27,13 +27,14 @@ class Operator::SessionsController < Operator::BaseController
     )
 
     if result.success?
-      # Block unconfirmed email users (staff roles bypass this check)
-      if !result.user.email_confirmed? && result.user.role == User::UNASSIGNED
-        flash[:error] = "Please verify your email address. Check your inbox for a confirmation link."
-        turbo_redirect(login_path, action: "replace")
-        return
-      end
-
+      # Unconfirmed members used to be HARD-BLOCKED here, which stranded real
+      # signups who never clicked the confirmation link (and was inconsistent
+      # with the mobile/API path, which never blocked them). We now let them in
+      # and surface a persistent "verify your email" nudge via the operator
+      # layout (see layouts/_verify_email_banner) — keeping the confirmation
+      # email flow intact (resend lives in that banner). Front-door spam is
+      # handled before a User even exists (reCAPTCHA, honeypot, disposable-email
+      # + MX validators), so the gate here only punished legitimate users.
       log_in(result.user)
       remember(result.user)
 

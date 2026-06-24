@@ -30,5 +30,15 @@ RSpec.describe Api::V1::UsersController, type: :controller do
       expect(body["admin"]).to eq(false)
       expect(body["superadmin"]).to eq(false)
     end
+
+    it "exposes email-confirmation state so the app can show a verify nudge" do
+      member = create(:user, operator: operator, current_location: location,
+                             role: User::UNASSIGNED, email_confirmed: false)
+      allow(controller).to receive(:current_api_user).and_return(member)
+      get :me
+      body = JSON.parse(response.body)
+      expect(body["email_confirmed"]).to eq(false)
+      expect(body["needs_email_confirmation"]).to eq(true)
+    end
   end
 end

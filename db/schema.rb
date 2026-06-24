@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_000006) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_24_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1117,6 +1117,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_000006) do
     t.boolean "email_confirmed", default: false, null: false
     t.string "confirmation_token"
     t.datetime "confirmation_sent_at"
+    t.string "login_code_digest"
+    t.datetime "login_code_sent_at"
+    t.integer "login_code_attempts", default: 0, null: false
     t.boolean "marketing_consent", default: false, null: false
     t.datetime "terms_accepted_at"
     t.bigint "preferred_room_id"
