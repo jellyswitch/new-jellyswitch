@@ -101,4 +101,24 @@ class Reservations::ScheduleUpcomingReservationReminderTest < ActiveSupport::Tes
 
     Reservations::ScheduleUpcomingReservationReminder.call(reservation: @future_reservation)
   end
+
+  # Phase 6 review fix #3: a short-lead booking whose access window already opened
+  # gets the arrival push immediately (perform_now), not dropped.
+  test "fires the arrival push immediately for a short-lead booking inside the window" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    short = Reservation.new(room: @room, user: @user, datetime_in: 20.minutes.from_now, minutes: 60)
+    SendReservationReminderJob.expects(:perform_now).with(short.id)
+
+    Reservations::ScheduleUpcomingReservationReminder.call(reservation: short)
+  end
+
+  # Phase 6 review fix #2: a scheduling/enqueue error must NOT propagate (it runs
+  # after ChargeAtBooking captured money; a raise would roll back the booking).
+  test "swallows a scheduling error instead of failing the booking" do
+    SendUpcomingReservationReminderJob.stubs(:set).raises(StandardError.new("redis down"))
+
+    result = Reservations::ScheduleUpcomingReservationReminder.call(reservation: @future_reservation)
+
+    assert result.success?
+  end
 end

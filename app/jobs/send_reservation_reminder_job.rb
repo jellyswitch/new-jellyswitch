@@ -19,6 +19,13 @@ class SendReservationReminderJob < ApplicationJob
     # earlier or already started → now >= start → skip.
     return unless Time.current >= arrival_at - GRACE && Time.current < start
 
+    # Claim the arrival marker atomically: an edit re-enqueues this job without
+    # cancelling the old copy, so two jobs can target a still-valid instant. The
+    # first to claim sends; the rest no-op. A genuinely re-timed booking resets
+    # the marker (UpdateRoomReservation) so it can notify once more.
+    return if Reservation.where(id: reservation.id, arrival_notified_at: nil)
+                         .update_all(arrival_notified_at: Time.current).zero?
+
     SendNotificationsJob.perform_now(reservation, "ReservationReminder")
   rescue => e
     Honeybadger.notify(e)

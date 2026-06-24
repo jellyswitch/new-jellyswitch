@@ -22,14 +22,14 @@ Self-contained execution brief. TDD (RSpec + Minitest). Backend auto-deploys on 
 6. **NEW `app/adapters/notifiable/reservation_charged.rb`**: message `"You were charged #{$amount} for #{room.name} on #{date}."` (format like `paid_room_reservation.rb`), booker recipient, deep link.
 7. **`app/object_factories/notifiable_factory.rb`**: register `"ReservationStarted"` + `"ReservationCharged"` (`"ReservationReminder"` already present).
 8. **`app/interactors/billing/reservations/charge_at_booking.rb`**: best-effort `SendNotificationsJob.perform_later(reservation, "ReservationCharged")` beside `send_receipt` (post-capture path only; rescued). Idempotent via the existing `captured_at` early-return.
-9. **`app/interactors/billing/reservations/charge_extension_delta.rb`**: same charge push beside its receipt email (a member charged for an extension gets the push too).
+9. **`app/interactors/billing/reservations/charge_extension_delta.rb`** — DEFERRED (fast-follow). A push here must show the **delta** just charged, but the `ReservationCharged` adapter reads `captured_amount_in_cents`, which the extension path sets to the **cumulative** total — so a naive dispatch would announce the wrong (inflated) amount. Doing it right needs the charged amount threaded through `SendNotificationsJob`/the adapter, and a product call on delta-vs-total wording. The extension already sends a receipt email; the push is a separate small follow-up. Not in this PR.
 10. **`app/interactors/billing/reservations/update_billing_and_create_room_reservation.rb`**: add `Reservations::ScheduleUpcomingReservationReminder` (the new-card booking path currently schedules NO timed reminders — gap found in the map) so all bookings get the arrival/started pushes.
 
 ## TDD test list
 - Scheduler: schedules the arrival job at `datetime_in − window` (not 15 min); schedules started at `datetime_in` when window ≥ 15, and NOT when window < 15. (Mocha `.expects(:set).with(wait_until:)` per the repo convention.)
 - Arrival job: fires `ReservationReminder` inside the window; self-skips for a cancelled / moved-later / already-started reservation.
 - Started job: fires `ReservationStarted` at start; skips cancelled / ended / not-yet-due.
-- Charge push: `ChargeAtBooking` (self-serve capture) dispatches `ReservationCharged`; out_of_band/demo/exempt → no push (rides the existing early-returns). `ChargeExtensionDelta` dispatches it on a delta charge.
+- Charge push: `ChargeAtBooking` (self-serve capture) dispatches `ReservationCharged`; out_of_band/demo/exempt → no push (rides the existing early-returns). (Extension-delta charge push deferred — see file note 9.)
 - Adapters: `ReservationReminder` message reads the operator window; recipients = `[user]`; deep link keys present.
 - New-card organizer includes the scheduler step.
 

@@ -29,6 +29,14 @@ class Billing::Reservations::UpdateRoomReservation
       return
     end
 
+    # A genuinely re-timed booking should notify once more — clear the per-channel
+    # push markers so the rescheduled arrival/started jobs can claim and send
+    # (Phase 6). Only on a real start-time change, so same-time edits (room/
+    # duration only) stay deduped by the markers and never double-push.
+    if reservation.saved_change_to_datetime_in?
+      reservation.update_columns(arrival_notified_at: nil, started_notified_at: nil)
+    end
+
     Billing::Reservations::ChargeExtensionDelta.call(context)
     if context.failure?
       context.error ||= context.message

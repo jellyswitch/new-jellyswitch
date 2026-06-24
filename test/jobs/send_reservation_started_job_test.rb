@@ -31,4 +31,13 @@ class SendReservationStartedJobTest < ActiveSupport::TestCase
     SendNotificationsJob.expects(:perform_now).never
     SendReservationStartedJob.perform_now(res.id)
   end
+
+  # Phase 6 review fix #1: duplicate job (edit re-enqueue) must not double-send.
+  test "fires only once even when the job runs twice" do
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 1.minute.ago, minutes: 60)
+    SendNotificationsJob.expects(:perform_now).with(res, "ReservationStarted").once
+    SendReservationStartedJob.perform_now(res.id)
+    SendReservationStartedJob.perform_now(res.id)
+    assert_not_nil res.reload.started_notified_at
+  end
 end

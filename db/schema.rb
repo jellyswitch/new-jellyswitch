@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_000005) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_23_000006) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -975,6 +975,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_000005) do
     t.integer "captured_amount_in_cents"
     t.datetime "captured_at"
     t.datetime "payment_failed_at"
+    t.datetime "arrival_notified_at"
+    t.datetime "started_notified_at"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
     t.index ["stripe_payment_intent_id"], name: "index_reservations_on_stripe_payment_intent_id", unique: true
   end

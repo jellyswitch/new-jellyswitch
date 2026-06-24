@@ -16,6 +16,11 @@ class SendReservationStartedJob < ApplicationJob
     # start, or the reservation has already ended).
     return unless Time.current >= start - GRACE && Time.current < reservation.datetime_out
 
+    # Claim the started marker atomically (see SendReservationReminderJob) so a
+    # duplicate job from an edit can't double-send.
+    return if Reservation.where(id: reservation.id, started_notified_at: nil)
+                         .update_all(started_notified_at: Time.current).zero?
+
     SendNotificationsJob.perform_now(reservation, "ReservationStarted")
   rescue => e
     Honeybadger.notify(e)

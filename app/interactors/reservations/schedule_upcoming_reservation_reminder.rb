@@ -3,6 +3,20 @@ class Reservations::ScheduleUpcomingReservationReminder
 
   def call
     reservation = context.reservation
+
+    # Best-effort: scheduling reminders must NEVER fail the booking. This step
+    # runs after ChargeAtBooking has captured real money (which defines no
+    # rollback), so an unrescued raise here would roll back SaveRoomReservation
+    # and destroy a paid reservation. Swallow + report instead.
+    schedule_reminders(reservation)
+  rescue => e
+    Rails.logger.error("ScheduleUpcomingReservationReminder failed: #{e.class}: #{e.message}")
+    Honeybadger.notify(e) rescue nil
+  end
+
+  private
+
+  def schedule_reminders(reservation)
     reminder_time = reservation.datetime_in - Reservation::REMINDER_OFFSET_MINUTES
 
     # Notify the current occupant that someone else has booked after them
@@ -19,6 +33,12 @@ class Reservations::ScheduleUpcomingReservationReminder
     arrival_time = reservation.datetime_in - window.minutes
     if arrival_time > Time.current
       SendReservationReminderJob.set(wait_until: arrival_time).perform_later(reservation.id)
+    elsif reservation.datetime_in > Time.current
+      # Short-lead / walk-up booking made inside the access window (arrival
+      # moment already passed but start hasn't): fire now so the booker still
+      # gets the "you can get in" push. The job's window self-guard makes this
+      # safe (sends only while inside the live window).
+      SendReservationReminderJob.perform_now(reservation.id)
     end
 
     # Booker "your room is ready" push at start — only when the access window is

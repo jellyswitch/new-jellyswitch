@@ -2,6 +2,8 @@ require "rails_helper"
 
 # Phase 2 cancellation/refund policy (ADR 0011) on the unified pipeline.
 RSpec.describe CancelReservation do
+  include ActiveSupport::Testing::TimeHelpers
+
   let(:operator) { create(:operator, billing_state: "production", cancellation_window_hours: 24, refund_fee_percent: 10) }
   let(:location) { create(:location, operator: operator) }
   let(:room) { create(:room, operator: operator, location: location, hourly_rate_in_cents: 5000) }
@@ -143,14 +145,18 @@ RSpec.describe CancelReservation do
     end
 
     it "keeps the pass spent when the coverage day has already started" do
-      r = redeemed_reservation(2) # today (the 4am window has begun)
-      bundle = user.day_pass_bundles.first
-      expect(bundle.reload.passes_remaining).to eq(4)
+      # Freeze at midday so "2 hours from now" stays on the same calendar day
+      # (a relative offset near midnight would roll to tomorrow → wholly future).
+      travel_to(Time.current.change(hour: 12, min: 0)) do
+        r = redeemed_reservation(2) # today (the coverage day has begun)
+        bundle = user.day_pass_bundles.first
+        expect(bundle.reload.passes_remaining).to eq(4)
 
-      described_class.call(reservation: r, mode: :member)
+        described_class.call(reservation: r, mode: :member)
 
-      expect(bundle.reload.passes_remaining).to eq(4) # still spent — the day was live
-      expect(DayPassBundleRedemption.where(reservation_id: r.id, kind: "reservation")).to be_present
+        expect(bundle.reload.passes_remaining).to eq(4) # still spent — the day was live
+        expect(DayPassBundleRedemption.where(reservation_id: r.id, kind: "reservation")).to be_present
+      end
     end
 
     it "keeps the pass spent when another same-day reservation still relies on the minted pass" do
