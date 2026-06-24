@@ -121,5 +121,44 @@ RSpec.describe Billing::Reservations::ChargeAtBooking do
       expect(result).to be_a_success
       expect(r.reload.captured_at).to be_nil
     end
+
+    # The exemption (ChargeCalculator → should_charge_for_room?) runs BEFORE the
+    # out_of_band branch, so a net-30 booker who is ALSO a member or leaseholder
+    # is still exempt — they are never send_invoice'd for a room.
+    it "out_of_band member → no charge, no send_invoice" do
+      member = create(:user, operator: operator)
+      plan = create(:plan, operator: operator, location: location, amount_in_cents: 30000)
+      create(:subscription, subscribable: member, plan: plan, active: true, paused: false)
+      member.update_column(:out_of_band, true)
+      r = reservation_for(u: member)
+      expect(Stripe::PaymentIntent).not_to receive(:create)
+      expect(Stripe::Invoice).not_to receive(:create)
+      expect(Stripe::InvoiceItem).not_to receive(:create)
+
+      result = described_class.call(reservation: r)
+
+      expect(result).to be_a_success
+      r.reload
+      expect(r.captured_at).to be_nil
+      expect(r.invoices).to be_empty
+    end
+
+    it "out_of_band leaseholder → no charge, no send_invoice" do
+      leaseholder = create(:user, operator: operator)
+      create(:office_lease, user: leaseholder, organization: nil, operator: operator, location: location)
+      leaseholder.update_column(:out_of_band, true)
+      expect(leaseholder.has_active_lease?).to be(true)
+      r = reservation_for(u: leaseholder)
+      expect(Stripe::PaymentIntent).not_to receive(:create)
+      expect(Stripe::Invoice).not_to receive(:create)
+      expect(Stripe::InvoiceItem).not_to receive(:create)
+
+      result = described_class.call(reservation: r)
+
+      expect(result).to be_a_success
+      r.reload
+      expect(r.captured_at).to be_nil
+      expect(r.invoices).to be_empty
+    end
   end
 end
