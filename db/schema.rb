@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_23_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_23_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -810,6 +810,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_23_000003) do
     t.string "concierge_off_hours_message"
     t.string "embed_font"
     t.string "embed_accent_override"
+    t.integer "building_access_window_minutes", default: 60, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

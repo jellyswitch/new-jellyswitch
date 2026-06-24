@@ -247,6 +247,7 @@ class Operator::SettingsController < Operator::BaseController
   def doors_params
     params.require(:operator).permit(
       :kisi_api_key,
+      :building_access_window_minutes,
       locations_attributes: [:id, :kisi_api_key]
     )
   end

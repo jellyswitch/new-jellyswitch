@@ -122,6 +122,17 @@ class Reservation < ApplicationRecord
     now >= start_at && now < start_at + minutes.minutes
   end
 
+  # Whether `at` falls inside this reservation's building-access window (ADR
+  # 0013): from `building_access_window_minutes` before start to the same after
+  # end. datetime_in/out are absolute instants, so this comparison is
+  # zone-correct without any tz math. Pass window_minutes to avoid loading the
+  # operator per-record (the door path already has it).
+  def access_window_open?(at = Time.current, window_minutes: nil)
+    minutes_window = (window_minutes || room&.location&.operator&.building_access_window_minutes || 60).to_i
+    window = minutes_window.minutes
+    (datetime_in - window) <= at && at <= (datetime_out + window)
+  end
+
   def future?
     start_at > Time.current
   end
