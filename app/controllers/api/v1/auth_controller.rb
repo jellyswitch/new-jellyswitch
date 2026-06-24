@@ -235,6 +235,23 @@ class Api::V1::AuthController < Api::V1::BaseController
     render json: { token: token, user: user_json(current_api_user) }
   end
 
+  # Authenticated resend of the email-confirmation link, powering the app's
+  # "verify your email" nudge (we no longer block unconfirmed members from
+  # logging in). Scoped to the token's own user, so there's no enumeration
+  # surface. Always reports success to keep the response uniform.
+  def resend_confirmation
+    user = current_api_user
+    if user && !user.email_confirmed?
+      user.generate_confirmation_token
+      user.send_confirmation_email
+    end
+    render json: { success: true, message: "If your email needs confirming, we've sent a fresh link. Please check your inbox." }
+  rescue => e
+    Rails.logger.error("API resend confirmation failed: #{e.message}")
+    Honeybadger.notify(e) if defined?(Honeybadger)
+    render json: { success: true, message: "If your email needs confirming, we've sent a fresh link. Please check your inbox." }
+  end
+
   private
 
   def user_json(user)

@@ -38,6 +38,7 @@ Rails.application.routes.draw do
       post 'auth/forgot_password', to: 'auth#forgot_password'
       post 'auth/reset_password', to: 'auth#reset_password'
       post 'auth/refresh', to: 'auth#refresh'
+      post 'auth/resend_confirmation', to: 'auth#resend_confirmation'
       post 'auth/lookup_operators', to: 'auth#lookup_operators'
       get 'auth/operators', to: 'auth#operators'
       get 'brand_spec', to: 'brand_specs#show'
