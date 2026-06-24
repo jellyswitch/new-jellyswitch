@@ -215,3 +215,8 @@ A single **per-location** per-minute rate (operator-facing label: **"Overage / a
 ## Cancellation window & refund fee
 
 Operator policy on a **Reservation** cancel (`Operator.cancellation_window_hours`, `Operator.refund_fee_percent`): cancelling **inside** the window (closer to start than the set hours) **forfeits** the charge; **outside** the window **refunds minus the fee %**; a **no-show** (never cancels) → the charge stands (ADR 0011). Binary, not tiered. Member-initiated *reductions* (shorten / end early / switch to a cheaper room) do **not** auto-refund — only a cancel does. An admin may refund or re-price for an operator-forced change (e.g. a room closed for maintenance).
+
+## Login Code
+
+A single-use **6-digit numeric code** emailed to a **User** to log in **without a password** — the member-facing name is **"login code"** (never "OTP", "passcode", or "magic code" in UI). Requesting one emails the code; entering it within **10 minutes** authenticates the user *and*, as a side-effect, marks their email **confirmed** (receiving the code proves inbox control — the same assertion email-confirmation makes). Coexists with password login: it's an additional door to the same account, not a replacement, and it does not disturb the user's password. The login-code email is **transactional**, so it is exempt from the Spam Guard cool-down both directions (ADR 0003) — it always sends and never pauses a drip. See ADR 0016.
+_Avoid_: "OTP" / "passcode" / "magic link" in operator- or member-facing copy.
