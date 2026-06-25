@@ -1,0 +1,17 @@
+<%# Operator-dynamic app-download hand-off for post-purchase / booking
+    confirmation pages. Renders on the WEB only (not inside the app's own
+    webview) and only when the operator has configured store links. Per ADR 0017
+    redemption and door access live in the app, so every web confirmation points
+    the buyer there. Reuses the operator-dynamic AppLinks component for badges. %>
+<% if !mobile_app_request? && current_tenant&.has_mobile_app_links? %>
+  <div id="app-download-nudge" class="card border-light mt-3">
+    <div class="card-body text-center">
+      <h5 class="card-title">Get the <%= current_tenant.name %> app</h5>
+      <p class="card-text">
+        Unlock doors, book meeting rooms, message staff, and grab the WiFi password —
+        right from your phone. <strong>Check your email</strong> for how to use the space.
+      </p>
+      <%= render(AppLinks.new(operator: current_tenant)) %>
+    </div>
+  </div>
+<% end %>

@@ -74,6 +74,8 @@
     </div>
   <% end %>
 
+  <%= render "shared/app_download_nudge" %>
+
   <% can_buy_day_pass = current_tenant.day_passes_enabled? %>
   <% can_book_room = current_location.rentable_rooms_enabled? %>
   <% can_join = current_tenant.memberships_enabled? && current_location.plans.for_individuals.any? %>
