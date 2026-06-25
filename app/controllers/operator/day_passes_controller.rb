@@ -2,6 +2,7 @@
 class Operator::DayPassesController < Operator::BaseController
   include DayPassesHelper
   before_action :background_image
+  before_action :require_authentication, only: :redeem_today
 
   def index
     find_day_passes
@@ -193,6 +194,33 @@ class Operator::DayPassesController < Operator::BaseController
       flash[:error] = "No such code."
       turbo_redirect(code_day_passes_path, action: "replace")
     end
+  end
+
+  # POST /day_passes/redeem_today
+  # Member self-redeems one bundle pass for "today" from the web — parity with
+  # the mobile API's redeem_today, through the SAME single authority
+  # (Billing::DayPassBundles::ConsumeOnEntry): today-only, idempotent, and a
+  # no-op when other coverage already grants access.
+  #
+  # ADR 0017: a redemption mints today's DayPass (the right to be present) but
+  # does NOT open a door — so the success copy hands the member off to the app.
+  def redeem_today
+    result = Billing::DayPassBundles::ConsumeOnEntry.call(
+      user:     current_user,
+      location: current_location,
+    )
+
+    case result.outcome
+    when :redeemed
+      remaining = current_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
+      flash[:success] = "You're set for today — #{remaining} #{'pass'.pluralize(remaining)} left. Open the app to unlock the door."
+    when :already_covered
+      flash[:success] = "You're already set for today."
+    else
+      flash[:error] = "You don't have any day passes left."
+    end
+
+    turbo_redirect(home_path)
   end
 
   private
