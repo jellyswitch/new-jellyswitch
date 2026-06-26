@@ -119,6 +119,29 @@ class UserTest < ActiveSupport::TestCase
     refute users(:cowork_tahoe_admin).should_charge_for_room?(premium), "admin/staff are comped"
   end
 
+  # A Day Pass Bundle holder has prepaid passes, so they may book a room in
+  # ADVANCE (e.g. tomorrow) — they burn a pass on entry. can_see_all_rooms?
+  # gates whether free/call rooms are visible; it must treat an active bundle as
+  # standing, not just a DayPass already minted for the requested day (which a
+  # bundle never has for a future date — no scheduling).
+  test "can_see_all_rooms? reveals all rooms to a bundle holder for a future date" do
+    op       = operators(:cowork_tahoe); op.update!(billing_state: "production")
+    location = locations(:cowork_tahoe_location)
+    user     = users(:cowork_tahoe_non_member)
+    tomorrow = Date.tomorrow
+
+    refute user.can_see_all_rooms?(location, tomorrow), "no coverage for tomorrow yet → restricted to rentable rooms"
+
+    DayPassBundle.create!(
+      user: user, billable: user, operator: op, location: location,
+      day_pass_type: day_pass_type(:cowork_tahoe_day_pass_type),
+      quantity_purchased: 5, passes_remaining: 5, purchased_at: Time.current,
+    )
+
+    assert user.can_see_all_rooms?(location, tomorrow),
+      "an active bundle is standing to see all rooms — they burn a pass on entry"
+  end
+
   # --- Per-plan monthly meeting-room limit (included_meeting_room_minutes) ---
   # The included-minutes pool covers FREE standard rooms at THIS location only.
 
