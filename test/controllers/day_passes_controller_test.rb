@@ -26,7 +26,9 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
 
     Billing::DayPasses::CreateDayPass.stub :call, result do
       post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
-      assert_equal "Welcome to #{@user.operator.name}!", flash[:success]
+      # Approved buyer also gets the email hand-off appended (see
+      # Operator::HomeEmailHandoffTest); assert the base message is present.
+      assert_includes flash[:success], "Welcome to #{@user.operator.name}!"
       assert_redirected_to home_path
     end
   end
@@ -39,7 +41,9 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     Billing::DayPasses::CreateDayPass.stub :call, result do
       post day_passes_path, params: { day_pass: { day: @date.strftime('%a, %e %b %Y '), day_pass_type: @day_pass_type.id, user: @user } }, env: default_env
 
-      assert_equal "Thanks! Your day pass will be available on #{ @date_formatted }.", flash[:success]
+      # Approved buyer also gets the email hand-off appended (see
+      # Operator::HomeEmailHandoffTest); assert the base message is present.
+      assert_includes flash[:success], "Thanks! Your day pass will be available on #{ @date_formatted }."
       assert_redirected_to home_path
     end
   end
