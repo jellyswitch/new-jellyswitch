@@ -26,6 +26,10 @@ class Operator::ConfirmationAppNudgeTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "#app-download-nudge"
     assert_select "a[href=?]", @operator.ios_url
+    # Badges must use working local assets, not the dead linkmaker.itunes.apple.com
+    # URL (that host no longer resolves — broken image).
+    assert_select "#app-download-nudge img[src*=?]", "app-store-badge"
+    assert_no_match(/linkmaker\.itunes\.apple\.com/, response.body)
   end
 
   test "no app hand-off when the operator has not configured store links" do
