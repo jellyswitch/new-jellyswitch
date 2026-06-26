@@ -110,9 +110,9 @@ class Operator::DayPassesController < Operator::BaseController
 
     if result.success?
       if @day_pass.today?
-        flash[:success] = "Welcome to #{current_tenant.name}!"
+        flash[:success] = append_email_handoff("Welcome to #{current_tenant.name}!")
       else
-        flash[:success] = "Thanks! Your day pass will be available on #{short_date(@day_pass.day)}."
+        flash[:success] = append_email_handoff("Thanks! Your day pass will be available on #{short_date(@day_pass.day)}.")
       end
       flash.keep
       session[:should_track_pixels] = true
@@ -262,7 +262,7 @@ class Operator::DayPassesController < Operator::BaseController
 
     if result.success?
       bundle = result.day_pass_bundle
-      flash[:success] = "Thanks! #{bundle.passes_remaining} day passes added to your account."
+      flash[:success] = append_email_handoff("Thanks! #{bundle.passes_remaining} day passes added to your account.")
       flash.keep
       session[:should_track_pixels] = true
       turbo_redirect(approved? ? home_path : wait_path)
