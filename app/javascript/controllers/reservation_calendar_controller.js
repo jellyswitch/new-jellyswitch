@@ -820,8 +820,17 @@ export default class extends Controller {
     }
 
     rooms.forEach((room) => {
+      // Show capacity + whether it's a paid or free room so members who don't
+      // know the building can choose sensibly. The exact charge (after any
+      // membership/day-pass coverage) is shown once a room is selected.
+      const bits = [room.name];
+      if (room.capacity) {
+        bits.push(`${room.capacity} ${room.capacity == 1 ? "seat" : "seats"}`);
+      }
+      const cents = room.hourly_rate_in_cents || 0;
+      bits.push(cents > 0 ? `$${(cents / 100).toFixed(0)}/hr` : "No room charge");
       const optionElement = $(
-        `<option value="${room.id}">${room.name}</option>`
+        `<option value="${room.id}">${bits.join("  ·  ")}</option>`
       );
       roomsSelect.append(optionElement);
     });
