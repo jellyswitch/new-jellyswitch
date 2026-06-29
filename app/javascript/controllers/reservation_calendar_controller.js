@@ -38,6 +38,7 @@ export default class extends Controller {
   disconnect() {
     // Clean up all event handlers when Stimulus disconnects
     $("#reservation-fullcalendar").off("click.mobiletap");
+    $("#reservation-fullcalendar").off("click.daytap");
     $("#duration-slider").off("input.duration change.duration");
     $(".duration-quick-picks").off("click.quickpick");
     $("#time-slots-container").off("click.timeslot touchend.timeslot");
@@ -115,20 +116,6 @@ export default class extends Controller {
       },
       eventRender: function(event, element) {
         element.find('.fc-content').html(event.title);
-      },
-      // FullCalendar's bootstrap4 theme stamps TODAY's cell with Bootstrap's
-      // `.alert .alert-info` highlight classes. Those classes leave today's
-      // cell unclickable — dayClick never fires on it — so members couldn't
-      // start a booking for the current day (every other day worked). Strip
-      // them as each cell renders, BEFORE FC builds its click-coordinate
-      // cache, and again after the whole view renders (covers the day-number
-      // cell too). Today is still marked via `.fc-today` (double border) and
-      // the `.selected-date` highlight, so nothing visual is lost.
-      dayRender: function(date, cell) {
-        cell.removeClass("alert alert-info");
-      },
-      viewRender: function() {
-        $("#reservation-fullcalendar .fc-today").removeClass("alert alert-info");
       }
     });
 
@@ -158,6 +145,23 @@ export default class extends Controller {
 
         const clickedDate = moment(dateStr);
         this.handleDayClick(clickedDate);
+      });
+    } else {
+      // Desktop: FullCalendar v3's hit-detection never fires dayClick on the
+      // TODAY cell, so members could book every day EXCEPT today. Bind our own
+      // day-cell click handler that reads the date straight from the bg row and
+      // calls handleDayClick, bypassing FC's broken hit-detection. Reservation
+      // badges still go through FC's eventClick, and FC's dayClick still fires
+      // for every other day — handleDayClick's isModalOpen guard makes this a
+      // no-op in those cases (no double-open).
+      $("#reservation-fullcalendar").on("click.daytap", ".fc-content-skeleton td, .fc-day-number", (e) => {
+        if ($(e.target).closest(".fc-day-grid-event").length) return; // let eventClick handle badges
+        const td = $(e.target).closest("td");
+        const row = td.closest(".fc-row");
+        const bgCell = row.find(".fc-bg td.fc-day").eq(td.index());
+        const dateStr = bgCell.data("date");
+        if (!dateStr) return;
+        this.handleDayClick(moment(String(dateStr)));
       });
     }
   }
