@@ -27,6 +27,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       {
         id: dp.id,
         date: dp.day&.strftime("%B %e, %Y"),
+        day: dp.day&.iso8601, # ISO 'YYYY-MM-DD' — clients compare on this, NOT the formatted `date`
         type_name: dp.day_pass_type&.name,
         price: dp.day_pass_type&.amount_in_cents,
         paid: dp.invoice&.paid? || false,
