@@ -115,6 +115,20 @@ export default class extends Controller {
       },
       eventRender: function(event, element) {
         element.find('.fc-content').html(event.title);
+      },
+      // FullCalendar's bootstrap4 theme stamps TODAY's cell with Bootstrap's
+      // `.alert .alert-info` highlight classes. Those classes leave today's
+      // cell unclickable — dayClick never fires on it — so members couldn't
+      // start a booking for the current day (every other day worked). Strip
+      // them as each cell renders, BEFORE FC builds its click-coordinate
+      // cache, and again after the whole view renders (covers the day-number
+      // cell too). Today is still marked via `.fc-today` (double border) and
+      // the `.selected-date` highlight, so nothing visual is lost.
+      dayRender: function(date, cell) {
+        cell.removeClass("alert alert-info");
+      },
+      viewRender: function() {
+        $("#reservation-fullcalendar .fc-today").removeClass("alert alert-info");
       }
     });
 
