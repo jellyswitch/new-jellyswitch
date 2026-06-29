@@ -97,4 +97,66 @@ RSpec.describe Refundable::RefundableInvoice do
       end
     end
   end
+
+  # Used by the charge.refunded webhook (Webhooks::ChargeRefunded) to sync a
+  # refund that already happened on Stripe — typically a Dashboard refund — back
+  # onto the local Invoice. Must be idempotent across the 2-3 Stripe events that
+  # a single refund fires (charge.refunded, refund.created, charge.refund.updated).
+  describe "#reconcile_refund!" do
+    it "records a refund row (id + amount) and marks the invoice refunded" do
+      refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_abc")
+
+      expect(invoice.reload.status).to eq("refunded")
+      expect(invoice.refunded_at).to be_present
+      expect(invoice.refund_amount_in_cents).to eq(1000)
+      expect(invoice.refunds.count).to eq(1)
+      expect(invoice.refunds.first.stripe_refund_id).to eq("re_abc")
+      expect(invoice.refunds.first.amount).to eq(1000)
+    end
+
+    it "returns true" do
+      expect(refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_abc")).to eq(true)
+    end
+
+    it "is idempotent — a repeat event with the same refund id adds no row" do
+      refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_abc")
+      first_refunded_at = invoice.reload.refunded_at
+
+      refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_abc")
+
+      expect(invoice.reload.refunds.count).to eq(1)
+      expect(invoice.refunded_at).to eq(first_refunded_at)
+    end
+
+    it "backfills the real Stripe id onto an amount-only placeholder row" do
+      # #548's already-refunded path (or a charge.refunded with no inline refund
+      # id) leaves a row with a nil stripe_refund_id; a later refund.created
+      # carries the exact id and should stamp it, not create a duplicate.
+      invoice.refunds.create(amount: 1000, stripe_refund_id: nil)
+
+      refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_real")
+
+      expect(invoice.reload.refunds.count).to eq(1)
+      expect(invoice.refunds.first.stripe_refund_id).to eq("re_real")
+    end
+
+    it "works when no refund id is available (amount-only reconcile)" do
+      refundable_invoice.reconcile_refund!(amount_cents: 1000)
+
+      expect(invoice.reload.status).to eq("refunded")
+      expect(invoice.refunds.count).to eq(1)
+      expect(invoice.refunds.first.stripe_refund_id).to be_nil
+    end
+
+    it "reconciles an invoice that is already marked refunded without duplicating" do
+      invoice.refunds.create(amount: 1000, stripe_refund_id: "re_abc")
+      invoice.update(status: "refunded", refunded_at: 1.day.ago, refund_amount_in_cents: 1000)
+      original_refunded_at = invoice.reload.refunded_at
+
+      refundable_invoice.reconcile_refund!(amount_cents: 1000, stripe_refund_id: "re_abc")
+
+      expect(invoice.reload.refunds.count).to eq(1)
+      expect(invoice.refunded_at).to be_within(1.second).of(original_refunded_at)
+    end
+  end
 end

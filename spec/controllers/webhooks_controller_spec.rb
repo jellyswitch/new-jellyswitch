@@ -61,4 +61,40 @@ RSpec.describe WebhooksController, type: :controller do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  describe "POST #stripe — charge.refunded reconciles the local invoice" do
+    let(:operator) { create(:operator, stripe_user_id: "acct_OP") }
+    let(:location) { create(:location, operator: operator) }
+    let!(:invoice) do
+      create(:invoice, operator: operator, location: location, status: "paid",
+             amount_due: 1000, stripe_payment_intent_id: "pi_1")
+    end
+
+    def refund_charge_event
+      Stripe::Event.construct_from(
+        type: "charge.refunded",
+        account: "acct_OP",
+        data: {
+          object: {
+            object: "charge",
+            id: "ch_1",
+            payment_intent: "pi_1",
+            amount_refunded: 1000,
+            refunds: { object: "list", data: [{ object: "refund", id: "re_1", amount: 1000 }] },
+          }
+        }
+      )
+    end
+
+    before { allow_any_instance_of(WebhooksController).to receive(:report_error) }
+
+    it "marks the invoice refunded and returns 200" do
+      allow(Stripe::Event).to receive(:construct_from).and_return(refund_charge_event)
+      post :stripe, body: "{}"
+
+      expect(response).to have_http_status(:ok)
+      expect(invoice.reload.status).to eq("refunded")
+      expect(invoice.refunds.first.stripe_refund_id).to eq("re_1")
+    end
+  end
 end
