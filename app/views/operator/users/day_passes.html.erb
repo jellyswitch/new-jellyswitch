@@ -3,6 +3,30 @@
 <%= render "shared/back_bar", back_path: user_path(@user), back_label: "My Account", page_title: "My Day Passes" %>
 
 <%= wide_card do %>
+  <%# Day Pass Bundle balance + use-a-pass affordance (mirrors the home page).
+      Burns through the same ConsumeOnEntry authority; ADR 0017: it hands off to
+      the app for the door. %>
+  <% active_bundles = current_user.day_pass_bundles.active.where(location: current_location).order(purchased_at: :desc) %>
+  <% if active_bundles.any? %>
+    <h5 class="mb-2">Your day passes</h5>
+    <ul class="list-group list-group-flush mb-2">
+      <% active_bundles.each do |bundle| %>
+        <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+          <span><strong><%= bundle.day_pass_type.name %></strong></span>
+          <span class="badge badge-primary" style="font-size: 0.9rem;"><%= bundle.passes_remaining %> left</span>
+        </li>
+      <% end %>
+    </ul>
+    <p class="text-muted small mb-2">Heading in today? Use a pass to get access — then open the app to unlock the door.</p>
+    <%= button_to redeem_today_day_passes_path,
+          method: :post,
+          class: "btn btn-block btn-primary",
+          form: { data: { turbo_confirm: "Use a pass for today? Do this when you're heading in." } } do %>
+      <i class="fas fa-door-open"></i>&nbsp; Use a pass for today
+    <% end %>
+    <hr class="my-3"/>
+  <% end %>
+
   <% if policy(DayPass.new).new? %>
     <p>
       <%= link_to "Buy a day pass", day_passes_path, class: "btn btn-block btn-primary" %>

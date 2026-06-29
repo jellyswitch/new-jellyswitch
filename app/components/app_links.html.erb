@@ -1,15 +1,20 @@
+<%# Store badges use local assets — the old linkmaker.itunes.apple.com Apple badge
+    host no longer resolves (broken image). Each badge renders only when its URL
+    is set. %>
 <div class="row">
+  <% if operator.ios_url.present? %>
+    <div class="col text-center align-middle">
+      <a href="<%= operator.ios_url %>" target="_blank" rel="noopener">
+        <%= image_tag "app-store-badge.png", alt: "Download on the App Store", style: "height: 40px; width: auto;" %>
+      </a>
+    </div>
+  <% end %>
 
-  <div class="col text-center align-middle">
-    <a href="<%= operator.ios_url %>">
-      <img alt="Get it on the app store" src="https://linkmaker.itunes.apple.com/en-us/badge-lrg.svg?releaseDate=2019-03-26&kind=iossoftware&bubble=ios_apps" width=135 height=40>
-    </a>
-  </div>
-
-  <div class="col text-center align-middle" style="margin-top: -10px;">
-    <a href="<%= operator.android_url %>">
-      <img alt='Get it on Google Play' src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" height=60>
-    </a>
-  </div>
-
+  <% if operator.android_url.present? %>
+    <div class="col text-center align-middle">
+      <a href="<%= operator.android_url %>" target="_blank" rel="noopener">
+        <%= image_tag "google-play-badge.png", alt: "Get it on Google Play", style: "height: 40px; width: auto;" %>
+      </a>
+    </div>
+  <% end %>
 </div>

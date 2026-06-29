@@ -48,6 +48,7 @@ module Permissions
     if operator.production? || operator.subdomain == "southlakecoworking"
       member?(location) ||
       has_active_day_pass?(day) ||
+      has_active_day_pass_bundle?(location) ||
       checked_in?(location) ||
       has_active_lease? ||
       admin_of_location?(location)
