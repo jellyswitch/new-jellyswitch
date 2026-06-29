@@ -30,9 +30,36 @@ module Refundable
         refunded_at: Time.current,
         refund_amount_in_cents: refund_cents,
       )
+    rescue Stripe::InvalidRequestError => e
+      # The charge was already fully refunded out-of-band — almost always a
+      # refund issued directly in the Stripe Dashboard, which we don't yet sync
+      # via webhook, so our local `refunded?` guard (refunds.length > 0) still
+      # read false. The money has already been returned, so reconcile our records
+      # to match Stripe and report success rather than erroring on the operator.
+      # Same philosophy as StripeUtils#mark_invoice_paid's "already paid" path.
+      raise unless already_refunded_error?(e)
+      reconcile_already_refunded!(refund_cents)
+      true
     end
 
     private
+
+    def already_refunded_error?(e)
+      e.code == 'charge_already_refunded' || e.message.to_s.include?('already been refunded')
+    end
+
+    # Bring local state in line with Stripe's already-refunded charge. We don't
+    # have the out-of-band refund's Stripe id without an extra lookup, so we
+    # record the amount our retention policy would have refunded; a
+    # `charge.refunded` webhook (recommended) would capture the exact id/amount.
+    def reconcile_already_refunded!(refund_cents)
+      refunds.create(amount: refund_cents) if refunds.empty?
+      update(
+        status: 'refunded',
+        refunded_at: Time.current,
+        refund_amount_in_cents: refund_cents,
+      )
+    end
 
     # Honors the operator's processing-fee retention policy. Stripe
     # keeps its % fee on the original charge whether or not we refund,
