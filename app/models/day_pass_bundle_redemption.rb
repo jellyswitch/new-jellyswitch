@@ -1,5 +1,5 @@
 class DayPassBundleRedemption < ApplicationRecord
-  KINDS = %w[entry guest admin_restore].freeze
+  KINDS = %w[entry guest admin_restore schedule_cancel].freeze
 
   belongs_to :day_pass_bundle
   belongs_to :operator
