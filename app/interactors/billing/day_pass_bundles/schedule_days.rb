@@ -2,7 +2,9 @@ class Billing::DayPassBundles::ScheduleDays
   include Interactor
 
   def call
-    dates = Array(context.dates).map { |d| d.is_a?(String) ? Date.parse(d) : d }
+    # m2: pass each raw value straight to ScheduleDay — it owns date parsing and
+    # validation. Pre-parsing here would raise before the transaction can roll back.
+    dates = Array(context.dates)
     day_passes = []
 
     ActiveRecord::Base.transaction do

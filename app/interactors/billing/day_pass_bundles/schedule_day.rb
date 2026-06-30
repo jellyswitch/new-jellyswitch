@@ -8,9 +8,17 @@ class Billing::DayPassBundles::ScheduleDay
   def call
     tz    = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
     today = Time.current.in_time_zone(tz).to_date
-    date  = context.date.is_a?(String) ? Date.parse(context.date) : context.date
 
-    if date < today || date > today + HORIZON_DAYS.days
+    # m2: guard against unparseable date strings before any DB work.
+    date = begin
+      context.date.is_a?(String) ? Date.parse(context.date) : context.date
+    rescue Date::Error, ArgumentError
+      context.outcome = :invalid_date
+      return
+    end
+
+    # m1: Integer + Integer (no .days) — Date arithmetic, not Duration.
+    if date < today || date > today + HORIZON_DAYS
       context.outcome = :invalid_date
       return
     end
@@ -20,6 +28,9 @@ class Billing::DayPassBundles::ScheduleDay
       return
     end
 
+    # eligible_bundle runs BEFORE the lock. Under the single-active-bundle
+    # assumption this is safe; a concurrent exhaust between here and with_lock
+    # falls through to NoPassesRemaining → :no_bundle (accepted limitation).
     bundle = eligible_bundle(date, tz)
     unless bundle
       context.outcome = :no_bundle
@@ -27,6 +38,13 @@ class Billing::DayPassBundles::ScheduleDay
     end
 
     bundle.with_lock do
+      # C2: re-check inside the lock to prevent concurrent double-schedule of
+      # the same date (mirrors ConsumeOnEntry's inner guard).
+      if user.day_passes.for_location(location).for_day(date).exists?
+        context.outcome = :already_covered
+        next
+      end
+
       # `imported: true` skips DayPass member-lifecycle side effects — the burn
       # is the audit record (mirrors ConsumeOnEntry). NOT complimentary: the
       # pass is prepaid and must count toward door-access checks.
@@ -39,7 +57,11 @@ class Billing::DayPassBundles::ScheduleDay
         day:           date,
         imported:      true,
       )
-      bundle.burn_locked!(kind: :entry, performed_by: performed_by, day_pass: day_pass)
+      # C1: defer the "how was your visit?" follow_up email for future dates —
+      # the member hasn't visited yet. Same-day scheduling (date == today) still
+      # fires it immediately, matching the existing ConsumeOnEntry behaviour.
+      bundle.burn_locked!(kind: :entry, performed_by: performed_by, day_pass: day_pass,
+                          defer_review_email: date > today)
       context.bundle   = bundle
       context.day_pass = day_pass
       context.outcome  = :scheduled

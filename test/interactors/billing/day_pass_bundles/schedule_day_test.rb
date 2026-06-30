@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Billing::DayPassBundles::ScheduleDayTest < ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
   setup do
     @operator = operators(:cowork_tahoe)
     @location = locations(:cowork_tahoe_location)
@@ -86,6 +88,86 @@ class Billing::DayPassBundles::ScheduleDayTest < ActiveSupport::TestCase
       result = Billing::DayPassBundles::ScheduleDay.call(
         user: @member, location: @location, date: Date.current + 1, performed_by: @member)
       assert_equal :no_bundle, result.outcome
+    end
+  end
+
+  # C2: in-lock idempotency guard
+  test "scheduling the same future date twice returns :already_covered the second time with only one pass burned" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle = make_bundle(remaining: 5)
+      date = Date.current + 3
+
+      first  = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member)
+      second = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member)
+
+      assert_equal :scheduled,       first.outcome
+      assert_equal :already_covered, second.outcome
+      assert_equal 4, bundle.reload.passes_remaining, "only one pass burned for the same date"
+    end
+  end
+
+  # C1: defer follow_up review email for future-date schedules
+  test "scheduling a FUTURE date does NOT enqueue the follow_up email" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_bundle(remaining: 5)
+
+      assert_no_enqueued_jobs only: SendProductEmailJob do
+        Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: Date.current + 2, performed_by: @member)
+      end
+    end
+  end
+
+  test "scheduling for today (same-day) DOES enqueue the follow_up email" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_bundle(remaining: 5)
+
+      assert_enqueued_with(job: SendProductEmailJob) do
+        Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: Date.current, performed_by: @member)
+      end
+    end
+  end
+
+  # m2: unparseable date
+  test "an unparseable date string returns :invalid_date and mints nothing" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_bundle(remaining: 5)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: "not-a-date", performed_by: @member)
+
+      assert_equal :invalid_date, result.outcome
+      assert_equal 0, @member.day_passes.count
+    end
+  end
+
+  # m5: expiry-boundary — soonest-expiring bundle is skipped when it would be expired by the target date
+  test "expiry-boundary: burns perpetual bundle for a date beyond the expiring bundle's window" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      expiring  = make_bundle(remaining: 5, expires_at: 10.days.from_now)
+      perpetual = make_bundle(remaining: 5, expires_at: nil)
+
+      # 5 days out — expiring bundle still valid
+      result5 = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: Date.current + 5, performed_by: @member)
+      assert_equal :scheduled, result5.outcome
+      assert_equal 4, expiring.reload.passes_remaining,  "expiring bundle used for near date"
+      assert_equal 5, perpetual.reload.passes_remaining
+
+      # 15 days out — expiring bundle would be expired; must use perpetual
+      result15 = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: Date.current + 15, performed_by: @member)
+      assert_equal :scheduled, result15.outcome
+      assert_equal 4, expiring.reload.passes_remaining,  "expiring bundle not touched for far date"
+      assert_equal 4, perpetual.reload.passes_remaining, "perpetual bundle used for far date"
     end
   end
 end

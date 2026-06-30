@@ -8,4 +8,7 @@ class DayPassBundleRedemption < ApplicationRecord
 
   validates :kind, inclusion: { in: KINDS }
   validates :redeemed_at, presence: true
+  # I2: prevent two entry redemptions pointing at the same DayPass (double-burn).
+  # nil day_pass_id rows (guest/admin_restore/schedule_cancel) are unaffected via allow_nil.
+  validates :day_pass_id, uniqueness: { scope: :kind }, allow_nil: true
 end

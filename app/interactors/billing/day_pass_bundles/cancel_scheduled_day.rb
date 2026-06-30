@@ -19,12 +19,9 @@ class Billing::DayPassBundles::CancelScheduledDay
     end
 
     bundle.with_lock do
-      if bundle.passes_remaining.to_i < bundle.quantity_purchased.to_i
-        bundle.update!(passes_remaining: bundle.passes_remaining + 1)
-      end
-      bundle.redemptions.create!(
-        operator: bundle.operator, kind: "schedule_cancel",
-        performed_by: context.performed_by, guest_name: day_pass.day.iso8601, redeemed_at: Time.current)
+      # I1: delegate restore+log to the shared restore_locked! helper.
+      # guest_name stores the cancelled date in ISO form (no dedicated column).
+      bundle.restore_locked!(by: context.performed_by, reason: day_pass.day.iso8601, kind: "schedule_cancel")
       redemption.update!(day_pass: nil) # detach before destroying the pass
       day_pass.destroy!
     end
