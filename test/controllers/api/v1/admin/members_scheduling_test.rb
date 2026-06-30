@@ -40,6 +40,8 @@ class Api::V1::Admin::MembersSchedulingTest < ActionDispatch::IntegrationTest
 
     post "/api/v1/admin/members/#{@member.id}/scheduled_bundle_days/#{dp.id}/cancel", headers: headers
     assert_response :success
+    cancel_body = JSON.parse(response.body)
     assert_equal 5, @bundle.reload.passes_remaining
+    assert_equal 5, cancel_body["passes_remaining"], "cancel response should include passes_remaining"
   end
 end

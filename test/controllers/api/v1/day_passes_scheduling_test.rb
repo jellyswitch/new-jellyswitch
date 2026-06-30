@@ -65,4 +65,50 @@ class Api::V1::DayPassesSchedulingTest < ActionDispatch::IntegrationTest
     post "/api/v1/day_passes/#{dp.id}/cancel_scheduled", headers: headers(other)
     assert_response :not_found
   end
+
+  # Regression: failed_date was stored as a raw String → calling .strftime on it
+  # blew up with NoMethodError (500). The fix is to coerce to Date in ScheduleDays.
+  test "already_covered returns a clean client error, not 500" do
+    future_date = (Date.current + 5).iso8601
+    # Schedule the date once so the member is already covered for it.
+    ActsAsTenant.with_tenant(@operator) do
+      Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: future_date, performed_by: @member)
+    end
+    # Attempt to schedule the same date again.
+    post "/api/v1/day_passes/schedule",
+         params: { dates: [future_date] }.to_json,
+         headers: headers(@member)
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert body["error"].present?, "expected an error message in response"
+  end
+
+  # :too_late negative path — a bundle pass dated today cannot be cancelled.
+  test "cancel_scheduled on a same-day pass returns a client error" do
+    dp = nil
+    ActsAsTenant.with_tenant(@operator) do
+      # Create a bundle-sourced DayPass for today directly (ScheduleDay's future-only
+      # guard prevents scheduling today via the API, so we insert at DB level).
+      dp = DayPass.create!(
+        user: @member, billable: @member,
+        operator: @operator, location: @location,
+        day_pass_type: @bundle.day_pass_type,
+        day: Date.current, imported: true
+      )
+      # Attach a redemption so CancelScheduledDay can locate the bundle.
+      DayPassBundleRedemption.create!(
+        day_pass_bundle: @bundle, operator: @operator,
+        day_pass: dp, kind: "entry",
+        performed_by: @member, redeemed_at: Time.current
+      )
+      @bundle.update!(passes_remaining: @bundle.passes_remaining - 1)
+    end
+    post "/api/v1/day_passes/#{dp.id}/cancel_scheduled", headers: headers(@member)
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert body["error"].present?, "expected an error message for too_late"
+    # The pass must remain intact.
+    assert DayPass.exists?(dp.id), "day pass should not have been destroyed"
+  end
 end

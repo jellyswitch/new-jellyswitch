@@ -204,6 +204,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
   end
 
+  # NOTE: current_location is the admin's home location — acceptable for
+  # single-location operators; revisit if multi-location admin scheduling is added.
   def schedule_bundle_days
     member = current_tenant.users.find(params[:id])
     location = current_location
@@ -221,6 +223,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
   end
 
+  # NOTE: current_location is the admin's home location — acceptable for
+  # single-location operators; revisit if multi-location admin scheduling is added.
   def scheduled_bundle_days
     member = current_tenant.users.find(params[:id])
     location = current_location
@@ -232,10 +236,14 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
 
   def cancel_scheduled_bundle_day
     member = current_tenant.users.find(params[:member_id])
+    location = current_location
     day_pass = member.day_passes.find(params[:id])
     result = Billing::DayPassBundles::CancelScheduledDay.call(day_pass: day_pass, performed_by: current_api_user)
     if result.outcome == :cancelled
-      render json: { status: "cancelled" }
+      render json: {
+        status: "cancelled",
+        passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+      }
     else
       render_error("Could not cancel that day (#{result.outcome}).")
     end

@@ -163,7 +163,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date
       render_error("That date can't be scheduled.")
-    else # :no_bundle / :no_passes
+    else # :no_bundle
       render_error("You don't have enough day passes left.")
     end
   end
@@ -229,14 +229,6 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
   end
 
-  private
-
-  def remaining_bundle_passes
-    current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
-  end
-
-  public
-
   # Legacy redeem endpoint — forwards to apply_code.
   def redeem
     apply_code
@@ -295,5 +287,11 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         render json: { type: 'invalid', valid: false, error: result.message || 'Invalid code' }, status: :unprocessable_entity
       end
     end
+  end
+
+  private
+
+  def remaining_bundle_passes
+    current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
   end
 end

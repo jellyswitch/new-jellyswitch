@@ -14,7 +14,9 @@ class Billing::DayPassBundles::ScheduleDays
 
         if result.outcome != :scheduled
           context.outcome     = result.outcome
-          context.failed_date = date
+          # Coerce to Date so callers can safely call .strftime on failed_date.
+          # For :invalid_date the raw value is a fine fallback (strftime isn't called).
+          context.failed_date = (Date.parse(date.to_s) rescue date)
           raise ActiveRecord::Rollback
         end
         day_passes << result.day_pass
