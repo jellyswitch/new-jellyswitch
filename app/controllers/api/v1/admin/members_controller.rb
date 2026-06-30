@@ -204,6 +204,45 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
   end
 
+  def schedule_bundle_days
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    result = Billing::DayPassBundles::ScheduleDays.call(
+      user: member, location: location, dates: Array(params[:dates]), performed_by: current_api_user)
+
+    if result.outcome == :scheduled
+      render json: {
+        status: "scheduled",
+        scheduled_days: result.day_passes.map { |dp| dp.day.iso8601 },
+        passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+      }
+    else
+      render_error("Could not schedule those days (#{result.outcome}).")
+    end
+  end
+
+  def scheduled_bundle_days
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    tz = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    passes = member.day_passes.bundle_sourced.for_location(location).where("day > ?", today).order(:day)
+    render json: passes.map { |dp| { id: dp.id, day: dp.day.iso8601, date: dp.day.strftime("%B %e, %Y") } }
+  end
+
+  def cancel_scheduled_bundle_day
+    member = current_tenant.users.find(params[:member_id])
+    day_pass = member.day_passes.find(params[:id])
+    result = Billing::DayPassBundles::CancelScheduledDay.call(day_pass: day_pass, performed_by: current_api_user)
+    if result.outcome == :cancelled
+      render json: { status: "cancelled" }
+    else
+      render_error("Could not cancel that day (#{result.outcome}).")
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Not found" }, status: :not_found
+  end
+
   def create_day_pass
     user = current_tenant.users.find(params[:id])
     day_pass_type = DayPassType.find(params[:day_pass_type_id])

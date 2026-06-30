@@ -234,6 +234,9 @@ Rails.application.routes.draw do
         get 'members/:id/conversations', to: 'members#conversations'
         post 'members/:id/log_tour', to: 'members#log_tour'
         post 'members/:id/add_note', to: 'members#add_note'
+        post 'members/:id/schedule_bundle_days',  to: 'members#schedule_bundle_days'
+        get  'members/:id/scheduled_bundle_days', to: 'members#scheduled_bundle_days'
+        post 'members/:member_id/scheduled_bundle_days/:id/cancel', to: 'members#cancel_scheduled_bundle_day'
 
         # People (lifecycle-stage filtered list)
         get 'people', to: 'people#index'
