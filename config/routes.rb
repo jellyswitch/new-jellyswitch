@@ -114,6 +114,11 @@ Rails.application.routes.draw do
           post :redeem
           post :apply_code
           post :redeem_today
+          post :schedule
+          get  :scheduled_days
+        end
+        member do
+          post :cancel_scheduled
         end
       end
 

@@ -144,6 +144,58 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
   end
 
+  # POST /api/v1/day_passes/schedule
+  # Member schedules one or more future dates from their bundle.
+  # Calls ScheduleDays (all-or-nothing) and returns the confirmed dates.
+  def schedule
+    result = Billing::DayPassBundles::ScheduleDays.call(
+      user: current_api_user, location: current_location,
+      dates: Array(params[:dates]), performed_by: current_api_user)
+
+    case result.outcome
+    when :scheduled
+      render json: {
+        status: "scheduled",
+        scheduled_days: result.day_passes.map { |dp| dp.day.iso8601 },
+        passes_remaining: remaining_bundle_passes,
+      }
+    when :already_covered
+      render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
+    when :invalid_date
+      render_error("That date can't be scheduled.")
+    else # :no_bundle / :no_passes
+      render_error("You don't have enough day passes left.")
+    end
+  end
+
+  # GET /api/v1/day_passes/scheduled_days
+  # Lists upcoming bundle-sourced passes for the current member at their location.
+  def scheduled_days
+    tz    = ActiveSupport::TimeZone[current_location&.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    passes = current_api_user.day_passes.bundle_sourced
+               .for_location(current_location).where("day > ?", today).order(:day)
+    render json: passes.map { |dp| { id: dp.id, day: dp.day.iso8601, date: dp.day.strftime("%B %e, %Y") } }
+  end
+
+  # POST /api/v1/day_passes/:id/cancel_scheduled
+  # Cancels a future bundle-sourced scheduled pass, restoring it to the bundle.
+  # Scoped to the current_api_user so members cannot cancel each other's passes.
+  def cancel_scheduled
+    day_pass = current_api_user.day_passes.find(params[:id])
+    result = Billing::DayPassBundles::CancelScheduledDay.call(day_pass: day_pass, performed_by: current_api_user)
+    case result.outcome
+    when :cancelled
+      render json: { status: "cancelled", passes_remaining: remaining_bundle_passes }
+    when :too_late
+      render_error("That day has already started — it can't be cancelled.")
+    else
+      render_error("That scheduled day couldn't be found.")
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Not found" }, status: :not_found
+  end
+
   # POST /api/v1/day_passes/redeem_today
   # Member self-redeems one bundle pass to get access today without tapping a door.
   # Reuses ConsumeOnEntry (idempotent, same logic as door entry) and maps its
@@ -176,6 +228,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       render_error("You don't have any day passes left.")
     end
   end
+
+  private
+
+  def remaining_bundle_passes
+    current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
+  end
+
+  public
 
   # Legacy redeem endpoint — forwards to apply_code.
   def redeem
