@@ -41,60 +41,21 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       end
     end
 
-    # Coverage check: auto-purchase a day pass for the reservation date
-    # if the user has no active subscription, day pass, or lease. Keeps
-    # the "you booked for free without a day pass" gap closed.
+    # Included-room coverage (ADR 0019): booking an included room commits a day
+    # pass for its date, chosen by the member BEFORE booking. The organizer's
+    # coverage steps (ReuseCoveragePass / RedeemBundlePass / BuyCoverageDayPass)
+    # act on the decision flag; EnforceCoverage 422s an uncovered included
+    # booking. The old silent auto-buy is gone (it charged for a fresh single
+    # pass even when the member held a bundle).
     user = current_api_user
     location = current_location
-    # Opt-in reserve-time bundle redemption (ADR 0015): "use 1 pass for today".
-    # When the booker has an active bundle and opts in, RedeemBundlePass (an
-    # organizer step) spends one prepaid pass to cover the booking — so DON'T
-    # auto-purchase a fresh day pass on top of it here.
-    use_bundle_pass = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_bundle_pass))
-    # Check the bundle at the ROOM's location (RedeemBundlePass resolves it off
-    # room.location) — not the user's home location — so a cross-location booking
-    # doesn't both auto-purchase a pass AND burn a bundle pass.
-    redeeming_bundle = use_bundle_pass && user.has_active_day_pass_bundle?(room.location)
-    # Paid rooms already charge an hourly rate that covers access —
-    # don't bundle a day pass on top.
-    is_priced_room = room.hourly_rate_in_cents.to_i > 0
-    needs_cov = !is_priced_room &&
-                !redeeming_bundle &&
-                !user.has_active_subscription? &&
-                !user.has_active_day_pass?(date) &&
-                !user.has_active_lease?(location) &&
-                !user.admin_or_manager?(location) &&
-                !user.superadmin?
-    if needs_cov
-      scope = DayPassType
-        .where(operator_id: location.operator_id)
-        .where("location_id = ? OR location_id IS NULL", location.id)
-        .available
-        .where(visible: true)
-        .where("amount_in_cents > 0")
-        .where.not("name ILIKE ?", "%office%")
-      suggested = scope.where(default_for_room_booking: true).first ||
-                  scope.order(:amount_in_cents).first
-      if suggested.nil?
-        return render_error("You need a day pass to book for #{date.strftime('%b %-d')}, but none are available. Please contact the operator.")
-      end
+    use_bundle_pass   = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_bundle_pass))
+    use_existing_pass = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_existing_pass))
+    buy_day_pass      = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :buy_day_pass))
 
-      # Require a card on file (or a fresh token in this request).
-      unless user.card_added_for_location?(location) || stripe_token.present?
-        return render_error("A payment method is required to book a room without a day pass or membership.")
-      end
-
-      dp_result = Billing::DayPasses::CreateDayPass.call(
-        params: { day: date, day_pass_type: suggested.id, operator: location.operator },
-        operator: location.operator,
-        location: location,
-        user_id: user.id,
-        out_of_band: false,
-      )
-      unless dp_result.success?
-        return render_error("Couldn't purchase day pass: #{dp_result.message}")
-      end
-    end
+    # Coverage for the ROOM's location (bundles/passes resolve off room.location).
+    coverage = Billing::Reservations::CoverageState.for(user: user, room: room, date: date, location: location)
+    coverage_day_pass_type = coverage.day_pass_type
 
     day_pass_charge_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
     # Date-aware: bill against the period this reservation falls in, so booking
@@ -120,12 +81,15 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       day_pass_charge_info: day_pass_charge_info,
       subscription_charge_info: subscription_charge_info,
       use_bundle_pass: use_bundle_pass,
+      use_existing_pass: use_existing_pass,
+      buy_day_pass: buy_day_pass,
+      day_pass_type: coverage_day_pass_type,
     )
 
     if result.success?
       render json: reservation_json(result.reservation), status: :created
     else
-      render_error(result.error || 'Booking failed')
+      render_error(result.message.presence || result.error || 'Booking failed')
     end
   end
 
