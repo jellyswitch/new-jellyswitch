@@ -204,6 +204,11 @@ Two kinds of bookable **Room**, distinguished by `hourly_rate_in_cents`:
 
 The span around a **Reservation** during which the booker may unlock the building on that reservation alone: `Operator.building_access_window_minutes` before start to the same number of minutes after end (default 60). Outside it, the reservation grants no access. Replaces the prior behavior where any reservation granted all-day access (ADR 0013). Day Pass / membership / lease access are unaffected.
 
+## Included-room coverage
+
+Because an included room only grants the access window above, **booking one commits day-pass coverage for its date** — the member decides before booking (ADR 0019). `Billing::Reservations::CoverageState` classifies the situation (`not_applicable` for paid rooms · `already_covered` · `reusable_pass` · `bundle_available` · `needs_purchase`); coverage is committed by organizer steps **before** `ChargeAtBooking` — **reuse** a leftover purchased pass (a cancelled booking's pass, tracked by `day_passes.reservation_id`) → **burn** a bundle pass → **buy** one. `EnforceCoverage` blocks (422) an uncovered included booking (the old silent auto-buy is gone). Meeting-room **overage** is still charged against the covering pass's included minutes, independent of the coverage source, and previewed via `OveragePreview`. On cancel: a bundle pass is restored only if no sibling booking still needs the day; a purchased pass is kept and becomes reusable.
+_Avoid_: the retired "silent auto-buy" — a member with a bundle is never charged for a fresh single pass to book an included room.
+
 ## Capture-at-booking
 
 Reservation money is **charged at booking and the invoice committed then**, not deferred to a hold-and-settle at start (ADR 0010). Exempt bookers (member / leaseholder / staff) and **demo operators** (`billing_state != "production"`) move no money. Supersedes the retired authorize-hold → capture-on-settle lifecycle (`AuthorizeHold` / `SettleReservationJob` / `CaptureHold`).
