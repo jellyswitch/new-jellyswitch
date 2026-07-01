@@ -131,12 +131,29 @@ class Operator::InstantBookController < Operator::BaseController
       total_price = dp_info[:overage_amount_in_cents] / 100.0
     end
 
+    # ADR 0019: coverage state + prospective overage for the pre-booking confirm.
+    coverage = Billing::Reservations::CoverageState.for(user: current_user, room: room, date: date.to_date, location: current_location)
+    covering_type = case coverage.outcome
+                    when :bundle_available then coverage.bundle&.day_pass_type
+                    when :reusable_pass    then coverage.reusable_pass&.day_pass_type
+                    when :needs_purchase   then coverage.day_pass_type
+                    else current_user.day_passes.for_location(current_location).for_day(date.to_date).first&.day_pass_type
+                    end
+
     render json: {
       should_charge: should_charge || (sub_info&.dig(:charge_type) == :partial_overage) || (dp_info&.dig(:charge_type) == :partial_overage),
       included: included,
       total_price: total_price,
       hourly_price: hourly_price,
       included_minutes_remaining: sub_info&.dig(:included_minutes_remaining) || dp_info&.dig(:included_minutes_remaining),
+      coverage: {
+        state: coverage.outcome,
+        bundle_passes_remaining: coverage.passes_remaining,
+        day_pass_amount_in_cents: coverage.amount_cents,
+        reusable_from_date: coverage.reusable_pass&.day&.iso8601,
+        overage_in_cents: Billing::Reservations::OveragePreview.cents(
+          user: current_user, location: current_location, date: date.to_date, minutes: duration, day_pass_type: covering_type),
+      },
     }
   end
 end
