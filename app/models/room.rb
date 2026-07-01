@@ -51,6 +51,13 @@ class Room < ApplicationRecord
   scope :visible, ->() { active.where(visible: true) }
   scope :invisible, ->() { active.where(visible: false) }
   scope :rentable, ->() { active.where(rentable: true) }
+  # ADR 0019: rooms a not-yet-covered user may still book by committing day-pass
+  # coverage at booking — cash-rentable rooms OR included rooms that a day pass
+  # unlocks (rate 0 + include_with_day_pass). Widens the no-coverage room list so
+  # the buy-a-day-pass confirm can surface, instead of hiding included rooms.
+  scope :rentable_or_day_pass_included, ->() {
+    active.where("rentable = ? OR (hourly_rate_in_cents = ? AND include_with_day_pass = ?)", true, 0, true)
+  }
   scope :cheapest, ->() { order("hourly_rate_in_cents DESC") }
 
   # Slugs

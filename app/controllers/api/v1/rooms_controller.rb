@@ -306,7 +306,9 @@ class Api::V1::RoomsController < Api::V1::BaseController
       .pluck(:room_id).uniq
 
     available_rooms = location.rooms.visible.where.not(id: booked_room_ids)
-    available_rooms = available_rooms.rentable unless user.can_see_all_rooms?(location, start_time.to_date) rescue available_rooms
+    # ADR 0019: show a not-yet-covered user the included rooms too (not just
+    # cash-rentable ones) so tapping one surfaces the buy-a-day-pass confirm.
+    available_rooms = available_rooms.rentable_or_day_pass_included unless user.can_see_all_rooms?(location, start_time.to_date) rescue available_rooms
 
     available_list = available_rooms.to_a
 
@@ -452,7 +454,9 @@ class Api::V1::RoomsController < Api::V1::BaseController
     include_hidden = user.admin_of_location?(location) &&
                      ActiveModel::Type::Boolean.new.cast(params[:include_hidden])
     rooms = include_hidden ? location.rooms.active : location.rooms.visible
-    rooms = (rooms.rentable rescue rooms) unless user.can_see_all_rooms?(location, date)
+    # ADR 0019: include day-pass-unlockable rooms for not-yet-covered users so
+    # the buy-a-day-pass confirm surfaces instead of hiding included rooms.
+    rooms = (rooms.rentable_or_day_pass_included rescue rooms) unless user.can_see_all_rooms?(location, date)
 
     avail, unavail = rooms.to_a.partition do |r|
       r.available?(start_time: start_time, duration: minutes, except: except_id)

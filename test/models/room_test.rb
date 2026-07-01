@@ -27,4 +27,22 @@ class RoomTest < ActiveSupport::TestCase
 
     refute @room.available?(start_time: other.datetime_in, duration: 60, except: res.id)
   end
+
+  # ADR 0019: the no-coverage room list must widen from cash-rentable-only to
+  # also include day-pass-unlockable rooms, so the buy-a-day-pass confirm can
+  # surface instead of the included room being hidden.
+  test "rentable_or_day_pass_included lists cash-rentable and included rooms, excludes member-only" do
+    op  = operators(:cowork_tahoe)
+    loc = locations(:cowork_tahoe_location)
+    ActsAsTenant.with_tenant(op) do
+      cash     = create(:room, operator: op, location: loc, rentable: true,  hourly_rate_in_cents: 5000, include_with_day_pass: false)
+      included = create(:room, operator: op, location: loc, rentable: false, hourly_rate_in_cents: 0,    include_with_day_pass: true)
+      member   = create(:room, operator: op, location: loc, rentable: false, hourly_rate_in_cents: 0,    include_with_day_pass: false)
+
+      ids = loc.rooms.rentable_or_day_pass_included.pluck(:id)
+      assert_includes ids, cash.id,     "cash-rentable room should be listed"
+      assert_includes ids, included.id, "included (day-pass-unlockable) room should be listed"
+      refute_includes ids, member.id,   "member-only room should stay hidden from no-coverage users"
+    end
+  end
 end
