@@ -12,6 +12,10 @@
 **Base branch:** `feature/included-room-coverage` (off the staging line — this extends the not-yet-merged reservation-billing redesign).
 **Run backend tests:** `export PATH="$HOME/.rbenv/shims:$HOME/.rbenv/bin:$PATH"` then `bundle exec rails test <path>` from the repo root. Run the billing suites **single-process** (`PARALLEL_WORKERS=1`) — the parallel runner deadlocks on `with_lock` against the shared test DB.
 
+**CRITICAL GOTCHA — `Reservation default_scope { where(cancelled: false) }`:** any query that must SEE a cancelled reservation (reusable-pass detection) must use `Reservation.unscoped`. Any `joins(:reservation)` already filters to non-cancelled (good for the sibling-guard, which wants active bookings). The `DayPass belongs_to :reservation` association returns **nil** for a cancelled reservation (default_scope hides it) — so reusable detection uses the `reusable_coverage` scope's unscoped subquery, NOT `day_pass.reservation`.
+
+**GOTCHA 2 — `acts_as_tenant` validates the `reservation` association on save.** You **cannot** save a `DayPass` whose `reservation` is ALREADY cancelled (acts_as_tenant reloads it through the default scope, gets nil, and fails validation: "Reservation association is invalid"). Production is fine — it links the pass while the reservation is **active** and cancels the reservation later (the pass isn't re-saved). So in every TEST fixture, **link the pass while the reservation is active, THEN cancel it**: `res = create(:reservation, ...); create(:day_pass, ..., reservation: res); res.update!(cancelled: true)`. Never `create(:reservation, cancelled: true)` then link.
+
 ---
 
 ## File structure
@@ -96,10 +100,12 @@ In `app/models/day_pass.rb`, add:
   # new booking (ADR 0019). `not_bundle_sourced` excludes bundle mints, which
   # have their own lifecycle.
   scope :reusable_coverage, ->(today) {
+    # GOTCHA: Reservation has `default_scope { where(cancelled: false) }`, so a
+    # JOIN on :reservation hides cancelled rows and this would always be empty.
+    # Match the link via an UNSCOPED subquery of cancelled reservation ids.
     not_bundle_sourced
       .where("day >= ?", today)
-      .joins(:reservation)
-      .where(reservations: { cancelled: true })
+      .where(reservation_id: Reservation.unscoped.where(cancelled: true).select(:id))
   }
 ```
 
@@ -404,9 +410,10 @@ class Billing::Reservations::ReuseCoveragePassTest < ActiveSupport::TestCase
       user = create(:user, operator: @operator, original_location: @location, current_location: @location)
       room = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 0, include_with_day_pass: true)
       dpt  = create(:day_pass_type, operator: @operator, location: @location, included_meeting_room_minutes: 60)
-      old_res = create(:reservation, user: user, room: room, minutes: 60, cancelled: true)
+      old_res = create(:reservation, user: user, room: room, minutes: 60)
       spare = create(:day_pass, user: user, billable: user, operator: @operator, location: @location,
                      day_pass_type: dpt, day: Date.current + 5, reservation: old_res)
+      old_res.update!(cancelled: true) # cancel AFTER linking (acts_as_tenant; see GOTCHA 2)
       new_res = create(:reservation, user: user, room: room, minutes: 60,
                        datetime_in: (Date.current + 3).to_time + 9.hours)
 

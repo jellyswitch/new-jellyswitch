@@ -15,7 +15,14 @@ class Billing::Reservations::CreateRoomReservation
   organize(
     Billing::Reservations::SaveRoomReservation,
     Billing::Reservations::ChargeCredits,
+    # Commit day-pass coverage for an included room BEFORE ChargeAtBooking prices
+    # the room + overage (ADR 0019): reuse a spare pass → burn a bundle pass →
+    # buy one; EnforceCoverage blocks (422) if an included booking is still
+    # uncovered. Each step no-ops unless its decision flag is set.
+    Billing::Reservations::ReuseCoveragePass,
     Billing::Reservations::RedeemBundlePass,
+    Billing::Reservations::BuyCoverageDayPass,
+    Billing::Reservations::EnforceCoverage,
     Billing::Reservations::ChargeAtBooking,
     Reservations::ScheduleUpcomingReservationReminder,
     CreateNotificationsAsync,

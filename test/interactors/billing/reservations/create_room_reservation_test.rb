@@ -9,7 +9,10 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
     expected_organized = [
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
+      Billing::Reservations::ReuseCoveragePass,
       Billing::Reservations::RedeemBundlePass,
+      Billing::Reservations::BuyCoverageDayPass,
+      Billing::Reservations::EnforceCoverage,
       Billing::Reservations::ChargeAtBooking,
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,
