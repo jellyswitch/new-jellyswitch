@@ -3,12 +3,18 @@ require 'test_helper'
 class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveSupport::TestCase
   def test_organized_interactors
     # Captured at booking (ADR 0010): ChargeAtBooking replaces AuthorizeHold +
-    # ScheduleSettleReservation. RedeemBundlePass (ADR 0015) runs before it.
-    # GrantFreeDayPass stays absent (ADR 0012).
+    # ScheduleSettleReservation. GrantFreeDayPass stays absent (ADR 0012).
+    # ADR 0019 (web P8): the full included-room coverage set — reuse spare / burn
+    # bundle / buy / enforce — runs after SaveRoomReservation and before
+    # ChargeAtBooking, parity with CreateRoomReservation, so the new-card web path
+    # commits coverage the same way the no-card path does.
     expected_organized = [
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
+      Billing::Reservations::ReuseCoveragePass,
       Billing::Reservations::RedeemBundlePass,
+      Billing::Reservations::BuyCoverageDayPass,
+      Billing::Reservations::EnforceCoverage,
       Billing::Reservations::ChargeAtBooking,
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,

@@ -58,4 +58,24 @@ class Billing::Reservations::CoverageBookingTest < ActiveSupport::TestCase
       assert_equal 0, u.day_passes.count, "no silent auto-buy"
     end
   end
+
+  # ADR 0019 web (P8): the new-card path (UpdateBillingAndCreateRoomReservation,
+  # used when the web member enters a card) must carry the SAME coverage steps as
+  # CreateRoomReservation, committed AFTER the reservation saves and BEFORE the
+  # room/overage is charged. Lock the wiring so the card path can't silently
+  # regress to the pre-ADR-0019 behavior (no burn / no enforce).
+  test "both room-reservation organizers commit coverage before charging" do
+    [Billing::Reservations::CreateRoomReservation,
+     Billing::Reservations::UpdateBillingAndCreateRoomReservation].each do |organizer|
+      steps = organizer.organized
+      %i[ReuseCoveragePass RedeemBundlePass BuyCoverageDayPass EnforceCoverage].each do |k|
+        assert_includes steps, Billing::Reservations.const_get(k), "#{organizer} missing #{k}"
+      end
+      save   = steps.index(Billing::Reservations::SaveRoomReservation)
+      enforce = steps.index(Billing::Reservations::EnforceCoverage)
+      charge = steps.index(Billing::Reservations::ChargeAtBooking)
+      assert save < enforce, "#{organizer}: coverage must run after the reservation saves"
+      assert enforce < charge, "#{organizer}: coverage must commit before ChargeAtBooking prices the room"
+    end
+  end
 end

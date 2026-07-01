@@ -29,7 +29,9 @@ class Operator::InstantBookController < Operator::BaseController
     available = current_location.rooms.visible.where.not(id: booked_room_ids)
 
     if !current_user.can_see_all_rooms?(current_location, @start_time.to_date)
-      available = available.rentable
+      # ADR 0019: include day-pass-unlockable rooms so a not-yet-covered member
+      # can pick one and get the buy-a-day-pass confirm (parity with mobile).
+      available = available.rentable_or_day_pass_included
     end
 
     available_rooms_list = available.to_a

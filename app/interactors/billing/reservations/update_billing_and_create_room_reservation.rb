@@ -10,7 +10,14 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
   organize(
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
+    # Included-room coverage (ADR 0019) — parity with CreateRoomReservation, in
+    # the same slot (after the reservation saves, before ChargeAtBooking prices
+    # the room + overage). Each step no-ops unless its decision flag is set;
+    # EnforceCoverage only blocks when the caller passes enforce_coverage: true.
+    Billing::Reservations::ReuseCoveragePass,
     Billing::Reservations::RedeemBundlePass,
+    Billing::Reservations::BuyCoverageDayPass,
+    Billing::Reservations::EnforceCoverage,
     Billing::Reservations::ChargeAtBooking,
     Reservations::ScheduleUpcomingReservationReminder,
     CreateNotificationsAsync,

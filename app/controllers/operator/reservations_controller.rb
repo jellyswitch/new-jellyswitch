@@ -506,6 +506,16 @@ class Operator::ReservationsController < Operator::BaseController
       Billing::Reservations::CreateRoomReservation
     end
 
+    # Included-room coverage (ADR 0019): forward the member's confirm decision so
+    # the organizer reuses a spare pass / burns a bundle pass / buys one, and
+    # enforce_coverage blocks the booking if an included room stays uncovered.
+    # Member self-service (books for current_user) — mirrors the mobile API.
+    use_bundle_pass   = ActiveModel::Type::Boolean.new.cast(params[:use_bundle_pass])
+    use_existing_pass = ActiveModel::Type::Boolean.new.cast(params[:use_existing_pass])
+    buy_day_pass      = ActiveModel::Type::Boolean.new.cast(params[:buy_day_pass])
+    coverage_day_pass_type = Billing::Reservations::CoverageState.for(
+      user: current_user, room: @room, date: @day, location: current_location).day_pass_type
+
     result = interactor.call(reservation_params: {
                                datetime_in: @datetime_in,
                                hours: @duration / 60,
@@ -517,6 +527,11 @@ class Operator::ReservationsController < Operator::BaseController
                              token: token, out_of_band: false,
                              day_pass_charge_info: day_pass_charge_info,
                              subscription_charge_info: subscription_charge_info,
+                             use_bundle_pass: use_bundle_pass,
+                             use_existing_pass: use_existing_pass,
+                             buy_day_pass: buy_day_pass,
+                             day_pass_type: coverage_day_pass_type,
+                             enforce_coverage: true,
                              discount_code: discount_code)
 
     @reservation = result.reservation
