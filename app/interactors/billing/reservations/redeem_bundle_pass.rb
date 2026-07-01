@@ -58,6 +58,7 @@ class Billing::Reservations::RedeemBundlePass
         day_pass_type: bundle.day_pass_type,
         day:           day,
         imported:      true,
+        reservation:   reservation,
       )
       bundle.burn_locked!(kind: "reservation", performed_by: user, day_pass: day_pass,
                           reservation: reservation, redeemed_at: reservation.datetime_in)
