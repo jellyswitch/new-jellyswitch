@@ -20,7 +20,8 @@ class Billing::Reservations::CoverageBookingTest < ActiveSupport::TestCase
     Billing::Reservations::CreateRoomReservation.call(
       reservation_params: { datetime_in: di, hours: 1.0, minutes: 60, room: room, amenity_ids: [] },
       user: user, location: @loc, day_pass_charge_info: nil, subscription_charge_info: nil,
-      use_bundle_pass: false, use_existing_pass: false, buy_day_pass: false, day_pass_type: nil, **flags)
+      use_bundle_pass: false, use_existing_pass: false, buy_day_pass: false, day_pass_type: nil,
+      enforce_coverage: true, **flags)
   end
 
   test "use_bundle_pass books an included room and covers the date" do

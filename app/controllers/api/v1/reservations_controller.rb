@@ -84,6 +84,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       use_existing_pass: use_existing_pass,
       buy_day_pass: buy_day_pass,
       day_pass_type: coverage_day_pass_type,
+      enforce_coverage: true, # member self-service: ADR 0019 block-if-uncovered
     )
 
     if result.success?

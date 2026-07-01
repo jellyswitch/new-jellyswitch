@@ -9,6 +9,11 @@ class Billing::Reservations::EnforceCoverage
   delegate :reservation, :user, :location, to: :context
 
   def call
+    # Opt-in: only the member self-service booking flow enforces coverage. Admin
+    # / operator on-behalf bookings (which don't set this) keep their prior
+    # behavior — an operator can still book an uncovered included room.
+    return unless context.enforce_coverage
+
     room = reservation.room
     return if room.hourly_rate_in_cents.to_i > 0 || !room.include_with_day_pass?
 
