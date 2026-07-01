@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -352,9 +352,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.bigint "billable_id"
     t.integer "location_id"
     t.boolean "complimentary", default: false, null: false
+    t.bigint "reservation_id"
     t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
+    t.index ["reservation_id"], name: "index_day_passes_on_reservation_id"
   end
 
   create_table "discount_codes", force: :cascade do |t|
@@ -1117,9 +1119,6 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.boolean "email_confirmed", default: false, null: false
     t.string "confirmation_token"
     t.datetime "confirmation_sent_at"
-    t.string "login_code_digest"
-    t.datetime "login_code_sent_at"
-    t.integer "login_code_attempts", default: 0, null: false
     t.boolean "marketing_consent", default: false, null: false
     t.datetime "terms_accepted_at"
     t.bigint "preferred_room_id"
@@ -1136,6 +1135,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.string "home_city"
     t.string "home_state"
     t.string "home_zip"
+    t.string "login_code_digest"
+    t.datetime "login_code_sent_at"
+    t.integer "login_code_attempts", default: 0, null: false
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["home_zip"], name: "index_users_on_home_zip"
     t.index ["operator_id", "home_state", "home_city"], name: "index_users_on_operator_home_state_home_city"
@@ -1174,6 +1176,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
   add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
+  add_foreign_key "day_passes", "reservations", on_delete: :nullify
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"
