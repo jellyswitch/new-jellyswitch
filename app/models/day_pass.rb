@@ -72,10 +72,12 @@ class DayPass < ApplicationRecord
   # new booking (ADR 0019). `not_bundle_sourced` excludes bundle mints, which
   # have their own lifecycle.
   scope :reusable_coverage, ->(today) {
+    # GOTCHA: Reservation has `default_scope { where(cancelled: false) }`, so a
+    # JOIN on :reservation hides cancelled rows and this would always be empty.
+    # Match the link via an UNSCOPED subquery of cancelled reservation ids.
     not_bundle_sourced
       .where("day >= ?", today)
-      .joins(:reservation)
-      .where(reservations: { cancelled: true })
+      .where(reservation_id: Reservation.unscoped.where(cancelled: true).select(:id))
   }
 
   after_create :log_activity, unless: :imported

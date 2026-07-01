@@ -61,3 +61,36 @@ class DayPassReservationLinkTest < ActiveSupport::TestCase
     end
   end
 end
+
+class DayPassReusableCoverageScopeTest < ActiveSupport::TestCase
+  test "a pass linked to a CANCELLED reservation is returned by reusable_coverage" do
+    operator = operators(:cowork_tahoe)
+    ActsAsTenant.with_tenant(operator) do
+      loc  = locations(:cowork_tahoe_location)
+      user = create(:user, operator: operator, original_location: loc, current_location: loc)
+      dpt  = create(:day_pass_type, operator: operator, location: loc, included_meeting_room_minutes: 60)
+      room = create(:room, operator: operator, location: loc, hourly_rate_in_cents: 0, include_with_day_pass: true)
+      res  = create(:reservation, user: user, room: room, minutes: 60)
+      dp   = create(:day_pass, user: user, billable: user, operator: operator, location: loc,
+                    day_pass_type: dpt, day: Date.current + 5, reservation: res)
+      res.update!(cancelled: true) # cancel AFTER linking — acts_as_tenant can't validate a cancelled (default-scoped) reservation on save
+
+      assert DayPass.reusable_coverage(Date.current).exists?(id: dp.id)
+    end
+  end
+
+  test "a pass linked to an ACTIVE reservation is NOT returned by reusable_coverage" do
+    operator = operators(:cowork_tahoe)
+    ActsAsTenant.with_tenant(operator) do
+      loc  = locations(:cowork_tahoe_location)
+      user = create(:user, operator: operator, original_location: loc, current_location: loc)
+      dpt  = create(:day_pass_type, operator: operator, location: loc, included_meeting_room_minutes: 60)
+      room = create(:room, operator: operator, location: loc, hourly_rate_in_cents: 0, include_with_day_pass: true)
+      res  = create(:reservation, user: user, room: room, minutes: 60, cancelled: false)
+      dp   = create(:day_pass, user: user, billable: user, operator: operator, location: loc,
+                    day_pass_type: dpt, day: Date.current + 5, reservation: res)
+
+      refute DayPass.reusable_coverage(Date.current).exists?(id: dp.id)
+    end
+  end
+end
