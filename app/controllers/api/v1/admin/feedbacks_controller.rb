@@ -13,36 +13,41 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
   def show
     feedback = MemberFeedback.find(params[:id])
 
-    replies = feedback.feedback_replies.order(:created_at).map { |r|
-      {
-        id: r.id,
-        body: r.body,
-        author: r.user&.name,
-        is_admin: r.from_admin?,
-        created_at: r.created_at.iso8601,
-      }
-    }
+    replies = feedback.feedback_replies.order(:created_at).map { |r| reply_json(r) }
 
     render json: feedback_json(feedback).merge(replies: replies)
   end
 
   def reply
     feedback = MemberFeedback.find(params[:id])
-    reply = feedback.feedback_replies.build(
-      body: params[:body],
-      user: current_api_user,
-      operator: current_tenant,
-    )
+    conflicts = nil
+    reply = nil
 
-    if reply.save
+    # Send-time collision check: the client may send last_seen_reply_id (the
+    # highest staff-reply id it had loaded; null = it saw none). If the thread
+    # gained a staff reply the sender hadn't seen, answer 409 with those
+    # replies and save nothing — the second admin decides after reading the
+    # first answer. Param absent entirely = legacy clients, no check. The row
+    # lock makes two simultaneous sends serialize so both can't pass.
+    feedback.with_lock do
+      conflicts = unseen_staff_replies(feedback) if params.key?(:last_seen_reply_id)
+
+      if conflicts.blank?
+        reply = feedback.feedback_replies.build(
+          body: params[:body],
+          user: current_api_user,
+          operator: current_tenant,
+        )
+        reply.save
+      end
+    end
+
+    if conflicts.present?
+      render json: { conflicts: conflicts.map { |r| reply_json(r) } }, status: :conflict
+    elsif reply.persisted?
       SendNotificationsJob.perform_later(reply)
-      render json: {
-        id: reply.id,
-        body: reply.body,
-        author: current_api_user.name,
-        is_admin: true,
-        created_at: reply.created_at.iso8601,
-      }, status: :created
+      render json: reply_json(reply).merge(author: current_api_user.name, is_admin: true),
+        status: :created
     else
       render_error(reply.errors.full_messages.join(', '))
     end
@@ -65,6 +70,28 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
       reply_count: f.feedback_replies.count,
       read_by_admin: f.last_read_at.present?,
       created_at: f.created_at.iso8601,
+    }
+  end
+
+  # Staff replies the sender hadn't loaded when they hit Send. "Staff" mirrors
+  # FeedbackReply#from_admin?: any author other than the thread's member. A
+  # last_seen_reply_id that doesn't belong to this thread counts as saw-none.
+  def unseen_staff_replies(feedback)
+    last_seen_id = feedback.feedback_replies.find_by(id: params[:last_seen_reply_id])&.id || 0
+    feedback.feedback_replies
+      .where("feedback_replies.id > ?", last_seen_id)
+      .where.not(user_id: feedback.user_id)
+      .order(:id)
+      .to_a
+  end
+
+  def reply_json(r)
+    {
+      id: r.id,
+      body: r.body,
+      author: r.user&.name,
+      is_admin: r.from_admin?,
+      created_at: r.created_at.iso8601,
     }
   end
 end
