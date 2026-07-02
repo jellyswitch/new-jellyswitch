@@ -5,6 +5,9 @@ class Api::V1::ReservationsCoverageTest < ActionDispatch::IntegrationTest
     @operator = operators(:cowork_tahoe)
     @location = locations(:cowork_tahoe_location)
     ActsAsTenant.with_tenant(@operator) do
+      # Room Credits are orthogonal to day-pass coverage — disable so ChargeCredits
+      # doesn't 422 ("Insufficient credit balance") before the coverage steps run.
+      @location.update!(credits_enabled: false) if @location.respond_to?(:credits_enabled)
       @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
       @room = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 0, include_with_day_pass: true)
       @type = create(:day_pass_type, operator: @operator, location: @location,
