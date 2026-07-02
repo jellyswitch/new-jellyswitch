@@ -71,7 +71,12 @@
           <% end %>
           <% weekly_update.rooms.each do |room| %>
             <li>
-              <%= number_to_percentage(room['percent'].to_f * 100, precision: 0) %> of which were in <%= room['name'] %>
+              <% if room['utilization'] %>
+                <strong><%= room['name'] %></strong> was in use <%= number_to_percentage(room['utilization'].to_f * 100, precision: 0) %> of business hours (6am&ndash;6pm, Mon&ndash;Fri) &mdash; <%= pluralize(room['count'], 'reservation') %>
+              <% else %>
+                <%# Updates saved before utilization existed stored share-of-reservations %>
+                <%= number_to_percentage(room['percent'].to_f * 100, precision: 0) %> of which were in <%= room['name'] %>
+              <% end %>
             </li>
           <% end %>
         </ul>

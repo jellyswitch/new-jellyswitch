@@ -91,6 +91,16 @@ class Api::V1::RoomsAvailableTest < ActionDispatch::IntegrationTest
     refute_includes JSON.parse(response.body)["available_rooms"].map { |r| r["id"] }, room.id
   end
 
+  test "archived rooms never surface, even for an admin with include_hidden" do
+    room = Room.create!(name: "Retired Room", operator: @operator, location: @location,
+                        archived: true, rentable: true, capacity: 4)
+    get "/api/v1/rooms/available", params: { date: @date, time: "09:00", minutes: 60, include_hidden: true }, headers: admin_headers
+    assert_response :success
+    body = JSON.parse(response.body)
+    all_ids = (body["available_rooms"] + body["unavailable_rooms"]).map { |r| r["id"] }
+    refute_includes all_ids, room.id
+  end
+
   # --- should_charge in pricing_context ---
   # The when-first room list computes each room's price client-side from
   # pricing_context. For a PRICED room an exempt user (admin/member/
