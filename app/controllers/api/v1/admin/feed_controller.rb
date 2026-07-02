@@ -321,6 +321,16 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         else
           stats << "Reservations: #{wu.reservations.to_i}"
         end
+        # Per-room utilization of the business window (6am-6pm Mon-Fri).
+        # Updates saved before the field existed stored share-of-reservations
+        # instead — skip those rather than mislabel them.
+        room_lines = (wu.rooms || []).select { |r| r['utilization'] }
+        if room_lines.any?
+          stats << "Room usage (6am-6pm, Mon-Fri):"
+          room_lines.each do |r|
+            stats << "• #{r['name']}: #{(r['utilization'].to_f * 100).round}%"
+          end
+        end
         stats = stats.join("\n")
         header = "Week of #{wu.week_start&.strftime('%b %-d')} – #{wu.week_end&.strftime('%b %-d, %Y')}"
         base.merge(
