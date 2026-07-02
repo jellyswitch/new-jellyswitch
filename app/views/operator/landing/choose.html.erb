@@ -27,6 +27,10 @@
     <% end %>
   <% end %>
 
+  <%# Bundle holders with no coverage today can't reach home — this card is
+      their web path to self-redeem (Erin/Tiffany discoverability gap). %>
+  <%= render "shared/bundle_redeem_card" %>
+
   <%# Unified "space host messaged you" card — the host greets the visitor,
       the visitor replies, and the conversation continues on the thread show
       page. Rendered at the point of decision, above the purchase options,
