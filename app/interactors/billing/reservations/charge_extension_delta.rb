@@ -69,6 +69,7 @@ class Billing::Reservations::ChargeExtensionDelta
         billable: reservation.user,
         operator: location.operator,
         location: location,
+        reservation: reservation, # so a cancel refunds extension deltas too (ADR 0011)
         amount_due: delta,
         amount_paid: delta,
         status: 'paid',

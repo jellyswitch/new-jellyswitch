@@ -34,10 +34,13 @@ Rails.application.routes.draw do
 
     namespace :v1 do
       post 'auth/login', to: 'auth#login'
+      post 'auth/request_login_code', to: 'auth#request_login_code'
+      post 'auth/verify_login_code', to: 'auth#verify_login_code'
       post 'auth/signup', to: 'auth#signup'
       post 'auth/forgot_password', to: 'auth#forgot_password'
       post 'auth/reset_password', to: 'auth#reset_password'
       post 'auth/refresh', to: 'auth#refresh'
+      post 'auth/resend_confirmation', to: 'auth#resend_confirmation'
       post 'auth/lookup_operators', to: 'auth#lookup_operators'
       get 'auth/operators', to: 'auth#operators'
       get 'brand_spec', to: 'brand_specs#show'
@@ -114,6 +117,11 @@ Rails.application.routes.draw do
           post :redeem
           post :apply_code
           post :redeem_today
+          post :schedule
+          get  :scheduled_days
+        end
+        member do
+          post :cancel_scheduled
         end
       end
 
@@ -229,6 +237,9 @@ Rails.application.routes.draw do
         get 'members/:id/conversations', to: 'members#conversations'
         post 'members/:id/log_tour', to: 'members#log_tour'
         post 'members/:id/add_note', to: 'members#add_note'
+        post 'members/:id/schedule_bundle_days',  to: 'members#schedule_bundle_days'
+        get  'members/:id/scheduled_bundle_days', to: 'members#scheduled_bundle_days'
+        post 'members/:member_id/scheduled_bundle_days/:id/cancel', to: 'members#cancel_scheduled_bundle_day'
 
         # People (lifecycle-stage filtered list)
         get 'people', to: 'people#index'
@@ -393,6 +404,13 @@ Rails.application.routes.draw do
     delete "/logout", to: "sessions#destroy", as: :logout
     post "/login", to: "sessions#create", as: :operator_login_create
     get "/login", to: "sessions#new", as: :operator_login
+
+    # Passwordless login via emailed Login Code (ADR 0016) — member types the
+    # code, no deep link. Mirrors the password_resets two-step web flow.
+    get  "/login/code",        to: "operator/login_codes#new",         as: :new_login_code
+    post "/login/code",        to: "operator/login_codes#create",      as: :login_code
+    get  "/login/code/verify", to: "operator/login_codes#verify_form", as: :login_code_verify
+    post "/login/code/verify", to: "operator/login_codes#verify"
     get "/signup", to: "onboarding#new_user", as: :operator_signup
     get "/choose_operator", to: "sessions#choose_operator", as: :choose_operator
     get "/password_form", to: "sessions#password_form", as: :password_form
@@ -844,6 +862,7 @@ Rails.application.routes.draw do
     get  "branding",                   to: "operator/settings#branding",                   as: :branding
     patch "update_branding",           to: "operator/settings#update_branding",            as: :update_branding
     get  "payments",                   to: "operator/settings#payments",                   as: :payments
+    patch "update_payments",           to: "operator/settings#update_payments",            as: :update_payments
     get  "doors",                      to: "operator/settings#doors",                      as: :doors
     patch "update_doors",              to: "operator/settings#update_doors",               as: :update_doors
     post "import_doors",               to: "operator/settings#import_doors",               as: :import_doors

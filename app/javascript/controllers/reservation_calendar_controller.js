@@ -38,6 +38,7 @@ export default class extends Controller {
   disconnect() {
     // Clean up all event handlers when Stimulus disconnects
     $("#reservation-fullcalendar").off("click.mobiletap");
+    $("#reservation-fullcalendar").off("click.daytap");
     $("#duration-slider").off("input.duration change.duration");
     $(".duration-quick-picks").off("click.quickpick");
     $("#time-slots-container").off("click.timeslot touchend.timeslot");
@@ -144,6 +145,23 @@ export default class extends Controller {
 
         const clickedDate = moment(dateStr);
         this.handleDayClick(clickedDate);
+      });
+    } else {
+      // Desktop: FullCalendar v3's hit-detection never fires dayClick on the
+      // TODAY cell, so members could book every day EXCEPT today. Bind our own
+      // day-cell click handler that reads the date straight from the bg row and
+      // calls handleDayClick, bypassing FC's broken hit-detection. Reservation
+      // badges still go through FC's eventClick, and FC's dayClick still fires
+      // for every other day — handleDayClick's isModalOpen guard makes this a
+      // no-op in those cases (no double-open).
+      $("#reservation-fullcalendar").on("click.daytap", ".fc-content-skeleton td, .fc-day-number", (e) => {
+        if ($(e.target).closest(".fc-day-grid-event").length) return; // let eventClick handle badges
+        const td = $(e.target).closest("td");
+        const row = td.closest(".fc-row");
+        const bgCell = row.find(".fc-bg td.fc-day").eq(td.index());
+        const dateStr = bgCell.data("date");
+        if (!dateStr) return;
+        this.handleDayClick(moment(String(dateStr)));
       });
     }
   }
@@ -802,8 +820,17 @@ export default class extends Controller {
     }
 
     rooms.forEach((room) => {
+      // Show capacity + whether it's a paid or free room so members who don't
+      // know the building can choose sensibly. The exact charge (after any
+      // membership/day-pass coverage) is shown once a room is selected.
+      const bits = [room.name];
+      if (room.capacity) {
+        bits.push(`${room.capacity} ${room.capacity == 1 ? "seat" : "seats"}`);
+      }
+      const cents = room.hourly_rate_in_cents || 0;
+      bits.push(cents > 0 ? `$${(cents / 100).toFixed(0)}/hr` : "No room charge");
       const optionElement = $(
-        `<option value="${room.id}">${room.name}</option>`
+        `<option value="${room.id}">${bits.join("  ·  ")}</option>`
       );
       roomsSelect.append(optionElement);
     });
@@ -851,7 +878,7 @@ export default class extends Controller {
 
     const hourlyPriceText = should_charge
       ? this.USDollar.format(room.hourly_price)
-      : "Free";
+      : (room.coverage_label || "Free");
     const reservationPriceText = this.USDollar.format(room.reservation_price);
 
     $(".room-details .hourly-price .details-value").text(hourlyPriceText);

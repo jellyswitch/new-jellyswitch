@@ -14,6 +14,7 @@
 #  invoice_id       :integer
 #  location_id      :integer
 #  operator_id      :integer          default(1), not null
+#  reservation_id   :bigint(8)
 #  stripe_charge_id :string
 #  user_id          :integer          not null
 #
@@ -22,6 +23,11 @@
 #  index_day_passes_on_billable_type_and_billable_id  (billable_type,billable_id)
 #  index_day_passes_on_location_id                    (location_id)
 #  index_day_passes_on_operator_id                    (operator_id)
+#  index_day_passes_on_reservation_id                 (reservation_id)
+#
+# Foreign Keys
+#
+#  fk_rails_...  (reservation_id => reservations.id) ON DELETE => nullify
 #
 
 class DayPass < ApplicationRecord
@@ -33,6 +39,7 @@ class DayPass < ApplicationRecord
   belongs_to :invoice, optional: true
   belongs_to :user
   belongs_to :operator
+  belongs_to :reservation, optional: true
   acts_as_tenant :operator
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
 
@@ -41,11 +48,16 @@ class DayPass < ApplicationRecord
   attr_accessor :imported
 
   # Scopes
+  # A pass is bundle-sourced if a bundle redemption minted it (day_pass_id set).
+  # Only DayPass-minting redemptions — door "entry" and reserve-time "reservation"
+  # (ADR 0015) — set day_pass_id (guest/admin_restore don't), so the kind-agnostic
+  # `day_pass_id IS NOT NULL` filter excludes both from day-pass revenue (bundle
+  # money is recognized once at sale — ADR 0009).
   scope :bundle_sourced, -> {
-    where(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+    where(id: DayPassBundleRedemption.where.not(day_pass_id: nil).select(:day_pass_id))
   }
   scope :not_bundle_sourced, -> {
-    where.not(id: DayPassBundleRedemption.where(kind: "entry").where.not(day_pass_id: nil).select(:day_pass_id))
+    where.not(id: DayPassBundleRedemption.where.not(day_pass_id: nil).select(:day_pass_id))
   }
   scope :today, -> { where(day: Time.current) }
   scope :for_day, -> (date) { where(day: date) }
@@ -54,6 +66,19 @@ class DayPass < ApplicationRecord
   scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
   scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
+
+  # A purchased (non-bundle-sourced) pass bought for a booking that was then
+  # cancelled — still unused and today-or-future, so it can be re-dated onto a
+  # new booking (ADR 0019). `not_bundle_sourced` excludes bundle mints, which
+  # have their own lifecycle.
+  scope :reusable_coverage, ->(today) {
+    # GOTCHA: Reservation has `default_scope { where(cancelled: false) }`, so a
+    # JOIN on :reservation hides cancelled rows and this would always be empty.
+    # Match the link via an UNSCOPED subquery of cancelled reservation ids.
+    not_bundle_sourced
+      .where("day >= ?", today)
+      .where(reservation_id: Reservation.unscoped.where(cancelled: true).select(:id))
+  }
 
   after_create :log_activity, unless: :imported
   after_create :enroll_user_in_welcome_drip, unless: :imported

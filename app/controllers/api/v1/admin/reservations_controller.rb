@@ -82,11 +82,9 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     end
 
     # Route through the same interactor as the member-side endpoint so
-    # billing fires: post-start extensions hit ChargeExtensionDelta
-    # (auto-capture for the additional cost); pre-start extensions go
-    # through AuthorizeHoldOrSchedule (replaces the existing hold or
-    # stays deferred). Bypassing this previously gave members free time
-    # when an admin extended a captured booking.
+    # billing fires: under capture-at-booking every extension is a delta charge
+    # via ChargeExtensionDelta (auto-capture for the additional cost). Bypassing
+    # this previously gave members free time when an admin extended a booking.
     result = Billing::Reservations::ExtendReservation.call(
       reservation: reservation,
       additional_duration: additional_minutes,
@@ -110,43 +108,12 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
 
     return render json: { success: true } if reservation.cancelled?
 
-    location = reservation.room.location
-    creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
-
-    reservation.with_lock do
-      Reservation.unscoped { reservation.reload }
-      return render json: { success: true } if reservation.cancelled?
-
-      reservation.update!(cancelled: true)
-
-      if reservation.stripe_payment_intent_id.present?
-        if reservation.captured_at.present?
-          # Already captured — find the local invoice and refund it
-          # via the existing refund pipeline. Admin can refund any
-          # extension-delta invoices separately from the invoices list.
-          invoice = Invoice.find_by(stripe_payment_intent_id: reservation.stripe_payment_intent_id)
-          if invoice && !invoice.refunded?
-            begin
-              Billing::Invoices::Refunds::Create.call(
-                operator: current_tenant,
-                invoice: RefundableFactory.for(invoice),
-                location: location,
-              )
-            rescue => e
-              Rails.logger.warn("Admin cancel: refund failed for invoice #{invoice.id}: #{e.class}: #{e.message}")
-              Honeybadger.notify(e, context: { reservation_id: reservation.id, invoice_id: invoice.id })
-            end
-          end
-        else
-          # Pre-capture — void the held PaymentIntent so the member's
-          # card isn't kept frozen until Stripe expires the auth.
-          begin
-            Stripe::PaymentIntent.cancel(reservation.stripe_payment_intent_id, {}, creds)
-          rescue Stripe::InvalidRequestError => e
-            Rails.logger.warn("Admin cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
-          end
-        end
-      end
+    # Capture-at-booking (ADR 0010/0011): an admin cancel refunds ALL of the
+    # reservation's invoices (booking capture + any extension deltas) regardless
+    # of the cancellation window, via the one unified pipeline.
+    result = CancelReservation.call(reservation: reservation, mode: :admin)
+    unless result.success?
+      return render_error(result.message || 'Could not cancel reservation')
     end
 
     render json: { success: true }

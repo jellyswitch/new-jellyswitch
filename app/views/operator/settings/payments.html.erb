@@ -26,5 +26,29 @@
     </div>
   </div>
 
+  <div class="card mt-3">
+    <div class="card-body">
+      <h4>Meeting room pricing</h4>
+      <%= form_with model: @location, url: settings_update_payments_path(location_id: @location.id), method: :patch, local: true do |f| %>
+        <div class="form-group">
+          <%= f.label :overage_rate, "Overage / add-on meeting room time (per hour)" %>
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">$</span>
+            </div>
+            <%= f.text_field :overage_rate, class: "form-control",
+                  value: number_with_precision(@location.overage_rate_in_cents / 100.0, precision: 2) %>
+          </div>
+          <small class="form-text text-muted">
+            Hourly rate billed for $0 "call" rooms beyond a day pass's included
+            minutes — and for anyone booking a call room with no day pass. Priced
+            meeting rooms always bill at their own hourly rate.
+          </small>
+        </div>
+        <%= f.submit "Save", class: "btn btn-primary" %>
+      <% end %>
+    </div>
+  </div>
+
   <%= render "shared/stripe_connect_modal" %>
 <% end %>

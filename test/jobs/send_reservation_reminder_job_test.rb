@@ -31,4 +31,33 @@ class SendReservationReminderJobTest < ActiveSupport::TestCase
     SendNotificationsJob.expects(:perform_now).never
     SendReservationReminderJob.perform_now(res.id)
   end
+
+  # Phase 6: fires once door access opens — building_access_window_minutes before
+  # start (ADR 0013), not a fixed 15 min.
+  test "fires once the access window has opened" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 50.minutes.from_now, minutes: 60)
+    # Access opened 10 min ago (50 − 60), still before start → fire.
+    SendNotificationsJob.expects(:perform_now).with(res, "ReservationReminder").once
+    SendReservationReminderJob.perform_now(res.id)
+  end
+
+  test "does not fire before the access window opens" do
+    @room.location.operator.update!(building_access_window_minutes: 30)
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 50.minutes.from_now, minutes: 60)
+    # Window opens at start − 30 = 20 min from now → not yet.
+    SendNotificationsJob.expects(:perform_now).never
+    SendReservationReminderJob.perform_now(res.id)
+  end
+
+  # Phase 6 review fix #1: a duplicate job (an edit re-enqueues without cancelling
+  # the old one) must not double-send — the idempotency marker dedups.
+  test "fires only once even when the job runs twice" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 50.minutes.from_now, minutes: 60)
+    SendNotificationsJob.expects(:perform_now).with(res, "ReservationReminder").once
+    SendReservationReminderJob.perform_now(res.id)
+    SendReservationReminderJob.perform_now(res.id) # second copy no-ops via the marker
+    assert_not_nil res.reload.arrival_notified_at
+  end
 end

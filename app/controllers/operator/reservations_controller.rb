@@ -233,7 +233,9 @@ class Operator::ReservationsController < Operator::BaseController
     find_reservation
     authorize @reservation, :cancel?
 
-    result = CancelReservation.call(reservation: @reservation)
+    # Operator/staff cancel = admin mode: refunds all the reservation's invoices
+    # regardless of the member cancellation window (ADR 0011).
+    result = CancelReservation.call(reservation: @reservation, mode: :admin)
 
     if result.success?
       flash[:notice] = "Reservation cancelled."
@@ -352,14 +354,23 @@ class Operator::ReservationsController < Operator::BaseController
       duration = params[:duration].to_i
       date = Time.zone.parse(params[:date])
 
-      should_charge = current_user.should_charge_for_reservation?(current_location, date)
+      # Priced (premium) rooms charge everyone EXCEPT members/leaseholders/staff —
+      # day-passers are NOT exempt (a day pass covers free rooms + included minutes,
+      # not hourly rooms). $0 rooms use reservation-level coverage. Matches
+      # should_charge_for_room? + the actual booking charge, so the quote can never
+      # read "Free" for a room the booker is charged for.
+      priced_room = room.hourly_rate_in_cents.to_i > 0
+      should_charge = priced_room ?
+        current_user.should_charge_for_room?(room, date) :
+        current_user.should_charge_for_reservation?(current_location, date)
 
       hourly_price = room.hourly_rate_in_cents / 100.0
-      reservation_price = room.hourly_rate_in_cents / 100.0 * (duration / 60.0)
+      reservation_price = should_charge ? (room.hourly_rate_in_cents / 100.0 * (duration / 60.0)) : 0
 
-      # Check day pass overage for day pass holders
+      # Day-pass / subscription included-minutes never cover a premium hourly room,
+      # so skip those adjustments for priced rooms (they'd wrongly re-zero them).
       begin
-        day_pass_charge_info = current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
+        day_pass_charge_info = priced_room ? nil : current_user.day_pass_reservation_charge_info(current_location, date.to_date, duration)
       rescue => e
         Rails.logger.error("day_pass_reservation_charge_info error: #{e.class}: #{e.message}")
         Honeybadger.notify(e)
@@ -373,6 +384,11 @@ class Operator::ReservationsController < Operator::BaseController
         capacity: room.capacity,
         reservation_price: reservation_price,
         should_charge: should_charge,
+        coverage_label: (should_charge ? nil : (
+          current_user.member?(current_location) ? "Included with membership" :
+          current_user.has_active_lease? ? "Included with office" :
+          current_user.has_active_day_pass?(date.to_date) ? "Included with day pass" : "Free"
+        )),
         is_day_pass_overage: false,
         amenities: room.amenities,
       }
@@ -394,7 +410,7 @@ class Operator::ReservationsController < Operator::BaseController
 
       # Check subscription meeting room overage for members
       begin
-        subscription_charge_info = current_user.subscription_reservation_charge_info(current_location, duration)
+        subscription_charge_info = priced_room ? nil : current_user.subscription_reservation_charge_info(current_location, duration)
       rescue => e
         Rails.logger.error("subscription_reservation_charge_info error: #{e.class}: #{e.message}")
         Honeybadger.notify(e)
@@ -490,6 +506,16 @@ class Operator::ReservationsController < Operator::BaseController
       Billing::Reservations::CreateRoomReservation
     end
 
+    # Included-room coverage (ADR 0019): forward the member's confirm decision so
+    # the organizer reuses a spare pass / burns a bundle pass / buys one, and
+    # enforce_coverage blocks the booking if an included room stays uncovered.
+    # Member self-service (books for current_user) — mirrors the mobile API.
+    use_bundle_pass   = ActiveModel::Type::Boolean.new.cast(params[:use_bundle_pass])
+    use_existing_pass = ActiveModel::Type::Boolean.new.cast(params[:use_existing_pass])
+    buy_day_pass      = ActiveModel::Type::Boolean.new.cast(params[:buy_day_pass])
+    coverage_day_pass_type = Billing::Reservations::CoverageState.for(
+      user: current_user, room: @room, date: @day, location: current_location).day_pass_type
+
     result = interactor.call(reservation_params: {
                                datetime_in: @datetime_in,
                                hours: @duration / 60,
@@ -501,6 +527,11 @@ class Operator::ReservationsController < Operator::BaseController
                              token: token, out_of_band: false,
                              day_pass_charge_info: day_pass_charge_info,
                              subscription_charge_info: subscription_charge_info,
+                             use_bundle_pass: use_bundle_pass,
+                             use_existing_pass: use_existing_pass,
+                             buy_day_pass: buy_day_pass,
+                             day_pass_type: coverage_day_pass_type,
+                             enforce_coverage: true,
                              discount_code: discount_code)
 
     @reservation = result.reservation

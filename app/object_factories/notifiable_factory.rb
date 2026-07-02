@@ -41,6 +41,10 @@ class NotifiableFactory
       Notifiable::UpcomingReservationReminder
     when "ReservationReminder"
       Notifiable::ReservationReminder
+    when "ReservationStarted"
+      Notifiable::ReservationStarted
+    when "ReservationCharged"
+      Notifiable::ReservationCharged
     when "Approval"
       Notifiable::Approval
     when "RoomDemandMiss"

@@ -73,23 +73,23 @@
   <% if phone.present? || email.present? %>
     <div class="row mt-3 mx-n1">
       <% if phone.present? %>
-        <div class="col-4 px-1">
-          <%= link_to "tel:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
-            <i class="fas fa-phone-alt mb-1"></i>
+        <div class="col px-1">
+          <%= link_to "tel:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2 h-100" do %>
+            <i class="fas fa-phone-alt mb-1" aria-hidden="true"></i>
             <small>Call</small>
           <% end %>
         </div>
-        <div class="col-4 px-1">
-          <%= link_to "sms:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
-            <i class="fas fa-comment-dots mb-1"></i>
+        <div class="col px-1">
+          <%= link_to "sms:#{phone}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2 h-100" do %>
+            <i class="fas fa-comment-dots mb-1" aria-hidden="true"></i>
             <small>Text</small>
           <% end %>
         </div>
       <% end %>
       <% if email.present? %>
-        <div class="<%= phone.present? ? 'col-4' : 'col-12' %> px-1">
-          <%= link_to "mailto:#{email}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2" do %>
-            <i class="fas fa-envelope mb-1"></i>
+        <div class="col px-1">
+          <%= link_to "mailto:#{email}", class: "btn btn-outline-primary btn-block d-flex flex-column align-items-center py-2 h-100" do %>
+            <i class="fas fa-envelope mb-1" aria-hidden="true"></i>
             <small>Email</small>
           <% end %>
         </div>

@@ -1,17 +1,16 @@
 class Billing::Reservations::UpdateRoomReservation
   include Interactor
 
-  # Edits an upcoming (not-yet-started, not-yet-captured) reservation's
-  # start time and/or duration. The caller (ReservationsController#update)
-  # guards the "still editable" window; this service re-validates the slot,
-  # re-prices the hold, and reschedules the start-time-bound jobs.
+  # Edits an upcoming reservation's start time / duration / room. The caller
+  # (ReservationsController#update) guards the editable window (the 1-min
+  # cutoff). This service re-validates the slot and re-prices.
   #
-  # Re-pricing reuses the extension billing path: set `is_extend` so
-  # AuthorizeHold cancels the prior hold and re-authorizes for the new
-  # total (computed by ChargeCalculator). Shortening re-authorizes lower;
-  # a now-free booking releases the hold entirely. captured_at is blank
-  # (the controller blocks started/charged reservations), so the
-  # post-capture ChargeExtensionDelta branch never applies here.
+  # Re-pricing under capture-at-booking (ADR 0010): the original charge is
+  # already captured, so an edit that costs MORE charges the delta
+  # (ChargeExtensionDelta — a separate auto-capture for the difference). An edit
+  # that costs the same or LESS is a no-op: member-initiated reductions
+  # (shorten / switch to a cheaper room) do NOT auto-refund (ADR 0011) — a
+  # refund happens only via a real cancel.
   def call
     reservation = context.reservation
 
@@ -30,17 +29,21 @@ class Billing::Reservations::UpdateRoomReservation
       return
     end
 
-    context.is_extend = true
-    Billing::Reservations::AuthorizeHoldOrSchedule.call(context)
+    # A genuinely re-timed booking should notify once more — clear the per-channel
+    # push markers so the rescheduled arrival/started jobs can claim and send
+    # (Phase 6). Only on a real start-time change, so same-time edits (room/
+    # duration only) stay deduped by the markers and never double-push.
+    if reservation.saved_change_to_datetime_in?
+      reservation.update_columns(arrival_notified_at: nil, started_notified_at: nil)
+    end
+
+    Billing::Reservations::ChargeExtensionDelta.call(context)
     if context.failure?
       context.error ||= context.message
       return
     end
 
-    # datetime_in may have moved — re-queue the capture and reminders for
-    # the new start. SettleReservationJob ignores stale early fires, so the
-    # leftover job at the old start is harmless.
-    Reservations::ScheduleSettleReservation.call(context)
+    # datetime_in may have moved — re-queue the start reminder for the new time.
     Reservations::ScheduleUpcomingReservationReminder.call(context)
   end
 end

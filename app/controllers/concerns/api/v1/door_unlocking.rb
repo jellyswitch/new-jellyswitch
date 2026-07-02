@@ -16,12 +16,18 @@ module Api::V1::DoorUnlocking
     return true if location && user.has_active_day_pass_bundle?(location)
     return true if location && user.has_active_lease?(location)
 
-    day_start = today.in_time_zone(zone).beginning_of_day
-    day_end   = today.in_time_zone(zone).end_of_day
+    # A reservation grants access only inside its ±window (ADR 0013), not all
+    # day. Coarse-filter candidates by datetime_in (±(1 day + window) catches
+    # midnight spillover and any reasonable duration), then make the exact in/out
+    # call in Ruby. window_minutes is passed through so access_window_open? needn't
+    # reload the operator per row.
+    window_minutes = location&.operator&.building_access_window_minutes || 60
+    now = Time.current
+    window = window_minutes.minutes
     user.reservations
         .where(cancelled: false)
-        .where(datetime_in: day_start..day_end)
-        .any?
+        .where(datetime_in: (now - 1.day - window)..(now + 1.day + window))
+        .any? { |reservation| reservation.access_window_open?(now, window_minutes: window_minutes) }
   end
 
   def call_kisi_unlock(door, _location = nil)

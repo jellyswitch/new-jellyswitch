@@ -10,6 +10,7 @@
 #  description                        :text
 #  features                           :text             default([]), is an Array
 #  hourly_rate_in_cents               :integer          default(0), not null
+#  include_with_day_pass              :boolean          default(FALSE), not null
 #  name                               :string           not null
 #  rentable                           :boolean          default(FALSE), not null
 #  slug                               :string
@@ -40,6 +41,9 @@ FactoryBot.define do
     square_footage { 60 }
     rentable { true }
     hourly_rate_in_cents { 0 }
+    # Mirror the migration backfill: $0 (call) rooms count toward the day-pass
+    # included-minutes bucket; priced rooms don't. ADR 0012.
+    include_with_day_pass { (hourly_rate_in_cents || 0).to_i == 0 }
     credit_cost { 5 }
     allow_shorter_reservation_duration { true }
 

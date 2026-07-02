@@ -88,6 +88,71 @@ RSpec.describe Api::V1::AuthController, type: :controller do
     end
   end
 
+  describe "POST #login" do
+    let!(:operator) { create(:operator, subdomain: "login-test") }
+    let!(:location) { create(:location, operator: operator) }
+
+    before { request.headers["X-Operator-Subdomain"] = "login-test" }
+
+    it "lets an unconfirmed member log in and flags the verify nudge" do
+      create(:user, operator: operator, original_location: location,
+                    email: "unconfirmed@example.com", password: "password123",
+                    role: User::UNASSIGNED, email_confirmed: false)
+
+      post :login, params: { subdomain: "login-test", email: "unconfirmed@example.com", password: "password123" }
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)
+      expect(body["token"]).to be_present
+      expect(body["user"]["email_confirmed"]).to eq(false)
+      expect(body["user"]["needs_email_confirmation"]).to eq(true)
+    end
+
+    it "does not flag the nudge for a confirmed member" do
+      create(:user, operator: operator, original_location: location,
+                    email: "confirmed@example.com", password: "password123",
+                    role: User::UNASSIGNED, email_confirmed: true)
+
+      post :login, params: { subdomain: "login-test", email: "confirmed@example.com", password: "password123" }
+
+      body = JSON.parse(response.body)
+      expect(body["user"]["needs_email_confirmation"]).to eq(false)
+    end
+  end
+
+  describe "POST #resend_confirmation" do
+    let!(:operator) { create(:operator, subdomain: "resend-test") }
+    let!(:location) { create(:location, operator: operator) }
+
+    before { request.headers["X-Operator-Subdomain"] = "resend-test" }
+
+    it "resends the confirmation email for an authenticated unconfirmed member" do
+      member = create(:user, operator: operator, original_location: location,
+                             role: User::UNASSIGNED, email_confirmed: false)
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(member)
+      expect(member).to receive(:generate_confirmation_token)
+      expect(member).to receive(:send_confirmation_email)
+
+      post :resend_confirmation
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["success"]).to be true
+    end
+
+    it "is a no-op (but still 200) for an already-confirmed member" do
+      member = create(:user, operator: operator, original_location: location, email_confirmed: true)
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(member)
+      expect(member).not_to receive(:send_confirmation_email)
+
+      post :resend_confirmation
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["success"]).to be true
+    end
+  end
+
   describe "POST #lookup_operators" do
     # `:user` factory requires `original_location` to be settable from
     # `operator.locations.first`, so each operator needs at least one location.

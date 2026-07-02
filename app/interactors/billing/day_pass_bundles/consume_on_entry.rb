@@ -43,11 +43,16 @@ class Billing::DayPassBundles::ConsumeOnEntry
       return
     end
 
-    # Mint + burn INSIDE the row lock, idempotent on the business-day window
+    # Mint + burn INSIDE the row lock, idempotent on the business-day window.
+    # Count BOTH door "entry" and reserve-time "reservation" burns (ADR 0015):
+    # a pass redeemed at booking stamps redeemed_at at the reservation's start,
+    # so a same-business-day reservation (incl. one straddling the 4am rollover,
+    # where Guards 3/4 key on the calendar date and can miss it) is seen here and
+    # the door does not burn a second pass.
     window_start, window_end = location.business_day_window
     bundle.with_lock do
       already = bundle.redemptions
-                      .where(kind: "entry")
+                      .where(kind: %w[entry reservation])
                       .where(redeemed_at: window_start...window_end)
                       .exists?
       if already

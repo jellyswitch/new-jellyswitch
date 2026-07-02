@@ -34,6 +34,28 @@ class Billing::Reservations::UpdateRoomReservationTest < ActiveSupport::TestCase
     assert_equal new_start.to_i, @reservation.start_at.to_i
   end
 
+  # Phase 6 review fix #1: a real start-time change clears the push markers so the
+  # rescheduled arrival/started jobs can notify once more.
+  test "resets push markers when the start time changes" do
+    @reservation.update_columns(arrival_notified_at: Time.current, started_notified_at: Time.current)
+
+    update!(datetime_in: 3.days.from_now.change(hour: 15, min: 0), minutes: 60)
+
+    @reservation.reload
+    assert_nil @reservation.arrival_notified_at
+    assert_nil @reservation.started_notified_at
+  end
+
+  test "keeps push markers on a same-time edit (duration only) so it doesn't re-notify" do
+    @reservation.update_columns(arrival_notified_at: 1.hour.ago, started_notified_at: 1.hour.ago)
+
+    update!(datetime_in: @reservation.datetime_in, minutes: 90)
+
+    @reservation.reload
+    assert_not_nil @reservation.arrival_notified_at
+    assert_not_nil @reservation.started_notified_at
+  end
+
   test "fails and leaves the record untouched when the new window overlaps another booking" do
     blocker = Reservation.create!(user: @user, room: @room, datetime_in: 4.days.from_now.change(hour: 13), minutes: 60)
 

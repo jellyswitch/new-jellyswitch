@@ -1,22 +1,30 @@
 class SendReservationReminderJob < ApplicationJob
   queue_as :default
 
-  # The booker "starts in ~15 minutes" push. A reservation edited to a LATER
-  # start leaves a stale copy of this job queued at the old time; only fire
-  # when the reservation is still upcoming AND genuinely imminent.
-  REMINDER_WINDOW = 20.minutes
+  # The booker "come back — your door access is open" push (ADR 0013). Fires
+  # when access opens: building_access_window_minutes before start. A reservation
+  # edited to a different start leaves a stale copy of this job queued at the old
+  # time; the window-aware guard makes it self-skip.
+  GRACE = 2.minutes
 
   def perform(reservation_id)
     reservation = Reservation.find_by(id: reservation_id)
     return if reservation.nil? || reservation.cancelled?
 
-    # `datetime_in` is the reservation's start instant; only fire when it's
-    # still in the future (not already started/past) AND within the reminder
-    # window. A booking rescheduled to a later start falls outside the window
-    # so its stale job is skipped; one moved earlier/into the past is skipped
-    # as already-started.
     start = reservation.datetime_in
-    return unless start > Time.current && start <= Time.current + REMINDER_WINDOW
+    window = (reservation.room&.location&.operator&.building_access_window_minutes || 60).minutes
+    arrival_at = start - window
+    # Fire only when we're at/after the intended access-open moment and still
+    # before start. A booking moved LATER → arrival_at is later → skip; one moved
+    # earlier or already started → now >= start → skip.
+    return unless Time.current >= arrival_at - GRACE && Time.current < start
+
+    # Claim the arrival marker atomically: an edit re-enqueues this job without
+    # cancelling the old copy, so two jobs can target a still-valid instant. The
+    # first to claim sends; the rest no-op. A genuinely re-timed booking resets
+    # the marker (UpdateRoomReservation) so it can notify once more.
+    return if Reservation.where(id: reservation.id, arrival_notified_at: nil)
+                         .update_all(arrival_notified_at: Time.current).zero?
 
     SendNotificationsJob.perform_now(reservation, "ReservationReminder")
   rescue => e

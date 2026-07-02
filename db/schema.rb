@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -290,9 +290,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.datetime "redeemed_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "reservation_id"
     t.index ["day_pass_bundle_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_bundle_id"
     t.index ["day_pass_id"], name: "index_day_pass_bundle_redemptions_on_day_pass_id"
     t.index ["performed_by_id"], name: "index_day_pass_bundle_redemptions_on_performed_by_id"
+    t.index ["reservation_id"], name: "index_day_pass_bundle_redemptions_on_reservation_id"
   end
 
   create_table "day_pass_bundles", force: :cascade do |t|
@@ -350,9 +352,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.bigint "billable_id"
     t.integer "location_id"
     t.boolean "complimentary", default: false, null: false
+    t.bigint "reservation_id"
     t.index ["billable_type", "billable_id"], name: "index_day_passes_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
+    t.index ["reservation_id"], name: "index_day_passes_on_reservation_id"
   end
 
   create_table "discount_codes", force: :cascade do |t|
@@ -494,8 +498,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.string "description"
     t.datetime "refunded_at"
     t.integer "refund_amount_in_cents"
+    t.bigint "reservation_id"
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_invoices_on_location_id"
+    t.index ["reservation_id"], name: "index_invoices_on_reservation_id"
     t.index ["stripe_payment_intent_id"], name: "index_invoices_on_stripe_payment_intent_id"
   end
 
@@ -620,6 +626,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.integer "past_member_grace_days", default: 180, null: false
     t.bigint "space_host_id"
     t.string "day_pass_period_start", default: "04:00", null: false
+    t.integer "overage_rate_in_cents", default: 0, null: false
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["space_host_id"], name: "index_locations_on_space_host_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"
@@ -807,6 +814,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.string "concierge_off_hours_message"
     t.string "embed_font"
     t.string "embed_accent_override"
+    t.integer "building_access_window_minutes", default: 60, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -969,6 +977,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.integer "captured_amount_in_cents"
     t.datetime "captured_at"
     t.datetime "payment_failed_at"
+    t.datetime "arrival_notified_at"
+    t.datetime "started_notified_at"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
     t.index ["stripe_payment_intent_id"], name: "index_reservations_on_stripe_payment_intent_id", unique: true
   end
@@ -1006,6 +1016,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.boolean "allow_shorter_reservation_duration", default: true, null: false
     t.text "features", default: [], array: true
     t.boolean "archived", default: false, null: false
+    t.boolean "include_with_day_pass", default: false, null: false
     t.index ["archived"], name: "index_rooms_on_archived"
     t.index ["location_id"], name: "index_rooms_on_location_id"
     t.index ["operator_id"], name: "index_rooms_on_operator_id"
@@ -1124,6 +1135,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
     t.string "home_city"
     t.string "home_state"
     t.string "home_zip"
+    t.string "login_code_digest"
+    t.datetime "login_code_sent_at"
+    t.integer "login_code_attempts", default: 0, null: false
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["home_zip"], name: "index_users_on_home_zip"
     t.index ["operator_id", "home_state", "home_city"], name: "index_users_on_operator_home_state_home_city"
@@ -1162,6 +1176,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_25_000001) do
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
   add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
+  add_foreign_key "day_passes", "reservations", on_delete: :nullify
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"

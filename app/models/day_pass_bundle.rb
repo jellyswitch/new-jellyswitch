@@ -24,19 +24,30 @@ class DayPassBundle < ApplicationRecord
     passes_remaining.to_i > 0 && !expired?
   end
 
-  # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest.
-  # entry redemptions also pass the minted DayPass; guest redemptions pass guest_name.
-  def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil)
-    with_lock { burn_locked!(kind: kind, performed_by: performed_by, guest_name: guest_name, day_pass: day_pass) }
+  # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest |
+  # :reservation. entry/reservation redemptions also pass the minted DayPass
+  # (and reservation links the booking that spent it); guest passes guest_name.
+  # redeemed_at defaults to now; reserve-time burns stamp the reservation's start
+  # so the once-per-business-day-window dedupe (which keys on redeemed_at) lines
+  # up across the door and the booking — including future-dated reservations.
+  def burn!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil, redeemed_at: Time.current)
+    with_lock { burn_locked!(kind: kind, performed_by: performed_by, guest_name: guest_name, day_pass: day_pass, reservation: reservation, redeemed_at: redeemed_at) }
   end
 
   # Assumes the caller already holds the row lock (with_lock). Decrements + logs.
-  def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil)
+  # reservation: links a booking-time burn (ADR 0015); redeemed_at lets reserve-time
+  # burns stamp the reservation's start so the once-per-business-day-window dedupe
+  # lines up across the door and the booking.
+  # defer_review_email: when true, skip ONLY the follow_up branch (leave replenishment
+  # as-is) — pass true when scheduling a FUTURE visit (ADR 0018), since the member
+  # hasn't arrived yet, so "how was your visit?" must not fire until they do.
+  def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil, redeemed_at: Time.current, defer_review_email: false)
     raise NoPassesRemaining if passes_remaining.to_i <= 0 || expired?
     update!(passes_remaining: passes_remaining - 1)
     redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
-                        guest_name: guest_name, day_pass: day_pass, redeemed_at: Time.current)
-    enqueue_lifecycle_emails(kind)
+                        guest_name: guest_name, day_pass: day_pass, reservation: reservation,
+                        redeemed_at: redeemed_at)
+    enqueue_lifecycle_emails(kind, defer_review_email: defer_review_email)
   end
 
   # Event-fired buyer emails (see CONTEXT.md / ADR 0009 family). The job gates
@@ -44,8 +55,8 @@ class DayPassBundle < ApplicationRecord
   # is safe to enqueue optimistically here.
   #   - review (follow_up): the holder's FIRST entry burn — "how was your visit?"
   #   - replenishment: the pass that empties the pack — "grab another / go unlimited"
-  def enqueue_lifecycle_emails(kind)
-    if kind.to_s == "entry" && redemptions.where(kind: "entry").count == 1
+  def enqueue_lifecycle_emails(kind, defer_review_email: false)
+    if kind.to_s == "entry" && !defer_review_email && redemptions.where(kind: "entry").count == 1
       SendProductEmailJob.perform_later(self.class.name, id, operator_id, "day_pass_bundle", "follow_up", user_id)
     end
 
@@ -63,14 +74,27 @@ class DayPassBundle < ApplicationRecord
     "#{operator.name} #{day_pass_type.quantity}-Pack Day Pass Bundle"
   end
 
+  # Give one pass back when UNDOING a booking-time burn (rollback / pre-coverage
+  # cancel) — capped at the pack size so an interleaved admin_restore can't push
+  # the count over quantity_purchased. Assumes the caller holds the row lock and
+  # destroys the redemption + minted day pass itself.
+  def refund_pass_locked!
+    update!(passes_remaining: [passes_remaining.to_i + 1, quantity_purchased.to_i].min)
+  end
+
   # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.
   # No-op if passes_remaining is already at quantity_purchased (prevents over-credit).
   def restore!(by:, reason: nil)
-    with_lock do
-      return if passes_remaining.to_i >= quantity_purchased.to_i
-      update!(passes_remaining: passes_remaining + 1)
-      redemptions.create!(operator: operator, kind: "admin_restore", performed_by: by,
-                          guest_name: reason, redeemed_at: Time.current)
-    end
+    with_lock { restore_locked!(by: by, reason: reason) }
+  end
+
+  # I1: shared restore logic — assumes the caller already holds the row lock.
+  # kind controls the audit trail (e.g. "admin_restore", "schedule_cancel").
+  # guest_name stores the reason/date in ISO form (no dedicated column).
+  def restore_locked!(by:, reason: nil, kind: "admin_restore")
+    return if passes_remaining.to_i >= quantity_purchased.to_i
+    update!(passes_remaining: passes_remaining + 1)
+    redemptions.create!(operator: operator, kind: kind, performed_by: by,
+                        guest_name: reason, redeemed_at: Time.current)
   end
 end
