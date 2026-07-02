@@ -228,6 +228,10 @@ Rails.application.routes.draw do
         post 'members/:id/suppress', to: 'members#suppress'
         post 'members/:id/unsuppress', to: 'members#unsuppress'
         post 'members/:id/dismiss_inactive', to: 'members#dismiss_inactive'
+        # Group (organization) membership — staff-side twin of the web
+        # "Update group" form on the member's Group page.
+        post 'members/:id/assign_organization', to: 'members#assign_organization'
+        post 'members/:id/remove_organization', to: 'members#remove_organization'
         get 'members/:id/invoices', to: 'members#invoices'
         get 'members/:id/reservations', to: 'members#reservations'
         get 'members/:id/checkins', to: 'members#checkins'

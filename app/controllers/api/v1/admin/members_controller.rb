@@ -61,7 +61,10 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       day_pass_count: user.day_passes.where(operator: current_tenant).count,
       reservation_count: user.reservations.where(cancelled: false).count,
       invoice_count: Invoice.where(billable: user, operator: current_tenant).count,
+      organization_id: user.organization_id,
       organization_name: user.try(:organization)&.try(:name),
+      organization_owner: user.organization.present? && user.organization.owner_id == user.id,
+      always_allow_building_access: user.always_allow_building_access,
       day_passes: user.day_passes.where(operator: current_tenant).order(day: :desc).limit(10).map { |dp|
         { id: dp.id, date: dp.day&.strftime("%B %e, %Y"), type_name: dp.day_pass_type&.name }
       },
@@ -90,6 +93,35 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     user = current_tenant.users.find(params[:id])
     user.update_column(:inactive_dismissed_at, Time.current)
     render json: { success: true, inactive_dismissed_at: user.inactive_dismissed_at.iso8601 }
+  end
+
+  # Put the member in a group (organization). Mirrors the web "Update group"
+  # form (Operator::UsersController#update_organization). The organization is
+  # looked up through current_tenant so a member can never be attached to
+  # another operator's group.
+  def assign_organization
+    user = current_tenant.users.find(params[:id])
+    organization = current_tenant.organizations.find_by(id: params[:organization_id])
+    return render_error('Group not found', status: :not_found) unless organization
+
+    if user.update(organization: organization)
+      render json: {
+        success: true,
+        organization_id: organization.id,
+        organization_name: organization.name,
+      }
+    else
+      render_error(user.errors.full_messages.join(', '))
+    end
+  end
+
+  def remove_organization
+    user = current_tenant.users.find(params[:id])
+    # bill_to_organization with no organization is a broken billing state —
+    # the subscription guard (SaveSubscription) would treat the member as
+    # billable with nowhere to send the invoice. Clear it with the membership.
+    user.update!(organization: nil, bill_to_organization: false)
+    render json: { success: true }
   end
 
   def create
