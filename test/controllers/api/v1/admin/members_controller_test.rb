@@ -103,4 +103,53 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_includes doors, noise.id
     assert_equal [milestone.id, noise.id].sort, doors.sort, "doors tab shows every door punch"
   end
+
+  # --- Group (organization) info + assignment ---
+
+  test "show includes the member's group id, name, and owner flag" do
+    org = organizations(:sierra_nevada_organization)
+    @member.update!(organization: org)
+
+    get "/api/v1/admin/members/#{@member.id}", headers: headers
+    assert_response :success
+
+    body = JSON.parse(response.body)
+    assert_equal org.id, body["organization_id"]
+    assert_equal org.name, body["organization_name"]
+    assert_equal org.owner_id == @member.id, body["organization_owner"]
+    assert_includes body.keys, "always_allow_building_access"
+  end
+
+  test "assign_organization puts the member in the group" do
+    org = organizations(:sierra_nevada_organization)
+    @member.update!(organization: nil)
+
+    post "/api/v1/admin/members/#{@member.id}/assign_organization",
+         params: { organization_id: org.id }.to_json, headers: headers
+    assert_response :success
+
+    assert_equal org.id, @member.reload.organization_id
+    assert_equal org.name, JSON.parse(response.body)["organization_name"]
+  end
+
+  test "assign_organization 404s for a group outside the tenant" do
+    @member.update!(organization: nil)
+
+    post "/api/v1/admin/members/#{@member.id}/assign_organization",
+         params: { organization_id: 999_999 }.to_json, headers: headers
+    assert_response :not_found
+
+    assert_nil @member.reload.organization_id
+  end
+
+  test "remove_organization clears the group and bill_to_organization" do
+    @member.update!(organization: organizations(:sierra_nevada_organization), bill_to_organization: true)
+
+    post "/api/v1/admin/members/#{@member.id}/remove_organization", headers: headers
+    assert_response :success
+
+    @member.reload
+    assert_nil @member.organization_id
+    assert_equal false, @member.bill_to_organization
+  end
 end
