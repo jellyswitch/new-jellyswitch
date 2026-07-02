@@ -69,4 +69,39 @@ class Operator::DayPassRedeemTodayTest < ActionDispatch::IntegrationTest
 
     assert_equal 5, bundle.reload.passes_remaining, "subscription-covered member must not spend a pass"
   end
+
+  # Bundle holders with no coverage today never reach home — landing_redirect
+  # sends them to /choose (allowed_in? is false). The redeem card must render
+  # there too, or the web has no self-redeem path for exactly the people who
+  # need it (the Erin/Tiffany discoverability gap).
+  test "bundle holder with no coverage sees the redeem card on the choose page" do
+    create_active_bundle(@user)
+    log_in @user
+
+    get choose_path, env: default_env
+
+    assert_response :success
+    assert_match "Use a pass for today", response.body
+    assert_match redeem_today_day_passes_path, response.body
+  end
+
+  test "choose page shows no redeem card without an active bundle" do
+    log_in @user
+
+    get choose_path, env: default_env
+
+    assert_response :success
+    refute_match "Use a pass for today", response.body
+  end
+
+  test "covered member still sees the redeem card on home" do
+    member = users(:cowork_tahoe_member)
+    create_active_bundle(member)
+    log_in member
+
+    get home_path, env: default_env
+
+    assert_response :success
+    assert_match "Use a pass for today", response.body
+  end
 end

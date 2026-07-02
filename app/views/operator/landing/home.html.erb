@@ -26,28 +26,7 @@
         <h5 class="card-title">Quick Actions</h5>
       </div>
 
-      <%# Day Pass Bundle holders: show passes remaining + a "use a pass for today"
-          button. Burns through the same ConsumeOnEntry authority as the app/door
-          (today-only, idempotent). ADR 0017: redeeming mints today's pass but does
-          not open a door, so the copy hands off to the app. %>
-      <% bundle_passes = current_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining) %>
-      <% if bundle_passes.positive? %>
-        <%= list_item do %>
-          <div class="d-flex justify-content-between align-items-center">
-            <h5 class="card-title m-0">Your day passes</h5>
-            <span class="badge badge-primary" style="font-size: 0.95rem;"><%= bundle_passes %> left</span>
-          </div>
-          <p class="card-text text-muted small mt-2 mb-3">
-            Heading in today? Use one of your passes to get access — then open the app to unlock the door.
-          </p>
-          <%= button_to redeem_today_day_passes_path,
-                method: :post,
-                class: "btn btn-block btn-primary",
-                form: { data: { turbo_confirm: "Use a pass for today? Do this when you're heading in." } } do %>
-            <i class="fas fa-door-open"></i>&nbsp; Use a pass for today
-          <% end %>
-        <% end %>
-      <% end %>
+      <%= render "shared/bundle_redeem_card" %>
 
       <% if current_user.has_active_subscription? %>
         <%= link_to user_memberships_path(current_user), class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
