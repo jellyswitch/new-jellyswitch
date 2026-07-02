@@ -93,7 +93,9 @@ class Api::V1::Admin::FeedbacksControllerTest < ActionDispatch::IntegrationTest
   test "reply with fresh last_seen_reply_id is created" do
     seen = staff_reply!
     assert_difference -> { @feedback.feedback_replies.count }, 1 do
-      post_reply(body: "Follow-up", last_seen_reply_id: seen.id)
+      assert_enqueued_with(job: SendNotificationsJob) do
+        post_reply(body: "Follow-up", last_seen_reply_id: seen.id)
+      end
     end
     assert_response :created
   end
@@ -103,7 +105,9 @@ class Api::V1::Admin::FeedbacksControllerTest < ActionDispatch::IntegrationTest
     unseen = staff_reply!("Jamie's answer that raced in")
 
     assert_no_difference -> { @feedback.feedback_replies.count } do
-      post_reply(body: "My duplicate answer", last_seen_reply_id: seen.id)
+      assert_no_enqueued_jobs only: SendNotificationsJob do
+        post_reply(body: "My duplicate answer", last_seen_reply_id: seen.id)
+      end
     end
     assert_response :conflict
 
@@ -151,8 +155,16 @@ class Api::V1::Admin::FeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_response :conflict
   end
 
+  test "garbage last_seen_reply_id type fails closed as saw-none, not 500" do
+    staff_reply!
+    assert_no_difference -> { @feedback.feedback_replies.count } do
+      post_reply(body: "Client sent a mangled param", last_seen_reply_id: { x: 1 })
+    end
+    assert_response :conflict
+  end
+
   test "send-anyway with the conflicting reply id as new baseline is created" do
-    seen = staff_reply!("First answer")
+    staff_reply!("First answer")
     conflict = staff_reply!("Jamie's answer")
 
     assert_difference -> { @feedback.feedback_replies.count }, 1 do

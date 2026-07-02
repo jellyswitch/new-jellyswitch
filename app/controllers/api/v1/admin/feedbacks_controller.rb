@@ -13,7 +13,8 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
   def show
     feedback = MemberFeedback.find(params[:id])
 
-    replies = feedback.feedback_replies.order(:created_at).map { |r| reply_json(r) }
+    replies = feedback.feedback_replies.includes(:user, :member_feedback)
+      .order(:created_at).map { |r| reply_json(r) }
 
     render json: feedback_json(feedback).merge(replies: replies)
   end
@@ -28,7 +29,10 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
     # gained a staff reply the sender hadn't seen, answer 409 with those
     # replies and save nothing — the second admin decides after reading the
     # first answer. Param absent entirely = legacy clients, no check. The row
-    # lock makes two simultaneous sends serialize so both can't pass.
+    # lock makes two simultaneous sends serialize so both can't pass. The
+    # guarantee is endpoint-local: other write paths (member API, web,
+    # SaveReply interactor) don't take this lock; on human timescales they're
+    # still caught because their replies commit before the sender's locked read.
     feedback.with_lock do
       conflicts = unseen_staff_replies(feedback) if params.key?(:last_seen_reply_id)
 
@@ -77,8 +81,11 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
   # FeedbackReply#from_admin?: any author other than the thread's member. A
   # last_seen_reply_id that doesn't belong to this thread counts as saw-none.
   def unseen_staff_replies(feedback)
-    last_seen_id = feedback.feedback_replies.find_by(id: params[:last_seen_reply_id])&.id || 0
+    # .to_s makes garbage param types (Hash/Array) deterministic: they
+    # stringify to a non-numeric string, cast to 0 → saw-none (fail closed).
+    last_seen_id = feedback.feedback_replies.find_by(id: params[:last_seen_reply_id].to_s)&.id || 0
     feedback.feedback_replies
+      .includes(:user, :member_feedback)
       .where("feedback_replies.id > ?", last_seen_id)
       .where.not(user_id: feedback.user_id)
       .order(:id)
