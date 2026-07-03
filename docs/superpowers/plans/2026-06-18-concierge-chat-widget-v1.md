@@ -1,5 +1,7 @@
 # Concierge Chat Widget — V1 Implementation Plan (phased)
 
+> **STATUS (2026-07-02, at doc merge):** much of this plan has since been BUILT on main — `Embed::ConciergeController`, `Concierge::PublicCheckout` (the Phase 3 public checkout this plan flags as a "verified gap"), `Concierge::Recommender`, `Concierge::ConversionReport`, `operator/settings/concierge`, and the concierge migrations all exist. Read the dated claims below as the state of the world when the plan was written, not as current fact.
+>
 > The operator's website chat widget. V1 = **no AI** (see `docs/adr/0020-concierge-swappable-brain-ai-deferred.md`): live staff during business hours + a scripted needs-recommender off-hours, capturing every visitor as a Person and measuring conversion lift. Glossary: `CONTEXT.md` → **Concierge**.
 >
 > Reuse the **tour-request widget** as the chassis throughout (`app/controllers/embed/tour_requests_controller.rb`, `app/views/embed/tour_requests/*`, `app/views/operator/settings/tour_widget.html.erb`, the `Embed` route namespace, CORS, Turnstile, honeypot, Rack::Attack, `Activity.log`, `TourRequestAlert`). The Concierge is "the tour widget grown a conversation + a recommender + an inbox."
