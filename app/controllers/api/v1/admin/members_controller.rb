@@ -12,14 +12,23 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   end
 
   def unapproved
-    users = current_tenant.users
+    # Scope to the admin's location to match the web approval queue
+    # (users_helper#find_unapproved_users uses originally_at_location). Without
+    # this, multi-location operators saw an operator-wide total on mobile and a
+    # per-location total on web. For single-location operators it's a no-op.
+    scope = current_tenant.users
                           .where(approved: false, archived: false)
                           .where.not(role: 'admin')
-                          .order(created_at: :desc)
+                          .originally_at_location(current_location)
+    scope = search_users(scope) if params[:q].present?
 
-    users = search_users(users) if params[:q].present?
-    users = users.offset(params[:offset].to_i).limit(30)
+    # The list is paginated to 30, but the badge must reflect the TRUE total —
+    # otherwise the app shows "30" while web shows the real count (e.g. 52).
+    # Surfaced as a header so the response body stays a plain array (older app
+    # builds keep working unchanged).
+    response.set_header('X-Total-Count', scope.count.to_s)
 
+    users = scope.order(created_at: :desc).offset(params[:offset].to_i).limit(30)
     render json: users.map { |u| member_list_json(u) }
   end
 
