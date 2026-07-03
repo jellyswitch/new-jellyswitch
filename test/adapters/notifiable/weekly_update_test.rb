@@ -124,7 +124,10 @@ class Notifiable::WeeklyUpdateTest < ActiveSupport::TestCase
           "channel_id": "default",
         }
       },
-      "data" => @notifiable.send(:deep_link_data).transform_values(&:to_s)
+      # Deep-link data rides as a JSON string under "body" — the only key
+      # expo-notifications surfaces to the JS tap handler (see
+      # deep_link_payload_test.rb).
+      "data" => { "body" => @notifiable.send(:deep_link_data).to_json }
     }).times(recipients.count)
     
     FCM.expects(:new).with('', instance_of(StringIO), "test-project-id").returns(fcm_mock).times(recipients.count)
