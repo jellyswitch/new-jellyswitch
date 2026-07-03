@@ -41,50 +41,21 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       end
     end
 
-    # Coverage check: auto-purchase a day pass for the reservation date
-    # if the user has no active subscription, day pass, or lease. Keeps
-    # the "you booked for free without a day pass" gap closed.
+    # Included-room coverage (ADR 0019): booking an included room commits a day
+    # pass for its date, chosen by the member BEFORE booking. The organizer's
+    # coverage steps (ReuseCoveragePass / RedeemBundlePass / BuyCoverageDayPass)
+    # act on the decision flag; EnforceCoverage 422s an uncovered included
+    # booking. The old silent auto-buy is gone (it charged for a fresh single
+    # pass even when the member held a bundle).
     user = current_api_user
     location = current_location
-    # Paid rooms already charge an hourly rate that covers access —
-    # don't bundle a day pass on top.
-    is_priced_room = room.hourly_rate_in_cents.to_i > 0
-    needs_cov = !is_priced_room &&
-                !user.has_active_subscription? &&
-                !user.has_active_day_pass?(date) &&
-                !user.has_active_lease?(location) &&
-                !user.admin_or_manager?(location) &&
-                !user.superadmin?
-    if needs_cov
-      scope = DayPassType
-        .where(operator_id: location.operator_id)
-        .where("location_id = ? OR location_id IS NULL", location.id)
-        .available
-        .where(visible: true)
-        .where("amount_in_cents > 0")
-        .where.not("name ILIKE ?", "%office%")
-      suggested = scope.where(default_for_room_booking: true).first ||
-                  scope.order(:amount_in_cents).first
-      if suggested.nil?
-        return render_error("You need a day pass to book for #{date.strftime('%b %-d')}, but none are available. Please contact the operator.")
-      end
+    use_bundle_pass   = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_bundle_pass))
+    use_existing_pass = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :use_existing_pass))
+    buy_day_pass      = ActiveModel::Type::Boolean.new.cast(params.dig(:reservation, :buy_day_pass))
 
-      # Require a card on file (or a fresh token in this request).
-      unless user.card_added_for_location?(location) || stripe_token.present?
-        return render_error("A payment method is required to book a room without a day pass or membership.")
-      end
-
-      dp_result = Billing::DayPasses::CreateDayPass.call(
-        params: { day: date, day_pass_type: suggested.id, operator: location.operator },
-        operator: location.operator,
-        location: location,
-        user_id: user.id,
-        out_of_band: false,
-      )
-      unless dp_result.success?
-        return render_error("Couldn't purchase day pass: #{dp_result.message}")
-      end
-    end
+    # Coverage for the ROOM's location (bundles/passes resolve off room.location).
+    coverage = Billing::Reservations::CoverageState.for(user: user, room: room, date: date, location: location)
+    coverage_day_pass_type = coverage.day_pass_type
 
     day_pass_charge_info = user.day_pass_reservation_charge_info(location, date, minutes, room: room)
     # Date-aware: bill against the period this reservation falls in, so booking
@@ -109,12 +80,17 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       location: current_location,
       day_pass_charge_info: day_pass_charge_info,
       subscription_charge_info: subscription_charge_info,
+      use_bundle_pass: use_bundle_pass,
+      use_existing_pass: use_existing_pass,
+      buy_day_pass: buy_day_pass,
+      day_pass_type: coverage_day_pass_type,
+      enforce_coverage: true, # member self-service: ADR 0019 block-if-uncovered
     )
 
     if result.success?
       render json: reservation_json(result.reservation), status: :created
     else
-      render_error(result.error || 'Booking failed')
+      render_error(result.message.presence || result.error || 'Booking failed')
     end
   end
 
@@ -128,13 +104,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   def update
     reservation = current_api_user.reservations.find(params[:id])
 
-    # Same editability window as cancel: once a reservation is about to
-    # start (or has been captured) it's committed and can't be moved.
+    # Editable until the 1-minute cutoff before start. (Capture now happens AT
+    # BOOKING, so captured_at is set immediately and is no longer an editability
+    # signal — an edit re-prices via a delta charge; ADR 0010.)
     if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
       return render_error('This reservation can no longer be changed — it starts within a minute.')
-    end
-    if reservation.captured_at.present?
-      return render_error('This reservation can no longer be changed — it has already been charged.')
     end
 
     new_minutes = params.dig(:reservation, :minutes).present? ? params[:reservation][:minutes].to_i : reservation.minutes
@@ -179,64 +153,25 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       return render_error('This reservation can no longer be cancelled — it starts within a minute.')
     end
 
-    # Operator's cancellation policy. Within window-hours-of-start the
-    # member forfeits the hold entirely; outside the window we still
-    # capture refund_fee_percent (processing fee + booking time) and
-    # release the rest.
+    # Capture-at-booking (ADR 0010/0011): the money was taken at booking, so a
+    # cancel is now a REFUND, not a hold release. Inside the cancellation window
+    # the member forfeits the charge (no refund); outside, CancelReservation
+    # refunds all the reservation's invoices minus refund_fee_percent.
+    # fee_charged_in_cents reports what the member is OUT (kept by the operator),
+    # preserving the response contract the app already reads.
     op = current_tenant
     window_hours = op&.try(:cancellation_window_hours).to_i
     fee_pct = op&.try(:refund_fee_percent).to_i
     inside_window = window_hours > 0 && (reservation.datetime_in - Time.current) < window_hours.hours
 
-    # Atomic cancel + hold-release: take the row lock so we don't race
-    # the SettleReservationJob firing at datetime_in. Re-check captured_at
-    # under the lock — if the capture beat us, the slot is committed and
-    # the user owes the charge.
-    fee_charged_cents = 0
-    reservation.with_lock do
-      Reservation.unscoped { reservation.reload }
-      if reservation.captured_at.present?
-        return render_error('This reservation can no longer be cancelled — it has already been charged.')
-      end
+    charged = reservation.captured_amount_in_cents.to_i
+    fee_charged_cents = inside_window ? charged : (charged * fee_pct / 100.0).round
 
-      pi_id = reservation.stripe_payment_intent_id
-      authorized = reservation.authorized_amount_in_cents.to_i
-
-      capture_cents = if pi_id.blank? || authorized <= 0
-        0
-      elsif inside_window
-        authorized # forfeit — full capture
-      else
-        (authorized * fee_pct / 100.0).round # cancellation fee only
-      end
-
-      reservation.update!(cancelled: true)
-
-      if pi_id.present?
-        location = reservation.room.location
-        creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
-
-        if capture_cents > 0
-          begin
-            Stripe::PaymentIntent.capture(pi_id, { amount_to_capture: capture_cents }, creds)
-            reservation.update!(captured_amount_in_cents: capture_cents, captured_at: Time.current)
-            fee_charged_cents = capture_cents
-          rescue Stripe::InvalidRequestError => e
-            # Most likely failure: capture amount below Stripe's $0.50
-            # minimum, or PI already cancelled. Fall back to voiding.
-            Rails.logger.warn("Cancel-fee capture failed (#{e.message}) reservation=#{reservation.id}; voiding")
-            begin
-              Stripe::PaymentIntent.cancel(pi_id, {}, creds)
-            rescue Stripe::InvalidRequestError; end
-          end
-        else
-          begin
-            Stripe::PaymentIntent.cancel(pi_id, {}, creds)
-          rescue Stripe::InvalidRequestError => e
-            Rails.logger.warn("Cancel: PI release failed (#{e.message}) reservation=#{reservation.id}")
-          end
-        end
-      end
+    result = CancelReservation.call(
+      reservation: reservation, mode: :member, current_user: current_api_user,
+    )
+    unless result.success?
+      return render_error(result.message || 'Could not cancel reservation')
     end
 
     render json: {
@@ -400,6 +335,8 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       datetime_in: r.datetime_in.iso8601,
       datetime_out: ends_at.iso8601,
       end_time_label: ends_at.strftime("%-l:%M %p").strip,
+      access_opens_label: r.access_opens_at.strftime("%l:%M %p").strip,
+      access_window_minutes: r.building_access_window_minutes,
       duration: "#{r.minutes} min",
       minutes: r.minutes,
       minutes_remaining: minutes_remaining,

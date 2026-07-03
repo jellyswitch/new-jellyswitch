@@ -12,14 +12,23 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   end
 
   def unapproved
-    users = current_tenant.users
+    # Scope to the admin's location to match the web approval queue
+    # (users_helper#find_unapproved_users uses originally_at_location). Without
+    # this, multi-location operators saw an operator-wide total on mobile and a
+    # per-location total on web. For single-location operators it's a no-op.
+    scope = current_tenant.users
                           .where(approved: false, archived: false)
                           .where.not(role: 'admin')
-                          .order(created_at: :desc)
+                          .originally_at_location(current_location)
+    scope = search_users(scope) if params[:q].present?
 
-    users = search_users(users) if params[:q].present?
-    users = users.offset(params[:offset].to_i).limit(30)
+    # The list is paginated to 30, but the badge must reflect the TRUE total —
+    # otherwise the app shows "30" while web shows the real count (e.g. 52).
+    # Surfaced as a header so the response body stays a plain array (older app
+    # builds keep working unchanged).
+    response.set_header('X-Total-Count', scope.count.to_s)
 
+    users = scope.order(created_at: :desc).offset(params[:offset].to_i).limit(30)
     render json: users.map { |u| member_list_json(u) }
   end
 
@@ -61,7 +70,10 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       day_pass_count: user.day_passes.where(operator: current_tenant).count,
       reservation_count: user.reservations.where(cancelled: false).count,
       invoice_count: Invoice.where(billable: user, operator: current_tenant).count,
+      organization_id: user.organization_id,
       organization_name: user.try(:organization)&.try(:name),
+      organization_owner: user.organization.present? && user.organization.owner_id == user.id,
+      always_allow_building_access: user.always_allow_building_access,
       day_passes: user.day_passes.where(operator: current_tenant).order(day: :desc).limit(10).map { |dp|
         { id: dp.id, date: dp.day&.strftime("%B %e, %Y"), type_name: dp.day_pass_type&.name }
       },
@@ -90,6 +102,35 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     user = current_tenant.users.find(params[:id])
     user.update_column(:inactive_dismissed_at, Time.current)
     render json: { success: true, inactive_dismissed_at: user.inactive_dismissed_at.iso8601 }
+  end
+
+  # Put the member in a group (organization). Mirrors the web "Update group"
+  # form (Operator::UsersController#update_organization). The organization is
+  # looked up through current_tenant so a member can never be attached to
+  # another operator's group.
+  def assign_organization
+    user = current_tenant.users.find(params[:id])
+    organization = current_tenant.organizations.find_by(id: params[:organization_id])
+    return render_error('Group not found', status: :not_found) unless organization
+
+    if user.update(organization: organization)
+      render json: {
+        success: true,
+        organization_id: organization.id,
+        organization_name: organization.name,
+      }
+    else
+      render_error(user.errors.full_messages.join(', '))
+    end
+  end
+
+  def remove_organization
+    user = current_tenant.users.find(params[:id])
+    # bill_to_organization with no organization is a broken billing state —
+    # the subscription guard (SaveSubscription) would treat the member as
+    # billable with nowhere to send the invoice. Clear it with the membership.
+    user.update!(organization: nil, bill_to_organization: false)
+    render json: { success: true }
   end
 
   def create
@@ -202,6 +243,53 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     rescue => e
       render_error(e.message)
     end
+  end
+
+  # NOTE: current_location is the admin's home location — acceptable for
+  # single-location operators; revisit if multi-location admin scheduling is added.
+  def schedule_bundle_days
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    result = Billing::DayPassBundles::ScheduleDays.call(
+      user: member, location: location, dates: Array(params[:dates]), performed_by: current_api_user)
+
+    if result.outcome == :scheduled
+      render json: {
+        status: "scheduled",
+        scheduled_days: result.day_passes.map { |dp| dp.day.iso8601 },
+        passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+      }
+    else
+      render_error("Could not schedule those days (#{result.outcome}).")
+    end
+  end
+
+  # NOTE: current_location is the admin's home location — acceptable for
+  # single-location operators; revisit if multi-location admin scheduling is added.
+  def scheduled_bundle_days
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    tz = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    passes = member.day_passes.bundle_sourced.for_location(location).where("day > ?", today).order(:day)
+    render json: passes.map { |dp| { id: dp.id, day: dp.day.iso8601, date: dp.day.strftime("%B %e, %Y") } }
+  end
+
+  def cancel_scheduled_bundle_day
+    member = current_tenant.users.find(params[:member_id])
+    location = current_location
+    day_pass = member.day_passes.find(params[:id])
+    result = Billing::DayPassBundles::CancelScheduledDay.call(day_pass: day_pass, performed_by: current_api_user)
+    if result.outcome == :cancelled
+      render json: {
+        status: "cancelled",
+        passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+      }
+    else
+      render_error("Could not cancel that day (#{result.outcome}).")
+    end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Not found" }, status: :not_found
   end
 
   def create_day_pass

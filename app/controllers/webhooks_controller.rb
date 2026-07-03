@@ -79,6 +79,20 @@ class WebhooksController < ApplicationController
       capture_home_zip_from_charge(@event)
       ok
 
+    when "charge.refunded", "refund.created", "charge.refund.updated"
+      # A refund issued directly in the Stripe Dashboard never reaches the local
+      # Invoice otherwise — it stays `paid`/refundable while Stripe shows it
+      # refunded, and the next in-app "Refund" click hits charge_already_refunded
+      # (Honeybadger 132040149). Reconcile local state to match Stripe.
+      result = Webhooks::ChargeRefunded.call(event: @event)
+
+      if result.success?
+        ok
+      else
+        report_error(result.message, __method__)
+        error(result.message)
+      end
+
     when "customer.subscription.deleted"
       result = Webhooks::SubscriptionDeleted.call(event: @event)
 

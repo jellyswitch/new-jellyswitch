@@ -10,6 +10,7 @@
 #  description                        :text
 #  features                           :text             default([]), is an Array
 #  hourly_rate_in_cents               :integer          default(0), not null
+#  include_with_day_pass              :boolean          default(FALSE), not null
 #  name                               :string           not null
 #  rentable                           :boolean          default(FALSE), not null
 #  slug                               :string
@@ -50,6 +51,13 @@ class Room < ApplicationRecord
   scope :visible, ->() { active.where(visible: true) }
   scope :invisible, ->() { active.where(visible: false) }
   scope :rentable, ->() { active.where(rentable: true) }
+  # ADR 0019: rooms a not-yet-covered user may still book by committing day-pass
+  # coverage at booking — cash-rentable rooms OR included rooms that a day pass
+  # unlocks (rate 0 + include_with_day_pass). Widens the no-coverage room list so
+  # the buy-a-day-pass confirm can surface, instead of hiding included rooms.
+  scope :rentable_or_day_pass_included, ->() {
+    active.where("rentable = ? OR (hourly_rate_in_cents = ? AND include_with_day_pass = ?)", true, 0, true)
+  }
   scope :cheapest, ->() { order("hourly_rate_in_cents DESC") }
 
   # Slugs
@@ -199,6 +207,13 @@ class Room < ApplicationRecord
 
   def paid_room?
     rentable? && hourly_rate_in_cents > 0
+  end
+
+  # Whether this room draws from a booker's day-pass included-minutes bucket
+  # (a "call room"). Explicit column as of ADR 0012 — previously inferred from
+  # hourly_rate_in_cents == 0. Backfilled true for every $0 room.
+  def counts_toward_day_pass?
+    include_with_day_pass?
   end
 
   def has_av?

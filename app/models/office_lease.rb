@@ -76,6 +76,20 @@ class OfficeLease < ApplicationRecord
     subscription.active?
   end
 
+  # Which termination options the operator UI should offer:
+  #   :full → both "end of billing cycle" and "now" (live subscription)
+  #   :now  → immediate only — a "zombie" lease that's still running but whose
+  #           subscription was already cancelled (e.g. the member self-cancelled
+  #           or downgraded in the app). Without this the buttons disappeared and
+  #           the lease became un-terminable from the UI.
+  #   :none → lease isn't currently active
+  def termination_options
+    return :full if subscription_active?
+    return :now if active?
+
+    :none
+  end
+
   def eligible_for_renewal?
     end_date.between?(Date.today, Date.today + RENEWAL_WINDOW_DAYS.days) && active?
   end

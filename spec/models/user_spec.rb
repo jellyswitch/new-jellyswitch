@@ -831,4 +831,29 @@ RSpec.describe User, type: :model do
     end
   end
 
+  # The day-pass quote must agree with ChargeCalculator (ADR 0012): both read
+  # the overage RATE from the LOCATION, so the hold placed at booking matches
+  # the amount captured at settle. The day-pass type still defines the included
+  # minutes; only the rate moved up to the location.
+  describe "#day_pass_reservation_charge_info — overage priced from the LOCATION rate" do
+    let(:prod_operator) { create(:operator, billing_state: "production") }
+    # $12/hr = 20¢/min on the location; the day-pass type's rate is stale and ignored.
+    let(:prod_location) { create(:location, operator: prod_operator, overage_rate_in_cents: 1200) }
+    let(:dp_user) { create(:user, operator: prod_operator) }
+    let(:call_room) { create(:room, operator: prod_operator, location: prod_location, hourly_rate_in_cents: 0) }
+    let!(:day_pass) do
+      dpt = create(:day_pass_type, operator: prod_operator, location: prod_location,
+                                   included_meeting_room_minutes: 60, overage_rate_in_cents: 9999)
+      create(:day_pass, user: dp_user, billable: dp_user, operator: prod_operator,
+                        location: prod_location, day_pass_type: dpt, day: Date.current)
+    end
+
+    it "prices the over-minutes at the location rate, not the day-pass-type rate" do
+      info = dp_user.day_pass_reservation_charge_info(prod_location, Date.current, 90, room: call_room)
+      expect(info[:charge_type]).to eq(:partial_overage)
+      expect(info[:overage_amount_in_cents]).to eq(600) # 30 over-min × 20¢
+      expect(info[:overage_rate_in_cents]).to eq(1200)
+    end
+  end
+
 end

@@ -29,6 +29,7 @@ class Activity < ApplicationRecord
     signup
     tour
     tour_request
+    chat
     checkin
     door_punch
     reservation

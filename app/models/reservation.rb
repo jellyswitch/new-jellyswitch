@@ -35,6 +35,10 @@ class Reservation < ApplicationRecord
   belongs_to :recurring_reservation, optional: true
   has_and_belongs_to_many :amenities
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
+  # Booking-capture + extension-delta invoices (ADR 0010/0011). A cancel refunds
+  # all of them. nullify on destroy keeps the financial record after the
+  # reservation row goes away.
+  has_many :invoices, dependent: :nullify
 
   validates_with ReservationValidator
 
@@ -116,6 +120,30 @@ class Reservation < ApplicationRecord
   def ongoing?
     now = Time.current
     now >= start_at && now < start_at + minutes.minutes
+  end
+
+  # Whether `at` falls inside this reservation's building-access window (ADR
+  # 0013): from `building_access_window_minutes` before start to the same after
+  # end. datetime_in/out are absolute instants, so this comparison is
+  # zone-correct without any tz math. Pass window_minutes to avoid loading the
+  # operator per-record (the door path already has it).
+  def access_window_open?(at = Time.current, window_minutes: nil)
+    minutes_window = (window_minutes || room&.location&.operator&.building_access_window_minutes || 60).to_i
+    window = minutes_window.minutes
+    (datetime_in - window) <= at && at <= (datetime_out + window)
+  end
+
+  # The operator's door-access window width (ADR 0013), read the SAME way as
+  # access_window_open? above and the Phase 6 arrival push, so the member-facing
+  # "you can get in from…" promise can't drift from when the door actually opens.
+  def building_access_window_minutes
+    (room&.location&.operator&.building_access_window_minutes || 60).to_i
+  end
+
+  # The instant door access opens for this reservation. datetime_in is presented
+  # in the location zone, so this stays room-local for a member-facing label.
+  def access_opens_at
+    datetime_in - building_access_window_minutes.minutes
   end
 
   def future?

@@ -16,6 +16,42 @@ RSpec.describe Api::V1::Admin::MembersController, type: :controller do
     request.headers["X-Operator-Subdomain"] = operator.subdomain
   end
 
+  describe "GET #unapproved" do
+    before { request.headers["Authorization"] = "Bearer #{jwt_for(admin_user)}" }
+    let(:admin_loc) { admin_user.original_location || admin_user.current_location }
+
+    # Regression: web showed the true count (e.g. 52) while mobile showed the
+    # paginated page length (30). The badge must read the true total.
+    it "returns the TRUE total in X-Total-Count even though the list page caps at 30" do
+      get :unapproved
+      baseline = response.headers["X-Total-Count"].to_i
+
+      35.times do |i|
+        create(:user, operator: operator, original_location: admin_loc, current_location: admin_loc,
+                      approved: false, archived: false, role: "unassigned", name: "Pending #{i}")
+      end
+
+      get :unapproved
+      body = JSON.parse(response.body)
+      expect(response).to have_http_status(:ok)
+      expect(body.length).to eq(30)                                       # page is capped
+      expect(response.headers["X-Total-Count"].to_i).to eq(baseline + 35) # count is true
+    end
+
+    it "scopes the count to the admin's location (matches the web approval queue)" do
+      get :unapproved
+      baseline = response.headers["X-Total-Count"].to_i
+
+      other = create(:location, operator: operator)
+      create(:user, operator: operator, original_location: admin_loc, approved: false, archived: false, role: "unassigned")
+      create(:user, operator: operator, original_location: other,     approved: false, archived: false, role: "unassigned")
+
+      get :unapproved
+      # +1 for the same-location pending user, NOT for the other location's.
+      expect(response.headers["X-Total-Count"].to_i).to eq(baseline + 1)
+    end
+  end
+
   describe "POST #log_tour" do
     context "when authenticated as admin" do
       before { request.headers["Authorization"] = "Bearer #{jwt_for(admin_user)}" }

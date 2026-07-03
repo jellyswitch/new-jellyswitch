@@ -19,6 +19,7 @@
 #  billable_id              :bigint(8)
 #  location_id              :integer
 #  operator_id              :integer
+#  reservation_id           :bigint(8)
 #  stripe_invoice_id        :string
 #  stripe_payment_intent_id :string
 #
@@ -36,6 +37,10 @@ class Invoice < ApplicationRecord
   acts_as_tenant :operator
 
   belongs_to :billable, polymorphic: true
+  # A reservation's booking-capture and extension-delta invoices link back to it
+  # so a cancel can refund all of them (ADR 0011). Nullable — most invoices
+  # (subscriptions, day passes, custom) carry no reservation.
+  belongs_to :reservation, optional: true
   has_many :checkins
   has_many :refunds
 

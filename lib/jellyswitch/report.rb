@@ -857,6 +857,20 @@ module Jellyswitch
       active_ids = active_members.pluck(:id)
       return [] if active_ids.empty?
 
+      # Drop out-of-band members whose only membership basis was a group office
+      # lease that has since ended: they're former members, not lapsed ones, and
+      # shouldn't surface on the re-engagement list. An out-of-band member counts
+      # as inactive only if their org still holds an active lease, or they carry
+      # their own active individual subscription.
+      active_lease_org_ids = office_leases.active.pluck(:organization_id).compact
+      stale_group_member_ids = User.where(id: active_ids)
+        .where.not(organization_id: nil)
+        .where.not(organization_id: active_lease_org_ids)
+        .where.not(id: subscribed_members.select(:id))
+        .pluck(:id)
+      active_ids -= stale_group_member_ids
+      return [] if active_ids.empty?
+
       door_active_ids = DoorPunch.where(user_id: active_ids)
         .where("created_at > ?", cutoff).distinct.pluck(:user_id)
       reservation_active_ids = Reservation.where(user_id: active_ids)

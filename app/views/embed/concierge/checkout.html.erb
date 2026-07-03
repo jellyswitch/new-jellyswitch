@@ -1,0 +1,99 @@
+<%
+  accent = @operator.embed_accent_color
+  price = number_to_currency(@product.amount_in_cents.to_f / 100.0)
+  product_param = @product.is_a?(Plan) ? "plan_id" : "day_pass_type_id"
+%>
+<div id="cxco"
+     data-purchase-url="<%= embed_concierge_checkout_path(operator_subdomain: @operator.subdomain) %>"
+     data-pk="<%= @location.stripe_publishable_key %>"
+     data-account="<%= @location.stripe_user_id %>"
+     data-product-param="<%= product_param %>"
+     data-product-id="<%= @product.id %>"
+     data-location-id="<%= @location.id %>"
+     data-ios="<%= @operator.ios_url %>"
+     data-android="<%= @operator.android_url %>"
+     style="--accent: <%= accent %>;">
+
+  <h2><%= @product.name %></h2>
+  <p class="muted"><%= price %> · <%= @location.name %></p>
+
+  <form id="cxco-form">
+    <input name="name" type="text" placeholder="Your name" autocomplete="name" required>
+    <input name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
+    <input name="phone" type="tel" placeholder="Phone number" autocomplete="tel" required>
+    <input name="password" type="password" placeholder="Create a password" autocomplete="new-password" required>
+    <div id="card-element"></div>
+    <label class="terms">
+      <input id="terms" name="terms_accepted" type="checkbox" value="1" required>
+      I agree to the <a href="<%= @operator.terms_of_service.attached? ? rails_blob_path(@operator.terms_of_service, only_path: true) : "#" %>" target="_blank">Terms of Service</a>.
+    </label>
+    <div style="position:absolute;left:-5000px;" aria-hidden="true"><input name="_hp" tabindex="-1" autocomplete="off"></div>
+    <button id="pay" type="submit">Pay <%= price %></button>
+    <div id="cxco-msg" class="msg"></div>
+  </form>
+</div>
+
+<style>
+  body { margin: 0; font-family: <%= @operator.embed_font_family %>; color: #111827; }
+  #cxco { max-width: 420px; margin: 0 auto; padding: 20px; }
+  .muted { color: #6b7280; margin-top: -8px; }
+  #cxco-form { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+  #cxco-form input { padding: 11px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 15px; }
+  #card-element { padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; }
+  #pay { padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
+  #pay:disabled { opacity: .6; }
+  .terms { font-size: 13px; color: #4b5563; display: flex; align-items: flex-start; gap: 8px; }
+  .terms a { color: var(--accent); }
+  .msg { font-size: 14px; min-height: 18px; }
+  .msg.err { color: #b91c1c; }
+  .msg.ok { color: #047857; }
+</style>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+(function () {
+  var root = document.getElementById("cxco");
+  var stripe = Stripe(root.dataset.pk, root.dataset.account ? { stripeAccount: root.dataset.account } : undefined);
+  var card = stripe.elements().create("card");
+  card.mount("#card-element");
+
+  var form = document.getElementById("cxco-form");
+  var pay = document.getElementById("pay");
+  var msg = document.getElementById("cxco-msg");
+
+  function show(text, cls) { msg.textContent = text; msg.className = "msg " + (cls || ""); }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    pay.disabled = true; show("Processing…");
+
+    stripe.createToken(card).then(function (res) {
+      if (res.error) { show(res.error.message, "err"); pay.disabled = false; return; }
+
+      var body = new URLSearchParams({
+        stripe_token: res.token.id,
+        location_id: root.dataset.locationId,
+        name: form.name.value, email: form.email.value, phone: form.phone.value,
+        password: form.password.value,
+        terms_accepted: document.getElementById("terms").checked ? "1" : "0",
+        _hp: form._hp.value,
+      });
+      body.append(root.dataset.productParam, root.dataset.productId);
+
+      fetch(root.dataset.purchaseUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+        .then(function (x) {
+          if (x.d && x.d.ok) {
+            form.style.display = "none";
+            show("You're in! 🎉 Download the app to open the door and manage your pass.", "ok");
+            if (x.d.app && x.d.app.ios) { var a = document.createElement("a"); a.href = x.d.app.ios; a.textContent = "Get the app"; a.style.cssText = "display:block;margin-top:10px;color:var(--accent);"; root.appendChild(a); }
+          } else {
+            show((x.d && x.d.message) || "Payment failed — please try again.", "err");
+            pay.disabled = false;
+          }
+        })
+        .catch(function () { show("Something went wrong — please try again.", "err"); pay.disabled = false; });
+    });
+  });
+})();
+</script>

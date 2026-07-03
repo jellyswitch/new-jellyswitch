@@ -144,12 +144,9 @@ class ReservationTest < ApplicationSystemTestCase
   end
 
   test "charging user for extra hours in the reservation when they book the reservation at first without membership" do
-    # Billing::Reservations::ChargeReservationInvoice was removed when reservation
-    # billing moved to the hold/capture model. A future (un-captured) reservation's
-    # extension now routes through ExtendReservation → AuthorizeHoldOrSchedule;
-    # stub it (and the post-start ChargeExtensionDelta path) so "Pay & Confirm"
+    # Under capture-at-booking every extension routes through
+    # ExtendReservation → ChargeExtensionDelta; stub it so "Pay & Confirm"
     # doesn't place a real Stripe PaymentIntent, which StripeMock doesn't model.
-    Billing::Reservations::AuthorizeHoldOrSchedule.stubs(:call) { |context| context }
     Billing::Reservations::ChargeExtensionDelta.stubs(:call) { |context| context }
     # Setup
     @user = users(:cowork_tahoe_member)
@@ -174,11 +171,9 @@ class ReservationTest < ApplicationSystemTestCase
   end
 
   test "not charging user for extra hours in the reservation when they do not have to pay at the beginning" do
-    # Even a "free" extension re-authorizes a hold for the new max charge under
-    # the hold/capture model, which needs a card on file (this member has none).
-    # Stub the authorize step so the flow reports success instead of "No payment
-    # method on file"; StripeMock doesn't model PaymentIntents either way.
-    Billing::Reservations::AuthorizeHoldOrSchedule.stubs(:call) { |context| context }
+    # A "free" extension still runs ChargeExtensionDelta (a no-op when the new
+    # total isn't higher). Stub it so the flow doesn't touch Stripe; StripeMock
+    # doesn't model PaymentIntents either way.
     Billing::Reservations::ChargeExtensionDelta.stubs(:call) { |context| context }
     # Setup
     @user = users(:cowork_tahoe_member)

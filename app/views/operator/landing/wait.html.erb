@@ -36,6 +36,11 @@
         <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
         <span>Day pass purchased</span>
       </div>
+    <% elsif current_user.day_pass_bundles.active.any? %>
+      <div class="d-flex align-items-center mb-2">
+        <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
+        <span>Day passes purchased</span>
+      </div>
     <% elsif current_user.reservations.any? %>
       <div class="d-flex align-items-center mb-2">
         <span class="text-success mr-2" style="font-size: 18px;">&#10003;</span>
@@ -73,6 +78,8 @@
       <span class="text-warning font-weight-bold">Awaiting approval</span>
     </div>
   <% end %>
+
+  <%= render "shared/app_download_nudge" %>
 
   <% can_buy_day_pass = current_tenant.day_passes_enabled? %>
   <% can_book_room = current_location.rentable_rooms_enabled? %>

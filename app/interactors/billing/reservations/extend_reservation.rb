@@ -1,19 +1,11 @@
 class Billing::Reservations::ExtendReservation
   include Interactor
 
-  # Extensions branch on whether the original capture has fired:
-  #
-  # * Pre-start (captured_at blank) — original hold is still pending.
-  #   AuthorizeHold cancels the prior PaymentIntent and re-authorizes
-  #   a hold for the new total max charge. The already-scheduled
-  #   SettleReservationJob fires at datetime_in and captures the new
-  #   total then; no reschedule needed (extension doesn't move
-  #   datetime_in).
-  #
-  # * Post-start (captured_at present) — original capture is done and
-  #   can't be "raised." ChargeExtensionDelta places a separate
-  #   auto-capture PaymentIntent for the cost of the additional
-  #   minutes only.
+  # Capture-at-booking (ADR 0010): the original charge is already captured at
+  # booking, so every extension is just a delta charge — ChargeExtensionDelta
+  # places a separate auto-capture PaymentIntent for the additional minutes only
+  # (a no-op when the new total isn't higher, e.g. an exempt member). There is
+  # no pre-start hold to re-authorize anymore.
   def call
     Billing::Reservations::UpdateReservationDuration.call(context)
     return if context.failure?
@@ -21,14 +13,6 @@ class Billing::Reservations::ExtendReservation
     Billing::Reservations::ChargeCredits.call(context)
     return if context.failure?
 
-    # context.is_extend is already true (set by UpdateReservationDuration).
-    if context.reservation.captured_at.present?
-      Billing::Reservations::ChargeExtensionDelta.call(context)
-    else
-      # Pre-start extensions go through AuthorizeHoldOrSchedule so a
-      # far-future booking whose hold is still deferred stays deferred —
-      # re-authorizing now would burn the 7-day Stripe window.
-      Billing::Reservations::AuthorizeHoldOrSchedule.call(context)
-    end
+    Billing::Reservations::ChargeExtensionDelta.call(context)
   end
 end

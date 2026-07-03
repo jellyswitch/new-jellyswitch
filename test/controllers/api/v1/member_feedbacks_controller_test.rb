@@ -82,4 +82,36 @@ class Api::V1::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Do you have call rooms for zoom calls?",
       existing.feedback_replies.order(:created_at).last.body
   end
+
+  # Regression: a member replying INSIDE an existing conversation
+  # (MessageDetailScreen → feedbackAPI.reply → #reply) must reach staff the
+  # same way #create does. The old #reply did a bare reply.save with no
+  # notification pipeline, so the admin push never fired and the
+  # management-feed card was never refreshed — a real member's follow-up
+  # ("I booked a room but it's not showing") sat unanswered because nobody
+  # was alerted. Assert the feed card now reflects the latest reply.
+  test "reply surfaces the member's message to the management feed (not a silent save)" do
+    thread = MemberFeedback.create!(
+      user: @member, operator: @operator, location: @location, comment: nil,
+    )
+    FeedbackReply.create!(
+      member_feedback: thread, user: users(:cowork_tahoe_admin),
+      operator: @operator, body: "Hi! Welcome to Cowork Tahoe.",
+    )
+
+    assert_difference -> { thread.feedback_replies.count }, +1 do
+      post "/api/v1/member_feedbacks/#{thread.id}/reply",
+           params: { body: "Following up on my earlier question" }.to_json,
+           headers: headers
+    end
+    assert_response :created
+
+    card = FeedItem.unscoped.for_operator(@operator)
+                   .where("blob->>'type' = ?", "feedback")
+                   .where("blob->>'member_feedback_id' = ?", thread.id.to_s)
+                   .order(:created_at).first
+    assert card, "a feedback feed card must exist for the thread after a member reply"
+    assert_equal "Following up on my earlier question", card.blob["body"],
+      "the management-feed card must reflect the member's latest reply"
+  end
 end

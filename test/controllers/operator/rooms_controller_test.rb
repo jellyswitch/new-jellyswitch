@@ -20,4 +20,18 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_no_match(/An error occurred/, flash.to_h.values.join(" "))
     assert_equal "Meeting Room 3B", @room.reload.name
   end
+
+  # ADR 0012: the per-room "Counts toward day pass (call room)" toggle must be
+  # permitted and persisted by the operator room form.
+  test "update persists include_with_day_pass" do
+    log_in users(:cowork_tahoe_admin)
+    @room.update!(include_with_day_pass: false)
+
+    patch room_path(@room), env: default_env, params: {
+      room: { name: @room.name, hourly_rate_in_cents: "0", include_with_day_pass: "1" },
+    }
+
+    assert @room.reload.include_with_day_pass,
+      "the call-room toggle must be saved through room_params"
+  end
 end

@@ -13,10 +13,22 @@ class Operator::SettingsController < Operator::BaseController
     @operator = current_operator
   end
 
-  # No update_payments — Stripe Connect is OAuth, not a form. See Payments tab in spec.
+  # Stripe Connect itself is OAuth, not a form. The Payments tab still carries
+  # one editable, location-scoped pricing field: the "Overage / add-on meeting
+  # room time" rate (ADR 0012) — see update_payments below.
   def payments
     @location = selected_location
     @current_location = @location
+  end
+  def update_payments
+    @location = selected_location
+    @current_location = @location
+    if @location.update(payments_params)
+      redirect_to settings_payments_path(location_id: @location.id), notice: "Payment settings saved."
+    else
+      flash.now[:error] = @location.errors.full_messages.to_sentence
+      render :payments, status: :unprocessable_entity
+    end
   end
   def doors
     @operator = current_operator
@@ -33,6 +45,19 @@ class Operator::SettingsController < Operator::BaseController
   end
   def tour_widget
     @operator = current_operator
+  end
+  def concierge
+    @operator = current_operator
+    @report = Concierge::ConversionReport.new(operator: @operator).call
+  end
+  def update_concierge
+    @operator = current_operator
+    if @operator.update(concierge_params)
+      redirect_to settings_concierge_path, notice: "Concierge settings saved."
+    else
+      flash.now[:error] = @operator.errors.full_messages.to_sentence
+      render :concierge, status: :unprocessable_entity
+    end
   end
   def modules
     # Module flags are location-scoped: every module policy reads
@@ -222,8 +247,14 @@ class Operator::SettingsController < Operator::BaseController
   def doors_params
     params.require(:operator).permit(
       :kisi_api_key,
+      :building_access_window_minutes,
       locations_attributes: [:id, :kisi_api_key]
     )
+  end
+
+  # overage_rate is the HasDollars virtual that writes overage_rate_in_cents.
+  def payments_params
+    params.require(:location).permit(:overage_rate)
   end
 
   def policies_params
@@ -242,6 +273,19 @@ class Operator::SettingsController < Operator::BaseController
       :tour_widget_enabled,
       :tour_widget_thank_you_url,
       :tour_widget_intro_html,
+    )
+  end
+
+  def concierge_params
+    params.require(:operator).permit(
+      :concierge_enabled,
+      :concierge_assistant_name,
+      :concierge_greeting,
+      :concierge_offer_text,
+      :concierge_promo_code,
+      :concierge_off_hours_message,
+      :embed_font,
+      :embed_accent_override,
     )
   end
 

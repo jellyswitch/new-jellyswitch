@@ -38,6 +38,7 @@
 #  open_thursday                       :boolean          default(TRUE), not null
 #  open_tuesday                        :boolean          default(TRUE), not null
 #  open_wednesday                      :boolean          default(TRUE), not null
+#  overage_rate_in_cents               :integer          default(0), not null
 #  past_member_grace_days              :integer          default(180), not null
 #  renewal_reminder_days               :integer
 #  rooms_enabled                       :boolean          default(TRUE), not null
@@ -83,7 +84,10 @@ class Location < ApplicationRecord
   belongs_to :space_host, class_name: "User", optional: true
 
   include HasDollars
-  dollars :hourly_rate, :credit_cost, :childcare_reservation_cost
+  # overage_rate = the "Overage / add-on meeting room time" rate (ADR 0012).
+  # Charged per minute for $0 (call) rooms beyond any day-pass allowance, and
+  # for any booker of a $0 room with no day-pass coverage. See ChargeCalculator.
+  dollars :hourly_rate, :credit_cost, :childcare_reservation_cost, :overage_rate
 
   geocoded_by :address_string
   after_validation :geocode, if: -> { address_changed? && building_address.present? }

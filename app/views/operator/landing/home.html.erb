@@ -26,6 +26,8 @@
         <h5 class="card-title">Quick Actions</h5>
       </div>
 
+      <%= render "shared/bundle_redeem_card" %>
+
       <% if current_user.has_active_subscription? %>
         <%= link_to user_memberships_path(current_user), class: "list-group-item list-group-item-action m-0", style: "border-top: 0px;" do %>
           <div class="row">

@@ -1,8 +1,15 @@
 class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   def index
+    # Order by recent ACTIVITY, not creation. A member's in-thread feedback
+    # reply upserts the existing feed card and bumps its updated_at (see
+    # FeedItemCreator.upsert_feedback_feed_item), so a freshly-replied
+    # conversation must float back to the top. Ordering by created_at left the
+    # reply buried at the thread's original position — the web feed already
+    # sorts by updated_at (FeedItemsHelper#generic_feed_items), so this also
+    # brings the mobile feed to parity with the dashboard.
     items = FeedItem.where(operator: current_tenant)
                     .includes(:user, :feed_item_comments, :rich_text_text)
-                    .order(created_at: :desc)
+                    .order(updated_at: :desc)
 
     items = apply_filter(items, params[:filter]) if params[:filter].present?
 
@@ -313,6 +320,16 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
           stats << "Member reservations: #{wu.member_reservations.to_i}"
         else
           stats << "Reservations: #{wu.reservations.to_i}"
+        end
+        # Per-room utilization of the business window (6am-6pm Mon-Fri).
+        # Updates saved before the field existed stored share-of-reservations
+        # instead — skip those rather than mislabel them.
+        room_lines = (wu.rooms || []).select { |r| r['utilization'] }
+        if room_lines.any?
+          stats << "Room usage (6am-6pm, Mon-Fri):"
+          room_lines.each do |r|
+            stats << "• #{r['name']}: #{(r['utilization'].to_f * 100).round}%"
+          end
         end
         stats = stats.join("\n")
         header = "Week of #{wu.week_start&.strftime('%b %-d')} – #{wu.week_end&.strftime('%b %-d, %Y')}"

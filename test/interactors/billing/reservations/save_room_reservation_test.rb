@@ -96,4 +96,18 @@ class Billing::Reservations::SaveRoomReservationTest < ActiveSupport::TestCase
     assert context.success?
     assert context.reservation.paid?
   end
+
+  # Capture-at-booking (ADR 0010): when ChargeAtBooking declines a card it calls
+  # context.fail!, and the organizer rolls back the already-run SaveRoomReservation.
+  # That rollback MUST destroy the reservation so a declined attempt never leaves
+  # a phantom row holding the slot.
+  test "rollback destroys the reservation (no phantom slot on a declined charge)" do
+    context = Billing::Reservations::SaveRoomReservation.call(reservation_params: @reservation_params, user: @user)
+    reservation = context.reservation
+    assert reservation.persisted?
+
+    Billing::Reservations::SaveRoomReservation.new(context).rollback
+
+    assert_nil Reservation.unscoped.find_by(id: reservation.id)
+  end
 end

@@ -227,6 +227,15 @@ class Subscription < ApplicationRecord
     e.present? && e > now
   end
 
+  # Does this subscription back an office lease (a fixed-term contract)?
+  # Members must not be able to self-cancel or downgrade these from the app —
+  # only an admin terminates a lease via the office-lease flow. Keys on either
+  # the lease-type plan or an actual OfficeLease record so a mistyped plan
+  # can't slip a real lease through.
+  def backs_office_lease?
+    office_leases.exists? || plan&.lease? || false
+  end
+
   # Member-initiated cancellation during a commitment: don't end immediately —
   # schedule the membership to end at the current term's boundary (Stripe
   # cancel_at), keeping access + billing through the term they committed to.

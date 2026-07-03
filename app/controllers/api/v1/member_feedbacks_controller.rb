@@ -82,13 +82,22 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
 
   def reply
     feedback = current_api_user.member_feedbacks.find(params[:id])
-    reply = feedback.feedback_replies.build(
-      body: params[:body],
+
+    # Route through CreateReply (SaveReply + CreateNotifications) — the same
+    # organizer #create already uses — instead of a bare reply.save. The old
+    # path saved the reply but fired NO notification pipeline, so an in-thread
+    # follow-up (MessageDetailScreen → feedbackAPI.reply) reached neither the
+    # admins' push NOR the management-feed card: a real member's "I booked a
+    # room but it's not showing" sat unanswered because nobody was alerted.
+    result = MemberFeedback::CreateReply.call(
+      member_feedback: feedback,
       user: current_api_user,
       operator: current_tenant,
+      body: params[:body],
     )
 
-    if reply.save
+    if result.success?
+      reply = result.feedback_reply
       render json: {
         id: reply.id,
         body: reply.body,
@@ -96,7 +105,7 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
         created_at: reply.created_at.strftime("%B %e at %l:%M %p"),
       }, status: :created
     else
-      render_error(reply.errors.full_messages.first)
+      render_error(result.message)
     end
   end
 

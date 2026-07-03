@@ -61,6 +61,12 @@ class MemberFeedback < ApplicationRecord
     update_column(:last_read_at, Time.current)
   end
 
+  # Hide the thread from the admin inbox. A later reply from either side
+  # resurfaces it (see FeedbackReply#resurface_dismissed_thread).
+  def dismiss!
+    update_column(:dismissed_at, Time.current)
+  end
+
   # How long after the last reply on either side the conversation is treated
   # as "wrapped up" — at which point the rate-this-experience CTA becomes
   # available. Showing the rating immediately after the first staff reply

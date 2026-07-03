@@ -241,6 +241,35 @@ class Api::V1::RoomsController < Api::V1::BaseController
       base[:needs_day_pass] = false
     end
 
+    # Reserve-time bundle redemption (Phase 5 / ADR 0015): offer "use 1 pass for
+    # today" when the booking would otherwise auto-add a day pass (needs_cov ⇒ $0
+    # room + uncovered + not subscribed/leased/admin — the same coarse guards as
+    # RedeemBundlePass) and the booker holds prepaid bundle passes. The finer
+    # once-per-business-day-window burn check stays in the interactor (idempotent),
+    # so an optimistic flag here can never double-spend a pass.
+    bundle_passes_remaining = user.day_pass_bundles.active.where(location: location)
+                                  .map { |b| b.passes_remaining.to_i }.sum
+    base[:bundle_passes_remaining] = bundle_passes_remaining
+    base[:bundle_pass_redeemable] = needs_cov && bundle_passes_remaining > 0
+
+    # ADR 0019 — included-room coverage state + prospective overage for the
+    # pre-booking confirm. `:not_applicable` for paid rooms / non-included rooms.
+    coverage = Billing::Reservations::CoverageState.for(user: user, room: room, date: date, location: location)
+    covering_type = case coverage.outcome
+                    when :bundle_available then coverage.bundle&.day_pass_type
+                    when :reusable_pass    then coverage.reusable_pass&.day_pass_type
+                    when :needs_purchase   then coverage.day_pass_type
+                    else user.day_passes.for_location(location).for_day(date).first&.day_pass_type
+                    end
+    base[:coverage] = {
+      state: coverage.outcome,
+      bundle_passes_remaining: coverage.passes_remaining,
+      day_pass_amount_in_cents: coverage.amount_cents,
+      reusable_from_date: coverage.reusable_pass&.day&.iso8601,
+      overage_in_cents: Billing::Reservations::OveragePreview.cents(
+        user: user, location: location, date: date, minutes: minutes, day_pass_type: covering_type),
+    }
+
     render json: base
   end
 
@@ -277,7 +306,9 @@ class Api::V1::RoomsController < Api::V1::BaseController
       .pluck(:room_id).uniq
 
     available_rooms = location.rooms.visible.where.not(id: booked_room_ids)
-    available_rooms = available_rooms.rentable unless user.can_see_all_rooms?(location, start_time.to_date) rescue available_rooms
+    # ADR 0019: show a not-yet-covered user the included rooms too (not just
+    # cash-rentable ones) so tapping one surfaces the buy-a-day-pass confirm.
+    available_rooms = available_rooms.rentable_or_day_pass_included unless user.can_see_all_rooms?(location, start_time.to_date) rescue available_rooms
 
     available_list = available_rooms.to_a
 
@@ -354,6 +385,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
         available_at: available_at,
         preferred: r.id == user.preferred_room_id,
         photo_url: (r.photo.attached? ? url_for(r.photo) : nil rescue nil),
+        charge: room_charge(r, user, location, start_time.to_date, effective_minutes, start_time),
       }
     }
 
@@ -415,8 +447,16 @@ class Api::V1::RoomsController < Api::V1::BaseController
     return render_error('Invalid time') if start_time.nil?
     except_id = params[:exclude_reservation_id].presence
 
-    rooms = location.rooms.visible
-    rooms = (rooms.rentable rescue rooms) unless user.can_see_all_rooms?(location, date)
+    # `include_hidden` is an admin-only carveout (e.g. Choose Folsom's
+    # auditorium is an intentionally-hidden room only admins may book). Gated
+    # on admin_of_location? so members can never surface hidden rooms by
+    # passing the flag.
+    include_hidden = user.admin_of_location?(location) &&
+                     ActiveModel::Type::Boolean.new.cast(params[:include_hidden])
+    rooms = include_hidden ? location.rooms.active : location.rooms.visible
+    # ADR 0019: include day-pass-unlockable rooms for not-yet-covered users so
+    # the buy-a-day-pass confirm surfaces instead of hiding included rooms.
+    rooms = (rooms.rentable_or_day_pass_included rescue rooms) unless user.can_see_all_rooms?(location, date)
 
     avail, unavail = rooms.to_a.partition do |r|
       r.available?(start_time: start_time, duration: minutes, except: except_id)
@@ -428,6 +468,12 @@ class Api::V1::RoomsController < Api::V1::BaseController
     dp_info  = (user.day_pass_reservation_charge_info(location, date, minutes) rescue nil)
     included_minutes_remaining = sub_info&.dig(:remaining_free) || dp_info&.dig(:remaining_free)
     overage_rate = sub_info&.dig(:overage_rate_in_cents) || dp_info&.dig(:overage_rate_in_cents)
+    # Exempt members/admins/leaseholders are never charged the hourly rate,
+    # even for a priced room. Surface it (as #reserve_now does) so the room
+    # list reads Free instead of quoting hourly_rate × duration.
+    should_charge = (user.should_charge_for_reservation?(location, start_time.to_date) rescue true)
+    should_charge ||= sub_info&.dig(:charge_type) == :partial_overage
+    should_charge ||= dp_info&.dig(:charge_type) == :partial_overage
 
     end_time = start_time + minutes.minutes
     render json: {
@@ -435,9 +481,10 @@ class Api::V1::RoomsController < Api::V1::BaseController
       start_time_label: start_time.strftime("%-l:%M %p").strip,
       minutes: minutes,
       no_rooms_available: avail.empty?,
-      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true) },
+      available_rooms: avail.sort_by { |r| r.hourly_rate_in_cents.to_i }.map { |r| room_card(r, true).merge(charge: room_charge(r, user, location, date, minutes, start_time)) },
       unavailable_rooms: unavail.map { |r| room_card(r, false, next_free_at(r, start_time, end_time, zone)) },
       pricing_context: {
+        should_charge: should_charge,
         has_plan: sub_info.present? || dp_info.present?,
         minutes_remaining: included_minutes_remaining.to_i,
         overage_rate_per_hour_cents: overage_rate.to_i,
@@ -492,6 +539,47 @@ class Api::V1::RoomsController < Api::V1::BaseController
     else
       [start_hour, end_hour]
     end
+  end
+
+  # Per-room charge + coverage label for the room LIST, computed with the SAME
+  # rules as the /rooms/:id/pricing summary so the list can never disagree with
+  # it. Priced rooms use should_charge_for_room? (day-passers DO pay premium
+  # rooms — a day pass covers free rooms + included minutes, not hourly rooms);
+  # $0 rooms use should_charge_for_reservation? plus any plan/day-pass overage.
+  # Returns { cents:, label: } — when label is present the client shows it
+  # ("Included with …"); otherwise it shows the dollar amount.
+  def room_charge(room, user, location, day, minutes, at = nil)
+    if room.hourly_rate_in_cents.to_i > 0
+      if user.should_charge_for_room?(room, day)
+        { cents: (room.hourly_rate_in_cents.to_i * minutes / 60.0).round, label: nil }
+      else
+        { cents: 0, label: included_with_label(user, location, day) }
+      end
+    else
+      # $0 room. Compute coverage the SAME way the /pricing summary does — per
+      # room, with the booking's minutes — so a plan/day-pass OVERAGE (included
+      # meeting-room minutes exceeded) surfaces as a real charge FIRST, instead of
+      # wrongly reading "Included" while the booker is actually billed the overage.
+      sub_info = (user.subscription_reservation_charge_info(location, minutes, room: room, at: at) rescue nil)
+      dp_info  = (user.day_pass_reservation_charge_info(location, day, minutes, room: room) rescue nil)
+      info = sub_info || dp_info
+      over = info&.dig(:overage_amount_in_cents).to_i
+      if over > 0
+        { cents: over, label: nil }
+      elsif !user.should_charge_for_reservation?(location, day) || info
+        { cents: 0, label: included_with_label(user, location, day) }
+      else
+        { cents: 0, label: "Day pass required" }
+      end
+    end
+  end
+
+  # Why a room reads as covered, for the list label.
+  def included_with_label(user, location, day)
+    return "Included with membership" if user.member?(location)
+    return "Included with office" if user.has_active_lease?
+    return "Included with day pass" if user.has_active_day_pass?(day)
+    "Free"
   end
 
   def room_card(room, is_available, available_at = nil)

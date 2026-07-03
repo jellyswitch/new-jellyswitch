@@ -130,6 +130,20 @@ class Operator::BaseController < ApplicationController
 
   private
 
+  # Post-purchase email hand-off (ADR 0017). Approved buyers are redirected to
+  # /home, which — unlike /wait — carries no `shared/_app_download_nudge`
+  # partial, so they'd otherwise miss the pointer to the "how to use the space"
+  # email. Append that same line to the post-purchase success flash, but ONLY on
+  # the approved (home-bound) path: unapproved buyers land on /wait where the
+  # partial already shows it, so guarding on approved? avoids a duplicate line.
+  #
+  # Keep the wording in sync with shared/_app_download_nudge.html.erb.
+  def append_email_handoff(message)
+    return message unless approved?
+
+    "#{message} Check your email for how to use the space."
+  end
+
   def set_resource_scopes
     if ActsAsScopable.current_scope_resources.empty?
       ActsAsScopable.current_scope_resources = [current_tenant, current_location]

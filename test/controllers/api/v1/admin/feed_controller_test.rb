@@ -51,9 +51,12 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
 
     ActsAsTenant.with_tenant(@operator) do
       member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      # Overage RATE is location-scoped now (ADR 0012); the day-pass type only
+      # defines the included allowance.
+      @location.update!(overage_rate_in_cents: 6000)
       room   = create(:room, operator: @operator, location: @location, hourly_rate_in_cents: 0)
       dpt    = create(:day_pass_type, operator: @operator, location: @location,
-                      included_meeting_room_minutes: 60, overage_rate_in_cents: 6000)
+                      included_meeting_room_minutes: 60, overage_rate_in_cents: 0)
       reservation = create(:reservation, user: member, room: room, minutes: 120, paid: true)
       create(:day_pass, user: member, billable: member, day: reservation.datetime_in.to_date,
              day_pass_type: dpt, operator: @operator, location: @location)
@@ -205,5 +208,46 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert_includes names, "Community Manager", "CM should be returned"
     assert_includes names, "Tim C",             "approved member should be returned (#4)"
     assert body.all? { |u| u.key?("id") && u.key?("name") && u.key?("role") }, "shape has id/name/role"
+  end
+
+  # When a member replies in an existing feedback thread, the reply upserts the
+  # thread's single feed card and bumps its updated_at (so it floats to the top
+  # of the activity feed). The mobile feed used to order by created_at, leaving
+  # the freshly-replied card buried at the conversation's original position —
+  # "replies aren't showing at the top of the feed." It must order by recent
+  # activity (updated_at), matching the web dashboard.
+  test "feed orders by recent activity so a freshly-replied card floats to the top" do
+    @operator.update!(member_feedback_notifications: true)
+    bumped = nil
+    newer_created = nil
+
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+
+      # An OLD thread whose conversation just received a new reply: old
+      # created_at, but updated_at bumped to "now" by the reply upsert.
+      bumped = FeedItem.create!(
+        operator: @operator, location: @location, user: member,
+        blob: { "type" => "feedback", "member_feedback_id" => 1, "body" => "older thread, just replied" },
+        created_at: 3.days.ago, updated_at: 5.seconds.ago,
+      )
+
+      # A thread created AFTER the bumped one was first created, but with no
+      # new activity since — its created_at is newer, its updated_at is older.
+      newer_created = FeedItem.create!(
+        operator: @operator, location: @location, user: member,
+        blob: { "type" => "feedback", "member_feedback_id" => 2, "body" => "newer thread, no new replies" },
+        created_at: 1.hour.ago, updated_at: 1.hour.ago,
+      )
+    end
+
+    get "/api/v1/admin/feed", headers: headers
+    assert_response :success
+    ids = JSON.parse(response.body).map { |i| i["id"] }
+
+    assert_includes ids, bumped.id
+    assert_includes ids, newer_created.id
+    assert ids.index(bumped.id) < ids.index(newer_created.id),
+      "a freshly-replied (updated_at-bumped) card must sort above a more-recently-created but inactive one"
   end
 end

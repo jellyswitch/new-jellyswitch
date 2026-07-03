@@ -48,6 +48,7 @@ module Permissions
     if operator.production? || operator.subdomain == "southlakecoworking"
       member?(location) ||
       has_active_day_pass?(day) ||
+      has_active_day_pass_bundle?(location) ||
       checked_in?(location) ||
       has_active_lease? ||
       admin_of_location?(location)
@@ -334,11 +335,17 @@ module Permissions
     day_pass_type = day_pass.day_pass_type
     return nil unless day_pass_type.has_meeting_room_limit?
 
+    # The included-minutes allowance comes from the day-pass type; the overage
+    # RATE comes from the location (ADR 0012), so this quote agrees with the
+    # amount ChargeCalculator captures. Only rooms flagged include_with_day_pass
+    # draw down the allowance.
+    overage_rate_in_cents = location.overage_rate_in_cents.to_i
+    overage_rate_per_minute = overage_rate_in_cents / 60.0
+
     # Calculate cumulative usage: sum of minutes from non-cancelled reservations for this user on this day
-    # Priced rooms don't count toward day pass allowance
     used_minutes = Reservation.joins(:room).where(user_id: id, cancelled: false)
                               .where(datetime_in: day.beginning_of_day..day.end_of_day)
-                              .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
+                              .where(rooms: { include_with_day_pass: true })
                               .sum(:minutes)
 
     remaining_free = [day_pass_type.included_meeting_room_minutes - used_minutes, 0].max
@@ -350,13 +357,13 @@ module Permissions
         overage_minutes_rounded: 0,
         overage_amount_in_cents: 0,
         remaining_free: remaining_free,
-        overage_rate_in_cents: day_pass_type.overage_rate_in_cents
+        overage_rate_in_cents: overage_rate_in_cents
       }
     else
       overage_minutes = requested_minutes - remaining_free
       # Round up to nearest 15-minute increment (matches booking slider granularity)
       overage_minutes_rounded = (overage_minutes / 15.0).ceil * 15
-      overage_amount = (day_pass_type.overage_rate_per_minute_in_cents * overage_minutes_rounded).to_i
+      overage_amount = (overage_rate_per_minute * overage_minutes_rounded).to_i
 
       {
         charge_type: :partial_overage,
@@ -364,7 +371,7 @@ module Permissions
         overage_minutes_rounded: overage_minutes_rounded,
         overage_amount_in_cents: overage_amount,
         remaining_free: remaining_free,
-        overage_rate_in_cents: day_pass_type.overage_rate_in_cents
+        overage_rate_in_cents: overage_rate_in_cents
       }
     end
   end

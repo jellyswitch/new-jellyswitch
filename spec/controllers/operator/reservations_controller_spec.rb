@@ -130,6 +130,15 @@ RSpec.describe Operator::ReservationsController, type: :controller do
     end
 
     context "with valid params" do
+      # ADR 0019: the default factory room is $0 + include_with_day_pass, so
+      # booking it now requires day-pass coverage (enforce_coverage). These
+      # examples cover the basic create mechanics, so give the member a day pass
+      # for the booking date → already_covered → the booking proceeds.
+      let!(:coverage_pass) do
+        create(:day_pass, user: regular_user, billable: regular_user, operator: operator,
+               location: location, day: Time.current.tomorrow.to_date)
+      end
+
       before do
         allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
         allow(Stripe::InvoiceItem).to receive(:create).and_return(true)
@@ -144,7 +153,7 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         )
         allow(Stripe::Invoice).to receive(:create).and_return(invoice)
         allow(Stripe::Invoice).to receive(:retrieve).and_return(invoice)
-        allow(Billing::Reservations::AuthorizeHoldOrSchedule).to receive(:call!) { |context| context }
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
       end
 
       it "creates a new reservation" do

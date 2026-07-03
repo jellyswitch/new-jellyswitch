@@ -55,6 +55,32 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_not_requested :post, @kisi_url
   end
 
+  # ADR 0013: a reservation grants access only inside its ±window, not all day.
+  def reservation_room
+    Room.create!(name: "RW-#{SecureRandom.hex(3)}", slug: "rw-#{SecureRandom.hex(4)}",
+                 location: @location, operator: @operator, rentable: true)
+  end
+
+  test "a reservation inside the access window unlocks the door for an otherwise-denied user" do
+    Reservation.new(user: @non_member, room: reservation_room,
+                    datetime_in: 30.minutes.from_now, minutes: 60).save!(validate: false)
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@non_member)
+
+    assert_response :success
+    assert_requested :post, @kisi_url, times: 1
+  end
+
+  test "a reservation outside the access window does NOT unlock the door (no all-day grant)" do
+    Reservation.new(user: @non_member, room: reservation_room,
+                    datetime_in: 3.days.from_now.change(hour: 12), minutes: 60).save!(validate: false)
+
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@non_member)
+
+    assert_response :forbidden
+    assert_not_requested :post, @kisi_url
+  end
+
   # ---------------------------------------------------------------------------
   # Bundle-pass consumption tests — manual unlock path
   # ---------------------------------------------------------------------------

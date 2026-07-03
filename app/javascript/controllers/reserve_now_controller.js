@@ -63,7 +63,16 @@ export default class extends Controller {
       const response = await fetch(`${this.priceUrlValue}?${params}`)
       const data = await response.json()
 
-      if (data.included) {
+      // ADR 0019 included-room coverage: remember the state for the Confirm
+      // Booking prompt, and surface the day-pass cost the plain room price hides.
+      this._coverage = data.coverage
+      this._coverageFlag = null
+      const cov = data.coverage
+      const coverageActive = cov && ["needs_purchase", "bundle_available", "reusable_pass"].includes(cov.state)
+
+      if (coverageActive) {
+        this.renderCoverageBox(cov)
+      } else if (data.included) {
         this.priceBoxTarget.className = "mx-3 p-3 rounded border border-success"
         this.priceBoxTarget.style.background = "#e8f5e0"
         let remainingText = ""
@@ -89,11 +98,11 @@ export default class extends Controller {
         `
       }
 
-      // Show/hide Stripe billing section
-      if (data.should_charge && this.hasBillingSectionTarget) {
-        this.billingSectionTarget.style.display = "block"
-      } else if (this.hasBillingSectionTarget) {
-        this.billingSectionTarget.style.display = "none"
+      // Show/hide Stripe billing section: pay when the room is charged OR the
+      // member is buying a day pass to cover an included room (needs_purchase).
+      const needsPay = data.should_charge || (coverageActive && cov.state === "needs_purchase")
+      if (this.hasBillingSectionTarget) {
+        this.billingSectionTarget.style.display = needsPay ? "block" : "none"
       }
     } catch (e) {
       console.error("Error fetching price:", e)
@@ -123,6 +132,15 @@ export default class extends Controller {
     // race each other and surface as a "time slot conflicts" error on the
     // second one even though the first succeeded.
     if (this._booking) return
+
+    // ADR 0019: an included room commits a day pass for its date — confirm the
+    // reuse/burn/buy decision before booking (parity with the mobile Alert).
+    const cc = this._coverageConfirm()
+    if (cc && !this._coverageFlag) {
+      if (!window.confirm(cc.body)) return
+      this._coverageFlag = cc.flag
+    }
+
     this._booking = true
 
     const btn = this.confirmBtnTarget
@@ -141,6 +159,9 @@ export default class extends Controller {
     formData.append("time", timeStr)
     formData.append("duration", this.currentDuration)
     formData.append("day_or_night", this.dayOrNightValue)
+
+    // ADR 0019: the member's coverage decision (use_existing_pass / use_bundle_pass / buy_day_pass).
+    if (this._coverageFlag) formData.append(this._coverageFlag, "true")
 
     // Add Stripe token if present
     if (window.has_token && document.querySelector('input[name="stripeToken"]')) {
@@ -182,5 +203,67 @@ export default class extends Controller {
       btn.textContent = "Confirm Booking"
       this._booking = false
     }
+  }
+
+  // ADR 0019: render the included-room coverage state in the price box.
+  renderCoverageBox(cov) {
+    const over = Number(cov.overage_in_cents || 0)
+    const overLine = over > 0
+      ? `<div class="small text-muted mt-1">+ $${(over / 100).toFixed(2)} meeting-room overage</div>`
+      : ""
+    let label, right
+    if (cov.state === "needs_purchase") {
+      label = "Day pass required"
+      right = `$${(Number(cov.day_pass_amount_in_cents || 0) / 100).toFixed(2)}`
+    } else if (cov.state === "bundle_available") {
+      label = "Uses 1 of your day passes"
+      right = `${cov.bundle_passes_remaining} left`
+    } else { // reusable_pass
+      label = "Uses your existing day pass"
+      right = ""
+    }
+    this.priceBoxTarget.className = "mx-3 p-3 rounded border border-success"
+    this.priceBoxTarget.style.background = "#e8f5e0"
+    this.priceBoxTarget.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center">
+        <span class="text-success">${label}</span>
+        <strong class="text-success">${right}</strong>
+      </div>${overLine}
+    `
+  }
+
+  // Mirrors src/utils/coverageConfirm.js (mobile). Returns {flag, body} when the
+  // member must confirm a coverage decision before booking, else null.
+  _coverageConfirm() {
+    const cov = this._coverage
+    if (!cov) return null
+    const day = this._prettyDate(this.dateValue)
+    const over = Number(cov.overage_in_cents || 0)
+    const overLine = over > 0 ? ` Plus a $${(over / 100).toFixed(2)} meeting-room overage.` : ""
+    switch (cov.state) {
+      case "reusable_pass":
+        return {
+          flag: "use_existing_pass",
+          body: `Use your existing day pass${cov.reusable_from_date ? ` (from ${this._prettyDate(cov.reusable_from_date)})` : ""} for ${day}?${overLine}`,
+        }
+      case "bundle_available":
+        return {
+          flag: "use_bundle_pass",
+          body: `This booking uses 1 of your ${cov.bundle_passes_remaining} day passes for ${day}.${overLine}`,
+        }
+      case "needs_purchase":
+        return {
+          flag: "buy_day_pass",
+          body: `This room needs a day pass for ${day} — $${(Number(cov.day_pass_amount_in_cents || 0) / 100).toFixed(2)}.${overLine}`,
+        }
+      default:
+        return null
+    }
+  }
+
+  _prettyDate(iso) {
+    if (!iso) return "that day"
+    const d = new Date(`${iso}T12:00:00`)
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" })
   }
 }

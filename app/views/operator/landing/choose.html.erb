@@ -27,6 +27,18 @@
     <% end %>
   <% end %>
 
+  <%# Bundle holders with no coverage today can't reach home — this card is
+      their web path to self-redeem (Erin/Tiffany discoverability gap). %>
+  <%= render "shared/bundle_redeem_card" %>
+
+  <%# Unified "space host messaged you" card — the host greets the visitor,
+      the visitor replies, and the conversation continues on the thread show
+      page. Rendered at the point of decision, above the purchase options,
+      matching the mobile Welcome screen. %>
+  <%= list_item do %>
+    <%= render "shared/space_host_chat_card" %>
+  <% end %>
+
   <% if current_tenant.day_passes_enabled? && @day_pass_types.count > 0 %>
     <%= list_item do %>
       <%= render(MemberOnboarding::DayPass.new(day_pass_types: @day_pass_types, new_day_pass_path: new_day_pass_path, location: current_location)) %>
@@ -43,15 +55,5 @@
     <%= list_item do %>
       <%= render(MemberOnboarding::AvailableNow.new(available_rooms_now: @available_rooms_now)) %>
     <% end %>
-  <% end %>
-<% end %>
-
-<%# Unified "space host messaged you" card — the host greets the visitor,
-    the visitor replies, and the conversation continues on the thread show
-    page. Replaces the older 10-second delayed nudge + Contact Us pair so
-    web and mobile show the same single affordance. %>
-<%= render Layout::FullWidth.new do %>
-  <%= list_item do %>
-    <%= render "shared/space_host_chat_card" %>
   <% end %>
 <% end %>
