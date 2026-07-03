@@ -47,7 +47,7 @@ RSpec.describe IosNotification do
       )
     end
 
-    it "sets custom_payload when data is present" do
+    it "sets custom_payload with data nested under body when data is present" do
       apns_notification = nil
       allow(Apnotic::Notification).to receive(:new).and_wrap_original do |method, *args|
         apns_notification = method.call(*args)
@@ -56,7 +56,10 @@ RSpec.describe IosNotification do
 
       described_class.new(user: user, message: "Test", data: data).send!
 
-      expect(apns_notification.custom_payload).to eq(data)
+      # expo-notifications only exposes remote-push data the app can read
+      # from userInfo["body"] — top-level custom keys never reach the JS
+      # tap handler (see test/adapters/notifiable/deep_link_payload_test.rb).
+      expect(apns_notification.custom_payload).to eq({ "body" => data })
     end
 
     it "does not set custom_payload when data is empty" do
