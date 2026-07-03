@@ -1,18 +1,21 @@
 class Rooms::DurationButtons < ApplicationComponent
   include ApplicationHelper
 
-  def initialize(room:, datetime_in:, day:, hour:, user:)
+  def initialize(room:, datetime_in:, day:, hour:, user:, max_minutes: nil)
     @room = room
     @datetime_in = datetime_in
     @day = day
     @hour = hour
     @user = user
+    # Policy cap from the caller (staff 12h / priced 12h / free 4h);
+    # defaults to the member cap for this room.
+    @max_minutes = max_minutes || room.max_bookable_minutes(admin: false)
   end
 
   def max_duration
     @max_duration ||= begin
       min_duration = room.allow_shorter_reservation_duration? ? 15 : 240
-      max = room.calculate_max_continuous_duration(start_time: datetime_in)
+      max = room.calculate_max_continuous_duration(start_time: datetime_in, max_minutes: @max_minutes)
       [max, min_duration].max
     end
   end

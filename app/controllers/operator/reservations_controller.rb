@@ -336,13 +336,18 @@ class Operator::ReservationsController < Operator::BaseController
       rooms = current_user.admin_or_manager?(current_location) ? current_location.rooms.active : current_location.rooms.visible
       rooms = rooms.rentable unless current_user.can_see_all_rooms?(current_location, parsed_date)
 
+      # Per-room policy cap (staff 12h; priced rooms 12h; free rooms 4h)
+      # instead of the old flat 480 — the web admin was stuck at 8h while
+      # mobile admin allowed 12h.
+      booking_admin = current_user.admin_or_manager?(current_location)
       max_duration = 0
       rooms.each do |room|
-        durations = room.calculate_max_continuous_duration(start_time: parsed_time)
+        cap = room.max_bookable_minutes(admin: booking_admin)
+        durations = room.calculate_max_continuous_duration(start_time: parsed_time, max_minutes: cap)
         max_duration = [max_duration, durations].max
       end
 
-      render json: { max_duration: [max_duration, 480].min }
+      render json: { max_duration: max_duration }
     else
       render json: { error: "Invalid parameters" }, status: :unprocessable_entity
     end

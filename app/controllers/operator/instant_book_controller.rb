@@ -95,8 +95,10 @@ class Operator::InstantBookController < Operator::BaseController
 
     @included_minutes_remaining = @subscription_charge_info&.dig(:included_minutes_remaining) || @day_pass_charge_info&.dig(:included_minutes_remaining)
 
-    # Max duration for slider
-    @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time), 240].min
+    # Max duration for slider — priced rooms are day-bookable (12h) for
+    # members and visitors; free rooms keep the 4h cap.
+    cap = @room.max_bookable_minutes(admin: false)
+    @max_duration = [@room.calculate_max_continuous_duration(start_time: @start_time, max_minutes: cap), cap].min
 
     include_stripe
     background_image
