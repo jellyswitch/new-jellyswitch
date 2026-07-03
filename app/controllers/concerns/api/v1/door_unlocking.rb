@@ -30,6 +30,42 @@ module Api::V1::DoorUnlocking
         .any? { |reservation| reservation.access_window_open?(now, window_minutes: window_minutes) }
   end
 
+  ROOM_LOCK_EARLY_GRACE = 10.minutes
+
+  # ADR 0021: a Room Lock opens for staff anytime, or the reservation
+  # holder during their booking — including up to ROOM_LOCK_EARLY_GRACE
+  # early, but only when no other booking still occupies the room (early
+  # building entry is hospitality; early ROOM entry collides with the
+  # previous meeting).
+  def user_can_open_room_lock?(user, door)
+    return false if user.nil? || door.room.nil?
+    return true if user.superadmin?
+
+    location = door.location
+    return true if location && user.admin_or_manager?(location)
+
+    now = Time.current
+    holder_res = door.room.reservations
+      .where(user: user, cancelled: false)
+      .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?",
+             now + ROOM_LOCK_EARLY_GRACE, now)
+      .order(:datetime_in)
+      .first
+    return false unless holder_res
+
+    # Booking hasn't started yet (we're inside the grace window): the room
+    # must actually be free — a still-running prior booking wins.
+    if holder_res.datetime_in > now
+      occupied = door.room.reservations
+        .where(cancelled: false).where.not(id: holder_res.id)
+        .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?", now, now)
+        .exists?
+      return !occupied
+    end
+
+    true
+  end
+
   def call_kisi_unlock(door, _location = nil)
     # Routed through Kisi::Client so the manual /doors/:id/unlock path
     # benefits from the same persistent connection the async job uses.
@@ -38,15 +74,21 @@ module Api::V1::DoorUnlocking
   end
 
   def perform_unlock(door:, user:, location:, method:)
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method)
-    begin
-      Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
-    rescue => e
-      Rails.logger.error("[DoorUnlocking] ConsumeOnEntry failed: #{e.class}: #{e.message}")
-      Honeybadger.notify(e) rescue nil
+    room_entry = door.room_lock?
+    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, room_entry: room_entry)
+    # Bundle burn-on-entry is a BUILDING-entry semantic — a Room Entry
+    # never spends a pass (ADR 0021; the holder's reservation already
+    # granted access anyway).
+    unless room_entry
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
+      rescue => e
+        Rails.logger.error("[DoorUnlocking] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e) rescue nil
+      end
     end
     response = call_kisi_unlock(door, location)
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response)
+    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response, room_entry: room_entry)
     response
   end
 end
