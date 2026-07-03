@@ -1,5 +1,7 @@
 
 class Operator::MemberFeedbacksController < Operator::BaseController
+  include LandingHelper # space_host_for — greeting seeding in #create
+
   def new
     @member_feedback = MemberFeedback.new
     authorize @member_feedback
@@ -17,6 +19,19 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       .where(location: current_location)
       .order(updated_at: :desc)
       .first
+
+    # Mirror the API path: the greeting thread is seeded at first-message
+    # time (new members only), never on page view. See
+    # Api::V1::MemberFeedbacksController#create.
+    if existing.blank?
+      seeded = MemberFeedback::EnsureHostGreeting.call(
+        user: current_user,
+        location: current_location,
+        operator: current_tenant,
+        host: space_host_for(current_location),
+      )
+      existing = seeded.member_feedback
+    end
 
     if existing.present?
       result = MemberFeedback::CreateReply.call(

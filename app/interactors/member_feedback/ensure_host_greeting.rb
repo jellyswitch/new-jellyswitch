@@ -1,20 +1,30 @@
 class MemberFeedback::EnsureHostGreeting
   include Interactor
 
-  # Makes the space host's "Hi! Any questions?" prompt feel like a real
-  # message: when a visitor lands on the choose page (or hits the mobile
-  # dashboard) without an existing thread at this location, we create a
-  # MemberFeedback owned by the visitor and immediately drop a FeedbackReply
-  # from the host into it. The greeting then renders both on the host-chat
-  # card and inside My Messages — same conversation, persistent context.
+  # Seeds the space host's "Hi! Any questions?" greeting as the first
+  # message of a brand-new thread. Called at FIRST-MESSAGE time (the
+  # member_feedbacks #create paths) — NOT on page view. The chat card
+  # renders the greeting client-side without a thread; a MemberFeedback
+  # only exists once the visitor actually replies, so the admin inbox
+  # holds real conversations instead of one-sided auto-welcomes.
   #
   # Idempotent: if a thread already exists for this user+location, it's a
-  # no-op. Safe to call on every page load.
+  # no-op.
+
+  # The greeting is a SIGNUP welcome, not a feature announcement: only
+  # accounts younger than this are greeted. Without the gate, every
+  # long-standing member's first dashboard load after the greeting feature
+  # shipped (or after re-logging in on a fresh install) minted them a
+  # "Welcome to <space>!" message + unread badge years into their
+  # membership. Once they have the lay of the land, they know what to do.
+  NEW_MEMBER_WINDOW = 7.days
+
   def call
     user = context.user
     location = context.location
     operator = context.operator
     return if user.blank? || location.blank? || operator.blank?
+    return if user.created_at.blank? || user.created_at < NEW_MEMBER_WINDOW.ago
     return if user.member_feedbacks.where(location: location).exists?
 
     host = context.host

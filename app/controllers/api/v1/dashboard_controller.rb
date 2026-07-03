@@ -5,17 +5,12 @@ class Api::V1::DashboardController < Api::V1::BaseController
     location = current_location
     user = current_api_user
 
-    # Auto-send the host's greeting on first dashboard fetch — keeps the
-    # mobile WelcomeScreen experience in sync with the web /choose page.
-    # Idempotent: no-op when the visitor already has a thread.
-    if user && location
-      MemberFeedback::EnsureHostGreeting.call(
-        user: user,
-        location: location,
-        operator: current_tenant,
-        host: space_host_for(location),
-      )
-    end
+    # The host greeting is NOT auto-created here anymore. The WelcomeScreen
+    # chat card renders the greeting client-side; a MemberFeedback thread is
+    # only opened when the member actually replies (member_feedbacks#create
+    # seeds the greeting into the new thread then). Page-load auto-creation
+    # filled the admin inbox with one-sided "Welcome!" threads for every
+    # visitor — impossible to keep track of real conversations.
 
     today_reservations = user.reservations.where(cancelled: false).where("datetime_in::date = ?", Date.current)
     next_reservation = user.reservations.where(cancelled: false).where("datetime_in > ?", Time.current).order(:datetime_in).first
