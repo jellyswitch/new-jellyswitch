@@ -80,6 +80,37 @@ A prepaid quantity of day passes a buyer redeems over time (operator-facing: **"
 
 _Avoid_: **"credits"** for bundle passes — "Room Credits" is a separate stored-value concept. Say **pass / passes remaining / Bundle / N-Pack**.
 
+## Doors & Access
+
+### Building Door
+
+A door that grants **entry to the space itself** — gated on *coverage* (active membership, day pass for today, lease, or staff). Opening one is a **door punch**, the canonical "member physically used the space today" event: it burns Day Pool days, triggers bundle burn-on-entry, and feeds the Quiet lifecycle signal. A Door with **no Room attached** is a Building Door.
+
+### Room Lock
+
+An electric lock protecting **one specific reservable space inside the building** (a meeting room, phone booth, studio). Classified by attachment: a Door **attached to a Room is that Room's lock**. Authorization is about *the resource, not the building* — holding building coverage alone does not open a Room Lock. A Room Lock opens only for:
+- **the reservation holder**, during their booking (plus a short early-entry grace when no prior booking occupies the room) — deliberately tighter than the ±60-min building **Access window** (ADR 0013): early building entry is hospitality, early room entry collides with the previous booking;
+- **staff**, anytime (setup, cleaning, tours).
+
+An idle reservable room **stays locked** — that is the lock's purpose (a priced room's revenue leaks if coverage alone opens it). V1: holder-only (no invitee/org-mate unlock).
+_Avoid_: "exterior/interior door" — that describes the architecture, not the rule. TLH's "Meeting Room **Ext**" lock is architecturally exterior but is a Room Lock. Classify by what the door protects.
+
+### Walk-up space
+
+An interior space with a lock but **no booking requirement** (phone booths). Its door stays **unattached** — coverage-gated like a Building Door, deliberately: requiring a booking for a 5-minute call is hostility, not access control. If the operator later makes the space reservable, attaching its door to the new Room converts it to a Room Lock with no other change.
+
+### Room Entry
+
+The event of opening a **Room Lock**. Logged for audit (who opened which room, when) but **not a door punch**: it never burns Day Pool days, never triggers bundle burn-on-entry, and stays out of building-entry analytics. "Door punch" keeps its exact meaning — *a Building Door open, the member physically entered the space*.
+_Avoid_: counting Room Entries in anything that means "visits" or "entries".
+
+### Relationships (doors)
+
+- A **Door** is attached to **at most one Room**; a Room may have multiple Doors (TLH's Meetup Room could have both an interior and an "Ext" lock).
+- Attachment is an operator configuration action (on the room/door settings), never inferred from names.
+- A **Room Lock** open is a **Room Entry**; a **Building Door** open is a **door punch**.
+- **The reservation is the key**: a member reaches a Room Lock only through their booking (reservation card / start notification), never through the general Keys list. Staff reach every door through the admin door list.
+
 ## Flagged ambiguities
 
 - "pool" was used loosely for both the day allowance and the meeting-room-minute allowance — resolved: **Day Pool** (distinct days) and **Hour Pool** (free room minutes) are distinct caps with separate fields.
