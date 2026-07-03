@@ -1,4 +1,5 @@
 class Api::V1::MemberFeedbacksController < Api::V1::BaseController
+  include LandingHelper
   def index
     feedbacks = current_api_user.member_feedbacks
       .where(operator: current_tenant)
@@ -48,6 +49,23 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
       .where(location: current_location)
       .order(updated_at: :desc)
       .first
+
+    # First message from a NEW member: seed the host greeting into the
+    # brand-new thread so the conversation reads greeting -> their reply.
+    # The thread is only opened HERE, at reply time — never on page view —
+    # so the admin inbox holds real conversations only. EnsureHostGreeting
+    # itself gates on account age + host presence and returns no thread
+    # for established members (their message just starts a plain thread
+    # below).
+    if existing.blank?
+      seeded = MemberFeedback::EnsureHostGreeting.call(
+        user: current_api_user,
+        location: current_location,
+        operator: current_tenant,
+        host: space_host_for(current_location),
+      )
+      existing = seeded.member_feedback
+    end
 
     if existing.present?
       result = MemberFeedback::CreateReply.call(

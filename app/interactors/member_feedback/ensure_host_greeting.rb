@@ -1,15 +1,15 @@
 class MemberFeedback::EnsureHostGreeting
   include Interactor
 
-  # Makes the space host's "Hi! Any questions?" prompt feel like a real
-  # message: when a visitor lands on the choose page (or hits the mobile
-  # dashboard) without an existing thread at this location, we create a
-  # MemberFeedback owned by the visitor and immediately drop a FeedbackReply
-  # from the host into it. The greeting then renders both on the host-chat
-  # card and inside My Messages — same conversation, persistent context.
+  # Seeds the space host's "Hi! Any questions?" greeting as the first
+  # message of a brand-new thread. Called at FIRST-MESSAGE time (the
+  # member_feedbacks #create paths) — NOT on page view. The chat card
+  # renders the greeting client-side without a thread; a MemberFeedback
+  # only exists once the visitor actually replies, so the admin inbox
+  # holds real conversations instead of one-sided auto-welcomes.
   #
   # Idempotent: if a thread already exists for this user+location, it's a
-  # no-op. Safe to call on every page load.
+  # no-op.
 
   # The greeting is a SIGNUP welcome, not a feature announcement: only
   # accounts younger than this are greeted. Without the gate, every

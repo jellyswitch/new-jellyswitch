@@ -36,20 +36,48 @@ class Api::V1::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
     }
   end
 
-  test "create spawns a new MemberFeedback when the member has no existing thread" do
+  test "a NEW member's first message seeds the host greeting, then their reply" do
+    # Fixture users are created at test time, so @member counts as a new
+    # signup (inside EnsureHostGreeting::NEW_MEMBER_WINDOW).
     assert_difference -> { @member.member_feedbacks.count }, +1 do
-      assert_no_difference -> { FeedbackReply.where(user: @member).count } do
-        post "/api/v1/member_feedbacks",
-             params: { body: "First message ever" }.to_json,
-             headers: headers
-      end
+      post "/api/v1/member_feedbacks",
+           params: { body: "First message ever" }.to_json,
+           headers: headers
     end
 
     assert_response :created
-    body = JSON.parse(response.body)
+    created = @member.member_feedbacks.reload.order(:created_at).last
+    replies = created.feedback_replies.order(:created_at)
+    assert_equal 2, replies.count, "expected host greeting + the member's message"
+    assert replies.first.from_admin?, "thread must open with the host's greeting"
+    assert_match(/Welcome/, replies.first.body)
+    assert_equal "First message ever", replies.last.body
+    assert_equal @member.id, replies.last.user_id
+    assert_equal created.id, JSON.parse(response.body)["id"]
+  end
+
+  test "an ESTABLISHED member's first message starts a plain thread — no greeting" do
+    @member.update!(created_at: 2.years.ago)
+
+    assert_difference -> { @member.member_feedbacks.count }, +1 do
+      post "/api/v1/member_feedbacks",
+           params: { body: "First message ever" }.to_json,
+           headers: headers
+    end
+
+    assert_response :created
     created = @member.member_feedbacks.reload.order(:created_at).last
     assert_equal "First message ever", created.comment
-    assert_equal created.id, body["id"]
+    assert_equal 0, created.feedback_replies.where.not(user: @member).count,
+      "no host greeting for a member who's been around for years"
+  end
+
+  test "viewing the dashboard never opens a message thread" do
+    get "/api/v1/dashboard", headers: headers
+    assert_response :success
+
+    assert_equal 0, @member.member_feedbacks.count,
+      "threads must only be created when the member sends a message, not on page view"
   end
 
   test "create appends a reply to the existing thread instead of spawning a parallel one" do

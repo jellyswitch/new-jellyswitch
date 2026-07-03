@@ -129,15 +129,10 @@ class Operator::LandingController < Operator::BaseController
       return
     end
 
-    # Auto-send the host's "Hi! Any questions?" greeting on the visitor's
-    # first hit so it shows up as a real first message in My Messages.
-    # Idempotent — no-op if they already have a thread at this location.
-    MemberFeedback::EnsureHostGreeting.call(
-      user: current_user,
-      location: current_location,
-      operator: current_tenant,
-      host: space_host_for(current_location),
-    )
+    # The host greeting is NOT auto-created on page view anymore — the chat
+    # card renders it client-side, and the thread is only opened when the
+    # visitor replies (Operator::MemberFeedbacksController#create seeds the
+    # greeting then). See MemberFeedback::EnsureHostGreeting.
 
     flash.keep
     @day_pass_types = current_location.day_pass_types.available.visible
