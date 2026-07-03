@@ -1,6 +1,10 @@
 <div class="row">
   <p class="col">
-    <%= feed_item.member_feedback.comment %>
+    <%# Greeting-first threads carry a nil comment — the member's message is
+        a FeedbackReply, stashed in the blob by
+        Notifiable::FeedbackReply#create_feed_item (same source the mobile
+        feed renders). %>
+    <%= feed_item.blob["body"].presence || feed_item.member_feedback&.comment %>
   </p>
 </div>
 <% if feed_item.member_feedback.present? %>
