@@ -141,7 +141,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     elsif result.conflict
       # The failed save left the new attrs assigned in-memory, so
       # window_label reflects the REQUESTED window, not the old one.
-      render_conflict(result.error || 'That room was just booked.', reservation)
+      render_conflict(result.error.presence || 'That room was just booked.', reservation)
     else
       render_error(result.error || 'Could not update reservation')
     end

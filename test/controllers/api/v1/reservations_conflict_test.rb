@@ -52,7 +52,7 @@ class Api::V1::ReservationsConflictTest < ActionDispatch::IntegrationTest
 
     assert_response :conflict
     body = JSON.parse(response.body)
-    assert body.dig("conflict", "window_label").present?
+    assert_equal "10:00–11:00 AM", body.dig("conflict", "window_label")
     # The persisted row is untouched by the failed edit.
     assert_equal (@start + 3.hours).to_i, mine.reload.datetime_in.to_i
   end
