@@ -10,11 +10,21 @@ class MemberFeedback::EnsureHostGreeting
   #
   # Idempotent: if a thread already exists for this user+location, it's a
   # no-op. Safe to call on every page load.
+
+  # The greeting is a SIGNUP welcome, not a feature announcement: only
+  # accounts younger than this are greeted. Without the gate, every
+  # long-standing member's first dashboard load after the greeting feature
+  # shipped (or after re-logging in on a fresh install) minted them a
+  # "Welcome to <space>!" message + unread badge years into their
+  # membership. Once they have the lay of the land, they know what to do.
+  NEW_MEMBER_WINDOW = 7.days
+
   def call
     user = context.user
     location = context.location
     operator = context.operator
     return if user.blank? || location.blank? || operator.blank?
+    return if user.created_at.blank? || user.created_at < NEW_MEMBER_WINDOW.ago
     return if user.member_feedbacks.where(location: location).exists?
 
     host = context.host
