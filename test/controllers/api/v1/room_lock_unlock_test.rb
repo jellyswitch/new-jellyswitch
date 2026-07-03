@@ -103,4 +103,16 @@ class Api::V1::RoomLockUnlockTest < ActionDispatch::IntegrationTest
     get "/api/v1/doors", headers: headers_for(@admin)
     assert_includes JSON.parse(response.body).map { |d| d["id"] }, @lock.id
   end
+
+  test "auto-unlock rejects room locks" do
+    # Beacon validates name presence — the plan's creation plus name.
+    beacon = Beacon.create!(name: "Room Lock Beacon", operator: @operator,
+                            location: @location, door: @lock,
+                            uuid: "AAAA", major: 1, minor: 2, available: true)
+    post "/api/v1/door/auto_unlock",
+         params: { uuid: beacon.uuid, major: 1, minor: 2, nonce: SecureRandom.hex(8) },
+         headers: headers_for(@member)
+    assert_response :unprocessable_entity
+    assert_match(/reservation/, JSON.parse(response.body)["error"])
+  end
 end

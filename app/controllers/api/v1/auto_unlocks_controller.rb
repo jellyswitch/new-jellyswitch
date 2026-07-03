@@ -20,6 +20,10 @@ class Api::V1::AutoUnlocksController < Api::V1::BaseController
     door = beacon.door
     return render_error("Beacon is not yet assigned to a door") if door.nil?
     return render_error("Door is not configured for unlock")    if door.kisi_id.blank?
+    # V1: Room Locks are excluded from approach-unlock (ADR 0021) — the
+    # reservation card is the room's key; auto-popping a meeting-room door
+    # for anyone walking past is wrong for non-holders and creepy for holders.
+    return render_error("This door opens from your reservation, not by approach") if door.room_lock?
 
     location = beacon.location
     user     = current_api_user
