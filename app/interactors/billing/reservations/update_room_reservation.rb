@@ -25,6 +25,8 @@ class Billing::Reservations::UpdateRoomReservation
     )
 
     unless reservation.save
+      # See SaveRoomReservation: :overlap-tagged failures surface as 409.
+      context.conflict = reservation.errors.details[:base].any? { |d| d[:error] == :overlap }
       context.fail!(error: reservation.errors.full_messages.first || "Could not update reservation.")
       return
     end
