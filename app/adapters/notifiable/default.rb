@@ -63,25 +63,7 @@ class Notifiable::Default < SimpleDelegator
         puts "Pushing android notification to #{user.name}: #{message}"
         if user.android_token.present?
           fcm = FCM.new('',StringIO.new(operator.android_push_notification_key.download),operator.firebase_project_id)
-          payload = {
-                "token": user.android_token,
-                "notification": {
-                  "title": message,
-                  "body": message
-              },
-                # Pin to the channel the mobile app creates with HIGH importance
-                # and request the default tone explicitly. Without this, FCM
-                # routes to the implicit "Miscellaneous" channel on some
-                # Android versions, which is silent by default.
-                "android": {
-                  "notification": {
-                    "sound": "default",
-                    "channel_id": "default",
-                  }
-                }
-              }
-          payload["data"] = deep_link_data.transform_values(&:to_s) if deep_link_data.present?
-          fcm.send_v1(payload)
+          fcm.send_v1(android_payload(user))
           puts "Pushed message: #{message} to #{user.name}'s android device: #{user.android_token}"
         else
           puts "Cannot push Android message to #{user.email} since android token is: #{user.android_token}"
@@ -92,10 +74,37 @@ class Notifiable::Default < SimpleDelegator
     end
   end
   
+  def android_payload(user)
+    payload = {
+      "token": user.android_token,
+      "notification": {
+        "title": message,
+        "body": message
+      },
+      # Pin to the channel the mobile app creates with HIGH importance
+      # and request the default tone explicitly. Without this, FCM
+      # routes to the implicit "Miscellaneous" channel on some
+      # Android versions, which is silent by default.
+      "android": {
+        "notification": {
+          "sound": "default",
+          "channel_id": "default",
+        }
+      }
+    }
+    # expo-notifications on Android reads a remote push's data from a JSON
+    # string under the FCM data map's "body" key (NotificationData#body) —
+    # flat top-level data keys never reach the JS tap handler, which is why
+    # notification deep links didn't route on real devices. Do NOT flatten
+    # this back to individual keys.
+    payload["data"] = { "body" => deep_link_data.to_json } if deep_link_data.present?
+    payload
+  end
+
   def message
     raise "Implement in a subclass"
   end
-  
+
   def recipients
     raise "Implement in subclass"
   end
