@@ -37,6 +37,9 @@ class Room < ApplicationRecord
   # Relationships
   has_many :reservations, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  # Electric locks protecting this room (ADR 0021). Nullify, not destroy:
+  # detaching a room's lock demotes the door to a Building Door.
+  has_many :doors, dependent: :nullify
   accepts_nested_attributes_for :amenities, reject_if: :all_blank
 
   belongs_to :operator

@@ -33,11 +33,18 @@ class Door < ApplicationRecord
   has_many :door_punches, dependent: :destroy
   belongs_to :operator
   belongs_to :location
+  # ADR 0021: attached to a Room ⇒ this door is that Room's LOCK —
+  # reservation-gated, not coverage-gated. nil ⇒ Building Door.
+  belongs_to :room, optional: true
   acts_as_scopable :operator, :location
 
   # Scopes
   scope :available, -> { where(available: true) }
   scope :unavailable, -> { where(available: false) }
+
+  def room_lock?
+    room_id.present?
+  end
 
   def search_data
     {

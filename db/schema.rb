@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_03_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -401,6 +401,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
     t.jsonb "json"
     t.string "method", default: "manual", null: false
     t.string "status", default: "unlocked", null: false
+    t.boolean "room_entry", default: false, null: false
     t.index ["method"], name: "index_door_punches_on_method"
     t.index ["operator_id"], name: "index_door_punches_on_operator_id"
     t.index ["status"], name: "index_door_punches_on_status"
@@ -416,8 +417,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
     t.integer "kisi_id"
     t.bigint "location_id"
     t.boolean "private", default: false, null: false
+    t.bigint "room_id"
     t.index ["location_id"], name: "index_doors_on_location_id"
     t.index ["operator_id"], name: "index_doors_on_operator_id"
+    t.index ["room_id"], name: "index_doors_on_room_id"
   end
 
   create_table "events", force: :cascade do |t|
@@ -1180,6 +1183,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_06_30_000001) do
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
   add_foreign_key "doors", "locations"
+  add_foreign_key "doors", "rooms"
   add_foreign_key "feedback_replies", "member_feedbacks"
   add_foreign_key "feedback_replies", "users"
   add_foreign_key "lease_renewal_requests", "locations"
