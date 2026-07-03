@@ -100,6 +100,6 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
       headers: headers
 
     assert_response :unprocessable_entity
-    assert_match(/conflicts with an existing reservation/i, JSON.parse(response.body)["error"])
+    assert_match(/is no longer free/i, JSON.parse(response.body)["error"])
   end
 end
