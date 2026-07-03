@@ -114,4 +114,24 @@ class Api::V1::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Following up on my earlier question", card.blob["body"],
       "the management-feed card must reflect the member's latest reply"
   end
+
+  test "index and show include created_at_iso so the app can render local date + time" do
+    post "/api/v1/member_feedbacks", params: { body: "When does the sauna open?" }.to_json, headers: headers
+    assert_response :success
+
+    get "/api/v1/member_feedbacks", headers: headers
+    assert_response :success
+    thread = JSON.parse(response.body).first
+    assert_match(/\A\d{4}-\d{2}-\d{2}T/, thread["created_at_iso"],
+      "thread list must carry an ISO instant alongside the legacy date string")
+
+    get "/api/v1/member_feedbacks/#{thread["id"]}", headers: headers
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_match(/\A\d{4}-\d{2}-\d{2}T/, body["created_at_iso"])
+    body["replies"].each do |reply|
+      assert_match(/\A\d{4}-\d{2}-\d{2}T/, reply["created_at_iso"],
+        "every reply must carry created_at_iso")
+    end
+  end
 end
