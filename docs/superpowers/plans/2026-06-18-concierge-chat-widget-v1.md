@@ -1,6 +1,6 @@
 # Concierge Chat Widget — V1 Implementation Plan (phased)
 
-> The operator's website chat widget. V1 = **no AI** (see `docs/adr/0010-concierge-swappable-brain-ai-deferred.md`): live staff during business hours + a scripted needs-recommender off-hours, capturing every visitor as a Person and measuring conversion lift. Glossary: `CONTEXT.md` → **Concierge**.
+> The operator's website chat widget. V1 = **no AI** (see `docs/adr/0020-concierge-swappable-brain-ai-deferred.md`): live staff during business hours + a scripted needs-recommender off-hours, capturing every visitor as a Person and measuring conversion lift. Glossary: `CONTEXT.md` → **Concierge**.
 >
 > Reuse the **tour-request widget** as the chassis throughout (`app/controllers/embed/tour_requests_controller.rb`, `app/views/embed/tour_requests/*`, `app/views/operator/settings/tour_widget.html.erb`, the `Embed` route namespace, CORS, Turnstile, honeypot, Rack::Attack, `Activity.log`, `TourRequestAlert`). The Concierge is "the tour widget grown a conversation + a recommender + an inbox."
 >

@@ -1,6 +1,6 @@
 # Concierge V2 — AI Brain & Beyond (design notes, not yet scheduled)
 
-> Parked design from the V1 grilling. V2 swaps an **AI responder** into the Concierge's off-hours brain slot (see `docs/adr/0010-concierge-swappable-brain-ai-deferred.md`). Nothing here is built. Captured so it isn't lost.
+> Parked design from the V1 grilling. V2 swaps an **AI responder** into the Concierge's off-hours brain slot (see `docs/adr/0020-concierge-swappable-brain-ai-deferred.md`). Nothing here is built. Captured so it isn't lost.
 
 ## What V2 adds
 The V1 Concierge already has the conversation, capture, CRM, routing, conversion metric, and live-staff inbox. V2 changes **one thing**: the off-hours (and overflow) responder becomes an **LLM concierge** that answers free-form questions instead of a button script — then captures and routes exactly as V1 does.
