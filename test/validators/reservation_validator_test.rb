@@ -1,44 +1,50 @@
 require "test_helper"
 
 class ReservationValidatorTest < ActiveSupport::TestCase
-  def setup
-    @user = users(:cowork_tahoe_member)
+  setup do
     @room = rooms(:small_meeting_room)
-
-    @reservation_time = Time.zone.parse("2024-06-15 10:00:00")
-
-    @reservation = Reservation.new(room: @room, datetime_in: @reservation_time, user: @user, minutes: 30)
+    @user = users(:cowork_tahoe_member)
+    @zone = ActiveSupport::TimeZone[@room.location.time_zone]
+    @room.reservations.delete_all
+    day = Date.current + 7
+    @start = @zone.local(day.year, day.month, day.day, 10)
+    Reservation.create!(user: @user, room: @room, datetime_in: @start, minutes: 60)
   end
 
-  test "should ignore for the cancelled reservation" do
-    @reservation.cancelled = true
-
-    assert @reservation.valid?
+  test "overlap message names the room and the requested window" do
+    clash = Reservation.new(user: @user, room: @room, datetime_in: @start, minutes: 60)
+    refute clash.valid?
+    assert_equal "#{@room.name} is no longer free 10:00–11:00 AM.",
+      clash.errors.full_messages.first
   end
 
-  test "should add error if room is already booked for the selected time slot" do
-    another_reservation = Reservation.create(room: @room, datetime_in: Time.zone.parse("2024-06-15 9:30:00"), user: @user, minutes: 45)
-
-    assert_not @reservation.valid?
-    assert_includes @reservation.errors[:base], "The requested time slot conflicts with an existing reservation. Please choose a different time or room."
+  test "overlap error is tagged :overlap in details" do
+    clash = Reservation.new(user: @user, room: @room, datetime_in: @start, minutes: 30)
+    clash.valid?
+    assert clash.errors.details[:base].any? { |d| d[:error] == :overlap }
   end
 
-  test "should not add error if room is not booked for the selected time slot" do
-    another_reservation = Reservation.create(room: @room, datetime_in: Time.zone.parse("2024-06-15 8:00:00"), user: @user, minutes: 60)
-
-    assert @reservation.valid?
-    assert_empty @reservation.errors[:base]
+  test "non-overlapping reservation stays valid" do
+    free = Reservation.new(user: @user, room: @room,
+      datetime_in: @start + 2.hours, minutes: 60)
+    assert free.valid?
   end
 
-  test "should add error if a reservation extend a meeting time overlapped with other reservation" do
-    @reservation.save
+  test "cancelled reservation skips the overlap check" do
+    clash = Reservation.new(user: @user, room: @room, datetime_in: @start, minutes: 60)
+    clash.cancelled = true
+    assert clash.valid?
+  end
 
-    another_reservation = Reservation.create(room: @room, datetime_in: @reservation.datetime_out, user: @user, minutes: 30)
+  test "extending a meeting into another reservation adds the overlap error" do
+    mine = Reservation.create!(user: @user, room: @room,
+      datetime_in: @start + 2.hours, minutes: 30)
+    Reservation.create!(user: @user, room: @room,
+      datetime_in: mine.datetime_out, minutes: 30)
 
-    @reservation.update(minutes: @reservation.minutes + 30)
-
-    assert another_reservation.valid?
-    assert_not @reservation.valid?
-    assert_includes @reservation.errors[:base], "The requested time slot conflicts with an existing reservation. Please choose a different time or room."
+    mine.minutes += 30
+    assert_not mine.valid?
+    assert_includes mine.errors[:base],
+      "#{@room.name} is no longer free #{mine.window_label}."
   end
 end

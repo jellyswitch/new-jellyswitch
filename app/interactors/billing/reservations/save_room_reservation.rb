@@ -33,6 +33,10 @@ class Billing::Reservations::SaveRoomReservation
     context.notifiable = reservation
 
     if !reservation.save
+      # Overlap (someone booked between the room list loading and this tap)
+      # is a CONFLICT, not a generic failure — the API returns 409 with the
+      # room + window so the app can offer a one-tap list refresh.
+      context.conflict = reservation.errors.details[:base].any? { |d| d[:error] == :overlap }
       context.fail!(message: reservation.errors.full_messages.first || "Unable to create reservation, please try again.")
     end
   end

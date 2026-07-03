@@ -62,7 +62,8 @@ class Billing::Reservations::UpdateRoomReservationTest < ActiveSupport::TestCase
     result = update!(datetime_in: blocker.datetime_in, minutes: 60)
 
     refute result.success?
-    assert_match(/conflict/i, result.error.to_s)
+    assert_match(/is no longer free/i, result.error.to_s)
+    assert result.conflict, "overlap failure should be flagged as a conflict"
     @reservation.reload
     assert_equal 60, @reservation.minutes
     assert_equal 2.days.from_now.change(hour: 10).to_i, @reservation.start_at.to_i

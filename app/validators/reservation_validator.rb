@@ -5,7 +5,11 @@ class ReservationValidator < ActiveModel::Validator
     overlapping_reservations = find_overlapping_reservations(record)
 
     if overlapping_reservations.exists?
-      record.errors.add(:base, "The requested time slot conflicts with an existing reservation. Please choose a different time or room.")
+      # Precise + tagged: the message reaches members verbatim (old app
+      # bundles render data.error raw), and the :overlap tag lets the API
+      # detect a conflict and return 409 with a structured payload.
+      record.errors.add(:base, :overlap,
+        message: "#{record.room&.name || 'This room'} is no longer free #{record.window_label}.")
     end
   end
 

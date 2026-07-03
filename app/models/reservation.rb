@@ -117,6 +117,20 @@ class Reservation < ApplicationRecord
     datetime_in + minutes.minutes
   end
 
+  # "10:00–11:00 AM" in the room's location zone (datetime_in's reader already
+  # presents the location zone). Drops the duplicate meridiem when both ends
+  # share it. Used by ReservationValidator's overlap message and the API's
+  # 409 conflict payload.
+  def window_label
+    starts = datetime_in
+    ends = datetime_out
+    if starts.strftime("%p") == ends.strftime("%p")
+      "#{starts.strftime('%-l:%M')}–#{ends.strftime('%-l:%M %p')}"
+    else
+      "#{starts.strftime('%-l:%M %p')}–#{ends.strftime('%-l:%M %p')}"
+    end
+  end
+
   def ongoing?
     now = Time.current
     now >= start_at && now < start_at + minutes.minutes

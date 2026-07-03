@@ -89,6 +89,8 @@ class Api::V1::ReservationsController < Api::V1::BaseController
 
     if result.success?
       render json: reservation_json(result.reservation), status: :created
+    elsif result.conflict
+      render_conflict(result.message.presence || 'That room was just booked.', result.reservation)
     else
       render_error(result.message.presence || result.error || 'Booking failed')
     end
@@ -136,6 +138,10 @@ class Api::V1::ReservationsController < Api::V1::BaseController
 
     if result.success?
       render json: reservation_json(reservation.reload)
+    elsif result.conflict
+      # The failed save left the new attrs assigned in-memory, so
+      # window_label reflects the REQUESTED window, not the old one.
+      render_conflict(result.error.presence || 'That room was just booked.', reservation)
     else
       render_error(result.error || 'Could not update reservation')
     end
@@ -349,5 +355,19 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       can_cancel: future && !r.cancelled && r.datetime_in > Time.current + CANCEL_CUTOFF,
       can_end_now: ongoing && !r.cancelled,
     }
+  end
+
+  # 409 for a room-time overlap. `error` doubles as the display sentence for
+  # old app bundles that render data.error raw; `conflict` lets new bundles
+  # style the "Just missed it" alert + refresh. `failed_reservation` is the
+  # unsaved record carrying the requested room/window.
+  def render_conflict(message, failed_reservation)
+    render json: {
+      error: message,
+      conflict: {
+        room_name: failed_reservation&.room&.name,
+        window_label: failed_reservation&.window_label,
+      },
+    }, status: :conflict
   end
 end

@@ -14,7 +14,11 @@ class Operator::ConfirmationAppNudgeTest < ActionDispatch::IntegrationTest
   end
 
   def create_reservation
-    create(:reservation, user: @user, room: @room, datetime_in: 1.day.from_now, hours: 1, minutes: 60, paid: true)
+    # Deterministic mid-morning slot: `1.day.from_now` inherits the test run's
+    # wall-clock time, and near midnight that window overlapped the
+    # future_room_reservation fixture (tomorrow end_of_day, same room) —
+    # a time-of-day-flaky RecordInvalid.
+    create(:reservation, user: @user, room: @room, datetime_in: 2.days.from_now.change(hour: 10), hours: 1, minutes: 60, paid: true)
   end
 
   test "reservation confirmation shows the app hand-off on the web" do
