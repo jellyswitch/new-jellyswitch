@@ -96,8 +96,8 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
       params: { reservation: { datetime_in: blocker.datetime_in.iso8601, minutes: 60 } }.to_json,
       headers: headers(@viewer)
 
-    assert_response :unprocessable_entity
-    assert_match(/conflict/i, JSON.parse(response.body)["error"])
+    assert_response :conflict
+    assert_match(/is no longer free/i, JSON.parse(response.body)["error"])
     # Original window is untouched on failure.
     assert_equal 60, res.reload.minutes
     assert_equal 2.days.from_now.change(hour: 10).to_i, res.start_at.to_i
@@ -171,7 +171,7 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
       params: { reservation: { room_id: other_room.id, datetime_in: res.datetime_in.iso8601, minutes: 60 } }.to_json,
       headers: headers(@viewer)
 
-    assert_response :unprocessable_entity
+    assert_response :conflict
     assert_equal @room.id, res.reload.room_id
   end
 end
