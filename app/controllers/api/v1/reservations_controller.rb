@@ -25,6 +25,13 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     minutes = params[:reservation][:minutes].to_i
     date = datetime_in.to_date
 
+    # Duration backstop — the UI sliders enforce the same policy (staff 12h;
+    # priced rooms 12h; free rooms 4h), this catches hand-rolled requests.
+    duration_cap = room.max_bookable_minutes(admin: staff_booker?)
+    if minutes > duration_cap
+      return render_error("#{room.name} can be booked for up to #{duration_cap / 60} hours.")
+    end
+
     # If a stripe_token is provided, save the card to the user first
     # so it's stored for future one-tap bookings.
     stripe_token = params[:stripe_token] || params.dig(:reservation, :stripe_token)
@@ -125,6 +132,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
         (return render_error('Room not found', status: :not_found))
     else
       reservation.room
+    end
+
+    duration_cap = new_room.max_bookable_minutes(admin: staff_booker?)
+    if new_minutes > duration_cap
+      return render_error("#{new_room.name} can be booked for up to #{duration_cap / 60} hours.")
     end
 
     result = Billing::Reservations::UpdateRoomReservation.call(
@@ -355,6 +367,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       can_cancel: future && !r.cancelled && r.datetime_in > Time.current + CANCEL_CUTOFF,
       can_end_now: ongoing && !r.cancelled,
     }
+  end
+
+  # Staff get the 12h admin booking cap on every surface.
+  def staff_booker?
+    current_api_user.admin_or_manager?(current_location) || current_api_user.superadmin?
   end
 
   # 409 for a room-time overlap. `error` doubles as the display sentence for

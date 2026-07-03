@@ -209,6 +209,22 @@ class Room < ApplicationRecord
     rentable? && hourly_rate_in_cents > 0
   end
 
+  # Booking-duration policy (2026-07 consistency fix: web admin allowed 8h
+  # while mobile admin allowed 12h). Staff can book any room up to 12h on
+  # every surface. Members and web visitors get 12h on PRICED rooms only
+  # ("book the conference room for a day" — the hourly rate is the natural
+  # brake); free/call rooms keep the 4h cap so an included-minutes plan
+  # can't blanket-block them. Every duration UI and the API backstop read
+  # from here — don't fork these numbers per surface again.
+  ADMIN_MAX_BOOKING_MINUTES = 720
+  PAID_ROOM_MAX_BOOKING_MINUTES = 720
+  FREE_ROOM_MAX_BOOKING_MINUTES = 240
+
+  def max_bookable_minutes(admin: false)
+    return ADMIN_MAX_BOOKING_MINUTES if admin
+    paid_room? ? PAID_ROOM_MAX_BOOKING_MINUTES : FREE_ROOM_MAX_BOOKING_MINUTES
+  end
+
   # Whether this room draws from a booker's day-pass included-minutes bucket
   # (a "call room"). Explicit column as of ADR 0012 — previously inferred from
   # hourly_rate_in_cents == 0. Backfilled true for every $0 room.

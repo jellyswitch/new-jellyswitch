@@ -346,7 +346,8 @@ class Api::V1::RoomsController < Api::V1::BaseController
     preferred = available_list.find { |r| r.id == user.preferred_room_id }
     hero = preferred || available_list.min_by { |r| r.hourly_rate_in_cents.to_i } || available_list.first
 
-    max_duration = [(hero.calculate_max_continuous_duration(start_time: start_time) rescue 240), 240].min
+    hero_cap = hero.max_bookable_minutes(admin: false)
+    max_duration = [(hero.calculate_max_continuous_duration(start_time: start_time, max_minutes: hero_cap) rescue 240), hero_cap].min
 
     # Pricing for hero room — uses the effective booked minutes
     # (slider pick + lead-in) so the displayed cost matches what the
@@ -454,6 +455,13 @@ class Api::V1::RoomsController < Api::V1::BaseController
     include_hidden = user.admin_of_location?(location) &&
                      ActiveModel::Type::Boolean.new.cast(params[:include_hidden])
     rooms = include_hidden ? location.rooms.active : location.rooms.visible
+    # Beyond the free-room cap only priced (conference) rooms are bookable
+    # for non-staff — drop free rooms from the list here so the member sees
+    # only real options instead of failing at confirm. Staff keep all rooms
+    # (their cap is 12h across the board).
+    if minutes > Room::FREE_ROOM_MAX_BOOKING_MINUTES && !user.admin_of_location?(location)
+      rooms = rooms.where("hourly_rate_in_cents > 0")
+    end
     # ADR 0019: include day-pass-unlockable rooms for not-yet-covered users so
     # the buy-a-day-pass confirm surfaces instead of hiding included rooms.
     rooms = (rooms.rentable_or_day_pass_included rescue rooms) unless user.can_see_all_rooms?(location, date)
