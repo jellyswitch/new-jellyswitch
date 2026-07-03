@@ -18,6 +18,9 @@ class Api::V1::DoorsController < Api::V1::BaseController
     # SQL, which silently hid never-flagged doors from members. Matches the
     # NULL-tolerant filter used in the web/landing/door-access controllers.
     doors = doors.where(private: [false, nil]) unless current_api_user.admin?
+    # Room Locks never render in the general Keys list — the reservation is
+    # the key (ADR 0021). Staff keep the full door list.
+    doors = doors.where(room_id: nil) unless current_api_user.admin?
 
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   end
@@ -42,12 +45,22 @@ class Api::V1::DoorsController < Api::V1::BaseController
     location = current_location
     user     = current_api_user
 
-    unless user_can_access_building?(user, location)
-      return render json: {
-        success: false,
-        door:    door.name,
-        message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
-      }, status: :forbidden
+    if door.room_lock?
+      unless user_can_open_room_lock?(user, door)
+        return render json: {
+          success: false,
+          door:    door.name,
+          message: "#{door.room.name} opens with a reservation. Book the room to unlock it.",
+        }, status: :forbidden
+      end
+    else
+      unless user_can_access_building?(user, location)
+        return render json: {
+          success: false,
+          door:    door.name,
+          message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+        }, status: :forbidden
+      end
     end
 
     begin
