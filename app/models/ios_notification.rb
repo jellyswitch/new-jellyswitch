@@ -22,7 +22,7 @@ class IosNotification
     # system default tone — audible push, no custom asset required.
     notification.sound = "default"
     notification.topic = user.operator.bundle_id
-    notification.custom_payload = data if data.present?
+    notification.custom_payload = custom_payload if custom_payload.present?
     response = connection.push(notification)
     connection.close
 
@@ -35,6 +35,18 @@ class IosNotification
     end
 
     response
+  end
+
+  # expo-notifications only exposes a REMOTE push's data to JS when it arrives
+  # under a "body" key in the APNs userInfo — EXNotificationSerializer maps
+  # content.data = userInfo["body"] for remote notifications, and top-level
+  # custom keys are invisible to the tap handler. That's why notification deep
+  # links never routed on real iPhones even though the JS routing was correct
+  # (local-notification tests put data straight into content.data, so they
+  # passed). Do NOT flatten this back.
+  def custom_payload
+    return nil if data.blank?
+    { "body" => data }
   end
 
   def validate!

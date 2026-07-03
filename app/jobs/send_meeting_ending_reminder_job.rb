@@ -66,7 +66,10 @@ class SendMeetingEndingReminderJob < ApplicationJob
     payload = {
       token: user.android_token,
       notification: { title: "Meeting Ending Soon", body: message },
-      data: data.transform_values(&:to_s),
+      # See Notifiable::Default#android_payload — expo-notifications only
+      # exposes remote data to the JS tap handler from a JSON string under
+      # the "body" key; flat keys never reach it.
+      data: { "body" => data.to_json },
     }
     fcm.send_v1(payload)
   rescue => e
