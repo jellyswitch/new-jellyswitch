@@ -22,7 +22,11 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
         # a GM or CM rendered without the "Staff" badge on the member's
         # mobile thread.
         is_admin: r.from_admin?,
+        # Legacy string is UTC server-time and kept only for app bundles that
+        # predate created_at_iso; new bundles format the ISO instant in the
+        # device's local zone (date + time).
         created_at: r.created_at.strftime("%B %e at %l:%M %p"),
+        created_at_iso: r.created_at.iso8601,
       }
     }
 
@@ -103,6 +107,7 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
         body: reply.body,
         author: current_api_user.name,
         created_at: reply.created_at.strftime("%B %e at %l:%M %p"),
+        created_at_iso: reply.created_at.iso8601,
       }, status: :created
     else
       render_error(result.message)
@@ -138,6 +143,7 @@ class Api::V1::MemberFeedbacksController < Api::V1::BaseController
       reply_count: f.feedback_replies.count,
       unread: f.last_read_at.nil?,
       created_at: f.created_at.strftime("%B %e, %Y"),
+      created_at_iso: f.created_at.iso8601,
       # Mobile uses this to show the "rate this experience" CTA. The rule
       # (staff has replied AND conversation has been silent for 24h AND
       # not yet rated) lives on the model so the API and the model-level
