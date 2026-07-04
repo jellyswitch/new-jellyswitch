@@ -59,6 +59,26 @@ class Api::V1::RoomLockUnlockTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "holder before the grace window cannot open the lock" do
+    reserve(@member, 30.minutes.from_now)
+    post "/api/v1/doors/#{@lock.id}/unlock", headers: headers_for(@member)
+    assert_response :forbidden
+  end
+
+  test "a cancelled reservation opens nothing" do
+    reserve(@member, 10.minutes.ago).update_columns(cancelled: true)
+    post "/api/v1/doors/#{@lock.id}/unlock", headers: headers_for(@member)
+    assert_response :forbidden
+  end
+
+  test "a reservation in a DIFFERENT room does not open this lock" do
+    other_room = rooms(:large_meeting_room)
+    Reservation.new(user: @member, room: other_room, datetime_in: 10.minutes.ago, minutes: 60)
+      .save!(validate: false)
+    post "/api/v1/doors/#{@lock.id}/unlock", headers: headers_for(@member)
+    assert_response :forbidden
+  end
+
   test "early grace is denied while a prior booking still occupies the room" do
     reserve(@admin, 30.minutes.ago, minutes: 40)   # still running
     reserve(@member, 5.minutes.from_now)

@@ -44,11 +44,11 @@ module Api::V1::DoorUnlocking
     location = door.location
     return true if location && user.admin_or_manager?(location)
 
+    # Reservation's default_scope already excludes cancelled bookings.
     now = Time.current
     holder_res = door.room.reservations
-      .where(user: user, cancelled: false)
-      .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?",
-             now + ROOM_LOCK_EARLY_GRACE, now)
+      .where(user: user)
+      .overlapping(now, now + ROOM_LOCK_EARLY_GRACE)
       .order(:datetime_in)
       .first
     return false unless holder_res
@@ -57,8 +57,8 @@ module Api::V1::DoorUnlocking
     # must actually be free — a still-running prior booking wins.
     if holder_res.datetime_in > now
       occupied = door.room.reservations
-        .where(cancelled: false).where.not(id: holder_res.id)
-        .where("datetime_in <= ? AND (datetime_in + minutes * interval '1 minute') > ?", now, now)
+        .where.not(id: holder_res.id)
+        .overlapping(now, now)
         .exists?
       return !occupied
     end
