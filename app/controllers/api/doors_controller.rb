@@ -1,5 +1,6 @@
 class Api::DoorsController < ApplicationController
   include DoorsHelper
+  include Api::V1::DoorUnlocking
   skip_forgery_protection
   before_action :authenticate_api_user
 
@@ -24,6 +25,29 @@ class Api::DoorsController < ApplicationController
 
     # Set tenant context if missing (XHR requests may not have session tenant)
     ActsAsTenant.current_tenant = operator if ActsAsTenant.current_tenant.nil?
+
+    # Same gate as the mobile unlock (Api::V1::DoorsController#unlock) — being
+    # logged in is not building access. Gated on the door's own location, not
+    # the session's current_location, so a stale location pick can't widen access.
+    unless user_can_access_building?(current_user, @door.location)
+      return render json: {
+        success: false,
+        door:    @door.name,
+        message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+      }, status: :forbidden
+    end
+
+    # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock: a
+    # bundle-only member passes the gate above via their bundle, so a web
+    # unlock must spend a bundle day exactly like a mobile unlock — otherwise
+    # the Keys page is an unmetered entrance. Best-effort: a billing error
+    # must not keep a member out of the building.
+    begin
+      Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
+    rescue => e
+      Rails.logger.error("[DoorOpen:API] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+      Honeybadger.notify(e) rescue nil
+    end
 
     # Log the door punch
     punch = DoorPunch.create!(user: current_user, door: @door, operator: operator)
