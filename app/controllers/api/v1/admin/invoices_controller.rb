@@ -46,7 +46,7 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
   end
 
   def charge
-    invoice = Invoice.find(params[:id])
+    invoice = Invoice.where(operator: current_tenant).find(params[:id])
 
     begin
       result = Billing::Invoices::ChargeInvoice.call(
@@ -64,14 +64,28 @@ class Api::V1::Admin::InvoicesController < Api::V1::Admin::BaseController
     end
   end
 
+  # "We received their check/ACH." Route through MarkInvoiceAsPaid so the
+  # Stripe invoice is settled (paid_out_of_band) and the local row gets the
+  # date/amount_paid stamps revenue reads — a bare status flip left the
+  # payment invisible to every revenue number.
   def mark_paid
-    invoice = Invoice.find(params[:id])
-    invoice.update(status: 'paid')
-    render json: { success: true }
+    invoice = Invoice.find_by(id: params[:id], operator: current_tenant)
+    return render json: { error: "Invoice not found" }, status: :not_found unless invoice
+
+    result = Billing::Invoices::MarkInvoiceAsPaid.call(
+      invoice: invoice,
+      operator: current_tenant,
+    )
+
+    if result.success?
+      render json: { success: true }
+    else
+      render_error(result.message)
+    end
   end
 
   def refund
-    invoice = Invoice.find(params[:id])
+    invoice = Invoice.where(operator: current_tenant).find(params[:id])
     refundable = RefundableFactory.for(invoice)
 
     begin

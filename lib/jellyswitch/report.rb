@@ -169,8 +169,7 @@ module Jellyswitch
       period_start = range.begin.to_date
       period_end = range.end.to_date
 
-      invoice_rev = location_invoices.paid
-        .where(due_date: period_start.beginning_of_day..period_end.end_of_day)
+      invoice_rev = paid_invoices_in(period_start.beginning_of_day..period_end.end_of_day)
         .sum(:amount_due).to_f / 100.0
 
       # Out-of-band lease checks aren't invoiced; add each overlapped month's
@@ -253,10 +252,21 @@ module Jellyswitch
       Invoice.for_location(location)
     end
 
+    # Revenue is recognized on COALESCE(due_date, date). Stripe only sets
+    # due_date on emailed (send_invoice) invoices — auto-charged card
+    # invoices carry due_date = NULL, so anything keyed on due_date alone
+    # silently drops most card revenue. `date` (invoice creation/charge
+    # time) is the fallback.
+    EFFECTIVE_DATE_SQL = "COALESCE(invoices.due_date, invoices.date)".freeze
+
+    def paid_invoices_in(range)
+      location_invoices.paid
+        .where("#{EFFECTIVE_DATE_SQL} BETWEEN ? AND ?", range.begin, range.end)
+    end
+
     def this_month_revenue
       return 0 unless location
-      invoice_rev = location_invoices.paid
-        .where(due_date: Time.current.beginning_of_month..Time.current.end_of_month)
+      invoice_rev = paid_invoices_in(Time.current.beginning_of_month..Time.current.end_of_month)
         .sum(:amount_due).to_f / 100.0
       lease_rev = lease_supplement_for_month(Date.today)
       invoice_rev + lease_rev
@@ -265,38 +275,34 @@ module Jellyswitch
     def revenue_by_month(months = 12)
       # Exactly `months` full calendar months including the current one — a
       # mid-month window start would show a misleading partial first month.
+      # One sum per month (instead of group_by_month) so the COALESCE
+      # effective-date key matches revenue_for_period exactly.
       start_month = (months - 1).months.ago.to_date.beginning_of_month
-
-      # All invoice revenue (memberships, day passes, and lease orgs that pay via Stripe)
-      invoice_data = location_invoices.paid
-        .where(due_date: start_month.beginning_of_day..)
-        .group_by_month(:due_date).sum(:amount_due)
-
-      # Normalize all keys to Date (beginning of month) and merge
-      combined = Hash.new(0.0)
-      invoice_data.each do |key, amt|
-        combined[key.to_date.beginning_of_month] += amt.to_f / 100.0
-      end
-
-      # Add lease revenue only for orgs that DON'T have invoices that month
       current_month = Date.today.beginning_of_month
+
+      combined = {}
       month = start_month
       while month <= current_month
-        combined[month] += lease_supplement_for_month(month)
+        invoice_rev = paid_invoices_in(month.beginning_of_day..month.end_of_month.end_of_day)
+          .sum(:amount_due).to_f / 100.0
+        # Lease revenue only for orgs that DON'T have invoices that month
+        combined[month] = invoice_rev + lease_supplement_for_month(month)
         month = month.next_month
       end
 
-      combined.sort.to_h
+      combined
     end
 
     def revenue_by_week
-      location_invoices.paid.where(due_date: 6.months.ago..).group_by_week(:due_date).sum(:amount_due).transform_values do |amt|
+      paid_invoices_in(6.months.ago..Time.current)
+        .group_by_week(Arel.sql(EFFECTIVE_DATE_SQL)).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
 
     def revenue_by_day
-      location_invoices.paid.where(due_date: 3.months.ago..).group_by_day(:due_date).sum(:amount_due).transform_values do |amt|
+      paid_invoices_in(3.months.ago..Time.current)
+        .group_by_day(Arel.sql(EFFECTIVE_DATE_SQL)).sum(:amount_due).transform_values do |amt|
         amt.to_f / 100.0
       end
     end
@@ -355,7 +361,7 @@ module Jellyswitch
 
     def membership_ltv(since: nil)
       scope = location_invoices.paid.where(billable_type: "User")
-      scope = scope.where("invoices.due_date >= ?", since) if since
+      scope = scope.where("#{EFFECTIVE_DATE_SQL} >= ?", since) if since
       per_user = scope.group(:billable_id).sum(:amount_due).values.map { |v| v.to_f / 100.0 }
       build_ltv_result("Memberships", per_user)
     end
@@ -429,8 +435,7 @@ module Jellyswitch
       when :mrr
         # Approximate past MRR from invoice revenue for that month
         target_month = days_ago.days.ago.beginning_of_month
-        location_invoices.paid
-          .where(due_date: target_month..target_month.end_of_month)
+        paid_invoices_in(target_month..target_month.end_of_month)
           .sum(:amount_due).to_f / 100.0
       when :active_members
         # Approximate "active members as of days_ago" using the same three
@@ -800,7 +805,7 @@ module Jellyswitch
       # Membership revenue
       result["Memberships"] = location_invoices.paid
         .where(billable_type: "User")
-        .where("due_date > ?", cutoff)
+        .where("#{EFFECTIVE_DATE_SQL} > ?", cutoff)
         .sum(:amount_due).to_f / 100.0
 
       # Day pass revenue
@@ -820,7 +825,7 @@ module Jellyswitch
       # Office lease revenue
       result["Office Leases"] = location_invoices.paid
         .where(billable_type: "Organization")
-        .where("due_date > ?", cutoff)
+        .where("#{EFFECTIVE_DATE_SQL} > ?", cutoff)
         .sum(:amount_due).to_f / 100.0
 
       result.reject { |_, v| v <= 0 }
@@ -885,8 +890,7 @@ module Jellyswitch
     def mrr_mom_change
       current = mrr
       # Rough last month MRR from the trend
-      last_month_invoices = location_invoices.paid
-        .where(due_date: 1.month.ago.beginning_of_month..1.month.ago.end_of_month)
+      last_month_invoices = paid_invoices_in(1.month.ago.beginning_of_month..1.month.ago.end_of_month)
         .sum(:amount_due).to_f / 100.0
       return nil if last_month_invoices == 0
       ((current - last_month_invoices) / last_month_invoices * 100).round(1)
@@ -1000,9 +1004,12 @@ module Jellyswitch
       month_start = date.to_date.beginning_of_month
       month_end = date.to_date.end_of_month
 
-      # Find org IDs that already have invoices this month
-      month_invoices = location_invoices.paid
-        .where(due_date: month_start.beginning_of_day..month_end.end_of_day)
+      # Find org IDs that already have invoices this month. Must use the
+      # same effective-date key as the revenue sums: a lease org that paid
+      # by card gets an invoice with NULL due_date, and keying this check
+      # on due_date alone made those invisible — so the org's lease was
+      # ALSO added as a "check payment" and double-counted.
+      month_invoices = paid_invoices_in(month_start.beginning_of_day..month_end.end_of_day)
       orgs_with_invoices = Set.new
 
       # Orgs billed directly as Organization
@@ -1028,6 +1035,9 @@ module Jellyswitch
       office_leases.includes(subscription: :plan).each do |lease|
         plan = lease.subscription&.plan
         next unless plan
+        # Orphaned rows (nil organization) exist in prod — no org means no
+        # payer to attribute, so they don't belong in revenue.
+        next if lease.organization_id.nil?
         next if lease.end_date < month_start || lease.start_date > month_end
         next if orgs_with_invoices.include?(lease.organization_id)
 
