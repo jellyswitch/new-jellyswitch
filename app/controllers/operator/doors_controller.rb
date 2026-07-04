@@ -105,15 +105,35 @@ class Operator::DoorsController < Operator::BaseController
     find_door(:door_id)
     authorize @door
 
+    # ADR 0021: a Room Lock is reservation-gated — staff anytime, otherwise
+    # only the reservation holder during their booking (same rule as the
+    # api/v1 unlock; Door#openable_as_room_lock_by? is the single home).
+    if @door.room_lock? && !@door.openable_as_room_lock_by?(current_user)
+      respond_to do |format|
+        # Flash only on the HTML path — setting it for JS would leave a
+        # stale error queued for the next full page load.
+        format.html do
+          flash[:error] = "#{@door.room.name} opens with a reservation. Book the room to unlock it."
+          redirect_to home_path
+        end
+        format.js { head :forbidden }
+      end
+      return
+    end
+
     # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock:
     # DoorPolicy#open? admits bundle-only members (allowed_in?), so this web
-    # entrance must spend a bundle day like every other unlock path.
+    # entrance must spend a bundle day like every other unlock path — but a
+    # Room Entry never burns a pass (ADR 0021): the holder's reservation
+    # already granted access.
     # Best-effort: a billing error must not keep a member out of the building.
-    begin
-      Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
-    rescue => e
-      Rails.logger.error("[DoorOpen] ConsumeOnEntry failed: #{e.class}: #{e.message}")
-      Honeybadger.notify(e)
+    unless @door.room_lock?
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
+      rescue => e
+        Rails.logger.error("[DoorOpen] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
     end
 
     punch = log_door_punch
@@ -159,6 +179,9 @@ class Operator::DoorsController < Operator::BaseController
   def find_doors
     @doors = current_location.doors.available
     @doors = @doors.where(private: [false, nil]) unless admin?
+    # Room Locks never render in the general Keys list — the reservation is
+    # the key (ADR 0021). Staff keep the full door list.
+    @doors = @doors.where(room_id: nil) unless admin?
   end
 
   def find_door(key = :id)
@@ -170,6 +193,9 @@ class Operator::DoorsController < Operator::BaseController
   end
 
   def log_door_punch
-    DoorPunch.create!(user: current_user, door: @door, operator: current_tenant)
+    # Room Entry ≠ door punch (ADR 0021): a Room Lock open is audited but
+    # flagged out of building-entry semantics (Day Pool, entry analytics).
+    DoorPunch.create!(user: current_user, door: @door, operator: current_tenant,
+                      room_entry: @door.room_lock?)
   end
 end

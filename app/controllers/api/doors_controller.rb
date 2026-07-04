@@ -13,6 +13,9 @@ class Api::DoorsController < ApplicationController
     end
 
     doors = location.doors.available
+    # Room Locks never render in the general Keys list — the reservation is
+    # the key (ADR 0021). Staff keep the full door list.
+    doors = doors.where(room_id: nil) unless current_user.admin?
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   rescue => e
     Rails.logger.error("[DoorsAPI] Error in index: #{e.class}: #{e.message}")
@@ -26,31 +29,47 @@ class Api::DoorsController < ApplicationController
     # Set tenant context if missing (XHR requests may not have session tenant)
     ActsAsTenant.current_tenant = operator if ActsAsTenant.current_tenant.nil?
 
-    # Same gate as the mobile unlock (Api::V1::DoorsController#unlock) — being
-    # logged in is not building access. Gated on the door's own location, not
-    # the session's current_location, so a stale location pick can't widen access.
-    unless user_can_access_building?(current_user, @door.location)
-      return render json: {
-        success: false,
-        door:    @door.name,
-        message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
-      }, status: :forbidden
+    # ADR 0021: a Room Lock is reservation-gated — staff anytime, otherwise
+    # only the reservation holder during their booking. This is the endpoint
+    # the web Keys page's unlock buttons hit, so members reach it directly.
+    if @door.room_lock?
+      unless @door.openable_as_room_lock_by?(current_user)
+        return render json: {
+          success: false,
+          door:    @door.name,
+          message: "#{@door.room.name} opens with a reservation. Book the room to unlock it.",
+        }, status: :forbidden
+      end
+    else
+      # Same gate as the mobile unlock (Api::V1::DoorsController#unlock) — being
+      # logged in is not building access. Gated on the door's own location, not
+      # the session's current_location, so a stale location pick can't widen access.
+      unless user_can_access_building?(current_user, @door.location)
+        return render json: {
+          success: false,
+          door:    @door.name,
+          message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+        }, status: :forbidden
+      end
+
+      # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock: a
+      # bundle-only member passes the gate above via their bundle, so a web
+      # unlock must spend a bundle day exactly like a mobile unlock — otherwise
+      # the Keys page is an unmetered entrance. A Room Entry never burns
+      # (ADR 0021), hence the else-branch. Best-effort: a billing error
+      # must not keep a member out of the building.
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
+      rescue => e
+        Rails.logger.error("[DoorOpen:API] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e) rescue nil
+      end
     end
 
-    # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock: a
-    # bundle-only member passes the gate above via their bundle, so a web
-    # unlock must spend a bundle day exactly like a mobile unlock — otherwise
-    # the Keys page is an unmetered entrance. Best-effort: a billing error
-    # must not keep a member out of the building.
-    begin
-      Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
-    rescue => e
-      Rails.logger.error("[DoorOpen:API] ConsumeOnEntry failed: #{e.class}: #{e.message}")
-      Honeybadger.notify(e) rescue nil
-    end
-
-    # Log the door punch
-    punch = DoorPunch.create!(user: current_user, door: @door, operator: operator)
+    # Log the door punch. Room Entry ≠ door punch (ADR 0021): a Room Lock
+    # open is audited but flagged out of building-entry semantics.
+    punch = DoorPunch.create!(user: current_user, door: @door, operator: operator,
+                              room_entry: @door.room_lock?)
 
     # Call Kisi API to physically unlock the door
     begin

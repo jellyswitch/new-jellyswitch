@@ -36,6 +36,29 @@
   </div>
 </div>
 
+<div class="form-group mt-3">
+  <label>Door locks</label>
+  <p class="text-muted small mb-1">
+    Attach this room's electric lock(s). An attached door opens only for the
+    reservation holder during their booking (and staff) — not for general members.
+  </p>
+  <% current_location.doors.where(available: true).order(:name).each do |door| %>
+    <div class="form-check">
+      <%# room_id.present? guard: on the NEW form f.object.id is nil, and
+          nil == nil would pre-check every unattached door. %>
+      <%= check_box_tag "room[door_ids][]", door.id,
+            door.room_id.present? && door.room_id == f.object.id,
+            id: "room_door_#{door.id}", class: "form-check-input" %>
+      <%= label_tag "room_door_#{door.id}", door.name, class: "form-check-label" %>
+      <% if door.room_id.present? && door.room_id != f.object.id %>
+        <small class="text-muted">(currently: <%= door.room&.name %>)</small>
+      <% end %>
+    </div>
+  <% end %>
+  <%# Hidden empty entry so unchecking ALL boxes still submits door_ids %>
+  <%= hidden_field_tag "room[door_ids][]", "" %>
+</div>
+
 <div class="form-group">
   <div class="form-check">
     <%= f.check_box :rentable, class: "form-check-input" %>

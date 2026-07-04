@@ -39,12 +39,17 @@ class Mobile::DoorAccessController < Operator::BaseController
   def find_doors
     @doors = current_location&.doors || Door.none
     @doors = @doors.where(private: [false, nil]) unless admin?
+    # Room Locks never render in the general Keys list — the reservation is
+    # the key (ADR 0021). Staff keep the full door list.
+    @doors = @doors.where(room_id: nil) unless admin?
   end
 
   def find_door(key = :id)
     @door = Door.friendly.find(params[key])
   end
 
+  # DEAD CODE (no route reaches this); if ever re-wired it MUST set
+  # room_entry: @door.room_lock? or Room Entries will corrupt the Day Pool.
   def log_door_punch
     DoorPunch.create!(user: current_user, door: @door)
   end

@@ -37,6 +37,9 @@ class Room < ApplicationRecord
   # Relationships
   has_many :reservations, dependent: :destroy
   has_many :amenities, dependent: :destroy
+  # Electric locks protecting this room (ADR 0021). Nullify, not destroy:
+  # detaching a room's lock demotes the door to a Building Door.
+  has_many :doors, dependent: :nullify
   accepts_nested_attributes_for :amenities, reject_if: :all_blank
 
   belongs_to :operator
@@ -73,6 +76,19 @@ class Room < ApplicationRecord
       text: description,
       operator_id: operator_id,
     }
+  end
+
+  # Door↔Room attachment (ADR 0021). Reassignment is scoped to this room's
+  # location so a lock can never be attached across locations. Full-list
+  # semantics: doors omitted from `door_ids` are detached (become Building
+  # Doors again). Blank entries (the web form's hidden "clear all" input)
+  # are ignored. Single home for the rule — the admin API and the operator
+  # web form both call this.
+  def reassign_doors!(door_ids, operator:)
+    ids = Array(door_ids).reject(&:blank?).map(&:to_i)
+    scope = Door.where(operator: operator, location: location)
+    scope.where(room_id: id).where.not(id: ids).update_all(room_id: nil)
+    scope.where(id: ids).update_all(room_id: id)
   end
 
   # Predicates

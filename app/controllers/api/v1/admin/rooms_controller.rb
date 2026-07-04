@@ -28,6 +28,10 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   def update
     room = Room.find(params[:id])
 
+    if params[:room]&.key?(:door_ids)
+      room.reassign_doors!(params[:room][:door_ids], operator: current_tenant)
+    end
+
     if room.update(room_params)
       render json: room_json(room)
     else
@@ -74,6 +78,8 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       allow_shorter_reservation_duration: room.allow_shorter_reservation_duration,
       credit_cost: room.credit_cost,
       features: room.features || [],
+      # This room's attached locks (ADR 0021) — full list, for the config UI.
+      door_ids: room.doors.pluck(:id),
       archived: room.archived,
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }

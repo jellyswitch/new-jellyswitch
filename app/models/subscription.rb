@@ -132,6 +132,9 @@ class Subscription < ApplicationRecord
     punch_days = subscribable.door_punches
                              .joins(:door)
                              .where(doors: { location_id: day_pool_location.id })
+                             # Room Entries are not building entries (ADR 0021) — only Building
+                             # Door punches burn Day Pool days.
+                             .where(room_entry: false)
                              .where(created_at: period_start...period_end)
                              .group_by_day("door_punches.created_at").count
                              .count { |_day, n| n.positive? }
@@ -167,6 +170,9 @@ class Subscription < ApplicationRecord
     subscribable.door_punches
                 .joins(:door)
                 .where(doors: { location_id: day_pool_location.id })
+                # Room Entries are not building entries (ADR 0021) — only Building
+                # Door punches burn Day Pool days.
+                .where(room_entry: false)
                 .where(created_at: now.beginning_of_day..now.end_of_day)
                 .exists?
   rescue StandardError => e

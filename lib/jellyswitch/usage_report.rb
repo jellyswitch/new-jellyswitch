@@ -15,7 +15,9 @@ class Jellyswitch::UsageReport
   end
 
   def door_punches
-    @door_punches ||= user.door_punches.this_month.group_by_day(:created_at).count.reject do |k,v|
+    # Room Entries are not building entries (ADR 0021) — a Room Lock open
+    # doesn't count as a visit day here (the reservation already does).
+    @door_punches ||= user.door_punches.where(room_entry: false).this_month.group_by_day(:created_at).count.reject do |k,v|
       v < 1
     end
   rescue

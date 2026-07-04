@@ -43,7 +43,10 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
 
     begin
       response = unlock_door(door)
-      DoorPunch.create(user: current_api_user, door: door, operator: current_tenant, json: response)
+      # Staff-only controller, so no room-lock authorization needed — but a
+      # Room Lock open is still a Room Entry, never a building entry (ADR 0021).
+      DoorPunch.create(user: current_api_user, door: door, operator: current_tenant, json: response,
+                       room_entry: door.room_lock?)
       render json: { success: true, door: door.name, message: "Door unlocked" }
     rescue => e
       render json: { success: false, door: door.name, message: e.message }
@@ -72,6 +75,8 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
     {
       id: d.id, name: d.name, kisi_id: d.kisi_id,
       slug: d.try(:slug), private: d.private, available: d.available,
+      # Attached room ⇒ this door is a Room Lock (ADR 0021).
+      room_id: d.room_id, room_name: d.room&.name,
     }
   end
 

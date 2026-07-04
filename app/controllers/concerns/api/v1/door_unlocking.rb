@@ -30,6 +30,14 @@ module Api::V1::DoorUnlocking
         .any? { |reservation| reservation.access_window_open?(now, window_minutes: window_minutes) }
   end
 
+  # ADR 0021 room-lock rule (staff anytime; holder during their booking,
+  # incl. the early grace when the room is free). The logic lives on the
+  # model — Door#openable_as_room_lock_by? — so the operator web and legacy
+  # /api unlock paths share the exact same rule.
+  def user_can_open_room_lock?(user, door)
+    door.openable_as_room_lock_by?(user)
+  end
+
   def call_kisi_unlock(door, _location = nil)
     # Routed through Kisi::Client so the manual /doors/:id/unlock path
     # benefits from the same persistent connection the async job uses.
@@ -38,15 +46,21 @@ module Api::V1::DoorUnlocking
   end
 
   def perform_unlock(door:, user:, location:, method:)
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method)
-    begin
-      Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
-    rescue => e
-      Rails.logger.error("[DoorUnlocking] ConsumeOnEntry failed: #{e.class}: #{e.message}")
-      Honeybadger.notify(e) rescue nil
+    room_entry = door.room_lock?
+    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, room_entry: room_entry)
+    # Bundle burn-on-entry is a BUILDING-entry semantic — a Room Entry
+    # never spends a pass (ADR 0021; the holder's reservation already
+    # granted access anyway).
+    unless room_entry
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
+      rescue => e
+        Rails.logger.error("[DoorUnlocking] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e) rescue nil
+      end
     end
     response = call_kisi_unlock(door, location)
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response)
+    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response, room_entry: room_entry)
     response
   end
 end
