@@ -259,6 +259,61 @@ module Jellyswitch
       assert_equal before - 205, Jellyswitch::Report.new(@operator, @location).mrr_by_month(6)[label]
     end
 
+    # ── Seasonal day-pass forecast ──
+    # Day-pass demand is strongly seasonal (summer/winter peaks); the
+    # forecast is same-month-last-year × YoY growth, clamped, with a
+    # trailing-average fallback when there's no year-ago history.
+
+    test "seasonal forecast scales last year's month by the trailing-year growth" do
+      target = Date.current.next_month.beginning_of_month
+      # Same month last year: 2 × $200 = $400 (these fall inside the
+      # trailing-12 growth window too — ~11 months ago)
+      2.times { |i| create_day_pass(day: (target << 12) + i) }
+      # Trailing 12 months: $400 + $800 = $1200; prior 12: $800 → growth 1.5
+      4.times { |i| create_day_pass(day: 2.months.ago.to_date - i) }
+      4.times { |i| create_day_pass(day: 14.months.ago.to_date - i) }
+
+      # $400 × 1.5 = $600
+      assert_equal 600, @report.seasonal_day_pass_forecast
+    end
+
+    test "seasonal forecast clamps runaway growth at 2x" do
+      target = Date.current.next_month.beginning_of_month
+      create_day_pass(day: (target << 12) + 3) # last year: $200
+      # trailing: $1600, prior: $200 → raw growth 8, clamped to 2
+      8.times { |i| create_day_pass(day: 2.months.ago.to_date - i) }
+      create_day_pass(day: 14.months.ago.to_date)
+
+      assert_equal 400, @report.seasonal_day_pass_forecast
+    end
+
+    test "seasonal forecast falls back to trailing average without year-ago data" do
+      # No pass exists in the same month last year → trailing 3-month avg.
+      3.times { |i| create_day_pass(day: 20.days.ago.to_date - i) } # $600 in 3 months
+      assert_equal 200, @report.seasonal_day_pass_forecast
+    end
+
+    test "day_pass_revenue_for_month ignores complimentary and future-scheduled passes" do
+      last_month = Date.current.prev_month
+      create_day_pass(day: last_month.beginning_of_month + 5)
+      comp = create_day_pass(day: last_month.beginning_of_month + 6)
+      comp.update_column(:complimentary, true)
+
+      assert_equal 200, @report.day_pass_revenue_for_month(last_month)
+      # A month in the future can hold scheduled bundle days — never revenue
+      assert_equal 0.0, @report.day_pass_revenue_for_month(Date.current.next_month)
+    end
+
+    test "projected_next_month_revenue is contracted recurring plus the seasonal day-pass estimate" do
+      repoint_lease_fixture_plan
+      expected = @report.mrr(product_filter: "memberships") +
+        @report.mrr(product_filter: "offices") +
+        @report.mrr(product_filter: "meeting_rooms") +
+        @report.seasonal_day_pass_forecast
+
+      assert_equal expected.round, @report.projected_next_month_revenue
+    end
+
     test "lease supplement skips leases with no organization" do
       repoint_lease_fixture_plan
       last_month = Date.current.prev_month
