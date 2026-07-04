@@ -121,17 +121,12 @@ class Operator::RoomsController < Operator::BaseController
     end.friendly.find(params[key])
   end
 
-  # Door↔Room attachment (ADR 0021). Same reassignment as the admin API:
-  # scoped to the room's location, full-list semantics (doors omitted are
-  # detached and demote to Building Doors). The form always submits a hidden
-  # blank entry so "no boxes checked" still clears the room's locks.
+  # The form always submits a hidden blank entry so "no boxes checked" still
+  # clears the room's locks (Room#reassign_doors! holds the ADR 0021 rule).
   def reassign_doors_if_requested
     return unless params[:room]&.key?(:door_ids)
 
-    ids = Array(params[:room][:door_ids]).reject(&:blank?).map(&:to_i)
-    scope = Door.where(operator: current_tenant, location: @room.location)
-    scope.where(room_id: @room.id).where.not(id: ids).update_all(room_id: nil)
-    scope.where(id: ids).update_all(room_id: @room.id)
+    @room.reassign_doors!(params[:room][:door_ids], operator: current_tenant)
   end
 
   def handle_amenity_deletions_if_needed

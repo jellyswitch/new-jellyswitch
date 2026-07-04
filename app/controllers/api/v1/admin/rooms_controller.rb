@@ -28,14 +28,8 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   def update
     room = Room.find(params[:id])
 
-    # Door↔Room attachment (ADR 0021). Reassignment is scoped to the room's
-    # location so a lock can never be attached across locations. Sent as the
-    # full list: doors omitted are detached (become Building Doors again).
-    if params[:room].key?(:door_ids)
-      ids = Array(params[:room][:door_ids]).reject(&:blank?).map(&:to_i)
-      scope = Door.where(operator: current_tenant, location: room.location)
-      scope.where(room_id: room.id).where.not(id: ids).update_all(room_id: nil)
-      scope.where(id: ids).update_all(room_id: room.id)
+    if params[:room]&.key?(:door_ids)
+      room.reassign_doors!(params[:room][:door_ids], operator: current_tenant)
     end
 
     if room.update(room_params)

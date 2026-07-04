@@ -48,6 +48,8 @@ class Mobile::DoorAccessController < Operator::BaseController
     @door = Door.friendly.find(params[key])
   end
 
+  # DEAD CODE (no route reaches this); if ever re-wired it MUST set
+  # room_entry: @door.room_lock? or Room Entries will corrupt the Day Pool.
   def log_door_punch
     DoorPunch.create!(user: current_user, door: @door)
   end

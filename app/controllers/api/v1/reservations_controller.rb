@@ -377,10 +377,14 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   end
 
   # The room's electric lock (ADR 0021), if it has a Kisi-openable one.
-  # Memoized per room id — reservation_json runs in a list loop.
+  # Memoized per room id — reservation_json runs in a list loop — via fetch
+  # so a nil result (most rooms have no lock) is cached too, not re-queried.
+  # order(:id) keeps the pick deterministic when a room has two locks.
   def room_door(r)
     @room_doors ||= {}
-    @room_doors[r.room_id] ||= r.room.doors.where(available: true).where.not(kisi_id: nil).first
+    @room_doors.fetch(r.room_id) do
+      @room_doors[r.room_id] = r.room.doors.where(available: true).where.not(kisi_id: nil).order(:id).first
+    end
   end
 
   # Staff get the 12h admin booking cap on every surface.

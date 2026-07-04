@@ -78,6 +78,19 @@ class Room < ApplicationRecord
     }
   end
 
+  # Door↔Room attachment (ADR 0021). Reassignment is scoped to this room's
+  # location so a lock can never be attached across locations. Full-list
+  # semantics: doors omitted from `door_ids` are detached (become Building
+  # Doors again). Blank entries (the web form's hidden "clear all" input)
+  # are ignored. Single home for the rule — the admin API and the operator
+  # web form both call this.
+  def reassign_doors!(door_ids, operator:)
+    ids = Array(door_ids).reject(&:blank?).map(&:to_i)
+    scope = Door.where(operator: operator, location: location)
+    scope.where(room_id: id).where.not(id: ids).update_all(room_id: nil)
+    scope.where(id: ids).update_all(room_id: id)
+  end
+
   # Predicates
 
   def available_now?

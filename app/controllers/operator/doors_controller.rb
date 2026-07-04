@@ -109,9 +109,13 @@ class Operator::DoorsController < Operator::BaseController
     # only the reservation holder during their booking (same rule as the
     # api/v1 unlock; Door#openable_as_room_lock_by? is the single home).
     if @door.room_lock? && !@door.openable_as_room_lock_by?(current_user)
-      flash[:error] = "#{@door.room.name} opens with a reservation. Book the room to unlock it."
       respond_to do |format|
-        format.html { redirect_to home_path }
+        # Flash only on the HTML path — setting it for JS would leave a
+        # stale error queued for the next full page load.
+        format.html do
+          flash[:error] = "#{@door.room.name} opens with a reservation. Book the room to unlock it."
+          redirect_to home_path
+        end
         format.js { head :forbidden }
       end
       return
