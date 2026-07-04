@@ -145,13 +145,17 @@ module Jellyswitch
       checkins_last_30_days.count
     end
 
-    def day_pass_count(period_days = 30)
-      day_passes.where("day > ?", period_days.days.ago).count
+    def day_pass_count(period_days = 30, range: nil)
+      range, _days = resolve_period(period_days, range)
+      # Bounded on both ends: `day` is a date and bundle days can be scheduled
+      # in advance, so an open-ended window would count future passes today.
+      day_passes.where(day: range.begin.to_date..range.end.to_date).count
     end
 
-    def checkin_count(period_days = 30)
+    def checkin_count(period_days = 30, range: nil)
+      range, _days = resolve_period(period_days, range)
       scope = location ? location.checkins : Checkin.where(location: locations)
-      scope.where("datetime_in > ?", period_days.days.ago).count
+      scope.where(datetime_in: range).count
     end
 
     # Comprehensive period revenue — mirrors revenue_by_month semantics so the
@@ -159,21 +163,36 @@ module Jellyswitch
     # Invoice.sum(:amount_paid) misses out-of-band office-lease checks that the
     # operator records outside the invoice flow; lease_supplement_for_month
     # fills those in.
-    def revenue_for_period(period_days)
+    def revenue_for_period(period_days = 30, range: nil)
       return 0 unless location
-      period_start = period_days.days.ago.to_date
-      period_end = Date.today
+      range, _days = resolve_period(period_days, range)
+      period_start = range.begin.to_date
+      period_end = range.end.to_date
 
       invoice_rev = location_invoices.paid
-        .where(due_date: period_start..period_end)
+        .where(due_date: period_start.beginning_of_day..period_end.end_of_day)
         .sum(:amount_due).to_f / 100.0
 
+      # Out-of-band lease checks aren't invoiced; add each overlapped month's
+      # supplement pro-rated by the fraction of the month inside the window,
+      # so a 30-day window spanning two months no longer counts two full
+      # months of check revenue. Iteration starts at the earliest lease —
+      # "All Time" windows would otherwise walk hundreds of empty months.
       lease_rev = 0.0
-      month = period_start.beginning_of_month
-      current_month = period_end.beginning_of_month
-      while month <= current_month
-        lease_rev += lease_supplement_for_month(month)
-        month = month.next_month
+      earliest_lease = office_leases.minimum(:start_date)
+      if earliest_lease
+        month = [period_start, earliest_lease.beginning_of_month].max.beginning_of_month
+        last_month = period_end.beginning_of_month
+        while month <= last_month
+          overlap_start = [month, period_start].max
+          overlap_end = [month.end_of_month, period_end].min
+          if overlap_end >= overlap_start
+            overlap_days = (overlap_end - overlap_start).to_i + 1
+            fraction = overlap_days / month.end_of_month.day.to_f
+            lease_rev += lease_supplement_for_month(month) * fraction
+          end
+          month = month.next_month
+        end
       end
 
       (invoice_rev + lease_rev).round
@@ -243,10 +262,14 @@ module Jellyswitch
       invoice_rev + lease_rev
     end
 
-    def revenue_by_month
+    def revenue_by_month(months = 12)
+      # Exactly `months` full calendar months including the current one — a
+      # mid-month window start would show a misleading partial first month.
+      start_month = (months - 1).months.ago.to_date.beginning_of_month
+
       # All invoice revenue (memberships, day passes, and lease orgs that pay via Stripe)
       invoice_data = location_invoices.paid
-        .where(due_date: 12.months.ago..)
+        .where(due_date: start_month.beginning_of_day..)
         .group_by_month(:due_date).sum(:amount_due)
 
       # Normalize all keys to Date (beginning of month) and merge
@@ -256,7 +279,6 @@ module Jellyswitch
       end
 
       # Add lease revenue only for orgs that DON'T have invoices that month
-      start_month = 12.months.ago.to_date.beginning_of_month
       current_month = Date.today.beginning_of_month
       month = start_month
       while month <= current_month
@@ -638,79 +660,99 @@ module Jellyswitch
       @mrr_by_month_cache[cache_key] = result.reverse_each.to_h
     end
 
-    def churn_rate(period_days = 30)
+    def churn_rate(period_days = 30, range: nil)
       return 0 unless location
-      churned = churned_members_count(period_days)
+      range, days = resolve_period(period_days, range)
+      churned = churned_members_count(range: range)
       # Members at start of period ≈ current active + those who cancelled
       starting_members = active_member_count + churned
       return 0 if starting_members == 0
 
-      months = [period_days / 30.0, 1].max
+      months = [days / 30.0, 1].max
       # Monthly churn rate: (cancellations per month) / starting members
       monthly_cancellations = churned.to_f / months
       (monthly_cancellations / starting_members * 100).round(1)
     end
 
-    def churned_members_count(period_days = 30)
-      # Use actual subscription data: individual subscriptions that became inactive in the period
+    def churned_members_count(period_days = 30, range: nil)
+      range, _days = resolve_period(period_days, range)
+      # Use actual subscription data: individual subscriptions that became
+      # inactive in the period. Users who still hold an active paid individual
+      # subscription merely switched plans — they didn't churn.
+      still_subscribed = Subscription.where(
+        plan: plans.individual.nonzero, active: true, subscribable_type: "User",
+      ).select(:subscribable_id)
       Subscription.where(plan: plans.individual.nonzero, active: false)
-        .where("subscriptions.updated_at > ?", period_days.days.ago)
+        .where(updated_at: range)
         .where(subscribable_type: "User")
+        .where.not(subscribable_id: still_subscribed)
         .distinct.count(:subscribable_id)
     end
 
-    def room_utilization(period_days = 30)
+    def room_utilization(period_days = 30, range: nil)
       return 0 unless location
       rooms = location.rooms.visible
       return 0 if rooms.count == 0
 
-      business_hours_per_day = 10.0 # 8am-6pm
-      business_days = (period_days * 5.0 / 7).round # approximate weekdays
-      available_hours = rooms.count * business_hours_per_day * business_days
+      range, days = resolve_period(period_days, range)
 
+      business_hours_per_day = 10.0 # 8am-6pm local
+      business_days = (days * 5.0 / 7).round # approximate weekdays
+      available_hours = rooms.count * business_hours_per_day * business_days
+      return 0 if available_hours == 0
+
+      # datetime_in is timestamptz; EXTRACT on the raw column yields UTC hours,
+      # which shifted the 8am-6pm business window to ~1-11am Pacific and
+      # silently dropped every afternoon booking. Convert to the location's
+      # wall clock, and count weekdays only to match the denominator.
+      tz = ActiveSupport::TimeZone[location.time_zone.presence || "UTC"].tzinfo.name
+      local = "(datetime_in AT TIME ZONE ?)"
       booked_minutes = Reservation.where(room: rooms, cancelled: false)
-        .where("datetime_in > ?", period_days.days.ago)
-        .where("EXTRACT(HOUR FROM datetime_in) >= 8 AND EXTRACT(HOUR FROM datetime_in) < 18")
+        .where(datetime_in: range)
+        .where("EXTRACT(HOUR FROM #{local}) >= 8 AND EXTRACT(HOUR FROM #{local}) < 18", tz, tz)
+        .where("EXTRACT(ISODOW FROM #{local}) <= 5", tz)
         .sum(:minutes)
 
-      return 0 if available_hours == 0
       ((booked_minutes / 60.0) / available_hours * 100).round(1)
     end
 
-    def avg_daily_visitors(period_days = 30)
+    def avg_daily_visitors(period_days = 30, range: nil)
       return 0 unless location
+      range, days = resolve_period(period_days, range)
       visitor_days = DoorPunch.where(door: location.doors)
-        .where("created_at > ?", period_days.days.ago)
+        .where(created_at: range)
         .count("DISTINCT (DATE(created_at), user_id)")
-      days = [period_days, 1].max
-      (visitor_days.to_f / days).round(1)
+      (visitor_days.to_f / [days, 1].max).round(1)
     rescue => e
       Rails.logger.warn("avg_daily_visitors error: #{e.message}")
       0
     end
 
-    def avg_visits_per_member_per_month(period_days = 30)
+    def avg_visits_per_member_per_month(period_days = 30, range: nil)
       return 0 unless location
       member_count = active_member_count + active_lease_member_count
       return 0 if member_count == 0
 
+      range, days = resolve_period(period_days, range)
       total_visit_days = DoorPunch.where(door: location.doors)
-        .where("created_at > ?", period_days.days.ago)
+        .where(created_at: range)
         .count("DISTINCT (DATE(created_at), user_id)")
 
-      months = [period_days / 30.0, 1].max
+      months = [days / 30.0, 1].max
       ((total_visit_days.to_f / member_count) / months).round(1)
     rescue => e
       Rails.logger.warn("avg_visits_per_member_per_month error: #{e.message}")
       0
     end
 
-    def new_members_count(period_days = 30)
-      # Only count users who got a subscription (actual members, not day passers)
-      Subscription.joins(:plan)
-        .where(plans: { operator_id: operator.id })
-        .where("subscriptions.created_at > ?", period_days.days.ago)
-        .where(subscribable_type: "User")
+    def new_members_count(period_days = 30, range: nil)
+      range, _days = resolve_period(period_days, range)
+      # Paid individual subscriptions only — the same population
+      # churned_members_count draws from, so net_member_growth compares
+      # like with like. (Previously this counted every plan including free
+      # ones, so free signups inflated growth that no churn could offset.)
+      Subscription.where(plan: plans.individual.nonzero, subscribable_type: "User")
+        .where(created_at: range)
         .distinct.count(:subscribable_id)
     end
 
@@ -722,8 +764,8 @@ module Jellyswitch
         .count
     end
 
-    def net_member_growth(period_days = 30)
-      new_members_count(period_days) - churned_members_count(period_days)
+    def net_member_growth(period_days = 30, range: nil)
+      new_members_count(period_days, range: range) - churned_members_count(period_days, range: range)
     end
 
     def revenue_per_member
@@ -900,6 +942,25 @@ module Jellyswitch
     end
 
     private
+
+    # Period metrics historically took a trailing day count (`period_days`);
+    # calendar periods like "last month" need an explicit window instead.
+    # Returns [range, days-in-range]. With no range, preserves the trailing
+    # behavior exactly.
+    def resolve_period(period_days, range)
+      if range
+        days = (range.end.to_date - range.begin.to_date).to_i + 1
+        # A Date..Date range compared against a timestamp column would cast
+        # the end date to midnight and drop that whole day — expand to the
+        # full days in Time.zone.
+        if range.begin.is_a?(Date) && range.end.is_a?(Date)
+          range = range.begin.beginning_of_day..range.end.end_of_day
+        end
+        [range, [days, 1].max]
+      else
+        [period_days.days.ago..Time.current, period_days]
+      end
+    end
 
     def normalize_to_monthly(plan)
       return 0.0 unless plan
