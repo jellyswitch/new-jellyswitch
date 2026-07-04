@@ -364,7 +364,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       room_door_id: room_door(r)&.id,
       room_door_name: room_door(r)&.name,
       room_door_unlockable: !r.cancelled && room_door(r).present? &&
-        (ongoing || (future && r.datetime_in <= now + Api::V1::DoorUnlocking::ROOM_LOCK_EARLY_GRACE)),
+        (ongoing || (future && r.datetime_in <= now + Door::ROOM_LOCK_EARLY_GRACE)),
       paid: r.paid,
       cancelled: r.cancelled,
       payment_failed: r.payment_failed_at.present?,

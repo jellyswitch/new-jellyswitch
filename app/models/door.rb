@@ -46,6 +46,44 @@ class Door < ApplicationRecord
     room_id.present?
   end
 
+  ROOM_LOCK_EARLY_GRACE = 10.minutes
+
+  # ADR 0021: a Room Lock opens for staff anytime, or the reservation
+  # holder during their booking — including up to ROOM_LOCK_EARLY_GRACE
+  # early, but only when no other booking still occupies the room (early
+  # building entry is hospitality; early ROOM entry collides with the
+  # previous meeting).
+  #
+  # This is the single home for the rule: every unlock surface (api/v1
+  # DoorUnlocking, the operator web open action, the legacy /api unlock)
+  # authorizes through it.
+  def openable_as_room_lock_by?(user)
+    return false if user.nil? || room.nil?
+    return true if user.superadmin?
+    return true if location && user.admin_or_manager?(location)
+
+    # Reservation's default_scope already excludes cancelled bookings.
+    now = Time.current
+    holder_res = room.reservations
+      .where(user: user)
+      .overlapping(now, now + ROOM_LOCK_EARLY_GRACE)
+      .order(:datetime_in)
+      .first
+    return false unless holder_res
+
+    # Booking hasn't started yet (we're inside the grace window): the room
+    # must actually be free — a still-running prior booking wins.
+    if holder_res.datetime_in > now
+      occupied = room.reservations
+        .where.not(id: holder_res.id)
+        .overlapping(now, now)
+        .exists?
+      return !occupied
+    end
+
+    true
+  end
+
   def search_data
     {
       name: name,

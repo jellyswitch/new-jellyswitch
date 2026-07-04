@@ -12,6 +12,9 @@ class Api::DoorsController < ApplicationController
     end
 
     doors = location.doors.available
+    # Room Locks never render in the general Keys list — the reservation is
+    # the key (ADR 0021). Staff keep the full door list.
+    doors = doors.where(room_id: nil) unless current_user.admin?
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   rescue => e
     Rails.logger.error("[DoorsAPI] Error in index: #{e.class}: #{e.message}")
@@ -25,8 +28,21 @@ class Api::DoorsController < ApplicationController
     # Set tenant context if missing (XHR requests may not have session tenant)
     ActsAsTenant.current_tenant = operator if ActsAsTenant.current_tenant.nil?
 
-    # Log the door punch
-    punch = DoorPunch.create!(user: current_user, door: @door, operator: operator)
+    # ADR 0021: a Room Lock is reservation-gated — staff anytime, otherwise
+    # only the reservation holder during their booking. This is the endpoint
+    # the web Keys page's unlock buttons hit, so members reach it directly.
+    if @door.room_lock? && !@door.openable_as_room_lock_by?(current_user)
+      return render json: {
+        success: false,
+        door:    @door.name,
+        message: "#{@door.room.name} opens with a reservation. Book the room to unlock it.",
+      }, status: :forbidden
+    end
+
+    # Log the door punch. Room Entry ≠ door punch (ADR 0021): a Room Lock
+    # open is audited but flagged out of building-entry semantics.
+    punch = DoorPunch.create!(user: current_user, door: @door, operator: operator,
+                              room_entry: @door.room_lock?)
 
     # Call Kisi API to physically unlock the door
     begin
