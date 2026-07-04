@@ -358,6 +358,13 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       duration: "#{r.minutes} min",
       minutes: r.minutes,
       minutes_remaining: minutes_remaining,
+      # "The reservation is the key" (ADR 0021). room_door_unlockable is the
+      # optimistic client signal (ongoing, or starting within the grace);
+      # the unlock endpoint re-checks for a still-occupying prior booking.
+      room_door_id: room_door(r)&.id,
+      room_door_name: room_door(r)&.name,
+      room_door_unlockable: !r.cancelled && room_door(r).present? &&
+        (ongoing || (future && r.datetime_in <= now + Api::V1::DoorUnlocking::ROOM_LOCK_EARLY_GRACE)),
       paid: r.paid,
       cancelled: r.cancelled,
       payment_failed: r.payment_failed_at.present?,
@@ -367,6 +374,13 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       can_cancel: future && !r.cancelled && r.datetime_in > Time.current + CANCEL_CUTOFF,
       can_end_now: ongoing && !r.cancelled,
     }
+  end
+
+  # The room's electric lock (ADR 0021), if it has a Kisi-openable one.
+  # Memoized per room id — reservation_json runs in a list loop.
+  def room_door(r)
+    @room_doors ||= {}
+    @room_doors[r.room_id] ||= r.room.doors.where(available: true).where.not(kisi_id: nil).first
   end
 
   # Staff get the 12h admin booking cap on every surface.
