@@ -13,7 +13,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     report = Jellyswitch::Report.new(current_tenant, current_location)
 
     mrr_value = safe(0) { report.mrr }
-    avg_mrr_value = safe(0) { report.avg_mrr(period_days) }
+    avg_revenue_value = safe(0) { report.avg_monthly_revenue(period_days) }
     churn_rate_value = safe(0) { report.churn_rate(range: window) }
     churn_count_value = safe(0) { report.churned_members_count(range: window) }
     growth_value = safe(0) { report.net_member_growth(range: window) }
@@ -38,8 +38,13 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       period: params[:period] || '30',
       period_days: period_days,
       # Primary KPIs
-      current_mrr: (mrr_value * 100).to_i, # cents — mobile divides by 100
-      avg_mrr: (avg_mrr_value * 100).to_i, # cents — period-averaged MRR
+      current_mrr: (mrr_value * 100).to_i, # cents — recurring run-rate snapshot
+      # Average of the window's complete months of ACTUAL revenue. The old
+      # synthetic subscription-average undercounted ~12% vs invoices; the
+      # operator reads this tile as "revenue ÷ months". `avg_mrr` keeps the
+      # old key so existing app builds show the corrected number too.
+      avg_monthly_revenue: (avg_revenue_value * 100).to_i, # cents
+      avg_mrr: (avg_revenue_value * 100).to_i, # cents — legacy key, same value
       revenue: revenue_total, # cents
       active_members: safe(0) { report.total_active_member_count },
       churn_rate: churn_rate_value,

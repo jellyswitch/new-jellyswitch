@@ -213,6 +213,52 @@ module Jellyswitch
       assert_equal base + 300 - 205, @report.revenue_for_period(range: range)
     end
 
+    # The hero tile reads as "revenue ÷ months" — it must average actual
+    # complete months, not synthetic subscription snapshots, and the current
+    # partial month must not drag the average down.
+    test "avg_monthly_revenue equals last complete month's revenue for a 30-day period" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+
+      payer = create_member(organization: nil, out_of_band: false)
+      create_paid_invoice(
+        billable: payer,
+        amount_cents: 50000,
+        date: last_month.beginning_of_month.in_time_zone.change(day: 10, hour: 9),
+      )
+      # Current-month noise that must NOT affect the average
+      create_paid_invoice(billable: payer, amount_cents: 99900, date: Time.current)
+
+      assert_equal @report.revenue_for_period(range: range), @report.avg_monthly_revenue(30)
+    end
+
+    test "avg_monthly_revenue averages the last 12 complete months for a 1-year period" do
+      by_month = @report.revenue_by_month(13)
+      complete = by_month.reject { |m, _| m == Date.current.beginning_of_month }
+      assert_equal 12, complete.size
+      assert_equal (complete.values.sum / complete.size).round, @report.avg_monthly_revenue(365)
+    end
+
+    # mrr_by_month used to filter on active-today, so every since-cancelled
+    # subscription vanished from history (survivorship bias).
+    test "mrr_by_month keeps a cancelled subscription in months it was active" do
+      label = 3.months.ago.beginning_of_month.strftime("%b %Y")
+
+      user = create_member(organization: nil, out_of_band: false)
+      sub = create_subscription(user: user, plan: plans(:cowork_tahoe_full_time_plan), active: true)
+      sub.update_column(:created_at, 6.months.ago)
+      before = Jellyswitch::Report.new(@operator, @location).mrr_by_month(6)[label]
+
+      # Cancelled today → was still active 3 months ago → must still count there
+      sub.update!(active: false)
+      assert_equal before, Jellyswitch::Report.new(@operator, @location).mrr_by_month(6)[label]
+
+      # Cancelled BEFORE that month → must not count there ($205 full-time plan)
+      sub.update_columns(active: false, updated_at: 5.months.ago)
+      assert_equal before - 205, Jellyswitch::Report.new(@operator, @location).mrr_by_month(6)[label]
+    end
+
     test "lease supplement skips leases with no organization" do
       repoint_lease_fixture_plan
       last_month = Date.current.prev_month

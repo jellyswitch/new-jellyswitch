@@ -197,20 +197,27 @@ module Jellyswitch
       (invoice_rev + lease_rev).round
     end
 
-    # Average MRR across the period — averages the per-month MRR snapshots
-    # mrr_by_month already computes. For periods < 1 month, falls back to the
-    # current MRR snapshot. Capped at 24 months so "All Time" (which would
-    # otherwise iterate ~120 months) doesn't blow the Heroku 30s timeout —
-    # 24 months is plenty for a meaningful running average and matches the
-    # chart cap below so the memoized mrr_by_month result is reused.
+    # Average monthly revenue across the period — actual money (paid invoices
+    # + out-of-band lease checks via revenue_by_month), averaged over the
+    # window's COMPLETE months. The current partial month is excluded: four
+    # days into July it would drag a 12-month average down for no reason.
+    # Capped at 24 months so "All Time" doesn't blow the Heroku 30s timeout.
+    #
+    # This tile used to average mrr_by_month's synthetic snapshots, which
+    # never look at invoices and undercounted by ~12% (survivorship on
+    # cancelled subs + list prices instead of amounts actually paid). The
+    # operator reads this as "revenue ÷ months" — make it exactly that.
+    # The recurring run-rate is still available as #mrr.
     AVG_MRR_MAX_MONTHS = 24
-    def avg_mrr(period_days = 30)
+    def avg_monthly_revenue(period_days = 30)
       months = [(period_days / 30.0).round, AVG_MRR_MAX_MONTHS].min
       months = [months, 1].max
-      by_month = mrr_by_month(months) rescue {}
-      return mrr if by_month.empty?
-      (by_month.values.sum.to_f / by_month.size).round
+      by_month = revenue_by_month(months + 1) rescue {}
+      complete = by_month.reject { |m, _| m == Date.today.beginning_of_month }
+      return this_month_revenue.round if complete.empty?
+      (complete.values.sum / complete.size).round
     end
+    alias avg_mrr avg_monthly_revenue
 
     def all_members
       users.members.non_superadmins.order("name")
@@ -630,16 +637,29 @@ module Jellyswitch
         total = 0.0
 
         if %w[all memberships].include?(product_filter)
-          total += Subscription.where(plan: plans.individual.nonzero, active: true)
+          # Subs that existed by month end and were still active during the
+          # month. Filtering on active-today (as this used to) has
+          # survivorship bias: every since-cancelled sub vanished from
+          # history. updated_at approximates the cancellation time — the
+          # same proxy churn uses.
+          total += Subscription.where(plan: plans.individual.nonzero)
             .where("subscriptions.created_at <= ?", month_end)
+            .where("subscriptions.active = ? OR subscriptions.updated_at >= ?", true, date)
             .includes(:plan)
             .sum { |s| normalize_to_monthly(s.plan) }
         end
 
         if %w[all offices].include?(product_filter)
           office_leases.where("start_date <= ? AND end_date >= ?", month_end, date)
-            .includes(subscription: :plan).each do |lease|
-              total += normalize_to_monthly(lease.subscription&.plan) if lease.subscription&.plan
+            .includes(:office, subscription: :plan).each do |lease|
+              plan = lease.subscription&.plan
+              if plan && plan.amount_in_cents > 0
+                total += normalize_to_monthly(plan)
+              elsif lease.office.respond_to?(:monthly_rate_in_cents)
+                # Out-of-band leases with no priced plan — same fallback #mrr
+                # uses; this chart previously dropped them entirely.
+                total += (lease.office&.monthly_rate_in_cents || 0).to_f / 100.0
+              end
             end
         end
 

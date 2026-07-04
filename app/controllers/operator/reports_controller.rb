@@ -19,7 +19,7 @@ class Operator::ReportsController < Operator::BaseController
     @insights = current_location ? (@report.actionable_insights rescue []) : []
 
     if current_location
-      @mrr_value = @report.avg_mrr(@period_days) rescue 0
+      @mrr_value = @report.avg_monthly_revenue(@period_days) rescue 0
       @churn_value = @report.churn_rate(@period_days) rescue 0
       @churned_count = @report.churned_members_count(@period_days) rescue 0
       @growth_value = @report.net_member_growth(@period_days) rescue 0
