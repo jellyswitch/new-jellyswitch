@@ -555,11 +555,13 @@ module Jellyswitch
         }
       end
 
-      # Revenue forecast
-      projected = mrr
+      # Revenue forecast — contracted recurring plus a seasonal day-pass
+      # estimate (same month last year × YoY trend), not the trailing
+      # average that lags peak/shoulder season swings.
+      projected = projected_next_month_revenue
       if projected > 0
         results << {
-          text: "Projected next month revenue: #{ActionController::Base.helpers.number_to_currency(projected, precision: 0)} based on current subscriptions + leases.",
+          text: "Projected #{Date.current.next_month.strftime('%B')} revenue: #{ActionController::Base.helpers.number_to_currency(projected, precision: 0)} — subscriptions + leases + seasonal day-pass estimate.",
           action: nil,
           urgency: :info
         }
@@ -598,9 +600,10 @@ module Jellyswitch
         end
       end
 
-      # Day pass MRR (average monthly day pass revenue)
+      # Day pass MRR (average monthly day pass revenue). Purchased only —
+      # a complimentary pass's list price isn't revenue.
       if %w[all day_passes].include?(product_filter)
-        dp_rev = day_passes.joins(:day_pass_type)
+        dp_rev = day_passes.purchased.joins(:day_pass_type)
           .where("day_passes.created_at > ?", 3.months.ago)
           .sum("day_pass_types.amount_in_cents").to_f / 100.0
         total += dp_rev / 3.0 # Average over 3 months
@@ -619,6 +622,50 @@ module Jellyswitch
       end
 
       total.round(0)
+    end
+
+    # ── Seasonal day-pass forecasting ──
+    #
+    # Day-pass demand at mountain locations swings hard with the seasons
+    # (summer and winter peaks, spring/fall shoulders), so a trailing
+    # 3-month average lags the season by a quarter — entering July it still
+    # averages the spring shoulder (~6x low at CT's 2025 peak). Estimate a
+    # month from the same month LAST YEAR, scaled by how the trailing year
+    # compares to the year before it, clamped so one anomalous month can't
+    # produce a wild forecast.
+
+    # Actual purchased day-pass revenue for a calendar month. Bounded at
+    # today — bundle days can be scheduled into future months — and
+    # excludes complimentary passes (their list price isn't revenue).
+    def day_pass_revenue_for_month(month)
+      month_start = month.to_date.beginning_of_month
+      return 0.0 if month_start > Date.current
+      month_end = [month_start.end_of_month, Date.current].min
+      purchased_day_pass_revenue(month_start..month_end)
+    end
+
+    def seasonal_day_pass_forecast(month = Date.current.next_month)
+      month_start = month.to_date.beginning_of_month
+      same_month_last_year = day_pass_revenue_for_month(month_start << 12)
+      # Young locations with no year-ago data fall back to the trailing
+      # average the run rate has always used.
+      return trailing_day_pass_monthly_average if same_month_last_year.zero?
+
+      recent = purchased_day_pass_revenue(12.months.ago.to_date..Date.current)
+      prior  = purchased_day_pass_revenue(24.months.ago.to_date..(12.months.ago.to_date - 1))
+      growth = prior.positive? ? (recent / prior).clamp(0.5, 2.0) : 1.0
+      (same_month_last_year * growth).round
+    end
+
+    # Next month's expected revenue: contracted recurring (memberships +
+    # leases) at today's book, seasonally-estimated day passes, and the
+    # trailing meeting-room average (room demand tracks day-pass traffic
+    # loosely but has no clean seasonal history yet).
+    def projected_next_month_revenue
+      return 0 unless location
+      contracted = mrr(product_filter: "memberships") + mrr(product_filter: "offices")
+      rooms = mrr(product_filter: "meeting_rooms")
+      (contracted + rooms + seasonal_day_pass_forecast).round
     end
 
     def mrr_by_month(months = 12, product_filter: "all")
@@ -665,7 +712,7 @@ module Jellyswitch
 
         # Day pass + meeting room: use actual revenue for that month
         if %w[all day_passes].include?(product_filter)
-          total += day_passes.joins(:day_pass_type)
+          total += day_passes.purchased.joins(:day_pass_type)
             .where(created_at: date..month_end)
             .sum("day_pass_types.amount_in_cents").to_f / 100.0
         end
@@ -984,6 +1031,16 @@ module Jellyswitch
       else
         [period_days.days.ago..Time.current, period_days]
       end
+    end
+
+    def purchased_day_pass_revenue(range)
+      day_passes.purchased.joins(:day_pass_type)
+        .where(day: range)
+        .sum("day_pass_types.amount_in_cents").to_f / 100.0
+    end
+
+    def trailing_day_pass_monthly_average
+      (purchased_day_pass_revenue(3.months.ago.to_date..Date.current) / 3.0).round
     end
 
     def normalize_to_monthly(plan)
