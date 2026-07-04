@@ -59,7 +59,192 @@ module Jellyswitch
       assert_includes @report.inactive_members, member
     end
 
+    # ── Dashboard metric accuracy (Reports & Data page) ──
+
+    # datetime_in is stored UTC; the old EXTRACT(HOUR) business-hours filter
+    # ran in UTC, which shifted the 8am-6pm window to ~1-11am Pacific and
+    # silently dropped every afternoon booking from utilization.
+    test "room_utilization counts afternoon bookings in the location's local time" do
+      utilization_room # create before the baseline so the denominator is stable
+      base = @report.room_utilization
+      weekday = most_recent_past_weekday
+
+      book_room(datetime_in: weekday.in_time_zone.change(hour: 14), minutes: 300)
+
+      assert_operator @report.room_utilization, :>, base
+    end
+
+    test "room_utilization ignores bookings outside local business hours" do
+      utilization_room
+      base = @report.room_utilization
+      weekday = most_recent_past_weekday
+
+      book_room(datetime_in: weekday.in_time_zone.change(hour: 3), minutes: 300)
+
+      assert_equal base, @report.room_utilization
+    end
+
+    test "room_utilization ignores weekend bookings to match its weekday denominator" do
+      utilization_room
+      base = @report.room_utilization
+      saturday = most_recent_past_saturday
+
+      book_room(datetime_in: saturday.in_time_zone.change(hour: 14), minutes: 300)
+
+      assert_equal base, @report.room_utilization
+    end
+
+    test "day_pass_count honors an explicit calendar-month range" do
+      last_month = Date.current.prev_month
+      create_day_pass(day: last_month.beginning_of_month + 9)
+      create_day_pass(day: Date.current)
+
+      range = last_month.beginning_of_month..last_month.end_of_month
+      assert_equal 1, @report.day_pass_count(range: range)
+    end
+
+    test "day_pass_count does not count passes scheduled for future days" do
+      base = @report.day_pass_count
+
+      create_day_pass(day: Date.current + 5) # bundle day scheduled ahead
+
+      assert_equal base, @report.day_pass_count
+    end
+
+    test "churned_members_count skips members who merely switched plans" do
+      base = @report.churned_members_count
+
+      switcher = create_member(organization: nil, out_of_band: false)
+      create_subscription(user: switcher, plan: plans(:cowork_tahoe_part_time_plan), active: false)
+      create_subscription(user: switcher, plan: plans(:cowork_tahoe_full_time_plan), active: true)
+
+      genuine = create_member(organization: nil, out_of_band: false)
+      create_subscription(user: genuine, plan: plans(:cowork_tahoe_part_time_plan), active: false)
+
+      assert_equal base + 1, @report.churned_members_count
+    end
+
+    # net_member_growth previously counted new subscriptions on ANY plan
+    # (including free ones) against churn on paid individual plans only, so
+    # free signups inflated growth that no churn could ever offset.
+    test "new_members_count counts only paid individual subscriptions" do
+      base = @report.new_members_count
+
+      free_plan = Plan.create!(
+        name: "Free Community",
+        interval: "monthly",
+        amount_in_cents: 0,
+        plan_type: "individual",
+        operator: @operator,
+        location: @location,
+        visible: true,
+        available: true,
+        slug: "free-community-#{SecureRandom.hex(4)}",
+        stripe_plan_id: "free-community-#{SecureRandom.hex(4)}",
+      )
+      freebie = create_member(organization: nil, out_of_band: false)
+      create_subscription(user: freebie, plan: free_plan, active: true)
+
+      assert_equal base, @report.new_members_count, "free plans must not count as new members"
+
+      paid = create_member(organization: nil, out_of_band: false)
+      create_subscription(user: paid, plan: plans(:cowork_tahoe_full_time_plan), active: true)
+
+      assert_equal base + 1, @report.new_members_count
+    end
+
+    test "revenue_for_period adds the full lease check when the window covers the month" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+
+      # office_23b_lease: sierra_nevada pays $205/mo by check — no invoices,
+      # so the whole supplement belongs in a window covering the full month.
+      assert_equal (paid_invoice_dollars(range) + 205.0).round,
+        @report.revenue_for_period(range: range)
+    end
+
+    test "revenue_for_period pro-rates the lease check for a partial month" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..(last_month.beginning_of_month + 14) # 15 days
+      expected_lease = 205.0 * 15 / last_month.end_of_month.day
+
+      assert_equal (paid_invoice_dollars(range) + expected_lease).round,
+        @report.revenue_for_period(range: range)
+    end
+
     private
+
+    def most_recent_past_weekday
+      day = Date.current - 1
+      day -= 1 while day.on_weekend?
+      day
+    end
+
+    def most_recent_past_saturday
+      day = Date.current - 1
+      day -= 1 until day.saturday?
+      day
+    end
+
+    # A dedicated room sidesteps overlap conflicts with fixture reservations.
+    def utilization_room
+      @utilization_room ||= Room.create!(
+        name: "Utilization Test Room #{SecureRandom.hex(3)}",
+        operator: @operator,
+        location: @location,
+        visible: true,
+        capacity: 4,
+      )
+    end
+
+    def book_room(datetime_in:, minutes:)
+      Reservation.create!(
+        user: users(:cowork_tahoe_member),
+        room: utilization_room,
+        datetime_in: datetime_in,
+        minutes: minutes,
+        cancelled: false,
+      )
+    end
+
+    def create_day_pass(day:)
+      member = users(:cowork_tahoe_member)
+      DayPass.create!(
+        day: day,
+        user: member,
+        billable: member,
+        operator: @operator,
+        location: @location,
+        day_pass_type: day_pass_type(:cowork_tahoe_day_pass_type),
+      )
+    end
+
+    def create_subscription(user:, plan:, active:)
+      Subscription.create!(
+        plan: plan,
+        subscribable: user,
+        billable: user,
+        active: active,
+        pending: false,
+        start_date: 6.months.ago,
+      )
+    end
+
+    # The office-lease subscription fixture's `plan:` label doesn't resolve to
+    # a real plans.yml entry (fixtures hash labels without checking), so the
+    # lease's plan_id dangles and lease_supplement_for_month sees no plan.
+    def repoint_lease_fixture_plan
+      subscriptions(:cowork_tahoe_office_lease)
+        .update_columns(plan_id: plans(:cowork_tahoe_office_lease_plan).id)
+    end
+
+    def paid_invoice_dollars(range)
+      Invoice.for_location(@location).paid
+        .where(due_date: range.begin.beginning_of_day..range.end.end_of_day)
+        .sum(:amount_due).to_f / 100.0
+    end
 
     def create_member(organization:, out_of_band:)
       suffix = SecureRandom.hex(4)

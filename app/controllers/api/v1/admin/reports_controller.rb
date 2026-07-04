@@ -5,33 +5,33 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   def index
     period_days = period_days_for(params[:period])
     period_start, period_end = period_window_for(params[:period])
+    # One explicit window for every metric. Previously only revenue used the
+    # calendar window and everything else got a trailing day count, so the
+    # "Last Month" chip showed last month's revenue next to trailing-31-day
+    # counts for day passes, check-ins, churn, etc.
+    window = period_start.beginning_of_day..period_end.end_of_day
     report = Jellyswitch::Report.new(current_tenant, current_location)
 
     mrr_value = safe(0) { report.mrr }
     avg_mrr_value = safe(0) { report.avg_mrr(period_days) }
-    churn_rate_value = safe(0) { report.churn_rate(period_days) }
-    churn_count_value = safe(0) { report.churned_members_count(period_days) }
-    growth_value = safe(0) { report.net_member_growth(period_days) }
-    new_count_value = safe(0) { report.new_members_count(period_days) }
-    util_value = safe(0) { report.room_utilization(period_days) }
-    visits_value = safe(0) { report.avg_visits_per_member_per_month(period_days) }
-    daily_visitors_value = safe(0) { report.avg_daily_visitors(period_days) }
+    churn_rate_value = safe(0) { report.churn_rate(range: window) }
+    churn_count_value = safe(0) { report.churned_members_count(range: window) }
+    growth_value = safe(0) { report.net_member_growth(range: window) }
+    new_count_value = safe(0) { report.new_members_count(range: window) }
+    util_value = safe(0) { report.room_utilization(range: window) }
+    visits_value = safe(0) { report.avg_visits_per_member_per_month(range: window) }
+    daily_visitors_value = safe(0) { report.avg_daily_visitors(range: window) }
     rev_per_member = safe(0) { report.revenue_per_member }
     avg_tenure = safe(0) { report.average_member_tenure }
     dp_conv = safe(0) { report.day_pass_conversion_rate }
 
-    # Revenue mirrors the web dashboard's revenue_by_month: paid invoices in
-    # the window + lease_supplement_for_month for out-of-band lease checks.
-    # `current_month` / `last_month` keep an explicit date-range so those
-    # period chips return invoices dated within that month.
+    # Same definition for every period chip: paid location invoices in the
+    # window + pro-rated out-of-band lease checks (revenue_for_period). The
+    # old current_month/last_month branch summed operator-wide amount_paid
+    # by `date` with no lease supplement — a different (and smaller) number
+    # than the adjacent trailing periods.
     revenue_total = safe(0) do
-      if %w[current_month last_month].include?(params[:period])
-        invoice_rev = Invoice.where(operator: current_tenant)
-          .where(date: period_start..period_end).sum(:amount_paid)
-        invoice_rev # already cents
-      else
-        (report.revenue_for_period(period_days) * 100).to_i # convert dollars → cents
-      end
+      (report.revenue_for_period(range: window) * 100).to_i # dollars → cents
     end
 
     render json: {
@@ -51,8 +51,8 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       daily_visitors: daily_visitors_value,
       revenue_per_member: (rev_per_member * 100).to_i, # cents
       avg_tenure_months: avg_tenure,
-      day_pass_count: safe(0) { report.day_pass_count(period_days) },
-      checkin_count: safe(0) { report.checkin_count(period_days) },
+      day_pass_count: safe(0) { report.day_pass_count(range: window) },
+      checkin_count: safe(0) { report.checkin_count(range: window) },
       day_pass_conversion_rate: dp_conv,
 
       # Multi-timeframe trends — % change vs 30/90/365 days ago, per metric.
@@ -73,21 +73,22 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   end
 
   def revenue
-    period = (params[:period] || '12').to_i
-    months = (0..[period - 1, 23].min).map { |i| i.months.ago.beginning_of_month }
+    months_back = (params[:period] || '12').to_i.clamp(1, 24)
+    report = Jellyswitch::Report.new(current_tenant, current_location)
 
-    data = months.map { |month_start|
-      month_end = month_start.end_of_month
-      amount = Invoice.where(operator: current_tenant)
-        .where(date: month_start..month_end).sum(:amount_paid)
+    # Same source as the web dashboard chart and the PERIOD REVENUE tile:
+    # paid location invoices by due_date + out-of-band lease supplement.
+    # The old operator-wide sum(:amount_paid)-by-`date` query disagreed
+    # with both, and missed lease months paid by check entirely.
+    data = safe({}) { report.revenue_by_month(months_back) }.map { |month_start, dollars|
       {
         month: month_start.strftime("%Y-%m"),
         label: month_start.strftime("%b %Y"),
-        amount: amount,
+        amount: (dollars * 100).round, # cents — mobile divides by 100
       }
     }
 
-    render json: { months: data.reverse }
+    render json: { months: data }
   end
 
   def room_demand
