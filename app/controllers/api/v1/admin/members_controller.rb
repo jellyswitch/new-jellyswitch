@@ -380,6 +380,10 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         billable: user,
         operator: current_tenant,
         location: current_location,
+        # Revenue is keyed on COALESCE(due_date, date) — a dateless row
+        # would never count even after it's marked paid.
+        date: Time.current,
+        description: description,
       )
 
       render json: { success: true, invoice_id: invoice.id }, status: :created

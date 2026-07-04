@@ -174,6 +174,65 @@ module Jellyswitch
         @report.revenue_for_period(range: range)
     end
 
+    # Stripe only sets due_date on emailed invoices; auto-charged card
+    # invoices carry due_date = NULL. Keying revenue on due_date alone
+    # dropped $18k of card revenue in a single real month.
+    test "revenue counts paid card invoices that have no due_date" do
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      base = @report.revenue_for_period(range: range)
+
+      payer = create_member(organization: nil, out_of_band: false)
+      create_paid_invoice(
+        billable: payer,
+        amount_cents: 10000,
+        date: last_month.beginning_of_month.in_time_zone.change(day: 12, hour: 9),
+      )
+
+      assert_equal base + 100, @report.revenue_for_period(range: range)
+    end
+
+    # A lease org that pays via Stripe gets an invoice with NULL due_date.
+    # The supplement's "does this org already have an invoice this month?"
+    # check must use the same effective-date key, or the org's lease gets
+    # added again on top of its real payment ($6.8k of double-counting in
+    # a single real month).
+    test "lease supplement is suppressed when the org paid by card that month" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      base = @report.revenue_for_period(range: range) # includes the $205 supplement
+
+      create_paid_invoice(
+        billable: organizations(:sierra_nevada_organization),
+        amount_cents: 30000, # deliberately != plan amount to expose double-counting
+        date: last_month.beginning_of_month.in_time_zone.change(day: 3, hour: 10),
+      )
+
+      # +$300 invoice, −$205 supplement (now covered by a real payment)
+      assert_equal base + 300 - 205, @report.revenue_for_period(range: range)
+    end
+
+    test "lease supplement skips leases with no organization" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      base = @report.revenue_for_period(range: range)
+
+      lease = OfficeLease.create!(
+        operator: @operator,
+        location: @location,
+        organization: organizations(:sierra_nevada_organization),
+        office: offices(:office_23b),
+        subscription: subscriptions(:cowork_tahoe_office_lease),
+        start_date: 1.year.ago,
+        end_date: 1.year.from_now,
+      )
+      lease.update_column(:organization_id, nil) # orphaned rows exist in prod
+
+      assert_equal base, @report.revenue_for_period(range: range)
+    end
+
     private
 
     def most_recent_past_weekday
@@ -242,8 +301,22 @@ module Jellyswitch
 
     def paid_invoice_dollars(range)
       Invoice.for_location(@location).paid
-        .where(due_date: range.begin.beginning_of_day..range.end.end_of_day)
+        .where("COALESCE(invoices.due_date, invoices.date) BETWEEN ? AND ?",
+          range.begin.beginning_of_day, range.end.end_of_day)
         .sum(:amount_due).to_f / 100.0
+    end
+
+    def create_paid_invoice(billable:, amount_cents:, date:, due_date: nil)
+      Invoice.create!(
+        billable: billable,
+        operator: @operator,
+        location: @location,
+        amount_due: amount_cents,
+        amount_paid: amount_cents,
+        status: "paid",
+        date: date,
+        due_date: due_date,
+      )
     end
 
     def create_member(organization:, out_of_band:)
