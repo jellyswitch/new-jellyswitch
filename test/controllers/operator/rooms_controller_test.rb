@@ -34,4 +34,33 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert @room.reload.include_with_day_pass,
       "the call-room toggle must be saved through room_params"
   end
+
+  # ADR 0021: the room form assigns/clears the room's electric locks via
+  # door_ids (full-list semantics; a hidden blank entry means "clear all").
+  test "update assigns and clears the room's door locks" do
+    log_in users(:cowork_tahoe_admin)
+    door = Door.create!(name: "Lock W", operator: operators(:cowork_tahoe),
+                        location: locations(:cowork_tahoe_location), available: true)
+
+    patch room_path(@room), env: default_env, params: {
+      room: { name: @room.name, hourly_rate_in_cents: "0", door_ids: ["", door.id.to_s] },
+    }
+    assert_equal @room.id, door.reload.room_id, "checked door was not attached"
+
+    patch room_path(@room), env: default_env, params: {
+      room: { name: @room.name, hourly_rate_in_cents: "0", door_ids: [""] },
+    }
+    assert_nil door.reload.room_id, "unchecking all boxes must detach the lock"
+  end
+
+  test "edit form renders the door locks section" do
+    log_in users(:cowork_tahoe_admin)
+    Door.create!(name: "Lock X", operator: operators(:cowork_tahoe),
+                 location: locations(:cowork_tahoe_location), available: true)
+
+    get edit_room_path(@room), env: default_env
+    assert_response :success
+    assert_match "Door locks", response.body
+    assert_match "Lock X", response.body
+  end
 end

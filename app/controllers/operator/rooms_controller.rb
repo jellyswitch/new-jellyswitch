@@ -38,6 +38,7 @@ class Operator::RoomsController < Operator::BaseController
     authorize @room
 
     if @room.save
+      reassign_doors_if_requested
       flash[:success] = "Room added."
       if params[:add_room_and_add_another].present?
         turbo_redirect(new_room_path, action: "replace")
@@ -85,6 +86,7 @@ class Operator::RoomsController < Operator::BaseController
 
     @room.update(room_params)
     handle_amenity_deletions_if_needed
+    reassign_doors_if_requested
 
     if @room.save
       flash[:notice] = "Room #{@room.name} has been updated."
@@ -117,6 +119,19 @@ class Operator::RoomsController < Operator::BaseController
     else
       Room.unscoped
     end.friendly.find(params[key])
+  end
+
+  # Door↔Room attachment (ADR 0021). Same reassignment as the admin API:
+  # scoped to the room's location, full-list semantics (doors omitted are
+  # detached and demote to Building Doors). The form always submits a hidden
+  # blank entry so "no boxes checked" still clears the room's locks.
+  def reassign_doors_if_requested
+    return unless params[:room]&.key?(:door_ids)
+
+    ids = Array(params[:room][:door_ids]).reject(&:blank?).map(&:to_i)
+    scope = Door.where(operator: current_tenant, location: @room.location)
+    scope.where(room_id: @room.id).where.not(id: ids).update_all(room_id: nil)
+    scope.where(id: ids).update_all(room_id: @room.id)
   end
 
   def handle_amenity_deletions_if_needed

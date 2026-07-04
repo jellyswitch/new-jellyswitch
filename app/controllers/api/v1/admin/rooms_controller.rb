@@ -28,6 +28,16 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
   def update
     room = Room.find(params[:id])
 
+    # Door↔Room attachment (ADR 0021). Reassignment is scoped to the room's
+    # location so a lock can never be attached across locations. Sent as the
+    # full list: doors omitted are detached (become Building Doors again).
+    if params[:room].key?(:door_ids)
+      ids = Array(params[:room][:door_ids]).reject(&:blank?).map(&:to_i)
+      scope = Door.where(operator: current_tenant, location: room.location)
+      scope.where(room_id: room.id).where.not(id: ids).update_all(room_id: nil)
+      scope.where(id: ids).update_all(room_id: room.id)
+    end
+
     if room.update(room_params)
       render json: room_json(room)
     else
@@ -74,6 +84,8 @@ class Api::V1::Admin::RoomsController < Api::V1::Admin::BaseController
       allow_shorter_reservation_duration: room.allow_shorter_reservation_duration,
       credit_cost: room.credit_cost,
       features: room.features || [],
+      # This room's attached locks (ADR 0021) — full list, for the config UI.
+      door_ids: room.doors.pluck(:id),
       archived: room.archived,
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }

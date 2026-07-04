@@ -72,6 +72,8 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
     {
       id: d.id, name: d.name, kisi_id: d.kisi_id,
       slug: d.try(:slug), private: d.private, available: d.available,
+      # Attached room ⇒ this door is a Room Lock (ADR 0021).
+      room_id: d.room_id, room_name: d.room&.name,
     }
   end
 
