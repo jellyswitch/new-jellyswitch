@@ -121,6 +121,21 @@ class Operator::DoorsController < Operator::BaseController
       return
     end
 
+    # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock:
+    # DoorPolicy#open? admits bundle-only members (allowed_in?), so this web
+    # entrance must spend a bundle day like every other unlock path — but a
+    # Room Entry never burns a pass (ADR 0021): the holder's reservation
+    # already granted access.
+    # Best-effort: a billing error must not keep a member out of the building.
+    unless @door.room_lock?
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
+      rescue => e
+        Rails.logger.error("[DoorOpen] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
+    end
+
     punch = log_door_punch
 
     # Call Kisi API inline instead of via background job for reliability

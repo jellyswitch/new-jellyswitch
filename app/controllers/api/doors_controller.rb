@@ -1,5 +1,6 @@
 class Api::DoorsController < ApplicationController
   include DoorsHelper
+  include Api::V1::DoorUnlocking
   skip_forgery_protection
   before_action :authenticate_api_user
 
@@ -31,12 +32,38 @@ class Api::DoorsController < ApplicationController
     # ADR 0021: a Room Lock is reservation-gated — staff anytime, otherwise
     # only the reservation holder during their booking. This is the endpoint
     # the web Keys page's unlock buttons hit, so members reach it directly.
-    if @door.room_lock? && !@door.openable_as_room_lock_by?(current_user)
-      return render json: {
-        success: false,
-        door:    @door.name,
-        message: "#{@door.room.name} opens with a reservation. Book the room to unlock it.",
-      }, status: :forbidden
+    if @door.room_lock?
+      unless @door.openable_as_room_lock_by?(current_user)
+        return render json: {
+          success: false,
+          door:    @door.name,
+          message: "#{@door.room.name} opens with a reservation. Book the room to unlock it.",
+        }, status: :forbidden
+      end
+    else
+      # Same gate as the mobile unlock (Api::V1::DoorsController#unlock) — being
+      # logged in is not building access. Gated on the door's own location, not
+      # the session's current_location, so a stale location pick can't widen access.
+      unless user_can_access_building?(current_user, @door.location)
+        return render json: {
+          success: false,
+          door:    @door.name,
+          message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+        }, status: :forbidden
+      end
+
+      # Burn-on-entry parity with Api::V1::DoorUnlocking#perform_unlock: a
+      # bundle-only member passes the gate above via their bundle, so a web
+      # unlock must spend a bundle day exactly like a mobile unlock — otherwise
+      # the Keys page is an unmetered entrance. A Room Entry never burns
+      # (ADR 0021), hence the else-branch. Best-effort: a billing error
+      # must not keep a member out of the building.
+      begin
+        Billing::DayPassBundles::ConsumeOnEntry.call(user: current_user, location: @door.location)
+      rescue => e
+        Rails.logger.error("[DoorOpen:API] ConsumeOnEntry failed: #{e.class}: #{e.message}")
+        Honeybadger.notify(e) rescue nil
+      end
     end
 
     # Log the door punch. Room Entry ≠ door punch (ADR 0021): a Room Lock
