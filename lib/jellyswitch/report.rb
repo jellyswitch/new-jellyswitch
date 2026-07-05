@@ -876,10 +876,38 @@ module Jellyswitch
       new_members_count(period_days, range: range) - churned_members_count(period_days, range: range)
     end
 
-    def revenue_per_member
-      member_count = active_member_count
-      return 0 if member_count == 0
-      (this_month_revenue / member_count).round(2)
+    # Average monthly revenue per PAYING individual member. Membership
+    # invoices only (revenue_by_product's exclusive "Memberships" bucket —
+    # no leases, day passes, or rooms) over the last COMPLETE calendar
+    # month, divided by the count of active paying individual subscribers.
+    #
+    # Numerator and denominator describe the same population: the people who
+    # each pay an individual membership invoice. Comped/out-of-band members
+    # and lease members are excluded from BOTH sides, so a sponsored member
+    # never dilutes it. A complete month avoids the partial-month
+    # understatement the old this_month_revenue-based tile suffered.
+    def revenue_per_paying_member
+      return 0 unless location
+      members = paying_individual_member_count
+      return 0 if members.zero?
+      (last_complete_month_product_revenue.fetch("Memberships", 0.0) / members).round(2)
+    end
+    alias revenue_per_member revenue_per_paying_member
+
+    # Average monthly revenue per active office lease — the "Office Leases"
+    # bucket (invoiced + out-of-band check leases) over the last complete
+    # month, divided by the number of active leases. Companion to
+    # revenue_per_paying_member so a lease-heavy space (leases are ~76% of
+    # revenue at CT) isn't summarized by membership ARPU alone.
+    def revenue_per_lease
+      return 0 unless location
+      leases = active_lease_count
+      return 0 if leases.zero?
+      (last_complete_month_product_revenue.fetch("Office Leases", 0.0) / leases).round(2)
+    end
+
+    def paying_individual_member_count
+      subscribed_members.visible.approved.count
     end
 
     def average_member_tenure
@@ -1119,6 +1147,15 @@ module Jellyswitch
         month = month.next_month
       end
       lease_rev
+    end
+
+    # revenue_by_product for the last COMPLETE calendar month, memoized so
+    # revenue_per_paying_member and revenue_per_lease share one query pass.
+    def last_complete_month_product_revenue
+      @last_complete_month_product_revenue ||= begin
+        last_month = Date.current.prev_month
+        revenue_by_product(range: last_month.beginning_of_month..last_month.end_of_month)
+      end
     end
 
     def purchased_day_pass_revenue(range)

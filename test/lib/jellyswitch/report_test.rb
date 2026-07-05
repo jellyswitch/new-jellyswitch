@@ -440,6 +440,71 @@ module Jellyswitch
       assert_operator @report.current_month_forecast, :>=, mtd.round
     end
 
+    # ── Rev per paying member / per lease ──
+    # The tile must be an ARPU with numerator and denominator on the SAME
+    # population: membership dollars ÷ paying individual members. Comped /
+    # out-of-band / lease members are excluded from both sides.
+
+    test "revenue_per_paying_member excludes comped members from the denominator" do
+      last_month = Date.current.prev_month
+      mid = last_month.beginning_of_month.in_time_zone.change(day: 10, hour: 9)
+
+      # Two paying individual members, $200 membership invoice each.
+      2.times do
+        m = create_member(organization: nil, out_of_band: false)
+        create_subscription(user: m, plan: plans(:cowork_tahoe_full_time_plan), active: true)
+        create_paid_invoice(billable: m, amount_cents: 20000, date: mid)
+      end
+      base_members = @report.paying_individual_member_count
+
+      # A comped out-of-band member pays nothing — must NOT enter either side.
+      create_member(organization: nil, out_of_band: true)
+
+      assert_equal base_members, @report.paying_individual_member_count,
+        "a comped OOB member must not be counted as a paying member"
+      # membership revenue in the window / paying members, unaffected by the comp
+      last_month = Date.current.prev_month
+      membership_rev = @report.revenue_by_product(range: last_month.beginning_of_month..last_month.end_of_month)
+        .fetch("Memberships", 0.0)
+      assert_equal (membership_rev / base_members).round(2), @report.revenue_per_paying_member
+    end
+
+    test "revenue_per_paying_member counts only membership dollars, not leases or day passes" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      mid = last_month.beginning_of_month.in_time_zone.change(day: 12, hour: 9)
+      member = create_member(organization: nil, out_of_band: false)
+      create_subscription(user: member, plan: plans(:cowork_tahoe_full_time_plan), active: true)
+      create_paid_invoice(billable: member, amount_cents: 25000, date: mid) # membership
+
+      # A day-pass-linked invoice for the same member must NOT inflate ARPU.
+      dp_inv = create_paid_invoice(billable: member, amount_cents: 9900, date: mid + 1.hour)
+      create_day_pass(day: last_month.beginning_of_month + 11).update_column(:invoice_id, dp_inv.id)
+
+      members = @report.paying_individual_member_count
+      membership_only = @report.revenue_by_product(range: last_month.beginning_of_month..last_month.end_of_month)
+        .fetch("Memberships", 0.0)
+      assert_equal (membership_only / members).round(2), @report.revenue_per_paying_member
+    end
+
+    test "revenue_per_lease divides lease revenue by active lease count" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      window = last_month.beginning_of_month..last_month.end_of_month
+      lease_rev = @report.revenue_by_product(range: window).fetch("Office Leases", 0.0)
+
+      expected = @report.active_lease_count.zero? ? 0 : (lease_rev / @report.active_lease_count).round(2)
+      assert_equal expected, @report.revenue_per_lease
+    end
+
+    test "revenue_per_paying_member is zero with no paying members" do
+      assert_equal 0, @report.revenue_per_paying_member
+    end
+
+    test "revenue_per_member aliases revenue_per_paying_member" do
+      assert_equal @report.revenue_per_paying_member, @report.revenue_per_member
+    end
+
     test "lease supplement skips leases with no organization" do
       repoint_lease_fixture_plan
       last_month = Date.current.prev_month

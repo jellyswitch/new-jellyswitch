@@ -21,7 +21,8 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
     util_value = safe(0) { report.room_utilization(range: window) }
     visits_value = safe(0) { report.avg_visits_per_member_per_month(range: window) }
     daily_visitors_value = safe(0) { report.avg_daily_visitors(range: window) }
-    rev_per_member = safe(0) { report.revenue_per_member }
+    rev_per_paying_member = safe(0) { report.revenue_per_paying_member }
+    rev_per_lease = safe(0) { report.revenue_per_lease }
     avg_tenure = safe(0) { report.average_member_tenure }
     dp_conv = safe(0) { report.day_pass_conversion_rate }
 
@@ -70,7 +71,13 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       room_utilization: util_value,
       avg_visits_per_member: visits_value,
       daily_visitors: daily_visitors_value,
-      revenue_per_member: (rev_per_member * 100).to_i, # cents
+      # Membership invoices ÷ paying individual members, last complete month
+      # (comped/lease members excluded from both sides). Legacy key
+      # revenue_per_member kept in sync so old app builds show the corrected
+      # figure. revenue_per_lease is the companion for lease-heavy spaces.
+      revenue_per_member: (rev_per_paying_member * 100).to_i, # cents — legacy key
+      revenue_per_paying_member: (rev_per_paying_member * 100).to_i, # cents
+      revenue_per_lease: (rev_per_lease * 100).to_i, # cents
       avg_tenure_months: avg_tenure,
       day_pass_count: safe(0) { report.day_pass_count(range: window) },
       checkin_count: safe(0) { report.checkin_count(range: window) },
