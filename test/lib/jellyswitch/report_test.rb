@@ -335,6 +335,79 @@ module Jellyswitch
       assert_equal expected.round, @report.projected_next_month_revenue
     end
 
+    # ── Revenue by product ──
+    # Exclusive partition: linkage first (day-pass invoice ids, room
+    # payment intents), then billable type; remainder = memberships.
+
+    test "revenue_by_product puts each invoice in exactly one bucket" do
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      mid = last_month.beginning_of_month.in_time_zone.change(day: 10, hour: 9)
+      member = create_member(organization: nil, out_of_band: false)
+
+      create_paid_invoice(billable: member, amount_cents: 20000, date: mid) # membership
+
+      dp_invoice = create_paid_invoice(billable: member, amount_cents: 3500, date: mid + 1.hour)
+      pass = create_day_pass(day: last_month.beginning_of_month + 9)
+      pass.update_column(:invoice_id, dp_invoice.id)
+
+      room_invoice = create_paid_invoice(billable: member, amount_cents: 4500, date: mid + 2.hours)
+      room_invoice.update_column(:stripe_payment_intent_id, "pi_room_bucket_test")
+      Reservation.create!(
+        user: member,
+        room: rooms(:small_meeting_room),
+        datetime_in: 10.days.ago.in_time_zone.change(hour: 3),
+        minutes: 60,
+        cancelled: false,
+        stripe_payment_intent_id: "pi_room_bucket_test",
+      )
+
+      create_paid_invoice(
+        billable: organizations(:sierra_nevada_organization),
+        amount_cents: 20500,
+        date: mid + 3.hours,
+      )
+
+      result = @report.revenue_by_product(range: range)
+
+      assert_equal 35.0, result["Day Passes"]
+      assert_equal 45.0, result["Meeting Rooms"]
+      assert_equal 205.0, result["Office Leases"]
+      assert_equal 200.0, result["Memberships"], "day-pass/room/org invoices must not leak into Memberships"
+    end
+
+    test "user-billed lease invoices bucket under Office Leases" do
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      payer = create_member(organization: nil, out_of_band: false)
+      organizations(:sierra_nevada_organization).update_columns(billing_contact_id: payer.id)
+
+      create_paid_invoice(
+        billable: payer,
+        amount_cents: 90000,
+        date: last_month.beginning_of_month.in_time_zone.change(day: 5, hour: 10),
+      )
+
+      result = @report.revenue_by_product(range: range)
+      assert_equal 900.0, result["Office Leases"]
+      assert_nil result["Memberships"]
+    end
+
+    test "revenue_by_product buckets sum to the PERIOD REVENUE definition" do
+      repoint_lease_fixture_plan
+      last_month = Date.current.prev_month
+      range = last_month.beginning_of_month..last_month.end_of_month
+      member = create_member(organization: nil, out_of_band: false)
+      create_paid_invoice(
+        billable: member,
+        amount_cents: 12300,
+        date: last_month.beginning_of_month.in_time_zone.change(day: 8, hour: 11),
+      )
+
+      total = @report.revenue_by_product(range: range).values.sum
+      assert_equal @report.revenue_for_period(range: range), total.round
+    end
+
     test "lease supplement skips leases with no organization" do
       repoint_lease_fixture_plan
       last_month = Date.current.prev_month

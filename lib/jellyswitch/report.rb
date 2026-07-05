@@ -172,29 +172,7 @@ module Jellyswitch
       invoice_rev = paid_invoices_in(period_start.beginning_of_day..period_end.end_of_day)
         .sum(:amount_due).to_f / 100.0
 
-      # Out-of-band lease checks aren't invoiced; add each overlapped month's
-      # supplement pro-rated by the fraction of the month inside the window,
-      # so a 30-day window spanning two months no longer counts two full
-      # months of check revenue. Iteration starts at the earliest lease —
-      # "All Time" windows would otherwise walk hundreds of empty months.
-      lease_rev = 0.0
-      earliest_lease = office_leases.minimum(:start_date)
-      if earliest_lease
-        month = [period_start, earliest_lease.beginning_of_month].max.beginning_of_month
-        last_month = period_end.beginning_of_month
-        while month <= last_month
-          overlap_start = [month, period_start].max
-          overlap_end = [month.end_of_month, period_end].min
-          if overlap_end >= overlap_start
-            overlap_days = (overlap_end - overlap_start).to_i + 1
-            fraction = overlap_days / month.end_of_month.day.to_f
-            lease_rev += lease_supplement_for_month(month) * fraction
-          end
-          month = month.next_month
-        end
-      end
-
-      (invoice_rev + lease_rev).round
+      (invoice_rev + lease_supplement_for_window(range)).round
     end
 
     # Average monthly revenue across the period — actual money (paid invoices
@@ -897,35 +875,60 @@ module Jellyswitch
       (converted.to_f / dp_users * 100).round(1)
     end
 
-    def revenue_by_product(period_days = 365)
-      result = {}
-      cutoff = period_days.days.ago
+    # Partition the window's paid invoices by what they actually paid for.
+    # Hard linkage first (day-pass/bundle invoice ids, room-capture payment
+    # intents), then billable type, remainder = memberships — every invoice
+    # lands in exactly ONE bucket, so the rows sum to the same invoice
+    # total the PERIOD REVENUE tile shows, plus the identical pro-rated
+    # out-of-band lease supplement.
+    #
+    # The previous version summed ALL User-billed invoices as "Memberships"
+    # while re-counting day passes at list price and rooms at rate×minutes
+    # on top — double counting — and user-billed office-lease invoices
+    # (how CT's leases are commonly billed) landed under Memberships.
+    def revenue_by_product(period_days = 365, range: nil)
+      return {} unless location
+      range, _days = resolve_period(period_days, range)
 
-      # Membership revenue
-      result["Memberships"] = location_invoices.paid
-        .where(billable_type: "User")
-        .where("#{EFFECTIVE_DATE_SQL} > ?", cutoff)
-        .sum(:amount_due).to_f / 100.0
+      dp_invoice_ids = day_passes.where.not(invoice_id: nil).pluck(:invoice_id).to_set
+      dp_invoice_ids |= DayPassBundle.where(location: location)
+        .where.not(invoice_id: nil).pluck(:invoice_id)
+      room_pi_ids = Reservation.joins(:room)
+        .where(rooms: { location_id: location.id })
+        .where.not(stripe_payment_intent_id: nil)
+        .pluck(:stripe_payment_intent_id).to_set
 
-      # Day pass revenue
-      result["Day Passes"] = day_passes.joins(:day_pass_type)
-        .where("day_passes.created_at > ?", cutoff)
-        .sum("day_pass_types.amount_in_cents").to_f / 100.0
+      # User-billed lease invoices: the payer is the billing contact or
+      # owner of an org holding a lease that overlaps the window. (An org
+      # owner's own personal membership gets folded in here too — accepted
+      # imprecision until invoices carry a product reference.)
+      lease_org_ids = office_leases
+        .where("start_date <= ? AND end_date >= ?", range.end.to_date, range.begin.to_date)
+        .pluck(:organization_id).compact
+      lease_contact_ids = Organization.where(id: lease_org_ids)
+        .pluck(:billing_contact_id, :owner_id).flatten.compact.to_set
 
-      # Meeting room revenue
-      room_ids = (location&.rooms&.rentable&.pluck(:id) || [])
-      if room_ids.any?
-        result["Meeting Rooms"] = Reservation.where(room_id: room_ids, cancelled: false, paid: true)
-          .where("datetime_in > ?", cutoff)
-          .joins(:room)
-          .sum("(rooms.hourly_rate_in_cents / 60.0) * reservations.minutes").to_f / 100.0
-      end
+      result = Hash.new(0.0)
+      paid_invoices_in(range)
+        .pluck(:id, :amount_due, :billable_type, :billable_id, :stripe_payment_intent_id)
+        .each do |id, amount, btype, bid, pi|
+          bucket =
+            if dp_invoice_ids.include?(id)
+              "Day Passes"
+            elsif pi.present? && room_pi_ids.include?(pi)
+              "Meeting Rooms"
+            elsif btype == "Organization"
+              "Office Leases"
+            elsif btype == "User" && lease_contact_ids.include?(bid)
+              "Office Leases"
+            else
+              "Memberships"
+            end
+          result[bucket] += (amount || 0).to_f / 100.0
+        end
 
-      # Office lease revenue
-      result["Office Leases"] = location_invoices.paid
-        .where(billable_type: "Organization")
-        .where("#{EFFECTIVE_DATE_SQL} > ?", cutoff)
-        .sum(:amount_due).to_f / 100.0
+      supplement = lease_supplement_for_window(range)
+      result["Office Leases"] += supplement if supplement.positive?
 
       result.reject { |_, v| v <= 0 }
     end
@@ -1063,6 +1066,33 @@ module Jellyswitch
       else
         [period_days.days.ago..Time.current, period_days]
       end
+    end
+
+    # Out-of-band lease checks aren't invoiced; add each overlapped month's
+    # supplement pro-rated by the fraction of the month inside the window,
+    # so a 30-day window spanning two months doesn't count two full months
+    # of check revenue. Iteration starts at the earliest lease — "All Time"
+    # windows would otherwise walk hundreds of empty months.
+    def lease_supplement_for_window(range)
+      period_start = range.begin.to_date
+      period_end = range.end.to_date
+      earliest_lease = office_leases.minimum(:start_date)
+      return 0.0 unless earliest_lease
+
+      lease_rev = 0.0
+      month = [period_start, earliest_lease.beginning_of_month].max.beginning_of_month
+      last_month = period_end.beginning_of_month
+      while month <= last_month
+        overlap_start = [month, period_start].max
+        overlap_end = [month.end_of_month, period_end].min
+        if overlap_end >= overlap_start
+          overlap_days = (overlap_end - overlap_start).to_i + 1
+          fraction = overlap_days / month.end_of_month.day.to_f
+          lease_rev += lease_supplement_for_month(month) * fraction
+        end
+        month = month.next_month
+      end
+      lease_rev
     end
 
     def purchased_day_pass_revenue(range)
