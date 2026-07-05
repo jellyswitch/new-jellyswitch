@@ -37,6 +37,13 @@ RSpec.describe Billing::Reservations::ChargeAtBooking do
       expect(inv.stripe_payment_intent_id).to eq("pi_test")
     end
 
+    it "does NOT create a paid-room feed card itself (Notifiable::PaidRoomReservation owns it — prevents duplicate feed cards)" do
+      stub_card!
+      r = reservation_for
+      expect { described_class.call(reservation: r) }
+        .not_to change { FeedItem.where("blob->>'type' = ?", "paid-room-reservation").count }
+    end
+
     it "passes a deterministic idempotency key to Stripe" do
       stub_card!
       r = reservation_for
