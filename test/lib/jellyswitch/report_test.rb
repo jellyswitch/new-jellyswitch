@@ -259,38 +259,59 @@ module Jellyswitch
       assert_equal before - 205, Jellyswitch::Report.new(@operator, @location).mrr_by_month(6)[label]
     end
 
-    # ── Seasonal day-pass forecast ──
-    # Day-pass demand is strongly seasonal (summer/winter peaks); the
-    # forecast is same-month-last-year × YoY growth, clamped, with a
-    # trailing-average fallback when there's no year-ago history.
+    # ── History-driven day-pass forecast ──
+    # forecast = recent baseline × the target month's historical index,
+    # where the index is measured from THIS location's data and shrunk
+    # toward 1.0 — seasonal locations get their peaks, non-seasonal
+    # locations (no tourist traffic) converge on their plain average.
+    # Fixture day-pass type is $200/pass. The target's sample month
+    # (next month, last year) sits 11 months back — inside the baseline.
 
-    test "seasonal forecast scales last year's month by the trailing-year growth" do
+    test "forecast amplifies a month that historically outperforms its year" do
       target = Date.current.next_month.beginning_of_month
-      # Same month last year: 2 × $200 = $400 (these fall inside the
-      # trailing-12 growth window too — ~11 months ago)
-      2.times { |i| create_day_pass(day: (target << 12) + i) }
-      # Trailing 12 months: $400 + $800 = $1200; prior 12: $800 → growth 1.5
-      4.times { |i| create_day_pass(day: 2.months.ago.to_date - i) }
-      4.times { |i| create_day_pass(day: 14.months.ago.to_date - i) }
+      sample = target << 12
+      (1..20).each do |i|
+        month = Date.current.beginning_of_month << i
+        create_day_pass(day: month + 3)
+      end
+      3.times { |i| create_day_pass(day: sample + 5 + i) } # sample month: $800
 
-      # $400 × 1.5 = $600
-      assert_equal 600, @report.seasonal_day_pass_forecast
+      # baseline (last 12 complete) = (11×200 + 800)/12 = 250
+      # index: 800 / (window avg 260) = 3.077 → shrunk (3.077+1)/2 = 2.038
+      # forecast = 250 × 2.038 = 510
+      assert_equal 510, @report.day_pass_forecast
     end
 
-    test "seasonal forecast clamps runaway growth at 2x" do
-      target = Date.current.next_month.beginning_of_month
-      create_day_pass(day: (target << 12) + 3) # last year: $200
-      # trailing: $1600, prior: $200 → raw growth 8, clamped to 2
-      8.times { |i| create_day_pass(day: 2.months.ago.to_date - i) }
-      create_day_pass(day: 14.months.ago.to_date)
+    test "forecast converges on the recent average when history shows no seasonality" do
+      (1..20).each do |i|
+        month = Date.current.beginning_of_month << i
+        create_day_pass(day: month + 3)
+      end
 
-      assert_equal 400, @report.seasonal_day_pass_forecast
+      # uniform history → index 1.0 → forecast = baseline = $200
+      assert_equal 200, @report.day_pass_forecast
     end
 
-    test "seasonal forecast falls back to trailing average without year-ago data" do
-      # No pass exists in the same month last year → trailing 3-month avg.
-      3.times { |i| create_day_pass(day: 20.days.ago.to_date - i) } # $600 in 3 months
-      assert_equal 200, @report.seasonal_day_pass_forecast
+    test "forecast clamps a runaway historical index at 4x" do
+      target = Date.current.next_month.beginning_of_month
+      sample = target << 12
+      (1..20).each do |i|
+        month = Date.current.beginning_of_month << i
+        create_day_pass(day: month + 3)
+      end
+      25.times { |i| create_day_pass(day: sample + (i % 25) + 1) } # sample month: $5200 total
+
+      # baseline = (11×200 + 5200)/12 = 616.67; raw index 7.43 → shrunk
+      # 4.21 → clamped 4.0 → forecast = 616.67 × 4 = 2467
+      assert_equal 2467, @report.day_pass_forecast
+    end
+
+    test "forecast for a young location is the average of its complete months" do
+      create_day_pass(day: (Date.current.beginning_of_month << 2) + 3) # $200
+      2.times { |i| create_day_pass(day: (Date.current.beginning_of_month << 1) + 3 + i) } # $400
+
+      # No usable year-ago sample → index 1.0 → (200 + 400)/2 = 300
+      assert_equal 300, @report.day_pass_forecast
     end
 
     test "day_pass_revenue_for_month ignores complimentary and future-scheduled passes" do
@@ -304,12 +325,12 @@ module Jellyswitch
       assert_equal 0.0, @report.day_pass_revenue_for_month(Date.current.next_month)
     end
 
-    test "projected_next_month_revenue is contracted recurring plus the seasonal day-pass estimate" do
+    test "projected_next_month_revenue is contracted recurring plus history-driven estimates" do
       repoint_lease_fixture_plan
       expected = @report.mrr(product_filter: "memberships") +
         @report.mrr(product_filter: "offices") +
-        @report.mrr(product_filter: "meeting_rooms") +
-        @report.seasonal_day_pass_forecast
+        @report.day_pass_forecast +
+        @report.room_forecast
 
       assert_equal expected.round, @report.projected_next_month_revenue
     end
