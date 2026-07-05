@@ -51,6 +51,13 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       # plain recent average).
       next_month_forecast: (safe(0) { report.projected_next_month_revenue } * 100).to_i, # cents
       day_pass_forecast: (safe(0) { report.day_pass_forecast } * 100).to_i, # cents
+      # Exclusive partition of the window's paid invoices (+ check leases);
+      # rows sum to `revenue` above.
+      revenue_by_product: safe([]) {
+        report.revenue_by_product(range: window)
+          .sort_by { |_, dollars| -dollars }
+          .map { |label, dollars| { label: label, amount: (dollars * 100).round } }
+      },
       revenue: revenue_total, # cents
       active_members: safe(0) { report.total_active_member_count },
       churn_rate: churn_rate_value,
