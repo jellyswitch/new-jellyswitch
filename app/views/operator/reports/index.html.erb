@@ -79,8 +79,15 @@
 
       <div class="col-6 col-lg-3 mb-3">
         <div class="border rounded p-3 h-100">
-          <div class="h4 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_member, precision: 0) %></div>
-          <div class="text-muted small">Rev / Member / Mo</div>
+          <div class="h4 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_paying_member, precision: 0) %></div>
+          <div class="text-muted small">Rev / Paying Member / Mo</div>
+        </div>
+      </div>
+
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="h4 mb-0 font-weight-bold"><%= number_to_currency(@report.revenue_per_lease, precision: 0) %></div>
+          <div class="text-muted small">Rev / Lease / Mo</div>
         </div>
       </div>
 
