@@ -45,10 +45,12 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       # old key so existing app builds show the corrected number too.
       avg_monthly_revenue: (avg_revenue_value * 100).to_i, # cents
       avg_mrr: (avg_revenue_value * 100).to_i, # cents — legacy key, same value
-      # Next month projection: contracted recurring + seasonal day-pass
-      # estimate (same month last year × YoY trend) + trailing room average.
+      # Next month projection: contracted recurring + history-driven
+      # day-pass and room estimates (baseline × the month's historical
+      # index — locations without real seasonality converge on their
+      # plain recent average).
       next_month_forecast: (safe(0) { report.projected_next_month_revenue } * 100).to_i, # cents
-      day_pass_forecast: (safe(0) { report.seasonal_day_pass_forecast } * 100).to_i, # cents
+      day_pass_forecast: (safe(0) { report.day_pass_forecast } * 100).to_i, # cents
       revenue: revenue_total, # cents
       active_members: safe(0) { report.total_active_member_count },
       churn_rate: churn_rate_value,

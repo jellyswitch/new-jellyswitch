@@ -555,13 +555,14 @@ module Jellyswitch
         }
       end
 
-      # Revenue forecast — contracted recurring plus a seasonal day-pass
-      # estimate (same month last year × YoY trend), not the trailing
-      # average that lags peak/shoulder season swings.
+      # Revenue forecast — contracted recurring plus history-driven
+      # day-pass and room estimates (recent baseline × the month's
+      # historical index), not a trailing average that lags seasonal
+      # locations by a quarter.
       projected = projected_next_month_revenue
       if projected > 0
         results << {
-          text: "Projected #{Date.current.next_month.strftime('%B')} revenue: #{ActionController::Base.helpers.number_to_currency(projected, precision: 0)} — subscriptions + leases + seasonal day-pass estimate.",
+          text: "Projected #{Date.current.next_month.strftime('%B')} revenue: #{ActionController::Base.helpers.number_to_currency(projected, precision: 0)} — subscriptions + leases + day-pass and room estimates from your history.",
           action: nil,
           urgency: :info
         }
@@ -624,48 +625,79 @@ module Jellyswitch
       total.round(0)
     end
 
-    # ── Seasonal day-pass forecasting ──
+    # ── History-driven forecasting ──
     #
-    # Day-pass demand at mountain locations swings hard with the seasons
-    # (summer and winter peaks, spring/fall shoulders), so a trailing
-    # 3-month average lags the season by a quarter — entering July it still
-    # averages the spring shoulder (~6x low at CT's 2025 peak). Estimate a
-    # month from the same month LAST YEAR, scaled by how the trailing year
-    # compares to the year before it, clamped so one anomalous month can't
-    # produce a wild forecast.
+    # Forecast = recent baseline × the target month's historical index.
+    # The index measures how that calendar month has historically compared
+    # to its surrounding year at THIS location, shrunk toward 1.0 by sample
+    # count — so a tourist-town location (CT: July runs several times an
+    # average month) gets its peaks, while a location with no real
+    # seasonality (Choose Folsom) converges on its plain recent average.
+    # No location-specific rules: the data decides how seasonal to be.
 
     # Actual purchased day-pass revenue for a calendar month. Bounded at
     # today — bundle days can be scheduled into future months — and
     # excludes complimentary passes (their list price isn't revenue).
+    # Memoized per instance: the forecaster samples many months.
     def day_pass_revenue_for_month(month)
       month_start = month.to_date.beginning_of_month
-      return 0.0 if month_start > Date.current
-      month_end = [month_start.end_of_month, Date.current].min
-      purchased_day_pass_revenue(month_start..month_end)
+      @day_pass_month_cache ||= {}
+      @day_pass_month_cache[month_start] ||= begin
+        if month_start > Date.current
+          0.0
+        else
+          month_end = [month_start.end_of_month, Date.current].min
+          purchased_day_pass_revenue(month_start..month_end)
+        end
+      end
     end
 
-    def seasonal_day_pass_forecast(month = Date.current.next_month)
-      month_start = month.to_date.beginning_of_month
-      same_month_last_year = day_pass_revenue_for_month(month_start << 12)
-      # Young locations with no year-ago data fall back to the trailing
-      # average the run rate has always used.
-      return trailing_day_pass_monthly_average if same_month_last_year.zero?
+    def day_pass_forecast(month = Date.current.next_month)
+      forecast_from_history(
+        month,
+        revenue_for_month: method(:day_pass_revenue_for_month),
+        first_month: day_passes.purchased.minimum(:day)&.beginning_of_month,
+      )
+    end
 
-      recent = purchased_day_pass_revenue(12.months.ago.to_date..Date.current)
-      prior  = purchased_day_pass_revenue(24.months.ago.to_date..(12.months.ago.to_date - 1))
-      growth = prior.positive? ? (recent / prior).clamp(0.5, 2.0) : 1.0
-      (same_month_last_year * growth).round
+    # Paid meeting-room revenue for a calendar month (same pricing basis as
+    # the MRR room component), bounded at today.
+    def room_revenue_for_month(month)
+      return 0.0 unless location
+      month_start = month.to_date.beginning_of_month
+      @room_month_cache ||= {}
+      @room_month_cache[month_start] ||= begin
+        if month_start > Date.current
+          0.0
+        else
+          room_ids = location.rooms.rentable.pluck(:id)
+          if room_ids.empty?
+            0.0
+          else
+            month_end = [month_start.end_of_month.end_of_day, Time.current].min
+            Reservation.where(room_id: room_ids, cancelled: false, paid: true)
+              .where(datetime_in: month_start.beginning_of_day..month_end)
+              .joins(:room)
+              .sum("(rooms.hourly_rate_in_cents / 60.0) * reservations.minutes").to_f / 100.0
+          end
+        end
+      end
+    end
+
+    def room_forecast(month = Date.current.next_month)
+      return 0 unless location
+      first = Reservation.where(room_id: location.rooms.rentable.select(:id), cancelled: false, paid: true)
+        .minimum(:datetime_in)&.to_date&.beginning_of_month
+      forecast_from_history(month, revenue_for_month: method(:room_revenue_for_month), first_month: first)
     end
 
     # Next month's expected revenue: contracted recurring (memberships +
-    # leases) at today's book, seasonally-estimated day passes, and the
-    # trailing meeting-room average (room demand tracks day-pass traffic
-    # loosely but has no clean seasonal history yet).
+    # leases) at today's book, plus history-driven day-pass and room
+    # estimates.
     def projected_next_month_revenue
       return 0 unless location
       contracted = mrr(product_filter: "memberships") + mrr(product_filter: "offices")
-      rooms = mrr(product_filter: "meeting_rooms")
-      (contracted + rooms + seasonal_day_pass_forecast).round
+      (contracted + day_pass_forecast + room_forecast).round
     end
 
     def mrr_by_month(months = 12, product_filter: "all")
@@ -1039,8 +1071,70 @@ module Jellyswitch
         .sum("day_pass_types.amount_in_cents").to_f / 100.0
     end
 
-    def trailing_day_pass_monthly_average
-      (purchased_day_pass_revenue(3.months.ago.to_date..Date.current) / 3.0).round
+    # How many past years to sample when measuring a month's historical
+    # index, how strongly to shrink the index toward "no seasonal effect",
+    # and how many months of surrounding history a sample year needs before
+    # it counts (a location's nascent first months produce junk ratios).
+    FORECAST_LOOKBACK_YEARS = 3
+    FORECAST_INDEX_PRIOR_WEIGHT = 1.0
+    FORECAST_MIN_SAMPLE_MONTHS = 6
+
+    # Generic month forecaster: recent baseline × historical index for the
+    # target calendar month.
+    #
+    # Baseline: mean of the last up-to-12 COMPLETE months, clipped to the
+    # series' first month so pre-opening zeros don't drag it down. It spans
+    # a full seasonal cycle for mature locations, so it's naturally
+    # season-free, and growth/decline shows up in it automatically.
+    #
+    # Index: for each of the last few years, the target month's revenue
+    # divided by the mean of the 12 months ending then — "how did this
+    # month compare to its own year?" — averaged, then shrunk toward 1.0
+    # by sample count and clamped. With no usable samples (young location)
+    # the index is 1.0 and the forecast is just the recent average.
+    def forecast_from_history(target_month, revenue_for_month:, first_month:)
+      return 0 unless first_month
+      target = target_month.to_date.beginning_of_month
+      first = first_month.to_date.beginning_of_month
+      last_complete = Date.current.beginning_of_month.prev_month
+      return 0 if last_complete < first
+
+      history = []
+      m = last_complete
+      while m >= first && history.size < 12
+        history << revenue_for_month.call(m)
+        m = m.prev_month
+      end
+      baseline = history.sum / history.size
+      return 0 if baseline.zero?
+
+      ratios = []
+      (1..FORECAST_LOOKBACK_YEARS).each do |k|
+        sample = target << (12 * k)
+        next if sample < first || sample > last_complete
+
+        window = []
+        m = sample
+        12.times do
+          window << revenue_for_month.call(m) if m >= first
+          m = m.prev_month
+        end
+        next if window.size < FORECAST_MIN_SAMPLE_MONTHS
+
+        year_avg = window.sum / window.size
+        ratios << revenue_for_month.call(sample) / year_avg if year_avg.positive?
+      end
+
+      index = if ratios.any?
+        raw = ratios.sum / ratios.size
+        shrunk = (raw * ratios.size + FORECAST_INDEX_PRIOR_WEIGHT) /
+          (ratios.size + FORECAST_INDEX_PRIOR_WEIGHT)
+        shrunk.clamp(0.25, 4.0)
+      else
+        1.0
+      end
+
+      (baseline * index).round
     end
 
     def normalize_to_monthly(plan)
