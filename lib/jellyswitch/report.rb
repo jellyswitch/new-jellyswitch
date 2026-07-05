@@ -678,6 +678,32 @@ module Jellyswitch
       (contracted + day_pass_forecast + room_forecast).round
     end
 
+    # How the CURRENT month is tracking: actuals so far plus the expected
+    # remainder. Usage products (day passes, rooms) get the rest of their
+    # history-driven monthly estimate at a uniform pace; recurring gets the
+    # not-yet-billed portion of the contracted book (anniversary billing
+    # lands all month), floored at zero so a big early payment — an annual
+    # payer, say — raises the forecast instead of going negative.
+    def current_month_forecast
+      return 0 unless location
+      today = Date.current
+      month_start = today.beginning_of_month
+      days_in_month = today.end_of_month.day
+      frac_remaining = (days_in_month - today.day).to_f / days_in_month
+
+      buckets = revenue_by_product(range: month_start..today)
+      mtd_total = buckets.values.sum
+
+      dp_remaining = day_pass_forecast(month_start) * frac_remaining
+      room_remaining = room_forecast(month_start) * frac_remaining
+
+      contracted = mrr(product_filter: "memberships") + mrr(product_filter: "offices")
+      recurring_mtd = buckets.fetch("Memberships", 0.0) + buckets.fetch("Office Leases", 0.0)
+      recurring_remaining = [contracted - recurring_mtd, 0].max
+
+      (mtd_total + dp_remaining + room_remaining + recurring_remaining).round
+    end
+
     def mrr_by_month(months = 12, product_filter: "all")
       # Memoize per Report instance — the dashboard renders the MRR chart AND
       # the avg_mrr tile in the same request and both call this with similar

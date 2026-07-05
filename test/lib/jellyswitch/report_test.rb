@@ -408,6 +408,38 @@ module Jellyswitch
       assert_equal @report.revenue_for_period(range: range), total.round
     end
 
+    test "current_month_forecast is MTD actuals plus the expected remainder" do
+      repoint_lease_fixture_plan
+      today = Date.current
+      month_start = today.beginning_of_month
+      frac_remaining = (today.end_of_month.day - today.day).to_f / today.end_of_month.day
+
+      buckets = @report.revenue_by_product(range: month_start..today)
+      contracted = @report.mrr(product_filter: "memberships") + @report.mrr(product_filter: "offices")
+      recurring_mtd = buckets.fetch("Memberships", 0.0) + buckets.fetch("Office Leases", 0.0)
+      expected = buckets.values.sum +
+        @report.day_pass_forecast(month_start) * frac_remaining +
+        @report.room_forecast(month_start) * frac_remaining +
+        [contracted - recurring_mtd, 0].max
+
+      assert_equal expected.round, @report.current_month_forecast
+    end
+
+    test "current_month_forecast never drops below money already received" do
+      # An annual payer early in the month: MTD exceeds the contracted
+      # monthly book — the recurring remainder must floor at zero, not
+      # subtract.
+      payer = create_member(organization: nil, out_of_band: false)
+      create_paid_invoice(
+        billable: payer,
+        amount_cents: 5_000_000, # $50k annual payment
+        date: Date.current.beginning_of_month.in_time_zone.change(hour: 9),
+      )
+
+      mtd = @report.revenue_by_product(range: Date.current.beginning_of_month..Date.current).values.sum
+      assert_operator @report.current_month_forecast, :>=, mtd.round
+    end
+
     test "lease supplement skips leases with no organization" do
       repoint_lease_fixture_plan
       last_month = Date.current.prev_month

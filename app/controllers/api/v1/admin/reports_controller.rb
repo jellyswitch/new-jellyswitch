@@ -50,6 +50,9 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
       # index — locations without real seasonality converge on their
       # plain recent average).
       next_month_forecast: (safe(0) { report.projected_next_month_revenue } * 100).to_i, # cents
+      # Month-to-date actuals + expected remainder (paced usage products,
+      # floored contracted remainder for recurring).
+      current_month_forecast: (safe(0) { report.current_month_forecast } * 100).to_i, # cents
       day_pass_forecast: (safe(0) { report.day_pass_forecast } * 100).to_i, # cents
       # Exclusive partition of the window's paid invoices (+ check leases);
       # rows sum to `revenue` above.
