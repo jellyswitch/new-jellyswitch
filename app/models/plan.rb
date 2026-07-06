@@ -55,6 +55,13 @@ class Plan < ApplicationRecord
   # Commitment Length: a positive integer count of billing periods, or unset.
   validates :commitment_interval, numericality: { only_integer: true, greater_than_or_equal_to: 1 }, allow_nil: true
 
+  # day_limit is NOT NULL (defaults to 0). The plan form always submits this
+  # field even when "Limit days per month" is unchecked — sending "" which
+  # casts to nil — so coerce nil back to 0 (the "no limit" sentinel; has_day_limit
+  # gates whether it's enforced). Without this, a blank field is a NOT NULL
+  # violation → HTTP 500 on plan create/update.
+  before_validation { self.day_limit ||= 0 }
+
   # Scopes
   scope :available, -> { where(available: true) }
   scope :unavailable, -> { where(available: false) }

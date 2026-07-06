@@ -43,6 +43,26 @@ RSpec.describe Plan, type: :model do
     it { should validate_numericality_of(:amount_in_cents).is_greater_than_or_equal_to(0) }
   end
 
+  describe "day_limit coercion (NOT NULL column)" do
+    it "coerces a blank/nil day_limit to 0 when the plan has no day limit (no NULL violation)" do
+      plan = build(:plan, has_day_limit: false, day_limit: nil)
+      expect { plan.save! }.not_to raise_error
+      expect(plan.reload.day_limit).to eq(0)
+    end
+
+    it "keeps a real day_limit when the plan has a day limit" do
+      plan = build(:plan, has_day_limit: true, day_limit: 3)
+      expect { plan.save! }.not_to raise_error
+      expect(plan.reload.day_limit).to eq(3)
+    end
+
+    it "still rejects a day-limited plan with a blank day_limit (0 fails the >= 1 rule)" do
+      plan = build(:plan, has_day_limit: true, day_limit: nil)
+      expect(plan).not_to be_valid
+      expect(plan.errors[:day_limit]).to be_present
+    end
+  end
+
   describe "scopes" do
     let!(:available_plan) { create(:plan, available: true) }
     let!(:unavailable_plan) { create(:plan, available: false) }
