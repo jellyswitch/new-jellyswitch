@@ -266,6 +266,16 @@ RSpec.describe Operator::DayPassTypesController, type: :controller do
         expect(response).to have_http_status(:ok)
       end
     end
+
+    context "bundle-size / expiration fields (must be editable, not just settable on create)" do
+      render_views
+
+      it "renders the quantity and expires_after_days inputs on the edit form" do
+        get :edit, params: { id: day_pass_type.id }
+        expect(response.body).to include("day_pass_type[quantity]")
+        expect(response.body).to include("day_pass_type[expires_after_days]")
+      end
+    end
   end
 
   describe "GET #index" do
