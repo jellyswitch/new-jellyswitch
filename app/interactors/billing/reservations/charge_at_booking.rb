@@ -92,10 +92,13 @@ class Billing::Reservations::ChargeAtBooking
     )
     context.payment_intent = intent
 
-    invoice = create_local_invoice(
+    create_local_invoice(
       amount_paid: amount, status: 'paid', stripe_payment_intent_id: intent.id,
     )
-    create_feed_item(invoice)
+    # The admin "paid room" feed card is created by Notifiable::PaidRoomReservation
+    # (via SendAdminNotificationForPaidRoom, later in the CreateRoomReservation
+    # chain). Do NOT create a second card here — that produced duplicate feed
+    # cards for every paid booking.
     send_receipt
     notify_charged
   rescue Stripe::CardError => e
@@ -131,10 +134,10 @@ class Billing::Reservations::ChargeAtBooking
       captured_at: Time.current,
     )
 
-    invoice = create_local_invoice(
+    create_local_invoice(
       amount_paid: 0, status: 'open', stripe_invoice_id: stripe_invoice.id, due_date: 30.days.from_now,
     )
-    create_feed_item(invoice)
+    # Admin "paid room" feed card is created by Notifiable::PaidRoomReservation, not here.
   rescue Stripe::InvalidRequestError => e
     Honeybadger.notify(e, context: { reservation_id: reservation.id })
     context.fail!(message: 'Could not invoice this booking. Please try again.')
@@ -163,26 +166,6 @@ class Billing::Reservations::ChargeAtBooking
     Rails.logger.error("ChargeAtBooking invoice failed: #{e.class}: #{e.message}")
     Honeybadger.notify(e, context: { reservation_id: reservation.id })
     nil
-  end
-
-  def create_feed_item(invoice)
-    FeedItem.create!(
-      operator: location.operator,
-      location: location,
-      user: reservation.user,
-      blob: {
-        'type' => 'paid-room-reservation',
-        'user_name' => reservation.user.name,
-        'reservation_id' => reservation.id,
-        'invoice_id' => invoice&.id,
-        'charge_amount_in_cents' => amount,
-        'room_name' => reservation.room.name,
-        'minutes' => reservation.minutes,
-      },
-    )
-  rescue => e
-    Rails.logger.error("ChargeAtBooking feed item failed: #{e.class}: #{e.message}")
-    Honeybadger.notify(e, context: { reservation_id: reservation.id })
   end
 
   def send_receipt
