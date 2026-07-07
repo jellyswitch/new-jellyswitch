@@ -14,9 +14,22 @@ class Billing::Invoices::Refunds::Save
     # a feed/search-index failure must never flip a committed refund to
     # "failed" or page Honeybadger. See ADR 0014.
     create_refund_feed_item
+
+    # A refunded day-pass invoice must not keep granting access / masking bundle
+    # redemption. Best-effort like the feed item — the refund is already committed.
+    rescind_day_passes
   end
 
   private
+
+  def rescind_day_passes
+    Billing::DayPasses::RescindForInvoice.call(invoice: invoice)
+  rescue => e
+    Rails.logger.warn(
+      "[Refunds::Save] rescinding day pass(es) failed for invoice #{invoice.id}: #{e.class}: #{e.message}",
+    )
+    Honeybadger.notify(e) if defined?(Honeybadger)
+  end
 
   def create_refund_feed_item
     billable = invoice.billable

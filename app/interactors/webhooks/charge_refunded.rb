@@ -28,11 +28,25 @@ class Webhooks::ChargeRefunded
       amount_cents: info[:amount_cents].to_i,
       stripe_refund_id: info[:stripe_refund_id],
     )
+
+    # Stripe-Dashboard refunds arrive only here, so this is where a day pass
+    # refunded outside the app gets rescinded. Best-effort: a rescind failure
+    # must not fail the (idempotent, already-reconciled) webhook.
+    rescind_day_passes(invoice)
   rescue => e
     context.fail!(message: "#{event.type} reconcile failed: #{e.class}: #{e.message}")
   end
 
   private
+
+  def rescind_day_passes(invoice)
+    Billing::DayPasses::RescindForInvoice.call(invoice: invoice)
+  rescue => e
+    Rails.logger.warn(
+      "[ChargeRefunded] rescinding day pass(es) failed for invoice #{invoice.id}: #{e.class}: #{e.message}",
+    )
+    Honeybadger.notify(e) if defined?(Honeybadger)
+  end
 
   # Normalize a Charge (charge.refunded) or a Refund (refund.created /
   # charge.refund.updated) into the fields we need to match + reconcile.
