@@ -1,4 +1,23 @@
 class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
+  # Mobile admin notification toggle key => real boolean column on operators.
+  # The mobile settings screen renders one Switch per key returned by
+  # #notifications, so this map is the single source of truth for BOTH the read
+  # (GET notifications_config) and the write (PATCH notifications_config) paths,
+  # keeping them symmetric — a toggle saved via PATCH reads back identically.
+  #
+  # The four keys this endpoint originally used (new_member_notification,
+  # new_booking_notification, new_feedback_notification, daily_digest) were never
+  # operator columns: GET hid that with .try (always false) and PATCH raised
+  # ActiveModel::UnknownAttributeError, 500-ing every save. Room bookings are
+  # split into free vs paid to mirror the web settings page. daily_digest is
+  # dropped — no column backs it and no digest delivery exists.
+  NOTIFICATION_TOGGLES = {
+    new_member_notification:        :signup_notifications,
+    free_room_booking_notification: :reservation_notifications,
+    paid_room_booking_notification: :paid_room_reservation_notifications,
+    new_feedback_notification:      :member_feedback_notifications,
+  }.freeze
+
   def show
     loc = current_location
     return render_error("No location found", status: :not_found) unless loc
@@ -76,20 +95,19 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
   end
 
   def notifications
-    operator = current_tenant
-    render json: {
-      new_member_notification: operator.try(:new_member_notification) || false,
-      new_booking_notification: operator.try(:new_booking_notification) || false,
-      new_feedback_notification: operator.try(:new_feedback_notification) || false,
-      daily_digest: operator.try(:daily_digest) || false,
-    }
+    render json: notification_state(current_tenant)
   end
 
   def update_notifications
     operator = current_tenant
 
-    if operator.update(notification_params)
-      render json: { success: true }
+    updates = NOTIFICATION_TOGGLES.each_with_object({}) do |(api_key, column), attrs|
+      next unless params.key?(api_key)
+      attrs[column] = ActiveModel::Type::Boolean.new.cast(params[api_key])
+    end
+
+    if operator.update(updates)
+      render json: notification_state(operator)
     else
       render_error(operator.errors.full_messages.join(', '))
     end
@@ -128,11 +146,8 @@ class Api::V1::Admin::SettingsController < Api::V1::Admin::BaseController
     )
   end
 
-  def notification_params
-    params.permit(
-      :new_member_notification, :new_booking_notification,
-      :new_feedback_notification, :daily_digest
-    )
+  def notification_state(operator)
+    NOTIFICATION_TOGGLES.transform_values { |column| operator.public_send(column) }
   end
 
   def module_flags(loc)
