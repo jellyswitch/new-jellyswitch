@@ -1,6 +1,7 @@
 class Api::V1::AnnouncementsController < Api::V1::BaseController
   def index
-    announcements = Announcement.where(operator: current_tenant, location: current_location)
+    announcements = Announcement.active
+      .where(operator: current_tenant, location: current_location)
       .order(created_at: :desc)
       .limit(20)
 

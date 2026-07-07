@@ -44,6 +44,29 @@ RSpec.describe Announcement, type: :model do
         expect(Announcement.latest).to eq(newest_announcement)
       end
     end
+
+    describe '.active' do
+      let!(:fresh) { create(:announcement, created_at: 6.days.ago) }
+      let!(:stale) { create(:announcement, created_at: 8.days.ago) }
+
+      it 'includes announcements posted within the last ACTIVE_WINDOW_DAYS days' do
+        expect(Announcement.active).to include(fresh)
+      end
+
+      it 'excludes announcements older than ACTIVE_WINDOW_DAYS days' do
+        expect(Announcement.active).not_to include(stale)
+      end
+    end
+
+    describe '.archived' do
+      let!(:fresh) { create(:announcement, created_at: 6.days.ago) }
+      let!(:stale) { create(:announcement, created_at: 8.days.ago) }
+
+      it 'is the complement of .active' do
+        expect(Announcement.archived).to include(stale)
+        expect(Announcement.archived).not_to include(fresh)
+      end
+    end
   end
 
   describe 'searchkick' do
