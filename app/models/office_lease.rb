@@ -11,6 +11,7 @@
 #  escalation_value             :decimal(10, 2)
 #  initial_invoice_date         :date
 #  renewal_notice_days          :integer          default(60), not null
+#  renewal_notice_sent_at       :datetime
 #  start_date                   :date             not null
 #  created_at                   :datetime         not null
 #  updated_at                   :datetime         not null

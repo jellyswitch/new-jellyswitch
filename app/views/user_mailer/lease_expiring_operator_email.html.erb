@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Lease ending soon</title>
+  </head>
+  <body style="font-family: Helvetica, sans-serif; font-size: 14px; line-height: 1.4; color: #333; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f6f6f6;">
+      <tr>
+        <td>&nbsp;</td>
+        <td style="max-width: 600px; margin: 0 auto; display: block; padding: 24px 0;" width="600">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: #fff; border-radius: 4px;">
+            <tr>
+              <td style="padding: 24px;">
+                <p style="margin: 0 0 16px;">A lease at <strong><%= @operator.name %></strong> is coming up on its end date and is <strong>not set to auto-renew</strong>, so it will drop off automatically unless you renew it.</p>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                  <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Office</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;"><%= @office_name %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Leaseholder</td>
+                    <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;"><%= @leasee_name %></td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 8px; color: #666;">Ends</td>
+                    <td style="padding: 8px; text-align: right; font-weight: bold;"><%= @ends_on.strftime("%B %-d, %Y") %></td>
+                  </tr>
+                </table>
+
+                <p style="margin: 0;">Renew or update this lease from the Offices section of your dashboard.</p>
+              </td>
+            </tr>
+          </table>
+          <div style="padding-top: 24px; text-align: center; color: #999; font-size: 12px;"><%= @operator.name %></div>
+        </td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>

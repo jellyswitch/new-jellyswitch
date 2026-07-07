@@ -204,6 +204,39 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Your office lease renewal for #{renewal_request.office_lease.office.name}", from: from_address, reply_to: operator.contact_email
   end
 
+  # Heads-up to the OPERATOR that a fixed-term (non-auto-renew) office lease is
+  # approaching its end date. Sent by LeaseRenewalReminderJob within the lease's
+  # renewal-notice window, once per term — so a lease can't silently lapse.
+  def lease_expiring_operator_email(operator, office_lease, location = nil)
+    @operator = operator
+    @office_lease = office_lease
+    @location = location
+    @office_name = office_lease.office_name
+    @leasee_name = office_lease.leasee_name
+    @ends_on = office_lease.end_date
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: operator.contact_email,
+         subject: "Lease ending soon: #{@office_name} (#{@leasee_name})",
+         from: from_address, reply_to: operator.contact_email
+  end
+
+  # Heads-up to the LESSEE that their fixed-term office lease is ending and is
+  # not set to auto-renew, so they can reach out to renew before it lapses.
+  def lease_expiring_lessee_email(user, operator, office_lease, location = nil)
+    @user = user
+    @operator = operator
+    @office_lease = office_lease
+    @location = location
+    @office_name = office_lease.office_name
+    @ends_on = office_lease.end_date
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email,
+         subject: "Your office lease for #{@office_name} ends #{office_lease.pretty_date}",
+         from: from_address, reply_to: operator.contact_email
+  end
+
   def signup_nudge_email(user, operator, template, location = nil)
     @user = user
     @operator = operator

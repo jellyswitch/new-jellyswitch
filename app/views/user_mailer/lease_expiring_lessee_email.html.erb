@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Your office lease is ending soon</title>
+  </head>
+  <body style="font-family: Helvetica, sans-serif; font-size: 14px; line-height: 1.4; color: #333; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f6f6f6;">
+      <tr>
+        <td>&nbsp;</td>
+        <td style="max-width: 600px; margin: 0 auto; display: block; padding: 24px 0;" width="600">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: #fff; border-radius: 4px;">
+            <tr>
+              <td style="padding: 24px;">
+                <p style="margin: 0 0 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+                <p style="margin: 0 0 16px;">Your office lease for <strong><%= @office_name %></strong> at <%= @operator.name %> ends on <strong><%= @ends_on.strftime("%B %-d, %Y") %></strong>. It isn't set to renew automatically, so it will end on that date unless you renew it.</p>
+                <p style="margin: 0;">If you'd like to stay, please reach out to <%= @operator.name %><%= " at #{@operator.contact_email}" if @operator.contact_email.present? %> to renew your lease.</p>
+              </td>
+            </tr>
+          </table>
+          <div style="padding-top: 24px; text-align: center; color: #999; font-size: 12px;"><%= @operator.name %></div>
+        </td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
