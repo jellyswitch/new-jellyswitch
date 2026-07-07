@@ -84,6 +84,27 @@ RSpec.describe Webhooks::ChargeRefunded do
     end
   end
 
+  describe "rescinding a refunded day pass (Stripe-Dashboard refund)" do
+    let!(:invoice) do
+      create(:invoice, operator: operator, location: location, status: "paid",
+             amount_due: 1000, stripe_payment_intent_id: "pi_dp")
+    end
+
+    it "destroys the day pass tied to the invoice when the refund reconciles" do
+      user = create(:user, operator: operator)
+      day_pass_type = create(:day_pass_type, operator: operator, location: location)
+      pass = create(:day_pass, user: user, billable: user, operator: operator,
+                    location: location, day_pass_type: day_pass_type,
+                    day: Date.current, invoice: invoice)
+
+      result = described_class.call(event: charge_event(payment_intent: "pi_dp"))
+
+      expect(result).to be_success
+      expect(invoice.reload.status).to eq("refunded")
+      expect(DayPass.exists?(pass.id)).to be(false)
+    end
+  end
+
   describe "refund.created for a PI-backed invoice" do
     let!(:invoice) do
       create(:invoice, operator: operator, location: location, status: "paid",
