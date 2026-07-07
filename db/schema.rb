@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_03_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_07_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -693,6 +693,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_03_000002) do
     t.decimal "escalation_value", precision: 10, scale: 2
     t.string "cpi_index_series_id"
     t.datetime "deposit_invoiced_at"
+    t.datetime "renewal_notice_sent_at"
     t.index ["location_id"], name: "index_office_leases_on_location_id"
     t.index ["office_id"], name: "index_office_leases_on_office_id"
     t.index ["operator_id"], name: "index_office_leases_on_operator_id"
