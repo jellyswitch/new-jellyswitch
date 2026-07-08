@@ -5,7 +5,9 @@ RSpec.describe Operator::DayPassesController, type: :controller do
   let(:location) { create(:location, operator: operator) }
   let(:admin_user) { create(:user, operator: operator, role: "superadmin", original_location: location) }
   let(:regular_user) { create(:user, operator: operator, original_location: location) }
-  let(:day_pass_type) { create(:day_pass_type, operator: operator, location: location) }
+  # A realistic customer-facing paid pass. (The factory defaults amount_in_cents
+  # to 0, but a $0 type can't be self-purchased — see the purchase-guard specs.)
+  let(:day_pass_type) { create(:day_pass_type, operator: operator, location: location, amount_in_cents: 5000) }
   let(:day_pass) { create(:day_pass, operator: operator, location: location, user: regular_user, day_pass_type: day_pass_type) }
 
   before do
@@ -104,6 +106,38 @@ RSpec.describe Operator::DayPassesController, type: :controller do
       it "handles the error" do
         post :create, params: valid_params
         expect(flash[:error]).to match(/An error occurred/)
+      end
+    end
+
+    # Members may only self-purchase an available, paid type — mirrors the
+    # mobile API guardrails. A crafted POST can pass any operator-scoped id.
+    context "when the type is free ($0)" do
+      let(:free_type) { create(:day_pass_type, operator: operator, location: location, amount_in_cents: 0) }
+
+      it "rejects the purchase (no free self-mint = free access)" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        post :create, params: { day_pass: { day: Date.current, day_pass_type: free_type.id } }
+        expect(flash[:error]).to match(/free day passes/i)
+      end
+    end
+
+    context "when the type is retired (available: false)" do
+      let(:retired_type) { create(:day_pass_type, operator: operator, location: location, amount_in_cents: 5000, available: false) }
+
+      it "rejects the purchase of a pulled SKU" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        post :create, params: { day_pass: { day: Date.current, day_pass_type: retired_type.id } }
+        expect(flash[:error]).to match(/not available/i)
+      end
+    end
+
+    context "when a free bundle SKU is submitted" do
+      let(:free_bundle) { create(:day_pass_type, operator: operator, location: location, quantity: 2, amount_in_cents: 0) }
+
+      it "rejects it before the bundle flow" do
+        expect(Billing::DayPassBundles::CreateBundle).not_to receive(:call)
+        post :create, params: { day_pass: { day: Date.current, day_pass_type: free_bundle.id } }
+        expect(flash[:error]).to match(/free day passes/i)
       end
     end
   end
