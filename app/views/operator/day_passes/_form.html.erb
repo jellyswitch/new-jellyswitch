@@ -59,13 +59,22 @@
 
   <%# Discount codes don't apply to bundles (rejected server-side) — hide the field. %>
   <% unless @day_pass_type&.bundle? %>
-    <div class="form-group row">
-      <div class="col-1"></div>
-      <div class="col">
-        <%= render "shared/discount_code_field" %>
+    <% if local_assigns[:code].present? %>
+      <%# Redeem flow: the access code the member entered unlocked this (hidden)
+          pass. Carry it on the purchase POST so the server can confirm the code
+          matches this type — hidden passes can't be self-purchased without it.
+          The visible "have a discount code?" field is suppressed to avoid a
+          second input clobbering this same-named param. %>
+      <%= hidden_field_tag :discount_code, local_assigns[:code] %>
+    <% else %>
+      <div class="form-group row">
+        <div class="col-1"></div>
+        <div class="col">
+          <%= render "shared/discount_code_field" %>
+        </div>
+        <div class="col-1"></div>
       </div>
-      <div class="col-1"></div>
-    </div>
+    <% end %>
   <% end %>
   <div class="form-group row">
     <%= f.button class: 'form-control btn btn-primary col ml-3 mr-3', id: 'stripe-submit', data: { acc: 'add-payment', disable_with: "Processing..." } do %>
