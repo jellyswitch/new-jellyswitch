@@ -158,6 +158,17 @@ class Api::V1::UsersController < Api::V1::BaseController
 
   def destroy_account
     user = current_api_user
+    # A member can't escape an office lease or a minimum-term commitment by
+    # deleting their account — those are agreements only an admin/host ends.
+    # Without this, destroy_account deactivated ALL active subs (including
+    # lease-backed and committed ones), the same escape #587/#590 closed on the
+    # cancel paths.
+    if user.subscriptions.where(active: true).any? { |sub| sub.backs_office_lease? || sub.in_commitment? }
+      return render_error(
+        "You have an active office lease or committed membership. Please contact your host to end it before deleting your account.",
+        status: :forbidden,
+      )
+    end
     # Cancel active subscriptions
     user.subscriptions.where(active: true).each do |sub|
       sub.update(active: false, cancelling_at_end_of_billing_period: true)
