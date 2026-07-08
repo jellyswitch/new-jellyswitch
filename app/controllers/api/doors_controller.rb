@@ -12,6 +12,12 @@ class Api::DoorsController < ApplicationController
       return
     end
 
+    # Mirror the mobile Keys list (Api::V1::DoorsController#index): a member
+    # without current building access (paused membership, lapsed plan, no day
+    # pass) gets an empty list rather than the enumerable public door names/ids.
+    # has_building_access? already admits all staff (superadmin/admin/CM/GM).
+    return render json: [] unless current_user.has_building_access?(location)
+
     doors = location.doors.available
     # Room Locks never render in the general Keys list — the reservation is
     # the key (ADR 0021). Staff keep the full door list.
