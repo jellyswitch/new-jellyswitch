@@ -579,6 +579,11 @@ class Operator::ReservationsController < Operator::BaseController
 
   def extend_reservation
     reservation = Reservation.find(params[:id])
+    # Without this, any authenticated member could extend ANY reservation by id
+    # (Reservation.find is not owner/tenant-scoped) and trigger an off-session
+    # charge against the victim owner. extend_reservation? = owner-or-staff and
+    # not-in-the-past.
+    authorize reservation, :extend_reservation?
 
     additional_duration = params[:duration].to_i
 

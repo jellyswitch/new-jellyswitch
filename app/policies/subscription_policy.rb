@@ -41,6 +41,20 @@ class SubscriptionPolicy < ApplicationPolicy
     (admin? || general_manager? || (owner? && approved? && billing_enabled?))
   end
 
+  # Pause / unpause are owner-management actions like cancel — a member may
+  # suspend their own month-to-month membership (travel, etc.) and staff may
+  # act on a member's. Before this existed, Operator::PauseMembershipsController
+  # never authorized at all and did a global Subscription.find(params[:id]),
+  # so any authenticated member could pause/unpause ANY subscription by id
+  # (cross-member, even cross-tenant — Subscription is not tenant-scoped).
+  def pause?
+    (admin? || general_manager? || (owner? && approved? && billing_enabled?))
+  end
+
+  def unpause?
+    (admin? || general_manager? || (owner? && approved? && billing_enabled?))
+  end
+
   private
 
   def owner?

@@ -4,6 +4,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
 
   def create
     find_subscription
+    authorize @subscription, :pause?
 
     if pause_durations.has_key?(params["resumes_at"])
       resumes_at = pause_durations[params["resumes_at"]].to_i
@@ -41,6 +42,7 @@ class Operator::PauseMembershipsController < Operator::BaseController
 
   def destroy
     find_subscription
+    authorize @subscription, :unpause?
 
     result = DestroyPause.call(
       subscription: @subscription,

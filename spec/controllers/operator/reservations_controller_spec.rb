@@ -293,6 +293,21 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         expect(flash[:error]).to be_present
       end
     end
+
+    # IDOR guard: the reservation belongs to regular_user; a different member
+    # must not be able to extend it (and charge the owner). extend_reservation?
+    # = owner-or-staff.
+    context "when a different member (not the owner) attempts it" do
+      let(:other_user) { create(:user, operator: operator, original_location: location) }
+
+      before { allow(controller).to receive(:current_user).and_return(other_user) }
+
+      it "does not extend and is not authorized" do
+        expect(Billing::Reservations::ExtendReservation).not_to receive(:call)
+        post :extend_reservation, params: valid_params
+        expect(response).to have_http_status(:redirect)
+      end
+    end
   end
 
   describe "POST #end_now" do
