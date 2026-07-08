@@ -49,4 +49,29 @@ class Operator::OrganizationMembersControllerTest < ActionDispatch::IntegrationT
     assert_nil foreign_user.reload.organization_id,
       "operator admin must not be able to add a foreign-operator user to their org"
   end
+
+  # Authorization: before manage_members?, this action had only
+  # require_authentication and never authorized, so any member could reassign
+  # users' organization_id into any org. manage_members? = staff OR owner of
+  # THIS org.
+  test "a non-owner, non-staff member cannot add members" do
+    member = create(:user, operator: @operator, original_location: locations(:cowork_tahoe_location))
+    assert_nil @target.reload.organization_id
+    log_in member
+    post organization_add_member_path(@org),
+         params: { user: { ids: [@target.id] } }, env: default_env
+    assert_response :redirect
+    assert_nil @target.reload.organization_id,
+      "a non-owner, non-staff member must not be able to add members to an org"
+  end
+
+  test "the organization owner (non-staff) can add members to their own org" do
+    owner = create(:user, operator: @operator, original_location: locations(:cowork_tahoe_location))
+    @org.update!(owner: owner)
+    log_in owner
+    post organization_add_member_path(@org),
+         params: { user: { ids: [@target.id] } }, env: default_env
+    assert_equal @org.id, @target.reload.organization_id,
+      "the owner of THIS org should be able to add members"
+  end
 end
