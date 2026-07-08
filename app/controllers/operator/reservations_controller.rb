@@ -528,6 +528,7 @@ class Operator::ReservationsController < Operator::BaseController
                                room: @room,
                                amenity_ids: amenity_ids,
                                note: reservation_params[:note],
+                               attendee_count: reservation_params[:attendee_count].presence,
                              }, user: current_user, location: current_location,
                              token: token, out_of_band: false,
                              day_pass_charge_info: day_pass_charge_info,
@@ -829,7 +830,7 @@ class Operator::ReservationsController < Operator::BaseController
   public
 
   def create_reservation_params
-    params.permit(:room_id, :date, :time, :duration, :day_or_night, :note)
+    params.permit(:room_id, :date, :time, :duration, :day_or_night, :note, :attendee_count)
   end
 
   def reservation_params

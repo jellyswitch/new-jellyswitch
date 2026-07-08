@@ -39,6 +39,31 @@ RSpec.describe Reservation, type: :model do
     end
   end
 
+  describe "attendee_count" do
+    # factory room capacity is 4
+    it "is valid when blank (the field is optional)" do
+      expect(build(:reservation, room: room, attendee_count: nil)).to be_valid
+    end
+
+    it "accepts a positive count within the room's capacity" do
+      expect(build(:reservation, room: room, attendee_count: 4)).to be_valid
+    end
+
+    it "rejects a count over the room's capacity" do
+      res = build(:reservation, room: room, attendee_count: 5)
+      expect(res).not_to be_valid
+      expect(res.errors[:attendee_count].join).to match(/capacity/i)
+    end
+
+    it "rejects a non-positive count" do
+      expect(build(:reservation, room: room, attendee_count: 0)).not_to be_valid
+    end
+
+    it "rejects a non-integer count" do
+      expect(build(:reservation, room: room, attendee_count: 2.5)).not_to be_valid
+    end
+  end
+
   describe "scopes" do
     let!(:ongoing_reservation) { create(:reservation, datetime_in: Time.zone.now, room: room) }
     let!(:future_reservation) { create(:reservation, :future, room: room) }

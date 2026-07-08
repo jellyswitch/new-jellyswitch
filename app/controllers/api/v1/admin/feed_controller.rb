@@ -222,6 +222,7 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         room_name: res&.room&.name,
         when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
         duration: res ? "#{res.minutes} min" : nil,
+        attendee_count: res&.attendee_count,
         amount: reservation_charge_in_cents(fi, res),
       )
     when 'paid-room-reservation', 'paid_room_reservation'
@@ -231,6 +232,7 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         room_name: res&.room&.name,
         when: res&.datetime_in&.strftime("%B %e at %l:%M %p")&.strip,
         duration: res ? "#{res.minutes} min" : nil,
+        attendee_count: res&.attendee_count,
         # Same live calc as the 'reservation' card and the web feed — not the
         # stale booking-time snapshot, which showed only the room's hourly-rate
         # estimate instead of the full booking total.

@@ -27,6 +27,15 @@
     <%= feed_item.reservation.minutes %> <%= quantize(feed_item.reservation.minutes, "minute") %>
   </dd>
 
+  <% if feed_item.reservation.attendee_count.present? %>
+    <dt class="col-6">
+      Attendees
+    </dt>
+    <dd class="col">
+      <%= feed_item.reservation.attendee_count %>
+    </dd>
+  <% end %>
+
   <% if feed_item.reservation.paid? %>
     <dt class="col-6">
       Amount
