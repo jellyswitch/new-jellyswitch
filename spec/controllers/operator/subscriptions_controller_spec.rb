@@ -268,6 +268,47 @@ RSpec.describe Operator::SubscriptionsController, type: :controller do
     end
   end
 
+  # A member inside a minimum-term commitment (TLH) must not be able to end
+  # early on either web cancel button — both should schedule the end at the
+  # commitment boundary. Staff cancel normally.
+  describe "minimum-term commitment enforcement" do
+    let(:committed_plan) { create(:plan, operator: operator, location: location, interval: "monthly", commitment_interval: 6) }
+    let(:committed_sub) do
+      create(:subscription, plan: committed_plan, subscribable: regular_user, billable: regular_user,
+             start_date: 2.months.ago.to_date, stripe_subscription_id: nil)
+    end
+
+    before do
+      allow(controller).to receive(:current_user).and_return(regular_user)
+      allow_any_instance_of(Subscription).to receive(:set_end_date!) # stub Stripe
+    end
+
+    it "DELETE #destroy schedules at the commitment boundary instead of a period-end cancel" do
+      expect(SetSubscriptionForCancellation).not_to receive(:call)
+      delete :destroy, params: { id: committed_sub.id }
+      expect(flash[:notice]).to match(/committed through/i)
+      expect(committed_sub.reload.cancelling_at_end_of_billing_period).to be true
+    end
+
+    it "DELETE #destroy_subscription_now schedules at the commitment boundary instead of an immediate cancel" do
+      expect(Billing::Subscription::CancelSubscriptionNow).not_to receive(:call)
+      delete :destroy_subscription_now, params: { id: committed_sub.id }
+      expect(flash[:notice]).to match(/committed through/i)
+      expect(committed_sub.reload.cancelling_at_end_of_billing_period).to be true
+    end
+
+    context "when staff cancels a committed member's subscription" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "cancels normally (no commitment hold for staff)" do
+        allow(SetSubscriptionForCancellation).to receive(:call).and_return(OpenStruct.new(success?: true))
+        expect_any_instance_of(Subscription).not_to receive(:schedule_commitment_cancellation!)
+        delete :destroy, params: { id: committed_sub.id }
+        expect(SetSubscriptionForCancellation).to have_received(:call)
+      end
+    end
+  end
+
   describe "error handling" do
     before do
       allow(controller).to receive(:current_user).and_return(regular_user)

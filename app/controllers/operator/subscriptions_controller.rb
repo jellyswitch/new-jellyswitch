@@ -159,6 +159,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
     return if reject_office_lease_change
+    return if honor_commitment_for_member
 
     plan = @subscription.plan
     result = SetSubscriptionForCancellation.call(
@@ -187,6 +188,7 @@ class Operator::SubscriptionsController < Operator::BaseController
     find_subscription
     authorize @subscription
     return if reject_office_lease_change
+    return if honor_commitment_for_member
 
     plan = @subscription.plan
     result = Billing::Subscription::CancelSubscriptionNow.call(
@@ -245,6 +247,26 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     flash[:error] = "This subscription is part of an office lease — a fixed-term agreement. Please contact your host to make changes to it."
     turbo_redirect(user_memberships_path(current_user))
+    true
+  end
+
+  # A member inside a minimum-term commitment can't end early — schedule the
+  # cancellation at the commitment boundary (keeping access + billing through
+  # the term they committed to) instead of cancelling immediately or at the end
+  # of the current billing period. Mirrors the mobile API's cancel_now guard,
+  # now applied to BOTH web cancel paths (#destroy and #destroy_subscription_now)
+  # so a committed member can't escape the term by picking either button. Staff
+  # cancel through the normal flow (no commitment restriction). Returns true
+  # (and redirects) when it handled the cancellation, so callers do
+  # `return if honor_commitment_for_member`.
+  def honor_commitment_for_member
+    return false if current_user.admin_or_manager?(current_location)
+    return false unless @subscription.in_commitment?
+
+    @subscription.schedule_commitment_cancellation!
+    ends_on = @subscription.commitment_term_end&.strftime("%B %-d, %Y")
+    flash[:notice] = "Your membership is committed through #{ends_on} and will end then."
+    turbo_redirect(post_cancel_choices_path)
     true
   end
 

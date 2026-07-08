@@ -195,6 +195,22 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     sub = current_api_user.subscriptions.find(params[:id])
     return if reject_office_lease_change(sub)
 
+    # A committed member can't cancel early — schedule the end at their
+    # commitment boundary instead of the end of the current billing period.
+    # Mirrors #cancel_now (this scheduled path had been missing the guard, so a
+    # committed member could still end at month-end). Admins override via the
+    # operator API.
+    if sub.in_commitment?
+      sub.schedule_commitment_cancellation!
+      ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
+      return render json: {
+        success: true,
+        scheduled: true,
+        ends_on: ends_on,
+        message: "Your membership is committed through #{ends_on} and will end then.",
+      }
+    end
+
     result = SetSubscriptionForCancellation.call(
       subscription: sub,
       blob: { text: "Cancelled via mobile app", type: "membership_cancellation" },
