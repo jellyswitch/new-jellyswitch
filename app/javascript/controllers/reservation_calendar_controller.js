@@ -423,6 +423,7 @@ export default class extends Controller {
       const dayOrNight = $('input[name="day_or_night"]').val();
       const duration = $('input[name="duration"]').val();
       const note = $("#reservation-note").val();
+      const attendeeCount = $("#reservation-attendees").val();
 
       if (!roomId || !date || !time || !duration) {
         alert("Please select a room, date, time, and duration.");
@@ -442,6 +443,7 @@ export default class extends Controller {
         day_or_night: dayOrNight,
         amenity_ids: amenityIds,
         note: note,
+        attendee_count: attendeeCount,
       });
     });
   }
@@ -667,8 +669,9 @@ export default class extends Controller {
     day_or_night,
     amenity_ids,
     note,
+    attendee_count,
   }) {
-    const data = { room_id, date, time, duration, day_or_night, amenity_ids, note };
+    const data = { room_id, date, time, duration, day_or_night, amenity_ids, note, attendee_count };
 
     if (this.needsBilling && this.stripe && this.card) {
       const submitBtn = $("#add-reservation button[type='submit']");
@@ -753,6 +756,9 @@ export default class extends Controller {
 
     $(".note-container").addClass("d-none");
     $("#reservation-note").val("");
+
+    $(".attendee-container").addClass("d-none");
+    $("#reservation-attendees").val("");
 
     this.needsBilling = false;
     this.hideBillingSection();
@@ -883,6 +889,15 @@ export default class extends Controller {
 
     $(".room-details .hourly-price .details-value").text(hourlyPriceText);
     $(".room-details .room-capacity .details-value").text(room.capacity);
+
+    // Attendee count applies to paid meeting rooms only; cap it at capacity.
+    if ((room.hourly_rate_in_cents || 0) > 0) {
+      if (room.capacity) $("#reservation-attendees").attr("max", room.capacity);
+      $(".attendee-container").removeClass("d-none");
+    } else {
+      $(".attendee-container").addClass("d-none");
+      $("#reservation-attendees").val("");
+    }
 
     let amenities = [];
 

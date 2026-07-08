@@ -82,6 +82,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
         minutes: minutes,
         room: room,
         amenity_ids: amenity_ids,
+        attendee_count: params.dig(:reservation, :attendee_count).presence,
       },
       user: current_api_user,
       location: current_location,

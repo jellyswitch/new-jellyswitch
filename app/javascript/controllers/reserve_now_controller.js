@@ -4,7 +4,7 @@ export default class extends Controller {
   static targets = [
     "roomName", "roomDetails", "endTime", "durationLabel",
     "slider", "priceBox", "priceAmount", "includedRemaining",
-    "confirmBtn", "billingSection"
+    "confirmBtn", "billingSection", "attendeeSection", "attendeeInput"
   ]
   static values = {
     roomId: Number,
@@ -13,6 +13,8 @@ export default class extends Controller {
     startTime: String,
     date: String,
     dayOrNight: String,
+    roomRate: Number,
+    roomCapacity: Number,
     priceUrl: String,
     createUrl: String,
   }
@@ -21,6 +23,21 @@ export default class extends Controller {
     this.startTime = new Date(this.startTimeValue)
     this.currentRoomId = this.roomIdValue
     this.currentDuration = this.durationValue
+    this.currentRoomRate = this.roomRateValue
+    this.currentRoomCapacity = this.roomCapacityValue
+    this.toggleAttendees()
+  }
+
+  // Attendee count is only relevant for paid meeting rooms (rate > 0): hide it
+  // (and clear any value) for free/call rooms, and cap the input at capacity.
+  toggleAttendees() {
+    if (!this.hasAttendeeSectionTarget) return
+    const paid = (this.currentRoomRate || 0) > 0
+    this.attendeeSectionTarget.style.display = paid ? "block" : "none"
+    if (this.hasAttendeeInputTarget) {
+      if (this.currentRoomCapacity) this.attendeeInputTarget.max = this.currentRoomCapacity
+      if (!paid) this.attendeeInputTarget.value = ""
+    }
   }
 
   onDurationChange(event) {
@@ -121,6 +138,12 @@ export default class extends Controller {
     this.roomNameTarget.textContent = name
     this.roomDetailsTarget.textContent = `${capacity} people · ${amenities}`
 
+    // Track the new room's rate/capacity so the attendee field shows only for
+    // paid rooms and caps at the new room's capacity.
+    this.currentRoomRate = rate || 0
+    this.currentRoomCapacity = parseInt(capacity) || 0
+    this.toggleAttendees()
+
     // Update slider max based on new room availability
     // For now keep max duration — in production this would AJAX fetch
     this.fetchPrice()
@@ -159,6 +182,11 @@ export default class extends Controller {
     formData.append("time", timeStr)
     formData.append("duration", this.currentDuration)
     formData.append("day_or_night", this.dayOrNightValue)
+
+    // Optional attendee count (paid meeting rooms). Server caps it at capacity.
+    if (this.hasAttendeeInputTarget && this.attendeeInputTarget.value) {
+      formData.append("attendee_count", this.attendeeInputTarget.value)
+    }
 
     // ADR 0019: the member's coverage decision (use_existing_pass / use_bundle_pass / buy_day_pass).
     if (this._coverageFlag) formData.append(this._coverageFlag, "true")

@@ -128,6 +128,13 @@
                   </div>
                 </div>
 
+                <%# Attendees — shown by the controller for paid meeting rooms;
+                    optional, capped at the room's capacity. %>
+                <div class="form-group attendee-container mt-1 pl-1 pr-1 d-none">
+                  <label for="reservation-attendees">Number of attendees <small class="text-muted">(optional)</small></label>
+                  <input type="number" id="reservation-attendees" name="attendee_count" min="1" class="form-control form-control-sm" placeholder="How many people?">
+                </div>
+
                 <div class="price-container d-none">
                   <label class="mb-0">Total Price:</label>
                   <div class="price-value"></div>

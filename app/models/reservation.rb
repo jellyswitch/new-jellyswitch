@@ -3,6 +3,7 @@
 # Table name: reservations
 #
 #  id                         :bigint(8)        not null, primary key
+#  attendee_count             :integer
 #  authorized_amount_in_cents :integer
 #  cancelled                  :boolean          default(FALSE), not null
 #  captured_amount_in_cents   :integer
@@ -42,6 +43,12 @@ class Reservation < ApplicationRecord
 
   validates_with ReservationValidator
 
+  # Optional attendee count a member can enter when booking a paid meeting room
+  # (shown to admins in the activity feed). If given, it must be a positive whole
+  # number that doesn't exceed the room's capacity.
+  validates :attendee_count, numericality: { only_integer: true, greater_than: 0 }, allow_nil: true
+  validate :attendee_count_within_capacity
+
   default_scope { where(cancelled: false) }
   scope :not_cancelled, ->() { where(cancelled: false) }
   scope :this_month, ->() { where("datetime_in > ?", Time.current.beginning_of_month) }
@@ -64,6 +71,14 @@ class Reservation < ApplicationRecord
 
   def log_activity
     Activity.log(user: user, kind: :reservation, subject: self)
+  end
+
+  def attendee_count_within_capacity
+    return if attendee_count.blank? || room.nil?
+
+    if attendee_count > room.capacity
+      errors.add(:attendee_count, "can't exceed the room's capacity of #{room.capacity}")
+    end
   end
 
   def to_activity_payload

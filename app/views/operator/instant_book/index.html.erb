@@ -11,6 +11,8 @@
        data-reserve-now-start-time-value="<%= @start_time.iso8601 %>"
        data-reserve-now-date-value="<%= @start_time.to_date %>"
        data-reserve-now-day-or-night-value="<%= @day_or_night %>"
+       data-reserve-now-room-rate-value="<%= @room.hourly_rate_in_cents %>"
+       data-reserve-now-room-capacity-value="<%= @room.capacity %>"
        data-reserve-now-price-url-value="<%= instant_book_price_reservations_path %>"
        data-reserve-now-create-url-value="<%= reservations_path %>">
 
@@ -50,6 +52,19 @@
         <span>3h</span>
         <span>4h</span>
       </div>
+    </div>
+
+    <%# Attendees — paid meeting rooms only; optional, capped at room capacity. %>
+    <div class="mx-3 mb-2" data-reserve-now-target="attendeeSection"
+         style="display: <%= @room.hourly_rate_in_cents.to_i > 0 ? 'block' : 'none' %>;">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span class="text-muted" style="font-size: 13px;">Number of attendees</span>
+        <span class="text-muted" style="font-size: 11px;">optional</span>
+      </div>
+      <input type="number" min="1" max="<%= @room.capacity %>"
+             class="form-control form-control-sm"
+             placeholder="How many people?"
+             data-reserve-now-target="attendeeInput">
     </div>
 
     <%# Price Display %>
