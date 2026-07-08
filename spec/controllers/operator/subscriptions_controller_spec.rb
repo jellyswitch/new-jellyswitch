@@ -8,6 +8,8 @@ RSpec.describe Operator::SubscriptionsController, type: :controller do
   let(:plan) { create(:plan, operator: operator, location: location) }
   let(:plan_category) { create(:plan_category, operator: operator, location: location) }
   let(:subscription) { create(:subscription, plan: plan, subscribable: regular_user, billable: regular_user) }
+  let(:lease_plan) { create(:plan, operator: operator, location: location, plan_type: "lease") }
+  let(:lease_subscription) { create(:subscription, plan: lease_plan, subscribable: regular_user, billable: regular_user) }
 
   before do
     allow(controller).to receive(:current_location).and_return(location)
@@ -164,6 +166,30 @@ RSpec.describe Operator::SubscriptionsController, type: :controller do
         expect(flash[:error]).to be_present
       end
     end
+
+    # An office lease is a fixed-term agreement: a member must not be able to
+    # downgrade the subscription backing one (Byron Whetzel escaped Office Lease
+    # #3430 by switching to Flex this way). Only staff may, via the lease flow.
+    context "when the subscription backs an office lease" do
+      let(:lease_update_params) do
+        { id: lease_subscription.id, subscription: { plan_id: new_plan.id } }
+      end
+
+      it "blocks a member and does not switch the plan" do
+        expect(UpdateMembership).not_to receive(:call)
+        put :update, params: lease_update_params
+        expect(flash[:error]).to match(/office lease/i)
+        expect(response).to redirect_to(user_memberships_path(regular_user))
+      end
+
+      it "allows staff (admin) to switch it" do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+        allow(UpdateMembership).to receive(:call).and_return(OpenStruct.new(success?: true))
+        put :update, params: lease_update_params
+        expect(UpdateMembership).to have_received(:call)
+        expect(flash[:success]).to be_present
+      end
+    end
   end
 
   describe "DELETE #destroy" do
@@ -194,6 +220,14 @@ RSpec.describe Operator::SubscriptionsController, type: :controller do
         expect(flash[:error]).to be_present
       end
     end
+
+    context "when the subscription backs an office lease" do
+      it "blocks a member from cancelling it" do
+        expect(SetSubscriptionForCancellation).not_to receive(:call)
+        delete :destroy, params: { id: lease_subscription.id }
+        expect(flash[:error]).to match(/office lease/i)
+      end
+    end
   end
 
   describe "DELETE #destroy_subscription_now" do
@@ -222,6 +256,14 @@ RSpec.describe Operator::SubscriptionsController, type: :controller do
       it "sets error flash message" do
         delete :destroy_subscription_now, params: { id: subscription.id }
         expect(flash[:error]).to be_present
+      end
+    end
+
+    context "when the subscription backs an office lease" do
+      it "blocks a member from cancelling it immediately" do
+        expect(Billing::Subscription::CancelSubscriptionNow).not_to receive(:call)
+        delete :destroy_subscription_now, params: { id: lease_subscription.id }
+        expect(flash[:error]).to match(/office lease/i)
       end
     end
   end

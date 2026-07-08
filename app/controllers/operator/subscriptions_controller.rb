@@ -106,6 +106,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   def update
     find_subscription
     authorize @subscription
+    return if reject_office_lease_change
 
     # Pre-flight: SwitchMembership eventually calls
     # Stripe::Subscription.update on the old sub, which raises
@@ -157,6 +158,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   def destroy
     find_subscription
     authorize @subscription
+    return if reject_office_lease_change
 
     plan = @subscription.plan
     result = SetSubscriptionForCancellation.call(
@@ -184,7 +186,7 @@ class Operator::SubscriptionsController < Operator::BaseController
   def destroy_subscription_now
     find_subscription
     authorize @subscription
-
+    return if reject_office_lease_change
 
     plan = @subscription.plan
     result = Billing::Subscription::CancelSubscriptionNow.call(
@@ -226,6 +228,24 @@ class Operator::SubscriptionsController < Operator::BaseController
     else
       subscriptions_path
     end
+  end
+
+  # Office leases are fixed-term agreements — a member must not be able to
+  # self-downgrade (switch away) or cancel the subscription backing one from
+  # the web. Only staff terminate a lease, via the office-lease flow. This
+  # mirrors the mobile API's reject_office_lease_change (Api::V1::Subscriptions
+  # Controller), which the web path had been missing: Byron Whetzel (Untethered)
+  # escaped Office Lease #3430 by switching to Flex on the web because #update,
+  # #destroy, and #destroy_subscription_now had no such guard. Returns true (and
+  # redirects with a flash) when the change must be blocked, so callers do
+  # `return if reject_office_lease_change`.
+  def reject_office_lease_change
+    return false unless @subscription&.backs_office_lease?
+    return false if current_user.admin_or_manager?(current_location)
+
+    flash[:error] = "This subscription is part of an office lease — a fixed-term agreement. Please contact your host to make changes to it."
+    turbo_redirect(user_memberships_path(current_user))
+    true
   end
 
   def subscription_params
