@@ -53,15 +53,20 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # one hidden pass's code to unlock a different hidden pass.
     return render_error('This day pass is not available.') unless day_pass_type.available
     unless day_pass_type.visible
-      matches_access_code = discount_code.present? &&
-        DayPassType.for_location(current_location).for_code(discount_code).exists?(id: day_pass_type.id)
-      return render_error('This day pass is not available.') unless matches_access_code
+      return render_error('This day pass is not available.') unless access_code_matches?(day_pass_type, discount_code)
     end
     return render_error('Free day passes cannot be purchased directly.') if day_pass_type.amount_in_cents.to_i <= 0
 
     # N-Pack: route to bundle flow (no date needed; passes are redeemed later)
     if day_pass_type.bundle?
-      return render_error("Discount codes can't be applied to day pass bundles.") if discount_code.present?
+      # Discount codes don't apply to bundles. But a HIDDEN bundle is unlocked by
+      # its own access code (threaded in as discount_code — the visible-gate above
+      # requires it), which is the access key, not a coupon. Reject only a code
+      # that is NOT this bundle's own access code, else a legitimate code-holder
+      # could never buy a hidden N-Pack. Mirrors the web create_bundle guard.
+      if discount_code.present? && !access_code_matches?(day_pass_type, discount_code)
+        return render_error("Discount codes can't be applied to day pass bundles.")
+      end
 
       bundle_interactor = token.present? ?
         Billing::DayPassBundles::UpdatePaymentAndCreateBundle :
@@ -302,6 +307,15 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   end
 
   private
+
+  # True when the request carries this day-pass-type's own access code — the key
+  # that unlocks a hidden (visible:false) type. Shared by the visible-gate and
+  # the bundle branch so a hidden bundle's access code isn't mistaken for a
+  # (rejected) coupon. Mirrors the web Operator::DayPassesController guard.
+  def access_code_matches?(day_pass_type, code)
+    code.present? &&
+      DayPassType.for_location(current_location).for_code(code).exists?(id: day_pass_type.id)
+  end
 
   def remaining_bundle_passes
     current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)

@@ -146,6 +146,74 @@ RSpec.describe Api::V1::DayPassesController, type: :controller do
     end
   end
 
+  # A hidden (visible:false) N-Pack is unlocked by its own access code, which is
+  # threaded in as discount_code. The bundle branch must treat that as the access
+  # key, not a coupon — otherwise a code-holder can never buy a hidden bundle
+  # (the visible-gate requires the code, then the bundle branch rejected it).
+  # Parity with the web Operator::DayPassesController#create_bundle guard.
+  describe "POST #create — hidden (visible:false) bundle" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:user) { create(:user, operator: operator, current_location: location) }
+    let!(:hidden_bundle) do
+      create(:day_pass_type, operator: operator, location: location,
+             code: "NPACK", name: "Secret 5-Pack", amount_in_cents: 6000,
+             quantity: 5, visible: false, available: true)
+    end
+    let!(:visible_bundle) do
+      create(:day_pass_type, operator: operator, location: location,
+             name: "Public 5-Pack", amount_in_cents: 6000,
+             quantity: 5, visible: true, available: true)
+    end
+
+    before do
+      ActsAsTenant.current_tenant = operator
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(user)
+      allow(controller).to receive(:current_tenant).and_return(operator)
+      allow(controller).to receive(:current_location).and_return(location)
+    end
+
+    def stub_bundle(type)
+      result = double(
+        success?: true,
+        day_pass_bundle: double(id: 1, passes_remaining: type.quantity, day_pass_type: type),
+      )
+      allow(Billing::DayPassBundles::CreateBundle).to receive(:call).and_return(result)
+    end
+
+    it "creates the bundle when its own access code is supplied (not rejected as a coupon)" do
+      stub_bundle(hidden_bundle)
+      expect(Billing::DayPassBundles::CreateBundle).to receive(:call)
+      post :create, params: { day_pass_type_id: hidden_bundle.id, discount_code: "NPACK" }
+      expect(response).to have_http_status(:created)
+      expect(JSON.parse(response.body)["success"]).to be true
+    end
+
+    it "rejects a hidden bundle when no access code is supplied (visible-gate)" do
+      expect(Billing::DayPassBundles::CreateBundle).not_to receive(:call)
+      post :create, params: { day_pass_type_id: hidden_bundle.id }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to match(/not available/i)
+    end
+
+    it "rejects a hidden bundle when the access code does not match" do
+      expect(Billing::DayPassBundles::CreateBundle).not_to receive(:call)
+      post :create, params: { day_pass_type_id: hidden_bundle.id, discount_code: "WrongCode" }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to match(/not available/i)
+    end
+
+    it "still rejects a real discount code applied to a VISIBLE bundle" do
+      create(:discount_code, operator: operator, location: location, code: "SAVE10",
+             applies_to: "day_pass", discount_type: "percent_off", discount_value: 10)
+      expect(Billing::DayPassBundles::CreateBundle).not_to receive(:call)
+      post :create, params: { day_pass_type_id: visible_bundle.id, discount_code: "SAVE10" }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)["error"]).to match(/can't be applied/i)
+    end
+  end
+
   # A day-pass discount code must pass full validation (scope + expiry +
   # redemption cap), not just the `active` flag — the old dc&.active? check let
   # a member apply a membership-only / expired / maxed code to a day pass.
