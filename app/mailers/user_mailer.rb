@@ -160,6 +160,21 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Your membership renews soon", from: from_address, reply_to: operator.contact_email
   end
 
+  # Confirms a NEW membership at signup. Hardcoded + always fires (via
+  # Billing::Subscription::SendMembershipWelcome) so a new member always gets a
+  # confirmation, independent of any operator-configured onboarding template.
+  # The payment receipt itself is left to Stripe's "Successful payments" emails.
+  def membership_welcome_email(user, operator, subscription, location = nil)
+    @user = user
+    @operator = operator
+    @subscription = subscription
+    @plan = subscription&.plan
+    @location = location
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Welcome to #{operator.name}", from: from_address, reply_to: operator.contact_email
+  end
+
   # Commitment-term renewal notice: sent `commitment_notice_days` (default 30)
   # before a committed membership's term re-arms — the member's opt-out window.
   def commitment_renewal_email(user, operator, subscription, location = nil)

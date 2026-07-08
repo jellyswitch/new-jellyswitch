@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Welcome</title>
+  </head>
+  <body style="font-family: Helvetica, sans-serif; font-size: 14px; line-height: 1.4; color: #333; background-color: #f6f6f6; margin: 0; padding: 0;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f6f6f6;">
+      <tr>
+        <td>&nbsp;</td>
+        <td style="max-width: 600px; margin: 0 auto; display: block; padding: 24px 0;" width="600">
+          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background: #fff; border-radius: 4px;">
+            <tr>
+              <td style="padding: 24px;">
+                <p style="margin: 0 0 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+                <p style="margin: 0 0 16px;">You're now a member of <strong><%= @operator.name %></strong> — welcome aboard!</p>
+
+                <% if @plan %>
+                  <table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
+                    <tr>
+                      <td style="padding: 8px; border-bottom: 1px solid #eee; color: #666;">Membership</td>
+                      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;"><%= @plan.name.to_s.titleize %></td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 8px; color: #666;">Price</td>
+                      <td style="padding: 8px; text-align: right; font-weight: bold;">
+                        <% if @plan.amount_in_cents.to_i.zero? %>
+                          Free
+                        <% else %>
+                          <%= number_to_currency(@plan.amount_in_cents / 100.0) %> / <%= @plan.display_interval %>
+                        <% end %>
+                      </td>
+                    </tr>
+                  </table>
+                  <% unless @plan.amount_in_cents.to_i.zero? %>
+                    <p style="margin: 0 0 16px; color: #666;">You'll be billed automatically each <%= @plan.display_interval %>. A payment receipt is sent separately.</p>
+                  <% end %>
+                <% end %>
+
+                <p style="margin: 0;">Questions? Just reply to this email<%= " or reach us at #{@operator.contact_email}" if @operator.contact_email.present? %>.</p>
+              </td>
+            </tr>
+          </table>
+          <div style="padding-top: 24px; text-align: center; color: #999; font-size: 12px;"><%= @operator.name %></div>
+        </td>
+        <td>&nbsp;</td>
+      </tr>
+    </table>
+  </body>
+</html>
