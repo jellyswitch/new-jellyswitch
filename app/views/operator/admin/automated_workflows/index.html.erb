@@ -48,11 +48,6 @@
                   <label class="small text-muted">Hours before</label>
                   <%= number_field_tag "automated_workflow[config][hours_before]", workflow.hours_before, class: "form-control form-control-sm", style: "width: 80px", min: 1 %>
                 </div>
-              <% when "signup_nurture" %>
-                <div class="form-group col-auto mb-0">
-                  <label class="small text-muted">Sequence days (comma-separated)</label>
-                  <%= text_field_tag "automated_workflow[config][sequence_days]", workflow.sequence_days.join(", "), class: "form-control form-control-sm", style: "width: 220px" %>
-                </div>
               <% when "day_passer_followup", "room_reservation_followup" %>
                 <div class="form-group col-auto mb-0">
                   <label class="small text-muted">Days after</label>

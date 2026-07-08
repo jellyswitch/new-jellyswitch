@@ -17,10 +17,10 @@ RSpec.describe Operator::Admin::AutomatedWorkflowsController, type: :controller 
     context "when admin" do
       before { allow(controller).to receive(:current_user).and_return(admin_user) }
 
-      it "seeds defaults and lists all 7 workflow types" do
+      it "seeds defaults and lists all workflow types" do
         expect {
           get :index
-        }.to change { AutomatedWorkflow.count }.by(7)
+        }.to change { AutomatedWorkflow.count }.by(AutomatedWorkflow::TYPES.size)
         expect(response).to be_successful
         expect(assigns(:workflows).map(&:workflow_type)).to match_array(AutomatedWorkflow::TYPES)
       end
@@ -44,8 +44,8 @@ RSpec.describe Operator::Admin::AutomatedWorkflowsController, type: :controller 
   describe "PATCH #update" do
     let!(:workflow) do
       AutomatedWorkflow.create!(operator: operator, location: location,
-                                workflow_type: "signup_nurture",
-                                config: { "sequence_days" => [1, 3, 7, 14] },
+                                workflow_type: "re_engagement",
+                                config: { "days_inactive" => 14 },
                                 enabled: false)
     end
 
@@ -62,12 +62,12 @@ RSpec.describe Operator::Admin::AutomatedWorkflowsController, type: :controller 
       expect(workflow.reload.enabled).to be false
     end
 
-    it "persists an updated sequence_days config" do
+    it "persists an updated days_inactive config" do
       patch :update, params: {
         id: workflow.id,
-        automated_workflow: { enabled: "1", config: { sequence_days: "2, 5, 10, 21" } },
+        automated_workflow: { enabled: "1", config: { days_inactive: "30" } },
       }
-      expect(workflow.reload.config["sequence_days"]).to eq([2, 5, 10, 21])
+      expect(workflow.reload.config["days_inactive"]).to eq(30)
       expect(workflow.enabled).to be true
     end
 
@@ -93,7 +93,7 @@ RSpec.describe Operator::Admin::AutomatedWorkflowsController, type: :controller 
       it "is blocked by Pundit (no change)" do
         original = workflow.config.dup
         begin
-          patch :update, params: { id: workflow.id, automated_workflow: { config: { sequence_days: "99" } } }
+          patch :update, params: { id: workflow.id, automated_workflow: { config: { days_inactive: "99" } } }
         rescue Pundit::NotAuthorizedError
         end
         expect(workflow.reload.config).to eq(original)

@@ -44,6 +44,21 @@ class SendProductEmailJob < ApplicationJob
         return if sendable.respond_to?(:active?) && !sendable.active?
       end
 
+      # Honor unsubscribe / marketing suppression. These sends are scheduled
+      # ahead of time (the signup nudge fires ~a day after signup), so the
+      # recipient may have unsubscribed in the interim — re-check at send time.
+      # Onboarding is transactional (welcome / "your booking is confirmed") and
+      # always sends. SpamGuard only checks frequency, not opt-out.
+      if email_type != "onboarding" && (user.email_opted_out? || user.marketing_suppressed?)
+        ProductEmailSend.create!(
+          operator: operator, user: user, sendable: sendable,
+          email_type: email_type, status: "skipped",
+          error_message: "Skipped: recipient unsubscribed or marketing-suppressed",
+          sent_at: Time.current,
+        )
+        return
+      end
+
       # SpamGuard (ADR-0003): gate all marketing-type sends. Onboarding is
       # operationally-required (welcome / "your booking is confirmed"
       # information) and always sends — gating it would create confusing UX
