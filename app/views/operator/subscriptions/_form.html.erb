@@ -47,13 +47,17 @@
       <div class="col-1"></div>
     </div>
   <% end %>
-  <div class="form-group row">
-    <div class="col-1"></div>
-    <div class="col">
-      <%= render "shared/discount_code_field" %>
+  <%# Only on a NEW subscription (Become a Member). A plan switch/downgrade
+      (edit.html.erb) never reads discount_code, so the field is hidden there. %>
+  <% if local_assigns[:show_discount] %>
+    <div class="form-group row">
+      <div class="col-1"></div>
+      <div class="col">
+        <%= render "shared/discount_code_field" %>
+      </div>
+      <div class="col-1"></div>
     </div>
-    <div class="col-1"></div>
-  </div>
+  <% end %>
   <div class="form-group row">
     <div class="col-1"></div>
     <button class="form-control btn btn-primary col" id="stripe-submit" data-acc="add-payment" data-disable-with="Processing...">

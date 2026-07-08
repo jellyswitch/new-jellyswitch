@@ -14,7 +14,8 @@ class Billing::DiscountCodes::CreateStripeCoupon
 
     coupon_args = {
       id: "dc_#{discount_code.id}_#{SecureRandom.hex(4)}",
-      duration: "once"
+      # "once" (first payment) or "forever" (every payment) — set per code.
+      duration: discount_code.duration
     }
 
     if discount_code.discount_type == "percent_off"

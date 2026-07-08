@@ -66,7 +66,7 @@ class Operator::DiscountCodesController < Operator::BaseController
 
   def discount_code_params
     params.require(:discount_code).permit(
-      :code, :discount_type, :discount_value, :applies_to,
+      :code, :discount_type, :discount_value, :applies_to, :duration,
       :max_redemptions, :expires_at, :active
     ).tap do |p|
       # Convert dollar amount to cents if amount_off

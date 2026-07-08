@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_07_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_07_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -373,6 +373,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_07_120000) do
     t.string "stripe_coupon_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "duration", default: "once", null: false
     t.index ["operator_id", "code"], name: "index_discount_codes_on_operator_id_and_code", unique: true
     t.index ["operator_id", "location_id"], name: "index_discount_codes_on_operator_id_and_location_id"
   end
