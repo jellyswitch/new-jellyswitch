@@ -8,6 +8,7 @@
 #  code             :string           not null
 #  discount_type    :string           not null
 #  discount_value   :integer          not null
+#  duration         :string           default("once"), not null
 #  expires_at       :datetime
 #  max_redemptions  :integer
 #  redemption_count :integer          default(0), not null
@@ -35,7 +36,15 @@ class DiscountCode < ApplicationRecord
   validates :discount_type, presence: true, inclusion: { in: %w[percent_off amount_off] }
   validates :discount_value, presence: true, numericality: { greater_than: 0 }
   validates :applies_to, presence: true, inclusion: { in: %w[day_pass membership meeting_room all] }
+  # "once" = first payment only; "forever" = every payment for the life of a
+  # subscription (maps straight to the Stripe coupon's `duration`).
+  validates :duration, presence: true, inclusion: { in: %w[once forever] }
   validate :percent_off_max_100
+
+  # A Stripe coupon bakes in its amount/percent AND duration at creation, and we
+  # cache the coupon id. If any of those change, the cached coupon is stale, so
+  # drop it — CreateStripeCoupon mints a fresh one on next use.
+  before_save :invalidate_stripe_coupon, if: :coupon_attributes_changed?
 
   scope :active, -> { where(active: true) }
   scope :not_expired, -> { where("expires_at IS NULL OR expires_at > ?", Time.current) }
@@ -80,11 +89,24 @@ class DiscountCode < ApplicationRecord
     end
   end
 
+  def duration_display
+    duration == "forever" ? "Every payment (recurring)" : "First payment only"
+  end
+
   private
 
   def percent_off_max_100
     if discount_type == "percent_off" && discount_value.present? && discount_value > 100
       errors.add(:discount_value, "can't exceed 100 for percentage discounts")
     end
+  end
+
+  def coupon_attributes_changed?
+    stripe_coupon_id.present? &&
+      (duration_changed? || discount_type_changed? || discount_value_changed?)
+  end
+
+  def invalidate_stripe_coupon
+    self.stripe_coupon_id = nil
   end
 end

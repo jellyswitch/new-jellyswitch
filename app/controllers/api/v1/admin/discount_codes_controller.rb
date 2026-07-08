@@ -34,7 +34,7 @@ class Api::V1::Admin::DiscountCodesController < Api::V1::Admin::BaseController
   private
 
   def code_params
-    params.permit(:code, :discount_type, :discount_value, :applies_to,
+    params.permit(:code, :discount_type, :discount_value, :applies_to, :duration,
       :active, :expires_at, :max_redemptions)
   end
 
@@ -46,6 +46,7 @@ class Api::V1::Admin::DiscountCodesController < Api::V1::Admin::BaseController
       discount_type: c.discount_type,
       discount_value: c.discount_value,
       applies_to: c.try(:applies_to) || 'all',
+      duration: c.try(:duration) || 'once',
       max_redemptions: c.try(:max_redemptions),
       expires_at: c.try(:expires_at)&.strftime("%B %e, %Y"),
       usage_count: c.discount_redemptions.count,

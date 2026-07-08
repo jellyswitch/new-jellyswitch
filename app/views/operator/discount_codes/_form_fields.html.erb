@@ -47,6 +47,17 @@
   </div>
 
   <div class="form-group mt-3">
+    <%= f.label :duration, "Duration" %>
+    <%= f.select :duration, [
+      ["First payment only (one-time)", "once"],
+      ["Every payment (recurring for subscriptions)", "forever"]
+    ], {}, class: "form-control" %>
+    <small class="form-text text-muted">
+      For memberships: one-time discounts only the first charge; recurring applies to every renewal. (Day passes and meeting rooms are single charges, so both behave the same.)
+    </small>
+  </div>
+
+  <div class="form-group mt-3">
     <%= f.label :max_redemptions, "Maximum Redemptions" %>
     <%= f.number_field :max_redemptions, class: "form-control", min: 1, placeholder: "Leave blank for unlimited" %>
   </div>
