@@ -24,8 +24,9 @@ class Operator::DayPassesController < Operator::BaseController
     # Members may only self-purchase a customer-facing, PAID day pass / bundle:
     # available (not a retired SKU) and priced > $0. Free/comp types are admin-
     # or code-granted — a $0 self-mint would be free building access — so they
-    # aren't self-served here. Mirrors the mobile API guardrails. (Hidden
-    # visible:false types are reached via the redeem_paid access-code flow.)
+    # aren't self-served here. Hidden (visible:false) types are reached via the
+    # redeem_paid access-code flow and require a matching code (threaded through
+    # the checkout as discount_code). Mirrors the mobile API guardrails.
     day_pass_type = current_location&.day_pass_types&.find_by(id: params.dig(:day_pass, :day_pass_type))
     return if reject_unpurchasable_day_pass_type(day_pass_type)
 
@@ -91,16 +92,24 @@ class Operator::DayPassesController < Operator::BaseController
           location: current_location
         )
         if dpt_result.success?
-          turbo_redirect(redeem_paid_day_passes_path(
-            code: params[:discount_code],
-            day_pass_type_id: dpt_result.day_pass_type.id
-          ))
+          # The code is a DayPassType access code, not a coupon. If it unlocks a
+          # DIFFERENT type than the one being purchased, route the buyer to that
+          # type's checkout (the existing "surface the hidden pass" behavior). If
+          # it matches THE SAME type, the redeem_paid checkout threaded it into
+          # this POST to satisfy the hidden-pass guard — let the purchase proceed
+          # at full price without applying it as a discount. Mirrors the mobile API.
+          if dpt_result.day_pass_type.id != day_pass_type&.id
+            turbo_redirect(redeem_paid_day_passes_path(
+              code: params[:discount_code],
+              day_pass_type_id: dpt_result.day_pass_type.id
+            ))
+            return
+          end
+        else
+          flash[:error] = validate_result.message
+          turbo_redirect(new_day_pass_path)
           return
         end
-
-        flash[:error] = validate_result.message
-        turbo_redirect(new_day_pass_path)
-        return
       end
     end
 
@@ -195,6 +204,11 @@ class Operator::DayPassesController < Operator::BaseController
 
     if result.success?
       @day_pass_type = result.day_pass_type
+      # Thread the validated access code into the checkout form so the purchase
+      # POST carries it — the hidden-pass guard on #create requires a code that
+      # matches this (visible:false) type. Without it, a legitimate code-holder
+      # would be blocked at purchase.
+      @access_code = params[:code]
       @day_pass = DayPass.new
       include_stripe
     else
@@ -239,16 +253,19 @@ class Operator::DayPassesController < Operator::BaseController
   # picker but a crafted POST can pass any operator-scoped id, so the check is
   # server-side. A nil type falls through (the interactor surfaces "Invalid day
   # pass type"). Returns true (and redirects) when the purchase must be blocked.
-  # NOTE: hidden (visible:false) types are intentionally NOT gated here — the
-  # web reaches them via the redeem_paid access-code flow, whose checkout form
-  # doesn't carry the code on the final POST, so a visible+code check would
-  # block legitimate code-holders. Threading the access code through that flow
-  # is a tracked follow-up.
+  #
+  # Hidden (visible:false) types are unlocked by an access code. The redeem_paid
+  # checkout threads that validated code into the purchase POST (as
+  # discount_code), so we require it to match THIS type — otherwise a crafted
+  # POST with no/wrong code could buy a hidden pass at its unlisted rate,
+  # bypassing the access-code gate. Mirrors the mobile API guard.
   def reject_unpurchasable_day_pass_type(day_pass_type)
     return false if day_pass_type.nil?
 
     message =
       if !day_pass_type.available
+        "This day pass is not available."
+      elsif !day_pass_type.visible && !access_code_matches?(day_pass_type)
         "This day pass is not available."
       elsif day_pass_type.amount_in_cents.to_i <= 0
         "Free day passes can't be purchased directly."
@@ -258,6 +275,15 @@ class Operator::DayPassesController < Operator::BaseController
     flash[:error] = message
     turbo_redirect(new_day_pass_path)
     true
+  end
+
+  # True when the request carries this day-pass-type's own access code. Gates
+  # self-purchase of a hidden (visible:false) type to code-holders reaching it
+  # through the redeem_paid flow, which threads the code in as discount_code.
+  def access_code_matches?(day_pass_type)
+    code = params[:discount_code]
+    code.present? &&
+      current_location.day_pass_types.for_code(code).exists?(id: day_pass_type.id)
   end
 
   def find_day_passes
@@ -277,7 +303,10 @@ class Operator::DayPassesController < Operator::BaseController
   # one charge for the N-Pack SKU price, no DayPass minted — passes are burned
   # later at the door / via redeem. Token present => attach card first.
   def create_bundle(day_pass_type)
-    if params[:discount_code].present?
+    # Discount codes don't apply to bundles. But a hidden bundle reached via the
+    # redeem flow threads its own ACCESS code in as discount_code — that's the
+    # access key, not a coupon, so let it through. Any other code is rejected.
+    if params[:discount_code].present? && !access_code_matches?(day_pass_type)
       flash[:error] = "Discount codes can't be applied to day pass bundles."
       return turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
     end

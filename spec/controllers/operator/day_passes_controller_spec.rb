@@ -140,6 +140,71 @@ RSpec.describe Operator::DayPassesController, type: :controller do
         expect(flash[:error]).to match(/free day passes/i)
       end
     end
+
+    # Hidden (visible:false) types are unlocked by an access code. The redeem_paid
+    # checkout threads that code into the purchase POST (as discount_code). A
+    # direct POST without the matching code must not buy a hidden pass at its
+    # unlisted rate — mirrors the mobile API guard.
+    context "with a hidden (visible: false) day pass type" do
+      let(:hidden_type) do
+        create(:day_pass_type, operator: operator, location: location,
+               amount_in_cents: 1000, visible: false, code: "CAFE")
+      end
+
+      it "purchases when the matching access code is present (redeem flow)" do
+        allow(DayPassInteractorFactory).to receive_message_chain(:for, :call).and_return(
+          OpenStruct.new(success?: true, day_pass: day_pass)
+        )
+        post :create, params: {
+          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          discount_code: "CAFE",
+        }
+        expect(flash[:error]).to be_blank
+        expect(flash[:success]).to be_present
+      end
+
+      it "does not bounce the matching-code purchase back to the redeem page" do
+        allow(DayPassInteractorFactory).to receive_message_chain(:for, :call).and_return(
+          OpenStruct.new(success?: true, day_pass: day_pass)
+        )
+        post :create, params: {
+          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          discount_code: "CAFE",
+        }
+        expect(response).not_to redirect_to(
+          redeem_paid_day_passes_path(code: "CAFE", day_pass_type_id: hidden_type.id)
+        )
+      end
+
+      it "rejects a direct purchase with no access code" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        post :create, params: { day_pass: { day: Date.current, day_pass_type: hidden_type.id } }
+        expect(flash[:error]).to match(/not available/i)
+        expect(response).to redirect_to(new_day_pass_path)
+      end
+
+      it "rejects a direct purchase carrying a non-matching code" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        post :create, params: {
+          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          discount_code: "WRONGCODE",
+        }
+        expect(flash[:error]).to match(/not available/i)
+        expect(response).to redirect_to(new_day_pass_path)
+      end
+
+      it "rejects using a DIFFERENT hidden pass's code to unlock this one" do
+        create(:day_pass_type, operator: operator, location: location,
+               amount_in_cents: 2000, visible: false, code: "OTHER")
+        expect(DayPassInteractorFactory).not_to receive(:for)
+        post :create, params: {
+          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          discount_code: "OTHER",
+        }
+        expect(flash[:error]).to match(/not available/i)
+        expect(response).to redirect_to(new_day_pass_path)
+      end
+    end
   end
 
   describe "POST #create with an N-Pack (bundle) day pass type" do
@@ -195,6 +260,25 @@ RSpec.describe Operator::DayPassesController, type: :controller do
         post :create, params: bundle_params.merge(discount_code: "SAVE10")
         expect(flash[:error]).to match(/can't be applied/i)
         expect(response).to redirect_to(new_day_pass_path(day_pass_type_id: bundle_type.id))
+      end
+    end
+
+    # A hidden (code-gated) bundle reached via the redeem flow carries its own
+    # access code as discount_code. That's the access key, not a coupon — the
+    # bundle purchase must still go through, not get rejected as "can't apply".
+    context "when the bundle is hidden and its access code is threaded in" do
+      let(:hidden_bundle) do
+        create(:day_pass_type, operator: operator, location: location,
+               quantity: 2, amount_in_cents: 7000, visible: false, code: "NPACK")
+      end
+
+      it "creates the bundle instead of rejecting the access code" do
+        expect(Billing::DayPassBundles::CreateBundle).to receive(:call).and_return(bundle_result)
+        post :create, params: {
+          day_pass: { day: Date.current, day_pass_type: hidden_bundle.id },
+          discount_code: "NPACK",
+        }
+        expect(flash[:error]).to be_blank
       end
     end
   end
@@ -291,6 +375,10 @@ RSpec.describe Operator::DayPassesController, type: :controller do
 
       it "assigns @day_pass" do
         expect(assigns(:day_pass)).to be_a_new(DayPass)
+      end
+
+      it "assigns @access_code so the checkout POST can carry it" do
+        expect(assigns(:access_code)).to eq("TEST123")
       end
 
       it "includes stripe" do
