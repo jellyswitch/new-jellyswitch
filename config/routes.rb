@@ -897,6 +897,7 @@ Rails.application.routes.draw do
       get :archived, to: "operator/users#archived"
       get :search_archived, to: "operator/users#search_archived"
       get :unapproved, to: "operator/users#unapproved"
+      get :cold_leads, to: "operator/users#cold_leads"
       get :search, to: "operator/users#search"
       get :confirmation_pending, to: "operator/users#confirmation_pending"
     end

@@ -387,6 +387,18 @@ class User < ApplicationRecord
   scope :unapproved, -> { where(approved: false) }
   scope :archived, -> { where(archived: true) }
   scope :visible, -> { where(archived: false) }
+
+  # A new signup sits in the approval queue for APPROVAL_QUEUE_DAYS. After that,
+  # with no action taken, it drops off the queue and is treated as a "cold lead"
+  # (still a User — per the Lead-model deprecation, every User is already a
+  # potential lead; there's no separate row). recent_signup / stale_signup split
+  # the unapproved population by that window.
+  APPROVAL_QUEUE_DAYS = 7
+  scope :recent_signup, -> { where("users.created_at >= ?", APPROVAL_QUEUE_DAYS.days.ago) }
+  scope :stale_signup,  -> { where("users.created_at < ?", APPROVAL_QUEUE_DAYS.days.ago) }
+  # The live approval queue and the cold-lead bucket.
+  scope :awaiting_approval, -> { unapproved.visible.recent_signup }
+  scope :cold_leads,        -> { unapproved.visible.stale_signup }
   scope :members, -> { where(role: User::UNASSIGNED) }
   scope :admins, -> { where(role: User::ADMIN) }
   scope :community_managers, -> { where(role: User::COMMUNITY_MANAGER) }

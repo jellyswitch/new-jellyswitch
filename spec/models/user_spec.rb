@@ -235,6 +235,35 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe 'approval-queue window scopes' do
+    let!(:recent) do
+      create(:user, approved: false, archived: false, operator: operator).tap do |u|
+        u.update_column(:created_at, 2.days.ago)
+      end
+    end
+    let!(:stale) do
+      create(:user, approved: false, archived: false, operator: operator).tap do |u|
+        u.update_column(:created_at, (User::APPROVAL_QUEUE_DAYS + 3).days.ago)
+      end
+    end
+    let!(:approved) do
+      create(:user, approved: true, operator: operator).tap { |u| u.update_column(:created_at, 10.days.ago) }
+    end
+    let!(:archived_stale) do
+      create(:user, approved: false, archived: true, operator: operator).tap { |u| u.update_column(:created_at, 10.days.ago) }
+    end
+
+    it 'awaiting_approval = unapproved, visible, within the window' do
+      expect(User.awaiting_approval).to include(recent)
+      expect(User.awaiting_approval).not_to include(stale, approved, archived_stale)
+    end
+
+    it 'cold_leads = unapproved, visible, past the window' do
+      expect(User.cold_leads).to include(stale)
+      expect(User.cold_leads).not_to include(recent, approved, archived_stale)
+    end
+  end
+
   describe 'role management' do
     let(:user) { create(:user, operator: operator) }
 

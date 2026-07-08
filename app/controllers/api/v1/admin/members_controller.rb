@@ -20,6 +20,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
                           .where(approved: false, archived: false)
                           .where.not(role: 'admin')
                           .originally_at_location(current_location)
+                          .recent_signup # drop off after APPROVAL_QUEUE_DAYS -> cold leads
     scope = search_users(scope) if params[:q].present?
 
     # The list is paginated to 30, but the badge must reflect the TRUE total —
