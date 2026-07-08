@@ -1,23 +1,23 @@
-<% title "Approval Queue" %>
+<% title "Cold Leads" %>
 
-<%= render "shared/back_bar", back_path: members_groups_path, back_label: "Members & Groups", page_title: "Approval Queue" %>
+<%= render "shared/back_bar", back_path: members_groups_path, back_label: "Members & Groups", page_title: "Cold Leads" %>
 
 <%= wide_card do %>
-  <h4 class="display-4 text-center mb-1">Approval Queue</h4>
+  <h4 class="display-4 text-center mb-1">Cold Leads</h4>
   <p class="text-center text-muted mb-3">
-    <%= @users.count %> <%= "member".pluralize(@users.count) %> waiting for approval.
+    <%= @users.count %> <%= "signup".pluralize(@users.count) %> that sat in the queue past <%= User::APPROVAL_QUEUE_DAYS %> days with no action.
   </p>
 
   <div class="d-flex justify-content-center mb-2">
     <div class="btn-group" role="group" aria-label="Member view">
       <%= link_to "All", users_path, class: "btn btn-sm btn-outline-secondary" %>
-      <%= link_to unapproved_users_path, class: "btn btn-sm btn-primary" do %>
-        Approval queue
+      <%= link_to "Approval queue", unapproved_users_path, class: "btn btn-sm btn-outline-secondary" %>
+      <%= link_to cold_leads_users_path, class: "btn btn-sm btn-primary" do %>
+        Cold leads
         <% if @users.count > 0 %>
           <span class="badge badge-light ml-1"><%= @users.count %></span>
         <% end %>
       <% end %>
-      <%= link_to "Cold leads", cold_leads_users_path, class: "btn btn-sm btn-outline-secondary" %>
       <%= link_to "Archived", archived_users_path, class: "btn btn-sm btn-outline-secondary" %>
     </div>
   </div>
@@ -27,11 +27,11 @@
   <% if @users.count < 1 %>
     <div class="text-center py-4">
       <div class="mb-3" style="font-size: 2.5rem; color: #c8ced3;">
-        <i class="fas fa-check-circle"></i>
+        <i class="fas fa-snowflake"></i>
       </div>
-      <h5 class="mb-2">All caught up</h5>
+      <h5 class="mb-2">No cold leads</h5>
       <p class="text-muted small mb-3" style="max-width: 320px; margin-left: auto; margin-right: auto;">
-        No members are waiting for approval. New signups will land here.
+        Signups that aren't approved within <%= User::APPROVAL_QUEUE_DAYS %> days land here. You can still approve them from this list.
       </p>
     </div>
   <% else %>

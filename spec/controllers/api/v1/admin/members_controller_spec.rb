@@ -50,6 +50,18 @@ RSpec.describe Api::V1::Admin::MembersController, type: :controller do
       # +1 for the same-location pending user, NOT for the other location's.
       expect(response.headers["X-Total-Count"].to_i).to eq(baseline + 1)
     end
+
+    it "drops signups older than the approval window (they become cold leads)" do
+      get :unapproved
+      baseline = response.headers["X-Total-Count"].to_i
+
+      create(:user, operator: operator, original_location: admin_loc, current_location: admin_loc,
+                    approved: false, archived: false, role: "unassigned", name: "Stale")
+        .update_column(:created_at, (User::APPROVAL_QUEUE_DAYS + 2).days.ago)
+
+      get :unapproved
+      expect(response.headers["X-Total-Count"].to_i).to eq(baseline) # stale signup dropped off the queue
+    end
   end
 
   describe "POST #log_tour" do

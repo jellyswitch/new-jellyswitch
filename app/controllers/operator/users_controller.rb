@@ -35,6 +35,13 @@ class Operator::UsersController < Operator::BaseController
     authorize @users
   end
 
+  # Cold leads: signups that sat in the approval queue past the window with no
+  # action. Same page, older slice — a filter, not a separate model.
+  def cold_leads
+    set_cold_leads
+    authorize @users
+  end
+
   def archived
     set_archived_users
     authorize @users

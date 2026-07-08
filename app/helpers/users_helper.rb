@@ -37,12 +37,26 @@ module UsersHelper
     end
   end
 
+  # The approval queue: unapproved signups from the last APPROVAL_QUEUE_DAYS,
+  # most recent first. Older signups drop off here and surface under cold leads.
   def find_unapproved_users
-    User.for_space(current_tenant).originally_at_location(current_location).unapproved.visible.order("name")
+    User.for_space(current_tenant).originally_at_location(current_location)
+        .awaiting_approval.order(created_at: :desc)
+  end
+
+  # Cold leads: unapproved signups that sat past the approval window with no
+  # action taken. Same list, older slice — a filter on the members page.
+  def find_cold_leads
+    User.for_space(current_tenant).originally_at_location(current_location)
+        .cold_leads.order(created_at: :desc)
   end
 
   def set_unapproved_users
     @users = find_unapproved_users
+  end
+
+  def set_cold_leads
+    @users = find_cold_leads
   end
 
   def find_archived_users
