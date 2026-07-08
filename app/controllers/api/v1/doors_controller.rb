@@ -54,6 +54,16 @@ class Api::V1::DoorsController < Api::V1::BaseController
         }, status: :forbidden
       end
     else
+      # Private doors are admin/staff-only — a member with building access must
+      # not open one just because they know its id (the Keys list hides them).
+      if door.private? && !user.admin_or_manager?(door.location)
+        return render json: {
+          success: false,
+          door:    door.name,
+          message: "#{door.name} is a restricted door.",
+        }, status: :forbidden
+      end
+
       unless user_can_access_building?(user, location)
         return render json: {
           success: false,
