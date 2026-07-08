@@ -6,6 +6,7 @@ class Billing::Subscription::CreateSubscription
     Billing::Subscription::SaveSubscription,
     Billing::Subscription::CreateStripeSubscription,
     CreateNotifications,
-    Billing::Subscription::ScheduleSubscriptionEmails
+    Billing::Subscription::ScheduleSubscriptionEmails,
+    Billing::Subscription::SendMembershipWelcome
   )
 end
