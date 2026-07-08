@@ -21,6 +21,14 @@ class Operator::DayPassesController < Operator::BaseController
   def create
     authorize DayPass.new
 
+    # Members may only self-purchase a customer-facing, PAID day pass / bundle:
+    # available (not a retired SKU) and priced > $0. Free/comp types are admin-
+    # or code-granted — a $0 self-mint would be free building access — so they
+    # aren't self-served here. Mirrors the mobile API guardrails. (Hidden
+    # visible:false types are reached via the redeem_paid access-code flow.)
+    day_pass_type = current_location&.day_pass_types&.find_by(id: params.dig(:day_pass, :day_pass_type))
+    return if reject_unpurchasable_day_pass_type(day_pass_type)
+
     # N-Pack SKUs are prepaid bundles, not single dated day passes. The web
     # checkout below (date picker, duplicate-by-date guard, single-pass
     # interactor) only models a single pass — so without this branch, buying a
@@ -28,8 +36,7 @@ class Operator::DayPassesController < Operator::BaseController
     # price (two real Cowork Tahoe customers hit exactly this). Route bundle
     # SKUs to the same flow the mobile API uses; the picked date is irrelevant
     # because bundle passes are redeemed later.
-    bundle_type = current_location&.day_pass_types&.find_by(id: params.dig(:day_pass, :day_pass_type))
-    return create_bundle(bundle_type) if bundle_type&.bundle?
+    return create_bundle(day_pass_type) if day_pass_type&.bundle?
 
     # Duplicate-purchase guard: when the member already has a day pass for
     # the same date at this location, render an interstitial confirm page
@@ -224,6 +231,34 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   private
+
+  # Members may only self-purchase a customer-facing, PAID day pass / bundle.
+  # Rejects a retired (available:false) SKU and a free ($0) type — a member
+  # self-minting a $0 pass would get free building access with no charge or
+  # code. Mirrors the mobile API guardrails; the web resolves the type from the
+  # picker but a crafted POST can pass any operator-scoped id, so the check is
+  # server-side. A nil type falls through (the interactor surfaces "Invalid day
+  # pass type"). Returns true (and redirects) when the purchase must be blocked.
+  # NOTE: hidden (visible:false) types are intentionally NOT gated here — the
+  # web reaches them via the redeem_paid access-code flow, whose checkout form
+  # doesn't carry the code on the final POST, so a visible+code check would
+  # block legitimate code-holders. Threading the access code through that flow
+  # is a tracked follow-up.
+  def reject_unpurchasable_day_pass_type(day_pass_type)
+    return false if day_pass_type.nil?
+
+    message =
+      if !day_pass_type.available
+        "This day pass is not available."
+      elsif day_pass_type.amount_in_cents.to_i <= 0
+        "Free day passes can't be purchased directly."
+      end
+    return false unless message
+
+    flash[:error] = message
+    turbo_redirect(new_day_pass_path)
+    true
+  end
 
   def find_day_passes
     if current_location.nil?

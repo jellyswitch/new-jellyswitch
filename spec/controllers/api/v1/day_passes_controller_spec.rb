@@ -145,4 +145,60 @@ RSpec.describe Api::V1::DayPassesController, type: :controller do
       expect(response).to have_http_status(:created)
     end
   end
+
+  # A day-pass discount code must pass full validation (scope + expiry +
+  # redemption cap), not just the `active` flag — the old dc&.active? check let
+  # a member apply a membership-only / expired / maxed code to a day pass.
+  describe "POST #create — discount code validation" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:user) { create(:user, operator: operator, current_location: location) }
+    let!(:paid_pass) do
+      create(:day_pass_type, operator: operator, location: location,
+             name: "Single", amount_in_cents: 1500, visible: true, available: true)
+    end
+
+    before do
+      ActsAsTenant.current_tenant = operator
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(user)
+      allow(controller).to receive(:current_tenant).and_return(operator)
+      allow(controller).to receive(:current_location).and_return(location)
+    end
+
+    # Stub the interactor and capture what discount_code (if any) it was handed.
+    def create_with(code)
+      captured = {}
+      allow(Billing::DayPasses::CreateDayPass).to receive(:call) do |**kwargs|
+        captured = kwargs
+        double(success?: true, day_pass: nil)
+      end
+      post :create, params: { day_pass_type_id: paid_pass.id, discount_code: code }
+      captured
+    end
+
+    it "applies a valid day-pass discount code" do
+      dc = create(:discount_code, operator: operator, location: location, code: "SAVE10",
+                  applies_to: "day_pass", discount_type: "percent_off", discount_value: 10)
+      kwargs = create_with("SAVE10")
+      expect(response).to have_http_status(:created)
+      expect(kwargs[:discount_code]).to eq(dc)
+    end
+
+    it "does NOT apply a membership-only code to a day pass" do
+      create(:discount_code, operator: operator, location: location, code: "MEMBERSONLY",
+             applies_to: "membership", discount_type: "percent_off", discount_value: 100)
+      kwargs = create_with("MEMBERSONLY")
+      expect(response).to have_http_status(:created)
+      expect(kwargs[:discount_code]).to be_nil
+    end
+
+    it "does NOT apply an expired code" do
+      create(:discount_code, operator: operator, location: location, code: "EXPIREDCODE",
+             applies_to: "day_pass", discount_type: "percent_off", discount_value: 50, expires_at: 1.day.ago)
+      kwargs = create_with("EXPIREDCODE")
+      expect(response).to have_http_status(:created)
+      expect(kwargs[:discount_code]).to be_nil
+    end
+  end
 end

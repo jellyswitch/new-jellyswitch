@@ -117,10 +117,23 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # If it matches THE SAME pass being purchased, the code is the access key
     # that unlocked this hidden pass — not a coupon — so we accept it silently.
     if discount_code.present?
-      dc = DiscountCode.for_location(current_location).for_code(discount_code).first
-      if dc&.active?
-        interactor_params[:discount_code] = dc
+      # Validate as a real day-pass discount code — scope (applies_to day_pass),
+      # expiry, and redemption cap — not just the `active` flag. The old
+      # dc&.active? check let a member apply a membership-only / meeting-room-
+      # only, expired, or maxed-out code (up to 100%-off = free pass) to a day
+      # pass. Mirrors the web's Billing::DiscountCodes::ValidateCode.
+      validate = Billing::DiscountCodes::ValidateCode.call(
+        code: discount_code,
+        location: current_location,
+        product_type: "day_pass",
+      )
+      if validate.success?
+        interactor_params[:discount_code] = validate.discount_code
       else
+        # Not a valid coupon — it may instead be a DayPassType ACCESS code. If it
+        # unlocks a DIFFERENT hidden pass, tell the client to switch; if it
+        # matches THIS pass it's the access key (already validated above) so the
+        # purchase proceeds at full price without applying it as a coupon.
         dpt = DayPassType.for_location(current_location).for_code(discount_code).first
         if dpt && dpt.id != day_pass_type.id
           return render json: {
