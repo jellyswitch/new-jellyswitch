@@ -6,6 +6,9 @@ class Operator::OrganizationMembersController < Operator::BaseController
     # `Organization` acts_as_tenant :operator, so this find is already scoped
     # to current_tenant — a foreign-operator org 404s rather than resolving.
     organization = Organization.friendly.find(params[:organization_id])
+    # Only staff or the owner of THIS org may add members. Without this, any
+    # authenticated member could reassign users' organization_id into any org.
+    authorize organization, :manage_members?
 
     ids = user_params[:ids]&.reject(&:blank?)
     if ids.present?
