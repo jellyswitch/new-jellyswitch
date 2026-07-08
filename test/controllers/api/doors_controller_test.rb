@@ -131,4 +131,52 @@ class Api::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal 5, bundle.reload.passes_remaining, "subscription-covered user must not spend a pass"
   end
+
+  # ---------------------------------------------------------------------------
+  # Private (admin-only) doors — Untethered "Pipkin Suite" regression: the Keys
+  # list showed private doors to members, and unlock only checked building
+  # access, so a lease-holder from another org opened a private door.
+  # ---------------------------------------------------------------------------
+
+  def private_door!(kisi: 99777)
+    d = Door.create!(
+      name: "Pipkin Suite", slug: "pipkin-#{SecureRandom.hex(4)}",
+      location: @location, operator: @operator, kisi_id: kisi,
+      available: true, private: true,
+    )
+    stub_request(:post, "https://api.kisi.io/locks/#{kisi}/unlock").to_return(
+      status: 200, body: { success: true }.to_json, headers: { "Content-Type" => "application/json" },
+    )
+    d
+  end
+
+  test "Keys list hides a private door from a member" do
+    door = private_door!
+    log_in @member
+    get "/api/doors", env: default_env
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |d| d["id"] }
+    refute_includes ids, door.id, "member must not see a private door"
+    assert_includes ids, @door.id, "public door is still listed"
+  end
+
+  test "a member with building access is DENIED a private door" do
+    door = private_door!
+    log_in @member
+    post "/api/doors/#{door.id}/unlock", env: default_env
+
+    assert_response :forbidden
+    assert_match(/restricted/i, JSON.parse(response.body)["message"])
+    assert_not_requested :post, "https://api.kisi.io/locks/#{door.kisi_id}/unlock"
+  end
+
+  test "staff can open a private door" do
+    door = private_door!
+    log_in @admin
+    post "/api/doors/#{door.id}/unlock", env: default_env
+
+    assert_response :success
+    assert_requested :post, "https://api.kisi.io/locks/#{door.kisi_id}/unlock", times: 1
+  end
 end

@@ -156,4 +156,22 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_includes ids, public_door.id, "member should see the public door"
     refute_includes ids, private_door.id, "member should not see the private door"
   end
+
+  test "a member with building access is DENIED unlocking a private door" do
+    private_door = Door.create!(
+      name: "Server Room", slug: "srv-#{SecureRandom.hex(4)}",
+      location: @location, operator: @operator, kisi_id: 99098,
+      available: true, private: true,
+    )
+    kisi = "https://api.kisi.io/locks/#{private_door.kisi_id}/unlock"
+    stub_request(:post, kisi).to_return(
+      status: 200, body: { success: true }.to_json, headers: { "Content-Type" => "application/json" },
+    )
+
+    post "/api/v1/doors/#{private_door.id}/unlock", headers: headers(@member)
+
+    assert_response :forbidden
+    assert_match(/restricted/i, JSON.parse(response.body)["message"])
+    assert_not_requested :post, kisi
+  end
 end

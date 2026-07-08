@@ -16,6 +16,11 @@ class Api::DoorsController < ApplicationController
     # Room Locks never render in the general Keys list — the reservation is
     # the key (ADR 0021). Staff keep the full door list.
     doors = doors.where(room_id: nil) unless current_user.admin?
+    # Private doors are admin-only. The mobile Keys list already hid them; this
+    # endpoint was missing the filter, so a member with building access could
+    # see + open a private door (e.g. Untethered "Pipkin Suite"). NULL-tolerant
+    # so a never-flagged door stays public.
+    doors = doors.where(private: [false, nil]) unless current_user.admin?
     render json: doors.map { |d| { id: d.id, name: d.name, private: d.private } }
   rescue => e
     Rails.logger.error("[DoorsAPI] Error in index: #{e.class}: #{e.message}")
@@ -41,6 +46,17 @@ class Api::DoorsController < ApplicationController
         }, status: :forbidden
       end
     else
+      # Private doors are admin/staff-only — a member with building access must
+      # not open one just because they know its id (the Keys list hides them from
+      # members). Staff = admins/managers/superadmins of the door's location.
+      if @door.private? && !current_user.admin_or_manager?(@door.location)
+        return render json: {
+          success: false,
+          door:    @door.name,
+          message: "#{@door.name} is a restricted door.",
+        }, status: :forbidden
+      end
+
       # Same gate as the mobile unlock (Api::V1::DoorsController#unlock) — being
       # logged in is not building access. Gated on the door's own location, not
       # the session's current_location, so a stale location pick can't widen access.
