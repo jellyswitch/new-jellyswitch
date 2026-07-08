@@ -19,8 +19,16 @@ class OfficeLeasePolicy < ApplicationPolicy
     enabled? && (admin? || general_manager?)
   end
 
+  # Terminating a lease early is a staff-only action — we do let members out of
+  # leases (e.g. when demand is high), but that's an admin's call, not something
+  # a member presses themselves. The `owner?` clause (a non-staff organization
+  # owner) was removed: it let the company point-of-contact self-terminate the
+  # lease (cancel the Stripe sub + set end_date=today) from the web, which every
+  # sibling lease action (destroy?/renew?) and the mobile admin API already
+  # forbid. Matches the "don't let people out of long-term agreements unless an
+  # admin does it" rule.
   def destroy_office_lease_now?
-    enabled? && (admin? || owner? || general_manager?)
+    enabled? && (admin? || general_manager?)
   end
 
   def enabled?
