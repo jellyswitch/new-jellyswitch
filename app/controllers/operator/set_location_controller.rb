@@ -16,7 +16,13 @@ class Operator::SetLocationController < Operator::BaseController
   end
 
   def update
-    location = Location.find(location_params[:id])
+    # Members (and anonymous first-time visitors) may only switch to a *visible*
+    # location; admins/superadmins may target a hidden (deprecated/staff-only)
+    # one. Mirrors the mobile switch_location gate — the raw Location.find let a
+    # member land on a hidden location by id. Location acts_as_tenant, so this
+    # stays scoped to the current operator.
+    scope = (current_user&.admin? || current_user&.superadmin?) ? Location : Location.visible
+    location = scope.find(location_params[:id])
     update_location(location)
 
     turbo_redirect(root_path)

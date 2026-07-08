@@ -179,4 +179,32 @@ class Api::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_requested :post, "https://api.kisi.io/locks/#{door.kisi_id}/unlock", times: 1
   end
+
+  # Keys list visibility parity with the mobile app: a member without current
+  # building access gets an empty list instead of the public door names/ids.
+  test "Keys list is empty for a member without building access" do
+    log_in @non_member
+    get "/api/doors", env: default_env
+
+    assert_response :success
+    assert_equal [], JSON.parse(response.body), "no-coverage member should see no doors"
+  end
+
+  test "Keys list shows doors to a member with building access" do
+    log_in @member
+    get "/api/doors", env: default_env
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |d| d["id"] }
+    assert_includes ids, @door.id, "member with access should see the building door"
+  end
+
+  test "Keys list shows doors to staff regardless of personal coverage" do
+    log_in @admin
+    get "/api/doors", env: default_env
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |d| d["id"] }
+    assert_includes ids, @door.id, "staff should always see the door list"
+  end
 end
