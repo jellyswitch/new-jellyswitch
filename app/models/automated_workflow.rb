@@ -23,11 +23,16 @@ class AutomatedWorkflow < ApplicationRecord
 
   acts_as_tenant :operator
 
+  # NOTE: "signup_nurture" was retired — it was a non-functional duplicate of the
+  # event-driven signup nudge (Users::Save -> ScheduleSignupNudgeJob ->
+  # SendProductEmailJob, using the valid signup_nudge/nudge ProductEmailTemplate).
+  # Its template lookup used a product_type/email_type the model forbids, so it
+  # never sent while presenting a misleading "Signup nurture drip" toggle. The
+  # signup nudge is now the single, real nurture.
   TYPES = %w[
     re_engagement
     past_due_followup
     booking_reminder
-    signup_nurture
     day_passer_followup
     room_reservation_followup
     past_member_recovery
@@ -37,7 +42,6 @@ class AutomatedWorkflow < ApplicationRecord
     "re_engagement" => { "days_inactive" => 14 },
     "past_due_followup" => { "followup_days" => [3, 7, 14] },
     "booking_reminder" => { "hours_before" => 24 },
-    "signup_nurture" => { "sequence_days" => [1, 3, 7, 14] },
     "day_passer_followup" => { "days_after" => 14 },
     "room_reservation_followup" => { "days_after" => 14 },
     "past_member_recovery" => { "days_after_grace" => 30 },
@@ -67,9 +71,6 @@ class AutomatedWorkflow < ApplicationRecord
     config["hours_before"] || 24
   end
 
-  def sequence_days
-    config["sequence_days"] || [1, 3, 7, 14]
-  end
 
   def days_after
     config["days_after"] || 14
@@ -84,7 +85,6 @@ class AutomatedWorkflow < ApplicationRecord
     when "re_engagement" then "Re-engagement"
     when "past_due_followup" then "Past-due follow-up"
     when "booking_reminder" then "Booking reminder"
-    when "signup_nurture" then "Signup nurture drip"
     when "day_passer_followup" then "Day-passer follow-up"
     when "room_reservation_followup" then "Room-reservation follow-up"
     when "past_member_recovery" then "Past-member recovery"
@@ -99,8 +99,6 @@ class AutomatedWorkflow < ApplicationRecord
       "Send follow-up emails at day #{followup_days.join(', ')} for unpaid invoices"
     when "booking_reminder"
       "Email reminder 24 hours before paid room reservations. Push notification 10 min before all reservations."
-    when "signup_nurture"
-      "4-step drip for new signups who haven't purchased: day #{sequence_days.join(', ')}"
     when "day_passer_followup"
       "Email day-passers #{days_after} days after their visit if they haven't returned"
     when "room_reservation_followup"

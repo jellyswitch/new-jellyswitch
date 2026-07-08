@@ -40,9 +40,6 @@ class Operator::Admin::AutomatedWorkflowsController < Operator::BaseController
       list.present? ? { "followup_days" => list } : {}
     when "booking_reminder"
       raw[:hours_before].present? ? { "hours_before" => raw[:hours_before].to_i } : {}
-    when "signup_nurture"
-      list = parse_int_list(raw[:sequence_days])
-      list.present? ? { "sequence_days" => list } : {}
     when "day_passer_followup", "room_reservation_followup"
       raw[:days_after].present? ? { "days_after" => raw[:days_after].to_i } : {}
     when "past_member_recovery"

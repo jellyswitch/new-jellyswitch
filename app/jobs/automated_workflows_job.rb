@@ -34,8 +34,6 @@ class AutomatedWorkflowsJob < ApplicationJob
         run_past_due_followup(workflow, operator, location)
       when "booking_reminder"
         run_booking_reminder(workflow, operator, location)
-      when "signup_nurture"
-        run_signup_nurture(workflow, operator, location)
       when "day_passer_followup"
         run_day_passer_followup(workflow, operator, location)
       when "room_reservation_followup"
@@ -129,40 +127,6 @@ class AutomatedWorkflowsJob < ApplicationJob
 
       UserMailer.booking_reminder_email(user, operator, reservation, location).deliver_later
       record_send_key(user, send_key)
-    end
-  end
-
-  # Signup nurture: drip sequence for users who signed up but haven't purchased
-  def run_signup_nurture(workflow, operator, location)
-    sequence_days = workflow.sequence_days
-
-    users = User.for_space(operator)
-      .originally_at_location(location)
-      .visible
-      .where(email_opted_out: false, email_bounced: false)
-
-    users.find_each do |user|
-      next if user.day_passes.any? || user.subscriptions.any? || user.reservations.any?
-
-      days_since_signup = (Date.current - user.created_at.to_date).to_i
-
-      sequence_days.each_with_index do |day, step|
-        next unless days_since_signup >= day
-
-        template = ProductEmailTemplate.find_by(
-          operator: operator, location: location,
-          product_type: "signup_nurture", email_type: "nurture_step_#{step}"
-        )
-        next unless template&.enabled?
-
-        send_key = "signup_nurture_step_#{step}_user_#{user.id}"
-        next if already_sent_key?(send_key)
-        next unless guard_eligible?(user, operator, send_key)
-
-        UserMailer.re_engagement_email(user, operator, template, location).deliver_later
-        record_send_key(user, send_key)
-        break # only send one step per run
-      end
     end
   end
 
