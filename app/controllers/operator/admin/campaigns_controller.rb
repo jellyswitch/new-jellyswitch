@@ -1,18 +1,21 @@
 class Operator::Admin::CampaignsController < Operator::BaseController
   before_action :require_authentication
   before_action :background_image
-  before_action :find_campaign, only: [:show, :edit, :update, :destroy, :send_campaign, :pause, :resume, :clone, :preview, :test_send]
+  before_action :find_campaign, only: [:show, :edit, :update, :destroy, :send_campaign, :pause, :resume, :clone, :preview, :test_send, :exclude_recipient]
 
   def index
+    authorize Campaign
     @campaigns = Campaign.where(operator: current_tenant).order(created_at: :desc)
   end
 
   def new
+    authorize Campaign
     @campaign = Campaign.new(campaign_type: "single")
     @campaign.campaign_steps.build(position: 0, delay_days: 0)
   end
 
   def create
+    authorize Campaign
     @campaign = Campaign.new(campaign_params)
     @campaign.operator = current_tenant
     @campaign.location = current_location
@@ -113,13 +116,16 @@ class Operator::Admin::CampaignsController < Operator::BaseController
   private
 
   def find_campaign
-    @campaign = Campaign.find(params[:id])
+    # Tenant-scoped find (belt-and-suspenders with acts_as_tenant), then a role
+    # check via CampaignPolicy — the controller had neither before.
+    @campaign = current_tenant.campaigns.find(params[:id])
+    authorize @campaign
   end
 
   def campaign_params
     params.require(:campaign).permit(
       :name, :campaign_type, :suppression_days, :cool_down_days, :scheduled_at,
-      segment: [:status_filter, date_range: [:from, :to], customer_types: []],
+      segment: [:status_filter, :interest_match, date_range: [:from, :to], customer_types: [], interest_products: []],
       campaign_steps_attributes: [:id, :position, :subject, :body, :delay_days, :_destroy]
     )
   end

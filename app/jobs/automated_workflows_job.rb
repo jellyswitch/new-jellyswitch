@@ -56,7 +56,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       .originally_at_location(location)
       .approved
       .visible
-      .where(email_opted_out: false, email_bounced: false)
+      .marketing_sendable
       .joins(:subscriptions)
       .where(subscriptions: { pending: false })
       .distinct
@@ -88,7 +88,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       .find_each do |invoice|
         user = invoice.billable
         next unless user.is_a?(User)
-        next if user.email_opted_out? || user.email_bounced?
+        next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
 
         days_past_due = (Date.current - invoice.due_date.to_date).to_i
 
@@ -116,7 +116,7 @@ class AutomatedWorkflowsJob < ApplicationJob
 
     reservations.find_each do |reservation|
       user = reservation.user
-      next if user.email_opted_out? || user.email_bounced?
+      next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
       # Only remind people who actually paid for the reservation. Members on
       # plans, day-pass holders, lease holders, admins, GMs, and CMs all book
       # rentable rooms with reservation.paid = false (see Billing::Reservations::SaveRoomReservation).
@@ -149,7 +149,7 @@ class AutomatedWorkflowsJob < ApplicationJob
            .find_each do |day_pass|
       user = day_pass.user
       next unless user
-      next if user.email_opted_out? || user.email_bounced?
+      next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
       next if user.has_active_subscription?
       next if returned_since?(user, day_pass.day)
 
@@ -182,7 +182,7 @@ class AutomatedWorkflowsJob < ApplicationJob
                .find_each do |reservation|
       user = reservation.user
       next unless user
-      next if user.email_opted_out? || user.email_bounced?
+      next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
       next if user.has_active_subscription?
       next if returned_since?(user, reservation.datetime_in.to_date)
 
@@ -215,7 +215,7 @@ class AutomatedWorkflowsJob < ApplicationJob
                              .uniq
 
     User.where(id: activity_users)
-        .where(email_opted_out: false, email_bounced: false)
+        .marketing_sendable
         .find_each do |user|
       next if user.has_active_subscription?
 

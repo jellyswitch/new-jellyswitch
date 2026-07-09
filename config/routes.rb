@@ -781,6 +781,7 @@ Rails.application.routes.draw do
       get :waitlist, to: "operator/people#waitlist"
       post :office_offer, to: "operator/people#office_offer"
       post :office_decline, to: "operator/people#office_decline"
+      post :message_list, to: "operator/people#message_list"
     end
   end
   resources :notes, controller: "operator/notes", only: [:create, :destroy]

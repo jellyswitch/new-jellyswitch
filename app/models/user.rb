@@ -420,6 +420,21 @@ class User < ApplicationRecord
   scope :originally_at_location, ->(location) { location.present? ? where(original_location_id: location.id) : all }
   scope :currently_at_location, ->(location) { location.present? ? where(current_location_id: location.id) : all }
 
+  # The single source of truth for "may we send this Person MARKETING mail":
+  # not unsubscribed, not bounced, not operator-suppressed. Replaces the inlined
+  # triad that Campaign#build_recipient_query and the automation job had drifted
+  # on (the job was missing marketing_suppressed).
+  scope :marketing_sendable, -> { where(email_opted_out: false, email_bounced: false, marketing_suppressed: false) }
+
+  # Interest-tag audience targeting (ADR 0022). `products` are InterestTag
+  # product keys (office / day_pass / membership / meeting_room).
+  scope :with_any_interest, ->(products) { joins(:interest_tags).where(interest_tags: { product: products }).distinct }
+  # Holds ALL of the given interests (the "viewed day pass AND membership" play).
+  scope :with_all_interests, ->(products) {
+    joins(:interest_tags).where(interest_tags: { product: products })
+      .group("users.id").having("COUNT(DISTINCT interest_tags.product) = ?", Array(products).size)
+  }
+
   scope :relevant_admins_of_location, ->(location) {
     if location.present?
       # An admin is relevant to a location they manage (location_managements).

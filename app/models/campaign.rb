@@ -60,6 +60,18 @@ class Campaign < ApplicationRecord
     status == "active"
   end
 
+  def paused?
+    status == "paused"
+  end
+
+  def completed?
+    status == "completed"
+  end
+
+  def cancelled?
+    status == "cancelled"
+  end
+
   def excluded_user_ids
     segment["excluded_user_ids"] || []
   end
@@ -90,6 +102,16 @@ class Campaign < ApplicationRecord
 
   def segment_status_filter
     segment["status_filter"] || "all"
+  end
+
+  # Interest-tag audience (ADR 0022). Restricted to known products so stray
+  # segment data can't widen the query. "any" (default) vs "all" match.
+  def segment_interest_products
+    (segment["interest_products"] || []) & InterestTag::PRODUCTS
+  end
+
+  def segment_interest_match
+    segment["interest_match"] == "all" ? "all" : "any"
   end
 
   def build_recipient_query(location, apply_spam_guard: true)
@@ -132,8 +154,17 @@ class Campaign < ApplicationRecord
       users = users.where(id: user_ids)
     end
 
-    # Exclude opted-out, bounced, and marketing-suppressed
-    users = users.where(email_opted_out: false, email_bounced: false, marketing_suppressed: false)
+    # Filter by interest tag (ADR 0022) — an independent axis ANDed with the
+    # customer-type filter above. "any" holds one of the products; "all" holds
+    # every one (the "viewed day pass AND membership" play).
+    interest_products = segment_interest_products
+    if interest_products.any?
+      interest_scope = segment_interest_match == "all" ? User.with_all_interests(interest_products) : User.with_any_interest(interest_products)
+      users = users.where(id: interest_scope.select(:id))
+    end
+
+    # Never send to the unsubscribed / bounced / operator-suppressed.
+    users = users.marketing_sendable
 
     # Exclude per-campaign exclusions
     excluded = excluded_user_ids
@@ -141,11 +172,12 @@ class Campaign < ApplicationRecord
 
     # Apply Spam Guard (ADR-0003): drop anyone in another active series or
     # cooled down on this operator. Set apply_spam_guard: false for preview
-    # callers that want the raw candidate pool.
+    # callers that want the raw candidate pool. Load candidates once (was an
+    # N+1: a User.find per id).
     if apply_spam_guard
-      ineligible_ids = users.pluck(:id).reject do |uid|
-        SpamGuard.eligible?(User.find(uid), sender: operator, cool_down_days: cool_down_days)
-      end
+      ineligible_ids = users.to_a.reject do |candidate|
+        SpamGuard.eligible?(candidate, sender: operator, cool_down_days: cool_down_days)
+      end.map(&:id)
       users = users.where.not(id: ineligible_ids) if ineligible_ids.any?
     end
 

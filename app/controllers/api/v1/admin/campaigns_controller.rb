@@ -78,7 +78,7 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
 
   def campaign_params
     params.permit(:name, :campaign_type, :status, :scheduled_at,
-      segment: [:status_filter, customer_types: [], date_range: [:from, :to]],
+      segment: [:status_filter, :interest_match, customer_types: [], interest_products: [], date_range: [:from, :to]],
       campaign_steps_attributes: [:id, :subject, :body, :delay_days, :position, :_destroy])
   end
 end

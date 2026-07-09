@@ -37,6 +37,11 @@ class Operator::PeopleController < Operator::BaseController
     base_scope = base_scope.in_stage(@stage) unless @stage == "all"
     base_scope = base_scope.where(point_of_contact_id: current_user.id) if @owned_by_me
 
+    # Interest-tag filter (ADR 0022) — the audience dimension behind "Message
+    # this list". A single product here; the campaign form can combine several.
+    @interest = params[:interest].to_s.presence_in(InterestTag::PRODUCTS)
+    base_scope = base_scope.with_any_interest([@interest]) if @interest
+
     @q = params[:q].to_s.strip
     if @q.present?
       like = "%#{@q.downcase}%"
@@ -111,6 +116,27 @@ class Operator::PeopleController < Operator::BaseController
     turbo_redirect(waitlist_people_path, action: "replace")
   end
 
+  # "Message this list" — seed a DRAFT campaign whose audience is the current
+  # interest filter, then drop the operator into the campaign editor to write
+  # the message and review recipients. No send happens here (chosen: draft-seed,
+  # not blast).
+  def message_list
+    authorize :person, :message_list?
+    interest = params[:interest].to_s.presence_in(InterestTag::PRODUCTS)
+    label = interest ? interest.titleize : "New"
+
+    campaign = current_tenant.campaigns.create!(
+      location: current_location,
+      name: "#{label} list — #{Date.current.strftime('%b %-d, %Y')}",
+      campaign_type: "single",
+      status: "draft",
+      segment: interest ? { "interest_products" => [interest], "interest_match" => "any" } : {},
+    )
+
+    flash[:notice] = "Draft campaign created from this list — add your message and review the audience."
+    turbo_redirect(edit_campaign_path(campaign))
+  end
+
   private
 
   def find_waitlist_person
@@ -122,6 +148,7 @@ class Operator::PeopleController < Operator::BaseController
     {
       stage: @stage,
       owned_by_me: @owned_by_me,
+      interest: @interest,
       from: @from,
       q: @q,
       primary_city: @primary_city,

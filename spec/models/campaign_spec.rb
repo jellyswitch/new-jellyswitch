@@ -130,4 +130,84 @@ RSpec.describe Campaign, type: :model do
       expect(campaign.spam_guard_excluded_count_for(location)).to eq(20)
     end
   end
+
+  describe "status predicates" do
+    it "reflects the status string" do
+      expect(Campaign.new(status: "paused").paused?).to be true
+      expect(Campaign.new(status: "completed").completed?).to be true
+      expect(Campaign.new(status: "cancelled").cancelled?).to be true
+      expect(Campaign.new(status: "draft").paused?).to be false
+    end
+  end
+
+  describe "#build_recipient_query interest targeting (ADR 0022)" do
+    def sendable_user
+      create(:user, operator: operator, original_location: location, current_location: location,
+                    email_opted_out: false, email_bounced: false, marketing_suppressed: false)
+    end
+
+    let!(:office_only) do
+      u = sendable_user
+      InterestTag.record(user: u, product: "office", source: "concierge")
+      u
+    end
+    let!(:membership_only) do
+      u = sendable_user
+      InterestTag.record(user: u, product: "membership", source: "concierge")
+      u
+    end
+    let!(:both) do
+      u = sendable_user
+      InterestTag.record(user: u, product: "office", source: "concierge")
+      InterestTag.record(user: u, product: "membership", source: "staff")
+      u
+    end
+    let!(:no_interest) { sendable_user }
+
+    def recipient_ids(segment)
+      campaign.update!(segment: segment)
+      campaign.build_recipient_query(location, apply_spam_guard: false).pluck(:id)
+    end
+
+    it "ANY match returns users holding any of the products (union)" do
+      ids = recipient_ids("interest_products" => %w[office membership], "interest_match" => "any")
+      expect(ids).to include(office_only.id, membership_only.id, both.id)
+      expect(ids).not_to include(no_interest.id)
+    end
+
+    it "ANY match with a single product" do
+      ids = recipient_ids("interest_products" => %w[office], "interest_match" => "any")
+      expect(ids).to include(office_only.id, both.id)
+      expect(ids).not_to include(membership_only.id, no_interest.id)
+    end
+
+    it "ALL match requires every product" do
+      ids = recipient_ids("interest_products" => %w[office membership], "interest_match" => "all")
+      expect(ids).to contain_exactly(both.id)
+    end
+
+    it "no interest filter leaves the audience unfiltered by interest" do
+      ids = recipient_ids({})
+      expect(ids).to include(office_only.id, membership_only.id, both.id, no_interest.id)
+    end
+
+    it "ignores unknown products (can't widen the query)" do
+      ids = recipient_ids("interest_products" => %w[parking], "interest_match" => "any")
+      expect(ids).to include(no_interest.id, office_only.id) # no interest filter applied
+    end
+
+    it "still drops suppressed people even when interested" do
+      suppressed = sendable_user
+      InterestTag.record(user: suppressed, product: "office", source: "concierge")
+      suppressed.update!(marketing_suppressed: true)
+      ids = recipient_ids("interest_products" => %w[office], "interest_match" => "any")
+      expect(ids).not_to include(suppressed.id)
+      expect(ids).to include(office_only.id)
+    end
+
+    it "recipient_count_for stays an integer with an ALL (grouped) interest filter" do
+      campaign.update!(segment: { "interest_products" => %w[office membership], "interest_match" => "all" })
+      expect(campaign.recipient_count_for(location)).to eq(1)
+    end
+  end
 end

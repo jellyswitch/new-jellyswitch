@@ -14,12 +14,13 @@
     <%= f.hidden_field :stage, value: @stage if @stage != "all" %>
     <%= f.hidden_field :owned_by_me, value: 1 if @owned_by_me %>
     <%= f.hidden_field :from, value: @from if @from.present? %>
+    <%= f.hidden_field :interest, value: @interest if @interest %>
     <div class="input-group">
       <%= f.text_field :q, value: @q, placeholder: "Search by name, email, or zip", class: "form-control", "aria-label": "Search people" %>
       <div class="input-group-append">
         <%= f.submit "Search", class: "btn btn-primary" %>
         <% if @q.present? %>
-          <%= link_to "Clear", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence), class: "btn btn-outline-secondary" %>
+          <%= link_to "Clear", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, interest: @interest), class: "btn btn-outline-secondary" %>
         <% end %>
       </div>
     </div>
@@ -29,8 +30,21 @@
     <% Operator::PeopleController::STAGE_LABELS.each do |key, label| %>
       <% active = @stage == key %>
       <%= link_to label,
-                  people_path(stage: key == "all" ? nil : key, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, q: @q.presence),
+                  people_path(stage: key == "all" ? nil : key, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, q: @q.presence, interest: @interest),
                   class: "btn btn-sm #{active ? 'btn-primary' : 'btn-outline-secondary'} mr-1 mb-1" %>
+    <% end %>
+  </div>
+
+  <%# Interest filter (ADR 0022) — the audience dimension for "Message this list". %>
+  <div class="text-center mb-3">
+    <span class="text-muted small mr-2">Interest:</span>
+    <%= link_to "All",
+                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, q: @q.presence),
+                class: "btn btn-sm #{@interest.nil? ? 'btn-primary' : 'btn-outline-secondary'} mr-1 mb-1" %>
+    <% InterestTag::PRODUCTS.each do |product| %>
+      <%= link_to product.titleize,
+                  people_path(interest: product, stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: @from.presence, q: @q.presence),
+                  class: "btn btn-sm #{@interest == product ? 'btn-primary' : 'btn-outline-secondary'} mr-1 mb-1" %>
     <% end %>
   </div>
 
@@ -40,14 +54,14 @@
         From: <%= from_filter_label(@from, primary_city: @primary_city) %>
       </button>
       <div class="dropdown-menu">
-        <%= link_to "Any", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, q: @q.presence), class: "dropdown-item" %>
+        <%= link_to "Any", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, q: @q.presence, interest: @interest), class: "dropdown-item" %>
         <% if @primary_city.present? %>
-          <%= link_to "#{@primary_city} (local)", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "local", q: @q.presence), class: "dropdown-item" %>
-          <%= link_to "Out of town", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "out", q: @q.presence), class: "dropdown-item" %>
+          <%= link_to "#{@primary_city} (local)", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "local", q: @q.presence, interest: @interest), class: "dropdown-item" %>
+          <%= link_to "Out of town", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "out", q: @q.presence, interest: @interest), class: "dropdown-item" %>
           <% if @available_states.any? %><div class="dropdown-divider"></div><% end %>
         <% end %>
         <% @available_states.each do |state| %>
-          <%= link_to "State: #{state}", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "state:#{state}", q: @q.presence), class: "dropdown-item" %>
+          <%= link_to "State: #{state}", people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? 1 : nil, from: "state:#{state}", q: @q.presence, interest: @interest), class: "dropdown-item" %>
         <% end %>
       </div>
     </div>
@@ -55,9 +69,21 @@
 
   <div class="text-center mb-3">
     <%= link_to (@owned_by_me ? "Showing only people I own" : "People I own"),
-                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1, from: @from.presence, q: @q.presence),
+                people_path(stage: @stage == "all" ? nil : @stage, owned_by_me: @owned_by_me ? nil : 1, from: @from.presence, q: @q.presence, interest: @interest),
                 class: "btn btn-sm #{@owned_by_me ? 'btn-primary' : 'btn-outline-secondary'}" %>
   </div>
+
+  <%# Message this list — seed a draft campaign from the current interest filter. %>
+  <% if policy(:person).message_list? %>
+    <div class="text-center mb-4">
+      <%= button_to message_list_people_path(interest: @interest),
+            method: :post, class: "btn btn-sm btn-success", form_class: "d-inline-block" do %>
+        <i class="fas fa-paper-plane"></i>
+        Message this list<%= " (#{@interest.titleize})" if @interest %>
+      <% end %>
+      <div class="text-muted small mt-1">Creates a draft campaign from the current interest — you'll add the message next.</div>
+    </div>
+  <% end %>
 
   <% if @people.any? %>
     <% if @pagy.pages > 1 %>
