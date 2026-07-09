@@ -35,6 +35,8 @@ RSpec.describe Api::V1::Admin::CampaignsController, type: :controller do
         expect(response).to have_http_status(:ok)
         expect(body["name"]).to eq("Winter")
         expect(body["subject"]).to eq("Hi")
+        expect(body["body"]).to eq("Body")
+        expect(body["step_id"]).to eq(step.id) # so mobile can update the step, not create a colliding one
         expect(body["segment"]["interest_products"]).to eq(["office"])
         expect(body["segment"]["interest_match"]).to eq("any")
         expect(body["scorecard"]).to include("sent" => 1, "opened" => 1, "converted" => 1)

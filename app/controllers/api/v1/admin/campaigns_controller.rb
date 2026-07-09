@@ -88,6 +88,7 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
       name: campaign.name,
       status: campaign.status,
       campaign_type: campaign.campaign_type,
+      step_id: step&.id,
       subject: step&.subject,
       body: step&.body,
       segment: {
