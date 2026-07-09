@@ -351,7 +351,7 @@ Rails.application.routes.draw do
         end
 
         # Campaigns
-        resources :campaigns, only: [:index, :create, :update, :destroy] do
+        resources :campaigns, only: [:index, :show, :create, :update, :destroy] do
           member do
             post :send_campaign
             post :pause
