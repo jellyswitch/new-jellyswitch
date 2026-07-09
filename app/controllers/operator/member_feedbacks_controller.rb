@@ -178,9 +178,12 @@ class Operator::MemberFeedbacksController < Operator::BaseController
 
   def find_member_feedback(key=:id)
     # Try location-scoped first (for admins viewing all feedback),
-    # then fall back to user's own feedback (for members viewing their threads)
+    # then fall back to user's own feedback (for members viewing their threads).
+    # Anonymous requests (expired sessions, link previews) have no fallback
+    # scope — 404 rather than crash on current_user.
     @member_feedback = MemberFeedback.for_location(current_location).find_by(id: params[key])
-    @member_feedback ||= current_user.member_feedbacks.find(params[key])
+    @member_feedback ||= current_user.member_feedbacks.find(params[key]) if current_user
+    raise ActiveRecord::RecordNotFound if @member_feedback.nil?
   end
 
   def member_feedback_params

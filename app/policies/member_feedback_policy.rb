@@ -28,7 +28,7 @@ class MemberFeedbackPolicy < ApplicationPolicy
 
   def record_owner?
     if record.respond_to?(:user_id)
-      record.user_id == user.id
+      is_user? && record.user_id == user.id
     else
       true
     end
