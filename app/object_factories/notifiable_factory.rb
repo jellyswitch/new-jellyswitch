@@ -53,6 +53,8 @@ class NotifiableFactory
       Notifiable::PointOfContactAlert
     when "TourRequestAlert"
       Notifiable::TourRequestAlert
+    when "OfficeVacancy"
+      Notifiable::OfficeVacancy
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)

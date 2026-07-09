@@ -113,6 +113,31 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user), action: "replace")
   end
 
+  # Staff manually tag a Person's product interest (ADR 0022) — source "staff",
+  # sticky (a later behavioral signal won't overwrite it). Used from the profile
+  # to hand-add someone to a list (e.g. "called, wants an office").
+  def add_interest
+    find_user(:user_id)
+    authorize @user, :edit_interest?
+
+    if InterestTag.record(user: @user, product: params[:product], source: "staff", added_by: current_user)
+      flash[:success] = "Added #{params[:product].to_s.humanize.downcase} interest."
+    else
+      flash[:error] = "That isn't a product we track interest in."
+    end
+
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
+  def remove_interest
+    find_user(:user_id)
+    authorize @user, :edit_interest?
+
+    @user.interest_tags.for_product(params[:product].to_s).destroy_all
+    flash[:success] = "Removed #{params[:product].to_s.humanize.downcase} interest."
+    turbo_redirect(user_path(@user), action: "replace")
+  end
+
   def reassign_point_of_contact
     find_user(:user_id)
     authorize @user, :reassign_point_of_contact?

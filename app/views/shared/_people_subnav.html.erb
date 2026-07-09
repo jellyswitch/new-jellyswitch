@@ -4,9 +4,10 @@
   highlighted.
 %>
 <% tabs = [
-  { key: "people",      label: "Members",     path: people_path },
-  { key: "automations", label: "Automations", path: product_email_templates_path },
-  { key: "campaigns",   label: "Campaigns",   path: campaigns_path },
+  { key: "people",      label: "Members",      path: people_path },
+  { key: "waitlist",    label: "Office queue", path: waitlist_people_path },
+  { key: "automations", label: "Automations",  path: product_email_templates_path },
+  { key: "campaigns",   label: "Campaigns",    path: campaigns_path },
 ] %>
 
 <div class="bg-light rounded p-2 mb-3" data-testid="people-subnav-container">

@@ -218,4 +218,41 @@ RSpec.describe OfficeLease, type: :model do
       end
     end
   end
+
+  describe "culling office interest tags on creation (fairness-queue auto-cull)" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:office)   { create(:office, operator: operator, location: location) }
+
+    it "removes an individual leaseholder's office interest tag" do
+      user = create(:user, operator: operator, original_location: location)
+      InterestTag.record(user: user, product: "office", source: "concierge")
+
+      create(:office_lease, organization: nil, user: user, operator: operator, location: location, office: office)
+
+      expect(user.interest_tags.for_product("office")).to be_empty
+    end
+
+    it "removes the office tag of every member when an organization leases" do
+      org = create(:organization, operator: operator)
+      m1 = create(:user, operator: operator, organization: org, original_location: location)
+      m2 = create(:user, operator: operator, organization: org, original_location: location)
+      InterestTag.record(user: m1, product: "office", source: "concierge")
+      InterestTag.record(user: m2, product: "office", source: "staff", added_by: m1)
+
+      create(:office_lease, organization: org, user: nil, operator: operator, location: location, office: office)
+
+      expect(m1.interest_tags.for_product("office")).to be_empty
+      expect(m2.interest_tags.for_product("office")).to be_empty
+    end
+
+    it "leaves interest in other products untouched" do
+      user = create(:user, operator: operator, original_location: location)
+      InterestTag.record(user: user, product: "membership", source: "concierge")
+
+      create(:office_lease, organization: nil, user: user, operator: operator, location: location, office: office)
+
+      expect(user.interest_tags.for_product("membership")).to be_present
+    end
+  end
 end

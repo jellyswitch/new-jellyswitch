@@ -63,6 +63,12 @@ class OfficeLease < ApplicationRecord
   scope :upcoming, -> { where("start_date > now() AND now() < end_date") }
   scope :inactive, -> { where("end_date <= now()") }
 
+  # Signing an office lease is exactly what the office waitlist exists to
+  # deliver, so pull the leasee's office interest tag once they've got one — the
+  # fairness queue must never target someone who already leased. For an
+  # organization lease this culls every member of that org.
+  after_create :cull_office_interest_tags
+
   RENEWAL_WINDOW_DAYS = 60.freeze
 
   def has_lease?
@@ -169,6 +175,19 @@ class OfficeLease < ApplicationRecord
   def must_have_leasee
     if organization_id.blank? && user_id.blank?
       errors.add(:base, "Must have either an organization or a user")
+    end
+  end
+
+  def cull_office_interest_tags
+    user_ids = []
+    user_ids << user_id if user_id.present?
+    user_ids.concat(organization.users.ids) if organization_id.present?
+    return if user_ids.empty?
+
+    # Scope explicitly to this lease's operator regardless of ambient tenant
+    # (leases are created from interactors, the admin API, and renewals).
+    ActsAsTenant.with_tenant(operator) do
+      InterestTag.for_product("office").where(user_id: user_ids.uniq).destroy_all
     end
   end
 end

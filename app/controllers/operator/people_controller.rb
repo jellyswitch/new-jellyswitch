@@ -1,5 +1,5 @@
 class Operator::PeopleController < Operator::BaseController
-  before_action :background_image, only: [:index]
+  before_action :background_image, only: [:index, :waitlist]
 
   STAGE_LABELS = {
     "all" => "All",
@@ -83,7 +83,40 @@ class Operator::PeopleController < Operator::BaseController
     end
   end
 
+  # The office "waitlist" — everyone with an office interest tag, ordered as a
+  # fairness queue (customers by tenure, then outside parties by interest date).
+  # Worked one person at a time via #office_offer / #office_decline.
+  def waitlist
+    authorize :person, :waitlist?
+    waitlist = OfficeWaitlist.for(current_tenant)
+    @entries = waitlist.entries
+    @demand = waitlist.demand
+    @available_offices = Office.available_for_lease
+  end
+
+  # Offer the next freed office to a waiting person (records office_offered).
+  def office_offer
+    person = find_waitlist_person
+    office = current_tenant.offices.find_by(id: params[:office_id])
+    OfficeOutreach.offer!(user: person, office: office, added_by: current_user)
+    flash[:success] = "Marked #{person.name} as offered."
+    turbo_redirect(waitlist_people_path, action: "replace")
+  end
+
+  # Record that a person declined an office offer (records office_declined).
+  def office_decline
+    person = find_waitlist_person
+    OfficeOutreach.decline!(user: person, added_by: current_user)
+    flash[:success] = "Marked #{person.name} as declined."
+    turbo_redirect(waitlist_people_path, action: "replace")
+  end
+
   private
+
+  def find_waitlist_person
+    authorize :person, :office_outreach?
+    current_tenant.users.find(params[:user_id])
+  end
 
   def people_json
     {

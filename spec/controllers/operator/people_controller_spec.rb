@@ -300,4 +300,72 @@ RSpec.describe Operator::PeopleController, type: :controller do
       end
     end
   end
+
+  describe "GET #waitlist (office fairness queue)" do
+    before do
+      allow(controller).to receive(:current_location).and_return(location)
+    end
+
+    let!(:prospect) do
+      u = create(:user, operator: operator, current_location: location, original_location: location, name: "Pat Prospect")
+      InterestTag.record(user: u, product: "office", source: "concierge")
+      u
+    end
+
+    context "as an admin" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "renders and lists office-interest people with the demand stat" do
+        get :waitlist
+        expect(response).to be_successful
+        expect(assigns(:entries).map(&:user)).to include(prospect)
+        expect(assigns(:demand)[:waiting_count]).to eq(1)
+        expect(response.body).to include("Pat Prospect")
+      end
+    end
+
+    context "as a non-staff user" do
+      before { allow(controller).to receive(:current_user).and_return(regular_user) }
+
+      it "is not authorized" do
+        get :waitlist
+        expect(response).to redirect_to(root_path)
+      end
+    end
+  end
+
+  describe "working the queue one-by-one" do
+    let!(:prospect) do
+      u = create(:user, operator: operator, current_location: location, original_location: location, name: "Pat Prospect")
+      InterestTag.record(user: u, product: "office", source: "concierge")
+      u
+    end
+    let!(:office) { create(:office, operator: operator, location: location, name: "Pipkin Suite") }
+
+    before do
+      allow(controller).to receive(:current_location).and_return(location)
+      allow(controller).to receive(:current_user).and_return(admin_user)
+    end
+
+    it "POST #office_offer logs an office_offered Activity and returns to the queue" do
+      expect {
+        post :office_offer, params: { user_id: prospect.id, office_id: office.id }
+      }.to change { prospect.activities.where(kind: "office_offered").count }.by(1)
+      expect(response).to redirect_to(waitlist_people_path)
+    end
+
+    it "POST #office_decline logs an office_declined Activity" do
+      expect {
+        post :office_decline, params: { user_id: prospect.id }
+      }.to change { prospect.activities.where(kind: "office_declined").count }.by(1)
+      expect(response).to redirect_to(waitlist_people_path)
+    end
+
+    it "denies outreach to a non-staff user" do
+      allow(controller).to receive(:current_user).and_return(regular_user)
+      post :office_offer, params: { user_id: prospect.id }
+      expect(response).to redirect_to(root_path)
+      expect(prospect.activities.where(kind: "office_offered")).to be_empty
+    end
+  end
 end

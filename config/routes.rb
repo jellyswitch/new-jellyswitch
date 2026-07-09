@@ -768,7 +768,13 @@ Rails.application.routes.draw do
   resources :password_resets, only: [:new, :create, :edit, :update], controller: "operator/password_resets"
   resources :email_confirmations, only: [:show], controller: "operator/email_confirmations"
   post :resend_confirmation, to: "operator/email_confirmations#resend"
-  resources :people, controller: "operator/people", only: [:index]
+  resources :people, controller: "operator/people", only: [:index] do
+    collection do
+      get :waitlist, to: "operator/people#waitlist"
+      post :office_offer, to: "operator/people#office_offer"
+      post :office_decline, to: "operator/people#office_decline"
+    end
+  end
   resources :notes, controller: "operator/notes", only: [:create, :destroy]
   resources :plan_categories, controller: "operator/plan_categories"
   resources :plans, controller: "operator/plans" do
@@ -920,6 +926,8 @@ Rails.application.routes.draw do
     get :invoices, to: "operator/users#invoices"
     post :log_tour, to: "operator/users#log_tour"
     post :add_note, to: "operator/users#add_note"
+    post :add_interest, to: "operator/users#add_interest"
+    delete :remove_interest, to: "operator/users#remove_interest"
     patch :reassign_point_of_contact, to: "operator/users#reassign_point_of_contact"
     get :ltv, to: "operator/users#ltv"
     get :membership, to: "operator/users#membership"

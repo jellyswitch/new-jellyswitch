@@ -1,0 +1,46 @@
+<%#
+  Staff view + edit of a Person's Interest tags (ADR 0022). Behavioral tags are
+  seeded automatically (concierge, tours, purchases); staff can hand-add any
+  tag ("called, wants an office") or remove one. Manual adds are source "staff"
+  and sticky. Office interest is what feeds the office queue.
+
+  Required local:
+    user - the Person whose interest to show/edit
+%>
+<% tags = user.interest_tags.order(:product) %>
+<% product_labels = { "office" => "Office", "day_pass" => "Day pass", "membership" => "Membership", "meeting_room" => "Meeting room" } %>
+<% untagged = InterestTag::PRODUCTS - tags.map(&:product) %>
+
+<div class="mt-3">
+  <label class="small text-muted mb-1">Interested in</label>
+
+  <% if tags.any? %>
+    <div class="mb-2">
+      <% tags.each do |tag| %>
+        <span class="badge badge-pill badge-primary mr-1 mb-1" style="font-size: 0.85rem;">
+          <%= product_labels[tag.product] || tag.product.humanize %>
+          <span class="text-white-50">· <%= tag.source.humanize.downcase %></span>
+          <% if policy(user).edit_interest? %>
+            <%= button_to user_remove_interest_path(user, product: tag.product),
+                  method: :delete, class: "btn btn-link btn-sm p-0 ml-1 align-baseline text-white",
+                  form_class: "d-inline", title: "Remove #{product_labels[tag.product] || tag.product}" do %>
+              &times;
+            <% end %>
+          <% end %>
+        </span>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-muted small mb-2">No interests tagged yet.</p>
+  <% end %>
+
+  <% if policy(user).edit_interest? && untagged.any? %>
+    <%= form_with url: user_add_interest_path(user), method: :post, local: true do %>
+      <%= select_tag :product,
+            options_for_select(untagged.map { |p| [product_labels[p] || p.humanize, p] }),
+            include_blank: "Add an interest…",
+            class: "form-control form-control-sm",
+            onchange: "this.form.requestSubmit()" %>
+    <% end %>
+  <% end %>
+</div>
