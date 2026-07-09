@@ -36,7 +36,10 @@ class ProductEmailTemplate < ApplicationRecord
 
   # (product_type, email_type) combos that re_engagement and past_member_recovery
   # apply to. Onboarding/follow_up/nudge use the original cross-product matrix.
-  RE_ENGAGEMENT_PRODUCTS = %w[day_pass reservation].freeze
+  # membership added: run_re_engagement (the member re-engagement automation)
+  # reads the membership/re_engagement template. Before this it looked one up by
+  # an invalid product_type and never sent.
+  RE_ENGAGEMENT_PRODUCTS = %w[day_pass reservation membership].freeze
   PAST_MEMBER_RECOVERY_PRODUCTS = %w[membership].freeze
 
   DEFAULT_SUBJECTS = {
@@ -53,6 +56,7 @@ class ProductEmailTemplate < ApplicationRecord
     "office_lease_follow_up" => "How's your office working out?",
     "membership_onboarding" => "Welcome, new member!",
     "membership_follow_up" => "How's your membership going?",
+    "membership_re_engagement" => "We've missed you — come back soon",
     "membership_past_member_recovery" => "We'd love to welcome you back",
     "signup_nudge_nudge" => "Come check us out!"
   }.freeze
@@ -64,6 +68,7 @@ class ProductEmailTemplate < ApplicationRecord
     "reservation_re_engagement" => 14,
     "office_lease" => 180,
     "membership" => 90,
+    "membership_re_engagement" => 30,
     "membership_past_member_recovery" => 30,
     "signup_nudge" => 1
   }.freeze
@@ -106,7 +111,8 @@ class ProductEmailTemplate < ApplicationRecord
     # Signup nudge
     seed_template(operator, location, "signup_nudge", "nudge", DEFAULT_DELAYS["signup_nudge"])
 
-    # Re-engagement (day_passer_followup + room_reservation_followup automations)
+    # Re-engagement (day_passer_followup + room_reservation_followup + member
+    # re_engagement automations)
     RE_ENGAGEMENT_PRODUCTS.each do |product|
       seed_template(operator, location, product, "re_engagement", DEFAULT_DELAYS["#{product}_re_engagement"])
     end

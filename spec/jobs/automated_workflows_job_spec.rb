@@ -215,4 +215,39 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
       job.perform
     end
   end
+
+  # The member re-engagement automation was DEAD: it looked up its template by an
+  # invalid product_type and never matched. It now reads membership/re_engagement.
+  describe "run_re_engagement (member re-engagement — was never sending)" do
+    let!(:workflow) do
+      AutomatedWorkflow.create!(operator: operator, location: location,
+                                workflow_type: "re_engagement",
+                                config: { "days_inactive" => 30 }, enabled: true)
+    end
+
+    let!(:template) do
+      # A body is required — disable_when_body_blank forces enabled: false otherwise.
+      ProductEmailTemplate.find_or_initialize_by(operator: operator, location: location,
+                                                 product_type: "membership", email_type: "re_engagement")
+                          .tap { |t| t.update!(subject: "We've missed you", body: "<div>Come back</div>", enabled: true) }
+    end
+
+    let!(:subscription) do
+      create(:subscription, subscribable: member_user, billable: member_user, active: true, pending: false)
+    end
+
+    it "finds the membership/re_engagement template and sends to an inactive member" do
+      expect { described_class.new.perform }.to change { ProductEmailSend.count }.by(1)
+    end
+
+    it "sends nothing when the template is disabled" do
+      template.update!(enabled: false)
+      expect { described_class.new.perform }.not_to change { ProductEmailSend.count }
+    end
+
+    it "skips a marketing-suppressed member" do
+      member_user.update!(marketing_suppressed: true)
+      expect { described_class.new.perform }.not_to change { ProductEmailSend.count }
+    end
+  end
 end
