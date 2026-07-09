@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_08_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_08_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -482,6 +482,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_120000) do
     t.index ["slug", "sluggable_type"], name: "index_friendly_id_slugs_on_slug_and_sluggable_type"
     t.index ["sluggable_id"], name: "index_friendly_id_slugs_on_sluggable_id"
     t.index ["sluggable_type"], name: "index_friendly_id_slugs_on_sluggable_type"
+  end
+
+  create_table "interest_tags", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "operator_id", null: false
+    t.string "product", null: false
+    t.string "source", null: false
+    t.bigint "added_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["added_by_id"], name: "index_interest_tags_on_added_by_id"
+    t.index ["operator_id", "product"], name: "index_interest_tags_on_operator_id_and_product"
+    t.index ["operator_id"], name: "index_interest_tags_on_operator_id"
+    t.index ["user_id", "product"], name: "index_interest_tags_on_user_id_and_product", unique: true
+    t.index ["user_id"], name: "index_interest_tags_on_user_id"
   end
 
   create_table "invoices", force: :cascade do |t|
@@ -1189,6 +1204,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_08_120000) do
   add_foreign_key "doors", "rooms"
   add_foreign_key "feedback_replies", "member_feedbacks"
   add_foreign_key "feedback_replies", "users"
+  add_foreign_key "interest_tags", "operators"
+  add_foreign_key "interest_tags", "users"
+  add_foreign_key "interest_tags", "users", column: "added_by_id"
   add_foreign_key "lease_renewal_requests", "locations"
   add_foreign_key "lease_renewal_requests", "office_leases"
   add_foreign_key "lease_renewal_requests", "operators"

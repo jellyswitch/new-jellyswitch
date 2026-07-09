@@ -87,6 +87,7 @@ class User < ApplicationRecord
   has_many :invoices, as: :billable
   has_many :leads
   has_many :lead_notes
+  has_many :interest_tags, dependent: :destroy
   has_many :member_feedbacks
   has_many :feedback_replies
   belongs_to :organization, optional: true
