@@ -15,6 +15,11 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
     }
   end
 
+  def show
+    campaign = current_tenant.campaigns.find(params[:id])
+    render json: campaign_detail_json(campaign)
+  end
+
   def create
     campaign = Campaign.new(campaign_params)
     campaign.operator = current_tenant
@@ -27,7 +32,7 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
   end
 
   def update
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
 
     if campaign.update(campaign_params)
       render json: { id: campaign.id, name: campaign.name }
@@ -37,7 +42,7 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
   end
 
   def send_campaign
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
     campaign.update!(status: 'active', sent_at: Time.current)
     SendCampaignJob.perform_later(campaign.id, current_location.id)
 
@@ -45,21 +50,21 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
   end
 
   def pause
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
     campaign.update!(status: 'paused')
 
     render json: { success: true, status: 'paused' }
   end
 
   def resume
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
     campaign.update!(status: 'active')
 
     render json: { success: true, status: 'active' }
   end
 
   def test_send
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
     step = campaign.campaign_steps.first
     return render_error("Campaign has no email step") unless step
 
@@ -68,13 +73,34 @@ class Api::V1::Admin::CampaignsController < Api::V1::Admin::BaseController
   end
 
   def destroy
-    campaign = Campaign.find(params[:id])
+    campaign = current_tenant.campaigns.find(params[:id])
     campaign.destroy
 
     render json: { success: true }
   end
 
   private
+
+  def campaign_detail_json(campaign)
+    step = campaign.campaign_steps.first
+    {
+      id: campaign.id,
+      name: campaign.name,
+      status: campaign.status,
+      campaign_type: campaign.campaign_type,
+      subject: step&.subject,
+      body: step&.body,
+      segment: {
+        customer_types: campaign.segment_customer_types,
+        interest_products: campaign.segment_interest_products,
+        interest_match: campaign.segment_interest_match,
+      },
+      recipient_count: campaign.recipient_count_for(current_location),
+      scorecard: Campaigns::AttributionReport.new(campaign).scorecard,
+      sent_at: campaign.sent_at&.iso8601,
+      created_at: campaign.created_at.iso8601,
+    }
+  end
 
   def campaign_params
     params.permit(:name, :campaign_type, :status, :scheduled_at,
