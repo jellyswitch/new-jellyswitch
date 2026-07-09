@@ -171,4 +171,45 @@ RSpec.describe Api::V1::Admin::MembersController, type: :controller do
       end
     end
   end
+
+  describe "interest tags (ADR 0022)" do
+    before { request.headers["Authorization"] = "Bearer #{jwt_for(admin_user)}" }
+
+    it "GET #show includes the member's interest tags" do
+      InterestTag.record(user: target, product: "office", source: "concierge")
+      get :show, params: { id: target.id }
+      body = JSON.parse(response.body)
+      expect(body["interest_tags"]).to eq([{ "product" => "office", "source" => "concierge" }])
+    end
+
+    it "POST #add_interest hand-adds a staff-sourced tag" do
+      post :add_interest, params: { id: target.id, product: "office" }
+      body = JSON.parse(response.body)
+      expect(response).to have_http_status(:ok)
+      expect(body["interest_tags"]).to include("product" => "office", "source" => "staff")
+      tag = target.interest_tags.for_product("office").first
+      expect(tag.source).to eq("staff")
+      expect(tag.added_by).to eq(admin_user)
+    end
+
+    it "POST #add_interest rejects a product we don't track" do
+      post :add_interest, params: { id: target.id, product: "parking" }
+      expect(response).not_to have_http_status(:ok)
+      expect(target.interest_tags).to be_empty
+    end
+
+    it "DELETE #remove_interest removes the tag" do
+      InterestTag.record(user: target, product: "office", source: "concierge")
+      delete :remove_interest, params: { id: target.id, product: "office" }
+      expect(response).to have_http_status(:ok)
+      expect(target.interest_tags.for_product("office")).to be_empty
+    end
+
+    it "forbids a non-admin" do
+      request.headers["Authorization"] = "Bearer #{jwt_for(regular_user)}"
+      post :add_interest, params: { id: target.id, product: "office" }
+      expect(response).to have_http_status(:forbidden)
+      expect(target.interest_tags).to be_empty
+    end
+  end
 end

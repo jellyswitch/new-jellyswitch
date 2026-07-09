@@ -83,7 +83,27 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       inactive_dismissed_at: user.inactive_dismissed_at&.iso8601,
       point_of_contact_id: user.point_of_contact_id,
       point_of_contact_name: user.point_of_contact&.name,
+      interest_tags: interest_tags_json(user),
     }
+  end
+
+  # Staff manually tag/untag a Person's product interest (ADR 0022) — source
+  # "staff", sticky. The office tag feeds the Office queue. Mirrors the web
+  # Operator::UsersController#add_interest / #remove_interest.
+  def add_interest
+    user = current_tenant.users.find(params[:id])
+
+    if InterestTag.record(user: user, product: params[:product], source: "staff", added_by: current_api_user)
+      render json: { success: true, interest_tags: interest_tags_json(user) }
+    else
+      render_error("That isn't a product we track interest in.")
+    end
+  end
+
+  def remove_interest
+    user = current_tenant.users.find(params[:id])
+    user.interest_tags.for_product(params[:product].to_s).destroy_all
+    render json: { success: true, interest_tags: interest_tags_json(user) }
   end
 
   def suppress
@@ -605,6 +625,10 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   end
 
   private
+
+  def interest_tags_json(user)
+    user.interest_tags.order(:product).map { |tag| { product: tag.product, source: tag.source } }
+  end
 
   def activity_json(activity)
     {

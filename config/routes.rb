@@ -241,6 +241,9 @@ Rails.application.routes.draw do
         get 'members/:id/conversations', to: 'members#conversations'
         post 'members/:id/log_tour', to: 'members#log_tour'
         post 'members/:id/add_note', to: 'members#add_note'
+        # Staff add/remove a Person's product interest tag (ADR 0022)
+        post   'members/:id/interest_tags', to: 'members#add_interest'
+        delete 'members/:id/interest_tags', to: 'members#remove_interest'
         post 'members/:id/schedule_bundle_days',  to: 'members#schedule_bundle_days'
         get  'members/:id/scheduled_bundle_days', to: 'members#scheduled_bundle_days'
         post 'members/:member_id/scheduled_bundle_days/:id/cancel', to: 'members#cancel_scheduled_bundle_day'
@@ -304,6 +307,11 @@ Rails.application.routes.draw do
         get 'office_leases/:id', to: 'office_leases#show'
         patch 'office_leases/:id/price', to: 'office_leases#update_price'
         post 'office_leases/:id/terminate', to: 'office_leases#terminate'
+
+        # Office queue (fairness waitlist) — mobile parity with web People > Office queue
+        get  'office_waitlist',         to: 'office_waitlist#index'
+        post 'office_waitlist/offer',   to: 'office_waitlist#offer'
+        post 'office_waitlist/decline', to: 'office_waitlist#decline'
 
         # Organizations
         resources :organizations, only: [:index, :show, :create, :update]
