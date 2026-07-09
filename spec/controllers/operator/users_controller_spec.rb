@@ -566,4 +566,44 @@ RSpec.describe Operator::UsersController, type: :controller do
       end
     end
   end
+
+  describe "interest tags (ADR 0022)" do
+    context "as an admin" do
+      before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+      it "POST #add_interest hand-adds a staff-sourced tag crediting the staffer" do
+        expect {
+          post :add_interest, params: { user_id: test_user.id, product: "office" }
+        }.to change { test_user.interest_tags.for_product("office").count }.by(1)
+
+        tag = test_user.interest_tags.for_product("office").first
+        expect(tag.source).to eq("staff")
+        expect(tag.added_by).to eq(admin_user)
+        expect(response).to redirect_to(user_path(test_user))
+      end
+
+      it "POST #add_interest ignores a product we don't track" do
+        post :add_interest, params: { user_id: test_user.id, product: "parking" }
+        expect(test_user.interest_tags).to be_empty
+      end
+
+      it "DELETE #remove_interest removes the tag" do
+        InterestTag.record(user: test_user, product: "office", source: "concierge")
+        expect {
+          delete :remove_interest, params: { user_id: test_user.id, product: "office" }
+        }.to change { test_user.interest_tags.for_product("office").count }.by(-1)
+        expect(response).to redirect_to(user_path(test_user))
+      end
+    end
+
+    context "as a non-staff user" do
+      before { allow(controller).to receive(:current_user).and_return(regular_user) }
+
+      it "denies adding interest" do
+        post :add_interest, params: { user_id: test_user.id, product: "office" }
+        expect(response).to redirect_to(root_path)
+        expect(test_user.interest_tags).to be_empty
+      end
+    end
+  end
 end

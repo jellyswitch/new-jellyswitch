@@ -43,6 +43,8 @@ class Activity < ApplicationRecord
     email_opened
     email_clicked
     email_replied
+    office_offered
+    office_declined
   ].freeze
 
   belongs_to :user

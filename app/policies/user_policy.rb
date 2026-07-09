@@ -40,6 +40,11 @@ class UserPolicy < ApplicationPolicy
     admin? || general_manager? || superadmin?
   end
 
+  # Staff manually adding/removing a Person's interest tags (ADR 0022).
+  def edit_interest?
+    has_admin_right?
+  end
+
   def childcare?
     has_right_over_user?
   end

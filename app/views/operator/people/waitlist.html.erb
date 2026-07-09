@@ -1,0 +1,124 @@
+<% title "Office queue" %>
+
+<%
+  status_badges = {
+    not_contacted: { label: "Not contacted", css: "badge-light border" },
+    offered:       { label: "Offered",       css: "badge-info" },
+    declined:      { label: "Declined",      css: "badge-secondary" },
+    leased:        { label: "Leased",        css: "badge-success" },
+  }
+  available_count = @available_offices.size
+%>
+
+<%= wide_card do %>
+  <%= render "shared/people_subnav", active_tab: "waitlist" %>
+
+  <h4 class="display-4 text-center mb-1">Office queue</h4>
+  <p class="text-muted text-center mb-3">
+    The office waitlist, worked one person at a time — current customers first by
+    tenure, then everyone else by when they asked. Offer a freed office to the
+    top of the list, wait for a yes or no, then move down.
+  </p>
+
+  <%# Demand vs. vacancy %>
+  <div class="row text-center mb-4">
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="font-weight-bold text-primary" style="font-size: 1.4rem;"><%= @demand[:waiting_count] %></div>
+        <div class="text-muted small">Waiting</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="font-weight-bold text-primary" style="font-size: 1.4rem;">
+          <%= @demand[:oldest_days] %> <%= "day".pluralize(@demand[:oldest_days]) %>
+        </div>
+        <div class="text-muted small">Longest wait</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="font-weight-bold text-primary" style="font-size: 1.4rem; white-space: nowrap;">
+          <%= number_to_currency(@demand[:monthly_cents] / 100.0, precision: 0) %>
+        </div>
+        <div class="text-muted small">Est. monthly demand</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 mb-3">
+      <div class="border rounded p-3 h-100">
+        <div class="font-weight-bold <%= available_count.positive? ? 'text-success' : 'text-muted' %>" style="font-size: 1.4rem;">
+          <%= available_count %>
+        </div>
+        <div class="text-muted small">Offices available</div>
+      </div>
+    </div>
+  </div>
+
+  <% if available_count.positive? %>
+    <div class="alert alert-success text-center" role="alert">
+      <i class="fas fa-door-open"></i>
+      <%= pluralize(available_count, "office") %> available:
+      <strong><%= @available_offices.map(&:name).join(", ") %></strong>.
+      Offer to the top of the queue.
+    </div>
+  <% end %>
+
+  <% if @entries.any? %>
+    <ul class="list-group list-group-flush" data-testid="office-waitlist">
+      <% @entries.each_with_index do |entry, index| %>
+        <% person = entry.user %>
+        <% badge = status_badges[entry.status] %>
+        <li class="list-group-item <%= 'bg-light text-muted' if entry.resolved? %>" data-testid="waitlist-row">
+          <div class="d-flex align-items-center">
+            <div class="text-muted mr-3" style="width: 1.5rem; text-align: right;"><%= index + 1 %>.</div>
+            <%= render "shared/small_profile_photo", user: person %>
+            <div class="ml-3 flex-grow-1" style="min-width: 0;">
+              <div>
+                <%= link_to person.name, user_path(person), class: "font-weight-bold" %>
+                <span class="badge <%= badge[:css] %>"><%= badge[:label] %></span>
+                <% if entry.customer? %>
+                  <span class="badge badge-success" title="Current customer — ordered by tenure">Customer</span>
+                <% else %>
+                  <span class="badge badge-light border" title="Not yet a customer — ordered by interest date">Prospect</span>
+                <% end %>
+              </div>
+              <div class="text-muted small">
+                Interested <%= time_ago_in_words(entry.waiting_since) %> ago
+                via <%= entry.source.humanize.downcase %>
+                <% if entry.customer? %>· joined <%= time_ago_in_words(person.created_at) %> ago<% end %>
+              </div>
+              <div class="text-muted small">
+                <% if person.email.present? %><i class="fas fa-envelope"></i> <%= person.email %><% end %>
+                <% if person.phone.present? %>&nbsp; <i class="fas fa-phone"></i> <%= person.phone %><% end %>
+              </div>
+            </div>
+
+            <% unless entry.resolved? %>
+              <div class="ml-2 text-right" style="white-space: nowrap;">
+                <%= link_to user_path(person), class: "btn btn-sm btn-outline-secondary", title: "Message #{person.name}" do %>
+                  <i class="fas fa-comment"></i>
+                <% end %>
+                <%= button_to office_offer_people_path(user_id: person.id, office_id: @available_offices.first&.id),
+                      method: :post, class: "btn btn-sm btn-outline-primary d-inline-block",
+                      form_class: "d-inline-block" do %>
+                  Offer
+                <% end %>
+                <%= button_to office_decline_people_path(user_id: person.id),
+                      method: :post, class: "btn btn-sm btn-outline-secondary d-inline-block",
+                      form_class: "d-inline-block" do %>
+                  Declined
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </li>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-center text-muted my-5">
+      No one is waiting for an office yet. People land here when they ask about an
+      office (concierge, a tour, checkout) or when staff add the interest from a
+      Person's profile.
+    </p>
+  <% end %>
+<% end %>

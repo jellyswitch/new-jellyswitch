@@ -76,6 +76,8 @@
       <p class="mb-0"><%= @user.point_of_contact&.name || "Unassigned" %></p>
     <% end %>
   </div>
+
+  <%= render "operator/users/interest_section", user: @user %>
 <% end %>
 
 <div class="row mt-3 mb-2">
