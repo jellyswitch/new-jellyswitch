@@ -44,4 +44,20 @@ class Operator::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_select "##{ActionView::RecordIdentifier.dom_id(@conversation)}", true,
       "a restarted conversation should come back to the inbox"
   end
+
+  test "anonymous visit to a thread is quietly redirected, not a 500" do
+    delete logout_path, env: default_env
+
+    get member_feedback_path(@conversation), env: default_env
+    assert_response :redirect
+    assert_nil flash[:alert], "anonymous denials must not set a sticky flash"
+  end
+
+  test "anonymous visit to an unknown thread id is not found, not a 500" do
+    delete logout_path, env: default_env
+
+    assert_raises(ActiveRecord::RecordNotFound) do
+      get member_feedback_path(id: MemberFeedback.maximum(:id).to_i + 1), env: default_env
+    end
+  end
 end
