@@ -61,20 +61,29 @@ class AutomatedWorkflowsJob < ApplicationJob
       .where(subscriptions: { pending: false })
       .distinct
 
+    # Was product_type: "re_engagement" (not a valid product_type) + the wrong
+    # email_type — so this never matched and the workflow never sent. Member
+    # re-engagement uses the membership/re_engagement template.
     template = ProductEmailTemplate.find_by(
       operator: operator, location: location,
-      product_type: "re_engagement", email_type: "onboarding"
+      product_type: "membership", email_type: "re_engagement"
     )
     return unless template&.enabled?
 
     users.find_each do |user|
       next if user.reservations.where("created_at > ?", cutoff).exists?
       next if user.door_punches.where("created_at > ?", cutoff).exists?
-      next if already_sent?(user, "re_engagement", days)
-      next unless guard_eligible?(user, operator, "re_engagement_#{user.id}_#{Date.current}")
+
+      # Use the same key-based ledger as every other handler. The old
+      # record_send helper never set the (required) user_id, so the send row
+      # silently failed to persist — meaning no dedup and no attribution. The
+      # per-day key plus SpamGuard's 30-day cool-down throttle re-sends.
+      send_key = "re_engagement_#{user.id}_#{Date.current}"
+      next if already_sent_key?(send_key)
+      next unless guard_eligible?(user, operator, send_key)
 
       UserMailer.re_engagement_email(user, operator, template, location).deliver_later
-      record_send(user, "re_engagement", "onboarding")
+      record_send_key(user, send_key)
     end
   end
 
@@ -259,26 +268,8 @@ class AutomatedWorkflowsJob < ApplicationJob
     # Already logged — fine.
   end
 
-  def already_sent?(user, product_type, cooldown_days)
-    ProductEmailSend.where(
-      sendable: user,
-      product_type: product_type
-    ).where("created_at > ?", cooldown_days.days.ago).exists?
-  end
-
   def already_sent_key?(key)
     ProductEmailSend.where(email_type: key).exists?
-  end
-
-  def record_send(user, product_type, email_type)
-    ProductEmailSend.create(
-      sendable: user,
-      product_type: product_type,
-      email_type: email_type,
-      status: "sent"
-    )
-  rescue ActiveRecord::RecordNotUnique
-    # Already sent
   end
 
   def record_send_key(user, key)

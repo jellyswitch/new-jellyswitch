@@ -115,13 +115,18 @@ RSpec.describe ProductEmailTemplate, type: :model do
       expect(past_member.follow_up_delay_days).to eq(30)
     end
 
-    it "does not create re_engagement for membership or office_lease" do
-      ProductEmailTemplate::EMAIL_TYPES.each do |etype|
-        next unless etype == "re_engagement"
-        %w[membership office_lease signup_nudge].each do |product|
-          expect(ProductEmailTemplate.find_by(operator: operator, location: location,
-                                              product_type: product, email_type: etype)).to be_nil
-        end
+    it "creates a re_engagement template for membership (the member re-engagement automation)" do
+      t = ProductEmailTemplate.find_by(operator: operator, location: location,
+                                       product_type: "membership", email_type: "re_engagement")
+      expect(t).to be_present
+      expect(t.follow_up_delay_days).to eq(30)
+      expect(t.body).to be_present # so it can actually be enabled (disable_when_body_blank)
+    end
+
+    it "does not create re_engagement for office_lease or signup_nudge" do
+      %w[office_lease signup_nudge].each do |product|
+        expect(ProductEmailTemplate.find_by(operator: operator, location: location,
+                                            product_type: product, email_type: "re_engagement")).to be_nil
       end
     end
 

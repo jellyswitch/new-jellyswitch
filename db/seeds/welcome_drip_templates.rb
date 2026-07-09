@@ -206,6 +206,16 @@ module WelcomeDripSeed
       <div>The {{space_name}} team</div>
     HTML
 
+    %w[membership re_engagement] => <<~HTML.strip,
+      <div>Hi {{first_name}},</div>
+      <div><br></div>
+      <div>We haven't seen you at {{space_name}} in a little while and wanted to check in.</div>
+      <div><br></div>
+      <div>Your {{plan_name}} membership is ready whenever you are — a desk, rooms to book, and the community are all here. Reply to this email if there's anything we can do to help you make the most of it.</div>
+      <div><br></div>
+      <div>The {{space_name}} team</div>
+    HTML
+
     %w[membership past_member_recovery] => <<~HTML.strip,
       <div>Hi {{first_name}},</div>
       <div><br></div>
