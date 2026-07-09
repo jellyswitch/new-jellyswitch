@@ -89,6 +89,9 @@ module Embed
       location = @operator.locations.find_by(id: permitted[:location_id])
       user = upsert_person(permitted, location)
       log_chat(user, permitted, location) # keeps the conversion-lift metric working
+      # Seed the Person's Interest from what they asked about (office /
+      # conference room / day pass / membership) so they land on the right list.
+      InterestTag.record_from_concierge_intent(user, permitted[:intent])
 
       self_serve = SELF_SERVE_INTENTS.include?(permitted[:intent].to_s)
       route_to_feedback(user, permitted, location) unless self_serve

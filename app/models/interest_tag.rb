@@ -43,4 +43,44 @@ class InterestTag < ApplicationRecord
   def staff_set?
     source == "staff"
   end
+
+  # Concierge chat intents (embed/concierge_controller) map to interest products.
+  CONCIERGE_INTENT_TO_PRODUCT = {
+    "office" => "office",
+    "day_office" => "office",
+    "conference_room" => "meeting_room",
+    "day_pass" => "day_pass",
+    "day_pass_bundle" => "day_pass",
+    "membership" => "membership",
+  }.freeze
+
+  # Upsert a Person's interest in a product. One row per (user, product): a new
+  # signal updates the existing tag rather than duplicating. Staff-set tags are
+  # STICKY — a behavioral signal never overwrites a manual annotation, but a
+  # staff edit always wins. Scoped to the user's operator regardless of ambient
+  # tenant (works from the embed concierge, a backfill, or the admin UI).
+  def self.record(user:, product:, source:, added_by: nil)
+    product = product.to_s
+    source = source.to_s
+    return nil unless PRODUCTS.include?(product) && SOURCES.include?(source)
+
+    ActsAsTenant.with_tenant(user.operator) do
+      tag = find_or_initialize_by(user_id: user.id, product: product)
+      return tag if tag.persisted? && tag.staff_set? && source != "staff"
+
+      tag.operator = user.operator
+      tag.source = source
+      tag.added_by = (source == "staff" ? added_by : nil)
+      tag.save!
+      tag
+    end
+  end
+
+  # Record interest from a concierge chat intent, if it maps to a product.
+  def self.record_from_concierge_intent(user, intent)
+    product = CONCIERGE_INTENT_TO_PRODUCT[intent.to_s]
+    return nil unless product
+
+    record(user: user, product: product, source: "concierge")
+  end
 end
