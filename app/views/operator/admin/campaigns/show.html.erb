@@ -84,27 +84,40 @@
         </div>
       <% end %>
 
-      <%# Stats %>
+      <%# Scorecard: sent → opened → clicked → converted (+ revenue). Converted
+          and revenue are windowed last-touch attribution — a money-bearing
+          purchase within 14 days of the Person opening this campaign. %>
       <% if @campaign.campaign_sends.any? %>
-        <h6 class="mt-4 mb-3">Stats</h6>
+        <h6 class="mt-4 mb-3">Scorecard</h6>
         <div class="row text-center">
           <div class="col">
-            <h4><%= @campaign.campaign_sends.sent.count %></h4>
+            <h4><%= @scorecard[:sent] %></h4>
             <small class="text-muted">Sent</small>
           </div>
           <div class="col">
-            <h4><%= @campaign.campaign_sends.opened.count %></h4>
+            <h4><%= @scorecard[:opened] %></h4>
             <small class="text-muted">Opened</small>
           </div>
           <div class="col">
-            <h4><%= @campaign.campaign_sends.clicked.count %></h4>
+            <h4><%= @scorecard[:clicked] %></h4>
             <small class="text-muted">Clicked</small>
+          </div>
+          <div class="col">
+            <h4 class="text-success"><%= @scorecard[:converted] %></h4>
+            <small class="text-muted">Converted</small>
+          </div>
+          <div class="col">
+            <h4 class="text-success" style="white-space: nowrap;"><%= number_to_currency(@scorecard[:revenue_cents] / 100.0, precision: 0) %></h4>
+            <small class="text-muted">Revenue</small>
           </div>
           <div class="col">
             <h4><%= @campaign.campaign_sends.failed.count %></h4>
             <small class="text-muted">Failed</small>
           </div>
         </div>
+        <p class="text-muted small text-center mt-2 mb-0">
+          Converted &amp; revenue: a day pass, membership, or office lease within 14 days of opening.
+        </p>
       <% end %>
 
       <%# Recipient list %>

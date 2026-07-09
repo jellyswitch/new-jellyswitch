@@ -8,6 +8,7 @@ module ActivityTimelineHelper
     "day_pass"            => "fas fa-ticket-alt text-primary",
     "subscription_started"=> "fas fa-users text-success",
     "subscription_ended"  => "fas fa-user-slash text-warning",
+    "office_lease"        => "fas fa-building text-success",
     "payment_succeeded"   => "fas fa-dollar-sign text-success",
     "payment_failed"      => "fas fa-dollar-sign text-danger",
     "note"                => "fas fa-sticky-note text-muted",
@@ -36,6 +37,7 @@ module ActivityTimelineHelper
     when "day_pass"             then p["complimentary"] ? "Comped a day pass" : "Bought a day pass"
     when "subscription_started" then "Started membership: #{p['plan_name'] || 'plan'}"
     when "subscription_ended"   then "Ended membership: #{p['plan_name'] || 'plan'}"
+    when "office_lease"         then "Leased office: #{p['office_name'] || 'office'}"
     when "payment_succeeded"    then "Paid #{ActiveSupport::NumberHelper.number_to_currency(payment_amount_cents(p) / 100.0)}"
     when "payment_failed"       then "Payment failed (#{p['number'] || 'invoice'})"
     when "note"
@@ -62,6 +64,24 @@ module ActivityTimelineHelper
     paid = payload["amount_paid"].to_i
     return paid if paid > 0
     payload["amount_due"].to_i
+  end
+
+  # Windowed last-touch attribution for a conversion row: the campaign the Person
+  # opened within 14 days before this conversion, if any. Only resolves for
+  # conversion kinds, and loads the Person's opened sends ONCE per render (memoized)
+  # so a timeline of many conversion rows doesn't fire a query per row.
+  def attributed_campaign(activity)
+    return nil unless Campaigns::AttributionReport::CONVERSION_KINDS.include?(activity.kind)
+    Campaigns::AttributionReport.campaign_for_conversion(activity, opened_sends: opened_sends_for(activity.user_id))
+  end
+
+  def opened_sends_for(user_id)
+    @opened_sends_cache ||= {}
+    @opened_sends_cache[user_id] ||= CampaignSend.where(user_id: user_id, opened: true)
+                                                 .where.not(opened_at: nil)
+                                                 .includes(:campaign)
+                                                 .order(opened_at: :desc)
+                                                 .to_a
   end
 
   # Sendgrid's open/click webhook events don't carry the email subject,

@@ -255,4 +255,39 @@ RSpec.describe OfficeLease, type: :model do
       expect(user.interest_tags.for_product("membership")).to be_present
     end
   end
+
+  describe "logs an office_lease Activity on creation (CRM timeline + attribution)" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:office)   { create(:office, operator: operator, location: location) }
+
+    it "logs against an individual leaseholder with the office name and monthly rent" do
+      user = create(:user, operator: operator, original_location: location)
+      plan = create(:plan, operator: operator, amount_in_cents: 90_000)
+      sub  = create(:subscription, plan: plan, subscribable: user, billable: user)
+      create(:office_lease, organization: nil, user: user, operator: operator, location: location, office: office, subscription: sub)
+
+      activity = user.activities.where(kind: "office_lease").last
+      expect(activity).to be_present
+      expect(activity.subject).to be_a(OfficeLease)
+      expect(activity.payload["office_name"]).to eq(office.name)
+      expect(activity.payload["amount_cents"]).to eq(90_000)
+    end
+
+    it "records from_office_queue when the leaseholder was on the office list (before the cull)" do
+      user = create(:user, operator: operator, original_location: location)
+      InterestTag.record(user: user, product: "office", source: "concierge")
+      create(:office_lease, organization: nil, user: user, operator: operator, location: location, office: office)
+
+      activity = user.activities.where(kind: "office_lease").last
+      expect(activity.payload["from_office_queue"]).to be true
+    end
+
+    it "logs against the organization owner for an org lease" do
+      org = create(:organization, operator: operator)
+      create(:office_lease, organization: org, user: nil, operator: operator, location: location, office: office)
+
+      expect(org.owner.activities.where(kind: "office_lease")).to exist
+    end
+  end
 end

@@ -39,7 +39,7 @@ RSpec.describe Activity, type: :model do
     it 'enumerates the Day-1 activity kinds from CONTEXT.md plus tour_request, chat, and office-queue outreach' do
       expect(Activity::KINDS).to contain_exactly(
         'signup', 'tour', 'tour_request', 'chat', 'checkin', 'door_punch', 'reservation', 'day_pass',
-        'subscription_started', 'subscription_ended',
+        'subscription_started', 'subscription_ended', 'office_lease',
         'payment_succeeded', 'payment_failed',
         'note',
         'email_sent', 'email_opened', 'email_clicked', 'email_replied',

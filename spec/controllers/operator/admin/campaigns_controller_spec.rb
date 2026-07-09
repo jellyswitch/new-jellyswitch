@@ -51,6 +51,19 @@ RSpec.describe Operator::Admin::CampaignsController, type: :controller do
         expect(campaign.segment["interest_products"]).to eq(["office"])
         expect(campaign.segment["interest_match"]).to eq("all")
       end
+
+      it "computes the attribution scorecard on #show" do
+        campaign = Campaign.create!(operator: operator, location: location, name: "S", campaign_type: "single", status: "active", segment: {})
+        step = CampaignStep.create!(campaign: campaign, position: 0, subject: "Hi", body: "x")
+        buyer = create(:user, operator: operator, original_location: location)
+        CampaignSend.create!(campaign: campaign, campaign_step: step, user: buyer, status: "sent",
+                             sent_at: 3.days.ago, opened: true, opened_at: 3.days.ago)
+        Activity.create!(user: buyer, operator: operator, kind: "day_pass", occurred_at: 2.days.ago, subject: buyer)
+
+        get :show, params: { id: campaign.id }
+        expect(response).to be_successful
+        expect(assigns(:scorecard)).to include(sent: 1, opened: 1, converted: 1)
+      end
     end
   end
 end

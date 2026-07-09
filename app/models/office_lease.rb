@@ -63,6 +63,12 @@ class OfficeLease < ApplicationRecord
   scope :upcoming, -> { where("start_date > now() AND now() < end_date") }
   scope :inactive, -> { where("end_date <= now()") }
 
+  # An office lease is the highest-value conversion, so put it on the Person's
+  # CRM timeline (it was invisible there — no subscription_started/payment_succeeded
+  # is emitted for org leases). Runs BEFORE the cull so it can record whether the
+  # leasee came off the office queue (attribution). Keep this callback first.
+  after_create :log_office_lease_activity
+
   # Signing an office lease is exactly what the office waitlist exists to
   # deliver, so pull the leasee's office interest tag once they've got one — the
   # fairness queue must never target someone who already leased. For an
@@ -189,5 +195,27 @@ class OfficeLease < ApplicationRecord
     ActsAsTenant.with_tenant(operator) do
       InterestTag.for_product("office").where(user_id: user_ids.uniq).destroy_all
     end
+  end
+
+  # Puts the lease on the leasee's CRM timeline (kind office_lease). For an org
+  # lease the "converter" is the org owner. Records the monthly rent (for
+  # revenue attribution) and whether they came off the office queue.
+  def log_office_lease_activity
+    person = individual_lease? ? user : organization&.owner
+    return if person.nil?
+
+    Activity.log(
+      user: person,
+      operator: operator,
+      kind: :office_lease,
+      subject: self,
+      payload: {
+        "office_name" => office&.name,
+        "leasee_name" => leasee_name,
+        "amount_cents" => subscription&.plan&.amount_in_cents,
+        "start_date" => start_date&.iso8601,
+        "from_office_queue" => person.interest_tags.for_product("office").exists?,
+      }.compact,
+    )
   end
 end
