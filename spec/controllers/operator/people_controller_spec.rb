@@ -368,4 +368,60 @@ RSpec.describe Operator::PeopleController, type: :controller do
       expect(prospect.activities.where(kind: "office_offered")).to be_empty
     end
   end
+
+  describe "GET #index interest filter (ADR 0022)" do
+    before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+    let!(:office_person) do
+      u = create(:user, operator: operator, current_location: location, original_location: location, name: "Olive Office")
+      InterestTag.record(user: u, product: "office", source: "concierge")
+      u
+    end
+
+    it "narrows the list to people holding the interest tag" do
+      get :index, params: { interest: "office" }
+      expect(assigns(:interest)).to eq("office")
+      names = assigns(:people).map(&:name)
+      expect(names).to include("Olive Office")
+      expect(names).not_to include("Alice Member")
+    end
+
+    it "ignores an unknown interest product" do
+      get :index, params: { interest: "parking" }
+      expect(assigns(:interest)).to be_nil
+      expect(assigns(:people).map(&:name)).to include("Alice Member")
+    end
+
+    it "preserves the interest filter across the other controls (search + stage tabs)" do
+      get :index, params: { interest: "office" }
+      # search form has a hidden interest field so refining a search keeps it
+      expect(response.body).to include('name="interest"')
+      # stage tabs / geo / owned-toggle links carry it too
+      expect(response.body).to include("interest=office")
+    end
+  end
+
+  describe "POST #message_list (seed a draft campaign)" do
+    before { allow(controller).to receive(:current_user).and_return(admin_user) }
+
+    it "creates a draft campaign seeded with the interest segment and redirects to its editor" do
+      expect {
+        post :message_list, params: { interest: "membership" }
+      }.to change { Campaign.where(operator: operator).count }.by(1)
+
+      campaign = Campaign.where(operator: operator).order(:created_at).last
+      expect(campaign.status).to eq("draft")
+      expect(campaign.segment["interest_products"]).to eq(["membership"])
+      expect(campaign.segment["interest_match"]).to eq("any")
+      expect(response).to redirect_to(edit_campaign_path(campaign))
+    end
+
+    it "is denied to a non-staff user" do
+      allow(controller).to receive(:current_user).and_return(regular_user)
+      expect {
+        post :message_list, params: { interest: "membership" }
+      }.not_to change { Campaign.count }
+      expect(response).to redirect_to(root_path)
+    end
+  end
 end

@@ -126,6 +126,7 @@ class Operator < ApplicationRecord
   has_many :users
   has_many :offices
   has_many :office_leases
+  has_many :campaigns, dependent: :destroy
   has_many :officernd_imports, dependent: :destroy
   has_many :locations
   accepts_nested_attributes_for :locations, allow_destroy: false

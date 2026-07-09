@@ -235,6 +235,49 @@ RSpec.describe User, type: :model do
     end
   end
 
+  describe "marketing + interest audience scopes (Phase 2)" do
+    let!(:sendable) { create(:user, operator: operator, email_opted_out: false, email_bounced: false, marketing_suppressed: false) }
+    let!(:unsubscribed) { create(:user, operator: operator, email_opted_out: true) }
+    let!(:bounced) { create(:user, operator: operator, email_bounced: true) }
+    let!(:suppressed) { create(:user, operator: operator, marketing_suppressed: true) }
+
+    it "marketing_sendable excludes the unsubscribed, bounced, and operator-suppressed" do
+      ids = User.marketing_sendable.pluck(:id)
+      expect(ids).to include(sendable.id)
+      expect(ids).not_to include(unsubscribed.id, bounced.id, suppressed.id)
+    end
+
+    describe "interest scopes (ADR 0022)" do
+      let!(:office) do
+        u = create(:user, operator: operator)
+        InterestTag.record(user: u, product: "office", source: "concierge")
+        u
+      end
+      let!(:membership) do
+        u = create(:user, operator: operator)
+        InterestTag.record(user: u, product: "membership", source: "concierge")
+        u
+      end
+      let!(:both) do
+        u = create(:user, operator: operator)
+        InterestTag.record(user: u, product: "office", source: "concierge")
+        InterestTag.record(user: u, product: "membership", source: "staff")
+        u
+      end
+
+      it "with_any_interest returns users holding any listed product" do
+        ids = User.with_any_interest(%w[office]).pluck(:id)
+        expect(ids).to include(office.id, both.id)
+        expect(ids).not_to include(membership.id)
+      end
+
+      it "with_all_interests requires every listed product" do
+        ids = User.with_all_interests(%w[office membership]).pluck(:id)
+        expect(ids).to contain_exactly(both.id)
+      end
+    end
+  end
+
   describe 'approval-queue window scopes' do
     let!(:recent) do
       create(:user, approved: false, archived: false, operator: operator).tap do |u|

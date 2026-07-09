@@ -32,6 +32,27 @@
   </div>
 
   <div class="form-group">
+    <label>Interested In</label>
+    <div class="d-flex flex-wrap">
+      <% InterestTag::PRODUCTS.each do |product| %>
+        <div class="form-check mr-3 mb-2">
+          <%= check_box_tag "campaign[segment][interest_products][]", product,
+              campaign.segment_interest_products.include?(product),
+              class: "form-check-input", id: "interest_#{product}" %>
+          <%= label_tag "interest_#{product}", product.titleize.gsub("_", " "), class: "form-check-label" %>
+        </div>
+      <% end %>
+    </div>
+    <div class="form-inline mt-1">
+      <label class="mr-2 small text-muted mb-0">Match</label>
+      <%= select_tag "campaign[segment][interest_match]",
+          options_for_select([["Any selected interest", "any"], ["All selected interests", "all"]], campaign.segment_interest_match),
+          class: "form-control form-control-sm" %>
+    </div>
+    <small class="form-text text-muted">Target by product interest (concierge, staff, or the office queue). Combined with Customer Types — both must match.</small>
+  </div>
+
+  <div class="form-group">
     <label>Status Filter</label>
     <%= select_tag "campaign[segment][status_filter]",
         options_for_select([["All (active + past)", "all"], ["Active only", "active"], ["Past only (no longer active)", "past"]], campaign.segment_status_filter),

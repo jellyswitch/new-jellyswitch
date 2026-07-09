@@ -37,6 +37,13 @@ RSpec.describe AutomatedWorkflowsJob, type: :job do
       }.to change { ProductEmailSend.where(email_type: "day_passer_followup_#{day_pass.id}").count }.by(1)
     end
 
+    it "skips a marketing-suppressed member (compliance — was a drift vs Campaign)" do
+      member_user.update!(marketing_suppressed: true)
+      expect {
+        described_class.new.perform
+      }.not_to change { ProductEmailSend.count }
+    end
+
     it "does not record a send if the template is disabled" do
       template.update!(enabled: false)
       expect {

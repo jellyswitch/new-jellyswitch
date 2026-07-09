@@ -11,4 +11,9 @@ class PersonPolicy < ApplicationPolicy
   def office_outreach?
     admin_or_manager?
   end
+
+  # Seed a draft campaign from the current People filter ("Message this list").
+  def message_list?
+    admin_or_manager?
+  end
 end
