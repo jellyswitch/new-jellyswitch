@@ -125,21 +125,51 @@ A unified entity representing anyone in the operator's universe: members, past m
 **Do not say "Contact" or "Lead" in operator-facing UI.** Use "Person" or the lifecycle-stage label.
 
 ### Lifecycle Stage
-An operator-facing label that summarizes where a Person is in their relationship with the space. Surfaced as a filter on the People list and as a badge on the Person view.
+An operator-facing label that summarizes where a Person is in their relationship with the space. Surfaced as a filter on the People list (**web and mobile — parity**) and as a badge on the Person view.
 
 Operator-facing labels:
 - **Member** — currently has an active subscription
 - **Day-passer** — purchased a day pass within the last 30 days, no active subscription
-- **Tour-taker** — explicitly expressed interest (tour form, event RSVP, walk-in tour logged) but has not purchased
+- **New signup** — signed up but has not purchased, still within the approval window (7 days). Shown in the approval queue.
+- **Cold signup** — a New signup that took no action within the approval window (7 days). Drops off the approval queue and is found under the People **"Cold signup"** filter. **Never called a "Lead"** — that term was deliberately dropped as too broad / sales-funnel-y.
 - **Past member** — had an active subscription that ended *more than the operator's grace period ago* (configurable per operator, 4–12 months, default 6 months). Members in the grace window still show as **Member**.
 - **Quiet** — was active (member or day-passer) but has not had a check-in, door punch, or booking in 30+ days
 
-**These are not stored as a single enum.** They're derived at query time from subscription state, recent activity, and explicit Lead annotations. The "Lead" model in code is a sales annotation on a User; it does not represent a distinct person.
+A **tour** is recorded as an Activity (the `tour` kind), **not** a lifecycle stage — the system tracks that someone toured, but "Tour-taker" is not a class.
+
+**These are not stored as a single enum.** They're derived at query time from subscription state, recent activity, and signup/approval state.
 
 **Stage transitions are automatic, never manually clicked by the operator.** The system derives stage from data: when a Person subscribes they become Member; when their subscription ends + grace expires they become Past member; when they go silent they become Quiet. There is no "Convert Lead" button.
 
+### Interest
+Which product(s) a Person is drawn to — **office**, **day pass**, **membership**, or **meeting room**. A Person can hold **several at once** (badges on the Person view, filterable on the People list, web and mobile). Interest is *what* matches a Person to the right campaign or offer — the audience dimension that finally makes **New signups** targetable (no purchase history to derive a stage from). Distinct from **Lifecycle Stage**, which is *where* they are.
+
+A Person's Interest is a set of **tags**, kept deliberately simple — from two sources:
+- **Behavioral (the default)** — set automatically, one rule: **their last purchased product** if they've bought anything, otherwise **what they last looked at** (concierge chat intent — already captures `day_pass`/`day_pass_bundle`/`membership` and routes office/meeting-room requests; plan-category browsing; checkout attempts; viewing offices).
+- **Staff-set** — a staff member can **add, remove, or adjust** any tag (including overriding a behavioral one) and can **add a Person to a list manually** (even someone not otherwise tagged). Surfaces interest from offline conversations ("called, wants an office").
+
+Interest tags feed the **campaign / list system**: the operator pulls a **list of who to target** for a given interest — e.g. the "viewed day passes *and* membership → credit the day pass toward membership" play — sent in-app or exported.
+
+There is **no separate "waitlist" construct** — the "office waitlist" is simply the People list filtered to the **office** interest tag (offices are usually sold out, so it's the operator's most-used list).
+
+**The office list is a FAIRNESS QUEUE, not a marketing blast.** Ordering: **current customers first** — members and virtual-office (VO) clients — by **earliest account signup** (tenure/loyalty), then **outside parties** in the order they expressed interest. When an office frees up the operator works **down the queue one person at a time** — offers it to the longest-waiting eligible person, waits for a yes/no, then moves to the next — so nobody further down gets an office someone ahead of them still wants. This requires a per-person **outreach status** (not yet contacted / offered / declined / leased), which a "notify the whole list" blast does not. (Other interest lists — day pass, membership — *can* be a bulk send; the office list specifically is one-by-one.)
+
+### Marketing Suppression (culling a list)
+Not everyone should stay on a marketing list — "everybody has a story" (moved away, out of work, not a fit). The operator can cull at **two levels**, each with a **reason**:
+- **Permanent** — remove from **all** marketing, forever (`marketing_suppressed` + `marketing_suppressed_reason`). For people who've clearly moved on.
+- **Per-list / per-campaign** — suppress from **this** list/campaign only, still eligible for others (the campaign's existing `exclude_user!`). For "not this one, maybe later."
+
+Distinct from **unsubscribe** (`email_opted_out`) — that's the *Person's* choice; suppression is the *operator's*.
+
+### Attribution (did the email work?)
+The operator must be able to see **which email/campaign caused a conversion** and **how effective each campaign is** — otherwise marketing is guesswork and none of the above earns its keep. Every outreach is measured; nothing sends untracked. Two levels:
+- **Per-person** — on the Person's timeline: "bought a day pass / signed up **after** opening the *Winter come-back* email." The Activity table already logs `email_sent` / `email_opened` / `email_clicked`; attribution links a later **conversion** Activity (signup / day_pass / subscription_started / office_lease) back to a recent campaign email the Person opened.
+- **Per-campaign** — a scorecard: **sent → opened → clicked → converted** (+ revenue), so a working campaign is distinguishable from a dud. The office fairness-queue is measured too: offered → declined → **leased**.
+
+Attribution is a **window-based, last-touch association** (a conversion within N days of opening a campaign email is credited to it), not a hard causal claim. It closes the loop the whole CRM exists for.
+
 ### Point of Contact
-A staff User responsible for a given Person — the relationship "owner." Stored as `User.point_of_contact_id`. Defaults to whichever staff member first interacted with the Person (logged the tour, processed the signup, sent the first manual note). Stays consistent across lifecycle stage changes — a Tour-taker's PoC remains their PoC after they become a Member. Reassignable by `admin` or `general_manager` roles only.
+A staff User responsible for a given Person — the relationship "owner." Stored as `User.point_of_contact_id`. Defaults to whichever staff member first interacted with the Person (logged the tour, processed the signup, sent the first manual note). Stays consistent across lifecycle stage changes — a New signup's PoC remains their PoC after they become a Member. Reassignable by `admin` or `general_manager` roles only.
 
 PoC is surfaced on the Person view as "Owned by {name}" and is filterable on the People list ("Show only people I own").
 
