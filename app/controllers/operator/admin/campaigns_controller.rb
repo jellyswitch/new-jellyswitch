@@ -33,6 +33,7 @@ class Operator::Admin::CampaignsController < Operator::BaseController
     @recipient_count = @campaign.recipient_count_for(current_location)
     @spam_guard_excluded_count = @campaign.spam_guard_excluded_count_for(current_location)
     @recipients = @campaign.build_recipient_query(current_location).limit(50)
+    @scorecard = Campaigns::AttributionReport.new(@campaign).scorecard
   end
 
   def edit

@@ -36,6 +36,7 @@ class Activity < ApplicationRecord
     day_pass
     subscription_started
     subscription_ended
+    office_lease
     payment_succeeded
     payment_failed
     note
