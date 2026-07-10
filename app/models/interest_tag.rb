@@ -39,6 +39,9 @@ class InterestTag < ApplicationRecord
   scope :for_product, ->(product) { where(product: product) }
   scope :staff_set, -> { where(source: "staff") }
   scope :behavioral, -> { where(source: BEHAVIORAL_SOURCES) }
+  # Tags backed by an actual purchase (carry a last_purchased_at). The newest is
+  # the Person's most-recent buy.
+  scope :purchased, -> { where.not(last_purchased_at: nil) }
 
   def staff_set?
     source == "staff"
@@ -59,20 +62,36 @@ class InterestTag < ApplicationRecord
   # STICKY — a behavioral signal never overwrites a manual annotation, but a
   # staff edit always wins. Scoped to the user's operator regardless of ambient
   # tenant (works from the embed concierge, a backfill, or the admin UI).
-  def self.record(user:, product:, source:, added_by: nil)
+  def self.record(user:, product:, source:, added_by: nil, at: nil)
     product = product.to_s
     source = source.to_s
     return nil unless PRODUCTS.include?(product) && SOURCES.include?(source)
 
     ActsAsTenant.with_tenant(user.operator) do
-      tag = find_or_initialize_by(user_id: user.id, product: product)
-      return tag if tag.persisted? && tag.staff_set? && source != "staff"
+      retried = false
+      begin
+        tag = find_or_initialize_by(user_id: user.id, product: product)
+        return tag if tag.persisted? && tag.staff_set? && source != "staff"
 
-      tag.operator = user.operator
-      tag.source = source
-      tag.added_by = (source == "staff" ? added_by : nil)
-      tag.save!
-      tag
+        tag.operator = user.operator
+        tag.source = source
+        tag.added_by = (source == "staff" ? added_by : nil)
+        # Stamp the purchase time for purchase signals only, and only ever move it
+        # FORWARD — so a later concierge/looked_at signal doesn't erase it, and an
+        # older replayed purchase (backfill ordering) can't regress a newer one.
+        if source == "last_purchase"
+          tag.last_purchased_at = [tag.last_purchased_at, (at || Time.current)].compact.max
+        end
+        tag.save!
+        tag
+      rescue ActiveRecord::RecordNotUnique
+        # A concurrent insert won the race (first tag for this user+product). Retry
+        # once — find_or_initialize_by now finds the row and UPDATEs it. This keeps
+        # a purchase-time double-submit from ever rolling back the sale.
+        raise if retried
+        retried = true
+        retry
+      end
     end
   end
 

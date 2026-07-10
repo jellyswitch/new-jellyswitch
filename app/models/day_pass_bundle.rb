@@ -11,10 +11,19 @@ class DayPassBundle < ApplicationRecord
 
   acts_as_tenant :operator
 
+  # Buying a pack is a day_pass purchase signal (ADR 0022) — every create here is
+  # a purchase (SaveBundle). There's no separate bundle interest product.
+  # after_create_COMMIT so a tag write can never roll back the sale.
+  after_create_commit :record_purchase_interest
+
   validates :quantity_purchased, :passes_remaining,
             numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   scope :active, -> { where("passes_remaining > 0").where("expires_at IS NULL OR expires_at > ?", Time.current) }
+
+  def record_purchase_interest
+    InterestTag.record(user: user, product: "day_pass", source: "last_purchase") if user
+  end
 
   def expired?
     expires_at.present? && expires_at <= Time.current

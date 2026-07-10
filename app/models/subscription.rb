@@ -27,6 +27,8 @@ class Subscription < ApplicationRecord
   # Callbacks
   before_destroy :check_for_stripe_subscription
   after_create :log_subscription_started
+  # after_create_COMMIT so a tag write can never roll back the subscription.
+  after_create_commit :record_membership_interest
   after_update :log_subscription_ended_if_deactivated
 
   # Relationships
@@ -302,6 +304,15 @@ class Subscription < ApplicationRecord
   def log_subscription_started
     return unless subscribable.is_a?(User)
     Activity.log(user: subscribable, kind: :subscription_started, subject: self)
+  end
+
+  # Seed a membership interest tag from the purchase (ADR 0022). Only individual
+  # member subs — not org subs (subscribable isn't a User) and not office-lease
+  # subs (those are an office signal, and the lease culls the office tag anyway).
+  def record_membership_interest
+    return unless subscribable.is_a?(User)
+    return if plan&.lease?
+    InterestTag.record(user: subscribable, product: "membership", source: "last_purchase")
   end
 
   def log_subscription_ended_if_deactivated
