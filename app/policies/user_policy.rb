@@ -8,6 +8,11 @@ class UserPolicy < ApplicationPolicy
     has_admin_right?
   end
 
+  # Cold leads is the stale slice of the approval queue; same rule as unapproved?.
+  def cold_leads?
+    has_admin_right?
+  end
+
   def archived?
     admin?
   end
