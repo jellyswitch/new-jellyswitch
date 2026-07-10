@@ -68,9 +68,19 @@ class Reservation < ApplicationRecord
   delegate :operator, :location, to: :room
 
   after_create :log_activity
+  # after_create_COMMIT so a tag write can never roll back the booking.
+  after_create_commit :record_meeting_room_interest
 
   def log_activity
     Activity.log(user: user, kind: :reservation, subject: self)
+  end
+
+  # Seed a meeting_room interest tag from a PAID meeting-room booking (ADR 0022).
+  # Gate on the room being paid — NOT reservation.paid, which is false when a
+  # member/staff books a paid room and true for free call-room overages.
+  def record_meeting_room_interest
+    return unless user && room&.paid_room?
+    InterestTag.record(user: user, product: "meeting_room", source: "last_purchase")
   end
 
   def attendee_count_within_capacity

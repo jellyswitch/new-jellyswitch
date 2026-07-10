@@ -82,10 +82,18 @@ class DayPass < ApplicationRecord
 
   after_create :log_activity, unless: :imported
   after_create :enroll_user_in_welcome_drip, unless: :imported
+  # Seed a day_pass interest tag from the purchase (ADR 0022). `unless: :imported`
+  # excludes bundle redemptions, door/reserve burns, and historical imports.
+  # after_create_COMMIT so a tag write can never roll back or 500 the sale.
+  after_create_commit :record_purchase_interest, unless: :imported
 
   # Instance methods
   def log_activity
     Activity.log(user: user, kind: :day_pass, subject: self, operator: operator)
+  end
+
+  def record_purchase_interest
+    InterestTag.record(user: user, product: "day_pass", source: "last_purchase") if user
   end
 
   # Auto-enroll the day-passer in the Welcome Drip. Idempotent — no-op if
