@@ -15,6 +15,11 @@ class RecurringReservationPolicy < ApplicationPolicy
     admin_or_manager?
   end
 
+  # Conflict preview on the new-series form; same rule as create?.
+  def check_conflicts?
+    admin_or_manager?
+  end
+
   def cancel_series?
     admin_or_manager?
   end
