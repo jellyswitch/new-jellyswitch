@@ -457,4 +457,22 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal [loc1.id], admin.managed_location_ids
   end
+
+  # Duplicate-account regression: downcasing ran before_save — AFTER the
+  # case-sensitive uniqueness check — so "Foo@x.com" validated clean against
+  # a stored "foo@x.com", then saved as an exact duplicate row. One member's
+  # autocapitalized web signups minted three identical accounts.
+  test "email uniqueness ignores case within an operator" do
+    operator = operators(:cowork_tahoe)
+    create(:user, operator: operator, email: "evelyn@example.com")
+
+    dupe = build(:user, operator: operator, email: "Evelyn@Example.com")
+    refute dupe.valid?, "differently-cased duplicate email must not validate"
+    assert dupe.errors[:email].any?
+  end
+
+  test "email normalizes to lowercase at validation time" do
+    user = create(:user, operator: operators(:cowork_tahoe), email: "MixedCase@Example.com")
+    assert_equal "mixedcase@example.com", user.email
+  end
 end
