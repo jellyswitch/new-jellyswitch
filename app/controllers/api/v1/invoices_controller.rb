@@ -26,6 +26,10 @@ class Api::V1::InvoicesController < Api::V1::BaseController
   private
 
   def invoice_json(inv)
+    # has_billing_for_location? requires a location; calling it bare raised
+    # ArgumentError (500) for any member with an open invoice. Mirror
+    # InvoicePolicy: prefer the invoice's own location.
+    billing_location = inv.location || current_api_user&.current_location
     {
       id: inv.id,
       amount_due: inv.amount_due,
@@ -36,7 +40,8 @@ class Api::V1::InvoicesController < Api::V1::BaseController
       due_date: inv.try(:due_date)&.strftime("%B %e, %Y"),
       payment_method: inv.try(:payment_method),
       billable_to: inv.try(:billable)&.try(:name),
-      can_charge: inv.status == 'open' && current_api_user.try(:has_billing_for_location?),
+      can_charge: (inv.status == 'open' && billing_location.present? &&
+                   current_api_user&.has_billing_for_location?(billing_location)) || false,
       created_at: inv.created_at.strftime("%B %e, %Y"),
     }
   end
