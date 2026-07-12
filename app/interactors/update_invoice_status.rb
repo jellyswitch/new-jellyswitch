@@ -12,6 +12,13 @@ class UpdateInvoiceStatus
 
     new_status = stripe_invoice.status
 
+    # Stripe event payloads are frozen snapshots and delivery is at-least-once
+    # and unordered — a replayed invoice.payment_failed carries status "open"
+    # even after the member has paid. A settled invoice never legitimately goes
+    # back to open, so treat that as a stale snapshot and no-op (success, not
+    # fail! — the webhook should still 200 so Stripe stops redelivering).
+    return if %w(paid refunded void).include?(invoice.status) && new_status == "open"
+
     invoice.status = new_status
     # Keep the money fields in sync — this used to update only status, so
     # amount_paid stayed at its creation-time value (usually 0) forever and

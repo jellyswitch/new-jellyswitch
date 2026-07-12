@@ -55,6 +55,8 @@ class NotifiableFactory
       Notifiable::TourRequestAlert
     when "OfficeVacancy"
       Notifiable::OfficeVacancy
+    when "PaymentFailed"
+      Notifiable::PaymentFailed
     else
       raise "Unknown notifiable type: #{type}"
     end.new(notifiable)

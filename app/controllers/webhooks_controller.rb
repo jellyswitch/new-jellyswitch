@@ -35,6 +35,9 @@ class WebhooksController < ApplicationController
           invoice = Invoice.find_by(stripe_invoice_id: @event.data.object.id)
           if invoice
             SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id)
+            # Push counterpart of the email ("failed-card save") — nudges the
+            # member's phone to fix their card on every dunning attempt.
+            SendNotificationsJob.perform_later(invoice, "PaymentFailed")
 
             # Create feed item to alert admins
             user = invoice.billable.is_a?(User) ? invoice.billable : invoice.billable.try(:owner)
