@@ -124,6 +124,24 @@ class DayPass < ApplicationRecord
     day == Time.zone.today
   end
 
+  # A pass is "used" once the member actually entered on its day — any door
+  # punch or check-in at the pass's location that calendar day. Walk-in
+  # purchases auto-check-in at purchase, so they lock immediately.
+  def used?
+    tz = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"] || Time.zone
+    day_range = tz.local(day.year, day.month, day.day).all_day
+    user.checkins.where(location_id: location_id, datetime_in: day_range).exists? ||
+      user.door_punches.joins(:door)
+          .where(doors: { location_id: location_id }, created_at: day_range)
+          .exists?
+  end
+
+  # Reschedule policy: any unused pass can move to today or a future date —
+  # even one whose day already slipped by ("I paid, I never came").
+  def reschedulable?
+    !used?
+  end
+
   def day_pass_type_name
     if day_pass_type.present?
       day_pass_type.name

@@ -244,6 +244,34 @@ class Operator::DayPassesController < Operator::BaseController
     turbo_redirect(home_path)
   end
 
+  # PATCH /day_passes/:id/reschedule — staff move a member's UNUSED pass to
+  # today or a future date (policy: admin/CM/GM only). Same rules as the
+  # member-facing mobile endpoint; the pass keeps its id and invoice.
+  def reschedule
+    @day_pass = DayPass.where(operator: current_tenant).find(params[:id])
+    authorize @day_pass
+
+    new_day = begin
+      Date.iso8601(params[:day].to_s)
+    rescue ArgumentError, TypeError
+      nil
+    end
+
+    tz    = ActiveSupport::TimeZone[@day_pass.location&.time_zone.presence || "UTC"] || Time.zone
+    today = Time.current.in_time_zone(tz).to_date
+
+    if !@day_pass.reschedulable?
+      flash[:error] = "That pass was already used — it can't be moved."
+    elsif new_day.nil? || new_day < today
+      flash[:error] = "Pick today or a future date."
+    else
+      @day_pass.update!(day: new_day)
+      flash[:success] = "Day pass moved to #{@day_pass.pretty_day}."
+    end
+
+    turbo_redirect(user_admin_day_passes_path(@day_pass.user))
+  end
+
   private
 
   # Members may only self-purchase a customer-facing, PAID day pass / bundle.

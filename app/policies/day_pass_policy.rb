@@ -23,4 +23,10 @@ class DayPassPolicy < ApplicationPolicy
   def redeem_code?
     is_user? && billing_enabled?
   end
+
+  # Staff-only: members reschedule their own passes via the mobile API,
+  # which scopes to current_api_user instead of using this policy.
+  def reschedule?
+    admin? || community_manager? || general_manager?
+  end
 end
