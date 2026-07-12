@@ -12,12 +12,19 @@ class Api::V1::InvoicesController < Api::V1::BaseController
     invoice = Invoice.find(params[:id])
     return render_error('Not your invoice', status: :forbidden) unless invoice.billable == current_api_user
 
-    result = Billing::ChargeInvoice.call(invoice: invoice) rescue nil
+    begin
+      result = Billing::Invoices::ChargeInvoice.call(
+        invoice: invoice,
+        operator: invoice.operator,
+      )
 
-    if result&.success?
-      render json: { success: true, message: 'Invoice paid successfully.' }
-    else
-      render_error(result&.message || 'Unable to charge invoice')
+      if result.success?
+        render json: { success: true, message: 'Invoice paid successfully.' }
+      else
+        render_error(result.message || 'Unable to charge invoice')
+      end
+    rescue Stripe::InvalidRequestError, Stripe::APIConnectionError, Stripe::StripeError => e
+      render_error("Payment processing error: #{e.message}")
     end
   rescue ActiveRecord::RecordNotFound
     render_error('Invoice not found', status: :not_found)
