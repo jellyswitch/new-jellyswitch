@@ -137,9 +137,14 @@ class User < ApplicationRecord
 
   # Auth stuff
   attr_accessor :remember_token, :reset_token, :raw_confirmation_token, :terms_accepted, :admin_created, :login_code
-  before_save { self.email = email.downcase }
+  # Normalize BEFORE validation, not before_save: downcasing after the
+  # uniqueness check let "Foo@x.com" pass validation against a stored
+  # "foo@x.com" and then save as an exact duplicate row (every autocapitalized
+  # web signup minted a new account). case_sensitive backstops any path that
+  # skips normalization.
+  before_validation { self.email = email&.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
-  validates :email, uniqueness: { scope: :operator_id }, presence: true
+  validates :email, uniqueness: { scope: :operator_id, case_sensitive: false }, presence: true
   # Front-door spam defense: reject disposable/throwaway email providers at
   # self-signup. Skipped for admin-created members and only on :create (mirrors
   # the phone rule below, so a member's existing email is never re-blocked).
