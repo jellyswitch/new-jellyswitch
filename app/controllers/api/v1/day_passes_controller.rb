@@ -32,6 +32,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         price: dp.day_pass_type&.amount_in_cents,
         paid: dp.invoice&.paid? || false,
         complimentary: dp.complimentary,
+        can_reschedule: dp.reschedulable?,
       }
     }
   end
@@ -209,6 +210,32 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     else
       render_error("That scheduled day couldn't be found.")
     end
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Not found" }, status: :not_found
+  end
+
+  # PATCH /api/v1/day_passes/:id/reschedule
+  # Moves an UNUSED pass (no entry recorded on its day) to today or any
+  # future date — even a pass whose day already slipped by. Works for
+  # purchased and bundle-sourced passes alike: the row keeps its id and
+  # invoice, only `day` changes. Scoped to current_api_user.
+  def reschedule
+    day_pass = current_api_user.day_passes.where(operator: current_tenant).find(params[:id])
+    return render_error("That pass was already used — it can't be moved.") unless day_pass.reschedulable?
+
+    new_day = begin
+      Date.iso8601(params[:day].to_s)
+    rescue ArgumentError, TypeError
+      nil
+    end
+    return render_error("Please pick a valid date.") unless new_day
+
+    tz    = ActiveSupport::TimeZone[day_pass.location&.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    return render_error("Passes can only be moved to today or a future date.") if new_day < today
+
+    day_pass.update!(day: new_day)
+    render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
   end

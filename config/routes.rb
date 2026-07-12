@@ -122,6 +122,7 @@ Rails.application.routes.draw do
         end
         member do
           post :cancel_scheduled
+          patch :reschedule
         end
       end
 
@@ -562,6 +563,9 @@ Rails.application.routes.draw do
       post :code, to: "operator/day_passes#redeem_code"
       get :redeem_paid, to: "operator/day_passes#redeem_paid"
       post :redeem_today, to: "operator/day_passes#redeem_today"
+    end
+    member do
+      patch :reschedule, to: "operator/day_passes#reschedule"
     end
   end
   resources :day_pass_types, controller: "operator/day_pass_types" do
