@@ -1,9 +1,40 @@
+require "net/smtp"
 
 class ApplicationMailer < ActionMailer::Base
-  default from: 'Jellyswitch <noreply@jellyswitch.com>'
+  # The platform sender is verified in SendGrid; brand senders are only
+  # verified once their domain-authentication DNS records are in place.
+  PLATFORM_FROM = "Jellyswitch <noreply@jellyswitch.com>"
+
+  default from: PLATFORM_FROM
   layout 'mailer'
 
   after_action :log_email_sent
+
+  # SendGrid 550s any mail whose From domain isn't a verified Sender Identity
+  # (a brand whose domain authentication isn't set up yet), which bounces
+  # every email for that brand — confirmations, password resets, receipts.
+  # Retry once from the platform sender, keeping the brand reachable via
+  # Reply-To. Once the brand's domain is authenticated the first attempt
+  # succeeds and this never fires.
+  def self.deliver_mail(mail)
+    super
+  rescue Net::SMTPFatalError => e
+    raise unless e.message.include?("verified Sender Identity")
+
+    original_from = mail[:from].to_s
+    raise if original_from.include?("noreply@jellyswitch.com")
+
+    if defined?(Honeybadger)
+      Honeybadger.notify(
+        "Unverified SendGrid sender — delivered from platform fallback",
+        context: { original_from: original_from, to: mail.to, subject: mail.subject, smtp_error: e.message },
+      )
+    end
+
+    mail.reply_to = original_from if mail.reply_to.blank?
+    mail.from = PLATFORM_FROM
+    super(mail)
+  end
 
   private
 
