@@ -475,4 +475,27 @@ class UserTest < ActiveSupport::TestCase
     user = create(:user, operator: operators(:cowork_tahoe), email: "MixedCase@Example.com")
     assert_equal "mixedcase@example.com", user.email
   end
+
+  test "database unique index rejects duplicate emails even when validations are skipped" do
+    operator = operators(:cowork_tahoe)
+    create(:user, operator: operator, email: "backstop@example.com")
+
+    # validate: false also skips before_validation normalization — the
+    # lower(email) expression index must still catch the duplicate.
+    dupe = build(:user, operator: operator, email: "Backstop@Example.com")
+    assert_raises(ActiveRecord::RecordNotUnique) { dupe.save(validate: false) }
+  end
+
+  test "Users::Save turns a unique-index rejection into a graceful failure" do
+    User.any_instance.stubs(:save).raises(ActiveRecord::RecordNotUnique.new("duplicate key"))
+
+    result = Users::Save.call(
+      params: { name: "Race Condition", email: "race@example.com", password: "secret1" },
+      operator: operators(:cowork_tahoe),
+      admin_created: false,
+    )
+
+    refute result.success?
+    assert_match "already been taken", result.message
+  end
 end

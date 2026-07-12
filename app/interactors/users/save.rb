@@ -30,8 +30,14 @@ class Users::Save
       @user.admin_created = true
     end
 
-    if !@user.save
-      context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
+    begin
+      if !@user.save
+        context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # Unique index on (operator_id, lower(email)) — a concurrent signup
+      # slipped past the validation; surface it like a validation failure.
+      context.fail!(message: "Unable to sign up. Please review errors. Email has already been taken")
     end
 
     context.notifiable = @user

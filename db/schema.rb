@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_09_140000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_12_184629) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1160,6 +1160,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_09_140000) do
     t.string "login_code_digest"
     t.datetime "login_code_sent_at"
     t.integer "login_code_attempts", default: 0, null: false
+    t.index "operator_id, lower((email)::text)", name: "index_users_on_operator_id_and_lower_email", unique: true
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["home_zip"], name: "index_users_on_home_zip"
     t.index ["operator_id", "home_state", "home_city"], name: "index_users_on_operator_home_state_home_city"
