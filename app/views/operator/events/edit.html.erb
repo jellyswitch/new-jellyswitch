@@ -20,7 +20,7 @@
           </div>
         <% end %>
 
-        <%= link_to event_path(@event), class: "btn btn-block btn-danger mt-4", method: :delete do %>
+        <%= link_to event_path(@event), class: "btn btn-block btn-danger mt-4", data: { turbo_method: :delete, turbo_confirm: "Cancel this event?" } do %>
           <i class="fas fa-times"></i>
           &nbsp;
           Cancel this event

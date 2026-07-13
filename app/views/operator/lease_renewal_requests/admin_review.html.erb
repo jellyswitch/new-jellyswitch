@@ -55,7 +55,7 @@
       <div class="form-group">
         <%= f.text_area :notes, placeholder: "Admin notes (optional)...", class: "form-control", rows: 2 %>
       </div>
-      <%= f.submit "Approve Renewal", class: "btn btn-block btn-primary", data: { confirm: "Approve this renewal and create the new lease?" } %>
+      <%= f.submit "Approve Renewal", class: "btn btn-block btn-primary", data: { turbo_confirm: "Approve this renewal and create the new lease?" } %>
     <% end %>
 
     <%# Force approve (when leasee hasn't responded) %>
@@ -73,7 +73,7 @@
         <div class="form-group">
           <%= f.text_area :notes, placeholder: "Reason for force approval (e.g., verbal agreement)...", class: "form-control", rows: 2 %>
         </div>
-        <%= f.submit "Force Approve (verbal/email agreement)", class: "btn btn-block btn-outline-primary", data: { confirm: "Force approve this renewal without leasee's digital acceptance?" } %>
+        <%= f.submit "Force Approve (verbal/email agreement)", class: "btn btn-block btn-outline-primary", data: { turbo_confirm: "Force approve this renewal without leasee's digital acceptance?" } %>
       <% end %>
     <% end %>
 
@@ -82,7 +82,7 @@
       <div class="form-group">
         <%= f.text_area :notes, placeholder: "Reason for declining (optional)...", class: "form-control", rows: 2 %>
       </div>
-      <%= f.submit "Decline Renewal", class: "btn btn-block btn-danger", data: { confirm: "Decline this renewal request?" } %>
+      <%= f.submit "Decline Renewal", class: "btn btn-block btn-danger", data: { turbo_confirm: "Decline this renewal request?" } %>
     <% end %>
   <% end %>
 <% end %>

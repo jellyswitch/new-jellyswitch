@@ -37,7 +37,7 @@
       <% if plan_category.plans.count.positive? %>
         <%= link_to "Remove plans before removing category", "#", class: "btn btn-danger btn-block disabled", disabled: true %>
       <% else %>
-        <%= link_to "Remove this plan category", operator_admin_plan_category_path(plan_category), method: :delete, data: { turbo: false, confirm: "Are you sure?" }, class: "btn btn-danger btn-block" %>
+        <%= link_to "Remove this plan category", operator_admin_plan_category_path(plan_category), data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-danger btn-block" %>
       <% end %>
     </div>
   </div>

@@ -18,7 +18,7 @@
     <%= list_item do %>
       <p class="text-muted text-center">You have a stuck pending membership blocking new signups.</p>
       <% pending_subs.each do |sub| %>
-        <%= link_to "Remove pending #{sub.plan&.name || 'membership'}", operator_admin_subscription_path(sub), data: { turbo_method: :delete, confirm: "Remove this stuck pending membership?" }, class: "btn btn-block btn-outline-danger mb-2" %>
+        <%= link_to "Remove pending #{sub.plan&.name || 'membership'}", operator_admin_subscription_path(sub), data: { turbo_method: :delete, turbo_confirm: "Remove this stuck pending membership?" }, class: "btn btn-block btn-outline-danger mb-2" %>
       <% end %>
     <% end %>
   <% end %>

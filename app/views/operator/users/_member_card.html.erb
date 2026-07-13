@@ -28,7 +28,7 @@
       </div>
       <% if policy(member).remove_from_organization? && member.member_of_organization? %>
         <div class="ml-auto d-flex align-items-center">
-          <%= link_to user_remove_from_organization_path(member), class: "btn btn-outline-danger btn-sm", data: { confirm: "Remove #{member.name} from this group?" } do %>
+          <%= link_to user_remove_from_organization_path(member), class: "btn btn-outline-danger btn-sm", data: { turbo_method: :get, turbo_confirm: "Remove #{member.name} from this group?" } do %>
             <i class="fas fa-times"></i> Remove
           <% end %>
         </div>
