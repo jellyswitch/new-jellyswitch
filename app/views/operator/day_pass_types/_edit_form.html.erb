@@ -61,6 +61,12 @@
     <small class="form-text text-muted"><%= DayPassType::EXPIRATION_DISCLAIMER %></small>
   </div>
 
+  <div class="form-group">
+    <%= form.label :daily_limit, "Max sold per day (leave blank = unlimited)" %>
+    <%= form.number_field :daily_limit, class: "form-control", min: 1, step: 1, placeholder: "Unlimited" %>
+    <small class="form-text text-muted">Counts every pass of this type on a given day — purchased, comped, or scheduled from a pack. Staff can always add passes past the limit.</small>
+  </div>
+
   <hr class="my-3">
 
   <div class="form-group">
