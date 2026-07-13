@@ -69,6 +69,16 @@ RSpec.describe "User MX-record guard", type: :model do
     expect(user.errors[:email]).to be_empty
   end
 
+  it "never DNS-probes an @-less value — the format validation rejects it instead" do
+    # Prod incident (untethered 2026-07-13): "scott.screenzen.co" (@ typo'd
+    # away) used to have the WHOLE string treated as its domain here.
+    allow(MxRecordValidator).to receive(:enabled?).and_return(true)
+    expect(Resolv::DNS).not_to receive(:open)
+    user = build(:user, operator: operator, email: "scott.screenzen.co")
+    expect(user).not_to be_valid
+    expect(user.errors[:email]).to include("is invalid")
+  end
+
   it "does not block admin-created members (a walk-in an admin adds by hand)" do
     stub_dns(mx: [], a: [], aaaa: [])
     user = build(:user, operator: operator, email: "walkin@nodomainhere.invalid", admin_created: true)

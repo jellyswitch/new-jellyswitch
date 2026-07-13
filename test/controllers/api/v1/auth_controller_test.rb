@@ -136,6 +136,18 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_response :created
   end
 
+  # Companion regression to the Stripe test above (same untethered incident):
+  # the malformed address "scott.screenzen.co" (@ typo'd away) passed every
+  # email validation and only surfaced as a Stripe error. It must fail at
+  # validation time with "Email is invalid", before any user row or Stripe call.
+  test "signup with an @-less email returns 422 with Email is invalid" do
+    assert_no_difference -> { User.count } do
+      post "/api/v1/auth/signup", params: signup_params(email: "scott.screenzen.co")
+    end
+    assert_response :unprocessable_entity
+    assert_match(/email is invalid/i, JSON.parse(response.body)["error"])
+  end
+
   test "signup verifies with context mobile_signup when a token is present" do
     Turnstile::Verifier.expects(:call).with(
       has_entries(context: "mobile_signup", token: "some-token")
