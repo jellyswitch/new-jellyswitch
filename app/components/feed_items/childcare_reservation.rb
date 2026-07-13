@@ -5,6 +5,10 @@ class FeedItems::ChildcareReservation < ApplicationComponent
     @feed_item = feed_item
   end
 
+  def render?
+    feed_item.childcare_reservation.present?
+  end
+
   private
 
   attr_reader :feed_item

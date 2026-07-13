@@ -173,6 +173,20 @@ RSpec.describe FeedItem, type: :model do
       end
     end
 
+    describe '#day_pass' do
+      it 'returns nil when the referenced day pass no longer exists' do
+        feed_item.update(blob: { type: 'day-pass', day_pass_id: -1 })
+        expect(feed_item.day_pass).to be_nil
+      end
+    end
+
+    describe '#reservation' do
+      it 'returns nil when the referenced reservation no longer exists' do
+        feed_item.update(blob: { type: 'reservation', reservation_id: -1 })
+        expect(feed_item.reservation).to be_nil
+      end
+    end
+
     # Similar tests for other lazy relationships
   end
 end

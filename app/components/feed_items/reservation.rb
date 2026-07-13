@@ -5,6 +5,10 @@ class FeedItems::Reservation < ApplicationComponent
     @feed_item = feed_item
   end
 
+  def render?
+    feed_item.reservation.present?
+  end
+
   private
 
   attr_reader :feed_item
