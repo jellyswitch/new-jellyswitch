@@ -104,6 +104,22 @@ for v1 — same posture as the existing reservation-overlap guard (no DB lock, p
 current operators makes this a rare, staff-fixable edge (staff can comp/refund). If it ever
 bites, the fix is a `with_lock` on the DayPassType row around count+create.
 
+## Known limits (accepted for v1)
+
+- **Nil-location legacy passes** sit outside every real location's tally: the
+  count is exact-match on `location_id`, so a legacy pass with NULL location
+  neither counts toward nor is gated by any location's cap. App-created passes
+  always carry a location; this only affects odd legacy rows.
+- **Multi-bundle members with mixed types**: bundle day-scheduling gates the
+  soonest-expiring eligible bundle's type. If that type's day is full, the
+  member gets "fully booked" even if another bundle of a different, uncapped
+  type could cover the day. Consistent with the single-active-bundle
+  assumption.
+- **Emails enqueued inside the scheduling batch transaction** (pre-existing):
+  a mid-batch failure after a burn can leave an already-enqueued product email
+  for a rolled-back burn. `:sold_out` adds a fourth route into this
+  pre-existing behavior; not made worse by this feature.
+
 ## Testing
 
 - **Model:** `daily_limit_reached?` — nil limit always false; at/below/above threshold;

@@ -103,7 +103,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # their rows still count toward the tally. See
     # docs/superpowers/specs/2026-07-12-day-pass-daily-limit-design.md.
     if day_pass_type.daily_limit_reached?(day: date, location: current_location)
-      return render_error("#{day_pass_type.name.pluralize} are fully booked for #{date.strftime('%B %e')}. Try another day.")
+      return render_error(sold_out_message(day_pass_type, date))
     end
 
     # Use the same interactor chain as the web app
@@ -187,7 +187,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         passes_remaining: remaining_bundle_passes,
       }
     when :sold_out
-      render_error("#{result.day_pass_type.name.pluralize} are fully booked for #{result.failed_date.strftime('%B %e')}. Try another day.")
+      render_error(sold_out_message(result.day_pass_type, result.failed_date))
     when :already_covered
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date
@@ -249,7 +249,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # changing days — its own row would otherwise count against itself.
     if new_day != day_pass.day &&
        day_pass.day_pass_type&.daily_limit_reached?(day: new_day, location: day_pass.location)
-      return render_error("#{day_pass.day_pass_type.name.pluralize} are fully booked for #{new_day.strftime('%B %e')}. Try another day.")
+      return render_error(sold_out_message(day_pass.day_pass_type, new_day))
     end
 
     day_pass.update!(day: new_day)
@@ -364,5 +364,12 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
   def remaining_bundle_passes
     current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
+  end
+
+  # Copy shared by all three member-facing daily-limit gates in this
+  # controller. The web flow words the date differently (short_date) — that's
+  # a deliberate per-surface idiom, not drift.
+  def sold_out_message(day_pass_type, day)
+    "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
   end
 end
