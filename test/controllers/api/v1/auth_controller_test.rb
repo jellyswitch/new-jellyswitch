@@ -108,6 +108,32 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_response :unprocessable_entity
   end
 
+  # --- Stripe failure during signup ---
+  # Regression (untethered prod): Stripe::Customer.create raising during
+  # signup bubbled up as a 500 AND left the half-created user row behind,
+  # so retrying the signup failed with "Email has already been taken".
+  test "signup fails cleanly when Stripe rejects the customer, and the retry works" do
+    params = signup_params
+    stub_request(:post, "https://api.stripe.com/v1/customers")
+      .to_return(status: 400, body: {
+        error: { message: "Invalid email address", type: "invalid_request_error" },
+      }.to_json)
+
+    assert_no_difference -> { User.count } do
+      post "/api/v1/auth/signup", params: params
+    end
+    assert_response :unprocessable_entity
+    assert_match(/billing/i, JSON.parse(response.body)["error"])
+
+    # Same email must be retryable once Stripe accepts again.
+    stub_request(:post, "https://api.stripe.com/v1/customers")
+      .to_return(status: 200, body: { id: "cus_12345" }.to_json)
+    assert_difference -> { User.count }, 1 do
+      post "/api/v1/auth/signup", params: params
+    end
+    assert_response :created
+  end
+
   test "signup verifies with context mobile_signup when a token is present" do
     Turnstile::Verifier.expects(:call).with(
       has_entries(context: "mobile_signup", token: "some-token")

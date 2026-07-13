@@ -45,6 +45,10 @@ class Users::Save
     result = CreateStripeCustomer.call(user: @user, location: @user.original_location)
 
     if !result.success?
+      # The user row was already saved above — leaving it behind strands the
+      # signup: the person's retry hits the unique-email check and gets
+      # "Email has already been taken" forever.
+      @user.destroy if @user.persisted?
       context.fail!(message: result.message)
     end
 
