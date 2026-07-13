@@ -1,6 +1,6 @@
 class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
   def index
-    doors = Door.where(operator: current_tenant).order(:name)
+    doors = Door.where(operator: current_tenant).includes(:beacons).order(:name)
 
     render json: doors.map { |d| door_json(d) }
   end
@@ -77,6 +77,9 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
       slug: d.try(:slug), private: d.private, available: d.available,
       # Attached room ⇒ this door is a Room Lock (ADR 0021).
       room_id: d.room_id, room_name: d.room&.name,
+      # Beacon-linked ⇒ arrival-unlock building entrance; the room picker
+      # confirms before letting it be attached as a room lock.
+      beacon: d.beacons.any?,
     }
   end
 

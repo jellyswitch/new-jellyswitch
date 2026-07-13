@@ -108,6 +108,7 @@ _Avoid_: counting Room Entries in anything that means "visits" or "entries".
 
 - A **Door** is attached to **at most one Room**; a Room may have multiple Doors (TLH's Meetup Room could have both an interior and an "Ext" lock).
 - Attachment is an operator configuration action (on the room/door settings), never inferred from names.
+- A **beacon on a door** marks a BLE arrival-unlock **building entrance** — Room Locks are excluded from arrival-unlock, so both room pickers warn and ask for confirmation before attaching a beacon-linked door as a room lock (the TLH front-door lockout, 2026-07-12). Confirm, not block: an operator may legitimately reclassify.
 - A **Room Lock** open is a **Room Entry**; a **Building Door** open is a **door punch**.
 - **The reservation is the key**: a member reaches a Room Lock only through their booking (reservation card / start notification), never through the general Keys list. Staff reach every door through the admin door list.
 

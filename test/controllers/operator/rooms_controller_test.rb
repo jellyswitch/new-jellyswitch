@@ -63,4 +63,29 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_match "Door locks", response.body
     assert_match "Lock X", response.body
   end
+
+  # A beacon-linked door is an arrival-unlock building entrance; the picker
+  # must warn before it can be attached as a room lock (ADR 0021 — the TLH
+  # front-door lockout). Plain doors must NOT carry the warning.
+  test "edit form warns on beacon-linked doors only" do
+    log_in users(:cowork_tahoe_admin)
+    operator = operators(:cowork_tahoe)
+    location = locations(:cowork_tahoe_location)
+    entrance = Door.create!(name: "Front Entrance", operator: operator,
+                            location: location, available: true)
+    Beacon.create!(name: "Entrance Beacon", uuid: SecureRandom.uuid, major: 9, minor: 9,
+                   operator: operator, location: location, door: entrance)
+    plain = Door.create!(name: "Lock Y", operator: operator,
+                         location: location, available: true)
+
+    get edit_room_path(@room), env: default_env
+    assert_response :success
+    assert_match "arrival-unlock beacon", response.body
+
+    body = Nokogiri::HTML(response.body)
+    assert body.at_css("#room_door_#{entrance.id}")["data-beacon-warning"].present?,
+      "beacon-linked door checkbox must carry the confirm warning"
+    assert body.at_css("#room_door_#{plain.id}")["data-beacon-warning"].blank?,
+      "plain door checkbox must not prompt"
+  end
 end

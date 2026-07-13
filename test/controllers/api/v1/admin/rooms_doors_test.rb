@@ -32,6 +32,21 @@ class Api::V1::Admin::RoomsDoorsTest < ActionDispatch::IntegrationTest
     assert_nil @door.reload.room_id
   end
 
+  # Beacon-linked ⇒ arrival-unlock building entrance; the pickers read this
+  # flag to confirm before attaching such a door as a room lock (ADR 0021).
+  test "doors index flags beacon-linked doors" do
+    Beacon.create!(name: "Front Door Beacon", uuid: SecureRandom.uuid, major: 9, minor: 9,
+                   operator: @operator, location: @location, door: @door)
+    plain_door = Door.create!(name: "Lock B", operator: @operator, location: @location, available: true)
+
+    get "/api/v1/admin/doors", headers: headers
+    assert_response :success
+
+    by_id = JSON.parse(response.body).index_by { |d| d["id"] }
+    assert_equal true,  by_id[@door.id]["beacon"]
+    assert_equal false, by_id[plain_door.id]["beacon"]
+  end
+
   test "cannot attach another location's door" do
     other_location = Location.create!(name: "Annex", operator: @operator,
                                       working_day_start: "06:00", working_day_end: "20:00")

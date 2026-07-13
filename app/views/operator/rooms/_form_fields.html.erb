@@ -42,14 +42,28 @@
     Attach this room's electric lock(s). An attached door opens only for the
     reservation holder during their booking (and staff) — not for general members.
   </p>
-  <% current_location.doors.where(available: true).order(:name).each do |door| %>
+  <% current_location.doors.where(available: true).includes(:beacons).order(:name).each do |door| %>
+    <% entrance_beacon = door.beacons.any? %>
     <div class="form-check">
       <%# room_id.present? guard: on the NEW form f.object.id is nil, and
           nil == nil would pre-check every unattached door. %>
+      <%# A beacon on a door marks an arrival-unlock BUILDING entrance; room
+          locks are excluded from arrival-unlock (ADR 0021), so attaching one
+          here is probably a misclassification (the TLH front-door lockout).
+          Confirm, don't block — reclassifying can be legitimate. %>
       <%= check_box_tag "room[door_ids][]", door.id,
             door.room_id.present? && door.room_id == f.object.id,
-            id: "room_door_#{door.id}", class: "form-check-input" %>
+            id: "room_door_#{door.id}", class: "form-check-input",
+            data: entrance_beacon ? { beacon_warning:
+              "“#{door.name}” has an arrival-unlock beacon, which marks it as a " \
+              "building entrance. Attached to a room it becomes a reservation-gated " \
+              "room lock: members lose everyday app unlock and it leaves their Keys " \
+              "list. Attach it anyway?" } : {},
+            onchange: entrance_beacon ? "if (this.checked && !window.confirm(this.dataset.beaconWarning)) this.checked = false;" : nil %>
       <%= label_tag "room_door_#{door.id}", door.name, class: "form-check-label" %>
+      <% if entrance_beacon %>
+        <small class="text-muted">(arrival-unlock beacon — building entrance)</small>
+      <% end %>
       <% if door.room_id.present? && door.room_id != f.object.id %>
         <small class="text-muted">(currently: <%= door.room&.name %>)</small>
       <% end %>
