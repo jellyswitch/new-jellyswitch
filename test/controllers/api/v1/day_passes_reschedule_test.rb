@@ -84,4 +84,44 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
     row = JSON.parse(response.body).find { |p| p["id"] == @pass.id }
     assert_equal true, row["can_reschedule"]
   end
+
+  test "cannot move a pass to a day at the type's daily limit" do
+    @pass.day_pass_type.update!(daily_limit: 1)
+    target = 5.days.from_now.to_date
+    other = users(:cowork_tahoe_non_member)
+    ActsAsTenant.with_tenant(@operator) do
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: @pass.day_pass_type, day: target, imported: true)
+    end
+    original = @pass.day
+
+    patch "/api/v1/day_passes/#{@pass.id}/reschedule",
+          params: { day: target.iso8601 }, headers: headers
+
+    assert_response :unprocessable_entity
+    assert_includes JSON.parse(response.body)["error"], "fully booked"
+    assert_equal original, @pass.reload.day
+  end
+
+  test "a same-day 'move' is allowed even when the day is at the limit" do
+    # The pass's own row fills the day — moving it onto its own day must not
+    # count the pass against itself.
+    @pass.day_pass_type.update!(daily_limit: 1)
+
+    patch "/api/v1/day_passes/#{@pass.id}/reschedule",
+          params: { day: @pass.day.iso8601 }, headers: headers
+
+    assert_response :success
+  end
+
+  test "move succeeds when the target day has capacity under the limit" do
+    @pass.day_pass_type.update!(daily_limit: 2)
+    target = 5.days.from_now.to_date
+
+    patch "/api/v1/day_passes/#{@pass.id}/reschedule",
+          params: { day: target.iso8601 }, headers: headers
+
+    assert_response :success
+    assert_equal target, @pass.reload.day
+  end
 end

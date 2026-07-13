@@ -242,6 +242,13 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     today = Time.current.in_time_zone(tz).to_date
     return render_error("Passes can only be moved to today or a future date.") if new_day < today
 
+    # Daily cap on the TARGET day. Skipped when the pass isn't actually
+    # changing days — its own row would otherwise count against itself.
+    if new_day != day_pass.day &&
+       day_pass.day_pass_type&.daily_limit_reached?(day: new_day, location: day_pass.location)
+      return render_error("#{day_pass.day_pass_type.name.pluralize} are fully booked for #{new_day.strftime('%B %e')}. Try another day.")
+    end
+
     day_pass.update!(day: new_day)
     render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
   rescue ActiveRecord::RecordNotFound
