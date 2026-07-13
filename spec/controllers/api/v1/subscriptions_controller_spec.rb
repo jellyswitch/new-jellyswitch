@@ -177,4 +177,127 @@ RSpec.describe Api::V1::SubscriptionsController, type: :controller do
       expect(response).to have_http_status(:ok)
     end
   end
+
+  describe "churn-reason capture + auto-suppress (Phase 1b)" do
+    before do
+      allow(controller).to receive(:authenticate_api_v1).and_return(true)
+      allow(controller).to receive(:current_api_user).and_return(member)
+      allow(controller).to receive(:current_tenant).and_return(operator)
+      allow(controller).to receive(:current_location).and_return(location)
+    end
+
+    let(:plan) { create(:plan, operator: operator, location: location, plan_type: "individual", commitment_interval: nil) }
+    let!(:sub) { create(:subscription, plan: plan, subscribable: member, billable: member, stripe_subscription_id: nil) }
+
+    it "appends the stated reason to the cancellation feed blob" do
+      expect(SetSubscriptionForCancellation).to receive(:call)
+        .with(hash_including(blob: hash_including(text: "Cancelled via mobile app. Reason: Too expensive.")))
+        .and_return(double(success?: true))
+
+      delete :destroy, params: { id: sub.id, reason: "too_expensive" }
+    end
+
+    it "does NOT suppress marketing for a win-back-able reason (too expensive)" do
+      allow(SetSubscriptionForCancellation).to receive(:call).and_return(double(success?: true))
+      delete :destroy, params: { id: sub.id, reason: "too_expensive" }
+      expect(member.reload.marketing_suppressed).to be false
+    end
+
+    it "auto-suppresses a mover (gone for good)" do
+      allow(SetSubscriptionForCancellation).to receive(:call).and_return(double(success?: true))
+      delete :destroy, params: { id: sub.id, reason: "moving_away" }
+
+      member.reload
+      expect(member.marketing_suppressed).to be true
+      expect(member.marketing_suppressed_reason).to eq("Churned: Moving away")
+    end
+
+    it "auto-suppresses a visitor on the immediate-cancel path too" do
+      expect(Billing::Subscription::CancelSubscriptionNow).to receive(:call)
+        .with(hash_including(blob: hash_including(text: /Reason: Was just visiting\.\z/)))
+        .and_return(double(success?: true))
+
+      post :cancel_now, params: { id: sub.id, reason: "just_visiting" }
+      expect(member.reload.marketing_suppressed).to be true
+    end
+
+    it "suppresses on the commitment-scheduled path (intent expressed, end scheduled)" do
+      committed_plan = create(:plan, operator: operator, location: location, interval: "monthly", commitment_interval: 6)
+      committed = create(:subscription, plan: committed_plan, subscribable: member, billable: member,
+                         start_date: 2.months.ago.to_date, stripe_subscription_id: nil)
+      allow_any_instance_of(Subscription).to receive(:set_end_date!)
+
+      post :cancel_now, params: { id: committed.id, reason: "moving_away" }
+
+      expect(JSON.parse(response.body)["scheduled"]).to be true
+      expect(member.reload.marketing_suppressed).to be true
+    end
+
+    it "records the reason as a feed item on the commitment-scheduled path (no cancel blob exists there)" do
+      committed_plan = create(:plan, operator: operator, location: location, interval: "monthly", commitment_interval: 6)
+      committed = create(:subscription, plan: committed_plan, subscribable: member, billable: member,
+                         start_date: 2.months.ago.to_date, stripe_subscription_id: nil)
+      allow_any_instance_of(Subscription).to receive(:set_end_date!)
+
+      expect(FeedItemCreator).to receive(:create_feed_item)
+        .with(operator, location, member, hash_including(
+          text: /Reason: Too expensive\./, type: "membership_cancellation"
+        ))
+
+      post :cancel_now, params: { id: committed.id, reason: "too_expensive" }
+    end
+
+    it "posts no commitment feed item when the reason was skipped" do
+      committed_plan = create(:plan, operator: operator, location: location, interval: "monthly", commitment_interval: 6)
+      committed = create(:subscription, plan: committed_plan, subscribable: member, billable: member,
+                         start_date: 2.months.ago.to_date, stripe_subscription_id: nil)
+      allow_any_instance_of(Subscription).to receive(:set_end_date!)
+
+      expect(FeedItemCreator).not_to receive(:create_feed_item)
+      post :cancel_now, params: { id: committed.id }
+    end
+
+    it "a suppression hiccup never breaks the cancel response" do
+      allow(member).to receive(:update_columns).and_raise(ActiveRecord::StatementInvalid, "db hiccup")
+      allow(SetSubscriptionForCancellation).to receive(:call).and_return(double(success?: true))
+
+      delete :destroy, params: { id: sub.id, reason: "moving_away" }
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)["success"]).to be true
+    end
+
+    it "ignores an unknown reason (no blob change, no suppression)" do
+      expect(SetSubscriptionForCancellation).to receive(:call)
+        .with(hash_including(blob: hash_including(text: "Cancelled via mobile app.")))
+        .and_return(double(success?: true))
+
+      delete :destroy, params: { id: sub.id, reason: "hacked_value" }
+      expect(member.reload.marketing_suppressed).to be false
+    end
+
+    it "leaves behavior unchanged when no reason is sent (old app builds)" do
+      expect(SetSubscriptionForCancellation).to receive(:call)
+        .with(hash_including(blob: hash_including(text: "Cancelled via mobile app.")))
+        .and_return(double(success?: true))
+
+      delete :destroy, params: { id: sub.id }
+      expect(member.reload.marketing_suppressed).to be false
+    end
+
+    it "never clobbers an existing suppression" do
+      member.update!(marketing_suppressed: true, marketing_suppressed_reason: "Suppressed by admin")
+      allow(SetSubscriptionForCancellation).to receive(:call).and_return(double(success?: true))
+
+      delete :destroy, params: { id: sub.id, reason: "moving_away" }
+
+      expect(member.reload.marketing_suppressed_reason).to eq("Suppressed by admin")
+    end
+
+    it "does not suppress when the cancel itself fails" do
+      allow(SetSubscriptionForCancellation).to receive(:call).and_return(double(success?: false, message: "nope"))
+      delete :destroy, params: { id: sub.id, reason: "moving_away" }
+      expect(member.reload.marketing_suppressed).to be false
+    end
+  end
 end

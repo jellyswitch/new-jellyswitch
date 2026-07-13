@@ -1,4 +1,17 @@
 class Api::V1::SubscriptionsController < Api::V1::BaseController
+  # Member-selectable churn reasons (mobile cancel flow). Key = API param value;
+  # label lands in the admin feed text and the suppression reason.
+  CHURN_REASONS = {
+    "moving_away"   => "Moving away",
+    "just_visiting" => "Was just visiting",
+    "too_expensive" => "Too expensive",
+    "not_using"     => "Not using it enough",
+    "other"         => "Something else",
+  }.freeze
+  # Reasons that mean the member is gone for good — stop marketing to them.
+  # Price/usage churners stay sendable so past-member win-back can target them.
+  SUPPRESSING_REASONS = %w(moving_away just_visiting).freeze
+
   def plans
     categories = PlanCategory.where(operator: current_tenant).order(:name)
     plans = Plan.where(operator: current_tenant, available: true, visible: true, plan_type: 'individual')
@@ -163,7 +176,9 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     # current commitment boundary instead. Admins override via the operator API.
     if sub.in_commitment?
       sub.schedule_commitment_cancellation!
+      auto_suppress_for_churn!
       ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
+      record_scheduled_churn_reason(sub, ends_on)
       return render json: {
         success: true,
         scheduled: true,
@@ -174,7 +189,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
     result = Billing::Subscription::CancelSubscriptionNow.call(
       subscription: sub,
-      blob: { text: "Cancelled #{sub.plan.name} membership immediately via mobile app.", type: "membership_cancellation" },
+      blob: { text: with_churn_reason("Cancelled #{sub.plan.name} membership immediately via mobile app."), type: "membership_cancellation" },
       user: current_api_user,
       operator: current_tenant,
       location: current_location,
@@ -183,6 +198,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     )
 
     if result.success?
+      auto_suppress_for_churn!
       render json: { success: true, message: 'Membership cancelled immediately.' }
     else
       render_error(result.message || 'Unable to cancel immediately')
@@ -202,7 +218,9 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     # operator API.
     if sub.in_commitment?
       sub.schedule_commitment_cancellation!
+      auto_suppress_for_churn!
       ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
+      record_scheduled_churn_reason(sub, ends_on)
       return render json: {
         success: true,
         scheduled: true,
@@ -213,7 +231,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
 
     result = SetSubscriptionForCancellation.call(
       subscription: sub,
-      blob: { text: "Cancelled via mobile app", type: "membership_cancellation" },
+      blob: { text: with_churn_reason("Cancelled via mobile app."), type: "membership_cancellation" },
       user: current_api_user,
       operator: current_tenant,
       location: current_location,
@@ -221,6 +239,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     )
 
     if result.success?
+      auto_suppress_for_churn!
       render json: { success: true, message: 'Membership will cancel at end of billing period.' }
     else
       render_error(result.message || 'Unable to cancel')
@@ -230,6 +249,52 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
   end
 
   private
+
+  def churn_reason_label
+    CHURN_REASONS[params[:reason].to_s]
+  end
+
+  # Append the member's stated reason to a cancellation feed blob so staff see
+  # it where they already see the cancel. Unknown/absent reasons change nothing.
+  def with_churn_reason(text)
+    churn_reason_label ? "#{text} Reason: #{churn_reason_label}." : text
+  end
+
+  # A mover/tourist is gone for good — auto-suppress marketing (Phase 1b) so
+  # campaigns and win-back stop targeting them. Never clobbers an existing
+  # suppression, and never lets a suppression hiccup break the cancel response.
+  # update_columns: unrelated User validation drift must not skip this write.
+  # The "Churned:" prefix marks it machine-set — re-subscribing clears it
+  # (Subscription#clear_churn_suppression) while admin suppressions stay.
+  def auto_suppress_for_churn!
+    return unless SUPPRESSING_REASONS.include?(params[:reason].to_s)
+    return if current_api_user.marketing_suppressed?
+
+    current_api_user.update_columns(
+      marketing_suppressed: true,
+      marketing_suppressed_reason: "Churned: #{churn_reason_label}",
+      updated_at: Time.current,
+    )
+  rescue => e
+    Honeybadger.notify(e, context: { user_id: current_api_user.id, reason: params[:reason] })
+  end
+
+  # The commitment-scheduled path creates no cancellation feed item (the end is
+  # months away), which would silently drop a stated reason — the only place it
+  # is recorded for staff. Post one when (and only when) a reason was given.
+  def record_scheduled_churn_reason(sub, ends_on)
+    return unless churn_reason_label
+
+    FeedItemCreator.create_feed_item(
+      current_tenant,
+      current_location,
+      current_api_user,
+      { text: "Scheduled cancellation of #{sub.plan.name} membership at commitment end (#{ends_on}) via mobile app. Reason: #{churn_reason_label}.",
+        type: "membership_cancellation" },
+    )
+  rescue => e
+    Honeybadger.notify(e, context: { user_id: current_api_user.id, reason: params[:reason] })
+  end
 
   # Office leases are fixed-term contracts — a member can't self-cancel or
   # downgrade the subscription backing one from the app (only an admin

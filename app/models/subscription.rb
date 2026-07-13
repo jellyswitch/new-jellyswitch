@@ -29,6 +29,7 @@ class Subscription < ApplicationRecord
   after_create :log_subscription_started
   # after_create_COMMIT so a tag write can never roll back the subscription.
   after_create_commit :record_membership_interest
+  after_create_commit :clear_churn_suppression
   after_update :log_subscription_ended_if_deactivated
 
   # Relationships
@@ -313,6 +314,21 @@ class Subscription < ApplicationRecord
     return unless subscribable.is_a?(User)
     return if plan&.lease?
     InterestTag.record(user: subscribable, product: "membership", source: "last_purchase")
+  end
+
+  # A churn suppression ("Churned: …", set when the member cancelled as a
+  # mover/visitor) is a prediction that they're gone for good — subscribing
+  # again falsifies it, so clear it or the returned member misses every
+  # campaign forever. Machine-set ("Churned:") only; admin-set suppressions
+  # ("Suppressed by admin", bounce/complaint) are never touched.
+  def clear_churn_suppression
+    return unless subscribable.is_a?(User)
+    return unless subscribable.marketing_suppressed? &&
+                  subscribable.marketing_suppressed_reason.to_s.start_with?("Churned:")
+
+    subscribable.update_columns(marketing_suppressed: false,
+                                marketing_suppressed_reason: nil,
+                                updated_at: Time.current)
   end
 
   def log_subscription_ended_if_deactivated
