@@ -114,10 +114,11 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
   # so retrying the signup failed with "Email has already been taken".
   test "signup fails cleanly when Stripe rejects the customer, and the retry works" do
     params = signup_params
-    stub_request(:post, "https://api.stripe.com/v1/customers")
-      .to_return(status: 400, body: {
-        error: { message: "Invalid email address", type: "invalid_request_error" },
-      }.to_json)
+    # Stub the Stripe client, not HTTP: StripeMock server-mode tests redirect
+    # Stripe.api_base to localhost, so an api.stripe.com WebMock stub silently
+    # misses when this test runs after one of them (order-dependent CI flake).
+    Stripe::Customer.stubs(:create)
+      .raises(Stripe::InvalidRequestError.new("Invalid email address", :email))
 
     assert_no_difference -> { User.count } do
       post "/api/v1/auth/signup", params: params
@@ -126,8 +127,8 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     assert_match(/billing/i, JSON.parse(response.body)["error"])
 
     # Same email must be retryable once Stripe accepts again.
-    stub_request(:post, "https://api.stripe.com/v1/customers")
-      .to_return(status: 200, body: { id: "cus_12345" }.to_json)
+    Stripe::Customer.unstub(:create)
+    Stripe::Customer.stubs(:create).returns(Stripe::Customer.construct_from(id: "cus_12345"))
     assert_difference -> { User.count }, 1 do
       post "/api/v1/auth/signup", params: params
     end
