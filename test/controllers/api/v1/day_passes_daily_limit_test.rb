@@ -64,6 +64,10 @@ class Api::V1::DayPassesDailyLimitTest < ActionDispatch::IntegrationTest
     end
 
     refute_includes response.body, "fully booked"
+    # Positive proof the request cleared the gate and reached the (stubbed)
+    # billing boundary — without this the test could pass vacuously if auth,
+    # routing, or an earlier guard broke.
+    assert_includes response.body, "Payment failed."
   end
 
   test "no limit set means never blocked" do
@@ -77,5 +81,9 @@ class Api::V1::DayPassesDailyLimitTest < ActionDispatch::IntegrationTest
     end
 
     refute_includes response.body, "fully booked"
+    # Positive proof the request cleared the gate and reached the (stubbed)
+    # billing boundary — without this the test could pass vacuously if auth,
+    # routing, or an earlier guard broke.
+    assert_includes response.body, "Payment failed."
   end
 end
