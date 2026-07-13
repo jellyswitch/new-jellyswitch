@@ -5,6 +5,10 @@ class FeedItems::Checkin < ApplicationComponent
     @feed_item = feed_item
   end
 
+  def render?
+    feed_item.checkin.present?
+  end
+
   private
 
   attr_reader :feed_item

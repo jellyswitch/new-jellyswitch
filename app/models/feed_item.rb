@@ -271,7 +271,9 @@ class FeedItem < ApplicationRecord
     if rel_id.nil?
       nil
     else
-      klass.find(rel_id)
+      # nil, not raise: the referenced record may have been deleted since the
+      # feed item was written, and one orphan must not 500 the whole feed.
+      klass.find_by(id: rel_id)
     end
   end
 end
