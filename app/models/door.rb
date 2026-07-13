@@ -36,6 +36,10 @@ class Door < ApplicationRecord
   # ADR 0021: attached to a Room ⇒ this door is that Room's LOCK —
   # reservation-gated, not coverage-gated. nil ⇒ Building Door.
   belongs_to :room, optional: true
+  # A beacon on a door marks a BLE arrival-unlock BUILDING entrance; Room
+  # Locks are excluded from arrival-unlock (ADR 0021). The room pickers use
+  # this to confirm before attaching such a door as a room lock.
+  has_many :beacons
   acts_as_scopable :operator, :location
 
   # Scopes
