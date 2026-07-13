@@ -103,7 +103,12 @@ class Navigation::Default < SimpleDelegator
       items << {title: "Community", path: posts_path}
     end
 
-    if user.allowed_in?(location) && user.approved?
+    # location is nil for a multi-location operator with no location chosen
+    # yet (current_location resolves nil → the picker). These items are
+    # location-scoped, so skip them — allowed_in?(nil) raised from the
+    # location-scoped checks (the untethered /login 500), and location.rooms
+    # would raise right after even for superadmins.
+    if location && user.allowed_in?(location) && user.approved?
       if policy(:room).enabled? && location.rooms.visible.count > 0
         items << {title: "Reserve a room", path: calendar_reservations_path}
       end

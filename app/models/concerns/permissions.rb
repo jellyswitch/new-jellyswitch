@@ -105,6 +105,11 @@ module Permissions
   # a member with room access — running out of days revokes building access
   # only, on the access path below. See ADR 0004.
   def has_active_subscription_at_location?(location)
+    # Nil when a multi-location operator has no location chosen yet — not a
+    # member "nowhere in particular"; Subscription.for_location goes through
+    # Plan.for_location, which derefs location.id.
+    return false unless location
+
     subscriptions.for_location(location).active.where(paused: false).count > 0
   end
 
@@ -241,6 +246,11 @@ module Permissions
   end
 
   def checked_in?(location)
+    # Nil when a multi-location operator has no location chosen yet — not
+    # checked in anywhere, rather than NoMethodError from Checkin.for_location
+    # (which derefs location.id, unlike the nil-safe HasLocation scope).
+    return false unless location
+
     checkins.for_location(location).open.count > 0
   end
 
