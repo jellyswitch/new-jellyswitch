@@ -58,9 +58,11 @@ end
 
 | Path | Where | Behavior at limit |
 |---|---|---|
-| Buy a single pass for a chosen date | `Api::V1::DayPassesController#create` (single-pass branch) and the web member buy flow (`Operator::DayPassesController#create`) | 422: "Day Offices are fully booked for July 15. Try another day." |
+| Buy a single pass for a chosen date (API) | `Api::V1::DayPassesController#create` (single-pass branch) | 422: "Day Offices are fully booked for July 15. Try another day." |
+| Buy a single pass for a chosen date (web) | `Operator::DayPassesController#create` (member buy flow) | `flash[:error]` + `turbo_redirect` back to the date picker: "Day Offices are fully booked for 07/15/2026. Try another day." Uses `short_date` (MM/DD/YYYY) — a deliberate per-surface idiom; API surfaces use `%B %e`. |
 | Schedule a day from a bundle | `Billing::DayPassBundles::ScheduleDay` (per date), **opt-in** via an `enforce_daily_limit` context flag passed only by the member endpoint (`Api::V1::DayPassesController#schedule`). The flag exists because the staff burn-for-customer path (`Api::V1::Admin::MembersController#schedule_bundle_days`) shares this interactor and must stay ungated. | New `:sold_out` outcome carrying the failed date + type; controller maps it to the same message |
 | Move an unused pass to another day | `Api::V1::DayPassesController#reschedule` — check the **target** day; skip the check when the target equals the pass's current day (the row would count against itself) | 422, same wording |
+| Buy a single pass via the public concierge widget (no login) | `Concierge::PublicCheckout#purchase_day_pass`, reached anonymously from `Embed::ConciergeController#purchase` (which resolves any available+visible type at the location — same gate needed here) | Interactor `context.fail!(message: ...)` → `Embed::ConciergeController#purchase` renders `{ok:false, message:...}` at 422; same `%B %e` wording. Always today (`context.day` is never set by the widget), not a chosen date. |
 
 Note: the web `reschedule` action (`Operator::DayPassesController#reschedule`) is the **admin**
 surface (member reschedule is mobile-only), so it is a bypass path, not a gated one.
@@ -80,11 +82,16 @@ The check runs as a pre-check before create/move. Message template:
   is committed as part of the reservation.
 - **Bundle purchase itself** — buying an N-pack has no date; only scheduling/burning is
   date-bound and covered above.
-- **Web code-redemption flows** (`operator/day_passes#redeem_code` / `#redeem_paid`) — not
-  gated in v1. Codes are used for free/coworking passes, not capacity-limited types like Day
-  Office; redeemed rows still count toward the tally. (The API create path with an access
-  code IS gated — it runs through the single-pass create pre-check.) Revisit if an operator
-  ever puts a code on a capped type.
+- **`operator/day_passes#redeem_code`'s free-pass branch only** — a redeemed code for a
+  `free?` type routes straight to `Billing::DayPasses::RedeemFreeDayPass` (the ungated
+  `SaveDayPass` authority), today-only, with no daily-limit check. This is the one
+  code-redemption path that's actually ungated. A redeemed *paid* code instead redirects to
+  `#redeem_paid`, whose checkout form POSTs to the same `#create` action used by the regular
+  web buy flow above — **that path IS gated**, so a capped hidden type reached via an access
+  code is still blocked. (The mobile API create path with an access code is likewise gated —
+  it runs through the single-pass create pre-check.) Redeemed rows still count toward the
+  tally either way. Revisit `redeem_code`'s free-pass branch if an operator ever puts a code
+  on a capped free type.
 
 ## Admin UI (web)
 

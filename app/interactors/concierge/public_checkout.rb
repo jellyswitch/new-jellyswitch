@@ -54,9 +54,18 @@ module Concierge
 
     def purchase_day_pass(user)
       day = context.day || Date.current
+      day_pass_type = context.day_pass_type
+
+      # Daily cap — the concierge widget is anonymous member self-serve, the
+      # most public path in the app, so it gets the same gate as the four
+      # logged-in member entry points. Staff paths stay ungated by design.
+      if day_pass_type.daily_limit_reached?(day: day, location: context.location)
+        context.fail!(message: "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day.")
+      end
+
       result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
         user_id: user.id, token: context.token, operator: context.operator, location: context.location,
-        params: { day_pass_type: context.day_pass_type.id.to_s, day: day, operator_id: context.operator.id },
+        params: { day_pass_type: day_pass_type.id.to_s, day: day, operator_id: context.operator.id },
       )
       fail_payment!(result)
       context.day_pass = result.day_pass
