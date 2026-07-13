@@ -26,6 +26,25 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_equal "New Name", @user.reload.name
   end
 
+  # Prod incident (untethered, 2026-07-13): "scott.screenzen.co" — the @ typo'd
+  # away — passed every email validation and only died at Stripe::Customer.create.
+  # Web self-signup must reject it at validation time with "Email is invalid".
+  test "web signup rejects an @-less email with a validation error, not a Stripe failure" do
+    delete logout_path, env: default_env
+
+    assert_no_difference -> { User.count } do
+      post users_path, params: { user: {
+        name: "Scott Typo",
+        email: "scott.screenzen.co",
+        password: "password123",
+        password_confirmation: "password123",
+        phone: "5305551234",
+      } }, env: default_env
+    end
+    assert_response :unprocessable_entity
+    assert_match(/Email is invalid/, response.body)
+  end
+
   test "should scrub user data and redirect to signup page if user is not part of an organization" do
     @user.update(organization_id: nil)
     @user.reload.organization_id

@@ -145,6 +145,12 @@ class User < ApplicationRecord
   before_validation { self.email = email&.downcase }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id, case_sensitive: false }, presence: true
+  # Shape check only (something@something, no spaces/extra @) — a strict RFC
+  # regex would false-positive real addresses. Without this, "scott.screenzen.co"
+  # (@ typo'd away) passed every validation and only died at
+  # Stripe::Customer.create. :create only: legacy rows may hold malformed
+  # emails, and re-validating would block unrelated saves on those accounts.
+  validates :email, format: { with: /\A[^@\s]+@[^@\s]+\z/ }, on: :create
   # Front-door spam defense: reject disposable/throwaway email providers at
   # self-signup. Skipped for admin-created members and only on :create (mirrors
   # the phone rule below, so a member's existing email is never re-blocked).

@@ -26,8 +26,12 @@ class DisposableEmailValidator < ActiveModel::EachValidator
   def validate_each(record, attribute, value)
     return if value.blank?
 
-    domain = value.to_s.downcase.strip.split("@").last
-    return if domain.blank?
+    # An @-less value has no domain part — bail and let the format validation
+    # reject it, instead of matching the whole string against the domain list
+    # (e.g. "bob.mailinator.com" sans @ would end_with-match ".mailinator.com"
+    # and get the misleading "temporary email provider" error).
+    _local, at_sign, domain = value.to_s.downcase.strip.rpartition("@")
+    return if at_sign.empty? || domain.blank?
 
     blocked = DISPOSABLE_DOMAINS.include?(domain) ||
               DISPOSABLE_DOMAINS.any? { |d| domain.end_with?(".#{d}") }

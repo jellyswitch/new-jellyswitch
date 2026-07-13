@@ -476,6 +476,42 @@ class UserTest < ActiveSupport::TestCase
     assert_equal "mixedcase@example.com", user.email
   end
 
+  # Prod incident (untethered, 2026-07-13): "scott.screenzen.co" — the @ typo'd
+  # away — passed every email validation (presence, uniqueness, disposable, MX)
+  # and only died at Stripe::Customer.create.
+  test "email without an @ is rejected on create with a clear message" do
+    user = build(:user, operator: operators(:cowork_tahoe), email: "scott.screenzen.co")
+    refute user.valid?
+    assert_includes user.errors[:email], "is invalid"
+  end
+
+  test "email with spaces, a missing part, or a second @ is rejected on create" do
+    ["scott @screenzen.co", "scott@screenzen@co", "@screenzen.co", "scott@"].each do |email|
+      user = build(:user, operator: operators(:cowork_tahoe), email: email)
+      refute user.valid?, "#{email.inspect} must not validate"
+      assert_includes user.errors[:email], "is invalid"
+    end
+  end
+
+  test "@-less email hits the format error, not a bogus disposable-domain match" do
+    # Pre-fix, "bob.mailinator.com" (no @) end_with-matched ".mailinator.com"
+    # as if the whole string were a domain, yielding the misleading
+    # "temporary email provider" error instead of "is invalid".
+    user = build(:user, operator: operators(:cowork_tahoe), email: "bob.mailinator.com")
+    refute user.valid?
+    assert_includes user.errors[:email], "is invalid"
+    refute_match(/temporary/i, user.errors[:email].join)
+  end
+
+  test "format check is create-only so legacy rows with malformed emails still save" do
+    user = create(:user, operator: operators(:cowork_tahoe), email: "legacy@example.com")
+    # Simulate a malformed email persisted before the format validation existed.
+    user.update_column(:email, "legacy.example.com")
+
+    assert user.reload.update(name: "Still Updatable"),
+           "existing malformed-email row must not be bricked: #{user.errors.full_messages}"
+  end
+
   test "database unique index rejects duplicate emails even when validations are skipped" do
     operator = operators(:cowork_tahoe)
     create(:user, operator: operator, email: "backstop@example.com")
