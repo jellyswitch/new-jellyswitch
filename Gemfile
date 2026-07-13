@@ -7,7 +7,7 @@ gem "activejob-traffic_control"
 gem "acts_as_tenant", "1.0.1"
 gem "ahoy_matey"
 gem "apnotic"
-gem "aws-sdk-s3", "~> 1.48", require: false
+gem "aws-sdk-s3", "~> 1.227", require: false
 gem "bcrypt"
 gem "bootstrap", "~> 4.6.2"
 gem "chartkick", ">= 3.4.0"
