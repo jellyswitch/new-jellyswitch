@@ -170,4 +170,42 @@ class Billing::DayPassBundles::ScheduleDayTest < ActiveSupport::TestCase
       assert_equal 4, perpetual.reload.passes_remaining, "perpetual bundle used for far date"
     end
   end
+
+  test "with enforce_daily_limit, scheduling onto a full day returns :sold_out" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle = make_bundle(remaining: 5)
+      bundle.day_pass_type.update!(daily_limit: 1)
+      date = Date.current + 3
+      other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: bundle.day_pass_type, day: date, imported: true)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member,
+        enforce_daily_limit: true)
+
+      assert_equal :sold_out, result.outcome
+      assert_equal bundle.day_pass_type, result.day_pass_type
+      assert_equal 5, bundle.reload.passes_remaining, "no pass may be burned on a sold-out day"
+    end
+  end
+
+  test "without enforce_daily_limit (staff path), a full day still schedules" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle = make_bundle(remaining: 5)
+      bundle.day_pass_type.update!(daily_limit: 1)
+      date = Date.current + 3
+      other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: bundle.day_pass_type, day: date, imported: true)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member)
+
+      assert_equal :scheduled, result.outcome
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
 end

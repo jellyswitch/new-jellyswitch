@@ -176,7 +176,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def schedule
     result = Billing::DayPassBundles::ScheduleDays.call(
       user: current_api_user, location: current_location,
-      dates: Array(params[:dates]), performed_by: current_api_user)
+      dates: Array(params[:dates]), performed_by: current_api_user,
+      enforce_daily_limit: true)
 
     case result.outcome
     when :scheduled
@@ -185,6 +186,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         scheduled_days: result.day_passes.map { |dp| dp.day.iso8601 },
         passes_remaining: remaining_bundle_passes,
       }
+    when :sold_out
+      render_error("#{result.day_pass_type.name.pluralize} are fully booked for #{result.failed_date.strftime('%B %e')}. Try another day.")
     when :already_covered
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date

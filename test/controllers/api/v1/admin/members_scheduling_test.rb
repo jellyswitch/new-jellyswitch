@@ -44,4 +44,19 @@ class Api::V1::Admin::MembersSchedulingTest < ActionDispatch::IntegrationTest
     assert_equal 5, @bundle.reload.passes_remaining
     assert_equal 5, cancel_body["passes_remaining"], "cancel response should include passes_remaining"
   end
+
+  test "admin schedules a member onto a day at the limit (staff bypass)" do
+    ActsAsTenant.with_tenant(@operator) do
+      @bundle.day_pass_type.update!(daily_limit: 1)
+      other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: @bundle.day_pass_type, day: Date.current + 1, imported: true)
+    end
+
+    post "/api/v1/admin/members/#{@member.id}/schedule_bundle_days",
+         params: { dates: [(Date.current + 1).iso8601] }.to_json, headers: headers
+
+    assert_response :success
+    assert_equal 4, @bundle.reload.passes_remaining
+  end
 end
