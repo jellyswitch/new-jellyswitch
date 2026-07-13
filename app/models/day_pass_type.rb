@@ -59,6 +59,8 @@ class DayPassType < ApplicationRecord
   end
 
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
+  validates :daily_limit, numericality: { only_integer: true, greater_than_or_equal_to: 1 },
+                          allow_nil: true
 
   # Presented wherever expiration can be enabled. NOT legal advice.
   EXPIRATION_DISCLAIMER =
@@ -78,6 +80,16 @@ class DayPassType < ApplicationRecord
   # single day pass. See CONTEXT.md → Day Pass Bundle.
   def bundle?
     quantity.to_i > 1
+  end
+
+  # Daily sales cap. Every DayPass row of this type on that day at that
+  # location counts — purchased, comped, or bundle-sourced — because the limit
+  # models physical capacity (e.g. the building has 2 day offices), not sales
+  # volume. Enforced only at member self-serve entry points; staff/admin and
+  # door-entry paths never call this (their rows still count).
+  def daily_limit_reached?(day:, location:)
+    return false if daily_limit.nil?
+    day_passes.where(location: location, day: day).count >= daily_limit
   end
 
   def free?
