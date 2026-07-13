@@ -12,10 +12,6 @@ class ManageRoomsTest < ApplicationSystemTestCase
     log_in @user
   end
 
-  teardown do
-    StripeMock.stop
-  end
-
   def name_input
     all("input")[NAME_INDEX]
   end
