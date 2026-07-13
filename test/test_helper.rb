@@ -40,6 +40,10 @@ class ActiveSupport::TestCase
   end
 
   teardown do
+    # An active StripeMock intercepts Stripe calls ahead of WebMock for every
+    # later test in the worker, so a test that starts it must never leak it.
+    # stop is a no-op when not started.
+    StripeMock.stop
     WebMock.reset!
     # Reset tenant state between tests. current_tenant is per-request; a request
     # without a subdomain header keeps the prior tenant. default_tenant is a
