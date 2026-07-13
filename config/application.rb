@@ -35,5 +35,12 @@ module Jellyswitch
     config.action_controller.asset_host = ENV['ASSET_HOST']
     config.beginning_of_week = :sunday
     config.hosts.clear
+
+    # Rack 3+ raises EmptyContentError when a request advertises
+    # Content-Type: multipart/form-data with an empty body — in production
+    # that's exclusively bots POSTing junk to "/". Answer 400 instead of 500
+    # so scanner noise stays out of the 500-rate we alert and triage on.
+    # (Honeybadger already ignores it — see config/initializers/honeybadger.rb.)
+    config.action_dispatch.rescue_responses["Rack::Multipart::EmptyContentError"] = :bad_request
   end
 end
