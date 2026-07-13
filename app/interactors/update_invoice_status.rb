@@ -29,7 +29,7 @@ class UpdateInvoiceStatus
     invoice.date ||= Time.at(stripe_invoice.created).to_datetime if stripe_invoice.try(:created).present?
 
     if !invoice.save
-      context.fail!(message: "Couldn't save invoice #{number} with new status: #{new_status}")
+      context.fail!(message: "Couldn't save invoice #{invoice.number} with new status #{new_status}: #{invoice.errors.full_messages.join(', ')}")
     end
 
     if invoice.paid?
