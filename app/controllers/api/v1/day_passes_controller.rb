@@ -98,6 +98,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # Single day pass — existing path unchanged
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
 
+    # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
+    # only: staff/admin paths and door burns are intentionally ungated, though
+    # their rows still count toward the tally. See
+    # docs/superpowers/specs/2026-07-12-day-pass-daily-limit-design.md.
+    if day_pass_type.daily_limit_reached?(day: date, location: current_location)
+      return render_error("#{day_pass_type.name.pluralize} are fully booked for #{date.strftime('%B %e')}. Try another day.")
+    end
+
     # Use the same interactor chain as the web app
     interactor = token.present? ?
       Billing::DayPasses::UpdatePaymentAndCreateDayPass :
