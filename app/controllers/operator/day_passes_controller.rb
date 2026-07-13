@@ -59,6 +59,12 @@ class Operator::DayPassesController < Operator::BaseController
       nil
     end
 
+    # A crafted POST can send a plain-string day_pass[day] instead of the
+    # form's multiparameter fields; ActiveRecord would cast it downstream in
+    # SaveDayPass, so the gate (and the duplicate guard below) must see the
+    # same value or a hand-rolled request could buy onto a sold-out day.
+    prospective_day ||= ActiveModel::Type::Date.new.cast(params.dig(:day_pass, :day))
+
     # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
     # only: the admin add/comp flow (Operator::Admin::DayPassesController) is
     # intentionally ungated, though its rows still count. Checked before the

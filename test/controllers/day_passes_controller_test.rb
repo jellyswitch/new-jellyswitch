@@ -138,4 +138,24 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_day_pass_path(day_pass_type_id: @day_pass_type.id)
     assert_includes flash[:error], "fully booked"
   end
+
+  test "daily limit cannot be bypassed with a plain-string day param" do
+    target = Time.zone.today + 2.days
+    @day_pass_type.update!(daily_limit: 1)
+    other = users(:cowork_tahoe_non_member)
+    ActsAsTenant.with_tenant(@user.operator) do
+      DayPass.create!(user: other, billable: other, operator: @user.operator,
+                      location: locations(:cowork_tahoe_location),
+                      day_pass_type: @day_pass_type, day: target, imported: true)
+    end
+
+    assert_no_difference -> { DayPass.count } do
+      post day_passes_path, params: { day_pass: {
+        day_pass_type: @day_pass_type.id,
+        day: target.strftime('%a, %e %b %Y'),
+      } }, env: default_env
+    end
+
+    assert_includes flash[:error], "fully booked"
+  end
 end
