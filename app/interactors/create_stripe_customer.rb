@@ -17,12 +17,21 @@ class CreateStripeCustomer
       context.fail!(message: "This location has not set up Stripe connect yet. Please reach out to the location contact for more information.")
     end
 
-    customer = Stripe::Customer.create({
-      email: user.email
-    }, {
-      api_key: location.stripe_secret_key,
-      stripe_account: location.stripe_user_id
-    })
+    begin
+      customer = Stripe::Customer.create({
+        email: user.email
+      }, {
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id
+      })
+    rescue Stripe::StripeError => e
+      # Signup must not 500 because the payment processor rejected the
+      # request — the public signup endpoint sees emails Stripe won't accept,
+      # and Stripe has transient errors. Fail the interactor like the missing
+      # connect case above; keep Honeybadger visibility on the real cause.
+      Honeybadger.notify(e)
+      context.fail!(message: "We couldn't set up billing for this account. Please try again.")
+    end
 
     payment_profile.stripe_customer_id = customer.id
 
