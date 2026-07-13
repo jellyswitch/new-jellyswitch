@@ -64,8 +64,7 @@
                 <td class="text-right">
                   <% unless reservation.cancelled? %>
                     <%= link_to cancel_occurrence_recurring_reservation_path(@recurring_reservation, reservation_id: reservation.id),
-                        method: :put,
-                        data: { confirm: "Cancel this occurrence on #{reservation.datetime_in.strftime('%B %d, %Y')}?" },
+                        data: { turbo_method: :put, turbo_confirm: "Cancel this occurrence on #{reservation.datetime_in.strftime('%B %d, %Y')}?" },
                         class: "btn btn-outline-danger btn-sm" do %>
                       <i class="fas fa-times"></i> Cancel
                     <% end %>
@@ -129,7 +128,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <%= link_to "Cancel Series", cancel_series_recurring_reservation_path(@recurring_reservation),
-            method: :put, class: "btn btn-danger" %>
+            data: { turbo_method: :put }, class: "btn btn-danger" %>
       </div>
     </div>
   </div>

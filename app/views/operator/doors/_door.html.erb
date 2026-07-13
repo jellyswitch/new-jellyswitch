@@ -5,4 +5,4 @@
 <%= link_to "Open #{door.name}", door_open_path(door), class: "btn btn-block btn-success", data: {"turbo-action" => restore_if_possible} %>
 <%= link_to "View Access Log", door_path(door), class: "btn btn-block btn-primary" %>
 <%= link_to "Configure", edit_door_path(door), class: "btn btn-block btn-info" %>
-<%= link_to "Archive", door_path(door), method: :delete, class: "btn btn-block btn-outline-danger mt-2", data: { confirm: "Are you sure you want to archive #{door.name}?" } %>
+<%= link_to "Archive", door_path(door), class: "btn btn-block btn-outline-danger mt-2", data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to archive #{door.name}?" } %>

@@ -61,7 +61,7 @@
       <hr>
       <h5>Your Response</h5>
       <%= form_with url: accept_lease_renewal_request_path(@request), method: :post, local: true do |f| %>
-        <%= f.submit "Accept Renewal Terms", class: "btn btn-block btn-primary mb-2", data: { confirm: "Accept the renewal at #{@request.proposed_price_formatted}?" } %>
+        <%= f.submit "Accept Renewal Terms", class: "btn btn-block btn-primary mb-2", data: { turbo_confirm: "Accept the renewal at #{@request.proposed_price_formatted}?" } %>
       <% end %>
 
       <%= form_with url: request_modification_lease_renewal_request_path(@request), method: :post, local: true do |f| %>

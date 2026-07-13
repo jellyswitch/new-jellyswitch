@@ -109,7 +109,7 @@
         <%= form_with url: user_comp_days_path(user), method: :post, local: true, class: "form-inline mb-3" do |f| %>
           <%= f.text_field :reason, placeholder: "Reason (optional)", class: "form-control form-control-sm mr-2" %>
           <%= f.submit "Comp a day", class: "btn btn-sm btn-outline-secondary",
-                data: { confirm: "Comp a day back to #{user.name} for this period?" } %>
+                data: { turbo_confirm: "Comp a day back to #{user.name} for this period?" } %>
         <% end %>
       <% end %>
     <% end %>

@@ -16,7 +16,7 @@
               <br>
               <small class="text-muted">Kisi ID: <%= door.kisi_id %></small>
             </div>
-            <%= link_to "Unarchive", door_unarchive_path(door), method: :post, class: "btn btn-sm btn-success", data: { confirm: "Unarchive #{door.name}?" } %>
+            <%= link_to "Unarchive", door_unarchive_path(door), class: "btn btn-sm btn-success", data: { turbo_method: :post, turbo_confirm: "Unarchive #{door.name}?" } %>
           </div>
         </div>
       <% end %>

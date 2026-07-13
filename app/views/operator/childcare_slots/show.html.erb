@@ -23,7 +23,7 @@
     <% if @childcare_slot.visible? %>
       <div class="row mt-2">
         <div class="col">
-          <%= link_to "Delete", childcare_slot_path(@childcare_slot), method: :delete, class: "btn btn-block btn-danger" %>
+          <%= link_to "Delete", childcare_slot_path(@childcare_slot), class: "btn btn-block btn-danger", data: { turbo_method: :delete, turbo_confirm: "Delete this childcare slot?" } %>
         </div>
       </div>
     <% end %>

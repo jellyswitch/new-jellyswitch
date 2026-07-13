@@ -17,7 +17,7 @@
                 <br>
                 <small class="text-muted"><%= number_to_currency(day_pass_type.amount_in_cents.to_f / 100) %></small>
               </div>
-              <%= link_to "Unarchive", day_pass_type_unarchive_path(day_pass_type), method: :post, class: "btn btn-sm btn-success", data: { confirm: "Unarchive #{day_pass_type.name}?" } %>
+              <%= link_to "Unarchive", day_pass_type_unarchive_path(day_pass_type), class: "btn btn-sm btn-success", data: { turbo_method: :post, turbo_confirm: "Unarchive #{day_pass_type.name}?" } %>
             </div>
           </div>
         <% end %>

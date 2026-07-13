@@ -87,7 +87,7 @@
 
     <% if @office_lease.individual_lease? && @office_lease.active? %>
       <%= form_with url: office_lease_convert_to_organization_path(@office_lease), method: :post, local: true do %>
-        <%= submit_tag "Convert to Organization (add members)", class: "btn btn-block btn-outline-primary mb-2", data: { confirm: "This will create an organization for this lease so you can add additional members. Continue?" } %>
+        <%= submit_tag "Convert to Organization (add members)", class: "btn btn-block btn-outline-primary mb-2", data: { turbo_confirm: "This will create an organization for this lease so you can add additional members. Continue?" } %>
       <% end %>
     <% end %>
 

@@ -82,7 +82,7 @@
   <div class="mt-4">
     <%= form_with url: commit_officernd_import_path(@import), method: :post do %>
       <%= submit_tag "Import these now", class: "btn btn-block btn-success",
-            data: { confirm: "Import #{@import.kind} into your workspace? Existing records are matched, not duplicated." } %>
+            data: { turbo_confirm: "Import #{@import.kind} into your workspace? Existing records are matched, not duplicated." } %>
     <% end %>
     <%= link_to "Back to column mapping", map_officernd_import_path(@import), class: "btn btn-block btn-outline-secondary" %>
   </div>

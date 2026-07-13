@@ -26,7 +26,7 @@
                   method: :post,
                   params: { day_pass_bundle_id: bundle.id, reason: "admin restore" },
                   class: "btn btn-sm btn-outline-secondary",
-                  data: { confirm: "Restore one pass to this bundle?" } %>
+                  form: { data: { turbo_confirm: "Restore one pass to this bundle?" } } %>
           </div>
         </div>
       </li>
@@ -56,7 +56,7 @@
             <%= form_with url: reschedule_day_pass_path(day_pass), method: :patch, class: "d-flex align-items-center" do |f| %>
               <%= f.date_field :day, value: day_pass.day, min: Time.zone.today, class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
               <%= f.submit "Move", class: "btn btn-sm btn-outline-secondary",
-                    data: { confirm: "Move this pass to the selected date?" } %>
+                    data: { turbo_confirm: "Move this pass to the selected date?" } %>
             <% end %>
           <% end %>
         </div>

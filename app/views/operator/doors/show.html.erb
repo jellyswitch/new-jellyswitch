@@ -9,7 +9,7 @@
     <%= column_chart @door.door_punches.group_by_day(:created_at, last: 30).count, label: "Punches" %>
     <p>Kisi ID: <pre><%= @door.kisi_id %></pre></p>
     <%= link_to "Edit", edit_door_path(@door), class: "btn btn-info btn-block" %>
-    <%= link_to "Archive", door_path(@door), method: :delete, class: "btn btn-outline-danger btn-block mt-2", data: { confirm: "Are you sure you want to archive #{@door.name}?" } %>
+    <%= link_to "Archive", door_path(@door), class: "btn btn-outline-danger btn-block mt-2", data: { turbo_method: :delete, turbo_confirm: "Are you sure you want to archive #{@door.name}?" } %>
   <% end %>
   <% @punches.each do |punch| %>
     <%= link_to door_punch_path(punch), class: "list-group-item list-group-item-action m-0" do %>
