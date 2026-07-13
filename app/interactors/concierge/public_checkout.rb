@@ -60,7 +60,8 @@ module Concierge
       # most public path in the app, so it gets the same gate as the four
       # logged-in member entry points. Staff paths stay ungated by design.
       if day_pass_type.daily_limit_reached?(day: day, location: context.location)
-        context.fail!(message: "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day.")
+        context.fail!(error: "sold_out",
+                      message: "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day.")
       end
 
       result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(
