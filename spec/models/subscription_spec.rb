@@ -236,4 +236,47 @@ RSpec.describe Subscription, type: :model do
       end
     end
   end
+
+  describe "#clear_churn_suppression (returning member falsifies the churn prediction)" do
+    let(:operator) { create(:operator) }
+    let(:location) { create(:location, operator: operator) }
+    let(:plan) { create(:plan, operator: operator, location: location, plan_type: "individual") }
+    let(:member) { create(:user, operator: operator, original_location: location) }
+
+    it "clears a machine-set churn suppression when they subscribe again" do
+      member.update!(marketing_suppressed: true, marketing_suppressed_reason: "Churned: Moving away")
+
+      create(:subscription, plan: plan, subscribable: member, billable: member, stripe_subscription_id: nil)
+
+      member.reload
+      expect(member.marketing_suppressed).to be false
+      expect(member.marketing_suppressed_reason).to be_nil
+    end
+
+    it "never clears an admin-set suppression" do
+      member.update!(marketing_suppressed: true, marketing_suppressed_reason: "Suppressed by admin")
+
+      create(:subscription, plan: plan, subscribable: member, billable: member, stripe_subscription_id: nil)
+
+      member.reload
+      expect(member.marketing_suppressed).to be true
+      expect(member.marketing_suppressed_reason).to eq("Suppressed by admin")
+    end
+
+    it "no-ops for unsuppressed members and org subscriptions" do
+      expect {
+        create(:subscription, plan: plan, subscribable: member, billable: member, stripe_subscription_id: nil)
+      }.not_to change { member.reload.marketing_suppressed }
+
+      org_owner = create(:user, operator: operator, original_location: location)
+      org = create(:organization, operator: operator, owner: org_owner)
+      org_owner.update!(marketing_suppressed: true, marketing_suppressed_reason: "Churned: Moving away")
+
+      create(:subscription, plan: plan, subscribable: org, subscribable_type: "Organization",
+                            billable: org, billable_type: "Organization", stripe_subscription_id: nil)
+
+      # The org subscribing is not the owner personally returning.
+      expect(org_owner.reload.marketing_suppressed).to be true
+    end
+  end
 end
