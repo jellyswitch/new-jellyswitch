@@ -57,7 +57,12 @@ RSpec.describe Operator::DayPassesController, type: :controller do
     let(:valid_params) do
       {
         day_pass: {
-          day: Date.current,
+          # Not Date.current: the stubbed result's `day_pass` let-row already
+          # holds today for this buyer, and plain-string day params are now
+          # parsed (daily-limit hardening), so posting the same day would
+          # correctly land on the duplicate-purchase interstitial — which has
+          # its own coverage. These specs are about the purchase itself.
+          day: Date.current + 2,
           day_pass_type: day_pass_type.id
         }
       }
@@ -155,8 +160,11 @@ RSpec.describe Operator::DayPassesController, type: :controller do
         allow(DayPassInteractorFactory).to receive_message_chain(:for, :call).and_return(
           OpenStruct.new(success?: true, day_pass: day_pass)
         )
+        # Date.current + 2, not today: the stub's `day_pass` let-row holds today
+        # for this buyer, and a same-day plain-string POST now correctly lands
+        # on the duplicate-purchase interstitial (daily-limit hardening).
         post :create, params: {
-          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          day_pass: { day: Date.current + 2, day_pass_type: hidden_type.id },
           discount_code: "CAFE",
         }
         expect(flash[:error]).to be_blank
@@ -167,8 +175,11 @@ RSpec.describe Operator::DayPassesController, type: :controller do
         allow(DayPassInteractorFactory).to receive_message_chain(:for, :call).and_return(
           OpenStruct.new(success?: true, day_pass: day_pass)
         )
+        # Date.current + 2, not today: the stub's `day_pass` let-row holds today
+        # for this buyer, and a same-day plain-string POST now correctly lands
+        # on the duplicate-purchase interstitial (daily-limit hardening).
         post :create, params: {
-          day_pass: { day: Date.current, day_pass_type: hidden_type.id },
+          day_pass: { day: Date.current + 2, day_pass_type: hidden_type.id },
           discount_code: "CAFE",
         }
         expect(response).not_to redirect_to(
