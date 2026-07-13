@@ -98,6 +98,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # Single day pass — existing path unchanged
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
 
+    # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
+    # only: staff/admin paths and door burns are intentionally ungated, though
+    # their rows still count toward the tally. See
+    # docs/superpowers/specs/2026-07-12-day-pass-daily-limit-design.md.
+    if day_pass_type.daily_limit_reached?(day: date, location: current_location)
+      return render_error(sold_out_message(day_pass_type, date))
+    end
+
     # Use the same interactor chain as the web app
     interactor = token.present? ?
       Billing::DayPasses::UpdatePaymentAndCreateDayPass :
@@ -168,7 +176,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def schedule
     result = Billing::DayPassBundles::ScheduleDays.call(
       user: current_api_user, location: current_location,
-      dates: Array(params[:dates]), performed_by: current_api_user)
+      dates: Array(params[:dates]), performed_by: current_api_user,
+      enforce_daily_limit: true)
 
     case result.outcome
     when :scheduled
@@ -177,6 +186,8 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         scheduled_days: result.day_passes.map { |dp| dp.day.iso8601 },
         passes_remaining: remaining_bundle_passes,
       }
+    when :sold_out
+      render_error(sold_out_message(result.day_pass_type, result.failed_date))
     when :already_covered
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date
@@ -233,6 +244,13 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     tz    = ActiveSupport::TimeZone[day_pass.location&.time_zone.presence || "UTC"]
     today = Time.current.in_time_zone(tz).to_date
     return render_error("Passes can only be moved to today or a future date.") if new_day < today
+
+    # Daily cap on the TARGET day. Skipped when the pass isn't actually
+    # changing days — its own row would otherwise count against itself.
+    if new_day != day_pass.day &&
+       day_pass.day_pass_type&.daily_limit_reached?(day: new_day, location: day_pass.location)
+      return render_error(sold_out_message(day_pass.day_pass_type, new_day))
+    end
 
     day_pass.update!(day: new_day)
     render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
@@ -346,5 +364,12 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
   def remaining_bundle_passes
     current_api_user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining)
+  end
+
+  # Copy shared by all three member-facing daily-limit gates in this
+  # controller. The web flow words the date differently (short_date) — that's
+  # a deliberate per-surface idiom, not drift.
+  def sold_out_message(day_pass_type, day)
+    "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
   end
 end

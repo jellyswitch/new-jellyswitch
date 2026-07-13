@@ -37,6 +37,18 @@ class Billing::DayPassBundles::ScheduleDay
       return
     end
 
+    # Daily cap (opt-in). Only member self-serve scheduling enforces the cap —
+    # the staff burn-for-customer path (Api::V1::Admin::MembersController#
+    # schedule_bundle_days) shares this interactor and must stay ungated:
+    # staff can exceed the limit by design. Checked outside the lock; the
+    # same-instant race is accepted (see spec, Concurrency).
+    if context.enforce_daily_limit &&
+       bundle.day_pass_type.daily_limit_reached?(day: date, location: location)
+      context.day_pass_type = bundle.day_pass_type
+      context.outcome = :sold_out
+      return
+    end
+
     bundle.with_lock do
       # C2: re-check inside the lock to prevent concurrent double-schedule of
       # the same date (mirrors ConsumeOnEntry's inner guard).

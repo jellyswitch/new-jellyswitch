@@ -10,10 +10,12 @@ class Billing::DayPassBundles::ScheduleDays
     ActiveRecord::Base.transaction do
       dates.each do |date|
         result = Billing::DayPassBundles::ScheduleDay.call(
-          user: context.user, location: context.location, date: date, performed_by: context.performed_by)
+          user: context.user, location: context.location, date: date, performed_by: context.performed_by,
+          enforce_daily_limit: context.enforce_daily_limit)
 
         if result.outcome != :scheduled
-          context.outcome     = result.outcome
+          context.outcome       = result.outcome
+          context.day_pass_type = result.day_pass_type # set on :sold_out, nil otherwise
           # Coerce to Date so callers can safely call .strftime on failed_date.
           # For :invalid_date the raw value is a fine fallback (strftime isn't called).
           context.failed_date = (Date.parse(date.to_s) rescue date)

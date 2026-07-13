@@ -45,4 +45,51 @@ class DayPassTypeTest < ActiveSupport::TestCase
       assert_equal day_pass_types, DayPassType.where(location_id: @location.id).available.free
     end
   end
+
+  # --- daily_limit (per-day sales cap) ---
+
+  test "daily_limit must be a positive integer when present" do
+    dpt = day_pass_type(:cowork_tahoe_day_pass_type)
+    dpt.daily_limit = 0
+    assert_not dpt.valid?
+    dpt.daily_limit = 2
+    assert dpt.valid?
+    dpt.daily_limit = nil
+    assert dpt.valid?, "nil daily_limit means unlimited and must be valid"
+  end
+
+  test "daily_limit_reached? is always false when no limit is set" do
+    dpt = day_pass_type(:cowork_tahoe_day_pass_type)
+    assert_nil dpt.daily_limit
+    assert_not dpt.daily_limit_reached?(day: Date.current, location: @location)
+  end
+
+  test "daily_limit_reached? counts every pass of the type on that day at that location" do
+    operator = operators(:cowork_tahoe)
+    dpt = day_pass_type(:cowork_tahoe_day_pass_type)
+    dpt.update!(daily_limit: 2)
+    day = Date.current + 3
+
+    ActsAsTenant.with_tenant(operator) do
+      # 1st pass: a normal purchased pass
+      DayPass.create!(user: @user, billable: @user, operator: operator,
+                      location: @location, day_pass_type: dpt, day: day, imported: true)
+      assert_not dpt.daily_limit_reached?(day: day, location: @location),
+                 "1 of 2 is under the limit"
+
+      # 2nd pass: complimentary — still counts (limit models physical capacity)
+      other = users(:cowork_tahoe_non_member)
+      DayPass.create!(user: other, billable: other, operator: operator,
+                      location: @location, day_pass_type: dpt, day: day,
+                      complimentary: true, imported: true)
+      assert dpt.daily_limit_reached?(day: day, location: @location),
+             "2 of 2 reaches the limit; complimentary passes count"
+
+      # Different day and different location are unaffected
+      assert_not dpt.daily_limit_reached?(day: day + 1, location: @location)
+      other_location = Location.where.not(id: @location.id).first ||
+        Location.create!(operator: operator, name: "Other Location")
+      assert_not dpt.daily_limit_reached?(day: day, location: other_location)
+    end
+  end
 end

@@ -58,6 +58,23 @@ class Operator::DayPassesController < Operator::BaseController
     rescue ArgumentError, TypeError
       nil
     end
+
+    # A crafted POST can send a plain-string day_pass[day] instead of the
+    # form's multiparameter fields; ActiveRecord would cast it downstream in
+    # SaveDayPass, so the gate (and the duplicate guard below) must see the
+    # same value or a hand-rolled request could buy onto a sold-out day.
+    prospective_day ||= ActiveModel::Type::Date.new.cast(params.dig(:day_pass, :day))
+
+    # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
+    # only: the admin add/comp flow (Operator::Admin::DayPassesController) is
+    # intentionally ungated, though its rows still count. Checked before the
+    # duplicate-purchase confirm — a sold-out day is sold out regardless.
+    if prospective_day && day_pass_type&.daily_limit_reached?(day: prospective_day, location: current_location)
+      flash[:error] = "#{day_pass_type.name.pluralize} are fully booked for #{short_date(prospective_day)}. Try another day."
+      turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
+      return
+    end
+
     if prospective_day &&
        params[:confirm_duplicate].to_s != "1" &&
        DayPass.where(user_id: current_user.id, day: prospective_day, location_id: current_location.id).exists?

@@ -111,4 +111,20 @@ class Api::V1::DayPassesSchedulingTest < ActionDispatch::IntegrationTest
     # The pass must remain intact.
     assert DayPass.exists?(dp.id), "day pass should not have been destroyed"
   end
+
+  test "POST schedule returns 422 when a requested day is at the type's daily limit" do
+    ActsAsTenant.with_tenant(@operator) do
+      @bundle.day_pass_type.update!(daily_limit: 1)
+      other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: @bundle.day_pass_type, day: Date.current + 1, imported: true)
+    end
+
+    post "/api/v1/day_passes/schedule",
+         params: { dates: [(Date.current + 1).iso8601] }.to_json, headers: headers(@member)
+
+    assert_response :unprocessable_entity
+    assert_includes JSON.parse(response.body)["error"], "fully booked"
+    assert_equal 5, @bundle.reload.passes_remaining
+  end
 end

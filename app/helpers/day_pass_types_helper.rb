@@ -10,7 +10,7 @@ module DayPassTypesHelper
   end
 
   def day_pass_type_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
     # Convert hours input to minutes
@@ -26,12 +26,15 @@ module DayPassTypesHelper
       p[:overage_rate_in_cents] = 0
     end
     p[:location_id] = current_location.id if current_location
+    # Blank form field means unlimited — normalize "" to nil so the
+    # numericality validation (allow_nil) doesn't reject it.
+    p[:daily_limit] = p[:daily_limit].presence if p.key?(:daily_limit)
     p
   end
 
 
   def day_pass_type_update_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit)
     # Convert dollars input to cents for price
     if p[:amount_in_cents].present?
       p[:amount_in_cents] = Money.from_amount(p[:amount_in_cents].to_f, "USD").cents
@@ -48,6 +51,9 @@ module DayPassTypesHelper
     else
       p[:overage_rate_in_cents] = 0
     end
+    # Blank form field means unlimited — normalize "" to nil so the
+    # numericality validation (allow_nil) doesn't reject it.
+    p[:daily_limit] = p[:daily_limit].presence if p.key?(:daily_limit)
     p
   end
 end
