@@ -26,4 +26,24 @@ class Billing::DayPassBundles::ScheduleDayDoorTest < ActiveSupport::TestCase
       assert_equal 4, bundle.reload.passes_remaining, "door must not burn a second pass"
     end
   end
+
+  test "door entry burns a bundle pass even when today is at the type's daily limit" do
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      dpt = DayPassType.create!(operator: @operator, location: @location, name: "Pack",
+                                amount_in_cents: 20000, quantity: 5, available: true, visible: true,
+                                daily_limit: 1)
+      bundle = DayPassBundle.create!(user: member, operator: @operator, location: @location,
+                                     day_pass_type: dpt, quantity_purchased: 5, passes_remaining: 5,
+                                     purchased_at: Time.current)
+      other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPass.create!(user: other, billable: other, operator: @operator, location: @location,
+                      day_pass_type: dpt, day: Date.current, imported: true)
+
+      result = Billing::DayPassBundles::ConsumeOnEntry.call(user: member, location: @location)
+
+      assert_equal :redeemed, result.outcome, "a cap must never strand someone at the door"
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
 end
