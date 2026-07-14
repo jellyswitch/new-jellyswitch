@@ -164,6 +164,12 @@ class User < ApplicationRecord
   validates :email, mx_record: true, unless: :admin_created, on: :create
   validates :card_added, comparison: { other_than: :out_of_band, if: :card_added? }
   validate :terms_must_be_accepted, on: :create
+  # role is authorization-critical: constrain it to known values so no code path
+  # (or a permitted API param) can smuggle in an arbitrary/elevated string. The
+  # `in:` is a lambda so it resolves at validation time (User.roles is defined
+  # later in the class); guarded on change so it can never invalidate a
+  # pre-existing row with a legacy role during an unrelated update.
+  validates :role, inclusion: { in: ->(_user) { User.roles } }, if: :role_changed?
   has_secure_password
 
   after_commit :sync_to_mailchimp, if: -> { operator&.mailchimp_api_key.present? && saved_change_to_approved? }
@@ -522,6 +528,18 @@ class User < ApplicationRecord
     end
 
     eligible_roles.map { |r| [r.titleize, r] }
+  end
+
+  # Role values this user may GRANT to others. Mirrors the web edit form, which
+  # builds its dropdown from role_options_for_select on the ACTING user — so the
+  # API can enforce the same ceiling: a general manager can't mint an admin, and
+  # only a superadmin can grant superadmin.
+  def assignable_roles
+    role_options_for_select.map(&:last)
+  end
+
+  def can_assign_role?(target_role)
+    assignable_roles.include?(target_role.to_s)
   end
 
   def managed_location_options_for_select

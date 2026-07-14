@@ -28,6 +28,100 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     }
   end
 
+  # Auth as an arbitrary staff user (for the role-grant authorization tests).
+  def headers_for(user)
+    token = JWT.encode(
+      { user_id: user.id, operator_id: @operator.id, exp: 30.days.from_now.to_i },
+      Rails.application.secret_key_base,
+      "HS256",
+    )
+    {
+      "Authorization"        => "Bearer #{token}",
+      "X-Operator-Subdomain" => @operator.subdomain,
+      "Content-Type"         => "application/json",
+    }
+  end
+
+  # ---- role-grant authorization (privilege-escalation fix) ----------------
+
+  test "community manager cannot escalate a member to superadmin" do
+    cm     = users(:cowork_tahoe_community_manager)
+    member = users(:cowork_tahoe_member)
+
+    patch "/api/v1/admin/members/#{member.id}",
+          params: { role: "superadmin" }.to_json, headers: headers_for(cm)
+
+    assert_response :forbidden
+    assert_equal "unassigned", member.reload.role, "role must not change on a forbidden grant"
+  end
+
+  test "general manager cannot grant admin" do
+    gm     = users(:cowork_tahoe_general_manager)
+    member = users(:cowork_tahoe_member)
+
+    patch "/api/v1/admin/members/#{member.id}",
+          params: { role: "admin" }.to_json, headers: headers_for(gm)
+
+    assert_response :forbidden
+    assert_equal "unassigned", member.reload.role
+  end
+
+  test "superadmin can grant superadmin" do
+    superadmin = users(:cowork_tahoe_superadmin)
+    member     = users(:cowork_tahoe_member)
+
+    patch "/api/v1/admin/members/#{member.id}",
+          params: { role: "superadmin" }.to_json, headers: headers_for(superadmin)
+
+    assert_response :success
+    assert_equal "superadmin", member.reload.role
+  end
+
+  test "ordinary profile edits still work and never change role" do
+    cm     = users(:cowork_tahoe_community_manager)
+    member = users(:cowork_tahoe_member)
+
+    patch "/api/v1/admin/members/#{member.id}",
+          params: { name: "Renamed Member" }.to_json, headers: headers_for(cm)
+
+    assert_response :success
+    member.reload
+    assert_equal "Renamed Member", member.name
+    assert_equal "unassigned", member.role
+  end
+
+  test "resubmitting a higher-role target's unchanged role is allowed" do
+    # A GM editing an admin's phone: the payload echoes role: admin (which a GM
+    # could never GRANT), but it's unchanged, so the edit must not be blocked.
+    gm    = users(:cowork_tahoe_general_manager)
+    admin = users(:cowork_tahoe_admin)
+
+    patch "/api/v1/admin/members/#{admin.id}",
+          params: { phone: "5305550123", role: "admin" }.to_json, headers: headers_for(gm)
+
+    assert_response :success
+    assert_equal "admin", admin.reload.role
+  end
+
+  test "create cannot mint a superadmin from a community manager" do
+    cm = users(:cowork_tahoe_community_manager)
+
+    assert_no_difference -> { User.where(role: "superadmin").count } do
+      post "/api/v1/admin/members",
+           params: { name: "X", email: "x-escalate@example.com", phone: "5305550000",
+                     password: "secret123", role: "superadmin" }.to_json,
+           headers: headers_for(cm)
+    end
+    assert_response :forbidden
+  end
+
+  test "role column rejects unknown values (defense in depth)" do
+    member = users(:cowork_tahoe_member)
+    member.role = "wizard"
+    refute member.valid?, "an unknown role must be invalid"
+    assert_includes member.errors[:role], "is not included in the list"
+  end
+
   test "reservations response includes ended_early so admins can badge it" do
     reservations(:room_reservation).update!(ended_early: true)
 
