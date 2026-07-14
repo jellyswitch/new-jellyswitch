@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
+  include ActionMailer::TestHelper
+
   setup do
     @operator = operators(:cowork_tahoe)
     @location = locations(:cowork_tahoe_location)
@@ -112,6 +114,32 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
           params: { day: @pass.day.iso8601 }, headers: headers
 
     assert_response :success
+  end
+
+  test "a successful move emails the member a confirmation" do
+    original = @pass.day
+    target = 5.days.from_now.to_date
+
+    assert_enqueued_email_with UserMailer, :day_pass_rescheduled, args: [@pass.id, original] do
+      patch "/api/v1/day_passes/#{@pass.id}/reschedule", params: { day: target.iso8601 }, headers: headers
+    end
+    assert_response :success
+  end
+
+  test "a same-day 'move' sends no email" do
+    assert_no_enqueued_emails do
+      patch "/api/v1/day_passes/#{@pass.id}/reschedule",
+            params: { day: @pass.day.iso8601 }, headers: headers
+    end
+    assert_response :success
+  end
+
+  test "a rejected move sends no email" do
+    assert_no_enqueued_emails do
+      patch "/api/v1/day_passes/#{@pass.id}/reschedule",
+            params: { day: 2.days.ago.to_date.iso8601 }, headers: headers
+    end
+    assert_response :unprocessable_entity
   end
 
   test "move succeeds when the target day has capacity under the limit" do

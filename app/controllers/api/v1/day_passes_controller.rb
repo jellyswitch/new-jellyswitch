@@ -252,7 +252,9 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       return render_error(sold_out_message(day_pass.day_pass_type, new_day))
     end
 
+    old_day = day_pass.day
     day_pass.update!(day: new_day)
+    UserMailer.day_pass_rescheduled(day_pass.id, old_day).deliver_later if day_pass.day != old_day
     render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found

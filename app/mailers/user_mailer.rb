@@ -252,6 +252,27 @@ class UserMailer < ApplicationMailer
          from: from_address, reply_to: operator.contact_email
   end
 
+  # Confirms a day-pass date change to the pass holder. Sent from both the
+  # member-facing API reschedule and the staff move in web admin — for the
+  # staff path this is the only way the member finds out.
+  def day_pass_rescheduled(day_pass_id, old_day)
+    day_pass = DayPass.find_by(id: day_pass_id)
+    return if day_pass.nil? || day_pass.user.nil?
+
+    @user = day_pass.user
+    @day_pass = day_pass
+    @location = day_pass.location
+    @operator = day_pass.operator || @location&.operator
+    @old_day = old_day.to_date
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+
+    mail to: @user.email,
+         subject: "Your day pass is now scheduled for #{@day_pass.day.strftime('%B %-e, %Y')}",
+         from: from_address, reply_to: @operator.contact_email
+  end
+
   def signup_nudge_email(user, operator, template, location = nil)
     @user = user
     @operator = operator
