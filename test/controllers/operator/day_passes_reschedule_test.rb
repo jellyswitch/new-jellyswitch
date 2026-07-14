@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Operator::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
+  include ActionMailer::TestHelper
+
   setup do
     setup_initial_user_fixtures
     @location = locations(:cowork_tahoe_location)
@@ -17,6 +19,25 @@ class Operator::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
 
     assert_redirected_to user_admin_day_passes_path(@pass.user)
     assert_equal target, @pass.reload.day
+  end
+
+  test "a staff move emails the member a confirmation" do
+    log_in users(:cowork_tahoe_admin)
+    original = @pass.day
+    target = 7.days.from_now.to_date
+
+    assert_enqueued_email_with UserMailer, :day_pass_rescheduled, args: [@pass.id, original] do
+      patch reschedule_day_pass_path(@pass), params: { day: target.iso8601 }, env: default_env
+    end
+    assert_equal target, @pass.reload.day
+  end
+
+  test "a rejected staff move sends no email" do
+    log_in users(:cowork_tahoe_admin)
+
+    assert_no_enqueued_emails do
+      patch reschedule_day_pass_path(@pass), params: { day: 2.days.ago.to_date.iso8601 }, env: default_env
+    end
   end
 
   test "member cannot use the staff reschedule endpoint" do

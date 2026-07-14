@@ -282,7 +282,9 @@ class Operator::DayPassesController < Operator::BaseController
     elsif new_day.nil? || new_day < today
       flash[:error] = "Pick today or a future date."
     else
+      old_day = @day_pass.day
       @day_pass.update!(day: new_day)
+      UserMailer.day_pass_rescheduled(@day_pass.id, old_day).deliver_later if @day_pass.day != old_day
       flash[:success] = "Day pass moved to #{@day_pass.pretty_day}."
     end
 
