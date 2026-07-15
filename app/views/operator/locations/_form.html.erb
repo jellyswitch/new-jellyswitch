@@ -99,7 +99,15 @@
 
   <div class="form-group">
     <%= f.label :kisi_api_key %>
-    <%= f.text_field :kisi_api_key, placeholder: "Kisi API Key", class: "form-control" %>
+    <%# value: "" so the live key is never rendered into the HTML. When a key is
+        set, the placeholder shows a masked hint and a blank submit keeps it
+        (see LocationsController#location_params). %>
+    <%= f.text_field :kisi_api_key, value: "", autocomplete: "off",
+          placeholder: masked_kisi_key(f.object.kisi_api_key) || "Kisi API Key",
+          class: "form-control" %>
+    <% if f.object.kisi_api_key.present? %>
+      <small class="form-text text-muted">A key is set. Leave blank to keep it; enter a new key to replace it.</small>
+    <% end %>
   </div>
 
   <div class="form-group">

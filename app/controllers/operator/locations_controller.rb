@@ -173,9 +173,14 @@ class Operator::LocationsController < Operator::BaseController
       :credit_cost_in_cents, :sender_email, :google_reviews_url, :renewal_reminder_days,
     ]
     permitted << :space_host_id if policy(@location || Location).set_space_host?
-    params.require(:location).permit(
+    attrs = params.require(:location).permit(
       *permitted,
       tracking_pixels_attributes: [:id, :name, :position, :script, :always_on, :_destroy]
     )
+    # The Kisi field is masked — it submits blank unless the admin typed a new
+    # key. Treat blank as "keep current" so editing any other field can't wipe
+    # the stored door credential.
+    attrs.delete(:kisi_api_key) if attrs[:kisi_api_key].blank?
+    attrs
   end
 end
