@@ -102,6 +102,8 @@
   </dl>
 
   <% if policy(:operator).edit? %>
-    <%= link_to "Customize Jellyswitch", edit_operator_path(operator, subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
+    <%# Branding settings live on the operator's own subdomain; a full URL keeps
+        this working from the app-subdomain super-admin operators#show too. %>
+    <%= link_to "Branding Settings", settings_branding_url(subdomain: operator.subdomain), class: "btn btn-block btn-info" %>
   <% end %>
 <% end %>
