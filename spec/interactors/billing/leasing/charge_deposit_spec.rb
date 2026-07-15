@@ -12,7 +12,7 @@ RSpec.describe Billing::Leasing::ChargeDeposit, type: :interactor do
   end
   let(:subscription) { double("subscription", billable: payer, subscribable: payer) }
   let(:office_lease) do
-    double("office_lease", deposit_amount_in_cents: 50_000, deposit_invoiced_at: nil,
+    double("office_lease", id: 4242, deposit_amount_in_cents: 50_000, deposit_invoiced_at: nil,
                            subscription: subscription, location: location, office: office)
   end
 
@@ -52,6 +52,22 @@ RSpec.describe Billing::Leasing::ChargeDeposit, type: :interactor do
   it "stamps deposit_invoiced_at on success" do
     expect(office_lease).to receive(:update!).with(hash_including(:deposit_invoiced_at))
     run
+  end
+
+  it "passes a per-lease idempotency key so the recovery action can't double-charge" do
+    keys = []
+    allow(Stripe::InvoiceItem).to receive(:create) { |_p, opts| keys << opts[:idempotency_key] }
+    allow(Stripe::Invoice).to receive(:create) { |_p, opts| keys << opts[:idempotency_key]; double(id: "in_x") }
+    run
+    expect(keys).to include("deposit-item-4242", "deposit-invoice-4242")
+  end
+
+  it "deletes the pending item when invoice creation fails (no orphan swept into the next invoice)" do
+    allow(Stripe::InvoiceItem).to receive(:create).and_return(double(id: "ii_orphan"))
+    allow(Stripe::Invoice).to receive(:create).and_raise(Stripe::StripeError.new("boom"))
+    expect(Stripe::InvoiceItem).to receive(:delete).with("ii_orphan", anything)
+    expect(office_lease).not_to receive(:update!) # never stamped on failure
+    run # ChargeDeposit swallows the re-raise via its outer rescue
   end
 
   it "is idempotent — skips entirely when the deposit was already invoiced" do

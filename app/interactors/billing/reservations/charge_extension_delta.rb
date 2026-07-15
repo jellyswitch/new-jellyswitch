@@ -54,7 +54,13 @@ class Billing::Reservations::ChargeExtensionDelta
           delta_amount: delta,
         },
       },
-      creds,
+      # Idempotency key keyed on the resulting total: a double-tapped "extend"
+      # (both requests computing the same delta before either bumps
+      # captured_amount) reuses the same key, so Stripe places ONE PaymentIntent
+      # instead of double-charging. A genuinely separate later extension yields a
+      # different new_total → different key → charges normally. (ChargeAtBooking
+      # already keys its capture the same way.)
+      creds.merge(idempotency_key: "resv-#{reservation.id}-ext-#{new_total}"),
     )
 
     reservation.update!(
