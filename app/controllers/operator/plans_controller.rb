@@ -148,7 +148,7 @@ class Operator::PlansController < Operator::BaseController
       :available, :always_allow_building_access,
       :credits, :description, :plan_category_id, :childcare_reservations,
       :included_meeting_room_minutes, :overage_rate_in_cents,
-      :has_day_limit, :day_limit,
+      :has_day_limit, :day_limit, :commitment_interval,
       location_ids: [])
     convert_meeting_room_params!(p)
     p
