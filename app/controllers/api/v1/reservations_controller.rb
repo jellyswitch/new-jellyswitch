@@ -20,7 +20,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   end
 
   def create
-    room = Room.find(params[:reservation][:room_id])
+    # Scope to the caller's operator (mirrors #update below) — a bare Room.find
+    # is global in the API, letting a member book a foreign operator's room.
+    room = current_tenant.rooms.find_by(id: params[:reservation][:room_id])
+    return render_error("Room not found", status: :not_found) unless room
+
     datetime_in = parse_local_datetime(params[:reservation][:datetime_in], room)
     minutes = params[:reservation][:minutes].to_i
     date = datetime_in.to_date

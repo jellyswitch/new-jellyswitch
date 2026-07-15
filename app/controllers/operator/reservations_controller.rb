@@ -613,6 +613,10 @@ class Operator::ReservationsController < Operator::BaseController
 
   def update_note
     find_reservation
+    # Every sibling action authorizes; without this any authenticated member at
+    # the location could edit another member's reservation note (find_reservation
+    # is location-scoped, not owner-scoped). manage? = owner-or-staff.
+    authorize @reservation, :manage?
 
     if @reservation.update(note: params[:reservation][:note])
       flash[:notice] = "Reservation note updated successfully."

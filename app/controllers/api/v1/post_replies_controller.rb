@@ -1,6 +1,10 @@
 class Api::V1::PostRepliesController < Api::V1::BaseController
   def create
-    post = Post.find(params[:post_id])
+    # Scope to the caller's location so a member can't reply onto another
+    # operator's board (Post.find is global in the API — no tenant scope here).
+    post = Post.where(location: current_location).find_by(id: params[:post_id])
+    return render_error("Post not found", status: :not_found) unless post
+
     reply = post.post_replies.build(user: current_api_user)
     reply.content = params[:body] if params[:body].present?
 
