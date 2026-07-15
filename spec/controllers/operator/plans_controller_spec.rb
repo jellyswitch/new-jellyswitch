@@ -24,4 +24,19 @@ RSpec.describe Operator::PlansController, type: :controller do
       expect(plan.reload.has_day_limit).to be(false)
     end
   end
+
+  describe "PATCH #update — Commitment Length (commitment_interval)" do
+    let(:plan) { create(:plan, operator: operator, location: location) }
+
+    it "persists an edited commitment_interval (was silently dropped from plan_update_params)" do
+      patch :update, params: { id: plan.id, plan: { commitment_interval: 2 } }
+      expect(plan.reload.commitment_interval).to eq(2)
+    end
+
+    it "clears commitment_interval when the field is blanked" do
+      plan.update!(commitment_interval: 6)
+      patch :update, params: { id: plan.id, plan: { commitment_interval: "" } }
+      expect(plan.reload.commitment_interval).to be_nil
+    end
+  end
 end
