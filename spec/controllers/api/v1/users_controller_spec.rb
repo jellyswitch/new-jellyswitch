@@ -22,11 +22,11 @@ RSpec.describe Api::V1::UsersController, type: :controller do
     end
 
     it "returns admin=false for a plain member" do
-      member = create(:user, operator: operator, current_location: location, role: "member", admin: false, superadmin: false)
+      member = create(:user, operator: operator, current_location: location, role: User::UNASSIGNED, admin: false, superadmin: false)
       allow(controller).to receive(:current_api_user).and_return(member)
       get :me
       body = JSON.parse(response.body)
-      expect(body["role"]).to eq("member")
+      expect(body["role"]).to eq(User::UNASSIGNED)
       expect(body["admin"]).to eq(false)
       expect(body["superadmin"]).to eq(false)
     end
