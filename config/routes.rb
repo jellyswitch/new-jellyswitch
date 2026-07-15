@@ -447,7 +447,7 @@ Rails.application.routes.draw do
         get :finalize
       end
     end
-    resources :operators
+    resources :operators, only: [:index, :show]
     resources :operator_surveys do
       collection do
         get :wait, to: "operator_surveys#wait"

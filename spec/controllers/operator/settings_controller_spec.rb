@@ -44,6 +44,14 @@ RSpec.describe Operator::SettingsController, type: :controller do
       operator.reload
       expect(operator.kisi_api_key).to eq(original_kisi)
     end
+
+    it "attaches an uploaded background image" do
+      patch :update_branding, params: {
+        operator: { background_image: fixture_file_upload("spec/fixtures/test.jpg", "image/jpeg") }
+      }
+      expect(response).to redirect_to(settings_branding_path)
+      expect(operator.reload.background_image).to be_attached
+    end
   end
 
   describe "GET #branding (snippet field)" do
@@ -58,6 +66,12 @@ RSpec.describe Operator::SettingsController, type: :controller do
       get :branding
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("name=\"operator[snippet]\"")
+    end
+
+    it "renders background image field" do
+      get :branding
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("name=\"operator[background_image]\"")
     end
   end
 

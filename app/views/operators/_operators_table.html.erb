@@ -7,7 +7,6 @@
     <th><small>Billing Status</small></th>
     <th><small>iOS/Android apps</small></th>
     <th><small>Push Notification<small></th>
-    <th><small>Actions</small></th>
   </tr>
   <% reports.each do |report| %>
     <tr>
@@ -48,9 +47,6 @@
         <% else %>
           <span class="badge badge-danger">Android Not ready</span>
         <% end %>
-      </td>
-      <td>
-        <%= link_to "Edit", edit_operator_path(report.operator), class: "btn btn-sm btn-info" %>
       </td>
     </tr>
   <% end %>
