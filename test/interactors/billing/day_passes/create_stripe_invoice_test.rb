@@ -77,6 +77,17 @@ class Billing::DayPasses::CreateStripeInvoiceTest < ActiveSupport::TestCase
     assert_not Invoice.exists?(local.id)
   end
 
+  test "rollback deletes the pending invoice item so it isn't swept into the next invoice" do
+    local = make_local_invoice(stripe_id: "in_test_draft", status: "draft")
+    Stripe::Invoice.stubs(:retrieve).returns(Stripe::Invoice.construct_from(id: "in_test_draft", status: "draft", paid: false))
+    Stripe::Invoice.stubs(:delete)
+    Stripe::InvoiceItem.expects(:delete).with("ii_pending", anything).once
+
+    interactor = build_interactor(stripe_invoice_id: "in_test_draft", local_invoice: local)
+    interactor.instance_variable_set(:@invoice_item, OpenStruct.new(id: "ii_pending"))
+    interactor.rollback
+  end
+
   def teardown
     Invoice.where(stripe_invoice_id: %w[in_test_draft in_test_open in_test_paid in_test_err]).destroy_all
   end

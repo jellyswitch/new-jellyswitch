@@ -14,24 +14,27 @@ class Billing::DayPasses::CreateStripeInvoice
       context.discount_amount_in_cents = discount_amount
     end
 
+    creds = { api_key: location.stripe_secret_key, stripe_account: location.stripe_user_id }
+
     @invoice_item = Stripe::InvoiceItem.create({
       customer: day_pass.billable.stripe_customer_id_for_location(location),
       currency: 'usd',
       amount: charge_amount,
       description: day_pass.charge_description
-    }, {
-      api_key: location.stripe_secret_key,
-      stripe_account: location.stripe_user_id
-    })
+    }, creds.merge(idempotency_key: "daypass-item-#{day_pass.id}"))
 
     invoice_args = DayPassableFactory.for(day_pass).invoice_args
-    @invoice = Stripe::Invoice.create(
-      invoice_args,
-      {
-        api_key: location.stripe_secret_key,
-        stripe_account: location.stripe_user_id
-      }
-    )
+    @invoice =
+      begin
+        Stripe::Invoice.create(invoice_args, creds)
+      rescue Stripe::StripeError
+        # Invoice creation failed AFTER the item was created — this interactor's
+        # own rollback won't run (the gem only rolls back interactors that
+        # completed), so delete the pending item here or it gets swept into the
+        # member's NEXT invoice as a phantom charge.
+        Stripe::InvoiceItem.delete(@invoice_item.id, creds) rescue nil
+        raise
+      end
 
     result = CreateInvoice.call(stripe_invoice: @invoice, location: location)
     if !result.success?
@@ -92,6 +95,17 @@ class Billing::DayPasses::CreateStripeInvoice
     if @local_invoice&.persisted?
       @local_invoice.reload
       @local_invoice.destroy unless @local_invoice.status == "paid"
+    end
+
+    # Clean up the pending item too (a deleted draft releases its items back to
+    # pending, where they'd be swept into the next invoice). Guarded — a no-op
+    # if it was already consumed by a finalized/paid invoice.
+    if @invoice_item
+      begin
+        Stripe::InvoiceItem.delete(@invoice_item.id, creds)
+      rescue Stripe::StripeError
+        # already consumed by a finalized invoice — nothing to release
+      end
     end
   rescue => e
     # Rollback must never raise — that would mask the original failure.
