@@ -38,6 +38,26 @@ RSpec.describe Billing::Invoices::MarkInvoiceAsPaid, type: :interactor do
       end
     end
 
+    context "when Stripe reports the invoice as voided" do
+      # Regression: mark_invoice_paid used to swallow this error and return
+      # false, so the caller marked a Stripe-voided invoice paid locally.
+      before do
+        # Must have a location + stripe_invoice_id so the caller takes the
+        # Stripe branch (not the local-only fallback).
+        invoice.update_columns(location_id: create(:location).id, stripe_invoice_id: 'in_voided')
+        allow_any_instance_of(Location).to receive(:mark_invoice_paid)
+          .and_raise(Stripe::InvalidRequestError.new("This invoice is void", nil))
+      end
+
+      it "fails and does NOT mark the invoice paid" do
+        result = described_class.call(invoice: invoice, operator: operator)
+
+        expect(result).to be_failure
+        expect(result.message).to match(/voided or marked uncollectible/i)
+        expect(invoice.reload.status).to eq('open')
+      end
+    end
+
     context "when invoice location is missing" do
       before do
         allow(invoice).to receive(:location).and_return(nil)

@@ -186,10 +186,18 @@ module StripeUtils
 
     stripe_invoice.pay(options)
   rescue Stripe::InvalidRequestError => e
-    # Don't report expected errors to Honeybadger
-    unless e.message.include?('already paid') || e.message.include?('void')
-      Honeybadger.notify(e)
-    end
+    # A voided / uncollectible invoice must NOT be swallowed here: the sole
+    # caller (Billing::Invoices::MarkInvoiceAsPaid) has a guard that fails the
+    # action for those, but it only fires if the error propagates. Swallowing it
+    # and returning false sent the caller down its "Stripe returned false →
+    # mark paid locally" branch, stamping a Stripe-voided invoice as paid in our
+    # books. Re-raise so that guard is actually reachable.
+    raise if e.message.include?('void') || e.message.include?('uncollectible')
+
+    # "already paid" (and any other unexpected request error) keep the prior
+    # return-false behavior — the caller falls back to marking paid locally,
+    # which is correct when Stripe already considers it paid.
+    Honeybadger.notify(e) unless e.message.include?('already paid')
     false
   end
 
