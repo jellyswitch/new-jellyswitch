@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_150035) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -358,6 +358,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
     t.index ["location_id"], name: "index_day_passes_on_location_id"
     t.index ["operator_id"], name: "index_day_passes_on_operator_id"
     t.index ["reservation_id"], name: "index_day_passes_on_reservation_id"
+    t.index ["user_id", "day"], name: "index_day_passes_on_user_id_and_day"
   end
 
   create_table "discount_codes", force: :cascade do |t|
@@ -459,6 +460,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
     t.integer "location_id"
     t.index ["blob"], name: "index_feed_items_on_blob", using: :gin
     t.index ["location_id"], name: "index_feed_items_on_location_id"
+    t.index ["operator_id", "updated_at"], name: "index_feed_items_on_operator_id_and_updated_at"
   end
 
   create_table "feedback_replies", force: :cascade do |t|
@@ -523,6 +525,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
     t.index ["billable_type", "billable_id"], name: "index_invoices_on_billable_type_and_billable_id"
     t.index ["location_id"], name: "index_invoices_on_location_id"
     t.index ["reservation_id"], name: "index_invoices_on_reservation_id"
+    t.index ["stripe_invoice_id"], name: "index_invoices_on_stripe_invoice_id"
     t.index ["stripe_payment_intent_id"], name: "index_invoices_on_stripe_payment_intent_id"
   end
 
@@ -1003,7 +1006,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
     t.datetime "started_notified_at"
     t.integer "attendee_count"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
+    t.index ["room_id", "datetime_in"], name: "index_reservations_on_room_id_and_datetime_in"
     t.index ["stripe_payment_intent_id"], name: "index_reservations_on_stripe_payment_intent_id", unique: true
+    t.index ["user_id", "datetime_in"], name: "index_reservations_on_user_id_and_datetime_in"
   end
 
   create_table "room_demand_misses", force: :cascade do |t|
@@ -1076,6 +1081,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_12_200000) do
     t.boolean "cancelling_at_end_of_billing_period", default: false, null: false
     t.boolean "paused", default: false, null: false
     t.index ["billable_type", "billable_id"], name: "index_subscriptions_on_billable_type_and_billable_id"
+    t.index ["stripe_subscription_id"], name: "index_subscriptions_on_stripe_subscription_id"
     t.index ["subscribable_type", "subscribable_id"], name: "index_subscriptions_on_subscribable_type_and_subscribable_id"
   end
 
