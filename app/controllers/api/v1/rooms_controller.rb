@@ -9,7 +9,8 @@ class Api::V1::RoomsController < Api::V1::BaseController
   end
 
   def availability
-    room = Room.find(params[:id])
+    room = current_tenant.rooms.find_by(id: params[:id])
+    return render_error("Room not found", status: :not_found) unless room
     date = Date.parse(params[:date]) rescue Date.current
 
     # Get all reservations for this room on this date
@@ -37,7 +38,8 @@ class Api::V1::RoomsController < Api::V1::BaseController
   end
 
   def time_slots
-    room = Room.find(params[:id])
+    room = current_tenant.rooms.find_by(id: params[:id])
+    return render_error("Room not found", status: :not_found) unless room
     date = Date.parse(params[:date]) rescue Date.current
     location = current_location
 
@@ -83,7 +85,8 @@ class Api::V1::RoomsController < Api::V1::BaseController
   end
 
   def pricing
-    room = Room.find(params[:id])
+    room = current_tenant.rooms.find_by(id: params[:id])
+    return render_error("Room not found", status: :not_found) unless room
     date = params[:date].present? ? Date.parse(params[:date]) : Date.current
     minutes = (params[:minutes] || 60).to_i
 

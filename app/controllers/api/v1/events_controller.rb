@@ -9,7 +9,8 @@ class Api::V1::EventsController < Api::V1::BaseController
   end
 
   def show
-    event = Event.find(params[:id])
+    event = current_tenant.events.find_by(id: params[:id])
+    return render_error("Event not found", status: :not_found) unless event
     return render_error('Event not found', status: :not_found) unless event.approved? || event.user_id == current_api_user.id
 
     render json: {
@@ -34,7 +35,8 @@ class Api::V1::EventsController < Api::V1::BaseController
   end
 
   def rsvp
-    event = Event.find(params[:id])
+    event = current_tenant.events.find_by(id: params[:id])
+    return render_error("Event not found", status: :not_found) unless event
     return render_error('Event not available', status: :forbidden) unless event.approved?
 
     existing = current_api_user.rsvps.find_by(event: event)

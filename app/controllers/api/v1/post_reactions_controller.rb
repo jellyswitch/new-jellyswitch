@@ -2,7 +2,11 @@ class Api::V1::PostReactionsController < Api::V1::BaseController
   # POST /api/v1/posts/:post_id/reactions  body: { emoji: "👍" }
   # Toggles the reaction for the current user on this post.
   def create
-    post = Post.find(params[:post_id])
+    # Scope to the caller's location (Post.find is global in the API) so a
+    # member can't react onto another operator's board.
+    post = Post.where(location: current_location).find_by(id: params[:post_id])
+    return render_error("Post not found", status: :not_found) unless post
+
     emoji = params[:emoji].to_s
     return render_error('Invalid emoji') unless PostReaction::ALLOWED_EMOJIS.include?(emoji)
 

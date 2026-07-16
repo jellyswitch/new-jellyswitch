@@ -9,7 +9,11 @@ class Api::V1::PostsController < Api::V1::BaseController
   end
 
   def show
-    post = Post.find(params[:id])
+    # Scope to the caller's location — a bare Post.find is global in the API
+    # (no tenant default_scope here), leaking other operators' boards.
+    post = Post.where(location: current_location).find_by(id: params[:id])
+    return render_error("Post not found", status: :not_found) unless post
+
     replies = post.post_replies.order(:created_at).includes(user: { profile_photo_attachment: :blob }).map { |r|
       {
         id: r.id,

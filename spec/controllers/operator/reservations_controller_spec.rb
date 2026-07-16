@@ -331,6 +331,16 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       put :update_note, params: valid_params
       expect(flash[:notice]).to match(/updated successfully/)
     end
+
+    it "forbids a non-owner member from editing another member's note" do
+      other_member = create(:user, operator: operator, original_location: location)
+      allow(controller).to receive(:current_user).and_return(other_member)
+
+      put :update_note, params: { id: reservation.id, reservation: { note: "Hijacked" } }
+
+      expect(response).to have_http_status(:redirect) # Pundit denial
+      expect(reservation.reload.note).not_to eq("Hijacked")
+    end
   end
 
   describe "GET #daily_counts" do
