@@ -1,5 +1,15 @@
 
 module LocationHelper
+  # Masked display of a Kisi API key — shows only the last 4 characters, never
+  # the live secret. Used wherever the key surfaces to staff (the location
+  # detail page and the edit-form placeholder) so live door credentials don't
+  # land in rendered HTML or screenshots. Returns nil when no key is set.
+  def masked_kisi_key(key)
+    key = key.to_s
+    return nil if key.blank?
+    "kisi_••••#{key.last(4)}"
+  end
+
   def location_select_options(locations)
     locations.map do |location|
       ["#{location.name} @ #{location.building_address}", location.id]

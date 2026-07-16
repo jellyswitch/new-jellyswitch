@@ -77,7 +77,7 @@
   <dd><%= location.wifi_password %></dd>
 
   <dt>Kisi API Key</dt>
-  <dd><%= location.kisi_api_key %></dd>
+  <dd><%= masked_kisi_key(location.kisi_api_key) || "Not set" %></dd>
 
   <dt>Building Access Instructions</dt>
   <dd>
