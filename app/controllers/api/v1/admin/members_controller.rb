@@ -155,6 +155,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   end
 
   def create
+    return unless authorize_requested_role!
+
     result = Users::Create.call(
       params: user_params.to_h.symbolize_keys,
       operator: current_tenant,
@@ -170,6 +172,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
 
   def update
     user = current_tenant.users.find(params[:id])
+    return unless authorize_requested_role!(user.role)
 
     if user.update(user_update_params)
       render json: member_list_json(user)
@@ -667,5 +670,22 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
 
   def user_update_params
     params.permit(:name, :email, :phone, :bio, :role)
+  end
+
+  # Server-side ceiling on role grants — the web edit form enforces this by
+  # only offering roles in current_user.role_options_for_select, but the API
+  # took whatever :role was sent, letting any admin-API caller (down to a
+  # community manager) escalate anyone — or themselves — to superadmin. Renders
+  # 403 and returns false when the requested role exceeds what the caller may
+  # grant. A request that omits :role, or leaves the target's role unchanged,
+  # is always allowed (so ordinary profile edits on a higher-role member still
+  # work). Returns true when the action may proceed.
+  def authorize_requested_role!(current_role = nil)
+    requested = params[:role].presence
+    return true if requested.nil? || requested == current_role
+    return true if current_api_user.can_assign_role?(requested)
+
+    render_error("You are not allowed to assign the #{requested.titleize} role.", status: :forbidden)
+    false
   end
 end
