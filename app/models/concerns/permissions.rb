@@ -14,9 +14,14 @@ module Permissions
   end
 
   def has_active_reservation?
-    reservations.any? do |reservation|
-      reservation.ongoing?
-    end
+    # SQL existence check (uses the [user_id, datetime_in] index) instead of
+    # loading the member's entire reservation history into Ruby to scan with
+    # ongoing? — this runs on nearly every access-policy check. The `ongoing`
+    # scope and the ongoing? method agree on the underlying instant (start_at
+    # round-trips the timezone), verified in reservation_ongoing_equivalence_spec;
+    # using the scope also makes this consistent with everywhere else `.ongoing`
+    # is used.
+    reservations.ongoing.exists?
   end
 
   def should_charge_for_reservation?(location, day = Time.current)
