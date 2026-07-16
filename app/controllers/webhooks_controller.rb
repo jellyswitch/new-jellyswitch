@@ -3,8 +3,8 @@ class WebhooksController < ApplicationController
   protect_from_forgery except: [:stripe]
 
   def stripe
-    payload = JSON.parse(request.body.read, symbolize_names: true)
-    @event = Stripe::Event.construct_from(payload)
+    @event = resolve_stripe_event
+    return if performed? # verification rejected an unsigned/forged request (enforce mode)
 
     case @event.type
     when "invoice.finalized"
@@ -122,6 +122,66 @@ class WebhooksController < ApplicationController
   end
 
   private
+
+  # Build the Stripe::Event from the request, verifying its signature against
+  # the endpoint's signing secret first. Rolled out in stages so enabling it
+  # can never silently break billing:
+  #
+  #   * Signature verifies against a configured secret → use the verified event
+  #     (the goal state). One Connect-enabled endpoint means one secret covers
+  #     both platform and connected-account events; we also accept a second
+  #     (test-mode) secret so a single URL registered as both a live and a test
+  #     endpoint verifies either way.
+  #   * Verification FAILS, or no secret is configured yet → behavior depends on
+  #     STRIPE_WEBHOOK_ENFORCE:
+  #       - unset/false (default): log the problem but STILL process the event,
+  #         exactly as before this change. Deploying is a behavioral no-op until
+  #         the logs confirm real Stripe traffic verifies.
+  #       - true: reject with 400 so forged events are dropped.
+  #     Enforce is ignored when no secret is configured at all (rejecting then
+  #     would drop Stripe's own events); a missing secret always logs + falls
+  #     through to processing.
+  def resolve_stripe_event
+    payload   = request.raw_post
+    signature = request.headers["Stripe-Signature"].to_s
+    secrets   = stripe_webhook_signing_secrets
+
+    if secrets.empty?
+      Rails.logger.warn("[stripe-webhook] no signing secret configured — processing UNVERIFIED (log-only)")
+      return unverified_stripe_event(payload)
+    end
+
+    secrets.each do |secret|
+      return Stripe::Webhook.construct_event(payload, signature, secret)
+    rescue Stripe::SignatureVerificationError
+      next
+    end
+
+    # Reached only when NO configured secret verified this request.
+    Rails.logger.warn("[stripe-webhook] signature verification FAILED (signature_present=#{signature.present?}, enforce=#{stripe_webhook_enforce?})")
+    Honeybadger.notify("Stripe webhook signature verification failed", context: { signature_present: signature.present? }) if defined?(Honeybadger)
+
+    if stripe_webhook_enforce?
+      render plain: "Signature verification failed", status: :bad_request
+      return nil
+    end
+
+    unverified_stripe_event(payload)
+  end
+
+  # Legacy path: trust the raw payload. Only used in log-only mode / when no
+  # secret is set — preserves pre-verification behavior during rollout.
+  def unverified_stripe_event(payload)
+    Stripe::Event.construct_from(JSON.parse(payload, symbolize_names: true))
+  end
+
+  def stripe_webhook_signing_secrets
+    [ENV["STRIPE_WEBHOOK_SECRET"], ENV["STRIPE_TEST_WEBHOOK_SECRET"]].compact_blank
+  end
+
+  def stripe_webhook_enforce?
+    ActiveModel::Type::Boolean.new.cast(ENV["STRIPE_WEBHOOK_ENFORCE"])
+  end
 
   def ok
     render plain: "OK", status: 200

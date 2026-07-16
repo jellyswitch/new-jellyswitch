@@ -159,4 +159,69 @@ RSpec.describe WebhooksController, type: :controller do
       }.to have_enqueued_job(SendNotificationsJob).with(invoice, "PaymentFailed")
     end
   end
+
+  describe "POST #stripe — signature verification (staged rollout)" do
+    # An unhandled event type falls through to `ok` (200), so these specs can
+    # assert on the verification branching without a fixture-heavy handler.
+    let(:unhandled_event) { Stripe::Event.construct_from(type: "ping", data: { object: {} }) }
+
+    before { allow_any_instance_of(WebhooksController).to receive(:report_error) }
+
+    def stub_env(secret: nil, test_secret: nil, enforce: nil)
+      allow(ENV).to receive(:[]).and_call_original
+      allow(ENV).to receive(:[]).with("STRIPE_WEBHOOK_SECRET").and_return(secret)
+      allow(ENV).to receive(:[]).with("STRIPE_TEST_WEBHOOK_SECRET").and_return(test_secret)
+      allow(ENV).to receive(:[]).with("STRIPE_WEBHOOK_ENFORCE").and_return(enforce)
+    end
+
+    context "when a signing secret is configured" do
+      it "processes the event when the signature verifies" do
+        stub_env(secret: "whsec_live")
+        expect(Stripe::Webhook).to receive(:construct_event).and_return(unhandled_event)
+        post :stripe, body: "{}"
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "accepts a second (test-mode) secret when the first fails" do
+        stub_env(secret: "whsec_live", test_secret: "whsec_test")
+        allow(Stripe::Webhook).to receive(:construct_event)
+          .with(anything, anything, "whsec_live").and_raise(Stripe::SignatureVerificationError.new("bad", "sig"))
+        allow(Stripe::Webhook).to receive(:construct_event)
+          .with(anything, anything, "whsec_test").and_return(unhandled_event)
+        post :stripe, body: "{}"
+        expect(response).to have_http_status(:ok)
+      end
+
+      context "and the signature does NOT verify" do
+        before do
+          allow(Stripe::Webhook).to receive(:construct_event)
+            .and_raise(Stripe::SignatureVerificationError.new("bad sig", "sig"))
+        end
+
+        it "rejects with 400 when enforce is on (forgery blocked)" do
+          stub_env(secret: "whsec_live", enforce: "true")
+          expect(Stripe::Event).not_to receive(:construct_from)
+          post :stripe, body: "{}"
+          expect(response).to have_http_status(:bad_request)
+        end
+
+        it "still processes (log-only) when enforce is off — the deploy is a no-op" do
+          stub_env(secret: "whsec_live", enforce: nil)
+          expect(Stripe::Event).to receive(:construct_from).and_return(unhandled_event)
+          post :stripe, body: "{}"
+          expect(response).to have_http_status(:ok)
+        end
+      end
+    end
+
+    context "when no signing secret is configured yet" do
+      it "never enforces and processes unverified (pre-rollout behavior preserved)" do
+        stub_env(enforce: "true") # enforce flag is ignored without a secret
+        expect(Stripe::Webhook).not_to receive(:construct_event)
+        expect(Stripe::Event).to receive(:construct_from).and_return(unhandled_event)
+        post :stripe, body: "{}"
+        expect(response).to have_http_status(:ok)
+      end
+    end
+  end
 end
