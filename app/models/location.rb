@@ -292,6 +292,19 @@ class Location < ApplicationRecord
     end
   end
 
+  # Overrides the DB column: Stripe Connect OAuth stores the connected
+  # account's live-mode key there, so a prod snapshot copied to staging would
+  # serve pk_live against test-mode secret keys. Serve the platform key from
+  # env config, mode-matched to stripe_secret_key; clients pass stripe_user_id
+  # as the Stripe-Account header, so tokens still mint on the connected account.
+  def stripe_publishable_key
+    if operator.production? && operator.subdomain != "southlakecoworking"
+      Rails.configuration.stripe[:publishable_key]
+    else
+      Rails.configuration.stripe[:test_publishable_key]
+    end
+  end
+
   def stripe_operator
     @stripe_operator ||= StripeOperator.new(self)
   end

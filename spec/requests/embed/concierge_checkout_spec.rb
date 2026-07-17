@@ -20,11 +20,14 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Coworking Day Pass")
       expect(response.body).to include("js.stripe.com/v3")
-      expect(response.body).to include("pk_test_123")
+      # The platform key from env config, never the DB column (which holds the
+      # connected account's live-mode key).
+      expect(response.body).to include(Rails.configuration.stripe[:publishable_key])
+      expect(response.body).not_to include("pk_test_123")
     end
 
-    it "404s when the location has no Stripe key configured" do
-      location.update!(stripe_publishable_key: nil)
+    it "404s when the location is not connected to Stripe" do
+      location.update!(stripe_user_id: nil)
       get url, params: { day_pass_type_id: pass_type.id }
       expect(response).to have_http_status(:not_found)
     end
