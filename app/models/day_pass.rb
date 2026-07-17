@@ -33,6 +33,13 @@
 class DayPass < ApplicationRecord
   include HasLocation
 
+  # Self-serve purchases/reschedules may only target dates within this window.
+  # The web form's year dropdown made it easy to buy a pass for today's date
+  # NEXT year (a real member paid $40 for 07/17/2027); a bounded window turns
+  # that mis-tap into a friendly error. Admin flows are intentionally ungated.
+  # Keep in step with Billing::DayPassBundles::ScheduleDay::HORIZON_DAYS.
+  MAX_ADVANCE_DAYS = 90
+
   # Relationships
   belongs_to :billable, polymorphic: true
   belongs_to :day_pass_type

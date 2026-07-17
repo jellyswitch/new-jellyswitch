@@ -116,6 +116,30 @@ RSpec.describe Operator::DayPassesController, type: :controller do
 
     # Members may only self-purchase an available, paid type — mirrors the
     # mobile API guardrails. A crafted POST can pass any operator-scoped id.
+    context "when the date is outside the purchase window" do
+      it "rejects a wrong-year date without charging (the year-dropdown mis-tap)" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+
+        post :create, params: {
+          day_pass: { day: (Date.current + 1.year).to_s, day_pass_type: day_pass_type.id },
+          stripeToken: "tok_visa",
+        }
+
+        expect(flash[:error]).to include("double-check the date")
+      end
+
+      it "rejects a past date without charging" do
+        expect(DayPassInteractorFactory).not_to receive(:for)
+
+        post :create, params: {
+          day_pass: { day: (Date.current - 2).to_s, day_pass_type: day_pass_type.id },
+          stripeToken: "tok_visa",
+        }
+
+        expect(flash[:error]).to include("already passed")
+      end
+    end
+
     context "when the type is free ($0)" do
       let(:free_type) { create(:day_pass_type, operator: operator, location: location, amount_in_cents: 0) }
 
