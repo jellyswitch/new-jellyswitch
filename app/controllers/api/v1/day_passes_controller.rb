@@ -96,7 +96,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
 
     # Single day pass — existing path unchanged
-    date = params[:date].present? ? Date.parse(params[:date]) : Date.current
+    date = begin
+      params[:date].present? ? Date.parse(params[:date]) : Date.current
+    rescue ArgumentError
+      return render_error('Please pick a valid date.')
+    end
+
+    date_error = purchase_date_window_error(date)
+    return render_error(date_error) if date_error
 
     # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
     # only: staff/admin paths and door burns are intentionally ungated, though
@@ -244,6 +251,9 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     tz    = ActiveSupport::TimeZone[day_pass.location&.time_zone.presence || "UTC"]
     today = Time.current.in_time_zone(tz).to_date
     return render_error("Passes can only be moved to today or a future date.") if new_day < today
+    if new_day > today + DayPass::MAX_ADVANCE_DAYS
+      return render_error("Passes can be moved up to #{DayPass::MAX_ADVANCE_DAYS} days ahead — double-check the date (including the year).")
+    end
 
     # Daily cap on the TARGET day. Skipped when the pass isn't actually
     # changing days — its own row would otherwise count against itself.
@@ -373,5 +383,17 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # a deliberate per-surface idiom, not drift.
   def sold_out_message(day_pass_type, day)
     "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
+  end
+
+  # Self-serve purchase window (DayPass::MAX_ADVANCE_DAYS). "Today" is judged
+  # in the location's zone, matching #reschedule.
+  def purchase_date_window_error(date)
+    tz = ActiveSupport::TimeZone[current_location&.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    if date < today
+      "That date has already passed — double-check the date."
+    elsif date > today + DayPass::MAX_ADVANCE_DAYS
+      "Day passes can be scheduled up to #{DayPass::MAX_ADVANCE_DAYS} days ahead — double-check the date (including the year)."
+    end
   end
 end

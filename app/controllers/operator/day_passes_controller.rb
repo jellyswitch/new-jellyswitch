@@ -65,6 +65,23 @@ class Operator::DayPassesController < Operator::BaseController
     # same value or a hand-rolled request could buy onto a sold-out day.
     prospective_day ||= ActiveModel::Type::Date.new.cast(params.dig(:day_pass, :day))
 
+    # Self-serve purchase window (DayPass::MAX_ADVANCE_DAYS). The form's year
+    # dropdown made "today's date, NEXT year" a one-notch mis-tap that charged
+    # real money for a pass the buyer would never see.
+    if prospective_day
+      tz = ActiveSupport::TimeZone[current_location&.time_zone.presence || "UTC"]
+      today = Time.current.in_time_zone(tz).to_date
+      if prospective_day < today
+        flash[:error] = "That date has already passed — double-check the date."
+        turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type&.id))
+        return
+      elsif prospective_day > today + DayPass::MAX_ADVANCE_DAYS
+        flash[:error] = "Day passes can be scheduled up to #{DayPass::MAX_ADVANCE_DAYS} days ahead — double-check the date (including the year)."
+        turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type&.id))
+        return
+      end
+    end
+
     # Daily cap (physical capacity — e.g. 2 day offices). Member self-serve
     # only: the admin add/comp flow (Operator::Admin::DayPassesController) is
     # intentionally ungated, though its rows still count. Checked before the
