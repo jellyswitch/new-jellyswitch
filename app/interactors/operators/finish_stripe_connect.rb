@@ -61,11 +61,31 @@ class Operators::FinishStripeConnect
       #   context.fail!(message: "Failed to create stripe customers for all users: #{failures.first.message}")
       # end
 
-      # Migrate plans
-      # This likely won't work (but won't get called either)
-      operator.plans.each do |plan|
-        plan.create_stripe_plan
-      end
+      sync_plans_to_connected_account(operator, location, stripe_user_id)
+    end
+  end
+
+  private
+
+  # A (re)connected Stripe account doesn't have the operator's Plan objects on
+  # it, so every subscribe fails with "No such plan" until they're recreated.
+  # Recreate each Stripe-backed plan on the just-connected account. Per-plan
+  # failures must never fail the connect itself — the credentials are already
+  # stored and valid — and reconnecting the SAME account makes every create
+  # fail with "plan already exists", which is success for our purposes.
+  # (This replaced a call to the nonexistent Plan#create_stripe_plan that
+  # crashed every connect for an operator with plans, AFTER storing creds.)
+  def sync_plans_to_connected_account(operator, location, stripe_user_id)
+    target = location ||
+      operator.locations.find_by(stripe_user_id: stripe_user_id) ||
+      operator.locations.first
+    return unless target
+
+    operator.plans.where.not(stripe_plan_id: [nil, ""]).find_each do |plan|
+      result = Billing::Plans::CreateStripePlan.call(plan: plan, operator: operator, location: target)
+      next if result.success? || result.message.to_s.match?(/already exists/i)
+
+      Honeybadger.notify("FinishStripeConnect: could not recreate plan #{plan.id} on #{stripe_user_id}: #{result.message}")
     end
   end
 end
