@@ -121,18 +121,6 @@ class Operator::PlansController < Operator::BaseController
     turbo_redirect(plan_path(@plan), action: "replace")
   end
 
-  def toggle_building_access
-    find_plan(:plan_id)
-    authorize @plan
-    
-    result = ToggleValue.call(object: @plan, value: :always_allow_building_access)
-    
-    if !result.success?
-      flash[:error] = result.message
-    end
-    turbo_redirect(plan_path(@plan), action: "replace")
-  end
-
   private
 
   def find_plans
@@ -145,7 +133,7 @@ class Operator::PlansController < Operator::BaseController
 
   def plan_update_params
     p = params.require(:plan).permit(:visible,
-      :available, :always_allow_building_access,
+      :available, :building_access_level,
       :credits, :description, :plan_category_id, :childcare_reservations,
       :included_meeting_room_minutes, :overage_rate_in_cents,
       :has_day_limit, :day_limit, :commitment_interval,

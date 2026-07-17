@@ -6,7 +6,7 @@ module PlansHelper
 
   def plan_params
     p = params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents,
-      :visible, :available, :always_allow_building_access, :has_day_limit, :day_limit,
+      :visible, :available, :building_access_level, :has_day_limit, :day_limit,
       :credits, :commitment_interval, :description, :childcare_reservations, :plan_category_id,
       :included_meeting_room_minutes, :overage_rate_in_cents, location_ids: [])
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")

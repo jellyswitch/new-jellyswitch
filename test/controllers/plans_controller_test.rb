@@ -78,9 +78,6 @@ class PlansControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to plan_path(@plan)
   end
 
-  test "should toggle building access" do
-    get plan_toggle_building_access_path(@plan), env: default_env
-    assert :success
-    assert_redirected_to plan_path(@plan)
-  end
+  # (The building-access on/off toggle was replaced by the three-way
+  # building_access_level select — see building_access_level_spec.)
 end

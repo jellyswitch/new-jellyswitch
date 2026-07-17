@@ -36,6 +36,24 @@ class Plan < ApplicationRecord
   include HasLocation
   acts_as_tenant :operator
 
+  # Building-access tier for members on this plan (replaces the old
+  # always_allow_building_access boolean). Prefixed so `none` can't clash with
+  # ActiveRecord's `.none`, and so predicates read clearly (access_none? etc.).
+  #   none           -> never grants building access
+  #   business_hours -> access only while the location is open (working hours)
+  #   all_hours      -> 24-7 access
+  enum :building_access_level, { none: 0, business_hours: 1, all_hours: 2 }, prefix: :access
+
+  # Does this plan grant building access to `location` at time `at`? Business
+  # hours are evaluated against the location the member is actually accessing.
+  def grants_building_access?(location = nil, at = Time.current)
+    case building_access_level
+    when "all_hours"      then true
+    when "business_hours" then !!location&.open_at?(at)
+    else                       false # none / unknown
+    end
+  end
+
   has_rich_text :description
 
   # Relationships
