@@ -42,7 +42,7 @@ module Embed
     def checkout
       @location = checkout_location
       @product = checkout_product
-      return head(:not_found) unless @product && @location&.stripe_publishable_key.present?
+      return head(:not_found) unless @product && @location&.stripe_setup?
       render :checkout
     end
 

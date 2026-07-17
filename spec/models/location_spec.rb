@@ -254,6 +254,26 @@ RSpec.describe Location, type: :model do
         expect(location.stripe_setup?).to be false
       end
     end
+
+    describe '#stripe_publishable_key' do
+      before do
+        allow(Rails.configuration).to receive(:stripe).and_return(
+          publishable_key: 'pk_live_platform',
+          test_publishable_key: 'pk_test_platform',
+        )
+        location.update(stripe_publishable_key: 'pk_live_from_connect_oauth')
+      end
+
+      it 'serves the platform key from env config, never the DB column' do
+        location.operator.update(billing_state: 'production')
+        expect(location.stripe_publishable_key).to eq('pk_live_platform')
+      end
+
+      it 'serves the test key for non-production operators' do
+        location.operator.update(billing_state: 'demo')
+        expect(location.stripe_publishable_key).to eq('pk_test_platform')
+      end
+    end
   end
 
   describe "past_member_grace_days" do
