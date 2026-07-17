@@ -50,6 +50,7 @@ class Notifiable::Default < SimpleDelegator
       end
     else
       puts "Operator #{operator.name} has no APNs configuration or bundle_id is missing"
+      alert_missing_push_config(:ios)
     end
   end
 
@@ -71,7 +72,36 @@ class Notifiable::Default < SimpleDelegator
       end
     else
       puts "Operator #{operator.name} has no firebase server key."
+      alert_missing_push_config(:android)
     end
+  end
+
+  # A skipped send is a silent failure when real devices are registered —
+  # that's how a brand can launch with tokens piling up and zero pushes ever
+  # delivered. Alert Honeybadger, but at most once per operator/platform/day.
+  def alert_missing_push_config(platform)
+    token_column = platform == :ios ? :ios_token : :android_token
+    registered = operator.users.where.not(token_column => [nil, ""]).count
+    return if registered.zero?
+
+    cache_key = "notifiable/missing_push_config_alert/#{operator.id}/#{platform}"
+    return unless Rails.cache.write(cache_key, true, expires_in: 1.day, unless_exist: true)
+
+    Honeybadger.notify(
+      "Operator #{operator.name} (##{operator.id}) has #{registered} user(s) with registered #{platform} push tokens but #{platform} push is not configured — notifications are being silently skipped.",
+      error_class: "Notifiable::MissingPushConfig",
+      fingerprint: "missing_push_config/#{operator.id}/#{platform}",
+      context: {
+        operator_id: operator.id,
+        operator_name: operator.name,
+        platform: platform,
+        registered_token_count: registered,
+        apns_env_configured: apns_configured?,
+        bundle_id_present: operator.bundle_id.present?,
+        firebase_project_id_present: operator.firebase_project_id.present?,
+        firebase_key_attached: operator.android_push_notification_key.attached?
+      }
+    )
   end
   
   def android_payload(user)
