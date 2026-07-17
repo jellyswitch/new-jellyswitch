@@ -41,6 +41,10 @@ FactoryBot.define do
     sequence(:stripe_plan_id) { |n| "stripe-plan-#{n}-#{SecureRandom.uuid}" }
     plan_type { "individual" }
     always_allow_building_access { true }
+    # Matches the legacy always_allow=true default so existing specs keep their
+    # "member has 24-7 building access" behavior. Set explicitly to
+    # :business_hours / :none when testing the new tiers.
+    building_access_level { :all_hours }
     has_day_limit { false }
     day_limit { 0 }
     credits { 0 }

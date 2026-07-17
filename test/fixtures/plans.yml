@@ -41,6 +41,7 @@ cowork_tahoe_part_time_plan:
  operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
+ building_access_level: all_hours
  has_day_limit: true
  day_limit: 10
  credits: 0
@@ -60,6 +61,7 @@ cowork_tahoe_full_time_plan:
  operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
+ building_access_level: all_hours
  has_day_limit: false
  day_limit: 0
  credits: 0
@@ -79,6 +81,7 @@ cowork_tahoe_archived_plan:
  operator: cowork_tahoe
  plan_type: individual
  always_allow_building_access: true
+ building_access_level: all_hours
  has_day_limit: true
  day_limit: 10
  credits: 0
@@ -97,6 +100,7 @@ cowork_tahoe_office_lease_plan:
  operator: cowork_tahoe
  plan_type: lease
  always_allow_building_access: true
+ building_access_level: all_hours
  has_day_limit: false
  day_limit: 0
  credits: 0

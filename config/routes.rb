@@ -793,7 +793,6 @@ Rails.application.routes.draw do
   resources :plans, controller: "operator/plans" do
     get :toggle_visibility, to: "operator/plans#toggle_visibility"
     get :toggle_availability, to: "operator/plans#toggle_availability"
-    get :toggle_building_access, to: "operator/plans#toggle_building_access"
     post :unarchive, to: "operator/plans#unarchive"
     collection do
       get :archived, to: "operator/plans#archived"

@@ -2,7 +2,7 @@ module Permissions
   # Included as a module in the User class
 
   def allowed_in?(location)
-    has_building_access_membership? ||
+    has_building_access_membership?(location) ||
     has_active_day_pass_at_location?(location) ||
     has_active_day_pass_bundle?(location) ||
     checked_in?(location) ||
@@ -160,7 +160,7 @@ module Permissions
     general_manager_of_location?(location) ||
     always_allow_building_access? ||
     has_building_access_day_pass? ||
-    has_building_access_membership? ||
+    has_building_access_membership?(location) ||
     has_building_access_lease? ||
     has_active_day_pass_at_location?(location)
   end
@@ -171,9 +171,17 @@ module Permissions
   # members who roam between an operator's locations). A member out of days on
   # their only plan is blocked; a member with any other always-allow plan that
   # still has days left keeps access.
-  def has_building_access_membership?
+  # True if any active, non-paused membership grants building access to
+  # `location` at time `at`, honoring the plan's building_access_level
+  # (none / business_hours / all_hours), the day-pool limit, and — for the
+  # business_hours tier — the location's posted hours. This is the SINGLE
+  # source of truth shared by the Keys tab (has_building_access?) and the
+  # door-unlock authorization (Api::V1::DoorUnlocking#user_can_access_building?)
+  # so "what a member can see" and "what they can open" can never diverge.
+  def has_building_access_membership?(location = current_location, at = Time.current)
     subscriptions.active.where(paused: false).any? do |subscription|
-      subscription.plan.always_allow_building_access? && subscription.has_days_left?
+      subscription.has_days_left?(at) &&
+        subscription.plan&.grants_building_access?(location, at)
     end
   end
 

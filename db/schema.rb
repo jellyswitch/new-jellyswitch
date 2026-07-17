@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_07_16_150035) do
+ActiveRecord::Schema[7.2].define(version: 2026_07_16_212651) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -891,6 +891,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_07_16_150035) do
     t.integer "location_id"
     t.integer "included_meeting_room_minutes"
     t.integer "overage_rate_in_cents", default: 0
+    t.integer "building_access_level", default: 1, null: false
     t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end

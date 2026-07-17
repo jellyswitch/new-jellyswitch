@@ -48,9 +48,17 @@
     <%= f.label :visible, "Visible to new members", class: "form-check-label" %>
   </div>
 
-  <div class="form-check mt-3">
-    <%= f.check_box :always_allow_building_access, class: "form-check-input" %>
-    <%= f.label :always_allow_building_access, "Includes 24/7 building access", class: "form-check-label" %>
+  <div class="form-group mt-3">
+    <%= f.label :building_access_level, "Building access for members on this plan", class: "form-label d-block" %>
+    <%= f.select :building_access_level,
+          [["No building access", "none"],
+           ["Business hours only", "business_hours"],
+           ["24/7 access", "all_hours"]],
+          {}, class: "form-control", style: "max-width: 20rem;" %>
+    <small class="form-text text-muted">
+      "Business hours" follows this location's posted working hours; "24/7" is unrestricted;
+      "No building access" is for non-building tiers (e.g. mailbox or virtual memberships).
+    </small>
   </div>
 </div>
 

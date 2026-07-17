@@ -11,7 +11,12 @@ module Api::V1::DoorUnlocking
     zone  = location&.time_zone.presence || "UTC"
     today = Time.current.in_time_zone(zone).to_date
 
-    return true if user.has_active_subscription?
+    # Membership access now honors the plan's building_access_level (none /
+    # business_hours / all_hours) — the SAME check the Keys tab uses — instead
+    # of granting any active subscriber a 24-7 unlock. This closes the gap where
+    # a mailbox/community/free-tier member (level none) could open a door, and
+    # enforces the business-hours window for that tier at unlock time.
+    return true if user.has_building_access_membership?(location)
     return true if user.day_passes.where(day: today).any?
     return true if location && user.has_active_day_pass_bundle?(location)
     return true if location && user.has_active_lease?(location)

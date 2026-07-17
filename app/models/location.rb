@@ -168,6 +168,31 @@ class Location < ApplicationRecord
     true
   end
 
+  # True when `at` falls within this location's posted business hours — the
+  # basis for the "business_hours" membership building-access tier. Evaluated
+  # in the location's own timezone; handles overnight windows (end <= start);
+  # a blank/unparseable working time is treated as closed rather than raising.
+  def open_at?(at = Time.current)
+    zone = ActiveSupport::TimeZone[time_zone.presence || "UTC"] || ActiveSupport::TimeZone["UTC"]
+    local = at.in_time_zone(zone)
+    open_flags = [open_sunday, open_monday, open_tuesday, open_wednesday, open_thursday, open_friday, open_saturday]
+    return false unless open_flags[local.wday]
+
+    to_min = ->(hhmm) { (m = hhmm.to_s.match(/\A(\d{1,2}):(\d{2})\z/)) ? m[1].to_i * 60 + m[2].to_i : nil }
+    start_min = to_min.call(working_day_start)
+    end_min   = to_min.call(working_day_end)
+    return false if start_min.nil? || end_min.nil?
+
+    now_min = local.hour * 60 + local.min
+    if end_min > start_min
+      now_min >= start_min && now_min < end_min
+    elsif end_min < start_min
+      now_min >= start_min || now_min < end_min # overnight window (e.g. 22:00–05:00)
+    else
+      false # zero-length window
+    end
+  end
+
   # Editable data list — states where expiration on prepaid passes is restricted
   # or prohibited. Add states here as counsel advises; this is data, not logic.
   EXPIRATION_RESTRICTED_STATES = ["CA", "CALIFORNIA"].freeze
