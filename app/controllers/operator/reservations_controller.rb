@@ -210,18 +210,25 @@ class Operator::ReservationsController < Operator::BaseController
       subscription_charge_info = nil
     end
 
+    # Staff-only comp (mirrors the mobile admin flow): the confirm page offers
+    # "Comp — book free of charge" when staff book for someone else. Members
+    # can't comp themselves — a forged comp param from a non-staff session is
+    # ignored here.
+    comp = staff && params[:comp].present?
+
     result = Billing::Reservations::CreateRoomReservation.call(reservation_params: {
                                                                  datetime_in: @datetime_in,
                                                                  hours: @duration,
                                                                  minutes: @duration.to_i,
                                                                  room: @room,
                                                                }, user: @user, location: current_location,
-                                                               subscription_charge_info: subscription_charge_info)
+                                                               subscription_charge_info: subscription_charge_info,
+                                                               comp: comp)
 
     @reservation = result.reservation
 
     if result.success?
-      flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}"
+      flash[:notice] = "Reserved #{@reservation.room.name} for #{@reservation.pretty_datetime}#{" — comped, no charge" if comp}"
       redirect_to reservation_path(@reservation)
     else
       flash[:error] = result.message

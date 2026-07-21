@@ -75,5 +75,10 @@
     <% else %>
       <%= button_to "Confirm Reservation", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id), method: :post, class: "btn btn-block btn-primary", form_class: "d-block", form: { data: { turbo: false } }, data: { disable_with: "Reserving..." } %>
     <% end %>
+
+    <% if @staff && @user != current_user %>
+      <%= button_to "Comp — book free of charge", create_reservation_reservations_path(room_id: @room.id, day: @day, hour: pretty_time(@hour), duration: @duration, user_id: @user.id, comp: 1), method: :post, class: "btn btn-block btn-outline-primary mt-2", form_class: "d-block", form: { data: { turbo: false } }, data: { disable_with: "Reserving..." } %>
+      <p class="text-muted text-center small mt-1 mb-0">No charge, no credits — <%= @user.name %> still gets the confirmation email.</p>
+    <% end %>
   <% end %>
 <% end %>
