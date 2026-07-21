@@ -1,5 +1,6 @@
 class Api::V1::DashboardController < Api::V1::BaseController
   include LandingHelper
+  include Api::V1::DoorUnlocking
 
   def show
     location = current_location
@@ -23,14 +24,14 @@ class Api::V1::DashboardController < Api::V1::BaseController
     events = Event.where(location: location).approved.future.order(:starts_at).limit(5)
     user_rsvp_ids = user.rsvps.pluck(:event_id)
 
-    # Doors for unlock buttons — sorted by user's most-used first.
-    # Only surfaced if the user actually has building access right now;
-    # otherwise the dashboard rendered tappable "Open Lobby Door" buttons
-    # that would always 403 from /doors/:id/unlock — confusing UX, looks
-    # like a broken app. Matches the gating the unlock endpoint already
-    # does via DoorUnlocking#user_can_access_building?.
+    # Doors for unlock buttons — sorted by user's most-used first. Gated on
+    # the SAME predicate the unlock endpoint uses (user_can_access_building?),
+    # so buttons show if and only if a tap would succeed. The previous gate
+    # (Permissions#has_building_access?) had no reservation clause, so a
+    # reservation-only visitor inside their ±window (ADR 0013) — whom unlock
+    # would happily admit — saw no keys at all and was stranded at the door.
     doors =
-      if location && user.has_building_access?(location)
+      if location && user_can_access_building?(user, location)
         scope = location.doors.where(available: true)
         # Treat unset/NULL private as public (see Api::V1::DoorsController#index).
         scope = scope.where(private: [false, nil]) unless user.admin?
