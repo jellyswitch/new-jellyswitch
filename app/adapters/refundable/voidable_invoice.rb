@@ -19,6 +19,21 @@ module Refundable
       end
 
       update(status: 'void')
+    rescue Stripe::InvalidRequestError => e
+      # The invoice doesn't exist on the currently connected Stripe account —
+      # the operator reconnected to a different account, orphaning invoices
+      # created before the switch (Tahoe Longhouse, 2026-07-17). There is
+      # nothing to void on Stripe's side, but local bookkeeping must still
+      # resolve or the invoice stays open forever. Any other Stripe failure
+      # (auth, permissions, a void Stripe refuses) re-raises and fails loudly.
+      raise unless missing_invoice_error?(e)
+      update(status: 'void')
+    end
+
+    private
+
+    def missing_invoice_error?(e)
+      e.message.to_s.include?('No such invoice')
     end
   end
 end
