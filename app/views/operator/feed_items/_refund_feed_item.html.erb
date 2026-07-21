@@ -1,15 +1,21 @@
-<dl class="row">
-  <dt class="col-6">
-    Amount:
-  </dt>
-  <dd class="col">
-    <%= number_to_currency(feed_item.invoice.amount_due.to_f / 100.0) %>
-  </dd>
+<%# Guarded like the sibling partials (_day_pass, _subscription): the invoice
+    may have been deleted since the refund feed item was written — feed_items
+    only stores blob["invoice_id"] — and an unguarded orphan 500s the whole
+    feed (TLH outage #2, 2026-07-20). %>
+<% if feed_item.invoice.present? %>
+  <dl class="row">
+    <dt class="col-6">
+      Amount:
+    </dt>
+    <dd class="col">
+      <%= number_to_currency(feed_item.invoice.amount_due.to_f / 100.0) %>
+    </dd>
 
-  <dt class="col-6">
-    Description:
-  </dt>
-  <dd class="col">
-    <%= feed_item.invoice.description %>
-  </dd>
-</dl>
+    <dt class="col-6">
+      Description:
+    </dt>
+    <dd class="col">
+      <%= feed_item.invoice.description %>
+    </dd>
+  </dl>
+<% end %>

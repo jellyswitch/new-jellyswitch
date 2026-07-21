@@ -65,6 +65,23 @@ class Operator::FeedItemsOrphanedBlobTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Regression: refund feed items reference their invoice only via
+  # blob["invoice_id"]; deleting the invoice (test-data purges, corrections)
+  # left the refund item rendering `nil.amount_due` — a 500 for every admin
+  # (TLH outage #2, 2026-07-20). The partial must skip the invoice details.
+  test "feed renders when a refund feed item points at a deleted invoice" do
+    @operator.update!(refund_notifications: true)
+    FeedItem.create!(
+      operator: @operator,
+      user: users(:cowork_tahoe_member),
+      blob: { type: "refund", invoice_id: -1 }
+    )
+
+    get "/feed_items", env: default_env
+
+    assert_response :success
+  end
+
   test "feed renders when a reservation feed item points at a deleted reservation" do
     @operator.update!(reservation_notifications: true)
     FeedItem.create!(
