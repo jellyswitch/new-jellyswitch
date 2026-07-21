@@ -122,6 +122,13 @@ class Api::V1::DashboardController < Api::V1::BaseController
       "No plan selected yet"
     end
 
+    # Resolve a host the same way the web chat card does (space_host_for:
+    # location.space_host → first GM at the location → first operator admin,
+    # phone/email preferring the location's contact columns) so operators
+    # that never filled in the operator-level contact_* columns still get a
+    # chat card on the mobile Welcome/checkout flow.
+    host = space_host_for(location)
+
     render json: {
       has_plan: pending_sub.present?,
       has_day_pass: user.day_passes.any?,
@@ -129,9 +136,9 @@ class Api::V1::DashboardController < Api::V1::BaseController
       has_billing: user.has_billing_for_location?(location),
       plan_step: plan_step,
       approved: user.approved?,
-      contact_name: current_tenant.contact_name,
-      contact_phone: current_tenant.contact_phone,
-      contact_email: current_tenant.contact_email,
+      contact_name: current_tenant.contact_name.presence || host&.name,
+      contact_phone: current_tenant.contact_phone.presence || location&.contact_phone.presence || host&.phone,
+      contact_email: current_tenant.contact_email.presence || location&.contact_email.presence || host&.email,
     }
   end
 end
