@@ -5,6 +5,8 @@ class Billing::Reservations::ChargeCredits
   delegate :reservation, :reservation_params, :user, to: :context
 
   def call
+    return if context.comp # staff comped the booking — no credits burned
+
     location = reservation.room.location
 
     if location.credits_enabled?
