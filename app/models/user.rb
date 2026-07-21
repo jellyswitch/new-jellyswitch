@@ -82,8 +82,11 @@ class User < ApplicationRecord
   has_many :day_pass_bundles
   has_many :door_punches
   has_many :events
-  has_many :feed_items
-  has_many :feed_item_comments
+  # feed_items has no DB foreign key to users, so without dependent cleanup a
+  # deleted user leaves orphaned rows whose nil `user` 500s the operator feed —
+  # the page admins land on after login (TLH outage, 2026-07-20).
+  has_many :feed_items, dependent: :destroy
+  has_many :feed_item_comments, dependent: :destroy
   has_many :invoices, as: :billable
   has_many :leads
   has_many :lead_notes

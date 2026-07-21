@@ -33,7 +33,7 @@ class FeedItem < ApplicationRecord
   # Relationships
   belongs_to :operator
   belongs_to :user
-  has_many :feed_item_comments
+  has_many :feed_item_comments, dependent: :destroy
 
   # Override partial path so Turbo broadcasts find the namespaced partial
   def to_partial_path

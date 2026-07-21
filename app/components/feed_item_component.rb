@@ -12,6 +12,12 @@ class FeedItemComponent < ApplicationComponent
 
   def show_feed_item?
     return false unless feed_item.present?
+    # feed_items has no DB foreign key to users: a row whose author has been
+    # deleted out-of-band (raw SQL, replica import) has a nil `user`, and
+    # rendering it 500s the whole feed — the page admins land on after login
+    # (TLH outage, 2026-07-20). Skip it instead. Authorless types (e.g.
+    # weekly updates) have user_id nil and still render.
+    return false if feed_item.user_id.present? && feed_item.user.nil?
 
     case feed_item.type
     when "announcement"
