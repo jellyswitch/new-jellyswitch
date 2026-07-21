@@ -236,11 +236,16 @@ module StripeUtils
 
     "Stripe::#{klass}".constantize.public_send(action, *stripe_args)
   rescue Stripe::InvalidRequestError => e
-    # `charge_already_refunded` is an expected, benign duplicate: the refund
-    # caller (RefundableInvoice#cancel) catches it and reconciles local state.
-    # Don't add Honeybadger noise for it (mirrors mark_invoice_paid). Still
-    # re-raise so the caller can react.
-    Honeybadger.notify(e) unless e.code == 'charge_already_refunded'
+    # Expected, benign errors a caller catches and reconciles locally — don't
+    # add Honeybadger noise for them (mirrors mark_invoice_paid). Still
+    # re-raise so the caller can react:
+    #  - `charge_already_refunded`: RefundableInvoice#cancel reconciles the
+    #    out-of-band refund.
+    #  - "No such invoice": VoidableInvoice#cancel voids locally — the operator
+    #    reconnected to a different Stripe account, orphaning the invoice.
+    expected = e.code == 'charge_already_refunded' ||
+      e.message.to_s.include?('No such invoice')
+    Honeybadger.notify(e) unless expected
     raise(e)
   end
 end
