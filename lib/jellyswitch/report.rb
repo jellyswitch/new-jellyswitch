@@ -79,7 +79,7 @@ module Jellyswitch
     def total_active_members
       subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
       oob_ids = out_of_band_members.select(:id)
-      lease_member_ids = User.where(organization_id: office_leases.active.select(:organization_id)).select(:id)
+      lease_member_ids = active_lease_members.select(:id)
       User.where(id: subscribed_ids).or(User.where(id: oob_ids)).or(User.where(id: lease_member_ids)).visible.approved
     end
 
@@ -116,7 +116,16 @@ module Jellyswitch
     end
 
     def active_lease_members
-      User.where(organization_id: office_leases.active.select(:organization_id)).distinct
+      # Lease members come in two shapes: users under an organization holding
+      # an active office lease, and users who hold a lease-plan subscription
+      # directly (a solo office tenant entered as a personal subscription —
+      # Tahoe Longhouse, 2026-07-20). The direct shape was invisible to every
+      # membership rollup: not individual-plan subscribed, and no organization
+      # to ride in on.
+      direct_leaseholder_ids = Subscription.where(plan: plans.lease, active: true, subscribable_type: 'User').select(:subscribable_id)
+      User.where(organization_id: office_leases.active.select(:organization_id))
+          .or(User.where(id: direct_leaseholder_ids))
+          .distinct
     end
 
     def active_lease_member_count
