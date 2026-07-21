@@ -46,6 +46,16 @@ class Room < ApplicationRecord
   acts_as_scopable :operator, :location
   belongs_to :location
 
+  # Validations — the admin room forms (web + mobile API) expose these
+  # NOT NULL columns; a blank field typecasts to nil and used to reach
+  # Postgres as a NotNullViolation 500 instead of a field error (Tahoe
+  # Longhouse "Meeting Room", 2026-07-20). numericality allows nil so a
+  # blank field reports only "can't be blank", not also "is not a number".
+  validates :name, presence: true
+  validates :capacity, :square_footage, :hourly_rate_in_cents, :credit_cost,
+    presence: true,
+    numericality: { only_integer: true, greater_than_or_equal_to: 0, allow_nil: true }
+
   # Scopes
   scope :active, -> { where(archived: [false, nil]) }
   scope :archived, -> { where(archived: true) }
