@@ -598,6 +598,65 @@ module Jellyswitch
         .sum(:amount_due).to_f / 100.0
     end
 
+    # A solo office tenant entered as a lease-plan subscription held directly
+    # by the User (no organization) was invisible to every membership rollup:
+    # not individual-plan subscribed, and no organization to ride in on
+    # (Tahoe Longhouse, Steven Klearman, 2026-07-20). They must count as an
+    # active lease member and in the dashboard's Active Members total.
+    test "a user directly holding an active lease-plan subscription counts as an active member" do
+      plan = plans(:cowork_tahoe_office_lease_plan)
+      plan.update!(location: @location)
+      tenant = create_member(organization: nil, out_of_band: false)
+      Subscription.create!(
+        plan: plan,
+        subscribable: tenant,
+        billable: tenant,
+        active: true,
+        start_date: 1.month.ago,
+      )
+
+      assert_includes @report.active_lease_members, tenant
+      assert_includes @report.total_active_members, tenant
+      assert_not_includes @report.active_members, tenant,
+        "paying-only active_members is intentionally individual-plan only"
+    end
+
+    test "an inactive direct lease subscription does not count" do
+      plan = plans(:cowork_tahoe_office_lease_plan)
+      plan.update!(location: @location)
+      tenant = create_member(organization: nil, out_of_band: false)
+      Subscription.create!(
+        plan: plan,
+        subscribable: tenant,
+        billable: tenant,
+        active: false,
+        start_date: 1.year.ago,
+      )
+
+      assert_not_includes @report.active_lease_members, tenant
+      assert_not_includes @report.total_active_members, tenant
+    end
+
+    test "org-based lease members still count and are not double-counted with direct leases" do
+      plan = plans(:cowork_tahoe_office_lease_plan)
+      plan.update!(location: @location)
+      member = create_member(
+        organization: organizations(:sierra_nevada_organization),
+        out_of_band: false,
+      )
+      # Same user ALSO directly holds a lease sub — must appear exactly once.
+      Subscription.create!(
+        plan: plan,
+        subscribable: member,
+        billable: member,
+        active: true,
+        start_date: 1.month.ago,
+      )
+
+      assert_includes @report.active_lease_members, member
+      assert_equal 1, @report.active_lease_members.where(id: member.id).count
+    end
+
     def create_paid_invoice(billable:, amount_cents:, date:, due_date: nil)
       Invoice.create!(
         billable: billable,
