@@ -106,4 +106,25 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert body.at_css("#room_door_#{plain.id}")["data-beacon-warning"].blank?,
       "plain door checkbox must not prompt"
   end
+
+  # The location "Overage / add-on meeting room time" rate (ADR 0012) is room
+  # pricing, so its form lives on the Rooms & Reservations page — admins only.
+  test "index shows the meeting room pricing form to admins" do
+    log_in users(:cowork_tahoe_admin)
+
+    get rooms_path, env: default_env
+
+    assert_response :success
+    assert_match "Meeting Room Pricing", response.body
+    assert_match "overage_rate", response.body
+  end
+
+  test "index hides the meeting room pricing form from members" do
+    log_in users(:cowork_tahoe_member)
+
+    get rooms_path, env: default_env
+
+    assert_response :success
+    assert_no_match(/overage_rate/, response.body)
+  end
 end

@@ -29,12 +29,22 @@ class Operator::SettingsPaymentsTest < ActionDispatch::IntegrationTest
 
   # ADR 0012: the "Overage / add-on meeting room time" rate is location-scoped
   # and entered in dollars (HasDollars virtual writes overage_rate_in_cents).
+  # Its form lives on the Rooms & Reservations page, so saving returns there.
   test "update_payments saves the location overage rate" do
     patch settings_update_payments_path, env: default_env, params: {
       location: { overage_rate: "12.00" },
     }
 
-    assert_redirected_to settings_payments_path(location_id: @location.id)
+    assert_redirected_to rooms_path
     assert_equal 1200, @location.reload.overage_rate_in_cents
+  end
+
+  # The overage rate is room pricing, not a payment-processor setting — it is
+  # edited from Rooms & Reservations, and the Payments tab is Stripe-only.
+  test "payments page no longer carries the overage pricing form" do
+    get settings_payments_path, env: default_env
+
+    assert_response :success
+    assert_no_match(/overage_rate/, response.body)
   end
 end

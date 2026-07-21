@@ -13,9 +13,10 @@ class Operator::SettingsController < Operator::BaseController
     @operator = current_operator
   end
 
-  # Stripe Connect itself is OAuth, not a form. The Payments tab still carries
-  # one editable, location-scoped pricing field: the "Overage / add-on meeting
-  # room time" rate (ADR 0012) — see update_payments below.
+  # Stripe Connect itself is OAuth, not a form — the Payments tab is
+  # connection status only. The location-scoped "Overage / add-on meeting
+  # room time" rate (ADR 0012) is edited from the Rooms & Reservations page
+  # (operator/rooms#index), whose form still posts to update_payments below.
   def payments
     @location = selected_location
     @current_location = @location
@@ -24,10 +25,9 @@ class Operator::SettingsController < Operator::BaseController
     @location = selected_location
     @current_location = @location
     if @location.update(payments_params)
-      redirect_to settings_payments_path(location_id: @location.id), notice: "Payment settings saved."
+      redirect_to rooms_path, notice: "Meeting room pricing saved."
     else
-      flash.now[:error] = @location.errors.full_messages.to_sentence
-      render :payments, status: :unprocessable_entity
+      redirect_to rooms_path, flash: { error: @location.errors.full_messages.to_sentence }
     end
   end
   def doors
