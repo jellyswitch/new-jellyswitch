@@ -522,6 +522,20 @@ class UserTest < ActiveSupport::TestCase
     assert_raises(ActiveRecord::RecordNotUnique) { dupe.save(validate: false) }
   end
 
+  # feed_items has no DB foreign key to users; without dependent cleanup a
+  # deleted user's feed items linger with a nil `user` and 500 the operator
+  # feed (TLH login outage, 2026-07-20).
+  test "destroying a user destroys their feed items and comments" do
+    user = create(:user, operator: operators(:cowork_tahoe))
+    item = FeedItem.create!(operator: operators(:cowork_tahoe), user: user, blob: { type: "checkin" })
+    comment = FeedItemComment.create!(feed_item: item, user: user, comment: "hi")
+
+    user.destroy!
+
+    assert_not FeedItem.exists?(item.id)
+    assert_not FeedItemComment.exists?(comment.id)
+  end
+
   test "Users::Save turns a unique-index rejection into a graceful failure" do
     User.any_instance.stubs(:save).raises(ActiveRecord::RecordNotUnique.new("duplicate key"))
 

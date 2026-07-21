@@ -1,19 +1,24 @@
-<hr />
-<div class="row mb-2">
-  <div class="col-2">
-    <%= render "shared/small_profile_photo", user: feed_item_comment.user %>
+<%# Skip comments whose author was deleted out-of-band — feed_item_comments
+    has no FK to users, and a dangling user 500s every page rendering the
+    comment (same failure shape as the TLH feed outage, 2026-07-20). %>
+<% if feed_item_comment.user.present? %>
+  <hr />
+  <div class="row mb-2">
+    <div class="col-2">
+      <%= render "shared/small_profile_photo", user: feed_item_comment.user %>
+    </div>
+    <div class="col">
+      <p class="mb-1">
+        <%= link_to feed_item_comment.user.name, user_path(feed_item_comment.user) %> <small>replied</small>
+        <div class="clearfix"></div>
+        <small><%= time_ago_in_words(feed_item_comment.created_at) %> ago</small>
+      </p>
+    </div>
   </div>
-  <div class="col">
-    <p class="mb-1">
-      <%= link_to feed_item_comment.user.name, user_path(feed_item_comment.user) %> <small>replied</small>
-      <div class="clearfix"></div>
-      <small><%= time_ago_in_words(feed_item_comment.created_at) %> ago</small>
-    </p>
+  <div class="row">
+    <div class="col-2"></div>
+    <div class="col">
+      <%= feed_item_comment.comment %>
+    </div>
   </div>
-</div>
-<div class="row">
-  <div class="col-2"></div>
-  <div class="col">
-    <%= feed_item_comment.comment %>
-  </div>
-</div>
+<% end %>

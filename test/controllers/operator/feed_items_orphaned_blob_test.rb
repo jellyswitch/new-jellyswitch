@@ -25,6 +25,46 @@ class Operator::FeedItemsOrphanedBlobTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  # Regression: feed_items has no DB foreign key to users, so a user deleted
+  # without dependent cleanup (raw SQL, older sweeps) leaves feed items whose
+  # nil `user` 500'd the whole feed — locking every admin out of their landing
+  # page (TLH, 2026-07-20). Orphaned items must be skipped, not rendered.
+  test "feed renders when a feed item's user has been deleted" do
+    ghost = User.create!(
+      name: "Ghost", email: "ghost-#{SecureRandom.hex(4)}@example.com",
+      password: "password123", operator: @operator, admin_created: true,
+    )
+    FeedItem.create!(operator: @operator, user: ghost, blob: { type: "checkin" })
+    Activity.where(user_id: ghost.id).delete_all # signup activity FK blocks the raw delete
+    ghost.delete # raw delete, skipping callbacks — simulates the orphan
+
+    get "/feed_items", env: default_env
+
+    assert_response :success
+  end
+
+  # Same failure shape one level down: a comment whose author was deleted
+  # (16 such rows existed in prod from years-old deletions) crashes any page
+  # rendering it via the same profile-photo partial.
+  test "feed item show page renders when a comment's author has been deleted" do
+    item = FeedItem.create!(
+      operator: @operator, user: users(:cowork_tahoe_member), blob: { type: "checkin" },
+    )
+    ghost = User.create!(
+      name: "Ghost Commenter", email: "ghost-#{SecureRandom.hex(4)}@example.com",
+      password: "password123", operator: @operator, admin_created: true,
+    )
+    FeedItemComment.create!(feed_item: item, user: ghost, comment: "hello")
+    Activity.where(user_id: ghost.id).delete_all # signup activity FK blocks the raw delete
+    ghost.delete # raw delete, skipping callbacks — simulates the orphan
+
+    # The show page always renders comments (comments: true); the index only
+    # renders them when expanded, so this is the guaranteed crash path.
+    get "/feed_items/#{item.id}", env: default_env
+
+    assert_response :success
+  end
+
   test "feed renders when a reservation feed item points at a deleted reservation" do
     @operator.update!(reservation_notifications: true)
     FeedItem.create!(
