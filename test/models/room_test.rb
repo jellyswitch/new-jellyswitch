@@ -28,6 +28,30 @@ class RoomTest < ActiveSupport::TestCase
     refute @room.available?(start_time: other.datetime_in, duration: 60, except: res.id)
   end
 
+  # A blank numeric field in the admin room form typecasts to nil and used to
+  # reach Postgres as a NotNullViolation 500 (Tahoe Longhouse "Meeting Room",
+  # 2026-07-20). The model must catch it as a validation error instead.
+  test "blanking a required numeric field is a validation error, not a DB crash" do
+    %i[capacity square_footage hourly_rate_in_cents credit_cost].each do |field|
+      room = rooms(:small_meeting_room)
+      room.public_send("#{field}=", nil)
+
+      refute room.valid?, "#{field} = nil should fail validation before the DB"
+      assert room.errors.added?(field, :blank), "#{field} should report can't be blank"
+    end
+  end
+
+  test "name is required" do
+    @room.name = ""
+    refute @room.valid?
+    assert @room.errors.added?(:name, :blank)
+  end
+
+  test "negative numeric values are rejected" do
+    @room.capacity = -1
+    refute @room.valid?
+  end
+
   # ADR 0019: the no-coverage room list must widen from cash-rentable-only to
   # also include day-pass-unlockable rooms, so the buy-a-day-pass confirm can
   # surface instead of the included room being hidden.

@@ -21,6 +21,24 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_equal "Meeting Room 3B", @room.reload.name
   end
 
+  # Regression: submitting the room form with a blanked capacity used to hit
+  # Postgres as a NotNullViolation — a raw "An error occurred: PG::..." flash
+  # and a Honeybadger alert (Tahoe Longhouse "Meeting Room", 2026-07-20). The
+  # model validation must turn it into a field error and keep the old value.
+  test "update with a blank capacity shows a validation error instead of crashing" do
+    log_in users(:cowork_tahoe_admin)
+    original_capacity = @room.capacity
+
+    patch room_path(@room), env: default_env, params: {
+      room: { name: @room.name, capacity: "", hourly_rate_in_cents: "0" },
+    }
+
+    assert_match(/Capacity can't be blank/, flash.to_h.values.join(" "))
+    assert_no_match(/An error occurred/, flash.to_h.values.join(" "),
+      "a blank capacity must be a validation error, not a rescued exception")
+    assert_equal original_capacity, @room.reload.capacity
+  end
+
   # ADR 0012: the per-room "Counts toward day pass (call room)" toggle must be
   # permitted and persisted by the operator room form.
   test "update persists include_with_day_pass" do
