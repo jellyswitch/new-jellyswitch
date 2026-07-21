@@ -5,12 +5,13 @@ class Api::V1::DoorsController < Api::V1::BaseController
     location = current_location
     return render json: [] unless location
 
-    # Mirror the gating PR #467 (d56bea15) put on the dashboard doors
-    # list. /doors/:id/unlock already 403s for users without access via
-    # `user_can_access_building?`, but the Keys tab was rendering
-    # tappable door rows for paused-membership-no-day-pass users that
-    # would always fail at punch time — UX looks broken. Hide them.
-    return render json: [] unless current_api_user.has_building_access?(location)
+    # Gate the Keys tab on the SAME predicate the unlock endpoint uses, so
+    # door rows show if and only if a tap would succeed. PR #467 (d56bea15)
+    # hid rows that would 403 (paused-membership-no-day-pass users), but it
+    # gated on Permissions#has_building_access?, which lacks the reservation
+    # ±window clause (ADR 0013) — so a reservation-only visitor whom unlock
+    # would admit saw an empty Keys tab and was stranded at the door.
+    return render json: [] unless user_can_access_building?(current_api_user, location)
 
     doors = location.doors.where(available: true)
     # `private` is opt-in (a door is admin-only only when explicitly true). Treat

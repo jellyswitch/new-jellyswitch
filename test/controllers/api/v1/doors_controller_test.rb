@@ -157,6 +157,31 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     refute_includes ids, private_door.id, "member should not see the private door"
   end
 
+  # The Keys list must gate on the SAME predicate as unlock — a reservation
+  # inside its ±window (ADR 0013) has to surface door rows, or the visitor
+  # has a valid unlock right and no button to exercise it (Chris Horne,
+  # 2026-07-21: paid 8am booking, empty Keys tab, stranded at the door).
+  test "Keys list shows doors for a reservation-only visitor inside the access window" do
+    Reservation.new(user: @non_member, room: reservation_room,
+                    datetime_in: 30.minutes.from_now, minutes: 60).save!(validate: false)
+
+    get "/api/v1/doors", headers: headers(@non_member)
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |d| d["id"] }
+    assert_includes ids, @door.id, "visitor inside their reservation window should see the door"
+  end
+
+  test "Keys list stays empty for a reservation-only visitor outside the access window" do
+    Reservation.new(user: @non_member, room: reservation_room,
+                    datetime_in: 3.days.from_now.change(hour: 12), minutes: 60).save!(validate: false)
+
+    get "/api/v1/doors", headers: headers(@non_member)
+
+    assert_response :success
+    assert_equal [], JSON.parse(response.body), "no reservation window open — no keys"
+  end
+
   test "a member with building access is DENIED unlocking a private door" do
     private_door = Door.create!(
       name: "Server Room", slug: "srv-#{SecureRandom.hex(4)}",
