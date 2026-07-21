@@ -246,4 +246,55 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_nil @member.organization_id
     assert_equal false, @member.bill_to_organization
   end
+
+  # Staff comp a room on the house: comp: true books the member without
+  # capturing a charge — even on a priced room with a production operator.
+  # (Without comp, this same booking would enter the Stripe charge path.)
+  test "create_reservation with comp books a priced room free of charge" do
+    @operator.update!(billing_state: "production")
+    room = rooms(:small_meeting_room)
+    room.update!(hourly_rate_in_cents: 5000)
+
+    assert_difference -> { Reservation.count }, 1 do
+      assert_no_difference -> { Invoice.count } do
+        post "/api/v1/admin/members/#{@member.id}/create_reservation",
+          params: {
+            room_id: room.id,
+            datetime_in: (Time.current + 10.days).iso8601,
+            minutes: 60,
+            comp: true,
+          }.to_json,
+          headers: headers
+      end
+    end
+
+    assert_response :created
+    reservation = Reservation.order(:created_at).last
+    assert_equal @member.id, reservation.user_id
+    assert_nil reservation.captured_at, "a comped booking must not capture a charge"
+  end
+
+  # The mobile "Add a Day Pass" action can schedule a comp for a future date —
+  # the endpoint honors params[:date] rather than assuming today.
+  test "create_day_pass books a free pass on a future date" do
+    # Date handling is under test, not billing — stub the Stripe invoice steps
+    # (same pattern as day_pass_access_test; the fixture location has no keys).
+    Billing::DayPasses::CreateStripeInvoice.stubs(:call!) { |context| context }
+    Billing::DayPasses::ChargeDayPassInvoice.stubs(:call!) { |context| context }
+
+    free_type = DayPassType.create!(
+      operator: @operator, location: locations(:cowork_tahoe_location),
+      name: "Comp Pass", amount_in_cents: 0, available: true,
+    )
+    future = 5.days.from_now.to_date
+
+    post "/api/v1/admin/members/#{@member.id}/create_day_pass",
+      params: { day_pass_type_id: free_type.id, date: future.iso8601 }.to_json,
+      headers: headers
+
+    assert_response :created
+    day_pass = DayPass.order(:created_at).last
+    assert_equal @member.id, day_pass.user_id
+    assert_equal future, day_pass.day
+  end
 end

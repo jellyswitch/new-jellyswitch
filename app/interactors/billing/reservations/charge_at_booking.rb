@@ -22,6 +22,7 @@ class Billing::Reservations::ChargeAtBooking
 
   def call
     return if reservation.captured_at.present? # already billed — idempotent
+    return if context.comp # staff comped the booking — no charge
 
     # Demo operators move no real money on ANY path. The should_charge_* gates in
     # ChargeCalculator already zero most demo bookings, but the metered day-pass /

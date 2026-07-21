@@ -344,6 +344,9 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     datetime_in = Time.parse(params[:datetime_in])
     minutes = params[:minutes].to_i
 
+    # comp: staff books the room on the house — no credits burned, no charge
+    # captured, no coverage pass consumed. The member still gets confirmation
+    # emails and reservation-window door access.
     result = Billing::Reservations::CreateRoomReservation.call(
       reservation_params: {
         datetime_in: datetime_in,
@@ -353,6 +356,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       },
       user: user,
       location: current_location,
+      comp: ActiveModel::Type::Boolean.new.cast(params[:comp]) || false,
     )
 
     if result.success?
