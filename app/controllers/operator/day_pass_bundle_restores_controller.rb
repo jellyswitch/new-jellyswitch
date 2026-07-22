@@ -4,7 +4,8 @@ class Operator::DayPassBundleRestoresController < Operator::BaseController
   # Admin "Restore a pass" — returns one pass to a member's Day Pass Bundle
   # (e.g. they burned it by accident). Auditable: who restored it, when, why.
   def create
-    user   = current_tenant.users.find(params[:user_id])
+    # Nested under /users/:user_id, so the param is the friendly_id slug.
+    user   = current_tenant.users.friendly.find(params[:user_id])
     # acts_as_tenant scopes DayPassBundle.find to current_tenant automatically.
     # Also scope to the member to prevent restoring another user's bundle via this route.
     bundle = user.day_pass_bundles.find(params[:day_pass_bundle_id])
