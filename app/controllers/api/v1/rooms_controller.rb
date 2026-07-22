@@ -580,9 +580,28 @@ class Api::V1::RoomsController < Api::V1::BaseController
       elsif !user.should_charge_for_reservation?(location, day) || info
         { cents: 0, label: included_with_label(user, location, day) }
       else
-        { cents: 0, label: "Day pass required" }
+        { cents: 0, label: day_pass_required_label(room, location) }
       end
     end
+  end
+
+  # Uncovered booker on a $0 room: when a day pass unlocks the room, sell the
+  # cheap path by naming the price ("Included with $40 day pass") — the amount
+  # comes from the SAME type pick as the buy-prompt (ADR 0019), so the list
+  # label and the checkout number can never disagree. Rooms a pass does NOT
+  # unlock (include_with_day_pass false) keep the plain warning.
+  def day_pass_required_label(room, location)
+    return "Day pass required" unless room.include_with_day_pass?
+    unless defined?(@room_booking_day_pass_type)
+      @room_booking_day_pass_type = pick_default_room_booking_day_pass_type(location)
+    end
+    return "Day pass required" unless @room_booking_day_pass_type
+    "Included with #{short_dollars(@room_booking_day_pass_type.amount_in_cents)} day pass"
+  end
+
+  # "$40" for whole-dollar amounts, "$37.50" otherwise.
+  def short_dollars(cents)
+    (cents % 100).zero? ? "$#{cents / 100}" : format("$%.2f", cents / 100.0)
   end
 
   # Why a room reads as covered, for the list label.
@@ -632,6 +651,7 @@ class Api::V1::RoomsController < Api::V1::BaseController
       amenity_features: room.amenity_feature_names,
       features: room.features || [],
       rentable: room.rentable?,
+      include_with_day_pass: room.include_with_day_pass?,
       available: (room.available_now? rescue false),
       photo_url: (room.photo.attached? ? url_for(room.photo) : nil rescue nil),
     }

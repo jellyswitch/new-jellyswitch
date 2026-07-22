@@ -282,6 +282,11 @@ Two kinds of bookable **Room**, distinguished by `hourly_rate_in_cents`:
 - **Call room** — a $0 room (`hourly_rate_in_cents == 0`), for an individual taking calls. Covered by a **Day Pass**'s included allowance, then the location **Overage / add-on** rate. Whether a room draws on the day-pass bucket is the per-room **`include_with_day_pass`** flag (defaults to "true when the rate is $0", preserving today's behavior).
 - **Meeting room** — a priced room (`rate > 0`), for a **group up to its `capacity`**. Always billed at its own hourly rate, captured at booking; **never** drawn from the day-pass bucket (ADR 0012).
 
+## Room visibility (prospects)
+
+An **uncovered** user (no membership, office lease, or Day Pass for the date) sees exactly the rooms they can **pay their way into**: every priced **Meeting room**, plus **Call rooms** flagged `include_with_day_pass`. A $0 room *without* the flag is member-only and stays hidden — a pass can't unlock it, so showing it would only invert the confusion. The room-list label for a pass-unlockable room **names the pass price** ("Included with $40 day pass"), sourced from the same default-pass pick as the buy-prompt, so the label and the checkout number can never disagree.
+_Avoid_: "premium rooms" in prospect-facing copy — say what unlocks the room instead.
+
 ## Access window
 
 The span around a **Reservation** during which the booker may unlock the building on that reservation alone: `Operator.building_access_window_minutes` before start to the same number of minutes after end (default 60). Outside it, the reservation grants no access. Replaces the prior behavior where any reservation granted all-day access (ADR 0013). Day Pass / membership / lease access are unaffected.
