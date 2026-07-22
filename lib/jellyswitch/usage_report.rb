@@ -10,8 +10,6 @@ class Jellyswitch::UsageReport
     @reservations ||= user.reservations.this_month.group_by_day(:datetime_in).count.reject do |k,v|
       v < 1
     end
-  rescue
-    @reservations = {}
   end
 
   def door_punches
@@ -20,30 +18,28 @@ class Jellyswitch::UsageReport
     @door_punches ||= user.door_punches.where(room_entry: false).this_month.group_by_day(:created_at).count.reject do |k,v|
       v < 1
     end
-  rescue
-    @door_punches = {}
   end
 
   def checkins
     @checkins ||= user.checkins.this_month.group_by_day(:datetime_in).count.reject do |k,v|
       v < 1
     end
-  rescue
-    @checkins = {}
   end
 
   def day_passes
-    @day_passes ||= user.day_passes.this_month.group_by_day(:day).count.reject do |k,v|
+    # `day` is a plain date — without time_zone: false groupdate treats it as
+    # midnight UTC and shifts every pass back a day for Pacific tenants.
+    @day_passes ||= user.day_passes.this_month.group_by_day(:day, time_zone: false).count.reject do |k,v|
       v < 1
     end
-  rescue
-    @day_passes = {}
   end
 
   def days_used
     @days_used ||= reservations.merge(door_punches) do |_,o,n|
       o+n
     end.merge(checkins) do |_,o,n|
+      o+n
+    end.merge(day_passes) do |_,o,n|
       o+n
     end
   end

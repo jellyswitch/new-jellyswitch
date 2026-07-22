@@ -297,4 +297,18 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_equal @member.id, day_pass.user_id
     assert_equal future, day_pass.day
   end
+
+  test "usage reports visit_days derived from collected activity" do
+    @member.checkins.destroy_all
+    door = Door.create!(name: "Front Door", operator: @operator,
+                        location: locations(:cowork_tahoe_location), available: true)
+    DoorPunch.create!(user: @member, door: door, operator: @operator)
+
+    get "/api/v1/admin/members/#{@member.id}/usage", headers: headers
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body.key?("visit_days"), "usage JSON is missing visit_days"
+    assert_operator body["visit_days"], :>=, 1
+  end
 end

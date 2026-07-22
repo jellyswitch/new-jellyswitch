@@ -205,6 +205,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       reservation_count: reservation_count,
       checkin_count: checkin_count,
       day_pass_count: day_pass_count,
+      visit_days: Jellyswitch::UsageReport.new(user).days_used_count,
     }
   end
 

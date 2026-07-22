@@ -530,6 +530,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       reservation_minutes: user.reservations.where(cancelled: false).where("datetime_in >= ?", period_start).sum(:minutes),
       checkin_count: user.checkins.where("created_at >= ?", period_start).count,
       day_pass_count: user.day_passes.where("day >= ?", period_start.to_date).count,
+      visit_days: Jellyswitch::UsageReport.new(user).days_used_count,
       period: Time.current.strftime("%B %Y"),
     }
   end
