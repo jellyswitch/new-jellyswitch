@@ -910,6 +910,9 @@ Rails.application.routes.draw do
   resources :users, controller: "operator/users" do
     resources :comp_days, only: [:create], controller: "operator/comp_days"
     resources :day_pass_bundle_restores, only: [:create], controller: "operator/day_pass_bundle_restores"
+    # :id on destroy is the scheduled DayPass, not a bundle — CancelScheduledDay
+    # resolves the source bundle through the redemption row.
+    resources :day_pass_bundle_schedules, only: [:create, :destroy], controller: "operator/day_pass_bundle_schedules"
     collection do
       get "add_member", to: "operator/users#add_member"
       get :archived, to: "operator/users#archived"
