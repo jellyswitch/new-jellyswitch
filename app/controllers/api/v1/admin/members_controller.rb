@@ -284,7 +284,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
       }
     else
-      render_error("Could not schedule those days (#{result.outcome}).")
+      render_error(schedule_error_message(member, result))
     end
   end
 
@@ -310,7 +310,12 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
       }
     else
-      render_error("Could not cancel that day (#{result.outcome}).")
+      message = case result.outcome
+                when :too_late then "That day is already today or past — too late to cancel it."
+                when :not_scheduled then "That pass didn't come from a bundle."
+                else "Could not cancel that day (#{result.outcome})."
+                end
+      render_error(message)
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
@@ -633,6 +638,23 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   end
 
   private
+
+  # Raw interactor outcomes read like debug output in the staff-facing alert
+  # ("already_covered") — translate them. ScheduleDays coerces failed_date to a
+  # Date on every failure except an unparseable :invalid_date, so only the
+  # non-:invalid_date branches format it.
+  def schedule_error_message(member, result)
+    case result.outcome
+    when :already_covered
+      "#{member.name} already has coverage for #{result.failed_date.strftime('%b %-d')} — nothing was burned."
+    when :no_bundle
+      "#{member.name} has no bundle pass available for #{result.failed_date.strftime('%b %-d')}."
+    when :invalid_date
+      "Pick a date between today and #{Billing::DayPassBundles::ScheduleDay::HORIZON_DAYS} days out."
+    else
+      "Could not schedule those days (#{result.outcome})."
+    end
+  end
 
   def interest_tags_json(user)
     user.interest_tags.order(:product).map { |tag| { product: tag.product, source: tag.source } }

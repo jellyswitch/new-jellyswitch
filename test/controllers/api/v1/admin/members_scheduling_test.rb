@@ -59,4 +59,49 @@ class Api::V1::Admin::MembersSchedulingTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_equal 4, @bundle.reload.passes_remaining
   end
+
+  # Error copy: staff-facing alerts show these strings verbatim — they must be
+  # sentences, not raw outcomes like "(already_covered)".
+  test "double-covering a day returns a human-readable error" do
+    post "/api/v1/admin/members/#{@member.id}/schedule_bundle_days",
+         params: { dates: [(Date.current + 1).iso8601] }.to_json, headers: headers
+    assert_equal 4, @bundle.reload.passes_remaining
+
+    post "/api/v1/admin/members/#{@member.id}/schedule_bundle_days",
+         params: { dates: [(Date.current + 1).iso8601] }.to_json, headers: headers
+
+    error = JSON.parse(response.body)["error"]
+    assert_match "already has coverage", error
+    assert_match "nothing was burned", error
+    assert_no_match(/already_covered/, error)
+    assert_equal 4, @bundle.reload.passes_remaining
+  end
+
+  test "an exhausted bundle returns a human-readable error" do
+    ActsAsTenant.with_tenant(@operator) { @bundle.update!(passes_remaining: 0) }
+
+    post "/api/v1/admin/members/#{@member.id}/schedule_bundle_days",
+         params: { dates: [(Date.current + 1).iso8601] }.to_json, headers: headers
+
+    error = JSON.parse(response.body)["error"]
+    assert_match "no bundle pass available", error
+    assert_no_match(/no_bundle/, error)
+  end
+
+  test "cancelling a same-day burn returns a human-readable too-late error" do
+    tz = ActiveSupport::TimeZone[@location.time_zone.presence || "UTC"]
+    today = Time.current.in_time_zone(tz).to_date
+    dp = nil
+    ActsAsTenant.with_tenant(@operator) do
+      dp = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: today, performed_by: @admin).day_pass
+    end
+
+    post "/api/v1/admin/members/#{@member.id}/scheduled_bundle_days/#{dp.id}/cancel", headers: headers
+
+    error = JSON.parse(response.body)["error"]
+    assert_match "too late", error
+    assert_no_match(/too_late/, error)
+    assert_equal 4, @bundle.reload.passes_remaining
+  end
 end
