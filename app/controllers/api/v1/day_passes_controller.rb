@@ -12,6 +12,10 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         price: t.amount_in_cents,
         quantity: t.quantity,
         included_meeting_minutes: t.try(:included_meeting_room_minutes),
+        # Lets the client pitch the SAME pass the booking flow's buy-prompt
+        # quotes (pick_default_room_booking_day_pass_type): flagged type first,
+        # else its cheapest paid non-office fallback.
+        default_for_room_booking: t.default_for_room_booking,
       }
     }
   end
