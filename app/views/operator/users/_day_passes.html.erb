@@ -32,6 +32,21 @@
       </li>
     <% end %>
   </ul>
+  <%# Web parity with the mobile admin schedule picker: today = burn now
+      (front-desk member without the app), future = reserve ahead. ScheduleDay
+      picks the pack, so one control for all bundles, not one per row. %>
+  <% if user.day_pass_bundles.active.where(location: current_location).any? %>
+    <p class="text-muted small mb-1">
+      Use a pass for a day — today burns it now, a future date reserves it. Draws from the soonest-expiring pack.
+    </p>
+    <%= form_with url: user_day_pass_bundle_schedules_path(user), method: :post, class: "d-flex align-items-center mb-3" do |f| %>
+      <%= f.date_field :day, value: Time.zone.today, min: Time.zone.today,
+            max: Time.zone.today + Billing::DayPassBundles::ScheduleDay::HORIZON_DAYS,
+            class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
+      <%= f.submit "Use a pass", class: "btn btn-sm btn-outline-primary",
+            data: { turbo_confirm: "Use one of #{user.name}'s bundle passes for the selected date? Picking today burns it now." } %>
+    <% end %>
+  <% end %>
 <% end %>
 
 <% if @user.day_passes.count < 1 %>
@@ -42,23 +57,36 @@
   </div>
 <% else %>
   <h5 class="display-5 text-center mt-3">Day Passes:</h5>
+  <% bundle_sourced_ids = user.day_passes.bundle_sourced.pluck(:id).to_set %>
   <ul class="list-group list-group-flush">
     <% user.day_passes.order('day DESC').each do |day_pass| %>
       <li class="list-group-item">
         <div class="d-flex justify-content-between align-items-center">
           <div>
             <%= day_pass.pretty_day %>
+            <% if bundle_sourced_ids.include?(day_pass.id) %>
+              <span class="text-muted small">(from pack)</span>
+            <% end %>
             <% unless day_pass.reschedulable? %>
               <span class="text-muted small">(used)</span>
             <% end %>
           </div>
-          <% if day_pass.reschedulable? && policy(day_pass).reschedule? %>
-            <%= form_with url: reschedule_day_pass_path(day_pass), method: :patch, class: "d-flex align-items-center" do |f| %>
-              <%= f.date_field :day, value: day_pass.day, min: Time.zone.today, class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
-              <%= f.submit "Move", class: "btn btn-sm btn-outline-secondary",
-                    data: { turbo_confirm: "Move this pass to the selected date?" } %>
+          <div class="d-flex align-items-center">
+            <% if day_pass.reschedulable? && policy(day_pass).reschedule? %>
+              <%= form_with url: reschedule_day_pass_path(day_pass), method: :patch, class: "d-flex align-items-center" do |f| %>
+                <%= f.date_field :day, value: day_pass.day, min: Time.zone.today, class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
+                <%= f.submit "Move", class: "btn btn-sm btn-outline-secondary",
+                      data: { turbo_confirm: "Move this pass to the selected date?" } %>
+              <% end %>
             <% end %>
-          <% end %>
+            <% if bundle_sourced_ids.include?(day_pass.id) && day_pass.day > Time.zone.today %>
+              <%= button_to "Return to pack",
+                    user_day_pass_bundle_schedule_path(user, day_pass),
+                    method: :delete,
+                    class: "btn btn-sm btn-outline-secondary ml-1",
+                    form: { data: { turbo_confirm: "Cancel this scheduled day and return the pass to #{user.name}'s pack?" } } %>
+            <% end %>
+          </div>
         </div>
       </li>
     <% end %>
