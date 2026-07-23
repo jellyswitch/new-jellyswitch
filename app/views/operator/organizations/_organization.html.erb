@@ -6,7 +6,13 @@
   </div>
   <div class="row">
     <div class="col">
-      Owned by <%= link_to organization.owner.name, organization.owner %>
+      <%# Imported groups (e.g. the TLH OfficeRnD import) can be ownerless —
+          the association is optional, so mirror show.html.erb's guard. %>
+      <% if organization.owner %>
+        Owned by <%= link_to organization.owner.name, organization.owner %>
+      <% else %>
+        <span class="text-muted">No owner assigned</span>
+      <% end %>
     </div>
   </div>
   <% if view %>
