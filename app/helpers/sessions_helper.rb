@@ -26,14 +26,37 @@ module SessionsHelper
   # Returns the current logged-in user (if any)
   def current_user
     if (user_id = session[:user_id])
-      @current_user ||= User.find_by(id: session[:user_id])
+      @current_user ||= begin
+        user = User.find_by(id: user_id)
+        user if session_user_valid_for_tenant?(user)
+      end
     elsif (user_id = cookies.signed[:user_id])
       user = User.find_by(id: user_id)
-      if user && user.authenticated?(cookies[:remember_token])
+      if user && user.authenticated?(cookies[:remember_token]) && session_user_valid_for_tenant?(user)
         log_in(user)
         @current_user = user
       end
     end
+  end
+
+  # The session cookie is domain-wide (`domain: :all` in
+  # config/initializers/sessions.rb), so one `_magic_session` spans every
+  # tenant subdomain. Only honor a session/remember-me user on hosts belonging
+  # to their own operator — otherwise a member logged in on operator A was
+  # silently logged in on operator B's site as their A record, and anything
+  # they bought there (invoices, day passes) attached to a user B's admin
+  # can't even see. Platform staff (the `superadmin` BOOLEAN, not the
+  # per-operator "superadmin" role — mirrors
+  # Api::V1::BaseController#enforce_tenant_scope!) may cross operators, e.g.
+  # the app-subdomain → tenant hop and cross-tenant masquerade. A mismatch
+  # leaves the session and cookies untouched: the visitor is simply treated as
+  # logged out on this host, and stays logged in on their own tenant's site.
+  def session_user_valid_for_tenant?(user)
+    return false if user.nil?
+    return true if !defined?(current_tenant) || current_tenant.nil?
+    return true if user.superadmin == true
+
+    user.operator_id == current_tenant.id
   end
 
   def current_checkin

@@ -47,9 +47,13 @@ class MasqueradeController < Operator::BaseController
 
   def stop_masquerading
     raise("Not currently masquerading") if session[:masquerade_by_user_id].nil?
-    raise("Only admin users are allowed to masquerade") if !current_user.admin?
-    session[:user_id] = session[:masquerade_by_user_id]
-    ahoy.authenticate User.find(session[:user_id].to_i)
+    # Validate the stored ORIGINAL user, not current_user — while masquerading,
+    # current_user is the (non-admin) member, so checking current_user here
+    # made every stop-masquerading attempt raise.
+    original_user = User.find(session[:masquerade_by_user_id].to_i)
+    raise("Only admin users are allowed to masquerade") if !original_user.admin?
+    session[:user_id] = original_user.id
+    ahoy.authenticate original_user
     session[:location_id] = session[:masquerade_original_location]
   end
 end
