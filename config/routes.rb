@@ -17,6 +17,8 @@ Rails.application.routes.draw do
     scope "concierge/:operator_subdomain" do
       get  "/",                       to: "concierge#show", as: :concierge
       get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
+      # One-line embed: a floating chat-bubble launcher that opens the widget.
+      get  "/launcher.js",            to: "concierge#launcher", as: :concierge_launcher
       post "/capture",                to: "concierge#create", as: :concierge_capture
       # Public checkout (Phase 3): create account + buy a day pass, no login.
       get  "/checkout", to: "concierge#checkout", as: :concierge_checkout

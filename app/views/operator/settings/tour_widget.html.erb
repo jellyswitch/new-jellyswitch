@@ -94,7 +94,12 @@
       function render() {
         var publicPath = withLocation(publicBase, picker.value);
         var previewPath = withLocation(previewBase, picker.value);
-        iframeBox.value = '<iframe src="' + publicPath + '" width="100%" height="600" style="border:none;" title="Request a tour"></iframe>';
+        // The widget posts { jswEmbedHeight } (see the embed layout), so the
+        // snippet ships a listener that grows the iframe past the 600px fallback.
+        iframeBox.value =
+          '<iframe src="' + publicPath + '" width="100%" height="600" style="border:none;width:100%;" title="Request a tour"></iframe>\n' +
+          '<script>window.addEventListener("message",function(e){if(!e.data||!e.data.jswEmbedHeight)return;' +
+          'document.querySelectorAll("iframe").forEach(function(f){if(f.contentWindow===e.source)f.style.height=e.data.jswEmbedHeight+"px";});});<\/script>';
         formBox.value = '<form action="' + publicPath + '" method="post">\n' +
                         '  <input name="name" placeholder="Your name" required>\n' +
                         '  <input name="email" type="email" placeholder="Email" required>\n' +
@@ -106,6 +111,13 @@
       }
 
       picker.addEventListener('change', render);
+
+      // Mirror the snippet's auto-height listener so the live preview grows too.
+      window.addEventListener('message', function (e) {
+        if (e.data && e.data.jswEmbedHeight && preview.contentWindow === e.source) {
+          preview.style.height = e.data.jswEmbedHeight + 'px';
+        }
+      });
 
       document.querySelectorAll('[data-clipboard-target]').forEach(function(btn) {
         btn.addEventListener('click', function() {

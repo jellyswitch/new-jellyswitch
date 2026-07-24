@@ -98,13 +98,27 @@
   <% preview_token = Embed::ConciergeController.verifier.generate({
        "operator_id" => @operator.id, "exp" => 1.hour.from_now.to_i }) %>
   <% public_url = embed_concierge_url(operator_subdomain: @operator.subdomain, host: request.host_with_port) %>
+  <% launcher_url = embed_concierge_launcher_url(operator_subdomain: @operator.subdomain, host: request.host_with_port) %>
   <% preview_url = embed_concierge_url(operator_subdomain: @operator.subdomain, host: request.host_with_port, preview_token: preview_token) %>
 
   <h5>Embed on your website</h5>
-  <div class="input-group mb-4">
-    <textarea id="cx-snippet" class="form-control" rows="3" readonly><iframe src="<%= public_url %>" width="380" height="560" style="border:none;" title="<%= @operator.name %> Concierge"></iframe></textarea>
-    <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('cx-snippet').value)">Copy</button>
+  <p class="text-muted mb-2">
+    Recommended — paste this one line before <code>&lt;/body&gt;</code> (most site builders
+    have a "custom code" or "footer code" box). Visitors get a floating chat bubble in your
+    accent color on every page, with your offer as the teaser.
+  </p>
+  <div class="input-group mb-3">
+    <textarea id="cx-launcher-snippet" class="form-control" rows="2" readonly><script src="<%= launcher_url %>" async></script></textarea>
+    <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('cx-launcher-snippet').value)">Copy</button>
   </div>
+
+  <details class="mb-4">
+    <summary class="text-muted">Prefer an inline box instead of the floating bubble?</summary>
+    <div class="input-group mt-2">
+      <textarea id="cx-snippet" class="form-control" rows="3" readonly><iframe src="<%= public_url %>" width="380" height="560" style="border:none;" title="<%= @operator.name %> Concierge"></iframe></textarea>
+      <button class="btn btn-outline-secondary" type="button" onclick="navigator.clipboard.writeText(document.getElementById('cx-snippet').value)">Copy</button>
+    </div>
+  </details>
 
   <h5>Live preview</h5>
   <iframe src="<%= preview_url %>" width="380" height="560"

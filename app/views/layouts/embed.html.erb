@@ -17,5 +17,26 @@
   </head>
   <body class="embed-tour-request">
     <%= yield %>
+    <% if controller_name == "tour_requests" %>
+      <%# Auto-height: tell the host page how tall the widget is so the embed
+          iframe can grow past its fixed fallback height (600px in the snippet).
+          The payload is just a number, so "*" as target origin is fine. %>
+      <script>
+        (function () {
+          function send() {
+            // Measure the body's real content height (documentElement.scrollHeight
+            // never reports smaller than the iframe viewport, so it can only grow).
+            var body = document.body;
+            var cs = getComputedStyle(body);
+            var height = Math.ceil(body.getBoundingClientRect().height +
+                                   parseFloat(cs.marginTop) + parseFloat(cs.marginBottom));
+            window.parent.postMessage({ jswEmbedHeight: height }, "*");
+          }
+          window.addEventListener("load", send);
+          if (window.ResizeObserver) new ResizeObserver(send).observe(document.body);
+          else setTimeout(send, 500);
+        })();
+      </script>
+    <% end %>
   </body>
 </html>
