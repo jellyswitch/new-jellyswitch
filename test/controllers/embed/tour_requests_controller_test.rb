@@ -19,6 +19,12 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_select "input[name=_hp]"
   end
 
+  test "GET show includes the iframe auto-height script" do
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain)
+    assert_response :success
+    assert_includes @response.body, "jswEmbedHeight"
+  end
+
   test "GET show 404s when widget disabled" do
     @operator.update!(tour_widget_enabled: false)
     get embed_tour_request_path(operator_subdomain: @operator.subdomain)

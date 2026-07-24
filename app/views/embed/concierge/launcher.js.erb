@@ -1,0 +1,105 @@
+<%# The floating launcher a brand site gets from the one-line <script> embed:
+    a chat bubble (brand accent) that opens the Concierge widget in a panel,
+    plus a dismissible teaser pill showing the operator's offer/greeting hook.
+    Everything is namespaced jswcx- and z-indexed to float over host pages. %>
+(function () {
+  "use strict";
+  if (window.__jswConciergeLauncher) return;
+  window.__jswConciergeLauncher = true;
+
+  var WIDGET_URL = <%= raw @widget_url.to_json %>;
+  var ACCENT = <%= raw @operator.embed_accent_color.to_json %>;
+  var NAME = <%= raw @operator.concierge_display_name.to_json %>;
+  var TEASER_TEXT = <%= raw (@operator.concierge_offer_text.presence || @operator.concierge_greeting_text).to_json %>;
+  var KEY = "jswcx-" + <%= raw @operator.subdomain.to_json %>;
+  var Z = 2147483000;
+
+  function remember(name) { try { localStorage.setItem(KEY + name, "1"); } catch (e) {} }
+  function remembered(name) { try { return localStorage.getItem(KEY + name) === "1"; } catch (e) { return false; } }
+
+  var style = document.createElement("style");
+  style.textContent =
+    ".jswcx-btn{position:fixed;bottom:24px;right:20px;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;z-index:" + (Z + 1) + ";background:" + ACCENT + ";color:#fff;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;padding:0;}" +
+    ".jswcx-panel{position:fixed;bottom:96px;right:20px;width:380px;height:min(620px,calc(100vh - 120px));max-width:calc(100vw - 40px);z-index:" + Z + ";border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.22);overflow:hidden;background:#fff;display:none;}" +
+    ".jswcx-panel.jswcx-open{display:block;}" +
+    ".jswcx-frame{width:100%;height:100%;border:none;display:block;}" +
+    ".jswcx-teaser{position:fixed;bottom:34px;right:92px;max-width:280px;z-index:" + (Z + 1) + ";background:#fff;color:#111827;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:10px 30px 10px 14px;font:14px/1.4 system-ui,-apple-system,sans-serif;cursor:pointer;display:none;}" +
+    ".jswcx-teaser.jswcx-show{display:block;}" +
+    ".jswcx-teaser-x{position:absolute;top:2px;right:6px;border:none;background:none;color:#9ca3af;font-size:16px;cursor:pointer;padding:2px;line-height:1;}" +
+    "@media (max-width:480px){.jswcx-panel{top:10px;left:10px;right:10px;bottom:96px;width:auto;height:auto;max-width:none;}}";
+  document.head.appendChild(style);
+
+  var CHAT_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2z"/></svg>';
+  var CLOSE_ICON = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  var panel = document.createElement("div");
+  panel.className = "jswcx-panel";
+
+  var btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "jswcx-btn";
+  btn.setAttribute("aria-label", "Chat with " + NAME);
+  btn.innerHTML = CHAT_ICON;
+
+  var teaser = document.createElement("div");
+  teaser.className = "jswcx-teaser";
+  teaser.setAttribute("role", "button");
+  var teaserText = document.createElement("span");
+  teaserText.textContent = TEASER_TEXT;
+  var teaserX = document.createElement("button");
+  teaserX.type = "button";
+  teaserX.className = "jswcx-teaser-x";
+  teaserX.setAttribute("aria-label", "Dismiss");
+  teaserX.textContent = "×";
+  teaser.appendChild(teaserText);
+  teaser.appendChild(teaserX);
+
+  var isOpen = false;
+  var frame = null;
+
+  function hideTeaser() { teaser.classList.remove("jswcx-show"); }
+
+  function openPanel() {
+    if (!frame) {
+      frame = document.createElement("iframe");
+      frame.className = "jswcx-frame";
+      frame.src = WIDGET_URL;
+      frame.title = "Chat with " + NAME;
+      frame.setAttribute("allow", "payment");
+      panel.appendChild(frame);
+    }
+    panel.classList.add("jswcx-open");
+    btn.innerHTML = CLOSE_ICON;
+    btn.setAttribute("aria-label", "Close chat");
+    isOpen = true;
+    hideTeaser();
+    remember("-opened");
+  }
+
+  function closePanel() {
+    panel.classList.remove("jswcx-open");
+    btn.innerHTML = CHAT_ICON;
+    btn.setAttribute("aria-label", "Chat with " + NAME);
+    isOpen = false;
+  }
+
+  btn.addEventListener("click", function () { isOpen ? closePanel() : openPanel(); });
+  teaser.addEventListener("click", openPanel);
+  teaserX.addEventListener("click", function (e) {
+    e.stopPropagation();
+    hideTeaser();
+    remember("-teaser-dismissed");
+  });
+
+  function mount() {
+    document.body.appendChild(panel);
+    document.body.appendChild(btn);
+    document.body.appendChild(teaser);
+    if (TEASER_TEXT && !remembered("-teaser-dismissed") && !remembered("-opened")) {
+      setTimeout(function () { if (!isOpen) teaser.classList.add("jswcx-show"); }, 2500);
+    }
+  }
+
+  if (document.body) mount();
+  else document.addEventListener("DOMContentLoaded", mount);
+})();

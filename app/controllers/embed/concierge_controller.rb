@@ -37,6 +37,25 @@ module Embed
       render :show
     end
 
+    # One-line embed for operator marketing sites: a <script> tag that injects a
+    # floating chat bubble which opens the widget in a panel. Served as JS (not
+    # an iframe snippet) so site owners paste a single line and every page gets
+    # the launcher. When the Concierge is off this renders a no-op instead of a
+    # 404 so embedded sites never log script errors.
+    def launcher
+      expires_in 10.minutes, public: true
+      unless @operator.concierge_active?
+        return render(js: "/* Concierge is not enabled for #{@operator.subdomain} */")
+      end
+
+      @widget_url = embed_concierge_url(
+        operator_subdomain: @operator.subdomain,
+        host: request.host_with_port,
+        location_id: params[:location_id].presence,
+      )
+      render :launcher, formats: [:js], layout: false
+    end
+
     # Public checkout page (Stripe Elements). Product = day pass, bundle, or
     # membership (plan), pre-selected via day_pass_type_id or plan_id.
     def checkout

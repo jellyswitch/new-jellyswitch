@@ -396,6 +396,17 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(assigns(:report)).to include(:chatters, :non_chatters, :lift)
     end
 
+    describe "embed snippet section" do
+      render_views
+
+      it "offers the one-line launcher script as the recommended embed" do
+        get :concierge
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("launcher.js")
+        expect(response.body).to include("floating chat bubble")
+      end
+    end
+
     it "PATCH #update_concierge saves the lean per-brand settings" do
       patch :update_concierge, params: { operator: {
         concierge_enabled: "1",
