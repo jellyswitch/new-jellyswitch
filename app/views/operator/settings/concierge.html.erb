@@ -56,20 +56,11 @@
       <%= f.text_field :concierge_greeting, class: "form-control",
             placeholder: @operator.concierge_greeting_text %>
     </div>
-    <div class="form-group mb-3">
+    <div class="form-group mb-4">
       <%= f.label :concierge_offer_text, "Offer / hook (optional)" %>
       <%= f.text_field :concierge_offer_text, class: "form-control",
-            placeholder: "First day pass 50% off — ask for the code" %>
-    </div>
-    <div class="form-group mb-3">
-      <%= f.label :concierge_promo_code, "Promo code (optional)" %>
-      <%= f.text_field :concierge_promo_code, class: "form-control", placeholder: "FIRSTDAY" %>
-      <small class="form-text text-muted">Surfaced in the chat and pre-applied at checkout.</small>
-    </div>
-    <div class="form-group mb-4">
-      <%= f.label :concierge_off_hours_message, "Off-hours message" %>
-      <%= f.text_field :concierge_off_hours_message, class: "form-control",
-            placeholder: "We're closed — leave your email and we'll get back to you." %>
+            placeholder: "First day pass 50% off — mention this chat" %>
+      <small class="form-text text-muted">Shown as a gift bubble in the chat and as the floating launcher's teaser.</small>
     </div>
 
     <h5>Look &amp; feel <small class="text-muted">(shared with your tour widget)</small></h5>

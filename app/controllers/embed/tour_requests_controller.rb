@@ -38,7 +38,7 @@ module Embed
         return render(:show, status: :unprocessable_entity)
       end
 
-      permitted = params.permit(:name, :email, :phone, :message, :location_id)
+      permitted = params.permit(:name, :email, :phone, :message, :preferred_time, :location_id)
       location = @operator.locations.find_by(id: permitted[:location_id])
 
       if permitted[:email].blank? || permitted[:name].blank?
@@ -64,9 +64,10 @@ module Embed
         occurred_at: Time.current,
         subject: location,
         payload: {
-          "message"  => permitted[:message],
-          "source"   => "widget",
-          "referrer" => request.referer,
+          "message"        => permitted[:message],
+          "preferred_time" => permitted[:preferred_time].presence,
+          "source"         => "widget",
+          "referrer"       => request.referer,
         },
       )
 

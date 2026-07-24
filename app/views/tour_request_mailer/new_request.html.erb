@@ -7,6 +7,9 @@
   <% if @requester.phone.present? %>
     <li><strong>Phone:</strong> <%= @requester.phone %></li>
   <% end %>
+  <% if @preferred_time.present? %>
+    <li><strong>Preferred time:</strong> <%= @preferred_time %></li>
+  <% end %>
 </ul>
 
 <% if @message.present? %>

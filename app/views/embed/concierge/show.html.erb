@@ -9,6 +9,7 @@
      data-location-id="<%= @location&.id %>"
      data-ios="<%= @operator.ios_url %>"
      data-android="<%= @operator.android_url %>"
+     data-turnstile-sitekey="<%= ENV["TURNSTILE_SITEKEY"] %>"
      style="--cx-primary: <%= @theme[:primary] %>; --cx-accent: <%= @theme[:accent] %>;">
 
   <% if admin_previewing? && !@operator.concierge_active? %>
@@ -48,9 +49,14 @@
   .cx-actions { padding: 10px 14px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #e5e7eb; }
   .cx-btn { border: 1px solid var(--cx-accent); background: #fff; color: var(--cx-accent); border-radius: 10px; padding: 10px 12px; font-size: 14px; cursor: pointer; text-align: left; }
   .cx-btn:hover { background: var(--cx-accent); color: #fff; }
+  .cx-btn:disabled { opacity: .6; cursor: default; }
   .cx-cta { background: var(--cx-accent); color: #fff; border: none; text-align: center; font-weight: 600; text-decoration: none; display: block; }
   .cx-input { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 10px; font-size: 14px; }
 </style>
+
+<% if ENV["TURNSTILE_SITEKEY"].present? %>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=jswcxTurnstileReady&render=explicit" async defer></script>
+<% end %>
 
 <script>
 (function () {
@@ -61,6 +67,7 @@
   var captureUrl = root.dataset.captureUrl;
   var checkoutUrl = root.dataset.checkoutUrl;
   var locationId = root.dataset.locationId;
+  var tsSitekey = root.dataset.turnstileSitekey || "";
   var transcript = [];
 
   function price(cents) { return "$" + (Number(cents || 0) / 100).toFixed(2); }
@@ -79,6 +86,50 @@
     actions.appendChild(b);
     return b;
   }
+  function emailInput() {
+    var email = document.createElement("input");
+    email.className = "cx-input"; email.type = "email"; email.placeholder = "you@email.com";
+    actions.appendChild(email);
+    return email;
+  }
+  function validEmail(value) { return /.+@.+\..+/.test(value); }
+
+  // --- Turnstile (rendered only when the operator's platform has it on).
+  // The server verifies the token on capture, so the widget must produce one.
+  var tsWidgetId = null, tsPendingEl = null;
+  window.jswcxTurnstileReady = function () { if (tsPendingEl) renderTurnstile(tsPendingEl); };
+  function renderTurnstile(container) {
+    if (!tsSitekey) return;
+    if (!window.turnstile) { tsPendingEl = container; return; }
+    tsPendingEl = null;
+    try { tsWidgetId = window.turnstile.render(container, { sitekey: tsSitekey }); } catch (e) {}
+  }
+  function turnstileContainer() {
+    if (!tsSitekey) return null;
+    var d = document.createElement("div");
+    actions.appendChild(d);
+    renderTurnstile(d);
+    return d;
+  }
+  function turnstileToken() {
+    if (!tsSitekey || !window.turnstile || tsWidgetId === null) return "";
+    try { return window.turnstile.getResponse(tsWidgetId) || ""; } catch (e) { return ""; }
+  }
+  function turnstileReset() {
+    if (!tsSitekey || !window.turnstile || tsWidgetId === null) return;
+    try { window.turnstile.reset(tsWidgetId); } catch (e) {}
+  }
+
+  function captureBody(opt, email, message) {
+    var body = new URLSearchParams({
+      email: email, intent: opt.intent, message: message || "",
+      recommended_product: (opt.product && opt.product.name) || "",
+      location_id: locationId || "",
+      "cf-turnstile-response": turnstileToken(),
+    });
+    (transcript || []).forEach(function (t) { body.append("transcript[]", t); });
+    return body;
+  }
 
   function renderOptions() {
     clearActions();
@@ -87,23 +138,18 @@
 
   function chooseOption(opt) {
     say(opt.label, "user");
-    // Day pass / bundle / membership are self-serve on the web — go to checkout.
+    // Day pass / bundle / membership are self-serve — capture the email, then
+    // hand off to checkout (which pre-fills it).
     var checkoutParam = { day_pass: "day_pass_type_id", day_pass_bundle: "day_pass_type_id", membership: "plan_id" }[opt.intent];
     if (checkoutParam && opt.product && opt.product.id && checkoutUrl) {
-      say(opt.product.name + " — " + price(opt.product.price_cents) + ". Let's get you set up 👇", "bot");
-      clearActions();
-      button("Buy now — " + price(opt.product.price_cents), function () {
-        window.location.href = checkoutUrl + "?" + checkoutParam + "=" + encodeURIComponent(opt.product.id) +
-                               "&location_id=" + encodeURIComponent(locationId || "");
-      });
-      return;
-    }
-    if (opt.self_serve && opt.product) {
       var p = opt.product;
       var line = p.quantity > 1 ? (p.name + " — " + price(p.price_cents) + " for the pack")
                                 : (p.name + " — " + price(p.price_cents));
-      say("Great choice. " + line + ". Pop in your email and I'll get you set up.", "bot");
-    } else if (opt.intent === "question") {
+      say(line + ". Pop in your email and I'll take you to checkout.", "bot");
+      emailToCheckout(opt, checkoutParam);
+      return;
+    }
+    if (opt.intent === "question") {
       say("Happy to help — type your question and your email, and we'll reply.", "bot");
     } else {
       say("Got it — our team sets that up personally. Leave a note + your email and they'll reach out.", "bot");
@@ -111,36 +157,57 @@
     captureForm(opt);
   }
 
+  // Self-serve: email first (the lead survives an abandoned checkout), then
+  // redirect. The capture POST rides along with keepalive so navigation
+  // doesn't cancel it; a failed capture never blocks the sale.
+  function emailToCheckout(opt, checkoutParam) {
+    clearActions();
+    var email = emailInput();
+    turnstileContainer();
+    button("Continue to checkout — " + price(opt.product.price_cents), function () {
+      var e = (email.value || "").trim();
+      if (!validEmail(e)) { email.focus(); return; }
+      try { sessionStorage.setItem("jswcx-email", e); } catch (err) {}
+      try {
+        fetch(captureUrl, {
+          method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: captureBody(opt, e, ""), keepalive: true,
+        }).catch(function () {});
+      } catch (err) {}
+      window.location.href = checkoutUrl + "?" + checkoutParam + "=" + encodeURIComponent(opt.product.id) +
+                             "&location_id=" + encodeURIComponent(locationId || "");
+    });
+  }
+
   function captureForm(opt) {
     clearActions();
     var msg = document.createElement("textarea");
     msg.className = "cx-input"; msg.rows = 2; msg.placeholder = "Your question or message…";
     actions.appendChild(msg);
-    var email = document.createElement("input");
-    email.className = "cx-input"; email.type = "email"; email.placeholder = "you@email.com";
-    actions.appendChild(email);
-    button("Send", function () {
+    var email = emailInput();
+    turnstileContainer();
+    var send = button("Send", function () {
       var e = (email.value || "").trim();
-      if (!e) { email.focus(); return; }
+      if (!validEmail(e)) { email.focus(); return; }
       var m = (msg.value || "").trim();
-      if (m) say(m, "user");
-      submit(opt, e, m);
+      send.disabled = true;
+      submit(opt, e, m, function () { send.disabled = false; });
     });
   }
 
-  function submit(opt, email, message) {
-    clearActions();
-    var body = new URLSearchParams({
-      email: email, intent: opt.intent, message: message || "",
-      recommended_product: (opt.product && opt.product.name) || "",
-      location_id: locationId || "",
-    });
-    (transcript || []).forEach(function (t) { body.append("transcript[]", t); });
-
-    fetch(captureUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body })
+  function submit(opt, email, message, onRetry) {
+    fetch(captureUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: captureBody(opt, email, message) })
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (!data || !data.ok) { say("Hmm, something went wrong — please try again.", "bot"); return; }
+        if (data && data.error === "captcha") {
+          say("Please complete the captcha, then hit Send again.", "bot");
+          turnstileReset();
+          onRetry();
+          return;
+        }
+        if (!data || !data.ok) { say("Hmm, something went wrong — please try again.", "bot"); onRetry(); return; }
+        if (message) say(message, "user");
+        clearActions();
         if (data.self_serve) {
           say("You're all set! Finish up in the app 👇", "bot");
           ctaLinks(data.app);
@@ -148,7 +215,7 @@
           say("Thanks! Someone from the team will reach out shortly.", "bot");
         }
       })
-      .catch(function () { say("Hmm, something went wrong — please try again.", "bot"); });
+      .catch(function () { say("Hmm, something went wrong — please try again.", "bot"); onRetry(); });
   }
 
   function ctaLinks(app) {

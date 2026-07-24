@@ -101,6 +101,7 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
         email: "alex+tour@example.com",
         phone: "555-1212",
         message: "Interested in a hot desk",
+        preferred_time: "Weekday mornings",
         location_id: @location.id,
       }
     end
@@ -116,6 +117,7 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_equal @location.id, activity.subject_id
     assert_equal "Location", activity.subject_type
     assert_equal "Interested in a hot desk", activity.payload["message"]
+    assert_equal "Weekday mornings", activity.payload["preferred_time"]
     assert_equal "widget", activity.payload["source"]
 
     assert_redirected_to embed_tour_request_thank_you_path(operator_subdomain: @operator.subdomain)

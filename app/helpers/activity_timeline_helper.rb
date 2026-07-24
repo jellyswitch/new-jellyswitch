@@ -2,6 +2,8 @@ module ActivityTimelineHelper
   ICONS = {
     "signup"              => "fas fa-user-plus text-info",
     "tour"                => "fas fa-walking text-info",
+    "tour_request"        => "fas fa-walking text-info",
+    "chat"                => "fas fa-comments text-info",
     "checkin"             => "fas fa-sign-in-alt text-secondary",
     "door_punch"          => "fas fa-door-open text-secondary",
     "reservation"         => "fas fa-calendar-check text-primary",
@@ -31,6 +33,8 @@ module ActivityTimelineHelper
     case activity.kind
     when "signup"               then "Signed up"
     when "tour"                 then p["notes"].present? ? "Tour logged — #{truncate(p['notes'], length: 60)}" : "Tour logged"
+    when "tour_request"         then tour_request_label(p)
+    when "chat"                 then p["intent"].present? ? "Chatted with the Concierge — #{p['intent'].humanize.downcase}" : "Chatted with the Concierge"
     when "checkin"              then "Checked in at #{p['location_name'] || 'space'}"
     when "door_punch"           then "Entered #{p['door_name'] || 'a door'}"
     when "reservation"          then "Booked #{p['room_name'] || 'a room'}"
@@ -52,6 +56,15 @@ module ActivityTimelineHelper
     when "email_replied"        then "Replied to: #{engagement_subject(activity, p)}"
     else activity.kind.humanize
     end
+  end
+
+  # The widget request row carries what the prospect actually typed — staff
+  # shouldn't have to open the alert email to read it.
+  def tour_request_label(p)
+    parts = ["Tour request"]
+    parts << "“#{truncate(p['message'], length: 60)}”" if p["message"].present?
+    parts << "(prefers #{truncate(p['preferred_time'], length: 40)})" if p["preferred_time"].present?
+    parts.join(" — ")
   end
 
   # Invoice#amount_paid lags amount_due for invoices whose status is "paid"

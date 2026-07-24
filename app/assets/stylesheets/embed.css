@@ -17,5 +17,7 @@ body.embed-tour-request form button {
   margin-top: 16px; padding: 10px 18px; background: #2b6cb0; color: white;
   border: none; border-radius: 4px; font-size: 15px; cursor: pointer;
 }
-body.embed-tour-request form button:hover { background: #2c5282; }
+/* Hover is handled by the shared embed-theme in the layout (brightness filter),
+   so the operator's accent color survives hover instead of reverting to blue. */
+body.embed-tour-request form button:hover { filter: brightness(0.92); }
 body.embed-tour-request .intro { margin-bottom: 16px; color: #4a5568; }

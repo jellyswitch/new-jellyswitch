@@ -282,8 +282,9 @@ class Operator::SettingsController < Operator::BaseController
       :concierge_assistant_name,
       :concierge_greeting,
       :concierge_offer_text,
-      :concierge_promo_code,
-      :concierge_off_hours_message,
+      # concierge_promo_code / concierge_off_hours_message columns still exist
+      # but were never read anywhere — dropped from the form until a feature
+      # actually consumes them.
       :embed_font,
       :embed_accent_override,
     )

@@ -6,6 +6,7 @@ class TourRequestMailer < ApplicationMailer
     @location  = @activity.subject_type == "Location" ? @activity.subject : nil
     @operator  = @activity.operator
     @message   = @activity.payload["message"]
+    @preferred_time = @activity.payload["preferred_time"]
 
     mail(
       to: @recipient.email,
