@@ -4,6 +4,7 @@ New tour request
 
 Email: <%= @requester.email %>
 <% if @requester.phone.present? %>Phone: <%= @requester.phone %><% end %>
+<% if @preferred_time.present? %>Preferred time: <%= @preferred_time %><% end %>
 
 <% if @message.present? %>
 Message:

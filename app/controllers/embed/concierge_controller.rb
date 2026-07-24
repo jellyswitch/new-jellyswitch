@@ -78,9 +78,11 @@ module Embed
                name: params[:name], password: params[:password], phone: params[:phone],
                terms_accepted: params[:terms_accepted], token: params[:stripe_token] }
       args[product.is_a?(Plan) ? :plan : :day_pass_type] = product
+      args[:day] = checkout_day if checkout_day
       result = Concierge::PublicCheckout.call(args)
 
       if result.success?
+        log_purchase_chat(result.user, product, location)
         render json: { ok: true, app: { ios: @operator.ios_url, android: @operator.android_url } }
       else
         render json: { ok: false, error: result.error, message: result.message }, status: :unprocessable_entity
@@ -183,6 +185,39 @@ module Embed
     def checkout_location
       @operator.locations.find_by(id: params[:location_id]) ||
         @operator.locations.where(visible: true).order(:name).first
+    end
+
+    # The buyer's chosen day for a single day pass. Clamped to today..+60d;
+    # anything unparseable or out of range falls back to the interactor's
+    # Date.current default rather than failing the purchase.
+    def checkout_day
+      return @checkout_day if defined?(@checkout_day)
+      @checkout_day = begin
+        day = Date.iso8601(params[:day].to_s)
+        day if day >= Date.current && day <= Date.current + 60
+      rescue ArgumentError, TypeError
+        nil
+      end
+    end
+
+    # The conversion-lift metric cohorts on "has a chat Activity". Buyers who
+    # came straight through checkout (or whose pre-checkout capture failed)
+    # would otherwise count as non-chatters and deflate the Concierge's own
+    # lift number — log their first chat here. No-op if they already have one.
+    def log_purchase_chat(user, product, location)
+      return unless user
+      return if Activity.where(user: user, kind: :chat).exists?
+
+      intent = if product.is_a?(Plan) then "membership"
+               elsif product.bundle? then "day_pass_bundle"
+               else "day_pass"
+               end
+      Activity.log(
+        user: user, operator: @operator, kind: :chat, occurred_at: Time.current,
+        subject: location,
+        payload: { "intent" => intent, "recommended_product" => product.name,
+                   "source" => "concierge_checkout", "referrer" => request.referer },
+      )
     end
 
     # The selected product: a Plan (membership) when plan_id is given, otherwise

@@ -13,7 +13,7 @@ class TourRequestMailerTest < ActionMailer::TestCase
     @activity = Activity.create!(
       user: @requester, operator: @operator, kind: "tour_request",
       occurred_at: Time.current, subject: @location,
-      payload: { "message" => "Looking for office space for 3" },
+      payload: { "message" => "Looking for office space for 3", "preferred_time" => "Next Tuesday afternoon" },
     )
   end
 
@@ -36,5 +36,8 @@ class TourRequestMailerTest < ActionMailer::TestCase
     assert_match @requester.email, text_body
     assert_match "Looking for office space for 3", text_body
     assert_match @location.name, text_body
+
+    assert_match "Next Tuesday afternoon", html_body
+    assert_match "Next Tuesday afternoon", text_body
   end
 end

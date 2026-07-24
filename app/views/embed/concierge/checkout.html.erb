@@ -2,6 +2,9 @@
   accent = @operator.embed_accent_color
   price = number_to_currency(@product.amount_in_cents.to_f / 100.0)
   product_param = @product.is_a?(Plan) ? "plan_id" : "day_pass_type_id"
+  # A single day pass is for a specific day — let the buyer pick it. Bundles
+  # schedule days after purchase and memberships start today, so no picker.
+  day_picker = !@product.is_a?(Plan) && !@product.bundle?
 %>
 <div id="cxco"
      data-purchase-url="<%= embed_concierge_checkout_path(operator_subdomain: @operator.subdomain) %>"
@@ -22,6 +25,12 @@
     <input name="email" type="email" placeholder="you@email.com" autocomplete="email" required>
     <input name="phone" type="tel" placeholder="Phone number" autocomplete="tel" required>
     <input name="password" type="password" placeholder="Create a password" autocomplete="new-password" required>
+    <% if day_picker %>
+      <label class="day-label" for="cxco-day">Which day?</label>
+      <input id="cxco-day" name="day" type="date" required
+             value="<%= Date.current.iso8601 %>"
+             min="<%= Date.current.iso8601 %>" max="<%= (Date.current + 60).iso8601 %>">
+    <% end %>
     <div id="card-element"></div>
     <label class="terms">
       <input id="terms" name="terms_accepted" type="checkbox" value="1" required>
@@ -29,8 +38,9 @@
     </label>
     <div style="position:absolute;left:-5000px;" aria-hidden="true"><input name="_hp" tabindex="-1" autocomplete="off"></div>
     <button id="pay" type="submit">Pay <%= price %></button>
-    <div id="cxco-msg" class="msg"></div>
   </form>
+  <%# Outside the form: the form hides on success, the confirmation must not. %>
+  <div id="cxco-msg" class="msg"></div>
 </div>
 
 <style>
@@ -42,6 +52,7 @@
   #card-element { padding: 12px; border: 1px solid #d1d5db; border-radius: 10px; }
   #pay { padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; }
   #pay:disabled { opacity: .6; }
+  .day-label { font-size: 13px; color: #4b5563; margin-bottom: -6px; }
   .terms { font-size: 13px; color: #4b5563; display: flex; align-items: flex-start; gap: 8px; }
   .terms a { color: var(--accent); }
   .msg { font-size: 14px; min-height: 18px; }
@@ -63,6 +74,13 @@
 
   function show(text, cls) { msg.textContent = text; msg.className = "msg " + (cls || ""); }
 
+  // The widget stashes the email it captured before handing off to checkout.
+  try {
+    var stashed = sessionStorage.getItem("jswcx-email");
+    if (stashed && !form.email.value) form.email.value = stashed;
+    sessionStorage.removeItem("jswcx-email");
+  } catch (e) {}
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     pay.disabled = true; show("Processing…");
@@ -79,6 +97,7 @@
         _hp: form._hp.value,
       });
       body.append(root.dataset.productParam, root.dataset.productId);
+      if (form.day && form.day.value) body.append("day", form.day.value);
 
       fetch(root.dataset.purchaseUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: body })
         .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })

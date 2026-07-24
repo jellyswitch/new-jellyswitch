@@ -38,4 +38,27 @@ RSpec.describe "Embed::Concierge show", type: :request do
     expect(response).to have_http_status(:ok)
     expect(response.body).to include("not live yet")
   end
+
+  describe "Turnstile" do
+    around do |example|
+      old = ENV["TURNSTILE_SITEKEY"]
+      example.run
+    ensure
+      ENV["TURNSTILE_SITEKEY"] = old
+    end
+
+    it "renders the challenge script and sitekey when configured (the capture endpoint verifies the token)" do
+      ENV["TURNSTILE_SITEKEY"] = "sitekey-123"
+      get "/embed/concierge/#{operator.subdomain}"
+      expect(response.body).to include('data-turnstile-sitekey="sitekey-123"')
+      expect(response.body).to include("challenges.cloudflare.com/turnstile")
+    end
+
+    it "omits the challenge script when not configured" do
+      ENV["TURNSTILE_SITEKEY"] = nil
+      get "/embed/concierge/#{operator.subdomain}"
+      expect(response.body).to include('data-turnstile-sitekey=""')
+      expect(response.body).not_to include("challenges.cloudflare.com")
+    end
+  end
 end

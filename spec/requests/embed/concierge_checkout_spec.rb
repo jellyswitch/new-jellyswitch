@@ -20,6 +20,8 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("Coworking Day Pass")
       expect(response.body).to include("js.stripe.com/v3")
+      # A single day pass is day-specific — the buyer picks which day.
+      expect(response.body).to include("cxco-day")
       # The platform key from env config, never the DB column (which holds the
       # connected account's live-mode key).
       expect(response.body).to include(Rails.configuration.stripe[:publishable_key])
@@ -35,10 +37,15 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
 
   describe "POST purchase" do
     let(:params) { { day_pass_type_id: pass_type.id, location_id: location.id, email: "a@b.com", name: "A", password: "x", stripe_token: "tok_visa" } }
+    let(:buyer)  { create(:user, operator: operator) }
+
+    def stub_success
+      allow(Concierge::PublicCheckout).to receive(:call)
+        .and_return(double(success?: true, error: nil, message: nil, user: buyer))
+    end
 
     it "runs the checkout orchestration and returns ok on success" do
-      allow(Concierge::PublicCheckout).to receive(:call)
-        .and_return(double(success?: true, error: nil, message: nil))
+      stub_success
       post url, params: params
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)["ok"]).to be true
@@ -55,6 +62,45 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
     it "silently drops a honeypot submission" do
       post url, params: params.merge(_hp: "bot")
       expect(response).to have_http_status(:ok)
+    end
+
+    it "passes a valid in-range day through to the orchestration" do
+      day = Date.current + 3
+      stub_success
+      post url, params: params.merge(day: day.iso8601)
+      expect(Concierge::PublicCheckout).to have_received(:call)
+        .with(hash_including(day: day))
+    end
+
+    it "ignores a past or malformed day instead of failing the purchase" do
+      stub_success
+      post url, params: params.merge(day: "not-a-date")
+      expect(Concierge::PublicCheckout).to have_received(:call)
+        .with(hash_not_including(:day))
+
+      post url, params: params.merge(day: (Date.current - 1).iso8601)
+      expect(Concierge::PublicCheckout).to have_received(:call)
+        .with(hash_not_including(:day)).twice
+    end
+
+    it "logs a chat Activity for a buyer who has none, so the lift metric counts them as a chatter" do
+      stub_success
+      expect {
+        post url, params: params
+      }.to change { Activity.where(user: buyer, kind: :chat).count }.by(1)
+
+      activity = Activity.where(user: buyer, kind: :chat).last
+      expect(activity.payload["source"]).to eq("concierge_checkout")
+      expect(activity.payload["intent"]).to eq("day_pass")
+    end
+
+    it "does not duplicate the chat Activity when the pre-checkout capture already logged one" do
+      Activity.log(user: buyer, operator: operator, kind: :chat, occurred_at: Time.current,
+                   subject: location, payload: { "intent" => "day_pass" })
+      stub_success
+      expect {
+        post url, params: params
+      }.not_to change { Activity.where(user: buyer, kind: :chat).count }
     end
   end
 end
