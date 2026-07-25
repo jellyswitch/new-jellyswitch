@@ -5,7 +5,7 @@ module SessionsHelper
     ahoy.authenticate(user)
 
     # sets the user's current location to the current location, unless operator onboarding
-    subdomain = request.subdomains.first.downcase
+    subdomain = request.subdomains.first&.downcase
     if subdomain != "app" && current_location.present?
       user.update(current_location: current_location)
     end

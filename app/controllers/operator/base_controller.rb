@@ -14,7 +14,9 @@ class Operator::BaseController < ApplicationController
   layout "operator"
 
   def set_tenant_based_on_subdomain
-    subdomain = request.subdomains.first.downcase
+    # &. — hosts with no subdomain at all (`Host: localhost`, raw IPs from
+    # bot probes) must reach the presence guard, not crash on nil.downcase.
+    subdomain = request.subdomains.first&.downcase
     return unless subdomain.present?
 
     operator = Operator.find_by(subdomain: subdomain)
