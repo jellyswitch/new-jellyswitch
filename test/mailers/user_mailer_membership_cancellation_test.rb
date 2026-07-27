@@ -42,6 +42,40 @@ class UserMailerMembershipCancellationTest < ActionMailer::TestCase
     assert_match(/will not renew/i, mail.body.to_s)
   end
 
+  test "commitment cancellation states billing continues through the boundary date" do
+    mail = UserMailer.membership_cancellation_email(
+      @user, @operator, @subscription, @location,
+      immediate: false, commitment_ends_on: Time.utc(2026, 9, 26)
+    )
+    body = mail.body.to_s
+
+    assert_match "September 26, 2026", body
+    assert_match(/commitment through/i, body)
+    assert_match(/will end on/i, body)
+    # The standard scheduled-cancel promise would be FALSE here — the member
+    # keeps being billed until the commitment boundary.
+    refute_match(/won't be billed for it again/i, body)
+    refute_match(/will not renew/i, body)
+  end
+
+  test "commitment cancellation never reads Stripe for the period end" do
+    @subscription.expects(:current_period_end).never
+    mail = UserMailer.membership_cancellation_email(
+      @user, @operator, @subscription, @location,
+      immediate: false, commitment_ends_on: Time.utc(2026, 9, 26)
+    )
+    assert_match(/you won't be billed after that/i, mail.body.to_s)
+  end
+
+  test "commitment cancellation uses the scheduled subject" do
+    commitment = UserMailer.membership_cancellation_email(
+      @user, @operator, @subscription, @location,
+      immediate: false, commitment_ends_on: Time.utc(2026, 9, 26)
+    )
+    scheduled = UserMailer.membership_cancellation_email(@user, @operator, @subscription, @location, immediate: false)
+    assert_equal scheduled.subject, commitment.subject
+  end
+
   test "immediate cancellation says it is canceled effective today" do
     mail = UserMailer.membership_cancellation_email(@user, @operator, @subscription, @location, immediate: true)
     body = mail.body.to_s

@@ -41,6 +41,9 @@
                         <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
                         <% if @immediate %>
                         <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your <strong><%= @subscription.plan&.name %></strong> membership at <%= @operator.name %> has been canceled, effective today. You won't be billed for it again.</p>
+                        <% elsif @commitment_ends_on %>
+                        <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">We've received your request to cancel your <strong><%= @subscription.plan&.name %></strong> membership at <%= @operator.name %>. Your plan includes a commitment through <strong><%= @commitment_ends_on.strftime("%B %-d, %Y") %></strong>, so your membership &mdash; including its regular billing &mdash; will continue until then.</p>
+                        <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Your membership will end on <strong><%= @commitment_ends_on.strftime("%B %-d, %Y") %></strong>, and you won't be billed after that.</p>
                         <% else %>
                         <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">We've received your request to cancel your <strong><%= @subscription.plan&.name %></strong> membership at <%= @operator.name %>. It will not renew, and you won't be billed for it again.</p>
                         <% if @ends_on %>
