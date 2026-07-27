@@ -50,6 +50,25 @@ class Operator::SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_nil flash[:alert], "anonymous preview must not trigger the Whoops flash"
   end
 
+  # A committed member cancelling on the web hits honor_commitment_for_member,
+  # which bypasses both cancellation organizers — it must still send the
+  # written confirmation email stating billing continues to the boundary.
+  test "web cancel of a committed subscription schedules at the boundary and emails a confirmation" do
+    member = @subscription.subscribable
+    @subscription.plan.update!(interval: "monthly", commitment_interval: 6)
+    @subscription.update!(start_date: 2.months.ago.to_date, cancelling_at_end_of_billing_period: false)
+
+    log_in member
+    assert_enqueued_emails 1 do
+      delete subscription_path(@subscription), env: default_env
+    end
+
+    assert_response :redirect
+    assert_match(/committed through/i, flash[:notice].to_s)
+    assert @subscription.reload.cancelling_at_end_of_billing_period
+    assert @subscription.active?, "committed sub stays active until the boundary"
+  end
+
   # A real signed-in user who genuinely lacks permission (here: a different
   # CT member trying to edit someone else's subscription) SHOULD still see
   # the Whoops flash — that's the legitimate use of the rescue. Make sure

@@ -78,6 +78,42 @@ class Api::V1::SubscriptionsControllerTest < ActionDispatch::IntegrationTest
     assert_equal current.id, @subscription.reload.plan_id, "member must stay on their grandfathered plan"
   end
 
+  # ---- Commitment-scheduled cancels must email a written confirmation ----
+  # The in_commitment? branches bypass both cancellation organizers (and with
+  # them SendCancellationConfirmation), so before this coverage a committed
+  # member's only record of their scheduled end date was a dismissable in-app
+  # alert (Marian Sterk, TLH 7/26).
+
+  def arrange_commitment!
+    @subscription.plan.update!(interval: "monthly", commitment_interval: 6)
+    @subscription.update!(start_date: 2.months.ago.to_date, cancelling_at_end_of_billing_period: false)
+  end
+
+  test "period-end cancel of a committed subscription emails a confirmation" do
+    arrange_commitment!
+
+    assert_enqueued_emails 1 do
+      delete "/api/v1/subscriptions/#{@subscription.id}", headers: headers
+    end
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body["scheduled"], "commitment cancel must come back scheduled"
+    assert @subscription.reload.cancelling_at_end_of_billing_period
+  end
+
+  test "cancel_now of a committed subscription emails a confirmation and stays active" do
+    arrange_commitment!
+
+    assert_enqueued_emails 1 do
+      post "/api/v1/subscriptions/#{@subscription.id}/cancel_now", headers: headers
+    end
+
+    assert_response :success
+    assert JSON.parse(response.body)["scheduled"]
+    assert @subscription.reload.active?, "committed sub stays active until the boundary"
+  end
+
   test "plans list hides a costlier same-name plan from an active member" do
     current  = @subscription.plan
     costlier = ActsAsTenant.with_tenant(@operator) do

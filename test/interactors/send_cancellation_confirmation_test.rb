@@ -19,7 +19,7 @@ class SendCancellationConfirmationTest < ActiveSupport::TestCase
     mailer = mock("mail")
     mailer.expects(:deliver_later)
     UserMailer.expects(:membership_cancellation_email)
-             .with(@user, @operator, @subscription, @location, immediate: false)
+             .with(@user, @operator, @subscription, @location, immediate: false, commitment_ends_on: nil)
              .returns(mailer)
 
     assert call.success?
@@ -30,7 +30,7 @@ class SendCancellationConfirmationTest < ActiveSupport::TestCase
     mailer = mock("mail")
     mailer.expects(:deliver_later)
     UserMailer.expects(:membership_cancellation_email)
-             .with(@user, @operator, @subscription, @location, immediate: true)
+             .with(@user, @operator, @subscription, @location, immediate: true, commitment_ends_on: nil)
              .returns(mailer)
 
     assert call.success?
@@ -40,10 +40,22 @@ class SendCancellationConfirmationTest < ActiveSupport::TestCase
     mailer = mock("mail")
     mailer.stubs(:deliver_later)
     UserMailer.expects(:membership_cancellation_email)
-             .with(@subscription.subscribable, @operator, @subscription, @location, immediate: false)
+             .with(@subscription.subscribable, @operator, @subscription, @location, immediate: false, commitment_ends_on: nil)
              .returns(mailer)
 
     assert call(user: nil).success?
+  end
+
+  test "passes commitment_ends_on through for commitment-scheduled cancels" do
+    @subscription.active = true
+    boundary = Time.utc(2026, 9, 26)
+    mailer = mock("mail")
+    mailer.expects(:deliver_later)
+    UserMailer.expects(:membership_cancellation_email)
+             .with(@user, @operator, @subscription, @location, immediate: false, commitment_ends_on: boundary)
+             .returns(mailer)
+
+    assert call(commitment_ends_on: boundary).success?
   end
 
   test "never rolls back the cancellation if email delivery raises" do

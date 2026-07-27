@@ -265,6 +265,16 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     @subscription.schedule_commitment_cancellation!
     ends_on = @subscription.commitment_term_end&.strftime("%B %-d, %Y")
+    # This branch bypasses both cancellation organizers, so send the written
+    # confirmation directly — the email states that billing continues through
+    # the commitment boundary. The interactor swallows delivery failures.
+    Billing::Subscription::SendCancellationConfirmation.call(
+      subscription: @subscription,
+      user: @subscription.subscribable,
+      operator: current_tenant,
+      location: current_location,
+      commitment_ends_on: @subscription.commitment_term_end,
+    )
     flash[:notice] = "Your membership is committed through #{ends_on} and will end then."
     turbo_redirect(post_cancel_choices_path)
     true

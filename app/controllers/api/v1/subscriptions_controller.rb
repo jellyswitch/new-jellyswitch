@@ -179,6 +179,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       auto_suppress_for_churn!
       ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
       record_scheduled_churn_reason(sub, ends_on)
+      send_commitment_cancellation_email(sub)
       return render json: {
         success: true,
         scheduled: true,
@@ -221,6 +222,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       auto_suppress_for_churn!
       ends_on = sub.commitment_term_end&.strftime("%B %e, %Y")
       record_scheduled_churn_reason(sub, ends_on)
+      send_commitment_cancellation_email(sub)
       return render json: {
         success: true,
         scheduled: true,
@@ -294,6 +296,21 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     )
   rescue => e
     Honeybadger.notify(e, context: { user_id: current_api_user.id, reason: params[:reason] })
+  end
+
+  # The commitment-scheduled path bypasses both cancellation organizers, so
+  # without this the member would get no written confirmation at all — only the
+  # in-app alert (Marian Sterk, TLH 7/26). The interactor states that billing
+  # continues through the commitment boundary and swallows delivery failures,
+  # so a mail hiccup can never break the cancel response.
+  def send_commitment_cancellation_email(sub)
+    Billing::Subscription::SendCancellationConfirmation.call(
+      subscription: sub,
+      user: current_api_user,
+      operator: current_tenant,
+      location: current_location,
+      commitment_ends_on: sub.commitment_term_end,
+    )
   end
 
   # Office leases are fixed-term contracts — a member can't self-cancel or
