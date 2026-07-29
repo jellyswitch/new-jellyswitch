@@ -1,5 +1,14 @@
 
 class Operator::AccountingController < Operator::BaseController
+  # feed_items has NO amount column — an expense's amount lives in
+  # blob['amount'] as integer cents (FeedItem#parse_amount). Summing the
+  # jsonb field needs a cast, and the cast needs a guard: one legacy blob
+  # holding a non-numeric string would 500 the whole page.
+  EXPENSE_CENTS_SQL = Arel.sql(
+    "CASE WHEN blob->>'amount' ~ '^-?[0-9]+(\\.[0-9]+)?$' " \
+    "THEN (blob->>'amount')::numeric ELSE 0 END"
+  ).freeze
+
   def index
     background_image
 
@@ -17,7 +26,7 @@ class Operator::AccountingController < Operator::BaseController
   def expenses
     background_image
     expenses_scope = FeedItem.for_operator(current_tenant).for_location(current_location).expenses.order("created_at DESC")
-    @expenses_total = expenses_scope.sum(:amount)
+    @expenses_total = expenses_scope.sum(EXPENSE_CENTS_SQL)
     @pagy, @expenses = pagy(expenses_scope)
   end
 
