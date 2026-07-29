@@ -37,7 +37,15 @@ module StripeUtils
   end
 
   def retrieve_stripe_customer(customer)
-    stripe_request(stripe_customer, :retrieve, customer.stripe_customer_id_for_location(self))
+    id = customer.stripe_customer_id_for_location(self)
+    # A billable with no Stripe customer yet reads as "no customer" — nil.
+    # stripe-ruby raises client-side on retrieve(nil) ("Could not determine
+    # which URL to request"), which 500ed staff profile pages for users
+    # whose payment profile has no customer id (e.g. admins nulled in the
+    # 7/17 TLH cleanup viewing their own profile).
+    return nil if id.blank?
+
+    stripe_request(stripe_customer, :retrieve, id)
   end
 
   def retrieve_stripe_invoice(invoice)
