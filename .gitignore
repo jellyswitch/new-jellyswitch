@@ -43,3 +43,21 @@
 
 /config/credentials/development.key
 .byebug_history
+
+# Secrets and credential material — `.env` alone missed the variants.
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.keystore
+*.mobileprovision
+
+# Database dumps and data exports. The tracked sample/fixture CSVs are
+# placeholder data and stay; anything new is assumed to be a real export
+# until proven otherwise.
+*.sql
+*.csv
+!docs/officernd-migration/sample-members.csv
+!spec/fixtures/officernd_day_passes.csv
+!spec/fixtures/officernd_members.csv

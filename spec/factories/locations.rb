@@ -86,7 +86,7 @@ FactoryBot.define do
     stripe_publishable_key { "foobar" }
     stripe_refresh_token { "foobar" }
     wifi_name { "Mountain Lab" }
-    wifi_password { "LabRats337" }
+    wifi_password { "test-wifi-password" }
     working_day_start { "06:00" }
     working_day_end { "20:00" }
     stripe_user_id { nil }
