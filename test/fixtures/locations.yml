@@ -87,7 +87,7 @@ cowork_tahoe_location:
   wifi_password: test-wifi-password
   working_day_start: '06:00'
   working_day_end: '20:00'
-  stripe_user_id: acct_1JrA0qBKOLuysEMe
+  stripe_user_id: acct_test000000000000
   time_zone: Pacific Time (US & Canada)
   visible: true
   flex_square_footage: 900
