@@ -189,16 +189,32 @@ class User < ApplicationRecord
   # full history lives in the dedicated "Doors" tab.
   DOOR_MILESTONE_ANCHOR_KINDS = %w[subscription_started day_pass payment_succeeded].freeze
 
+  # LATERAL probe used by milestone_door_punch_ids: for each anchor row of the
+  # outer query, the single earliest door_punch at/after it (ties broken by id).
+  # Anchors with no later punch drop out via the inner join.
+  MILESTONE_DOOR_PUNCH_JOIN = <<~SQL.squish.freeze
+    JOIN LATERAL (
+      SELECT punches.id
+      FROM activities punches
+      WHERE punches.user_id = activities.user_id
+        AND punches.operator_id = activities.operator_id
+        AND punches.kind = 'door_punch'
+        AND punches.occurred_at >= activities.occurred_at
+      ORDER BY punches.occurred_at, punches.id
+      LIMIT 1
+    ) first_punch ON TRUE
+  SQL
+
   # IDs of the door_punch activities to keep inline in the Recent feed: the
-  # earliest punch at/after each anchor event.
+  # earliest punch at/after each anchor event. Runs on every profile page view,
+  # so the work stays in SQL — one LIMIT-1 index probe per anchor against
+  # (user_id, kind, occurred_at) — rather than plucking the member's entire
+  # punch history into Ruby, which grew unboundedly with account age.
   def milestone_door_punch_ids
-    anchors = activities.where(kind: DOOR_MILESTONE_ANCHOR_KINDS).order(:occurred_at).pluck(:occurred_at)
-    return [] if anchors.empty?
-
-    punches = activities.where(kind: "door_punch").order(:occurred_at).pluck(:id, :occurred_at)
-    return [] if punches.empty?
-
-    anchors.filter_map { |t| (pair = punches.bsearch { |p| p[1] >= t }) && pair[0] }.uniq
+    activities.where(kind: DOOR_MILESTONE_ANCHOR_KINDS)
+              .joins(MILESTONE_DOOR_PUNCH_JOIN)
+              .distinct
+              .pluck("first_punch.id")
   end
 
   # The "Recent" activity feed with door-punch noise removed (keeps only the
