@@ -31,29 +31,31 @@
 
     <% notes = notable.notes.recent.includes(:author) %>
     <% if notes.any? %>
-      <ul class="list-group list-group-flush mt-3" data-testid="notes-list">
-        <% notes.each do |note| %>
-          <li class="list-group-item px-0" data-note-id="<%= note.id %>">
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="flex-grow-1">
-                <div class="text-muted small mb-1">
-                  <strong><%= note.author&.name || "Unknown" %></strong>
-                  · <%= time_ago_in_words(note.created_at) %> ago
+      <div class="bounded-scroll-viewport mt-3" role="region" aria-label="Notes" tabindex="0">
+        <ul class="list-group list-group-flush" data-testid="notes-list">
+          <% notes.each do |note| %>
+            <li class="list-group-item px-0" data-note-id="<%= note.id %>">
+              <div class="d-flex justify-content-between align-items-start">
+                <div class="flex-grow-1">
+                  <div class="text-muted small mb-1">
+                    <strong><%= note.author&.name || "Unknown" %></strong>
+                    · <%= time_ago_in_words(note.created_at) %> ago
+                  </div>
+                  <div style="white-space: pre-wrap;"><%= note.body %></div>
                 </div>
-                <div style="white-space: pre-wrap;"><%= note.body %></div>
-              </div>
-              <% if policy(note).destroy? %>
-                <%= button_to note_path(note),
-                      method: :delete,
-                      class: "btn btn-sm btn-link text-danger p-0 ml-2",
-                      form: { data: { turbo_confirm: "Delete this note?" } } do %>
-                  <i class="fas fa-times"></i>
+                <% if policy(note).destroy? %>
+                  <%= button_to note_path(note),
+                        method: :delete,
+                        class: "btn btn-sm btn-link text-danger p-0 ml-2",
+                        form: { data: { turbo_confirm: "Delete this note?" } } do %>
+                    <i class="fas fa-times"></i>
+                  <% end %>
                 <% end %>
-              <% end %>
-            </div>
-          </li>
-        <% end %>
-      </ul>
+              </div>
+            </li>
+          <% end %>
+        </ul>
+      </div>
     <% else %>
       <p class="text-muted small mt-3 mb-0">No notes yet.</p>
     <% end %>
