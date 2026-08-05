@@ -4,7 +4,7 @@
   <div class="person-timeline list-item p-0 mb-3" style="background: #fff;">
     <%= render "timeline_tabs", user: user, active_tab: active_tab %>
 
-    <div class="timeline-body px-3 py-3">
+    <div class="timeline-body px-3 py-3" role="region" aria-label="Activity timeline" tabindex="0">
       <%= render "timeline_#{active_tab}", user: user %>
     </div>
   </div>
