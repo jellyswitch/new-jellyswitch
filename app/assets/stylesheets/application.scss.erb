@@ -461,3 +461,33 @@ button {
   }
 }
 
+// Person timeline (operator/users/profile): cap the activity history at a
+// viewport of roughly five rows so a very active customer doesn't stretch the
+// page to thousands of pixels. The list is newest-first, so the latest
+// activity is what's visible on load; the full history stays reachable by
+// scrolling inside the box.
+.person-timeline .timeline-body {
+  max-height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  // Scroll-away shadows: the white gradients ride the content
+  // (background-attachment: local) and cover each shadow until there is
+  // more content to scroll toward in that direction.
+  background:
+    linear-gradient(#fff 30%, rgba(255, 255, 255, 0)) center top,
+    linear-gradient(rgba(255, 255, 255, 0), #fff 70%) center bottom,
+    radial-gradient(farthest-side at 50% 0, rgba(33, 37, 41, 0.14), rgba(33, 37, 41, 0)) center top,
+    radial-gradient(farthest-side at 50% 100%, rgba(33, 37, 41, 0.14), rgba(33, 37, 41, 0)) center bottom;
+  background-repeat: no-repeat;
+  background-size: 100% 36px, 100% 36px, 100% 12px, 100% 12px;
+  background-attachment: local, local, scroll, scroll;
+}
+
+// Skip painting offscreen rows (the Doors tab renders up to 100).
+.timeline-row {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 54px;
+}
+

@@ -93,6 +93,9 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select "[data-testid='conversations-section']"
     assert_select "[data-testid='notes-section']"
+    # Timeline renders as a keyboard-focusable scroll region (viewport is
+    # capped in CSS so long histories scroll instead of stretching the page).
+    assert_select ".person-timeline .timeline-body[role=region][tabindex]"
     assert_match "The wifi keeps dropping", response.body
   end
 
