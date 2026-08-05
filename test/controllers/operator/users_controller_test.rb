@@ -88,6 +88,12 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
       user: member,
       comment: "The wifi keeps dropping",
     )
+    Note.create!(
+      operator: operators(:cowork_tahoe),
+      notable: member,
+      author: admin,
+      body: "Prefers the standing desk",
+    )
 
     get user_path(member), env: default_env
     assert_response :success
@@ -96,7 +102,11 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     # Timeline renders as a keyboard-focusable scroll region (viewport is
     # capped in CSS so long histories scroll instead of stretching the page).
     assert_select ".person-timeline .timeline-body[role=region][tabindex]"
+    # The Notes and Chat lists get the same bounded-viewport treatment.
+    assert_select "[data-testid='notes-section'] .bounded-scroll-viewport[role=region][tabindex]"
+    assert_select "[data-testid='conversations-section'] .bounded-scroll-viewport[role=region][tabindex]"
     assert_match "The wifi keeps dropping", response.body
+    assert_match "Prefers the standing desk", response.body
   end
 
   # Web timeline: door punches hidden from Recent (except milestones), full

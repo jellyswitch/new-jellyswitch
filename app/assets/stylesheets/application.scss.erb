@@ -461,12 +461,13 @@ button {
   }
 }
 
-// Person timeline (operator/users/profile): cap the activity history at a
-// viewport of roughly five rows so a very active customer doesn't stretch the
-// page to thousands of pixels. The list is newest-first, so the latest
-// activity is what's visible on load; the full history stays reachable by
-// scrolling inside the box.
-.person-timeline .timeline-body {
+// Bounded scroll viewports (Person timeline plus the Notes and Chat cards on
+// operator profile pages): cap long lists at a viewport of roughly five rows
+// so a very active customer doesn't stretch the page to thousands of pixels.
+// Each list is newest-first, so the latest items are visible on load; the
+// full history stays reachable by scrolling inside the box.
+.person-timeline .timeline-body,
+.bounded-scroll-viewport {
   max-height: 300px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -483,6 +484,13 @@ button {
   background-repeat: no-repeat;
   background-size: 100% 36px, 100% 36px, 100% 12px, 100% 12px;
   background-attachment: local, local, scroll, scroll;
+}
+
+// Bootstrap list items paint an opaque white background that would hide the
+// scroll-away shadows; let them show through, except while a clickable row
+// is hovered or focused so the highlight still reads.
+.bounded-scroll-viewport .list-group-item:not(:hover):not(:focus) {
+  background-color: transparent;
 }
 
 // Skip painting offscreen rows (the Doors tab renders up to 100).
