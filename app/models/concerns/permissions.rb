@@ -154,10 +154,16 @@ module Permissions
   end
 
   def has_building_access?(location)
-    superadmin? ||
-    admin_of_location?(location) ||
-    community_manager_of_location?(location) ||
-    general_manager_of_location?(location) ||
+    return true if superadmin? ||
+                   admin_of_location?(location) ||
+                   community_manager_of_location?(location) ||
+                   general_manager_of_location?(location)
+
+    # Approval is the hard gate for building access (Nash incident follow-up,
+    # 2026-08-08) — same rule as Api::V1::DoorUnlocking#user_can_access_building?
+    # so the web Keys list and the unlock path can't diverge (PR #668 invariant).
+    return false unless approved?
+
     always_allow_building_access? ||
     has_building_access_day_pass? ||
     has_building_access_membership?(location) ||
