@@ -166,6 +166,35 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         post :create, params: valid_params
         expect(flash[:notice]).to be_present
       end
+
+      it "allows a booking at exactly the 4h free-room cap" do
+        expect {
+          post :create, params: valid_params.merge(duration: "240")
+        }.to change(Reservation, :count).by(1)
+      end
+    end
+
+    context "over the duration cap" do
+      # Server-side backstop (EnforceDurationCap): the form's slider tops out
+      # at the cap, but a hand-rolled POST could send any duration. The step
+      # runs before anything persists or touches Stripe, so no coverage pass
+      # or billing stubs are needed — the booking must die first.
+      let(:over_cap_params) { valid_params.merge(duration: "300") }
+
+      it "rejects a free-room booking over the 4h member cap" do
+        expect {
+          post :create, params: over_cap_params
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+      end
+
+      it "rejects the stripeToken path too, before any card is attached" do
+        expect(Billing::Payment::UpdateUserPayment).not_to receive(:call!)
+        expect {
+          post :create, params: over_cap_params.merge(stripeToken: "tok_visa")
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+      end
     end
 
     context "with stripeToken" do

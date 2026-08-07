@@ -9,6 +9,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
     # ChargeAtBooking, parity with CreateRoomReservation, so the new-card web path
     # commits coverage the same way the no-card path does.
     expected_organized = [
+      Billing::Reservations::EnforceDurationCap,
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ReuseCoveragePass,

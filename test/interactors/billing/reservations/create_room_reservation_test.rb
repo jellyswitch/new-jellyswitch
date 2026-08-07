@@ -7,6 +7,7 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
   # stays absent (ADR 0012) — paid bookings mint no complimentary day pass.
   def test_organized_interactors
     expected_organized = [
+      Billing::Reservations::EnforceDurationCap,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
       Billing::Reservations::ReuseCoveragePass,

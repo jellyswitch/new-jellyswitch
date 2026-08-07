@@ -8,6 +8,10 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
   # ScheduleUpcomingReservationReminder added in Phase 6 so new-card bookings get
   # the same arrival/started/meeting-ending pushes as the main create path.
   organize(
+    # Duration backstop runs FIRST — before UpdateUserPayment, so an over-cap
+    # request dies without attaching a card to the customer. No-op unless the
+    # caller sets enforce_duration_cap.
+    Billing::Reservations::EnforceDurationCap,
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
     # Included-room coverage (ADR 0019) — parity with CreateRoomReservation, in
