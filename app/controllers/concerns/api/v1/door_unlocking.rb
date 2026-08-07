@@ -65,10 +65,16 @@ module Api::V1::DoorUnlocking
     window_minutes = location&.operator&.building_access_window_minutes || 60
     now = Time.current
     window = window_minutes.minutes
-    user.reservations
-        .where(cancelled: false)
-        .where(datetime_in: (now - 1.day - window)..(now + 1.day + window))
-        .any? { |reservation| reservation.access_window_open?(now, window_minutes: window_minutes) }
+    reservations = user.reservations
+                       .where(cancelled: false)
+                       .where(datetime_in: (now - 1.day - window)..(now + 1.day + window))
+    # A reservation admits its holder to the building the booked ROOM is in —
+    # at a multi-location operator a booking in one building must not open the
+    # others' doors during its window. Nil gate location keeps the unscoped
+    # behavior (no location context), the same lenient convention as the
+    # membership and day-pass clauses.
+    reservations = reservations.joins(:room).where(rooms: { location_id: location.id }) if location
+    reservations.any? { |reservation| reservation.access_window_open?(now, window_minutes: window_minutes) }
   end
 
   # ADR 0021 room-lock rule (staff anytime; holder during their booking,
