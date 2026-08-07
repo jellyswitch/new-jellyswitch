@@ -80,6 +80,19 @@ A prepaid quantity of day passes a buyer redeems over time (operator-facing: **"
 
 _Avoid_: **"credits"** for bundle passes — "Room Credits" is a separate stored-value concept. Say **pass / passes remaining / Bundle / N-Pack**.
 
+## Day Office
+
+A **day-pass kind whose purchase carries a private room for the day**. An office-backed `DayPassType` holds an admin-**ordered room pool** (any of the location's rooms, hidden ones included — a dedicated day office is just a hidden room); buying one — or scheduling a Day Office bundle day — auto-books the **first free pool room** in the admin's priority order as that pass's **office hold**. The buyer never picks the room.
+
+- **The office hold is a normal $0 Reservation** spanning the location's **posted hours** for the purchased date — the pass's money is the SKU price, the hold moves none. It occupies the room in every calendar/availability surface (conflicts with hourly bookings are symmetric — first commitment wins) and gives the holder the room's **Room Lock** for the day, per the ordinary reservation-gated rule.
+- **Building access is exactly a normal Day Pass** — approval gate, posted-hours bounds, burn rules, building scoping. The office is *extra*, never a different door privilege.
+- **Room availability alone decides sold-out** — a date is buyable iff a pool room is free; the type's `daily_limit` is ignored and hidden for office-backed types (one capacity source). When no office is free, self-serve offers the **regular day pass** (the location's default room-booking type) or another date.
+- **Included meeting-room minutes default to 0** — the holder already has a room, so additional call-room time bills straight at the location **Overage** rate. The office hold itself never draws the allowance.
+- **Admins may reassign** a hold to any free room (member notified), cancel just the hold (pass keeps its building access), or refund the pass — a refund **cancels the hold and rescinds the pass in one motion**.
+- **A Day Office bundle walk-in with no office free still burns and enters** — the door opens on the burned pass, no office is assigned, member and admins are notified, and the pass is admin-restorable. A **guest redemption never allocates an office** — the guest shares the holder's room.
+
+_Avoid_: "office day pass" / "private office pass" — say **Day Office**. And never infer office behavior from a type's *name* (the retired `%office%` name-match) — office-backed is a stored kind.
+
 ## Doors & Access
 
 ### Building Door
@@ -274,7 +287,7 @@ _Avoid_: calling it a "support chat" or "live chat" — it is a **Concierge** wh
 ## Reservation (room booking)
 
 A booking of one **Room** for one time window. Pricing is decided **server-side at booking** by `ChargeCalculator`, and the charge is **captured then, not at start** (ADR 0010). A Reservation grants a time-bounded **Access window** around its slot — **not** all-day building access (ADR 0013). A priced (group) **Meeting room** is bookable standalone — no Day Pass required.
-_Avoid_: treating a Reservation as a Day Pass. Booking a room neither mints nor requires one. (The retired "comp pass" minted a free Day Pass on paid bookings, and its included minutes mis-priced later edits — see ADR 0012/0013.)
+_Avoid_: treating a Reservation as a Day Pass. Booking a room neither mints nor requires one. (The retired "comp pass" minted a free Day Pass on paid bookings, and its included minutes mis-priced later edits — see ADR 0012/0013.) The one deliberate reverse arrow: a **Day Office** purchase creates its own $0 office-hold Reservation (ADR 0026) — the pass carries the booking, never a booking minting a pass.
 
 ## Call room vs Meeting room
 
