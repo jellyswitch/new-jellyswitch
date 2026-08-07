@@ -44,9 +44,17 @@ class Plan < ApplicationRecord
   #   all_hours      -> 24-7 access
   enum :building_access_level, { none: 0, business_hours: 1, all_hours: 2 }, prefix: :access
 
-  # Does this plan grant building access to `location` at time `at`? Business
-  # hours are evaluated against the location the member is actually accessing.
+  # Does this plan grant building access to `location` at time `at`? A plan
+  # grants access at ITS OWN location: plans are stamped with the admin's
+  # location on create, so at a multi-location operator a membership for one
+  # building must not open the others. A plan with no location stays
+  # operator-wide (legacy rows / deliberate all-access plans), and a nil gate
+  # location keeps the unscoped behavior (caller has no location context) —
+  # the same lenient convention as the day-pass scoping. Business hours are
+  # evaluated against the location the member is actually accessing.
   def grants_building_access?(location = nil, at = Time.current)
+    return false if location_id.present? && location.present? && location.id != location_id
+
     case building_access_level
     when "all_hours"      then true
     when "business_hours" then !!location&.open_at?(at)
