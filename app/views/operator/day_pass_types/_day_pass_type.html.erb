@@ -55,7 +55,7 @@
       <div class="col">
         <strong>Meeting Room Time:</strong>
         <% if day_pass_type.has_meeting_room_limit? %>
-          <%= day_pass_type.included_meeting_room_minutes / 60.0 %> hour(s) included
+          <%= day_pass_type.included_meeting_room_minutes / 60.0 %> hour(s) included per day
         <% else %>
           <span class="text-muted">Unlimited</span>
         <% end %>
