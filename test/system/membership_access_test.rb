@@ -9,10 +9,14 @@ class MembershipAccessTest < ApplicationSystemTestCase
 
     assert_text "Building Access"
 
-    # change location
+    # A membership is per-location: its plan grants access at the plan's own
+    # building only, so switching to the operator's other location lands on
+    # the no-access options page. (A plan with no location would keep
+    # operator-wide access — see PlanLocationBuildingAccessTest.)
     switch_to_location(other_location)
 
-    assert_text "Building Access"
+    assert_no_text "Building Access"
+    assert_text "Please select an option below."
   end
 
   test "admin accesses a location without membership" do
