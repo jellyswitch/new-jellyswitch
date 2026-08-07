@@ -89,5 +89,4 @@ class Api::V1::RoomsTimeSlotsTest < ActionDispatch::IntegrationTest
     assert avail.call(date: @date, exclude_reservation_id: res.id),
       "excluding the edited reservation frees its own slot"
   end
-
 end

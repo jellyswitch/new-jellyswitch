@@ -29,5 +29,4 @@ class Api::V1::RoomsBookingTimesTest < ActionDispatch::IntegrationTest
   test "a non-member is bounded by posted working hours" do
     assert hours_for(@non_member).max < 20
   end
-
 end
