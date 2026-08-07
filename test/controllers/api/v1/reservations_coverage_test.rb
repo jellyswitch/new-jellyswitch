@@ -25,7 +25,10 @@ class Api::V1::ReservationsCoverageTest < ActionDispatch::IntegrationTest
     {
       reservation: {
         room_id: @room.id,
-        datetime_in: (Date.current + 3).to_time.change(hour: 9).iso8601,
+        # in_time_zone (app zone), NOT to_time (system zone): on a UTC CI
+        # runner to_time makes this 9 AM UTC = 2 AM Pacific, which the
+        # posted-hours backstop (EnforcePostedHours) correctly rejects.
+        datetime_in: (Date.current + 3).in_time_zone.change(hour: 9).iso8601,
         minutes: 60,
       }.merge(extra),
     }.to_json

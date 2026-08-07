@@ -545,6 +545,7 @@ class Operator::ReservationsController < Operator::BaseController
                              buy_day_pass: buy_day_pass,
                              day_pass_type: coverage_day_pass_type,
                              enforce_coverage: true,
+                             enforce_posted_hours: true,
                              # Server-side duration cap (member self-serve only;
                              # the staff calendar flows keep the admin allowance).
                              enforce_duration_cap: true,

@@ -284,6 +284,37 @@ class Api::V1::RoomsController < Api::V1::BaseController
     zone = ActiveSupport::TimeZone[location.time_zone] || Time.zone
     now = Time.current.in_time_zone(zone).change(sec: 0)
 
+    # Posted-hours bound: Reserve Now starts a booking RIGHT NOW, so when the
+    # location is closed there is nothing an hour-bounded user can book —
+    # return every room as unavailable with the next opening time, so the
+    # app's existing "free at…" list renders a truthful closed state. (Nash,
+    # 2026-08-07: an after-hours Reserve Now would re-open the door through
+    # the reservation ±window even with day-pass door access hours-bounded.)
+    unless user.books_outside_posted_hours?(location) || user.admin_or_manager?(location) || location.within_posted_hours?(now)
+      reopen_label = next_open_label(location, now, zone)
+      closed_rooms = location.rooms.visible.map do |room|
+        {
+          id: room.id, name: room.name, capacity: room.capacity,
+          hourly_rate: room.hourly_rate_in_cents,
+          amenities: room.amenities.pluck(:name),
+          add_ons: room.amenity_add_ons,
+          amenity_features: room.amenity_feature_names,
+          features: room.features || [],
+          available: false,
+          available_at: reopen_label,
+        }
+      end
+      preferred = user.preferred_meeting_duration.to_i
+      return render json: {
+        rooms: closed_rooms,
+        no_rooms_available: true,
+        closed: true,
+        message: "#{location.name} is closed right now — open #{location.posted_hours_label}.",
+        start_time: now.iso8601,
+        preferred_duration: preferred > 0 ? preferred : 60,
+      }
+    end
+
     # Reserve Now starts the booking RIGHT NOW. End-times still align
     # to 15-minute marks (so the slider's 15/30/45/60 picks land on
     # familiar times), and the lead-in minutes between now and the
@@ -538,6 +569,22 @@ class Api::V1::RoomsController < Api::V1::BaseController
   # Role-gated bookable hour bounds for a location. Members with 24/7 access
   # (active subscription/lease) and superadmins get the full 0..24 window;
   # everyone else is bounded by posted working hours. Mirrors time_slots.
+  # "5:00 AM" for later today, or "Sat 5:00 AM" when the next opening is
+  # tomorrow — the next instant the posted-hours window begins (time-of-day
+  # rule; the open_<day> staffed-days flags don't bound day-pass access).
+  def next_open_label(location, from, zone)
+    m = location.working_day_start.to_s.match(/\A(\d{1,2}):(\d{2})\z/)
+    return nil unless m
+
+    (0..1).each do |i|
+      candidate = (from.to_date + i).in_time_zone(zone).change(hour: m[1].to_i, min: m[2].to_i)
+      next unless candidate > from
+      label = candidate.strftime("%l:%M %p").strip
+      return i.zero? ? label : "#{candidate.strftime('%a')} #{label}"
+    end
+    nil
+  end
+
   def start_hour_bounds(location)
     parse_hour = ->(val, default) {
       return default if val.nil?

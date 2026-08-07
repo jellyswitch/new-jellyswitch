@@ -162,7 +162,22 @@ module Permissions
     has_building_access_day_pass? ||
     has_building_access_membership?(location) ||
     has_building_access_lease? ||
-    has_active_day_pass_at_location?(location)
+    # Day-pass access honors the location's posted hours (Nash, 2026-08-07).
+    # 24/7 day-pass access exists only via an always_allow_building_access
+    # pass TYPE — that's the has_building_access_day_pass? clause above.
+    # Keeping the bound here (the web Keys list) in lockstep with the unlock
+    # gate (Api::V1::DoorUnlocking) avoids re-opening the list/unlock
+    # divergence PR #668 closed.
+    (has_active_day_pass_at_location?(location) && day_pass_within_posted_hours?(location))
+  end
+
+  # Whether day-pass building access is currently inside the location's posted
+  # hours — time-of-day only (within_posted_hours?), NOT the open_<day>
+  # staffed-days flags: weekend daytime day-pass entry is established
+  # behavior. Nil location keeps the previous behavior (no bound) rather than
+  # locking members out on operators with no location context.
+  def day_pass_within_posted_hours?(location, at = Time.current)
+    location.nil? || location.within_posted_hours?(at)
   end
 
   # Building access via membership. This is where the day-pool limit gates:

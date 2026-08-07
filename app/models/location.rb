@@ -175,8 +175,22 @@ class Location < ApplicationRecord
   def open_at?(at = Time.current)
     zone = ActiveSupport::TimeZone[time_zone.presence || "UTC"] || ActiveSupport::TimeZone["UTC"]
     local = at.in_time_zone(zone)
-    open_flags = [open_sunday, open_monday, open_tuesday, open_wednesday, open_thursday, open_friday, open_saturday]
-    return false unless open_flags[local.wday]
+    return false unless open_on?(local.to_date)
+
+    within_posted_hours?(at)
+  end
+
+  # Time-of-day check ONLY — whether `at` falls inside working_day_start..
+  # working_day_end in the location's zone, ignoring the open_<day> flags.
+  # Day-pass door access and member self-serve booking bounds use THIS rather
+  # than open_at?: the open-day flags describe STAFFED days, and weekend
+  # day-pass usage is established, accepted behavior (prod audit 2026-08-07:
+  # ~20 weekend daytime day-pass entries/month at Cowork Tahoe alone would
+  # have been blocked by a day-flag gate). Handles overnight windows
+  # (end <= start); blank/unparseable working times read as closed.
+  def within_posted_hours?(at = Time.current)
+    zone = ActiveSupport::TimeZone[time_zone.presence || "UTC"] || ActiveSupport::TimeZone["UTC"]
+    local = at.in_time_zone(zone)
 
     to_min = ->(hhmm) { (m = hhmm.to_s.match(/\A(\d{1,2}):(\d{2})\z/)) ? m[1].to_i * 60 + m[2].to_i : nil }
     start_min = to_min.call(working_day_start)
@@ -191,6 +205,24 @@ class Location < ApplicationRecord
     else
       false # zero-length window
     end
+  end
+
+  # Whether the location is open at all on `date`'s weekday (open_<day> flags).
+  # The date is taken as already location-local — callers pass a member-facing
+  # calendar date, not an instant.
+  def open_on?(date)
+    [open_sunday, open_monday, open_tuesday, open_wednesday,
+     open_thursday, open_friday, open_saturday][date.wday]
+  end
+
+  # Member-facing "6:00 AM – 8:00 PM" label for error messages and closed
+  # states. Falls back to the raw stored string if one side doesn't parse.
+  def posted_hours_label
+    fmt = ->(hhmm) {
+      m = hhmm.to_s.match(/\A(\d{1,2}):(\d{2})\z/)
+      m ? Time.utc(2000, 1, 1, m[1].to_i, m[2].to_i).strftime("%-l:%M %p") : hhmm.to_s
+    }
+    "#{fmt.call(working_day_start)} – #{fmt.call(working_day_end)}"
   end
 
   # Editable data list — states where expiration on prepaid passes is restricted

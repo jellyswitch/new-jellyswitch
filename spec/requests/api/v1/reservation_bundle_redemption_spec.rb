@@ -21,9 +21,13 @@ RSpec.describe "API v1 reserve-time bundle redemption", type: :request do
   end
 
   def book(use_bundle_pass:)
+    # Pinned to a guaranteed OPEN weekday — member creates enforce posted
+    # hours (EnforcePostedHours), and "2.days.from_now" lands on a closed
+    # weekend when the suite runs late in the week.
+    booking_day = Date.current.next_occurring(:tuesday) + 7
     post "/api/v1/reservations",
          params: { reservation: { room_id: call_room.id, minutes: 60, use_bundle_pass: use_bundle_pass,
-                                  datetime_in: 2.days.from_now.change(hour: 10, min: 0).iso8601 } },
+                                  datetime_in: booking_day.in_time_zone.change(hour: 10, min: 0).iso8601 } },
          headers: auth_headers_for(user)
   end
 
