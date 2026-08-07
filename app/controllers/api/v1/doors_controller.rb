@@ -43,7 +43,17 @@ class Api::V1::DoorsController < Api::V1::BaseController
 
   def unlock
     door     = Door.find(params[:id])
-    location = current_location
+    # Gate on the DOOR's building, not the requester's home location: the id
+    # is client-supplied, so at a multi-location operator a forged unlock for
+    # another location's door must be checked against access AT that door's
+    # location. The approach path (AutoUnlocksController, beacon.location)
+    # and the web path (Api::DoorsController, @door.location) already gate
+    # this way — this manual path was the one divergence. Using the door's
+    # location here also keys ConsumeOnEntry's bundle burn to the building
+    # actually entered, matching both other paths. The fallback only covers
+    # legacy location-less door rows (Kisi couldn't unlock those anyway — the
+    # API key lives on door.location).
+    location = door.location || current_location
     user     = current_api_user
 
     if door.room_lock?
