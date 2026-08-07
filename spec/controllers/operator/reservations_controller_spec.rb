@@ -117,10 +117,14 @@ RSpec.describe Operator::ReservationsController, type: :controller do
   end
 
   describe "POST #create" do
+    # Pinned to a guaranteed OPEN weekday — member self-serve creates enforce
+    # posted hours (EnforcePostedHours), and a relative "tomorrow" lands on a
+    # closed Saturday when the suite runs on a Friday.
+    let(:booking_date) { Date.current.next_occurring(:tuesday) + 7 }
     let(:valid_params) do
       {
         room_id: room.id,
-        date: Time.current.tomorrow.to_date.to_s,
+        date: booking_date.to_s,
         time: "10:00",
         duration: "60",
         day_or_night: "day",
@@ -136,7 +140,7 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       # for the booking date → already_covered → the booking proceeds.
       let!(:coverage_pass) do
         create(:day_pass, user: regular_user, billable: regular_user, operator: operator,
-               location: location, day: Time.current.tomorrow.to_date)
+               location: location, day: booking_date)
       end
 
       before do
