@@ -230,6 +230,71 @@ RSpec.describe Operator::ReservationsController, type: :controller do
     end
   end
 
+  describe "POST #create_reservation" do
+    # Classic wizard endpoint (choose-member flow) — reachable by non-staff
+    # members booking themselves, so EnforceDurationCap applies there too. The
+    # flag is gated on the BOOKER: the interactor reads the cap from
+    # context.user (the booked member), so staff booking on behalf must stay
+    # uncapped or the member's 4h free-room cap would block the staff booking.
+    # Same guaranteed-open-weekday pin as POST #create — keeps these green on
+    # Friday runs if posted-hours enforcement ever extends to the wizard.
+    let(:wizard_params) do
+      {
+        room_id: room.id,
+        day: (Date.current.next_occurring(:tuesday) + 7).to_s,
+        hour: "10:00am",
+        duration: "300"
+      }
+    end
+
+    context "as a member booking themselves" do
+      it "rejects a free-room booking over the 4h member cap" do
+        expect {
+          post :create_reservation, params: wizard_params
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+      end
+    end
+
+    context "as staff booking on behalf of a member" do
+      before do
+        allow(controller).to receive(:current_user).and_return(admin_user)
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
+      end
+
+      it "allows a 300-minute free-room booking for the member" do
+        expect {
+          post :create_reservation, params: wizard_params.merge(user_id: regular_user.id)
+        }.to change(Reservation, :count).by(1)
+
+        booked = Reservation.order(:id).last
+        expect(booked.user).to eq(regular_user)
+        expect(booked.minutes).to eq(300)
+        expect(flash[:error]).to be_nil
+      end
+    end
+  end
+
+  describe "POST #update_billing_and_create_reservation" do
+    # Same wizard, new-card variant (books for current_user). The cap step
+    # runs before UpdateUserPayment, so an over-cap request must die without
+    # attaching a card.
+    it "rejects a member booking over the cap before any card is attached" do
+      expect(Billing::Payment::UpdateUserPayment).not_to receive(:call!)
+      expect {
+        post :update_billing_and_create_reservation, params: {
+          room_id: room.id,
+          day: (Date.current.next_occurring(:tuesday) + 7).to_s,
+          hour: "10:00am",
+          duration: "300",
+          stripeToken: "tok_visa"
+        }
+      }.not_to change(Reservation, :count)
+      expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+    end
+  end
+
   describe "GET #needs_billing" do
     let(:date) { Time.current.tomorrow.to_date.to_s }
 

@@ -173,7 +173,11 @@ class Operator::ReservationsController < Operator::BaseController
                                                                                }, user: current_user,
                                                                                location: current_location,
                                                                                token: token,
-                                                                               out_of_band: false)
+                                                                               out_of_band: false,
+                                                                               # Duration backstop, gated on the booker like the API's
+                                                                               # staff_booker? (this endpoint books for current_user, so
+                                                                               # booker == booked): staff keep the 12h admin allowance.
+                                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location))
     @reservation = result.reservation
 
     if result.success?
@@ -223,7 +227,12 @@ class Operator::ReservationsController < Operator::BaseController
                                                                  room: @room,
                                                                }, user: @user, location: current_location,
                                                                subscription_charge_info: subscription_charge_info,
-                                                               comp: comp)
+                                                               comp: comp,
+                                                               # Cap gated on the BOOKER, not @user: the interactor reads the
+                                                               # cap from context.user (the booked member), so the flag must
+                                                               # stay off when staff book on behalf — the member's 4h free-room
+                                                               # cap must not block a staff booking (12h admin allowance).
+                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location))
 
     @reservation = result.reservation
 
