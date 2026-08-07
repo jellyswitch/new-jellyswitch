@@ -17,8 +17,29 @@ module Api::V1::DoorUnlocking
     # a mailbox/community/free-tier member (level none) could open a door, and
     # enforces the business-hours window for that tier at unlock time.
     return true if user.has_building_access_membership?(location)
-    return true if user.day_passes.where(day: today).any?
-    return true if location && user.has_active_day_pass_bundle?(location)
+
+    # Day-pass and bundle access are bounded to the location's posted HOURS
+    # (time-of-day only, not the open_<day> staffed-days flags — weekend
+    # daytime day-pass entry is established behavior): a pass covers the DAY,
+    # but the door only opens between working_day_start and working_day_end
+    # (Nash, 2026-08-07 — a 1:34 AM pass purchase opened the lobby at
+    # 1:38 AM; hours are 5 AM–8 PM). A pass TYPE flagged
+    # always_allow_building_access keeps 24/7 access — the same escape hatch
+    # the membership tiers get via all_hours. Membership, lease, staff, and
+    # reservation-±window access (below) are unchanged.
+    open_now = location.nil? || location.within_posted_hours?
+    todays_passes = user.day_passes.where(day: today)
+    if todays_passes.any?
+      return true if open_now
+      return true if todays_passes.joins(:day_pass_type)
+                                  .where(day_pass_types: { always_allow_building_access: true }).exists?
+    end
+    if location && user.has_active_day_pass_bundle?(location)
+      return true if open_now
+      return true if user.day_pass_bundles.active.where(location: location)
+                         .joins(:day_pass_type)
+                         .where(day_pass_types: { always_allow_building_access: true }).exists?
+    end
     return true if location && user.has_active_lease?(location)
 
     # A reservation grants access only inside its ±window (ADR 0013), not all

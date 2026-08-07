@@ -13,6 +13,10 @@ class Billing::Reservations::CreateRoomReservation
   # active reservation (User#allowed_in? → has_active_reservation?); Phase 4 will
   # narrow that to a ±window.
   organize(
+    # Posted-hours backstop runs FIRST (nothing persisted yet, nothing to roll
+    # back): member self-serve bookings stay inside the location's posted
+    # hours. No-op unless the caller sets enforce_posted_hours.
+    Billing::Reservations::EnforcePostedHours,
     Billing::Reservations::SaveRoomReservation,
     Billing::Reservations::ChargeCredits,
     # Commit day-pass coverage for an included room BEFORE ChargeAtBooking prices

@@ -545,6 +545,7 @@ class Operator::ReservationsController < Operator::BaseController
                              buy_day_pass: buy_day_pass,
                              day_pass_type: coverage_day_pass_type,
                              enforce_coverage: true,
+                             enforce_posted_hours: true,
                              discount_code: discount_code)
 
     @reservation = result.reservation

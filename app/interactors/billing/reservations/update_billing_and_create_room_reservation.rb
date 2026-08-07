@@ -8,6 +8,9 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
   # ScheduleUpcomingReservationReminder added in Phase 6 so new-card bookings get
   # the same arrival/started/meeting-ending pushes as the main create path.
   organize(
+    # Posted-hours backstop first — parity with CreateRoomReservation; no-op
+    # unless the caller sets enforce_posted_hours (member self-serve only).
+    Billing::Reservations::EnforcePostedHours,
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
     # Included-room coverage (ADR 0019) — parity with CreateRoomReservation, in

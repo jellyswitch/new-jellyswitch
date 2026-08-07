@@ -5,8 +5,12 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
   # pair. RedeemBundlePass (ADR 0015) runs after Save, before ChargeAtBooking, so
   # an opted-in bundle pass mints a DayPass that zeroes the charge. GrantFreeDayPass
   # stays absent (ADR 0012) — paid bookings mint no complimentary day pass.
+  # EnforcePostedHours runs FIRST (member self-serve posted-hours backstop,
+  # Nash incident 2026-08-07) — nothing is persisted yet, so a violation
+  # fails fast with nothing to roll back.
   def test_organized_interactors
     expected_organized = [
+      Billing::Reservations::EnforcePostedHours,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
       Billing::Reservations::ReuseCoveragePass,

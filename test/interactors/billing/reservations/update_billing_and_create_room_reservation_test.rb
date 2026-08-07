@@ -8,7 +8,11 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
     # bundle / buy / enforce — runs after SaveRoomReservation and before
     # ChargeAtBooking, parity with CreateRoomReservation, so the new-card web path
     # commits coverage the same way the no-card path does.
+    # EnforcePostedHours runs FIRST (member self-serve posted-hours backstop,
+    # Nash incident 2026-08-07) — before the card attach, so an after-hours
+    # attempt fails without touching the customer's payment method.
     expected_organized = [
+      Billing::Reservations::EnforcePostedHours,
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ReuseCoveragePass,

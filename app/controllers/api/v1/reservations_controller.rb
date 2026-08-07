@@ -97,6 +97,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       buy_day_pass: buy_day_pass,
       day_pass_type: coverage_day_pass_type,
       enforce_coverage: true, # member self-service: ADR 0019 block-if-uncovered
+      enforce_posted_hours: true, # member self-service: bookings stay inside posted hours
     )
 
     if result.success?
@@ -142,6 +143,13 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     duration_cap = new_room.max_bookable_minutes(admin: staff_booker?)
     if new_minutes > duration_cap
       return render_error("#{new_room.name} can be booked for up to #{duration_cap / 60} hours.")
+    end
+
+    # Posted-hours backstop on MOVES too — otherwise an in-hours booking could
+    # be edited into the middle of the night and re-open the door via the
+    # reservation ±window (mirrors EnforcePostedHours on create).
+    if (hours_error = posted_hours_violation(new_room, new_datetime_in, new_minutes))
+      return render_error(hours_error)
     end
 
     result = Billing::Reservations::UpdateRoomReservation.call(
@@ -222,8 +230,11 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # (because it's stored on the record). We want the charge for the
     # ADDITIONAL minutes only.
     options = possible.map do |additional|
-      # Does the room have space right after this reservation?
-      available = room.available?(start_time: reservation.datetime_out, duration: additional)
+      # Does the room have space right after this reservation? An extension
+      # must also stay inside posted hours for hour-bounded users, so those
+      # options gray out instead of failing at extend_time.
+      available = room.available?(start_time: reservation.datetime_out, duration: additional) &&
+                  posted_hours_violation(room, reservation.datetime_in, reservation.minutes + additional).nil?
 
       # Compute price delta for the additional minutes.
       sub_info = user.subscription_reservation_charge_info(location, reservation.minutes + additional, room: room)
@@ -272,6 +283,14 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     additional = params[:additional_minutes].to_i
 
     return render_error('Invalid duration') if additional <= 0
+
+    # Posted-hours backstop: an extension may not run past close for
+    # hour-bounded users (day-pass guests). Members/leaseholders/staff are
+    # exempt inside posted_hours_violation.
+    if (hours_error = posted_hours_violation(reservation.room, reservation.datetime_in,
+                                             reservation.minutes + additional))
+      return render_error(hours_error)
+    end
 
     # Conflict check: no booking may start in the extension window.
     unless reservation.room.available?(start_time: reservation.datetime_out, duration: additional)
@@ -395,6 +414,26 @@ class Api::V1::ReservationsController < Api::V1::BaseController
   # Staff get the 12h admin booking cap on every surface.
   def staff_booker?
     current_api_user.admin_or_manager?(current_location) || current_api_user.superadmin?
+  end
+
+  # Returns an error string when a member self-serve booking window falls
+  # outside the room location's posted hours; nil when allowed. Members,
+  # leaseholders, superadmins (books_outside_posted_hours?) and location staff
+  # are exempt — the same rule Billing::Reservations::EnforcePostedHours
+  # applies on create. Used by the update (move) and extend paths.
+  def posted_hours_violation(room, datetime_in, minutes)
+    location = room&.location || current_location
+    return nil if location.nil?
+    return nil if staff_booker? || current_api_user.books_outside_posted_hours?(location)
+
+    # Time-of-day bound only (within_posted_hours?), matching
+    # EnforcePostedHours — the open_<day> flags mark staffed days and don't
+    # bound self-serve bookings. end - 1 minute so a booking ending exactly
+    # at close passes.
+    return nil if location.within_posted_hours?(datetime_in) &&
+                  location.within_posted_hours?(datetime_in + minutes.minutes - 1.minute)
+
+    "#{location.name} is open #{location.posted_hours_label}. Rooms can be booked during open hours."
   end
 
   # 409 for a room-time overlap. `error` doubles as the display sentence for
