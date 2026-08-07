@@ -19,13 +19,17 @@ class Billing::DayPassBundles::ConsumeOnEntry
       return
     end
 
-    # Guard 3: reservation today at this location
+    # Guard 3: reservation today at this location. Scoped to the booked
+    # room's building — a reservation at ANOTHER building doesn't cover
+    # entry here, so it must not suppress the bundle burn. Nil location
+    # keeps the unscoped legacy behavior.
     day_start = today.in_time_zone(tz).beginning_of_day
     day_end   = today.in_time_zone(tz).end_of_day
-    if user.reservations
-           .where(cancelled: false)
-           .where(datetime_in: day_start..day_end)
-           .exists?
+    reservations_today = user.reservations
+                             .where(cancelled: false)
+                             .where(datetime_in: day_start..day_end)
+    reservations_today = reservations_today.joins(:room).where(rooms: { location_id: location.id }) if location
+    if reservations_today.exists?
       context.outcome = :already_covered
       return
     end
