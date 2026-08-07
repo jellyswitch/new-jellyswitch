@@ -165,7 +165,7 @@ module Permissions
     return false unless approved?
 
     always_allow_building_access? ||
-    has_building_access_day_pass? ||
+    has_building_access_day_pass?(location) ||
     has_building_access_membership?(location) ||
     has_building_access_lease? ||
     # Day-pass access honors the location's posted hours (Nash, 2026-08-07).
@@ -223,10 +223,15 @@ module Permissions
     day_pass_bundles.active.where(location: location).exists?
   end
 
-  def has_building_access_day_pass?
-    has_active_day_pass? && day_passes.today.any? do |day_pass|
-      day_pass.day_pass_type.always_allow_building_access?
-    end
+  # The always_allow_building_access pass-TYPE escape hatch (24/7 access).
+  # Scoped to `location` when given — a 24/7 pass bought for one location
+  # must not grant access at an operator's other locations. Lenient
+  # for_location keeps legacy location-less passes working; callers with no
+  # location context keep the old operator-wide behavior.
+  def has_building_access_day_pass?(location = nil)
+    passes = day_passes.today
+    passes = passes.for_location(location) if location
+    passes.any? { |day_pass| day_pass.day_pass_type.always_allow_building_access? }
   end
 
   def has_active_lease?(location = nil)

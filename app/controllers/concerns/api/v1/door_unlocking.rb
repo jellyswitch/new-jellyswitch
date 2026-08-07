@@ -36,7 +36,14 @@ module Api::V1::DoorUnlocking
     # the membership tiers get via all_hours. Membership, lease, staff, and
     # reservation-±window access (below) are unchanged.
     open_now = location.nil? || location.within_posted_hours?
+    # A pass covers the LOCATION it was bought for — at a multi-location
+    # operator a pass for one location must not open another location's
+    # doors. for_location is the lenient HasLocation scope
+    # (location_id = ? OR location_id IS NULL) so legacy location-less
+    # passes keep working; a nil gate location (no location context) keeps
+    # the unscoped behavior rather than locking members out.
     todays_passes = user.day_passes.where(day: today)
+    todays_passes = todays_passes.for_location(location) if location
     if todays_passes.any?
       return true if open_now
       return true if todays_passes.joins(:day_pass_type)
