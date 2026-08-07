@@ -11,6 +11,10 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservation
     # Posted-hours backstop first — parity with CreateRoomReservation; no-op
     # unless the caller sets enforce_posted_hours (member self-serve only).
     Billing::Reservations::EnforcePostedHours,
+    # Duration backstop, same shape — before UpdateUserPayment, so an over-cap
+    # request dies without attaching a card to the customer. No-op unless the
+    # caller sets enforce_duration_cap.
+    Billing::Reservations::EnforceDurationCap,
     Billing::Payment::UpdateUserPayment,
     Billing::Reservations::SaveRoomReservation,
     # Included-room coverage (ADR 0019) — parity with CreateRoomReservation, in

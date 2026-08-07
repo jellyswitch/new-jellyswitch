@@ -13,6 +13,7 @@ class Billing::Reservations::UpdateBillingAndCreateRoomReservationTest < ActiveS
     # attempt fails without touching the customer's payment method.
     expected_organized = [
       Billing::Reservations::EnforcePostedHours,
+      Billing::Reservations::EnforceDurationCap,
       Billing::Payment::UpdateUserPayment,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ReuseCoveragePass,

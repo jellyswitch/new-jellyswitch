@@ -17,6 +17,10 @@ class Billing::Reservations::CreateRoomReservation
     # back): member self-serve bookings stay inside the location's posted
     # hours. No-op unless the caller sets enforce_posted_hours.
     Billing::Reservations::EnforcePostedHours,
+    # Duration backstop, same shape (still nothing persisted): member
+    # self-serve bookings can't exceed the room's bookable cap. No-op unless
+    # the caller sets enforce_duration_cap.
+    Billing::Reservations::EnforceDurationCap,
     Billing::Reservations::SaveRoomReservation,
     Billing::Reservations::ChargeCredits,
     # Commit day-pass coverage for an included room BEFORE ChargeAtBooking prices

@@ -11,6 +11,7 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
   def test_organized_interactors
     expected_organized = [
       Billing::Reservations::EnforcePostedHours,
+      Billing::Reservations::EnforceDurationCap,
       Billing::Reservations::SaveRoomReservation,
       Billing::Reservations::ChargeCredits,
       Billing::Reservations::ReuseCoveragePass,
