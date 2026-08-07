@@ -66,10 +66,18 @@ class Api::V1::DoorsController < Api::V1::BaseController
       end
 
       unless user_can_access_building?(user, location)
+        # Tell an unapproved member the truth — they're pending screening —
+        # instead of steering them to buy a pass that won't open the door yet
+        # (the exact trap from the Nash incident, 2026-08-07).
+        message = if !user.approved? && !user.superadmin? && !user.admin_or_manager?(location)
+          "Your account is pending approval. You'll get building access as soon as the team approves you."
+        else
+          "You don't have access today. Buy a day pass or activate a membership to unlock the doors."
+        end
         return render json: {
           success: false,
           door:    door.name,
-          message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+          message: message,
         }, status: :forbidden
       end
     end

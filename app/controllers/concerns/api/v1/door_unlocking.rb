@@ -8,6 +8,14 @@ module Api::V1::DoorUnlocking
     return true if user.superadmin?
     return true if location && user.admin_or_manager?(location)
 
+    # Approval is the HARD GATE for building access (Nash incident follow-up,
+    # 2026-08-08): screening happens BEFORE the door opens. An unapproved
+    # account gets no keys and no unlock regardless of day passes, bundles,
+    # memberships, leases, or reservations — the app holds them on the
+    # Welcome/pending screen, and staff approve from the members queue.
+    # Purchasing and booking stay self-serve (coverage-gated only).
+    return false unless user.approved?
+
     zone  = location&.time_zone.presence || "UTC"
     today = Time.current.in_time_zone(zone).to_date
 
