@@ -232,12 +232,11 @@ RSpec.describe Operator::ReservationsController, type: :controller do
 
   describe "POST #create_reservation" do
     # Classic wizard endpoint (choose-member flow) — reachable by non-staff
-    # members booking themselves, so EnforceDurationCap applies there too. The
-    # flag is gated on the BOOKER: the interactor reads the cap from
-    # context.user (the booked member), so staff booking on behalf must stay
-    # uncapped or the member's 4h free-room cap would block the staff booking.
-    # Same guaranteed-open-weekday pin as POST #create — keeps these green on
-    # Friday runs if posted-hours enforcement ever extends to the wizard.
+    # members booking themselves, so the EnforceDurationCap and
+    # EnforcePostedHours backstops both apply, each gated on the BOOKER: the
+    # interactors read context.user (the booked member), so staff booking on
+    # behalf must stay unflagged or the member's limits would block the staff
+    # booking. Same guaranteed-open-weekday date pin as POST #create.
     let(:wizard_params) do
       {
         room_id: room.id,
@@ -253,6 +252,28 @@ RSpec.describe Operator::ReservationsController, type: :controller do
           post :create_reservation, params: wizard_params
         }.not_to change(Reservation, :count)
         expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+      end
+
+      # Nash backstop: the booker has no subscription/lease, so EnforcePostedHours
+      # applies (factory location posts 6:00 AM – 8:00 PM). Runs first in the
+      # organizer, so nothing persists and no billing stubs are needed.
+      it "rejects a booking outside posted hours" do
+        expect {
+          post :create_reservation, params: wizard_params.merge(hour: "9:00pm", duration: "60")
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to eq("#{location.name} is open #{location.posted_hours_label}. Rooms can be booked during open hours.")
+      end
+
+      it "still allows an active subscriber to book outside posted hours (members book 24/7)" do
+        create(:subscription, subscribable: regular_user, billable: regular_user,
+               plan: create(:plan, operator: operator, location: location))
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
+
+        expect {
+          post :create_reservation, params: wizard_params.merge(hour: "9:00pm", duration: "60")
+        }.to change(Reservation, :count).by(1)
+        expect(flash[:error]).to be_nil
       end
     end
 
@@ -273,13 +294,23 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         expect(booked.minutes).to eq(300)
         expect(flash[:error]).to be_nil
       end
+
+      # The booked member has no subscription (not exempt), so this passes only
+      # because the flag is gated on the BOOKER — a blanket enforce_posted_hours
+      # would wrongly block staff booking on behalf outside posted hours.
+      it "allows an outside-posted-hours booking for the member" do
+        expect {
+          post :create_reservation, params: wizard_params.merge(user_id: regular_user.id, hour: "9:00pm", duration: "60")
+        }.to change(Reservation, :count).by(1)
+        expect(flash[:error]).to be_nil
+      end
     end
   end
 
   describe "POST #update_billing_and_create_reservation" do
-    # Same wizard, new-card variant (books for current_user). The cap step
-    # runs before UpdateUserPayment, so an over-cap request must die without
-    # attaching a card.
+    # Same wizard, new-card variant (books for current_user). The posted-hours
+    # and cap steps run before UpdateUserPayment, so a blocked request must
+    # die without attaching a card.
     it "rejects a member booking over the cap before any card is attached" do
       expect(Billing::Payment::UpdateUserPayment).not_to receive(:call!)
       expect {
@@ -292,6 +323,20 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         }
       }.not_to change(Reservation, :count)
       expect(flash[:error]).to eq("#{room.name} can be booked for up to 4 hours.")
+    end
+
+    it "rejects a booking outside posted hours before any card is attached" do
+      expect(Billing::Payment::UpdateUserPayment).not_to receive(:call!)
+      expect {
+        post :update_billing_and_create_reservation, params: {
+          room_id: room.id,
+          day: (Date.current.next_occurring(:tuesday) + 7).to_s,
+          hour: "9:00pm",
+          duration: "60",
+          stripeToken: "tok_visa"
+        }
+      }.not_to change(Reservation, :count)
+      expect(flash[:error]).to eq("#{location.name} is open #{location.posted_hours_label}. Rooms can be booked during open hours.")
     end
   end
 

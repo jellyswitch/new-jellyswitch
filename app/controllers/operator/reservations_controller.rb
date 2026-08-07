@@ -174,6 +174,11 @@ class Operator::ReservationsController < Operator::BaseController
                                                                                location: current_location,
                                                                                token: token,
                                                                                out_of_band: false,
+                                                                               # Posted-hours backstop (Nash incident), same booker gate as
+                                                                               # the cap below: members/leaseholders stay exempt inside
+                                                                               # EnforcePostedHours (books 24/7), so this only bites
+                                                                               # non-members hand-rolling wizard POSTs.
+                                                                               enforce_posted_hours: !current_user.admin_or_manager?(current_location),
                                                                                # Duration backstop, gated on the booker like the API's
                                                                                # staff_booker? (this endpoint books for current_user, so
                                                                                # booker == booked): staff keep the 12h admin allowance.
@@ -228,6 +233,12 @@ class Operator::ReservationsController < Operator::BaseController
                                                                }, user: @user, location: current_location,
                                                                subscription_charge_info: subscription_charge_info,
                                                                comp: comp,
+                                                               # Posted-hours backstop (Nash incident), gated on the BOOKER like
+                                                               # the cap below: staff on-behalf bookings may book anything, and
+                                                               # for non-staff @user == current_user (set_reserved_user), so the
+                                                               # interactor's member/leaseholder 24/7 exemption lands on the
+                                                               # right person. Only non-members hand-rolling wizard POSTs are hit.
+                                                               enforce_posted_hours: !current_user.admin_or_manager?(current_location),
                                                                # Cap gated on the BOOKER, not @user: the interactor reads the
                                                                # cap from context.user (the booked member), so the flag must
                                                                # stay off when staff book on behalf — the member's 4h free-room
