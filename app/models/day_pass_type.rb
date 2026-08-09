@@ -7,10 +7,14 @@
 #  amount_in_cents               :integer          default(0), not null
 #  available                     :boolean          default(TRUE), not null
 #  code                          :string
+#  daily_limit                   :integer
 #  default_for_room_booking      :boolean          default(FALSE), not null
+#  expires_after_days            :integer
 #  included_meeting_room_minutes :integer
+#  kind                          :string           default("standard"), not null
 #  name                          :string           not null
 #  overage_rate_in_cents         :integer          default(0), not null
+#  quantity                      :integer          default(1), not null
 #  visible                       :boolean          default(TRUE), not null
 #  created_at                    :datetime         not null
 #  updated_at                    :datetime         not null
@@ -27,6 +31,17 @@ class DayPassType < ApplicationRecord
   include HasLocation
 
   has_many :day_passes
+  has_many :day_pass_type_rooms, -> { order(:position, :id) }, dependent: :destroy
+  has_many :office_rooms, through: :day_pass_type_rooms, source: :room
+
+  # String-backed kind: the first *behavioral* distinction between types.
+  # Never infer office behavior from the name (retired %office% ILIKE).
+  # validate: true trades the setter's raise-on-assignment (ArgumentError,
+  # an uncatchable 500) for a normal inclusion validation error (422).
+  enum :kind, { standard: "standard", day_office: "day_office" }, default: :standard, validate: true
+
+  validates :location, presence: { message: "is required for Day Office types" }, if: :day_office?
+
   belongs_to :operator
   acts_as_tenant :operator
 
@@ -94,6 +109,33 @@ class DayPassType < ApplicationRecord
 
   def free?
     amount_in_cents == 0
+  end
+
+  # Full-list semantics, mirroring Room#reassign_doors!: `positions` is
+  # {room_id => position}; rooms absent from the hash leave the pool. Blank
+  # keys (a form's hidden "clear all" input, mirroring reassign_doors!) are
+  # dropped rather than treated as a real room id.
+  #
+  # The resets MUST run in `ensure`, not just after the transaction: on a
+  # validation failure (e.g. a cross-location room), find_or_initialize_by
+  # has already pushed the new, invalid, unsaved record into the
+  # association's in-memory target — that happens in Ruby, not the DB, so
+  # the transaction rollback can't undo it. Left in place, that phantom
+  # record gets re-validated by the has_many autosave-validation callback on
+  # every later save of this DayPassType, failing it with "Day pass type
+  # rooms is invalid" — for a save that has nothing to do with the pool.
+  def assign_office_rooms!(positions)
+    positions = positions.reject { |room_id, _| room_id.blank? }
+    transaction do
+      day_pass_type_rooms.where.not(room_id: positions.keys).destroy_all
+      positions.each do |room_id, position|
+        day_pass_type_rooms.find_or_initialize_by(room_id: room_id)
+                           .update!(position: position)
+      end
+    end
+  ensure
+    day_pass_type_rooms.reset
+    office_rooms.reset
   end
 
   # Meeting room limit helpers

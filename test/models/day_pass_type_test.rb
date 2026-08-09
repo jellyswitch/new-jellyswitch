@@ -92,4 +92,99 @@ class DayPassTypeTest < ActiveSupport::TestCase
       assert_not dpt.daily_limit_reached?(day: day, location: other_location)
     end
   end
+
+  # --- kind / office room pool (ADR 0026) ---
+
+  test "kind defaults to standard and day_office requires a location" do
+    t = DayPassType.new(name: "X", operator: operators(:cowork_tahoe), amount_in_cents: 100)
+    assert t.standard?
+    t.kind = "day_office"
+    assert_not t.valid?
+    assert t.errors[:location].present?
+    t.location = locations(:cowork_tahoe_location)
+    assert t.valid?
+  end
+
+  # Lenient-nil convention (house-wide, see memory): a standard type is the
+  # legacy/default shape and must stay valid with no location, unlike a
+  # day_office type.
+  test "standard kind with no location stays valid" do
+    t = DayPassType.new(name: "X", operator: operators(:cowork_tahoe), amount_in_cents: 100)
+    assert_nil t.location
+    assert t.valid?
+  end
+
+  test "assign_office_rooms! replaces the pool in priority order" do
+    type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe),
+                               location: locations(:cowork_tahoe_location), kind: "day_office", amount_in_cents: 7500)
+    a = Room.create!(name: "A", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    b = Room.create!(name: "B", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    type.assign_office_rooms!({ b.id => 1, a.id => 2 })
+    assert_equal [b.id, a.id], type.office_rooms.map(&:id)
+    type.assign_office_rooms!({ a.id => 1 })
+    assert_equal [a.id], type.office_rooms.map(&:id)
+  end
+
+  test "assign_office_rooms! with an empty hash clears the pool" do
+    type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe),
+                               location: locations(:cowork_tahoe_location), kind: "day_office", amount_in_cents: 7500)
+    a = Room.create!(name: "A", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    type.assign_office_rooms!({ a.id => 1 })
+    assert_equal [a.id], type.office_rooms.map(&:id)
+
+    type.assign_office_rooms!({})
+    assert_empty type.office_rooms
+  end
+
+  test "assign_office_rooms! is atomic: a cross-location room raises and leaves the pool unchanged" do
+    type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe),
+                               location: locations(:cowork_tahoe_location), kind: "day_office", amount_in_cents: 7500)
+    a = Room.create!(name: "A", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    type.assign_office_rooms!({ a.id => 1 })
+
+    other_location = Location.create!(operator: operators(:cowork_tahoe), name: "Other Location")
+    stray = Room.create!(name: "Stray", operator: operators(:cowork_tahoe), location: other_location)
+
+    assert_raises(ActiveRecord::RecordInvalid) do
+      type.assign_office_rooms!({ a.id => 2, stray.id => 1 })
+    end
+
+    # No reload: this must hold from the association's own (reset) cache,
+    # not merely from a fresh query.
+    assert_equal [a.id], type.office_rooms.map(&:id)
+    assert_equal 1, DayPassTypeRoom.find_by(day_pass_type: type, room: a).position
+
+    # Regression pin: the failed assign used to leave a phantom invalid
+    # DayPassTypeRoom sitting in the loaded association target (built via
+    # find_or_initialize_by, never removed by a DB rollback). The has_many
+    # autosave-validation callback then re-validates that phantom on ANY
+    # later save of `type` — even one with nothing to do with the pool.
+    type.update!(name: "Renamed")
+    assert_equal "Renamed", type.reload.name
+  end
+
+  test "assign_office_rooms! ignores blank keys" do
+    type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe),
+                               location: locations(:cowork_tahoe_location), kind: "day_office", amount_in_cents: 7500)
+    a = Room.create!(name: "A", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    type.assign_office_rooms!({ "" => "1", a.id => "2" })
+    assert_equal [a.id], type.office_rooms.map(&:id)
+  end
+
+  test "assign_office_rooms! breaks equal positions by id" do
+    type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe),
+                               location: locations(:cowork_tahoe_location), kind: "day_office", amount_in_cents: 7500)
+    a = Room.create!(name: "A", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    b = Room.create!(name: "B", operator: operators(:cowork_tahoe), location: locations(:cowork_tahoe_location))
+    type.assign_office_rooms!({ a.id => 1, b.id => 1 })
+    lower, higher = [a.id, b.id].sort
+    assert_equal [lower, higher], type.office_rooms.map(&:id)
+  end
+
+  test "an invalid kind value fails validation instead of raising" do
+    t = DayPassType.new(name: "X", operator: operators(:cowork_tahoe), amount_in_cents: 100)
+    t.kind = "office"
+    assert_not t.valid?
+    assert t.errors[:kind].present?
+  end
 end
