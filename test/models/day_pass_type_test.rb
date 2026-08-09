@@ -187,4 +187,86 @@ class DayPassTypeTest < ActiveSupport::TestCase
     assert_not t.valid?
     assert t.errors[:kind].present?
   end
+
+  # --- day_office capacity + suggestion fallback (ADR 0026, decisions #6/#7) ---
+
+  test "daily_limit_reached? for day_office types is room availability, ignoring daily_limit" do
+    operator = operators(:cowork_tahoe)
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+    type = DayPassType.create!(name: "Day Office", operator: operator, location: @location,
+                               kind: "day_office", amount_in_cents: 7500, daily_limit: 99)
+    a = Room.create!(name: "A", operator: operator, location: @location)
+    b = Room.create!(name: "B", operator: operator, location: @location)
+    type.assign_office_rooms!({ a.id => 1, b.id => 2 })
+    day = Date.current + 7
+
+    assert_not type.daily_limit_reached?(day: day, location: @location),
+               "both pool rooms are free; a daily_limit of 99 must not matter either way"
+
+    span = @location.posted_hours_span(day)
+    [a, b].each { |r| Reservation.create!(user: users(:cowork_tahoe_non_member), room: r, datetime_in: span.first, minutes: 600) }
+    assert type.daily_limit_reached?(day: day, location: @location),
+           "both pool rooms are now taken; sold out even though daily_limit (99) is nowhere near reached"
+  end
+
+  test "day_office type with empty pool is always sold out" do
+    operator = operators(:cowork_tahoe)
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+    type = DayPassType.create!(name: "Day Office", operator: operator, location: @location,
+                               kind: "day_office", amount_in_cents: 7500)
+    assert_nil type.daily_limit, "unset daily_limit must not short-circuit the day_office branch to false"
+    assert_empty type.office_rooms
+    assert type.daily_limit_reached?(day: Date.current + 7, location: @location)
+  end
+
+  test "suggested_standard_for prefers default_for_room_booking, else cheapest paid standard, never day_office" do
+    operator = operators(:cowork_tahoe)
+    std = DayPassType.create!(name: "Regular", operator: operator, location: @location,
+                              amount_in_cents: 4000, default_for_room_booking: true)
+    assert_equal std, DayPassType.suggested_standard_for(@location)
+
+    std.update!(default_for_room_booking: false)
+    cheaper = DayPassType.create!(name: "Cheap", operator: operator, location: @location, amount_in_cents: 2000)
+    assert_equal cheaper, DayPassType.suggested_standard_for(@location)
+
+    # An office-NAMED standard type must now be suggestible — name no longer matters.
+    office_named = DayPassType.create!(name: "Office Pass", operator: operator, location: @location, amount_in_cents: 1000)
+    assert_equal office_named, DayPassType.suggested_standard_for(@location)
+
+    # A day_office-KIND type must never be suggested, even as the cheapest candidate.
+    DayPassType.create!(name: "Actual Office", operator: operator, location: @location,
+                        kind: "day_office", amount_in_cents: 100)
+    assert_equal office_named, DayPassType.suggested_standard_for(@location)
+  end
+
+  test "suggested_standard_for returns nil when location is nil" do
+    assert_nil DayPassType.suggested_standard_for(nil)
+  end
+
+  test "suggested_standard_for never suggests free, invisible, unavailable, or other-operator types" do
+    operator = operators(:cowork_tahoe)
+    other_operator = Operator.create!(name: "Other Operator", subdomain: "other-operator-test")
+
+    # Each is cheaper than the one eligible type below, so if any filter were
+    # dropped, that filter's type — not the eligible one — would win on price.
+    DayPassType.create!(name: "Free", operator: operator, location: @location, amount_in_cents: 0)
+    DayPassType.create!(name: "Invisible", operator: operator, location: @location,
+                        amount_in_cents: 100, visible: false)
+    DayPassType.create!(name: "Unavailable", operator: operator, location: @location,
+                        amount_in_cents: 100, available: false)
+    DayPassType.create!(name: "Other Operator's Pass", operator: other_operator, amount_in_cents: 100)
+
+    eligible = DayPassType.create!(name: "Eligible", operator: operator, location: @location, amount_in_cents: 5000)
+    assert_equal eligible, DayPassType.suggested_standard_for(@location)
+  end
+
+  test "suggested_standard_for prefers a location-specific default over a nil-location operator-wide default" do
+    operator = operators(:cowork_tahoe)
+    # Cheaper, but location: nil (operator-wide) — must lose to the pricier, location-specific default.
+    DayPassType.create!(name: "Global Default", operator: operator, location: nil,
+                        amount_in_cents: 1000, default_for_room_booking: true)
+    local_default = DayPassType.create!(name: "Local Default", operator: operator, location: @location,
+                                        amount_in_cents: 9000, default_for_room_booking: true)
+    assert_equal local_default, DayPassType.suggested_standard_for(@location)
+  end
 end

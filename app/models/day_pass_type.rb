@@ -73,6 +73,20 @@ class DayPassType < ApplicationRecord
     end
   end
 
+  # The regular pass to offer when an office is sold out — same preference
+  # order CoverageState uses for coverage auto-buy suggestions (ADR 0026). A
+  # location-specific default_for_room_booking type beats an operator-wide
+  # (nil-location) one; both orderings tiebreak on id for a deterministic pick.
+  def self.suggested_standard_for(location)
+    return nil if location.nil?
+    scope = where(operator_id: location.operator_id)
+              .for_location(location)
+              .available.where(visible: true).where("amount_in_cents > 0")
+              .where.not(kind: "day_office")
+    scope.where(default_for_room_booking: true).order(Arel.sql("location_id DESC NULLS LAST"), :id).first ||
+      scope.order(:amount_in_cents, :id).first
+  end
+
   validates :quantity, numericality: { only_integer: true, greater_than_or_equal_to: 1 }
   validates :daily_limit, numericality: { only_integer: true, greater_than_or_equal_to: 1 },
                           allow_nil: true
@@ -102,7 +116,13 @@ class DayPassType < ApplicationRecord
   # models physical capacity (e.g. the building has 2 day offices), not sales
   # volume. Enforced only at member self-serve entry points; staff/admin and
   # door-entry paths never call this (their rows still count).
+  #
+  # For day_office types the pool IS the capacity: sold out = no pool room
+  # free that day; the stored daily_limit is ignored (ADR 0026, decision #7).
   def daily_limit_reached?(day:, location:)
+    if day_office?
+      return DayOffices::Allocator.available_room(day_pass_type: self, day: day).nil?
+    end
     return false if daily_limit.nil?
     day_passes.where(location: location, day: day).count >= daily_limit
   end

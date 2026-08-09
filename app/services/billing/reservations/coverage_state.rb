@@ -69,13 +69,11 @@ class Billing::Reservations::CoverageState
     active_bundles.order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")).first
   end
 
-  # The same SKU the old silent auto-buy chose.
+  # The same SKU the old silent auto-buy chose. Office-backed types are
+  # excluded by KIND (was a %office% name-match) — an office pass is never
+  # auto-suggested as mere room coverage (ADR 0026).
   def suggested_day_pass_type
-    scope = DayPassType.where(operator_id: location.operator_id)
-                       .where("location_id = ? OR location_id IS NULL", location.id)
-                       .available.where(visible: true).where("amount_in_cents > 0")
-                       .where.not("name ILIKE ?", "%office%")
-    scope.where(default_for_room_booking: true).first || scope.order(:amount_in_cents).first
+    DayPassType.suggested_standard_for(location)
   end
 
   def today

@@ -77,4 +77,24 @@ class Billing::Reservations::CoverageStateTest < ActiveSupport::TestCase
       assert_equal 4000, state.amount_cents
     end
   end
+
+  # ADR 0026: office-backed types are excluded from the suggestion by KIND,
+  # not by a %office% name-match — an office pass is never auto-suggested as
+  # mere room coverage.
+  test "office-backed types are excluded from the suggestion by kind, not by name" do
+    ActsAsTenant.with_tenant(@operator) do
+      user = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      # Cheapest, but kind: day_office — must never be suggested as room coverage,
+      # regardless of its (office-free) name.
+      create(:day_pass_type, operator: @operator, location: @location,
+             name: "Private Suite", kind: "day_office", amount_in_cents: 500)
+      # Named the way the old ILIKE would have wrongly excluded — must now be suggestible.
+      office_named = create(:day_pass_type, operator: @operator, location: @location,
+                            name: "Office Hours Pass", amount_in_cents: 3000)
+
+      state = Billing::Reservations::CoverageState.for(user: user, room: included_room, date: Date.current + 3, location: @location)
+      assert_equal :needs_purchase, state.outcome
+      assert_equal office_named.id, state.day_pass_type.id
+    end
+  end
 end
