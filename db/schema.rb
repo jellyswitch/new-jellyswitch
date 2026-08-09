@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_09_012528) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -320,6 +320,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
     t.index ["user_id"], name: "index_day_pass_bundles_on_user_id"
   end
 
+  create_table "day_pass_type_rooms", force: :cascade do |t|
+    t.bigint "day_pass_type_id", null: false
+    t.bigint "room_id", null: false
+    t.integer "position", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["day_pass_type_id", "position"], name: "index_dpt_rooms_on_type_and_position"
+    t.index ["day_pass_type_id", "room_id"], name: "index_dpt_rooms_on_type_and_room", unique: true
+    t.index ["room_id"], name: "index_day_pass_type_rooms_on_room_id"
+  end
+
   create_table "day_pass_types", force: :cascade do |t|
     t.string "name", null: false
     t.integer "operator_id", null: false
@@ -337,6 +348,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
     t.integer "quantity", default: 1, null: false
     t.integer "expires_after_days"
     t.integer "daily_limit"
+    t.string "kind", default: "standard", null: false
     t.index ["location_id"], name: "index_day_pass_types_on_location_id"
     t.index ["operator_id", "location_id", "default_for_room_booking"], name: "index_dpt_on_op_loc_default"
   end
@@ -1007,6 +1019,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
     t.datetime "arrival_notified_at"
     t.datetime "started_notified_at"
     t.integer "attendee_count"
+    t.bigint "day_office_pass_id"
+    t.index ["day_office_pass_id"], name: "index_reservations_on_day_office_pass_id"
     t.index ["recurring_reservation_id"], name: "index_reservations_on_recurring_reservation_id"
     t.index ["room_id", "datetime_in"], name: "index_reservations_on_room_id_and_datetime_in"
     t.index ["stripe_payment_intent_id"], name: "index_reservations_on_stripe_payment_intent_id", unique: true
@@ -1208,6 +1222,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
   add_foreign_key "comp_days", "users"
   add_foreign_key "comp_days", "users", column: "granted_by_id"
   add_foreign_key "day_pass_bundle_redemptions", "users", column: "performed_by_id"
+  add_foreign_key "day_pass_type_rooms", "day_pass_types"
+  add_foreign_key "day_pass_type_rooms", "rooms"
   add_foreign_key "day_passes", "reservations", on_delete: :nullify
   add_foreign_key "discount_redemptions", "discount_codes"
   add_foreign_key "discount_redemptions", "users"
@@ -1239,6 +1255,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_07_210000) do
   add_foreign_key "product_email_templates", "locations"
   add_foreign_key "product_email_templates", "operators"
   add_foreign_key "refunds", "invoices", on_delete: :nullify
+  add_foreign_key "reservations", "day_passes", column: "day_office_pass_id", on_delete: :nullify
   add_foreign_key "room_demand_misses", "locations"
   add_foreign_key "room_demand_misses", "operators"
   add_foreign_key "room_demand_misses", "users"
