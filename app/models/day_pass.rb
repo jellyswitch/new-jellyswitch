@@ -47,8 +47,13 @@ class DayPass < ApplicationRecord
   belongs_to :user
   belongs_to :operator
   belongs_to :reservation, optional: true
+  # Live office hold only — Reservation's default_scope hides a cancelled one,
+  # so this naturally goes nil the moment the hold is released (ADR 0026).
+  has_one :office_hold, class_name: "Reservation", foreign_key: :day_office_pass_id
   acts_as_tenant :operator
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
+
+  delegate :day_office?, to: :day_pass_type, allow_nil: true
 
   # Set on historical imports to skip member-lifecycle side effects (welcome drip,
   # activity-feed entries) that should not fire for back-dated records.
@@ -93,6 +98,24 @@ class DayPass < ApplicationRecord
   # excludes bundle redemptions, door/reserve burns, and historical imports.
   # after_create_COMMIT so a tag write can never roll back or 500 the sale.
   after_create_commit :record_purchase_interest, unless: :imported
+
+  # The single release authority for every destroy path (refund rescind,
+  # cancel-scheduled-day, console) — cancels the hold so the room is bookable
+  # again immediately. The FK's ON DELETE SET NULL (see migration) is only a
+  # backstop against an orphaned non-null column; it does NOT cancel the
+  # reservation, so this callback is load-bearing, not redundant with it.
+  #
+  # before_destroy, not after_destroy: the FK's ON DELETE SET NULL fires as
+  # part of the DELETE statement itself, so by after_destroy day_office_pass_id
+  # is already nulled and office_hold can no longer find the row to cancel.
+  #
+  # reload_office_hold, not office_hold: an earlier read of `office_hold` in
+  # this same request/object (e.g. a serializer touching it before a
+  # controller destroys the pass) memoizes the association target. If that
+  # read happened before the hold existed (or after it was already released
+  # elsewhere), the cached nil would make this a silent no-op and leave a live
+  # hold behind, blocking the room. reload_ forces a fresh query every time.
+  before_destroy { DayOffices::ReleaseHold.call(reload_office_hold) }
 
   # Instance methods
   def log_activity

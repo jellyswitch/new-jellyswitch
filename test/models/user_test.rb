@@ -190,6 +190,60 @@ class UserTest < ActiveSupport::TestCase
     assert_equal 60, info[:used_minutes], "only the 60 min booked at THIS location should count against its pool"
   end
 
+  # ADR 0026: a Day Office hold is a $0 posted-hours reservation minted BY the
+  # office pass purchase itself — it must never draw down a meeting-room
+  # allowance, whether that allowance comes from the day pass (this test) or a
+  # subscription plan (the twin below). Without the day_office_pass_id
+  # exclusion, the hold's own ~600 minutes would swamp the pool it's supposed
+  # to sit alongside.
+  test "day_pass_reservation_charge_info excludes the holder's own office hold minutes (ADR 0026)" do
+    member = users(:cowork_tahoe_member)
+    Reservation.where(user_id: member.id).delete_all
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+
+    office_type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe), location: @location,
+                                      kind: "day_office", included_meeting_room_minutes: 60)
+    pool_room = Room.create!(name: "Office A", operator: operators(:cowork_tahoe), location: @location,
+                             hourly_rate_in_cents: 0, include_with_day_pass: true)
+    office_type.assign_office_rooms!({ pool_room.id => 1 })
+    day = Date.current + 7
+    office_pass = DayPass.create!(user: member, billable: member, operator: operators(:cowork_tahoe),
+                                  location: @location, day_pass_type: office_type, day: day, imported: true)
+    hold = DayOffices::Allocator.allocate!(day_pass: office_pass)
+    assert_equal 600, hold.minutes # sanity: a regression here would silently defeat the assertion below
+
+    info = member.day_pass_reservation_charge_info(@location, day, 30)
+    assert_equal :free, info[:charge_type]
+    assert_equal 60, info[:remaining_free], "the hold's 600 min must not count against its own type's allowance"
+  end
+
+  test "subscription_reservation_charge_info excludes the member's own office hold minutes (ADR 0026)" do
+    member = users(:cowork_tahoe_member)
+    Reservation.where(user_id: member.id).delete_all
+    plans(:cowork_tahoe_full_time_plan).update!(
+      included_meeting_room_minutes: 120, overage_rate_in_cents: 6000, location_id: @location.id,
+    )
+    subscriptions(:cowork_tahoe_subscription).update!(stripe_subscription_id: nil, start_date: 5.days.ago)
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+
+    # No meeting-room limit on the office TYPE itself, so this exercises the
+    # subscription pool specifically rather than the day-pass branch.
+    office_type = DayPassType.create!(name: "Day Office", operator: operators(:cowork_tahoe), location: @location,
+                                      kind: "day_office")
+    pool_room = Room.create!(name: "Office A", operator: operators(:cowork_tahoe), location: @location,
+                             hourly_rate_in_cents: 0)
+    office_type.assign_office_rooms!({ pool_room.id => 1 })
+    day = Date.current + 7
+    office_pass = DayPass.create!(user: member, billable: member, operator: operators(:cowork_tahoe),
+                                  location: @location, day_pass_type: office_type, day: day, imported: true)
+    hold = DayOffices::Allocator.allocate!(day_pass: office_pass)
+    assert_equal 600, hold.minutes
+
+    info = member.subscription_reservation_charge_info(@location, 30)
+    assert_equal 0, info[:used_minutes], "the office hold must not count against the plan's meeting-room pool"
+    assert_equal 120, info[:remaining_free]
+  end
+
   # ---- Day Pool gates BUILDING ACCESS only, not membership identity (ADR 0004) ----
 
   def setup_day_limited_member(limit:, punch_days:)

@@ -13,6 +13,7 @@ class Billing::Reservations::OveragePreview
                        .where(datetime_in: date.beginning_of_day..date.end_of_day)
                        .where(rooms: { include_with_day_pass: true })
                        .where.not(id: reservation_id)
+                       .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                        .sum(:minutes)
     free_remaining = [allotment - other, 0].max
     over = [minutes.to_i - free_remaining, 0].max

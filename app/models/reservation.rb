@@ -34,6 +34,10 @@ class Reservation < ApplicationRecord
   belongs_to :room
   belongs_to :user
   belongs_to :recurring_reservation, optional: true
+  # The day-office pass whose purchase MINTED this reservation as a hold (ADR
+  # 0026) — nil for every ordinary booking. optional: true because the FK is
+  # only ever set on that one reservation-per-pass path.
+  belongs_to :day_office_pass, class_name: "DayPass", optional: true
   has_and_belongs_to_many :amenities
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
   # Booking-capture + extension-delta invoices (ADR 0010/0011). A cancel refunds
@@ -272,5 +276,11 @@ class Reservation < ApplicationRecord
 
   def part_of_series?
     recurring_reservation_id.present?
+  end
+
+  # A Day Office hold: the $0 reservation minted BY a day-office pass purchase
+  # (ADR 0026) — never charged, never drawing meeting-room allowances.
+  def day_office_hold?
+    day_office_pass_id.present?
   end
 end

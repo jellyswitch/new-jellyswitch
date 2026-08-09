@@ -368,6 +368,7 @@ module Permissions
                               .where(datetime_in: period_start..period_end)
                               .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
                               .where(rooms: { location_id: location.id })
+                              .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                               .sum(:minutes)
 
     remaining_free = [plan.included_meeting_room_minutes - used_minutes, 0].max
@@ -433,6 +434,7 @@ module Permissions
     used_minutes = Reservation.joins(:room).where(user_id: id, cancelled: false)
                               .where(datetime_in: day.beginning_of_day..day.end_of_day)
                               .where(rooms: { include_with_day_pass: true })
+                              .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                               .sum(:minutes)
 
     remaining_free = [day_pass_type.included_meeting_room_minutes - used_minutes, 0].max
