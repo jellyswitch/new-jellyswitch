@@ -250,6 +250,9 @@ Rails.application.routes.draw do
         post 'members/:id/schedule_bundle_days',  to: 'members#schedule_bundle_days'
         get  'members/:id/scheduled_bundle_days', to: 'members#scheduled_bundle_days'
         post 'members/:member_id/scheduled_bundle_days/:id/cancel', to: 'members#cancel_scheduled_bundle_day'
+        # +/- one bundle pass with no date attached (admin_burn / admin_restore)
+        post 'members/:id/burn_bundle_pass',    to: 'members#burn_bundle_pass'
+        post 'members/:id/restore_bundle_pass', to: 'members#restore_bundle_pass'
 
         # People (lifecycle-stage filtered list)
         get 'people', to: 'people#index'
@@ -914,6 +917,7 @@ Rails.application.routes.draw do
   resources :users, controller: "operator/users" do
     resources :comp_days, only: [:create], controller: "operator/comp_days"
     resources :day_pass_bundle_restores, only: [:create], controller: "operator/day_pass_bundle_restores"
+    resources :day_pass_bundle_burns, only: [:create], controller: "operator/day_pass_bundle_burns"
     # :id on destroy is the scheduled DayPass, not a bundle — CancelScheduledDay
     # resolves the source bundle through the redemption row.
     resources :day_pass_bundle_schedules, only: [:create, :destroy], controller: "operator/day_pass_bundle_schedules"
