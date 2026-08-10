@@ -1,9 +1,6 @@
 class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   def index
-    reservations = Reservation.unscoped
-                              .joins(:room)
-                              .where(rooms: { operator_id: current_tenant.id })
-                              .where(cancelled: false)
+    reservations = visible_reservations
 
     reservations = apply_scope(reservations, params[:scope])
     reservations = reservations.order(:datetime_in).limit(30).offset(params[:offset].to_i)
@@ -15,12 +12,9 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     start_date = Time.zone.parse(params[:start])
     end_date = Time.zone.parse(params[:end])
 
-    reservations = Reservation.unscoped
-                              .joins(:room)
-                              .where(rooms: { operator_id: current_tenant.id })
-                              .where(cancelled: false)
-                              .where(datetime_in: start_date..end_date)
-                              .includes(:room, :user)
+    reservations = visible_reservations
+                     .where(datetime_in: start_date..end_date)
+                     .includes(:room, :user)
 
     render json: reservations.map { |r|
       {
@@ -36,7 +30,7 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
 
   def create
     user = current_tenant.users.find(params[:user_id])
-    room = Room.find(params[:room_id])
+    room = find_room
     datetime_in = Time.zone.parse(params[:datetime_in])
     minutes = params[:minutes].to_i
 
@@ -64,6 +58,8 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
       # than a blanket "Booking failed".
       render_error(result.message || result.error || 'Booking failed')
     end
+  rescue ActiveRecord::RecordNotFound
+    render_error('Not found', status: :not_found)
   end
 
   def extend
@@ -118,6 +114,35 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   end
 
   private
+
+  # Base relation for the list endpoints (index/calendar). Operator-wide was
+  # not the right boundary here either: once find_reservation confined
+  # destroy/extend to allowed_location_ids, a location-scoped community
+  # manager still SAW every other location's bookings (member names, times)
+  # in these lists — rows the web list (current_location-scoped) never shows
+  # them and that they could no longer act on. Same superadmin bypass as
+  # find_reservation, so superadmins keep the operator-wide view the mobile
+  # Reservations screen and calendar have today.
+  def visible_reservations
+    scope = Reservation.unscoped
+                       .joins(:room)
+                       .where(rooms: { operator_id: current_tenant.id })
+                       .where(cancelled: false)
+    scope = scope.where(rooms: { location_id: allowed_location_ids }) unless current_api_user.superadmin?
+    scope
+  end
+
+  # Room lookup for create. This was a bare Room.find — acts_as_scopable's
+  # default_scope reads RequestStore, which only the web Operator:: stack
+  # sets, so in the API the lookup was completely unscoped and an admin
+  # could book (and charge their member for) a room in a DIFFERENT
+  # OPERATOR. Tenant-scope via the association, then confine non-superadmins
+  # to the same location set find_reservation uses.
+  def find_room
+    scope = current_tenant.rooms
+    scope = scope.where(location_id: allowed_location_ids) unless current_api_user.superadmin?
+    scope.find(params[:room_id])
+  end
 
   # Lookup for the mutating actions (destroy/extend). Tenant scope alone is
   # not the boundary the web enforces: operator destroy/extend resolve via
