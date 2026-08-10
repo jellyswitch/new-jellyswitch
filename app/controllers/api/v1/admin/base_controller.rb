@@ -36,7 +36,16 @@ class Api::V1::Admin::BaseController < Api::V1::BaseController
     location = current_location
     return if location.nil?
 
-    allowed_location_ids = current_api_user.managed_location_ids + [current_api_user.original_location_id].compact
     render json: { error: 'Forbidden' }, status: :forbidden unless allowed_location_ids.include?(location.id)
+  end
+
+  # The admin API's one definition of a staff user's location boundary:
+  # locations they manage (location_managements) plus their own home location.
+  # Used both for the caller's own location (enforce_location_scope! above) and
+  # for per-record lookups (e.g. reservations#find_reservation) — a record
+  # check that consulted a different set would reopen the cross-location hole.
+  # Callers are responsible for the superadmin bypass.
+  def allowed_location_ids
+    current_api_user.managed_location_ids + [current_api_user.original_location_id].compact
   end
 end

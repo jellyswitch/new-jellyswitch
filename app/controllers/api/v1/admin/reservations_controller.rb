@@ -67,10 +67,7 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   end
 
   def extend
-    reservation = Reservation.unscoped
-                             .joins(:room)
-                             .where(rooms: { operator_id: current_tenant.id })
-                             .find(params[:id])
+    reservation = find_reservation
 
     additional_minutes = params[:additional_minutes].to_i
     return render_error('Invalid duration') if additional_minutes <= 0
@@ -96,15 +93,14 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     else
       render_error(result.message || 'Could not extend reservation')
     end
+  rescue ActiveRecord::RecordNotFound
+    render_error('Reservation not found', status: :not_found)
   rescue => e
     render_error(e.message)
   end
 
   def destroy
-    reservation = Reservation.unscoped
-                             .joins(:room)
-                             .where(rooms: { operator_id: current_tenant.id })
-                             .find(params[:id])
+    reservation = find_reservation
 
     return render json: { success: true } if reservation.cancelled?
 
@@ -117,9 +113,28 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     end
 
     render json: { success: true }
+  rescue ActiveRecord::RecordNotFound
+    render_error('Reservation not found', status: :not_found)
   end
 
   private
+
+  # Lookup for the mutating actions (destroy/extend). Tenant scope alone is
+  # not the boundary the web enforces: operator destroy/extend resolve via
+  # Reservation.for_location_id(current_location) + Pundit admin_or_manager?,
+  # so a community manager homed at location B can never cancel a location-A
+  # booking there — but this lookup only checked rooms.operator_id, so they
+  # could here. Confine non-superadmins to the same location set
+  # enforce_location_scope! uses (managed locations + home). Stays .unscoped
+  # because destroy's already-cancelled early return must still find
+  # cancelled rows past the model's default_scope.
+  def find_reservation
+    scope = Reservation.unscoped
+                       .joins(:room)
+                       .where(rooms: { operator_id: current_tenant.id })
+    scope = scope.where(rooms: { location_id: allowed_location_ids }) unless current_api_user.superadmin?
+    scope.find(params[:id])
+  end
 
   def apply_scope(reservations, scope)
     case scope
