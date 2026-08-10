@@ -12,6 +12,12 @@
       <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Previously:</strong></td>
       <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @old_day.strftime("%A, %B %e, %Y") %></td>
     </tr>
+    <% if @office_hold %>
+      <tr>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Your office:</strong></td>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @office_hold.room.name %>, <%= @office_hold.window_label %></td>
+      </tr>
+    <% end %>
     <% if @location %>
       <tr>
         <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Location:</strong></td>

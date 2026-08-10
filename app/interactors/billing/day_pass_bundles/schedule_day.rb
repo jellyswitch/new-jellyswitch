@@ -56,6 +56,10 @@ class Billing::DayPassBundles::ScheduleDay
       return
     end
 
+    # Computed in the lock, announced after it (ADR 0026 — never enqueue a
+    # notification inside a transaction).
+    office_hold = nil
+
     bundle.with_lock do
       # C2: re-check inside the lock to prevent concurrent double-schedule of
       # the same date (mirrors ConsumeOnEntry's inner guard).
@@ -85,10 +89,10 @@ class Billing::DayPassBundles::ScheduleDay
       # report :sold_out rather than burn for an office that doesn't exist
       # (mirrors AllocateDayOffice's organizer-level backstop). Staff
       # scheduling (no enforce flag) is lenient: it proceeds office-less on a
-      # lost race or a sold-out pool — staff judgment; reassignment/notify
-      # wiring is Task 11.
+      # lost race or a sold-out pool — staff judgment, and staff are the ones
+      # who then tell the member, so that path stays silent (see below).
       if bundle.day_pass_type.day_office?
-        hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
+        hold = office_hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
         if hold.nil? && context.enforce_daily_limit
           day_pass.destroy!
           context.day_pass_type = bundle.day_pass_type
@@ -102,9 +106,31 @@ class Billing::DayPassBundles::ScheduleDay
       # fires it immediately, matching the existing ConsumeOnEntry behaviour.
       bundle.burn_locked!(kind: :entry, performed_by: performed_by, day_pass: day_pass,
                           defer_review_email: date > today)
-      context.bundle   = bundle
-      context.day_pass = day_pass
-      context.outcome  = :scheduled
+      context.bundle      = bundle
+      context.day_pass    = day_pass
+      context.office_hold = office_hold
+      context.outcome     = :scheduled
+    end
+
+    # Member self-serve only. `notify_member` names the semantics
+    # `enforce_daily_limit` happens to carry — this schedule was initiated by
+    # the MEMBER (mobile redeem_today / pick-a-day), not by staff burning on
+    # their behalf — and defaults to it so no caller has to change. Staff
+    # scheduling stays deliberately quiet: the admin is standing there telling
+    # them, and the lenient branch above may have produced no office at all.
+    notify_member = context.notify_member.nil? ? context.enforce_daily_limit : context.notify_member
+
+    if context.outcome == :scheduled && notify_member && office_hold
+      # Always publish WHAT would be announced; `defer_notifications` decides
+      # WHO announces it. Billing::DayPassBundles::ScheduleDays wraps a whole
+      # batch in one transaction and rolls the batch back when any date fails,
+      # so enqueuing from in here would hand Sidekiq a job naming a row that
+      # may never commit — the worker can pick it up before COMMIT (job
+      # discarded on DeserializationError, mailer nil-bails) or after a
+      # ROLLBACK. When the batch owns the transaction it also owns the
+      # notification, and fires it once the transaction has closed.
+      context.notify_day_pass = context.day_pass
+      DayOffices::Notify.assigned(day_pass: context.day_pass) unless context.defer_notifications
     end
   rescue DayPassBundle::NoPassesRemaining
     context.outcome = :no_bundle

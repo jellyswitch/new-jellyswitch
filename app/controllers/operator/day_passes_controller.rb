@@ -256,11 +256,13 @@ class Operator::DayPassesController < Operator::BaseController
   # routes through Billing::DayPassBundles::ConsumeOnEntry: today-only,
   # idempotent, and a no-op when other coverage already grants access.
   #
-  # NOTE: unlike the mobile API's redeem_today (Task 10 / ADR 0026), this web
-  # action does NOT special-case a Day Office bundle — ConsumeOnEntry never
-  # allocates a pool room, so a Day Office bundle holder redeeming from the
-  # web gets a dated pass with no office assigned. Web-side parity (routing a
-  # Day Office bundle through ScheduleDay here too) is deferred to Task 11.
+  # Day Office bundles (ADR 0026) need no special-casing here: as of Task 11
+  # ConsumeOnEntry allocates a pool room itself on the office branch, and
+  # notifies the member either way — with the room when one was free, or with
+  # the walk-in "your pass still works, see staff" message (plus a staff alert)
+  # when the pool was full. The divergence from the mobile API's redeem_today,
+  # which routes an office bundle through ScheduleDay, is now only about which
+  # idempotency window applies (business day here, calendar date there).
   #
   # ADR 0017: a redemption mints today's DayPass (the right to be present) but
   # does NOT open a door — so the success copy hands the member off to the app.

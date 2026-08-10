@@ -55,6 +55,19 @@ class NotifiableFactory
       Notifiable::TourRequestAlert
     when "OfficeVacancy"
       Notifiable::OfficeVacancy
+    # Day Office (ADR 0026). All four wrap an existing record and are always
+    # dispatched with an explicit type string, so none of them can be reached
+    # by the bare-class branch above.
+    when "DayOfficeAssigned"
+      Notifiable::DayOfficeAssigned
+    when "DayOfficeUnavailable"
+      Notifiable::DayOfficeUnavailable
+    when "DayOfficeUnassignedAlert"
+      Notifiable::DayOfficeUnassignedAlert
+    when "DayOfficeUnassignedBookingAlert"
+      Notifiable::DayOfficeUnassignedBookingAlert
+    when "DayOfficeReassigned"
+      Notifiable::DayOfficeReassigned
     when "PaymentFailed"
       Notifiable::PaymentFailed
     else

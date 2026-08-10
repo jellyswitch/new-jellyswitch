@@ -30,6 +30,30 @@ class Api::V1::DayPassesSchedulingTest < ActionDispatch::IntegrationTest
     assert_equal 3, body["passes_remaining"]
   end
 
+  # ScheduleDays holds one transaction (and a bundle row lock) open across the
+  # whole batch, so an unbounded list is an unbounded lock hold on rows the door
+  # path needs. Refused before any DB work.
+  test "POST schedule refuses more than 30 dates and burns nothing" do
+    dates = (1..31).map { |n| (Date.current + n).iso8601 }
+
+    post "/api/v1/day_passes/schedule", params: { dates: dates }.to_json, headers: headers(@member)
+
+    assert_response :unprocessable_entity
+    assert_equal "You can schedule up to 30 days at a time.", JSON.parse(response.body)["error"]
+    assert_equal 5, @bundle.reload.passes_remaining
+    assert_equal 0, @member.day_passes.count
+  end
+
+  test "POST schedule accepts exactly 30 dates" do
+    ActsAsTenant.with_tenant(@operator) { @bundle.update!(passes_remaining: 30, quantity_purchased: 30) }
+    dates = (1..30).map { |n| (Date.current + n).iso8601 }
+
+    post "/api/v1/day_passes/schedule", params: { dates: dates }.to_json, headers: headers(@member)
+
+    assert_response :success
+    assert_equal 30, JSON.parse(response.body)["scheduled_days"].size
+  end
+
   test "GET scheduled_days lists only upcoming bundle days" do
     ActsAsTenant.with_tenant(@operator) do
       Billing::DayPassBundles::ScheduleDay.call(user: @member, location: @location, date: Date.current + 2, performed_by: @member)

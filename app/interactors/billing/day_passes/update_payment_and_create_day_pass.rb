@@ -9,6 +9,8 @@ class Billing::DayPasses::UpdatePaymentAndCreateDayPass
     Billing::DayPasses::CreateStripeInvoice,
     Billing::DayPasses::ChargeDayPassInvoice,
     CreateNotifications,
-    Billing::DayPasses::ScheduleDayPassEmails
+    Billing::DayPasses::ScheduleDayPassEmails,
+    # LAST: the Day Office confirmation email must imply a cleared charge.
+    Billing::DayPasses::NotifyDayOfficeAssigned
   )
 end

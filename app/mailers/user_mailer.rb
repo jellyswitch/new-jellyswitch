@@ -270,10 +270,72 @@ class UserMailer < ApplicationMailer
     @old_day = old_day.to_date
     @host = ENV['ASSET_HOST']
     @unsubscribe_url = unsubscribe_url(@user)
+    # Day Office pass (ADR 0026): the reschedule already moved the hold
+    # (DayOffices::MoveHold), so the view can name the room on the NEW date.
+    # nil for a standard pass, which never has a hold.
+    @office_hold = day_pass.office_hold
     from_address = @location&.sender_from_address || @operator.sender_from_address
 
     mail to: @user.email,
          subject: "Your day pass is now scheduled for #{@day_pass.day.strftime('%B %-e, %Y')}",
+         from: from_address, reply_to: @operator.contact_email
+  end
+
+  # Confirms a Day Office assignment to the pass holder (ADR 0026) — which
+  # room, when, and where. Sent as the FINAL step of every purchase organizer
+  # (Billing::DayPasses::NotifyDayOfficeAssigned), so it only ever goes out
+  # after money actually moved, and from the bundle burn paths where the pass
+  # is already prepaid.
+  #
+  # No hold means nothing to confirm: the assignment was released between
+  # enqueue and delivery (refund, reschedule, staff restore). Bail rather than
+  # promise a room the member no longer has.
+  def day_office_confirmation(day_pass_id)
+    day_pass = DayPass.find_by(id: day_pass_id)
+    return if day_pass.nil? || day_pass.user.nil?
+
+    @office_hold = day_pass.office_hold
+    return if @office_hold.nil?
+
+    @user = day_pass.user
+    @day_pass = day_pass
+    @room = @office_hold.room
+    @location = day_pass.location
+    @operator = day_pass.operator || @location&.operator
+    return if @operator.nil?
+
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+
+    mail to: @user.email,
+         subject: "Your Day Office: #{@room.name} on #{day_pass.day.strftime('%B %-e')}",
+         from: from_address, reply_to: @operator.contact_email
+  end
+
+  # Tells the member their Day Office moved to a different room (Task 12).
+  # Takes the NEW hold plus the old room's name — a string, not an id, because
+  # by the time this runs the move is done and the old room may be occupied by
+  # someone else.
+  def day_office_reassigned(reservation_id, old_room_name)
+    hold = Reservation.find_by(id: reservation_id)
+    return if hold.nil? || hold.user.nil? || hold.room.nil?
+
+    @hold = hold
+    @user = hold.user
+    @room = hold.room
+    @old_room_name = old_room_name.presence
+    @location = hold.room.location
+    @operator = @location&.operator
+    return if @operator.nil?
+
+    @day = hold.datetime_in.to_date
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+
+    mail to: @user.email,
+         subject: "Your office for #{@day.strftime('%B %-e')} is now #{@room.name}",
          from: from_address, reply_to: @operator.contact_email
   end
 

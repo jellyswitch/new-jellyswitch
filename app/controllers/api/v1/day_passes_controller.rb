@@ -1,4 +1,9 @@
 class Api::V1::DayPassesController < Api::V1::BaseController
+  # Upper bound on one #schedule request. ScheduleDays is all-or-nothing inside
+  # a single transaction, so batch size is lock-hold time; 30 is a month of
+  # calendar taps, far past any real selection.
+  MAX_SCHEDULE_DATES = 30
+
   def types
     types = DayPassType.where(operator: current_tenant)
       .where(location: current_location)
@@ -209,9 +214,16 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # Member schedules one or more future dates from their bundle.
   # Calls ScheduleDays (all-or-nothing) and returns the confirmed dates.
   def schedule
+    dates = Array(params[:dates])
+    # ScheduleDays holds ONE transaction (and a bundle row lock per date) open
+    # across the whole batch, and a Day Office batch takes a pool lock inside
+    # each. An unbounded list is a long-lived lock on rows the door path needs,
+    # so cap it well above any real calendar selection.
+    return render_error("You can schedule up to 30 days at a time.") if dates.size > MAX_SCHEDULE_DATES
+
     result = Billing::DayPassBundles::ScheduleDays.call(
       user: current_api_user, location: current_location,
-      dates: Array(params[:dates]), performed_by: current_api_user,
+      dates: dates, performed_by: current_api_user,
       enforce_daily_limit: true)
 
     case result.outcome
@@ -340,7 +352,11 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   #   nil               → NoPassesRemaining rescued inside interactor (race)  → 422 render_error
   #
   # DAY OFFICE bundle (Task 10 / ADR 0026) → Billing::DayPassBundles::ScheduleDay
-  # for date: today (allocates a pool room; ConsumeOnEntry never allocates).
+  # for date: today. Both interactors allocate a pool room on the office branch
+  # (ConsumeOnEntry gained that in Task 11, for the walk-in door burn), but they
+  # differ where it matters for a deliberate self-redeem: ScheduleDay is STRICT
+  # — a full pool refuses and refunds nothing — while ConsumeOnEntry is lenient,
+  # because a member already standing at a door must get in regardless.
   # Its idempotency instead keys on a plain CALENDAR date (day_passes.day, via
   # for_day) — NOT the business_day_window above. Known, narrow divergence:
   # a Day Office redemption between midnight and the rollover hour is judged

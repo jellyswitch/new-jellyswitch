@@ -297,8 +297,21 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     location = current_location
     tz = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
     today = Time.current.in_time_zone(tz).to_date
-    passes = member.day_passes.bundle_sourced.for_location(location).where("day > ?", today).order(:day)
-    render json: passes.map { |dp| { id: dp.id, day: dp.day.iso8601, date: dp.day.strftime("%B %e, %Y") } }
+    # includes(office_hold: :room): office_room below would otherwise fire two
+    # queries per scheduled day. Reservation's default_scope keeps a released
+    # hold out of the preload, so a pass whose office was freed reads as nil.
+    passes = member.day_passes.bundle_sourced.for_location(location).where("day > ?", today)
+                   .includes(office_hold: :room).order(:day)
+    render json: passes.map { |dp|
+      {
+        id: dp.id,
+        day: dp.day.iso8601,
+        date: dp.day.strftime("%B %e, %Y"),
+        # Additive (ADR 0026): the room name for a Day Office pass, nil for a
+        # standard one and for an office pass staff scheduled into a full pool.
+        office_room: dp.office_hold&.room&.name,
+      }
+    }
   end
 
   def cancel_scheduled_bundle_day
