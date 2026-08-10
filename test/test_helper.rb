@@ -53,6 +53,16 @@ class ActiveSupport::TestCase
     # which expects no tenant => []).
     ActsAsTenant.current_tenant = nil
     ActsAsTenant.default_tenant = nil
+    # RequestStore normally empties at the END of each Rack request (its
+    # middleware does it) — but ActionController::TestCase drives the
+    # controller directly with no middleware, so a functional test through
+    # Operator::BaseController strands acts_as_scopable's [operator, location]
+    # in RequestStore. The NEXT test's first request then runs under that
+    # stale default_scope until the middleware absorbs it — Door/Beacon
+    # lookups silently scoped to the wrong building (the door/location CI
+    # flake: 404 "Unknown beacon" / RecordNotFound in doors#unlock). Clear
+    # unconditionally; also covers any future RequestStore-backed state.
+    RequestStore.clear!
   end
 
   WebMock.disable_net_connect!(
