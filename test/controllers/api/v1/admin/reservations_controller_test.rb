@@ -125,18 +125,22 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
     }
   end
 
-  # A future reservation in a second location of the same operator — one the
-  # fixture staff (all scoped to cowork_tahoe_location) do not manage.
-  def create_other_location_reservation
+  # A room in a second location of the same operator — one the fixture staff
+  # (all scoped to cowork_tahoe_location) do not manage.
+  def create_other_location_room
     @location_b = Geocoder.stub(:search, ->(*_) { [] }) do
       ActsAsTenant.with_tenant(@operator) { create(:location, operator: @operator) }
     end
-    room_b = ActsAsTenant.with_tenant(@operator) do
+    ActsAsTenant.with_tenant(@operator) do
       create(:room, operator: @operator, location: @location_b)
     end
+  end
+
+  # A future reservation in that second location.
+  def create_other_location_reservation
     Reservation.create!(
       user: @member,
-      room: room_b,
+      room: create_other_location_room,
       datetime_in: 2.days.from_now.change(hour: 10, min: 0, sec: 0),
       minutes: 60,
     )
@@ -203,5 +207,140 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
 
     assert_response :success
     assert reservation.reload.cancelled
+  end
+
+  # --- Cross-tenant / cross-location guard on create --------------------------
+  #
+  # create looked the room up with a bare Room.find. acts_as_scopable's
+  # default_scope reads RequestStore, which nothing in the API stack sets, so
+  # the lookup was completely unscoped — an operator-X admin could book (and
+  # charge their member for) a room belonging to a different OPERATOR, one
+  # level worse than the destroy/extend location hole above. The lookup now
+  # goes through the tenant association plus the same allowed_location_ids
+  # set as find_reservation.
+
+  def create_other_operator_room
+    other_operator = create(:operator)
+    other_location = Geocoder.stub(:search, ->(*_) { [] }) do
+      ActsAsTenant.with_tenant(other_operator) { create(:location, operator: other_operator) }
+    end
+    ActsAsTenant.with_tenant(other_operator) do
+      create(:room, operator: other_operator, location: other_location)
+    end
+  end
+
+  test "create rejects a room belonging to another operator" do
+    room = create_other_operator_room
+
+    assert_no_difference -> { Reservation.unscoped.count } do
+      post "/api/v1/admin/reservations",
+        params: {
+          user_id: @member.id,
+          room_id: room.id,
+          datetime_in: 1.day.from_now.change(hour: 14, min: 0, sec: 0).iso8601,
+          minutes: 60,
+        }.to_json,
+        headers: headers
+    end
+
+    assert_response :not_found
+  end
+
+  test "community manager cannot create a booking at a location they do not manage" do
+    room_b = create_other_location_room
+    cm = users(:cowork_tahoe_community_manager)
+    refute cm.managed_location_ids.include?(@location_b.id), "fixture CM must not manage location B"
+
+    assert_no_difference -> { Reservation.unscoped.count } do
+      post "/api/v1/admin/reservations",
+        params: {
+          user_id: @member.id,
+          room_id: room_b.id,
+          datetime_in: 1.day.from_now.change(hour: 14, min: 0, sec: 0).iso8601,
+          minutes: 60,
+        }.to_json,
+        headers: headers_for(cm)
+    end
+
+    assert_response :not_found
+  end
+
+  test "superadmin can create a booking at any location within their operator" do
+    room_b = create_other_location_room
+    # Keep the free room out of the day-pass coverage chain — the boundary
+    # under test is the room lookup, not ADR 0019 coverage.
+    room_b.update!(include_with_day_pass: false)
+    owner = users(:cowork_tahoe_superadmin)
+    refute owner.managed_location_ids.include?(@location_b.id),
+      "success below must be the superadmin bypass, not a management row"
+
+    post "/api/v1/admin/reservations",
+      params: {
+        user_id: @member.id,
+        room_id: room_b.id,
+        datetime_in: 1.day.from_now.change(hour: 14, min: 0, sec: 0).iso8601,
+        minutes: 60,
+      }.to_json,
+      headers: headers_for(owner)
+
+    assert_response :created
+  end
+
+  # --- Location scope on the list endpoints -----------------------------------
+  #
+  # index/calendar listed reservations operator-wide, so a location-scoped
+  # community manager saw other locations' bookings (member names, times)
+  # that — after the destroy/extend fix above — they could no longer act on.
+  # The web all-bookings list is current_location-scoped and never showed
+  # them. Non-superadmins are now confined to allowed_location_ids;
+  # superadmins keep the operator-wide view.
+
+  test "index confines non-superadmin staff to locations they manage" do
+    other = create_other_location_reservation
+    mine = Reservation.create!(
+      user: @member,
+      room: rooms(:small_meeting_room),
+      datetime_in: 2.days.from_now.change(hour: 12, min: 0, sec: 0),
+      minutes: 60,
+    )
+    cm = users(:cowork_tahoe_community_manager)
+
+    get "/api/v1/admin/reservations", params: { scope: "upcoming" }, headers: headers_for(cm)
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |r| r["id"] }
+    assert_includes ids, mine.id, "managed-location booking must still be listed"
+    refute_includes ids, other.id, "other location's booking must not leak into the list"
+  end
+
+  test "index keeps the operator-wide view for superadmins" do
+    other = create_other_location_reservation
+    owner = users(:cowork_tahoe_superadmin)
+
+    get "/api/v1/admin/reservations", params: { scope: "upcoming" }, headers: headers_for(owner)
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |r| r["id"] }
+    assert_includes ids, other.id
+  end
+
+  test "calendar confines non-superadmin staff to locations they manage" do
+    other = create_other_location_reservation
+    mine = Reservation.create!(
+      user: @member,
+      room: rooms(:small_meeting_room),
+      datetime_in: 2.days.from_now.change(hour: 12, min: 0, sec: 0),
+      minutes: 60,
+    )
+    cm = users(:cowork_tahoe_community_manager)
+
+    get "/api/v1/admin/reservations/calendar",
+      params: { start: Time.zone.now.iso8601, end: 4.days.from_now.iso8601 },
+      headers: headers_for(cm)
+
+    assert_response :success
+    ids = JSON.parse(response.body).map { |r| r["id"] }
+    assert_includes ids, mine.id, "managed-location booking must still be on the calendar"
+    refute_includes ids, other.id, "other location's booking must not leak into the calendar"
   end
 end
