@@ -105,28 +105,36 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "bundle-only user unlocking the door burns exactly one pass" do
-    user   = bundle_user
-    bundle = create_active_bundle(user)
+    # Bundle door access is bounded to posted hours (ADR 0023) — freeze to a
+    # mid-morning on today's date so this test isn't hostage to the wall
+    # clock (fixture location: Pacific, 06:00–20:00; hours coverage lives in
+    # doors_hours_test).
+    travel_to Time.zone.parse("#{Date.current} 10:00") do
+      user   = bundle_user
+      bundle = create_active_bundle(user)
 
-    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+      post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
 
-    assert_response :success
-    assert_equal passes_before = 5, bundle.passes_remaining   # sanity
-    assert_equal 4, bundle.reload.passes_remaining
-    assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+      assert_response :success
+      assert_equal passes_before = 5, bundle.passes_remaining   # sanity
+      assert_equal 4, bundle.reload.passes_remaining
+      assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+    end
   end
 
   test "bundle-only user unlocking twice the same day burns only one pass total (idempotent)" do
-    user   = bundle_user
-    bundle = create_active_bundle(user)
+    travel_to Time.zone.parse("#{Date.current} 10:00") do # posted-hours bound, see above
+      user   = bundle_user
+      bundle = create_active_bundle(user)
 
-    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
-    assert_response :success
+      post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+      assert_response :success
 
-    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
-    assert_response :success
+      post "/api/v1/doors/#{@door.id}/unlock", headers: headers(user)
+      assert_response :success
 
-    assert_equal 4, bundle.reload.passes_remaining, "second unlock must not burn another pass"
+      assert_equal 4, bundle.reload.passes_remaining, "second unlock must not burn another pass"
+    end
   end
 
   test "member (active subscription) unlocking does NOT burn a bundle pass" do
