@@ -1,6 +1,8 @@
 require "test_helper"
 
 class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
+  include ActiveSupport::Testing::TimeHelpers
+
   setup do
     @member     = users(:cowork_tahoe_member)
     @non_member = users(:cowork_tahoe_non_member)
@@ -154,32 +156,44 @@ class Api::V1::AutoUnlocksControllerTest < ActionDispatch::IntegrationTest
     )
   end
 
+  # Bundle door access is bounded to the location's posted hours (ADR 0023):
+  # unfrozen, these unlocks 403 whenever the suite runs outside the fixture's
+  # 06:00–20:00 window.
+  def during_posted_hours(&block)
+    zone = ActiveSupport::TimeZone[@location.time_zone]
+    travel_to zone.parse("#{Date.current.next_occurring(:tuesday) + 7} 10:00"), &block
+  end
+
   test "bundle-only user auto-unlocking burns exactly one pass" do
-    user   = bundle_user
-    bundle = create_active_bundle(user)
-    token  = jwt_for(user)
+    during_posted_hours do
+      user   = bundle_user
+      bundle = create_active_bundle(user)
+      token  = jwt_for(user)
 
-    post "/api/v1/door/auto_unlock",
-         params:  payload.to_json,
-         headers: headers(token)
+      post "/api/v1/door/auto_unlock",
+           params:  payload.to_json,
+           headers: headers(token)
 
-    assert_response :success
-    assert_equal 4, bundle.reload.passes_remaining
-    assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+      assert_response :success
+      assert_equal 4, bundle.reload.passes_remaining
+      assert_equal 1, DayPass.where(user: user, location: @location, day: Date.current).count
+    end
   end
 
   test "bundle-only user auto-unlocking twice the same day burns only one pass (idempotent)" do
-    user   = bundle_user
-    bundle = create_active_bundle(user)
-    token  = jwt_for(user)
+    during_posted_hours do
+      user   = bundle_user
+      bundle = create_active_bundle(user)
+      token  = jwt_for(user)
 
-    post "/api/v1/door/auto_unlock", params: payload.to_json, headers: headers(token)
-    assert_response :success
+      post "/api/v1/door/auto_unlock", params: payload.to_json, headers: headers(token)
+      assert_response :success
 
-    post "/api/v1/door/auto_unlock", params: payload(nonce: SecureRandom.hex(16)).to_json, headers: headers(token)
-    assert_response :success
+      post "/api/v1/door/auto_unlock", params: payload(nonce: SecureRandom.hex(16)).to_json, headers: headers(token)
+      assert_response :success
 
-    assert_equal 4, bundle.reload.passes_remaining, "second entry same day must not burn again"
+      assert_equal 4, bundle.reload.passes_remaining, "second entry same day must not burn again"
+    end
   end
 
   test "member (active subscription) auto-unlocking does NOT burn a bundle pass" do

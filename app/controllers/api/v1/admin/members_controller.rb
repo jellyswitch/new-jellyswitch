@@ -643,6 +643,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         id: f.id,
         body: f.comment,
         rating: f.rating,
+        dismissed: f.dismissed_at.present?,
         created_at: f.created_at.iso8601,
         updated_at: f.updated_at.iso8601,
         replies: f.feedback_replies.order(:created_at).map { |r|

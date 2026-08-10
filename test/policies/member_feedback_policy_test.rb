@@ -22,9 +22,16 @@ class MemberFeedbackPolicyTest < PolicyAssertions::Test
     assert_permit @general_manager, @feedback
   end
 
+  def test_restore
+    assert_not_permitted @member, @feedback
+    assert_permit @admin, @feedback
+    assert_permit @community_manager, @feedback
+    assert_permit @general_manager, @feedback
+  end
+
   def test_anonymous
     # Logged-out traffic (expired sessions, iOS link previews) must be
     # denied, not crash on user.id
-    assert_not_permitted nil, @feedback, "show?", "reply?"
+    assert_not_permitted nil, @feedback, "show?", "reply?", "restore?"
   end
 end

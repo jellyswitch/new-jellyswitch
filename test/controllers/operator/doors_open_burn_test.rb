@@ -7,6 +7,8 @@ require "test_helper"
 # It now calls Billing::DayPassBundles::ConsumeOnEntry like every other
 # unlock path (see Api::V1::DoorUnlocking#perform_unlock).
 class Operator::DoorsOpenBurnTest < ActionDispatch::IntegrationTest
+  include ActiveSupport::Testing::TimeHelpers
+
   setup do
     @operator   = operators(:cowork_tahoe)
     @location   = locations(:cowork_tahoe_location)
@@ -29,6 +31,17 @@ class Operator::DoorsOpenBurnTest < ActionDispatch::IntegrationTest
     )
 
     host! "#{@operator.subdomain}.example.com"
+
+    # The web open path bounds day-pass/bundle access to posted hours
+    # (ADR 0023, doors_open_hours_test) — pin hours and freeze to a
+    # mid-morning weekday so burn semantics stay the thing under test no
+    # matter when the suite runs. travel_back happens in teardown.
+    zone = ActiveSupport::TimeZone["Pacific Time (US & Canada)"]
+    ActsAsTenant.with_tenant(@operator) do
+      @location.update!(time_zone: "Pacific Time (US & Canada)",
+                        working_day_start: "06:00", working_day_end: "20:00")
+    end
+    travel_to zone.parse("#{Date.current.next_occurring(:tuesday) + 7} 10:00")
   end
 
   def open_door!

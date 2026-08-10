@@ -58,6 +58,18 @@ class Api::V1::Admin::FeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil @feedback.reload.dismissed_at
   end
 
+  test "restore clears dismissed_at and returns the thread to the inbox list" do
+    @feedback.update!(dismissed_at: Time.current)
+
+    post "/api/v1/admin/feedbacks/#{@feedback.id}/restore", headers: headers
+    assert_response :success
+    assert_nil @feedback.reload.dismissed_at
+
+    get "/api/v1/admin/feedbacks", headers: headers
+    assert_response :success
+    assert_includes listed_feedback_ids, @feedback.id
+  end
+
   # --- Reply collision check (send-time 409 guard) -------------------------
   #
   # Two admins race to answer the same thread. The reply POST carries the

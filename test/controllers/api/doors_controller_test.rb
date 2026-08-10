@@ -99,27 +99,35 @@ class Api::DoorsControllerTest < ActionDispatch::IntegrationTest
   # ---------------------------------------------------------------------------
 
   test "bundle-only member web unlock burns exactly one pass" do
-    bundle = create_active_bundle(@non_member)
-    log_in @non_member
+    # Bundle door access is bounded to posted hours (ADR 0023) — freeze to a
+    # mid-morning on today's date so this test isn't hostage to the wall
+    # clock (fixture location: Pacific, 06:00–20:00; hours coverage lives in
+    # api/v1/doors_hours_test and operator/doors_open_hours_test).
+    travel_to Time.zone.parse("#{Date.current} 10:00") do
+      bundle = create_active_bundle(@non_member)
+      log_in @non_member
 
-    unlock!
+      unlock!
 
-    assert_response :success
-    assert_equal 4, bundle.reload.passes_remaining
-    assert_equal 1, DayPass.where(user: @non_member, location: @location, day: Date.current).count
-    assert_requested :post, @kisi_url, times: 1
+      assert_response :success
+      assert_equal 4, bundle.reload.passes_remaining
+      assert_equal 1, DayPass.where(user: @non_member, location: @location, day: Date.current).count
+      assert_requested :post, @kisi_url, times: 1
+    end
   end
 
   test "bundle-only member unlocking twice the same day burns only one pass" do
-    bundle = create_active_bundle(@non_member)
-    log_in @non_member
+    travel_to Time.zone.parse("#{Date.current} 10:00") do # posted-hours bound, see above
+      bundle = create_active_bundle(@non_member)
+      log_in @non_member
 
-    unlock!
-    assert_response :success
-    unlock!
-    assert_response :success
+      unlock!
+      assert_response :success
+      unlock!
+      assert_response :success
 
-    assert_equal 4, bundle.reload.passes_remaining, "second entry same day must not burn again"
+      assert_equal 4, bundle.reload.passes_remaining, "second entry same day must not burn again"
+    end
   end
 
   test "subscription member unlock does NOT burn a bundle pass" do
