@@ -15,9 +15,12 @@ class Operator::DayPassBundleRestoresController < Operator::BaseController
                            alert: "Not authorized to restore a pass."
     end
 
-    bundle.restore!(by: current_user, reason: params[:reason].presence)
-
-    redirect_back fallback_location: user_day_passes_path(user),
-                  notice: "Restored a pass to #{user.name}'s bundle."
+    if bundle.restore!(by: current_user, reason: params[:reason].presence)
+      redirect_back fallback_location: user_day_passes_path(user),
+                    notice: "Restored a pass to #{user.name}'s bundle."
+    else
+      redirect_back fallback_location: user_day_passes_path(user),
+                    alert: "That bundle is already at #{bundle.quantity_purchased} passes — nothing to restore."
+    end
   end
 end

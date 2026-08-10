@@ -3,7 +3,11 @@ class DayPassBundleRedemption < ApplicationRecord
   # ADR 0015); reservation_id links it so a cancel can restore the pass.
   # "schedule_cancel" = reverses a cancelled future-day schedule (ADR 0018),
   # restoring the pass.
-  KINDS = %w[entry guest admin_restore reservation schedule_cancel].freeze
+  # "admin_burn" = staff spend one pass with no date attached (no DayPass row,
+  # so it grants no access/coverage and can't suppress a real entry burn later
+  # the same day) — e.g. an entry the door system missed. Counterpart of
+  # "admin_restore"; guest_name holds the reason.
+  KINDS = %w[entry guest admin_restore reservation schedule_cancel admin_burn].freeze
 
   belongs_to :day_pass_bundle
   belongs_to :operator

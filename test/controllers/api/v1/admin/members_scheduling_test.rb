@@ -45,6 +45,63 @@ class Api::V1::Admin::MembersSchedulingTest < ActionDispatch::IntegrationTest
     assert_equal 5, cancel_body["passes_remaining"], "cancel response should include passes_remaining"
   end
 
+  # --- Unscheduled +/- (admin_burn / admin_restore, no date attached) -------
+
+  test "admin burns an unscheduled pass — admin_burn ledger row, no DayPass" do
+    assert_no_difference -> { DayPass.count } do
+      post "/api/v1/admin/members/#{@member.id}/burn_bundle_pass",
+           params: { reason: "walked in on the old system" }.to_json, headers: headers
+    end
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal "burned", body["status"]
+    assert_equal 4, body["passes_remaining"]
+    assert_equal 4, @bundle.reload.passes_remaining
+
+    redemption = @bundle.redemptions.order(:id).last
+    assert_equal "admin_burn", redemption.kind
+    assert_nil redemption.day_pass_id
+    assert_equal @admin.id, redemption.performed_by_id
+    assert_equal "walked in on the old system", redemption.guest_name
+  end
+
+  test "admin adds a pass back — works even when the pack is at zero" do
+    @bundle.update!(passes_remaining: 0)
+
+    post "/api/v1/admin/members/#{@member.id}/restore_bundle_pass", headers: headers
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal "restored", body["status"]
+    assert_equal 1, body["passes_remaining"]
+    assert_equal 1, @bundle.reload.passes_remaining
+    assert_equal "admin_restore", @bundle.redemptions.order(:id).last.kind
+  end
+
+  test "burn with no active pack is a clean 422" do
+    @bundle.update!(passes_remaining: 0)
+
+    post "/api/v1/admin/members/#{@member.id}/burn_bundle_pass", headers: headers
+
+    assert_response :unprocessable_entity
+    assert_equal 0, @bundle.reload.passes_remaining
+  end
+
+  test "add-back on a full pack is a clean 422" do
+    post "/api/v1/admin/members/#{@member.id}/restore_bundle_pass", headers: headers
+
+    assert_response :unprocessable_entity
+    assert_equal 5, @bundle.reload.passes_remaining
+  end
+
+  test "member show includes bundle_passes_remaining for the admin app" do
+    get "/api/v1/admin/members/#{@member.id}", headers: headers
+
+    assert_response :success
+    assert_equal 5, JSON.parse(response.body)["bundle_passes_remaining"]
+  end
+
   test "admin schedules a member onto a day at the limit (staff bypass)" do
     ActsAsTenant.with_tenant(@operator) do
       @bundle.day_pass_type.update!(daily_limit: 1)

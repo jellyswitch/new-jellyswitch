@@ -34,7 +34,8 @@ class DayPassBundle < ApplicationRecord
   end
 
   # Spend one pass, logging a redemption. Atomic. kind is :entry | :guest |
-  # :reservation. entry/reservation redemptions also pass the minted DayPass
+  # :reservation | :admin_burn (staff spend, nothing minted; guest_name holds
+  # the reason). entry/reservation redemptions also pass the minted DayPass
   # (and reservation links the booking that spent it); guest passes guest_name.
   # redeemed_at defaults to now; reserve-time burns stamp the reservation's start
   # so the once-per-business-day-window dedupe (which keys on redeemed_at) lines
@@ -92,7 +93,8 @@ class DayPassBundle < ApplicationRecord
   end
 
   # Admin adds a pass back (auditable). reason is stored in guest_name to keep the table lean.
-  # No-op if passes_remaining is already at quantity_purchased (prevents over-credit).
+  # Returns false (no-op) if passes_remaining is already at quantity_purchased
+  # (prevents over-credit) — callers should surface that instead of claiming success.
   def restore!(by:, reason: nil)
     with_lock { restore_locked!(by: by, reason: reason) }
   end
@@ -101,9 +103,10 @@ class DayPassBundle < ApplicationRecord
   # kind controls the audit trail (e.g. "admin_restore", "schedule_cancel").
   # guest_name stores the reason/date in ISO form (no dedicated column).
   def restore_locked!(by:, reason: nil, kind: "admin_restore")
-    return if passes_remaining.to_i >= quantity_purchased.to_i
+    return false if passes_remaining.to_i >= quantity_purchased.to_i
     update!(passes_remaining: passes_remaining + 1)
     redemptions.create!(operator: operator, kind: kind, performed_by: by,
                         guest_name: reason, redeemed_at: Time.current)
+    true
   end
 end

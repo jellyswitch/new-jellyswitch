@@ -20,7 +20,15 @@
               <span class="text-muted small">(expires <%= bundle.expires_at.to_date %>)</span>
             <% end %>
           </div>
-          <div>
+          <div class="d-flex">
+            <% if bundle.active? %>
+              <%= button_to "Burn a pass",
+                    user_day_pass_bundle_burns_path(user),
+                    method: :post,
+                    params: { day_pass_bundle_id: bundle.id, reason: "admin burn" },
+                    class: "btn btn-sm btn-outline-secondary mr-1",
+                    form: { data: { turbo_confirm: "Burn one pass from this bundle without scheduling a day?" } } %>
+            <% end %>
             <%= button_to "Restore a pass",
                   user_day_pass_bundle_restores_path(user),
                   method: :post,

@@ -69,6 +69,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       member_since: user.created_at,
       payment_method: user.try(:payment_method) || 'None',
       day_pass_count: user.day_passes.where(operator: current_tenant).count,
+      # Bundle balance at the admin's location, for the +/- pass controls.
+      bundle_passes_remaining: user.day_pass_bundles.active.where(location: current_location).sum(:passes_remaining),
       reservation_count: user.reservations.where(cancelled: false).count,
       invoice_count: Invoice.where(billable: user, operator: current_tenant).count,
       organization_id: user.organization_id,
@@ -319,6 +321,50 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
+  end
+
+  # Admin spends one bundle pass with no date attached (kind: admin_burn).
+  # No DayPass is minted — no door access, no coverage, and it can't suppress
+  # a real entry burn later the same day. Draws from the same pack ScheduleDay
+  # would: soonest-expiring active at the admin's location.
+  def burn_bundle_pass
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    bundle = member.day_pass_bundles.active.where(location: location)
+                   .order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")).first
+    return render_error("No active pack with passes left.") if bundle.nil?
+
+    bundle.burn!(kind: :admin_burn, performed_by: current_api_user,
+                 guest_name: params[:reason].presence || "admin burn (mobile)")
+    render json: {
+      status: "burned",
+      passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+    }
+  rescue DayPassBundle::NoPassesRemaining
+    render_error("No passes left in that pack.")
+  end
+
+  # +1 counterpart (kind: admin_restore): returns a pass to the pack the burn
+  # pick would draw from — soonest-expiring, not expired, below capacity. The
+  # below-capacity filter (rather than `active`) is what makes undoing the burn
+  # that emptied a pack work.
+  def restore_bundle_pass
+    member = current_tenant.users.find(params[:id])
+    location = current_location
+    bundle = member.day_pass_bundles.where(location: location)
+                   .where("expires_at IS NULL OR expires_at > ?", Time.current)
+                   .where("passes_remaining < quantity_purchased")
+                   .order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")).first
+    return render_error("No pack has room for a pass back.") if bundle.nil?
+
+    if bundle.restore!(by: current_api_user, reason: params[:reason].presence || "admin add-back (mobile)")
+      render json: {
+        status: "restored",
+        passes_remaining: member.day_pass_bundles.active.where(location: location).sum(:passes_remaining),
+      }
+    else
+      render_error("That pack is already full.")
+    end
   end
 
   def create_day_pass
