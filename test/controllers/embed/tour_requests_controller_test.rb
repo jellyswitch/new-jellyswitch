@@ -185,12 +185,21 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
   test "POST throttles after 5 requests per minute per IP" do
     Rails.cache.clear
 
-    6.times do |i|
-      post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
-        name: "Rate#{i}", email: "rate#{i}@example.com", location_id: @location.id,
-      }
+    # Rack::Attack's throttle is a FIXED 1-minute window derived from Time.now.
+    # Freeze time so all 6 requests fall in the same window -- otherwise a burst
+    # that happens to straddle a minute boundary resets the counter mid-burst and
+    # the 6th request comes back 303 instead of 429 (the source of this test's
+    # intermittent CI failures).
+    freeze_time do
+      6.times do |i|
+        post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
+          name: "Rate#{i}", email: "rate#{i}@example.com", location_id: @location.id,
+        }
+      end
     end
     # 6th response should be 429.
     assert_response :too_many_requests
+  ensure
+    Rails.cache.clear
   end
 end
