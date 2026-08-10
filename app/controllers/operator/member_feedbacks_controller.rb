@@ -88,7 +88,7 @@ class Operator::MemberFeedbacksController < Operator::BaseController
   def dismiss
     find_member_feedback
     authorize @member_feedback, :show?
-    @member_feedback.update(dismissed_at: Time.current)
+    @member_feedback.dismiss!
     @member_feedback.mark_as_read!
 
     respond_to do |format|
@@ -96,6 +96,16 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       format.turbo_stream { render turbo_stream: turbo_stream.remove(@member_feedback) }
       format.html { turbo_redirect(member_feedbacks_path, action: restore_if_possible) }
     end
+  end
+
+  # Undo for an accidental dismiss, triggered from the Chat card on the
+  # member's profile page — so land back there.
+  def restore
+    find_member_feedback
+    authorize @member_feedback, :restore?
+    @member_feedback.restore!
+
+    turbo_redirect(user_path(@member_feedback.user), action: restore_if_possible)
   end
 
   def reply

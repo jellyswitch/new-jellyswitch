@@ -20,6 +20,12 @@ class MemberFeedbackPolicy < ApplicationPolicy
     (admin? || community_manager? || general_manager?) || record_owner?
   end
 
+  # Staff-only (no record_owner?): restoring targets the admin inbox, which
+  # members never see.
+  def restore?
+    (admin? || community_manager? || general_manager?)
+  end
+
   def my_feedback?
     is_user?
   end

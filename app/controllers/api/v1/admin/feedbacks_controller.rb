@@ -63,6 +63,12 @@ class Api::V1::Admin::FeedbacksController < Api::V1::Admin::BaseController
     render json: { success: true }
   end
 
+  def restore
+    feedback = MemberFeedback.find(params[:id])
+    feedback.restore!
+    render json: { success: true }
+  end
+
   private
 
   def feedback_json(f)

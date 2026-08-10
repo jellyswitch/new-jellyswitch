@@ -45,6 +45,27 @@ class Operator::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
       "a restarted conversation should come back to the inbox"
   end
 
+  test "restore clears dismissed_at and puts the conversation back on the inbox" do
+    @conversation.update!(dismissed_at: Time.current)
+
+    post restore_member_feedback_path(@conversation), env: default_env
+    assert_nil @conversation.reload.dismissed_at
+
+    get member_feedbacks_path, env: default_env
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@conversation)}", true,
+      "a restored conversation should reappear in the inbox"
+  end
+
+  test "restore is staff-only — the thread's member cannot restore" do
+    @conversation.update!(dismissed_at: Time.current)
+    delete logout_path, env: default_env
+    log_in @member
+
+    post restore_member_feedback_path(@conversation), env: default_env
+    assert_not_nil @conversation.reload.dismissed_at,
+      "a member must not be able to restore a dismissed thread"
+  end
+
   test "anonymous visit to a thread is quietly redirected, not a 500" do
     delete logout_path, env: default_env
 

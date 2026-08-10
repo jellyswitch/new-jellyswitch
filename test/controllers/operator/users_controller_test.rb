@@ -109,6 +109,27 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match "Prefers the standing desk", response.body
   end
 
+  test "admin profile page marks dismissed conversations and offers Restore" do
+    admin = users(:cowork_tahoe_admin)
+    admin.update(password: "password")
+    ActsAsTenant.default_tenant = admin.operator
+    post login_path(params: { session: { email: admin.email, password: "password" } }), env: default_env
+
+    member = users(:cowork_tahoe_member)
+    thread = MemberFeedback.create!(
+      operator: operators(:cowork_tahoe),
+      user: member,
+      comment: "Accidentally dismissed",
+      dismissed_at: Time.current,
+    )
+
+    get user_path(member), env: default_env
+    assert_response :success
+    assert_select "[data-testid='conversations-section'] .badge", text: "Dismissed"
+    assert_select "[data-testid='conversations-section'] form[action=?]",
+      restore_member_feedback_path(thread)
+  end
+
   # Web timeline: door punches hidden from Recent (except milestones), full
   # history under the Doors tab.
   test "web timeline hides door-punch noise in recent and shows it under doors" do

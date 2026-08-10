@@ -67,6 +67,11 @@ class MemberFeedback < ApplicationRecord
     update_column(:dismissed_at, Time.current)
   end
 
+  # Undo a dismiss: put the thread straight back in the admin inbox.
+  def restore!
+    update_column(:dismissed_at, nil)
+  end
+
   # How long after the last reply on either side the conversation is treated
   # as "wrapped up" — at which point the rate-this-experience CTA becomes
   # available. Showing the rating immediately after the first staff reply
