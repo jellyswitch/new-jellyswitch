@@ -28,6 +28,7 @@ class Operator::DayPassTypesController < Operator::BaseController
 
     @day_pass_type = result.day_pass_type
     if result.success?
+      sync_office_room_pool!
       if params[:add_day_pass_type_and_add_another].present?
         turbo_redirect(new_day_pass_type_path, action: "replace")
       else
@@ -49,6 +50,7 @@ class Operator::DayPassTypesController < Operator::BaseController
     authorize @day_pass_type
 
     if @day_pass_type.update(day_pass_type_update_params)
+      sync_office_room_pool!
       flash[:success] = "Day pass type was successfully updated."
       turbo_redirect(day_pass_type_path(@day_pass_type))
     else
@@ -117,5 +119,31 @@ class Operator::DayPassTypesController < Operator::BaseController
     end
 
     turbo_redirect(day_pass_type_path(@day_pass_type), action: "replace")
+  end
+
+  # Syncs the Day Office room pool after a successful create/update (Task
+  # 13, ADR 0026) — full-list semantics, see DayPassType#assign_office_rooms!.
+  # A type saved as day_office gets whatever the form posted (an unsubmitted
+  # or empty office_room_positions clears the pool, matching the form's
+  # "blank = not in the pool" copy). A type saved as standard never carries
+  # a pool, so a type switched FROM day_office back to standard has its pool
+  # cleared here too — otherwise the orphaned rows would silently reappear
+  # if the type is ever switched back to day_office later.
+  #
+  # The type record itself is already saved by the time this runs — a pool
+  # row failing validation (e.g. a stray cross-location room id) must not
+  # look like the whole save failed. Report it as its own flash and let the
+  # action's normal redirect proceed instead of raising into the generic
+  # rescue => e handler (which would send a misleading "an error occurred"
+  # and mask that the type itself is fine).
+  def sync_office_room_pool!
+    if @day_pass_type.day_office?
+      @day_pass_type.assign_office_rooms!(office_room_positions_params)
+    elsif @day_pass_type.day_pass_type_rooms.exists?
+      @day_pass_type.assign_office_rooms!({})
+    end
+  rescue ActiveRecord::RecordInvalid => e
+    flash[:error] = "#{@day_pass_type.name} was saved, but the room pool couldn't be updated: " \
+                     "#{e.record.errors.full_messages.to_sentence}"
   end
 end
