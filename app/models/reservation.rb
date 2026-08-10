@@ -83,6 +83,7 @@ class Reservation < ApplicationRecord
   # Gate on the room being paid — NOT reservation.paid, which is false when a
   # member/staff books a paid room and true for free call-room overages.
   def record_meeting_room_interest
+    return if day_office_pass_id.present? # an office hold is not meeting-room interest (ADR 0026)
     return unless user && room&.paid_room?
     InterestTag.record(user: user, product: "meeting_room", source: "last_purchase")
   end

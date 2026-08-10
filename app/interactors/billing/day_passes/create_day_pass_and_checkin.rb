@@ -4,6 +4,7 @@ class Billing::DayPasses::CreateDayPassAndCheckin
 
   organize(
     Billing::DayPasses::SaveDayPass,
+    Billing::DayPasses::AllocateDayOffice,
     Billing::DayPasses::CreateStripeInvoice,
     Billing::DayPasses::ChargeDayPassInvoice,
     Checkins::AutoCheckin,

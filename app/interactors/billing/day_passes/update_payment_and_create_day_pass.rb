@@ -4,6 +4,7 @@ class Billing::DayPasses::UpdatePaymentAndCreateDayPass
 
   organize(
     Billing::DayPasses::SaveDayPass,
+    Billing::DayPasses::AllocateDayOffice,
     Billing::Payment::UpdateUserPayment,
     Billing::DayPasses::CreateStripeInvoice,
     Billing::DayPasses::ChargeDayPassInvoice,

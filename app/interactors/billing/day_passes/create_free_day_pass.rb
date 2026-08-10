@@ -5,6 +5,7 @@ class Billing::DayPasses::CreateFreeDayPass
   organize(
     Billing::DayPasses::FindFreeDayPass,
     Billing::DayPasses::SaveDayPass,
+    Billing::DayPasses::AllocateDayOffice,
     Billing::DayPasses::CreateStripeInvoice,
     CreateNotifications,
     Billing::DayPasses::ScheduleDayPassEmails
