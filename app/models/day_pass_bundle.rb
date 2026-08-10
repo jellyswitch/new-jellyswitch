@@ -50,13 +50,15 @@ class DayPassBundle < ApplicationRecord
   # defer_review_email: when true, skip ONLY the follow_up branch (leave replenishment
   # as-is) — pass true when scheduling a FUTURE visit (ADR 0018), since the member
   # hasn't arrived yet, so "how was your visit?" must not fire until they do.
+  # Returns the created DayPassBundleRedemption (and so does burn!, via with_lock).
   def burn_locked!(kind:, performed_by:, guest_name: nil, day_pass: nil, reservation: nil, redeemed_at: Time.current, defer_review_email: false)
     raise NoPassesRemaining if passes_remaining.to_i <= 0 || expired?
     update!(passes_remaining: passes_remaining - 1)
-    redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
-                        guest_name: guest_name, day_pass: day_pass, reservation: reservation,
-                        redeemed_at: redeemed_at)
+    redemption = redemptions.create!(operator: operator, kind: kind.to_s, performed_by: performed_by,
+                                     guest_name: guest_name, day_pass: day_pass, reservation: reservation,
+                                     redeemed_at: redeemed_at)
     enqueue_lifecycle_emails(kind, defer_review_email: defer_review_email)
+    redemption
   end
 
   # Event-fired buyer emails (see CONTEXT.md / ADR 0009 family). The job gates
