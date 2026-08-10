@@ -252,10 +252,15 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   # POST /day_passes/redeem_today
-  # Member self-redeems one bundle pass for "today" from the web — parity with
-  # the mobile API's redeem_today, through the SAME single authority
-  # (Billing::DayPassBundles::ConsumeOnEntry): today-only, idempotent, and a
-  # no-op when other coverage already grants access.
+  # Member self-redeems one bundle pass for "today" from the web. Always
+  # routes through Billing::DayPassBundles::ConsumeOnEntry: today-only,
+  # idempotent, and a no-op when other coverage already grants access.
+  #
+  # NOTE: unlike the mobile API's redeem_today (Task 10 / ADR 0026), this web
+  # action does NOT special-case a Day Office bundle — ConsumeOnEntry never
+  # allocates a pool room, so a Day Office bundle holder redeeming from the
+  # web gets a dated pass with no office assigned. Web-side parity (routing a
+  # Day Office bundle through ScheduleDay here too) is deferred to Task 11.
   #
   # ADR 0017: a redemption mints today's DayPass (the right to be present) but
   # does NOT open a door — so the success copy hands the member off to the app.

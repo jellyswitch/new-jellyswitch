@@ -23,7 +23,14 @@ class Billing::DayPassBundles::ScheduleDay
       return
     end
 
-    if already_covered?(date, tz)
+    # T10/ADR 0026: a Day Office bundle's coverage guard must not count a
+    # subscription/lease/reservation as "covered" — the office IS the point
+    # of scheduling, so those must not suppress the mint; only an existing
+    # same-date pass blocks. Looking the bundle up here too (a second cheap,
+    # indexed query) just to read its kind keeps the outcome for a COVERED,
+    # BUNDLE-LESS user unchanged (:already_covered, not :no_bundle) — the
+    # `bundle =` lookup right below is untouched and still owns :no_bundle.
+    if already_covered?(date, tz, office: eligible_bundle(date, tz)&.day_pass_type&.day_office?)
       context.outcome = :already_covered
       return
     end
@@ -69,6 +76,27 @@ class Billing::DayPassBundles::ScheduleDay
         day:           date,
         imported:      true,
       )
+
+      # T10/ADR 0026: allocate a pool room for a Day Office bundle before
+      # burning. Member self-serve (enforce_daily_limit) is strict: the
+      # pre-gate above normally catches a sold-out pool, but a concurrent
+      # schedule can still win the race between that snapshot and this
+      # in-lock attempt — when it does, destroy the just-minted pass and
+      # report :sold_out rather than burn for an office that doesn't exist
+      # (mirrors AllocateDayOffice's organizer-level backstop). Staff
+      # scheduling (no enforce flag) is lenient: it proceeds office-less on a
+      # lost race or a sold-out pool — staff judgment; reassignment/notify
+      # wiring is Task 11.
+      if bundle.day_pass_type.day_office?
+        hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
+        if hold.nil? && context.enforce_daily_limit
+          day_pass.destroy!
+          context.day_pass_type = bundle.day_pass_type
+          context.outcome = :sold_out
+          next
+        end
+      end
+
       # C1: defer the "how was your visit?" follow_up email for future dates —
       # the member hasn't visited yet. Same-day scheduling (date == today) still
       # fires it immediately, matching the existing ConsumeOnEntry behaviour.
@@ -84,25 +112,38 @@ class Billing::DayPassBundles::ScheduleDay
 
   private
 
-  # Mirrors ConsumeOnEntry's guards, scoped to the target date instead of today.
-  def already_covered?(date, tz)
-    return true if user.has_active_subscription?
-    return true if user.has_active_lease?(location)
+  # Mirrors ConsumeOnEntry's guards, scoped to the target date instead of
+  # today. For a day-office bundle the office is the point, not the access —
+  # subscription/lease/reservation coverage must not suppress the mint; only
+  # an existing same-date pass does (ADR 0026).
+  def already_covered?(date, tz, office: false)
+    unless office
+      return true if user.has_active_subscription?
+      return true if user.has_active_lease?(location)
 
-    day_start = date.in_time_zone(tz).beginning_of_day
-    day_end   = date.in_time_zone(tz).end_of_day
-    return true if user.reservations.where(cancelled: false)
-                       .where(datetime_in: day_start..day_end).exists?
+      day_start = date.in_time_zone(tz).beginning_of_day
+      day_end   = date.in_time_zone(tz).end_of_day
+      return true if user.reservations.where(cancelled: false)
+                         .where(datetime_in: day_start..day_end).exists?
+    end
 
     user.day_passes.for_location(location).for_day(date).exists?
   end
 
-  # Active, covers the location, not expired before the target date; soonest to
-  # expire first (NULLs/perpetual last), then oldest.
+  # Active, covers the location, draw_order (soonest-expiring first, then
+  # oldest). The "must survive until the target date" filter only applies to
+  # a FUTURE date — .active already guarantees "not expired as of right now,"
+  # so a bundle expiring LATER TODAY must still be eligible for a same-day
+  # schedule (redeem_today); requiring it to survive all the way to
+  # date.end_of_day wrongly excluded it (Task 10 fix). Memoized: this is now
+  # looked up twice per #call (the already_covered? office check, then the
+  # real assignment) and must return the identical row both times — safe
+  # because a ScheduleDay instance is one-shot (a fresh instance per .call).
   def eligible_bundle(date, tz)
-    user.day_pass_bundles.active.where(location: location)
-        .where("expires_at IS NULL OR expires_at > ?", date.in_time_zone(tz).end_of_day)
-        .order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC"))
-        .first
+    return @eligible_bundle if defined?(@eligible_bundle)
+    today = Time.current.in_time_zone(tz).to_date
+    scope = user.day_pass_bundles.active.where(location: location)
+    scope = scope.where("expires_at IS NULL OR expires_at > ?", date.in_time_zone(tz).end_of_day) if date > today
+    @eligible_bundle = scope.draw_order.first
   end
 end

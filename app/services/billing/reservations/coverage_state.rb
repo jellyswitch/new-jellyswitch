@@ -64,9 +64,11 @@ class Billing::Reservations::CoverageState
     user.day_pass_bundles.active.where(location: location)
   end
 
-  # Soonest-expiring, then oldest (matches ADR 0018 draw order).
+  # Soonest-expiring, then oldest (ADR 0018 draw order — DayPassBundle.draw_order
+  # is the single canonical definition; see its comment for why every caller
+  # that picks "the" active bundle must share it).
   def active_bundle
-    active_bundles.order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")).first
+    active_bundles.draw_order.first
   end
 
   # The same SKU the old silent auto-buy chose. Office-backed types are

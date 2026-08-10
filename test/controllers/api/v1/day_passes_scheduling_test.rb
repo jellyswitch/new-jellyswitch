@@ -127,4 +127,31 @@ class Api::V1::DayPassesSchedulingTest < ActionDispatch::IntegrationTest
     assert_includes JSON.parse(response.body)["error"], "fully booked"
     assert_equal 5, @bundle.reload.passes_remaining
   end
+
+  # Task 10 / ADR 0026: a sold-out Day Office bundle gets the same structured,
+  # machine-readable payload #create uses (fallback CTA) — scheduling a future
+  # office day from the calendar is an acquisition flow like purchase, unlike
+  # #reschedule which stays a plain refusal.
+  test "POST schedule returns the structured sold-out payload for a Day Office bundle" do
+    date = Date.current + 1
+    office_member = nil
+    room_a = room_b = nil
+    ActsAsTenant.with_tenant(@operator) do
+      # A dedicated member (not @member/@bundle from setup): eligible_bundle
+      # picks the SOONEST-EXPIRING bundle, tie-broken oldest-first, so a fresh
+      # office bundle for @member would lose to setup's older standard 5-Pack.
+      office_member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      _bundle, room_a, room_b = make_office_bundle(member: office_member)
+      fill_office_pool!(date, room_a, room_b)
+    end
+
+    post "/api/v1/day_passes/schedule",
+         params: { dates: [date.iso8601] }.to_json, headers: headers(office_member)
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_equal "day_office_sold_out", body["code"]
+    assert_includes body["error"], "fully booked"
+    assert body.key?("fallback_day_pass_type")
+  end
 end

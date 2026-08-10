@@ -222,7 +222,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         passes_remaining: remaining_bundle_passes,
       }
     when :sold_out
-      render_error(sold_out_message(result.day_pass_type, result.failed_date))
+      # Scheduling a future office day from the calendar is an acquisition
+      # flow like #create (unlike #reschedule, which has nothing for a
+      # suggested-swap to attach to) — offer the same rich fallback payload.
+      if result.day_pass_type&.day_office?
+        render_day_office_sold_out(result.day_pass_type, result.failed_date)
+      else
+        render_error(sold_out_message(result.day_pass_type, result.failed_date))
+      end
     when :already_covered
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date
@@ -312,17 +319,70 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
   # POST /api/v1/day_passes/redeem_today
   # Member self-redeems one bundle pass to get access today without tapping a door.
-  # Reuses ConsumeOnEntry (idempotent, same logic as door entry) and maps its
-  # outcome to a clear API response so the app can show a meaningful message.
+  # Routed by the KIND of the user's ACTIVE bundle at this location, drawn via
+  # DayPassBundle.draw_order (soonest-expiring first, NULLs/perpetual last) —
+  # the SAME order Billing::DayPassBundles::ScheduleDay#eligible_bundle uses
+  # internally, so this routing decision and the interactor's own draw always
+  # agree on which bundle is "the" one for today (Task 10 fix — they used to
+  # disagree when a location held more than one active bundle: this lookup was
+  # unordered/id-order while the interactor already drew by expiry).
   #
-  # Outcomes:
+  # STANDARD bundle → Billing::DayPassBundles::ConsumeOnEntry (idempotent,
+  # same logic as a door entry). Its dedupe is keyed on
+  # location.business_day_window — a configurable rollover, 4am by default
+  # (ADR 0008) — so a member who redeemed at 11pm and tries again at 1am is
+  # still "already covered" for the same business day.
   #   redeemed          → burned one pass; today now covered    → 200 { status: "redeemed", passes_remaining: N }
   #   already_covered   → already had access for today (sub / lease / reservation
   #                        / non-bundle day pass / bundle already burned)
   #                                                              → 200 { status: "already_active_today" }
   #   no_bundle         → no active bundle and no other coverage → 422 render_error
   #   nil               → NoPassesRemaining rescued inside interactor (race)  → 422 render_error
+  #
+  # DAY OFFICE bundle (Task 10 / ADR 0026) → Billing::DayPassBundles::ScheduleDay
+  # for date: today (allocates a pool room; ConsumeOnEntry never allocates).
+  # Its idempotency instead keys on a plain CALENDAR date (day_passes.day, via
+  # for_day) — NOT the business_day_window above. Known, narrow divergence:
+  # a Day Office redemption between midnight and the rollover hour is judged
+  # against literal "today," not "the same business day as an hour ago."
+  # Accepted for now (documented, not fixed) — see ADR 0026.
+  #   scheduled         → office allocated; burned one pass     → 200 { status: "redeemed", passes_remaining: N, confirmation_note: "<room> is yours <window>." }
+  #   sold_out          → pool full (pre-gate or lost the race) → 422 render_day_office_sold_out (code: "day_office_sold_out", fallback_day_pass_type)
+  #   already_covered   → a pass already exists for today (the ONLY guard for an office bundle — sub/lease/reservation do NOT suppress it, ADR 0026)
+  #                                                              → 200 { status: "already_active_today" }
+  #   else (:no_bundle / :invalid_date)                         → 422 render_error, same copy as the standard path
   def redeem_today
+    active_bundle = current_api_user.day_pass_bundles.active.where(location: current_location).draw_order.first
+
+    if active_bundle&.day_pass_type&.day_office?
+      tz    = ActiveSupport::TimeZone[current_location&.time_zone.presence || "UTC"]
+      today = Time.current.in_time_zone(tz).to_date
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: current_api_user, location: current_location, date: today,
+        performed_by: current_api_user, enforce_daily_limit: true)
+
+      case result.outcome
+      when :scheduled
+        render json: {
+          status:            "redeemed",
+          passes_remaining:  remaining_bundle_passes,
+          confirmation_note: office_confirmation_note(result.day_pass),
+        }
+      when :sold_out
+        # Entry-acquisition flow like #create — offer the fallback CTA
+        # (unlike #reschedule, which has nothing for a swap to attach to).
+        render_day_office_sold_out(result.day_pass_type, today)
+      when :already_covered
+        render json: { status: "already_active_today" }
+      else
+        # :no_bundle / :invalid_date (the latter shouldn't happen for
+        # "today", kept for safety) — same copy as the standard path below.
+        render_error("You don't have any day passes left.")
+      end
+      return
+    end
+
     result = Billing::DayPassBundles::ConsumeOnEntry.call(
       user:     current_api_user,
       location: current_location,

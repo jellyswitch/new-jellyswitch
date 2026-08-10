@@ -8,6 +8,7 @@ require "mocha/minitest"
 require 'webmock/minitest'
 require_relative "./clearance_helper"
 require_relative "./stripe_helper"
+require_relative "./day_office_helper"
 require "sidekiq/testing"
 Sidekiq::Testing.fake!
 
@@ -21,6 +22,7 @@ Geocoder::Lookup::Test.set_default_stub([])
 
 class ActiveSupport::TestCase
   include StripeHelper
+  include DayOfficeHelper
   include FactoryBot::Syntax::Methods
 
   # Run tests in parallel with specified workers

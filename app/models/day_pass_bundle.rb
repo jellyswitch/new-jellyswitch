@@ -21,6 +21,14 @@ class DayPassBundle < ApplicationRecord
 
   scope :active, -> { where("passes_remaining > 0").where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
+  # Soonest-expiring first (NULLs/perpetual last), then oldest — "use it before
+  # you lose it" (ADR 0018). The single canonical draw order: every caller that
+  # picks "the" active bundle for a user/location (ScheduleDay#eligible_bundle,
+  # Api::V1::DayPassesController#redeem_today's routing lookup, CoverageState
+  # #active_bundle) must use this SAME order, or a routing decision made on one
+  # order can disagree with a draw made on another (Task 10 fix).
+  scope :draw_order, -> { order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")) }
+
   def record_purchase_interest
     InterestTag.record(user: user, product: "day_pass", source: "last_purchase") if user
   end
