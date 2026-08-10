@@ -27,6 +27,11 @@ class Operator::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
       "host-greeting-only threads should not appear in the admin inbox"
   end
 
+  test "inbox dismiss button asks for confirmation (accidental-dismiss guard)" do
+    get member_feedbacks_path, env: default_env
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@conversation)} form[data-turbo-confirm]"
+  end
+
   test "dismiss hides the conversation and sets dismissed_at" do
     post dismiss_member_feedback_path(@conversation), env: default_env
     assert_not_nil @conversation.reload.dismissed_at
