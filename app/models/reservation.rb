@@ -76,6 +76,7 @@ class Reservation < ApplicationRecord
   after_create_commit :record_meeting_room_interest
 
   def log_activity
+    return if day_office_hold? # the pass's own activity is the timeline entry; holds (and re-holds on reschedule) are artifacts (ADR 0026)
     Activity.log(user: user, kind: :reservation, subject: self)
   end
 

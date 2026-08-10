@@ -51,6 +51,17 @@ class DayOffices::AllocatorTest < ActiveSupport::TestCase
     assert_not hold.paid
   end
 
+  test "allocate! does not log a reservation-kind Activity for the hold (ADR 0026)" do
+    # The pass's own purchase Activity is the timeline entry; a hold (and any
+    # re-hold on reschedule) is an implementation artifact, not a member
+    # action. Mirrors the meeting_room-interest guard in AllocateDayOfficeTest.
+    pass = DayPass.create!(user: @user, billable: @user, operator: @operator,
+                           location: @location, day_pass_type: @type, day: @day, imported: true)
+    assert_no_difference -> { Activity.where(kind: "reservation").count } do
+      DayOffices::Allocator.allocate!(day_pass: pass)
+    end
+  end
+
   test "allocate! returns nil when nothing is free" do
     span = @location.posted_hours_span(@day)
     [@a, @b].each { |r| Reservation.create!(user: @other, room: r, datetime_in: span.first, minutes: 600) }

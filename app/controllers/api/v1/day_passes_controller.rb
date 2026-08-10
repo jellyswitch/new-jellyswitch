@@ -291,9 +291,21 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
 
     old_day = day_pass.day
-    day_pass.update!(day: new_day)
+    if day_pass.day_office? && new_day != day_pass.day
+      move = DayOffices::MoveHold.call(day_pass: day_pass, new_day: new_day)
+      # Plain refusal, not the purchase-fallback payload: rescheduling an
+      # existing pass has nothing for a suggested-different-type swap to
+      # attach to (unlike #create's sold-out gate). Same shape as this
+      # method's own pre-check above.
+      return render_error(sold_out_message(day_pass.day_pass_type, new_day)) unless move.ok?
+    else
+      day_pass.update!(day: new_day)
+    end
     UserMailer.day_pass_rescheduled(day_pass.id, old_day).deliver_later if day_pass.day != old_day
-    render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
+    render json: {
+      status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y"),
+      confirmation_note: office_confirmation_note(day_pass),
+    }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
   end

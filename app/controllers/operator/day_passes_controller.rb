@@ -300,7 +300,15 @@ class Operator::DayPassesController < Operator::BaseController
       flash[:error] = "Pick today or a future date."
     else
       old_day = @day_pass.day
-      @day_pass.update!(day: new_day)
+      if @day_pass.day_office? && new_day != @day_pass.day
+        move = DayOffices::MoveHold.call(day_pass: @day_pass, new_day: new_day)
+        unless move.ok?
+          flash[:error] = "#{@day_pass.day_pass_type.name.pluralize} are fully booked for #{new_day.strftime('%B %e')}. Try another day."
+          return turbo_redirect(user_admin_day_passes_path(@day_pass.user))
+        end
+      else
+        @day_pass.update!(day: new_day)
+      end
       UserMailer.day_pass_rescheduled(@day_pass.id, old_day).deliver_later if @day_pass.day != old_day
       flash[:success] = "Day pass moved to #{@day_pass.pretty_day}."
     end

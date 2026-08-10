@@ -10,6 +10,14 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
     @pass = day_passes(:cowork_tahoe_day_pass)
     @pass.update_columns(location_id: @location.id, day: 2.days.from_now.to_date)
     @tz = ActiveSupport::TimeZone[@location.time_zone]
+
+    # Day Office pool (Task 9 / ADR 0026) — mirrors Api::V1::DayPassesControllerTest.
+    @office_type = DayPassType.create!(name: "Day Office", operator: @operator, location: @location,
+                                       kind: "day_office", amount_in_cents: 7500,
+                                       included_meeting_room_minutes: 0, available: true, visible: true)
+    @room_a = Room.create!(name: "A", operator: @operator, location: @location)
+    @room_b = Room.create!(name: "B", operator: @operator, location: @location)
+    @office_type.assign_office_rooms!({ @room_a.id => 1, @room_b.id => 2 })
   end
 
   def headers(user = @member)
@@ -19,6 +27,14 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
       "HS256",
     )
     { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => @operator.subdomain }
+  end
+
+  # A purchased-and-allocated Day Office pass for @member on `day`.
+  def office_pass!(day)
+    pass = DayPass.create!(user: @member, billable: @member, operator: @operator, location: @location,
+                           day_pass_type: @office_type, day: day, imported: true)
+    DayOffices::Allocator.allocate!(day_pass: pass)
+    pass
   end
 
   test "member moves an unused pass to a future date" do
@@ -151,5 +167,65 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_equal target, @pass.reload.day
+  end
+
+  # --- Day Office: reschedule moves the hold (Task 9 / ADR 0026) -----------
+
+  test "an office pass reschedule moves its hold to the new date" do
+    pass = office_pass!(2.days.from_now.to_date)
+    original = pass.day
+    target = 5.days.from_now.to_date
+
+    assert_enqueued_email_with UserMailer, :day_pass_rescheduled, args: [pass.id, original] do
+      patch "/api/v1/day_passes/#{pass.id}/reschedule", params: { day: target.iso8601 }, headers: headers
+    end
+
+    assert_response :success
+    assert_equal target, pass.reload.day
+    hold = pass.reload_office_hold
+    assert_equal target, hold.datetime_in.to_date
+    assert_equal 1, Reservation.unscoped.where(day_office_pass_id: pass.id, cancelled: true).count
+    body = JSON.parse(response.body)
+    assert_equal "#{hold.room.name} is yours #{hold.window_label}.", body["confirmation_note"]
+  end
+
+  test "an office pass reschedule is refused when the move is lost to a race" do
+    pass = office_pass!(2.days.from_now.to_date)
+    original_day = pass.day
+    original_hold_id = pass.office_hold.id
+    target = 5.days.from_now.to_date
+
+    # The pool genuinely has room on `target` (the pre-check gate passes);
+    # the allocator itself is stubbed to lose the race, the same shape a
+    # real concurrent move produces between the pre-check and MoveHold's own
+    # attempt. A literally-full target is instead caught earlier by the
+    # daily_limit_reached? pre-check — both paths now render the identical
+    # plain refusal (reschedule never offers the #create purchase-fallback
+    # payload; see #reschedule). Mirrors Api::V1::DayPassesControllerTest's
+    # #create race-backstop test.
+    assert_no_enqueued_emails do
+      DayOffices::Allocator.stub :allocate!, nil do
+        patch "/api/v1/day_passes/#{pass.id}/reschedule", params: { day: target.iso8601 }, headers: headers
+      end
+    end
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_includes body["error"], "fully booked"
+    assert_not body.key?("code")
+    assert_equal original_day, pass.reload.day
+    assert_equal original_hold_id, pass.reload_office_hold&.id
+  end
+
+  test "a same-day reschedule of an office pass keeps the same hold (no churn)" do
+    pass = office_pass!(2.days.from_now.to_date)
+    hold_id = pass.office_hold.id
+
+    assert_no_enqueued_emails do
+      patch "/api/v1/day_passes/#{pass.id}/reschedule", params: { day: pass.day.iso8601 }, headers: headers
+    end
+
+    assert_response :success
+    assert_equal hold_id, pass.reload_office_hold.id
   end
 end
