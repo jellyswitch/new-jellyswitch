@@ -77,12 +77,15 @@ class DayPassType < ApplicationRecord
   # order CoverageState uses for coverage auto-buy suggestions (ADR 0026). A
   # location-specific default_for_room_booking type beats an operator-wide
   # (nil-location) one; both orderings tiebreak on id for a deterministic pick.
+  # quantity: 1 excludes N-Packs — a bundle id posted back to a purchase
+  # endpoint routes into the dateless bundle-buy flow, not a same-day swap.
   def self.suggested_standard_for(location)
     return nil if location.nil?
     scope = where(operator_id: location.operator_id)
               .for_location(location)
               .available.where(visible: true).where("amount_in_cents > 0")
               .where.not(kind: "day_office")
+              .where(quantity: 1)
     scope.where(default_for_room_booking: true).order(Arel.sql("location_id DESC NULLS LAST"), :id).first ||
       scope.order(:amount_in_cents, :id).first
   end

@@ -269,4 +269,25 @@ class DayPassTypeTest < ActiveSupport::TestCase
                                         amount_in_cents: 9000, default_for_room_booking: true)
     assert_equal local_default, DayPassType.suggested_standard_for(@location)
   end
+
+  test "suggested_standard_for never suggests a bundle (quantity > 1)" do
+    operator = operators(:cowork_tahoe)
+    # Neutralize the operator's fixture standard type (day_pass_type.yml,
+    # $200/quantity 1) — it would otherwise qualify on its own and mask the
+    # thing this test checks.
+    day_pass_type(:cowork_tahoe_day_pass_type).update!(available: false)
+    DayPassType.create!(name: "10-Pack", operator: operator, location: @location,
+                        amount_in_cents: 20000, quantity: 10)
+    assert_nil DayPassType.suggested_standard_for(@location),
+               "the only qualifying type is an N-Pack — posting its id back would route into the bundle-buy flow, not a same-day swap"
+  end
+
+  test "suggested_standard_for prefers a quantity-1 type over a cheaper bundle" do
+    operator = operators(:cowork_tahoe)
+    DayPassType.create!(name: "Cheap 10-Pack", operator: operator, location: @location,
+                        amount_in_cents: 1000, quantity: 10)
+    single = DayPassType.create!(name: "Single", operator: operator, location: @location,
+                                 amount_in_cents: 5000, quantity: 1)
+    assert_equal single, DayPassType.suggested_standard_for(@location)
+  end
 end

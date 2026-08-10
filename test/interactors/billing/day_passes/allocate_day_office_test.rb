@@ -19,15 +19,6 @@ class Billing::DayPasses::AllocateDayOfficeTest < ActiveSupport::TestCase
     @room_b = Room.create!(name: "Office B", operator: @operator, location: @location)
     @office_type.assign_office_rooms!({ @room_a.id => 1, @room_b.id => 2 })
 
-    # suggested_standard_for's fallback branch (no default_for_room_booking
-    # winner) tiebreaks on cheapest-then-id, and fixtures already give this
-    # operator a $200 standard type — default_for_room_booking: true wins
-    # outright over that branch, so this is THE unambiguous fallback no
-    # matter what else exists.
-    @standard_type = DayPassType.create!(name: "Standard Fallback", operator: @operator, location: @location,
-                                         kind: "standard", amount_in_cents: 5000, available: true, visible: true,
-                                         default_for_room_booking: true)
-
     @user = users(:cowork_tahoe_member)
     @other = users(:cowork_tahoe_non_member)
     @day = Date.current + 7
@@ -88,7 +79,7 @@ class Billing::DayPasses::AllocateDayOfficeTest < ActiveSupport::TestCase
     assert_equal result.office_hold.id, result.day_pass.reload.office_hold.id
   end
 
-  test "sold out: fails before payment, surfaces a fallback type, persists nothing" do
+  test "sold out: fails before payment, persists nothing" do
     fill_pool!
 
     result = nil
@@ -98,7 +89,10 @@ class Billing::DayPasses::AllocateDayOfficeTest < ActiveSupport::TestCase
 
     assert result.failure?
     assert_equal :sold_out, result.outcome
-    assert_equal @standard_type, result.fallback_day_pass_type
+    # The fallback standard type is no longer threaded through this context —
+    # the api controller derives it itself (DayPassType.suggested_standard_for),
+    # since it needs current_location, not day_pass.location. See
+    # Api::V1::DayPassesControllerTest for fallback-payload coverage.
     assert_includes result.message, "Day Offices are fully booked for #{@day.strftime('%B %e')}. Try another day."
   end
 

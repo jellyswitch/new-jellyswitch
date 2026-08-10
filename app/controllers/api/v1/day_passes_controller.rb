@@ -12,6 +12,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         price: t.amount_in_cents,
         quantity: t.quantity,
         included_meeting_minutes: t.try(:included_meeting_room_minutes),
+        kind: t.kind,
       }
     }
   end
@@ -19,7 +20,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def index
     passes = current_api_user.day_passes
       .where(operator: current_tenant)
-      .includes(:day_pass_type, :invoice)
+      .includes(:day_pass_type, :invoice, office_hold: { room: :location })
       .order(day: :desc)
       .limit(20)
 
@@ -33,12 +34,24 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         paid: dp.invoice&.paid? || false,
         complimentary: dp.complimentary,
         can_reschedule: dp.reschedulable?,
+        office_room: dp.office_hold&.room&.name,
+        office_window: dp.office_hold&.window_label,
       }
     }
   end
 
   def create
-    day_pass_type = DayPassType.find(params[:day_pass_type_id])
+    # Location-scoped (lenient-nil: legacy operator-wide types with no
+    # location still resolve) — a multi-location operator's member must not
+    # be able to buy another building's type by crafting the id directly.
+    # acts_as_tenant's default scope already keeps this cross-OPERATOR safe;
+    # this closes the narrower cross-LOCATION gap (T5 review). find_by + an
+    # explicit nil check, not find + a method-level rescue: the rescue would
+    # also swallow an unrelated RecordNotFound raised deeper in this method
+    # (e.g. inside the interactor chain), silently turning a real bug into a
+    # misleading 404 instead of surfacing as a 500 to monitoring.
+    day_pass_type = DayPassType.for_location(current_location).find_by(id: params[:day_pass_type_id])
+    return render json: { error: "Not found" }, status: :not_found if day_pass_type.nil?
     token = params[:stripe_token]
     discount_code = params[:discount_code]
 
@@ -110,6 +123,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # their rows still count toward the tally. See
     # docs/superpowers/specs/2026-07-12-day-pass-daily-limit-design.md.
     if day_pass_type.daily_limit_reached?(day: date, location: current_location)
+      return render_day_office_sold_out(day_pass_type, date) if day_pass_type.day_office?
       return render_error(sold_out_message(day_pass_type, date))
     end
 
@@ -171,7 +185,21 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     if result.success?
       dp = result.day_pass || DayPass.where(user: current_api_user).order(created_at: :desc).first
-      render json: { success: true, id: dp&.id, date: date.strftime("%B %e, %Y") }, status: :created
+      render json: {
+        success: true,
+        id: dp&.id,
+        date: date.strftime("%B %e, %Y"),
+        confirmation_note: office_confirmation_note(dp),
+      }, status: :created
+    elsif result.outcome == :sold_out && day_pass_type.day_office?
+      # Race backstop: the pre-check gate above passed (pool looked free),
+      # but AllocateDayOffice lost the room to a concurrent purchase before
+      # this organizer reached it. Same structured payload either way — the
+      # client can't tell (and doesn't need to) which gate caught it. The
+      # day_office? guard is future-proofing: if a standard-flow producer
+      # ever sets outcome: :sold_out too, it must fall through to the plain
+      # render_error below, not this office-specific payload.
+      render_day_office_sold_out(day_pass_type, date)
     else
       render_error(result.message || 'Unable to create day pass')
     end
@@ -383,6 +411,31 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # a deliberate per-surface idiom, not drift.
   def sold_out_message(day_pass_type, day)
     "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
+  end
+
+  # Structured sold-out response for a Day Office purchase (ADR 0026) — used
+  # by both the pre-purchase capacity gate and the post-organizer race
+  # backstop, so a client sees the identical shape either way. Carries a
+  # machine-readable `code` (unlike the plain-string render_error standard
+  # day passes use) plus a suggested standard-type fallback so the client can
+  # offer an immediate swap instead of a dead end.
+  def render_day_office_sold_out(day_pass_type, day)
+    fallback = DayPassType.suggested_standard_for(current_location)
+    render json: {
+      error: sold_out_message(day_pass_type, day),
+      code: "day_office_sold_out",
+      fallback_day_pass_type: fallback && {
+        id: fallback.id, name: fallback.name, price: fallback.amount_in_cents,
+      },
+    }, status: :unprocessable_entity
+  end
+
+  # "Office A is yours 6:00 AM–8:00 PM." nil for a standard (non-office)
+  # pass, whose office_hold is always nil.
+  def office_confirmation_note(day_pass)
+    hold = day_pass&.office_hold
+    return nil unless hold
+    "#{hold.room.name} is yours #{hold.window_label}."
   end
 
   # Self-serve purchase window (DayPass::MAX_ADVANCE_DAYS). "Today" is judged

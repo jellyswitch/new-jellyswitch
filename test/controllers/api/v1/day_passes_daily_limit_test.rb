@@ -57,7 +57,7 @@ class Api::V1::DayPassesDailyLimitTest < ActionDispatch::IntegrationTest
     # a particular way. A "fully booked" error would mean the gate is
     # miscounting; anything else means the request cleared the gate and
     # reached the (stubbed) purchase interactor.
-    canned_failure = Struct.new(:success?, :message).new(false, "Payment failed.")
+    canned_failure = Struct.new(:success?, :message, :outcome).new(false, "Payment failed.", nil)
     Billing::DayPasses::CreateDayPass.stub :call, canned_failure do
       post "/api/v1/day_passes",
            params: { day_pass_type_id: @type.id, date: @day.iso8601 }, headers: headers
@@ -74,7 +74,7 @@ class Api::V1::DayPassesDailyLimitTest < ActionDispatch::IntegrationTest
     assert_nil @type.daily_limit
     fill_day(3)
 
-    canned_failure = Struct.new(:success?, :message).new(false, "Payment failed.")
+    canned_failure = Struct.new(:success?, :message, :outcome).new(false, "Payment failed.", nil)
     Billing::DayPasses::CreateDayPass.stub :call, canned_failure do
       post "/api/v1/day_passes",
            params: { day_pass_type_id: @type.id, date: @day.iso8601 }, headers: headers

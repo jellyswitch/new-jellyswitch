@@ -14,12 +14,13 @@ class Billing::DayPasses::AllocateDayOffice
     hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
     if hold.nil?
       # outcome: :sold_out matches the ScheduleDay/bundle vocabulary the api
-      # controller already cases on (result.outcome) — office-ness is
-      # recoverable from fallback_day_pass_type's caller-side context, so no
-      # separate error_code is needed.
+      # controller already cases on (result.outcome). The fallback standard
+      # type is NOT threaded through this context — the controller derives
+      # it itself (DayPassType.suggested_standard_for(current_location)),
+      # since it needs the request's current_location, not day_pass.location
+      # (nil for a legacy pass whose type has no location of its own).
       context.fail!(
         outcome: :sold_out,
-        fallback_day_pass_type: DayPassType.suggested_standard_for(day_pass.location || day_pass.day_pass_type.location),
         message: "#{day_pass.day_pass_type.name.pluralize} are fully booked for " \
                  "#{day_pass.day.strftime('%B %e')}. Try another day."
       )
