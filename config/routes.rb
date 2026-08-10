@@ -344,6 +344,7 @@ Rails.application.routes.draw do
         get 'feedbacks/:id', to: 'feedbacks#show'
         post 'feedbacks/:id/reply', to: 'feedbacks#reply'
         post 'feedbacks/:id/dismiss', to: 'feedbacks#dismiss'
+        post 'feedbacks/:id/restore', to: 'feedbacks#restore'
 
         # Email Templates
         resources :email_templates, only: [:index, :update] do
@@ -644,6 +645,7 @@ Rails.application.routes.draw do
     member do
       post :reply
       post :dismiss
+      post :restore
     end
     collection do
       get :my_feedback

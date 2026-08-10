@@ -19,20 +19,31 @@
       <div class="list-group list-group-flush bounded-scroll-viewport" data-testid="conversations-list"
            role="region" aria-label="Past conversations" tabindex="0">
         <% conversations.each do |thread| %>
-          <%= link_to member_feedback_path(thread),
-                class: "list-group-item list-group-item-action px-0",
-                data: { conversation_id: thread.id } do %>
-            <div class="d-flex justify-content-between align-items-start">
-              <div class="flex-grow-1" style="min-width: 0;">
-                <div class="text-truncate"><%= thread.comment.presence || "(no message)" %></div>
-                <div class="text-muted small mt-1">
-                  <%= pluralize(thread.feedback_replies.size, "reply") %>
-                  · updated <%= time_ago_in_words(thread.updated_at) %> ago
-                </div>
+          <div class="list-group-item d-flex justify-content-between align-items-center px-0"
+               data-conversation-id="<%= thread.id %>">
+            <%= link_to member_feedback_path(thread),
+                  class: "text-decoration-none text-dark flex-grow-1 mr-3",
+                  style: "min-width: 0;" do %>
+              <div class="text-truncate"><%= thread.comment.presence || "(no message)" %></div>
+              <div class="text-muted small mt-1">
+                <%= pluralize(thread.feedback_replies.size, "reply") %>
+                · updated <%= time_ago_in_words(thread.updated_at) %> ago
+                <% if thread.dismissed_at.present? %>
+                  · <span class="badge badge-secondary">Dismissed</span>
+                <% end %>
               </div>
+            <% end %>
+            <% if thread.dismissed_at.present? %>
+              <%= button_to "Restore", restore_member_feedback_path(thread),
+                    method: :post,
+                    class: "btn btn-sm btn-outline-secondary flex-shrink-0",
+                    form_class: "mb-0",
+                    title: "Restore conversation",
+                    aria: { label: "Restore conversation" } %>
+            <% else %>
               <i class="fas fa-chevron-right text-muted ml-2 mt-1"></i>
-            </div>
-          <% end %>
+            <% end %>
+          </div>
         <% end %>
       </div>
     <% else %>

@@ -175,6 +175,19 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_equal true, thread["replies"].first["is_admin"]
   end
 
+  test "conversations flags dismissed threads so clients can offer Restore" do
+    live      = MemberFeedback.create!(operator: @operator, user: @member, comment: "Live thread")
+    dismissed = MemberFeedback.create!(operator: @operator, user: @member, comment: "Old thread",
+      dismissed_at: Time.current)
+
+    get "/api/v1/admin/members/#{@member.id}/conversations", headers: headers
+    assert_response :success
+
+    body = JSON.parse(response.body)
+    assert_equal false, body.find { |c| c["id"] == live.id }["dismissed"]
+    assert_equal true,  body.find { |c| c["id"] == dismissed.id }["dismissed"]
+  end
+
   # "Recent" hides door-punch noise (keeps only the first after each
   # join/payment); the dedicated "doors" tab shows the full history.
   test "activities: recent hides door-punch noise, doors tab shows all" do
