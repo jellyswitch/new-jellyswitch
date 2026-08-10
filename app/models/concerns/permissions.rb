@@ -1,10 +1,35 @@
 module Permissions
   # Included as a module in the User class
 
+  # Insider-status check — nav, landing, announcements, and room booking key
+  # off it. NOT a door gate: DoorPolicy#open?/#keys? use
+  # allowed_in_for_door_access? below, which bounds the day-pass and bundle
+  # legs to posted hours (ADR 0023). Adding a leg here? Mirror it there.
   def allowed_in?(location)
     has_building_access_membership?(location) ||
     has_active_day_pass_at_location?(location) ||
     has_active_day_pass_bundle?(location) ||
+    checked_in?(location) ||
+    has_active_lease? ||
+    admin_of_location?(location) ||
+    superadmin? ||
+    has_active_reservation? ||
+    has_rsvp?
+  end
+
+  # The door-gate flavor of allowed_in?: same legs, except day-pass and
+  # bundle access honor the location's posted hours (ADR 0023 — a pass
+  # covers the DAY; the door only opens while the location is open), with
+  # the always_allow_building_access pass-TYPE escape hatch. Closes the
+  # legacy web open path (GET /doors/:slug/open), which stayed 24/7 after
+  # the api/v1, web-XHR, and Keys-list gates were bounded. Membership,
+  # lease, staff, checkin, reservation, and RSVP legs are unchanged.
+  def allowed_in_for_door_access?(location)
+    has_building_access_membership?(location) ||
+    ((has_active_day_pass_at_location?(location) || has_active_day_pass_bundle?(location)) &&
+      day_pass_within_posted_hours?(location)) ||
+    has_building_access_day_pass?(location) ||
+    has_building_access_day_pass_bundle?(location) ||
     checked_in?(location) ||
     has_active_lease? ||
     admin_of_location?(location) ||
@@ -232,6 +257,19 @@ module Permissions
     passes = day_passes.today
     passes = passes.for_location(location) if location
     passes.any? { |day_pass| day_pass.day_pass_type.always_allow_building_access? }
+  end
+
+  # Bundle counterpart of has_building_access_day_pass?: an active bundle
+  # whose pass TYPE is flagged always_allow_building_access keeps 24/7 door
+  # access (same ADR 0023 escape hatch, same join as the api/v1 unlock gate).
+  # Strictly location-scoped like has_active_day_pass_bundle? — bundles are
+  # always stamped with a location.
+  def has_building_access_day_pass_bundle?(location)
+    return false unless location
+    day_pass_bundles.active.where(location: location)
+                    .joins(:day_pass_type)
+                    .where(day_pass_types: { always_allow_building_access: true })
+                    .exists?
   end
 
   def has_active_lease?(location = nil)

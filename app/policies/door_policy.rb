@@ -35,12 +35,17 @@ class DoorPolicy < ApplicationPolicy
     enabled? && (admin? || general_manager?)
   end
 
+  # Day-pass/bundle holders only get the door within posted hours (ADR 0023):
+  # allowed_in_for_door_access? is allowed_in? with those two legs bounded,
+  # keeping this legacy GET open path in lockstep with the api/v1 and web-XHR
+  # unlock gates. keys? shares the predicate so the Keys page can't list
+  # doors the taps would refuse (the PR #668 list/unlock invariant).
   def open?
-    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
+    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in_for_door_access?(location) && approved?) || billing_disabled?)
   end
 
   def keys?
-    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in?(location) && approved?) || billing_disabled?)
+    user.present? && (admin? || community_manager? || general_manager? || (user.allowed_in_for_door_access?(location) && approved?) || billing_disabled?)
   end
 
   def enabled?
