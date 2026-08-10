@@ -658,6 +658,33 @@ class Operator::ReservationsController < Operator::BaseController
     end
   end
 
+  # Day Office admin reassign (Task 12, ADR 0026): staff-only move of a live
+  # hold to a different active room at its location (hidden rooms included —
+  # decision #8). There's no dedicated show page for a hold yet (Task 14 wires
+  # up the member-profile UI that will call this), so unlike its siblings this
+  # redirects back to wherever the admin triggered it from either way, instead
+  # of to reservation_path.
+  def reassign_room
+    # Not find_reservation: that goes through Reservation's default scope,
+    # which hides a cancelled hold behind a bare 404 before the service ever
+    # gets a chance to run its own liveness check and give a clear flash
+    # instead (mirrors the admin API's find_reservation, .unscoped for the
+    # same reason). Location scope matches the admin API's posture after
+    # #717: staff act only on holds at the locations they manage.
+    @reservation = Reservation.unscoped.for_location_id(current_location&.id).find(params[:id])
+    authorize @reservation, :reassign_room?
+
+    room = current_tenant.rooms.active.find_by(id: params[:room_id])
+    result = DayOffices::ReassignRoom.call(hold: @reservation, room: room)
+
+    if result.ok?
+      flash[:notice] = result.moved? ? "Office hold moved to #{@reservation.reload.room.name}." : "Already in #{@reservation.room.name}."
+    else
+      flash[:error] = result.error
+    end
+    turbo_redirect(referrer_or_root)
+  end
+
   def needs_billing
     date = Time.zone.parse(params[:date])
     should_charge = current_user.should_charge_for_reservation?(current_location, date)

@@ -43,6 +43,13 @@ class ReservationPolicy < ApplicationPolicy
     (admin_or_manager? || owner?) && record.ongoing?
   end
 
+  # Day Office admin reassign (Task 12, ADR 0026): staff-only, no owner
+  # exception — decision #8 is an admin picking any room, not a member
+  # self-service action like extend/cancel above.
+  def reassign_room?
+    admin_or_manager?
+  end
+
   private
 
   def admin_or_manager?
