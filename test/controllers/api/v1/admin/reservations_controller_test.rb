@@ -499,4 +499,66 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
     assert_response :unprocessable_entity
     assert_match(/not a day office hold/i, JSON.parse(response.body)["error"])
   end
+
+  # --- Cross-location guard on the reassign endpoints -------------------------
+  #
+  # Both reassign actions resolve through find_reservation, so they inherit the
+  # boundary #717 put on destroy/extend and must be held to it: staff can
+  # neither MOVE a hold nor ENUMERATE rooms for one at a location they don't
+  # manage. reassign_options matters as much as reassign_room — it leaks the
+  # room inventory and occupancy of a location the caller has no business
+  # seeing. Superadmins keep the operator-wide reach.
+  #
+  # NOTE the operator WEB reassign action is deliberately wider than this (it
+  # is tenant-scoped, so the profile page can list a member's holds across
+  # every location) — see the reassign_room comment in
+  # Operator::ReservationsController.
+
+  # A live Day Office hold in a second location of the same operator — one the
+  # fixture staff (all scoped to cowork_tahoe_location) do not manage. Points
+  # @location at location B first: make_office_hold builds the day-pass type,
+  # room pool and pass ambiently off @location, same as the tests above.
+  # Returns [hold, room_a, room_b], with the hold allocated to room_a.
+  def make_other_location_office_hold
+    @location_b = Geocoder.stub(:search, ->(*_) { [] }) do
+      ActsAsTenant.with_tenant(@operator) { create(:location, operator: @operator) }
+    end
+    @location = @location_b
+    make_office_hold
+  end
+
+  test "community manager cannot reassign a hold at a location they do not manage" do
+    hold, room_a, room_b = make_other_location_office_hold
+    cm = users(:cowork_tahoe_community_manager)
+    refute cm.managed_location_ids.include?(@location_b.id), "fixture CM must not manage location B"
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers_for(cm)
+
+    assert_response :not_found
+    assert_equal room_a, hold.reload.room, "cross-location reassign must not move the hold"
+  end
+
+  test "community manager cannot list reassign options for a hold at a location they do not manage" do
+    hold, _room_a, _room_b = make_other_location_office_hold
+    cm = users(:cowork_tahoe_community_manager)
+    refute cm.managed_location_ids.include?(@location_b.id), "fixture CM must not manage location B"
+
+    get "/api/v1/admin/reservations/#{hold.id}/reassign_options", headers: headers_for(cm)
+
+    assert_response :not_found
+  end
+
+  test "superadmin can reassign a hold across locations within their operator" do
+    hold, _room_a, room_b = make_other_location_office_hold
+    owner = users(:cowork_tahoe_superadmin)
+    refute owner.managed_location_ids.include?(@location_b.id),
+      "success below must be the superadmin bypass, not a management row"
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers_for(owner)
+
+    assert_response :success
+    assert_equal room_b, hold.reload.room
+  end
 end
