@@ -310,6 +310,10 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         # Additive (ADR 0026): the room name for a Day Office pass, nil for a
         # standard one and for an office pass staff scheduled into a full pool.
         office_room: dp.office_hold&.room&.name,
+        # Additive (Task 16): lets the mobile admin UI target the reassign
+        # endpoints (which key off the Reservation/hold id), nil under the
+        # same conditions as office_room above.
+        office_hold_id: dp.office_hold&.id,
       }
     }
   end
