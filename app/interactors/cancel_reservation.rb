@@ -98,6 +98,7 @@ class CancelReservation
     Reservation.joins(:room)
                .where(user_id: reservation.user_id)
                .where.not(id: reservation.id)
+               .where(day_office_pass_id: nil) # office holds never count as coverage survivors (ADR 0026)
                .where(rooms: { location_id: day_pass.location_id })
                .where("rooms.hourly_rate_in_cents = 0 OR rooms.hourly_rate_in_cents IS NULL")
                .where(datetime_in: (day_pass.day - 1).beginning_of_day..(day_pass.day + 1).end_of_day)

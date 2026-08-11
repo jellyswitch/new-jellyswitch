@@ -260,6 +260,18 @@ class Operator::ReservationsController < Operator::BaseController
     find_reservation
     authorize @reservation, :cancel?
 
+    # ReservationPolicy#cancel? admits `owner?`, so this action is member-facing
+    # too — a member reaches it for their own bookings. A Day Office hold is not
+    # one of those: it's the office their pass entitles them to (ADR 0026), and
+    # self-cancelling would release the room while leaving the pass sold and
+    # spent. Staff keep the ability to cancel a hold (the reassign/refund tools
+    # are theirs), so this gates on the CALLER being non-staff, not on the mode
+    # below — which is :admin for every caller of this action.
+    if @reservation.day_office_hold? && !current_user.admin_or_manager?(current_location)
+      flash[:error] = "Your office comes with your Day Office pass — ask staff to change or refund it."
+      return turbo_redirect(referrer_or_root)
+    end
+
     # Operator/staff cancel = admin mode: refunds all the reservation's invoices
     # regardless of the member cancellation window (ADR 0011).
     result = CancelReservation.call(reservation: @reservation, mode: :admin)

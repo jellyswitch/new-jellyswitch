@@ -30,9 +30,10 @@ module DayOfficeHelper
   # :user factory).
   def fill_office_pool!(day, room_a, room_b)
     span = @location.posted_hours_span(day)
+    minutes = ((span.last - span.first) / 60).round
     other = create(:user, operator: @operator, original_location: @location, current_location: @location)
     [room_a, room_b].each do |room|
-      Reservation.create!(user: other, room: room, datetime_in: span.first, minutes: 600)
+      Reservation.create!(user: other, room: room, datetime_in: span.first, minutes: minutes)
     end
   end
 end

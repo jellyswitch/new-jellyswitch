@@ -500,6 +500,18 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
     assert_match(/not a day office hold/i, JSON.parse(response.body)["error"])
   end
 
+  # The member-side cancel refuses to release an office hold (it would leave
+  # the pass sold and spent). Staff are the ones who CAN — refunding or
+  # reworking the pass is their job, so the admin path must stay open.
+  test "admin can still cancel a Day Office hold" do
+    hold, _room_a, _room_b = make_office_hold
+
+    delete "/api/v1/admin/reservations/#{hold.id}", headers: headers
+
+    assert_response :success
+    assert hold.reload.cancelled
+  end
+
   # --- Cross-location guard on the reassign endpoints -------------------------
   #
   # Both reassign actions resolve through find_reservation, so they inherit the

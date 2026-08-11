@@ -310,6 +310,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
 
     old_day = day_pass.day
+    moved_hold = nil
     if day_pass.day_office? && new_day != day_pass.day
       move = DayOffices::MoveHold.call(day_pass: day_pass, new_day: new_day)
       # Plain refusal, not the purchase-fallback payload: rescheduling an
@@ -317,13 +318,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
       # attach to (unlike #create's sold-out gate). Same shape as this
       # method's own pre-check above.
       return render_error(sold_out_message(day_pass.day_pass_type, new_day)) unless move.ok?
+      moved_hold = move.hold
     else
       day_pass.update!(day: new_day)
     end
     UserMailer.day_pass_rescheduled(day_pass.id, old_day).deliver_later if day_pass.day != old_day
     render json: {
       status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y"),
-      confirmation_note: office_confirmation_note(day_pass),
+      confirmation_note: office_confirmation_note_for(moved_hold || day_pass.office_hold),
     }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
@@ -521,7 +523,16 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # "Office A is yours 6:00 AM–8:00 PM." nil for a standard (non-office)
   # pass, whose office_hold is always nil.
   def office_confirmation_note(day_pass)
-    hold = day_pass&.office_hold
+    office_confirmation_note_for(day_pass&.office_hold)
+  end
+
+  # Same note from a hold the caller already has in hand. #reschedule must use
+  # this with DayOffices::MoveHold::Result#hold: the move releases the old hold
+  # and allocates a NEW one (possibly in a different room, since the pool's
+  # first choice may be free on one day and not the other), but day_pass's
+  # office_hold association is still the pre-move one and would name the OLD
+  # room in the confirmation.
+  def office_confirmation_note_for(hold)
     return nil unless hold
     "#{hold.room.name} is yours #{hold.window_label}."
   end

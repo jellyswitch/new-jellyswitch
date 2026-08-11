@@ -19,6 +19,39 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
     { "Authorization" => "Bearer #{token}", "X-Operator-Subdomain" => @operator.subdomain, "Content-Type" => "application/json" }
   end
 
+  # A live Day Office hold for a member, allocated the normal way.
+  def office_hold_for(member)
+    location = locations(:cowork_tahoe_location)
+    ActsAsTenant.with_tenant(@operator) do
+      type = DayPassType.create!(name: "Day Office", operator: @operator, location: location,
+                                 kind: "day_office", amount_in_cents: 7500,
+                                 included_meeting_room_minutes: 0, available: true, visible: true)
+      office = Room.create!(name: "Office A", operator: @operator, location: location)
+      type.assign_office_rooms!({ office.id => 1 })
+      pass = DayPass.create!(user: member, billable: member, operator: @operator, location: location,
+                             day_pass_type: type, day: 3.days.from_now.to_date, imported: true)
+      DayOffices::Allocator.allocate!(day_pass: pass)
+    end
+  end
+
+  # A Day Office hold is the office the member's PASS entitles them to, not a
+  # booking they made (ADR 0026). It is reachable here because it is a
+  # reservation owned by the member — but self-cancelling would release the
+  # room while leaving the pass sold and spent, so the member would keep paying
+  # for an office they no longer have. Changing or refunding the pass is staff
+  # work.
+  test "a member cannot cancel their own Day Office hold" do
+    member = users(:cowork_tahoe_member)
+    hold = office_hold_for(member)
+    assert hold.present?, "sanity: the pass must have been given an office"
+
+    delete "/api/v1/reservations/#{hold.id}", headers: headers(member)
+
+    assert_response :unprocessable_entity
+    assert_match(/ask staff/i, JSON.parse(response.body)["error"])
+    refute hold.reload.cancelled, "a member's own cancel must never release the office"
+  end
+
   test "index returns org-mates' upcoming bookings in `team`, labeled, excluding self/past/cancelled" do
     mate_future    = Reservation.create!(user: @mate,   room: @room, datetime_in: 2.days.from_now, minutes: 60)
     mate_past      = Reservation.create!(user: @mate,   room: @room, datetime_in: 2.days.ago,      minutes: 60)

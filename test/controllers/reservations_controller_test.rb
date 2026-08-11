@@ -33,6 +33,35 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
     assert_equal expected_message, flash[:error]
   end
 
+  # --- Day Office hold cancel gate (ADR 0026) -------------------------------
+  #
+  # ReservationPolicy#cancel? admits `owner?`, so this web destroy is
+  # member-facing too — a member reaches it for their own bookings. Their
+  # office hold is not one of those: releasing it would leave the pass sold and
+  # spent. Staff keep the ability, so the gate is on the CALLER, not the mode
+  # (which is :admin for every caller of this action).
+
+  test "a member cannot cancel their own Day Office hold from the web" do
+    hold, room_a, _room_b = make_office_hold
+    log_in @member
+
+    delete reservation_path(hold), env: default_env
+
+    assert_match(/ask staff/i, flash[:error])
+    refute hold.reload.cancelled, "a member's own cancel must never release the office"
+    assert_equal room_a, hold.room
+  end
+
+  test "staff can still cancel a Day Office hold from the web" do
+    hold, _room_a, _room_b = make_office_hold
+    log_in @admin
+
+    delete reservation_path(hold), env: default_env
+
+    assert_equal "Reservation cancelled.", flash[:notice]
+    assert hold.reload.cancelled
+  end
+
   # --- reassign_room (Task 12, ADR 0026) ------------------------------------
 
   # Builds a live Day Office hold under @operator/@location and returns

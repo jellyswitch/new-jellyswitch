@@ -37,6 +37,35 @@ class Api::V1::DayPassesRescheduleTest < ActionDispatch::IntegrationTest
     pass
   end
 
+  # The note must describe the hold the member ENDS UP with. MoveHold releases
+  # the old hold and allocates a fresh one, so when the pool's first choice is
+  # free on only one of the two days the member changes rooms — and reading
+  # day_pass.office_hold (the association cached from before the move) named
+  # the room they just left.
+  test "reschedule's confirmation note names the newly allocated room" do
+    old_day = 2.days.from_now.to_date
+    new_day = 6.days.from_now.to_date
+
+    # Block room A (pool position 1) on the OLD day only, so the pass lands on B
+    # there and can take A after the move.
+    other = create(:user, operator: @operator, original_location: @location, current_location: @location)
+    span = @location.posted_hours_span(old_day)
+    Reservation.create!(user: other, room: @room_a, datetime_in: span.first,
+                        minutes: ((span.last - span.first) / 60).round)
+
+    pass = office_pass!(old_day)
+    assert_equal @room_b, pass.office_hold.room, "sanity: A is taken on the old day, so the pass starts on B"
+
+    patch "/api/v1/day_passes/#{pass.id}/reschedule", params: { day: new_day.iso8601 }, headers: headers
+
+    assert_response :success
+    assert_equal @room_a, pass.reload_office_hold.room, "sanity: the move takes the free first choice"
+
+    note = JSON.parse(response.body)["confirmation_note"]
+    assert note.to_s.start_with?("#{@room_a.name} is yours"),
+      "the note must name the NEW room, got: #{note.inspect}"
+  end
+
   test "member moves an unused pass to a future date" do
     target = 5.days.from_now.to_date
 

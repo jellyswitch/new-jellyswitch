@@ -32,6 +32,48 @@ class CancelReservationCoverageTest < ActiveSupport::TestCase
     end
   end
 
+  # A Day Office bundle spent on ROOM coverage mints a pass AND takes an office
+  # for the day (ADR 0026). That office hold is a reservation by the same user,
+  # at the same location, on the same day, in a $0 room — it matches every
+  # clause of the coverage-survivor lookup. Left eligible, cancelling the
+  # covered booking re-points the ledger at the hold and keeps the pass spent,
+  # so the member silently loses a bundle pass for a booking they cancelled and
+  # the "last booking releases the pass" rule can never fire. Holds are the
+  # pass's own artifact, never coverage for it.
+  test "an office hold does not count as a coverage survivor when the covered booking is cancelled" do
+    ActsAsTenant.with_tenant(@op) do
+      user = create(:user, operator: @op, original_location: @loc, current_location: @loc)
+      room = included_room
+      dpt = DayPassType.create!(operator: @op, location: @loc, name: "Office 5-Pack",
+                                amount_in_cents: 20000, quantity: 5, kind: "day_office",
+                                included_meeting_room_minutes: 240, available: true, visible: true)
+      office = create(:room, operator: @op, location: @loc)
+      dpt.assign_office_rooms!({ office.id => 1 })
+      bundle = DayPassBundle.create!(user: user, operator: @op, location: @loc, day_pass_type: dpt,
+                                     quantity_purchased: 5, passes_remaining: 5, purchased_at: Time.current)
+
+      day = Date.current + 3
+      booking = create(:reservation, user: user, room: room, minutes: 60, datetime_in: day.to_time + 9.hours)
+      result = Billing::Reservations::RedeemBundlePass.call(reservation: booking, user: user, use_bundle_pass: true)
+
+      hold = result.office_hold
+      minted = result.bundle_redemption_day_pass
+      assert hold.present?, "sanity: an office bundle must take an office alongside the room coverage"
+      assert_equal 4, bundle.reload.passes_remaining, "sanity: the booking burned a pass"
+
+      CancelReservation.call(reservation: booking, mode: :member, current_user: user)
+
+      assert_equal 5, bundle.reload.passes_remaining,
+        "the bundle pass must be restored — the office hold is not a surviving booking"
+      assert_nil DayPass.find_by(id: minted.id), "the minted coverage pass is destroyed"
+      refute DayPassBundleRedemption.where(reservation_id: hold.id).exists?,
+        "the redemption ledger must never be re-pointed at the office hold"
+      # The hold goes with the pass that owned it: DayPass's before_destroy runs
+      # DayOffices::ReleaseHold, so giving the day back gives the office back.
+      assert hold.reload.cancelled, "releasing the pass releases its office too"
+    end
+  end
+
   test "a purchased coverage pass survives cancel and becomes reusable" do
     ActsAsTenant.with_tenant(@op) do
       user = create(:user, operator: @op, original_location: @loc, current_location: @loc)
