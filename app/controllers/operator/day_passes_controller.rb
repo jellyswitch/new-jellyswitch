@@ -87,7 +87,17 @@ class Operator::DayPassesController < Operator::BaseController
     # intentionally ungated, though its rows still count. Checked before the
     # duplicate-purchase confirm — a sold-out day is sold out regardless.
     if prospective_day && day_pass_type&.daily_limit_reached?(day: prospective_day, location: current_location)
-      flash[:error] = "#{day_pass_type.name.pluralize} are fully booked for #{short_date(prospective_day)}. Try another day."
+      message = "#{day_pass_type.name.pluralize} are fully booked for #{short_date(prospective_day)}. Try another day."
+      # Point the buyer at an immediate alternative instead of a dead end
+      # (mirrors the mobile API's day-office sold-out fallback, ADR 0026) —
+      # never an office or bundle type, and nil when nothing else qualifies.
+      # suggested.id != day_pass_type.id: when the sold-out type is itself
+      # the only qualifying candidate (a standard type with no sibling),
+      # suggested_standard_for has nothing else to offer but itself — never
+      # echo the same sold-out type back as its own "alternative".
+      suggested = DayPassType.suggested_standard_for(current_location)
+      message += " A #{suggested.name} is available instead." if suggested && suggested.id != day_pass_type.id
+      flash[:error] = message
       turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
       return
     end

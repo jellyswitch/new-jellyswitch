@@ -136,7 +136,9 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   # Free active rooms at the hold's location for its exact window — what the
   # reassign picker offers. hidden mirrors Room#visible inverted so the admin
   # UI can badge a hidden-but-usable room instead of hiding it outright
-  # (decision #8: hidden rooms are fair game for an admin-driven move).
+  # (decision #8: hidden rooms are fair game for an admin-driven move). The
+  # candidate query itself lives in DayOffices::ReassignRoom.options_for
+  # (Task 14) so the web profile's Reassign select can't drift from this list.
   def reassign_options
     hold = find_reservation
     # Duplicated from ReassignRoom's own guard: this action never calls the
@@ -146,17 +148,7 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     return render_error("That office hold is no longer active.") if hold.cancelled? || hold.datetime_out <= Time.current
     return render_error("Not a Day Office hold.") unless hold.day_office_hold?
 
-    candidates = Room.active.where(location_id: hold.room.location_id).where.not(id: hold.room_id).order(:name).to_a
-
-    # Two queries total, not one exists? per candidate: pluck every occupied
-    # room id for the hold's window in a single query, then reject in Ruby
-    # against a Set (O(1) membership) instead of round-tripping per room.
-    rooms = ActiveRecord::Base.uncached do
-      occupied_ids = Reservation.overlapping(hold.datetime_in, hold.datetime_out)
-                                .where(room_id: candidates.map(&:id)).where.not(id: hold.id)
-                                .distinct.pluck(:room_id).to_set
-      candidates.reject { |r| occupied_ids.include?(r.id) }
-    end
+    rooms = DayOffices::ReassignRoom.options_for(hold)
 
     render json: rooms.map { |r| { id: r.id, name: r.name, hidden: !r.visible } }
   rescue ActiveRecord::RecordNotFound

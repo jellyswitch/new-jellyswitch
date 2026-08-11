@@ -158,4 +158,79 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
 
     assert_includes flash[:error], "fully booked"
   end
+
+  # --- Sold-out flash suggestion (Task 14, ADR 0026) ------------------------
+
+  test "sold-out flash suggests a cheaper standard type when one qualifies" do
+    target = Time.zone.today + 2.days
+    @day_pass_type.update!(daily_limit: 1)
+    # Cheaper than @day_pass_type ($200) — suggested_standard_for's
+    # cheapest-tiebreak branch picks this one, not the sold-out type itself.
+    cheaper = DayPassType.create!(operator: @user.operator, location: locations(:cowork_tahoe_location),
+                                  name: "Basic Pass", amount_in_cents: 1500, available: true, visible: true)
+    other = users(:cowork_tahoe_non_member)
+    ActsAsTenant.with_tenant(@user.operator) do
+      DayPass.create!(user: other, billable: other, operator: @user.operator,
+                      location: locations(:cowork_tahoe_location),
+                      day_pass_type: @day_pass_type, day: target, imported: true)
+    end
+
+    assert_no_difference -> { DayPass.count } do
+      post day_passes_path, params: { day_pass: {
+        day_pass_type: @day_pass_type.id,
+        "day(1i)" => target.year.to_s, "day(2i)" => target.month.to_s, "day(3i)" => target.day.to_s,
+      } }, env: default_env
+    end
+
+    assert_includes flash[:error], "fully booked"
+    assert_includes flash[:error], "A #{cheaper.name} is available instead."
+  end
+
+  test "sold-out flash omits the suggestion when the sold-out type is itself the only qualifying candidate" do
+    target = Time.zone.today + 2.days
+    @day_pass_type.update!(daily_limit: 1)
+    # No sibling standard type exists at this location — suggested_standard_for
+    # has nothing to offer but @day_pass_type itself. Must never echo the
+    # sold-out type back as its own "alternative".
+    other = users(:cowork_tahoe_non_member)
+    ActsAsTenant.with_tenant(@user.operator) do
+      DayPass.create!(user: other, billable: other, operator: @user.operator,
+                      location: locations(:cowork_tahoe_location),
+                      day_pass_type: @day_pass_type, day: target, imported: true)
+    end
+
+    assert_no_difference -> { DayPass.count } do
+      post day_passes_path, params: { day_pass: {
+        day_pass_type: @day_pass_type.id,
+        "day(1i)" => target.year.to_s, "day(2i)" => target.month.to_s, "day(3i)" => target.day.to_s,
+      } }, env: default_env
+    end
+
+    assert_includes flash[:error], "fully booked"
+    assert_not_includes flash[:error], "is available instead"
+  end
+
+  test "sold-out flash omits the suggestion when no standard type qualifies" do
+    target = Time.zone.today + 2.days
+    # The only other standard type at this location must not qualify either,
+    # or suggested_standard_for would just offer it instead.
+    @day_pass_type.update!(visible: false)
+    # A Day Office type is excluded from suggested_standard_for by kind, so it
+    # can never suggest itself. An empty room pool (no assign_office_rooms!)
+    # makes DayOffices::Allocator.available_room nil — sold out with no
+    # reservation/room setup needed.
+    office_type = DayPassType.create!(operator: @user.operator, location: locations(:cowork_tahoe_location),
+                                      name: "Solo Office", kind: "day_office", amount_in_cents: 9000,
+                                      included_meeting_room_minutes: 0, available: true, visible: true)
+
+    assert_no_difference -> { DayPass.count } do
+      post day_passes_path, params: { day_pass: {
+        day_pass_type: office_type.id,
+        "day(1i)" => target.year.to_s, "day(2i)" => target.month.to_s, "day(3i)" => target.day.to_s,
+      } }, env: default_env
+    end
+
+    assert_includes flash[:error], "fully booked"
+    assert_not_includes flash[:error], "is available instead"
+  end
 end

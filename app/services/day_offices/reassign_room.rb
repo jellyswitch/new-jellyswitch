@@ -32,6 +32,50 @@ module DayOffices
     # there" copy without re-deriving it from old/new room ids themselves.
     Result = Struct.new(:ok?, :error, :moved?)
 
+    # The reassign picker's candidate list (Task 14): any ACTIVE room at the
+    # hold's location — hidden included, same decision #8 as .call above —
+    # other than the hold's current room, that is free for the hold's exact
+    # window. Shared by the admin API's reassign_options action and the web
+    # profile's inline Reassign select so the two surfaces can never drift.
+    #
+    # Two queries total, not one exists? per candidate: pluck every occupied
+    # room id for the hold's window in a single query, then reject in Ruby
+    # against a Set (O(1) membership) instead of round-tripping per room.
+    #
+    # No liveness guard here (unlike .call) — callers that need "is this hold
+    # still live" (a cancelled/ended hold shouldn't be offered a move at all)
+    # check that themselves before calling, same as reassign_options already
+    # does. This method only answers "what rooms are free", nothing about
+    # whether the hold itself is still eligible to move.
+    #
+    # Room.unscoped: Room's own acts_as_scopable(:operator, :location) default
+    # scope — populated for the whole request by
+    # Operator::BaseController#set_resource_scopes when this is called from
+    # the web profile — would otherwise silently AND the admin's OWN
+    # current_location into the candidate query below. For a hold at a
+    # DIFFERENT location (the web profile lists every hold for a member
+    # across all locations), that combined condition can never match
+    # anything, so every room reads as unavailable instead of merely the ones
+    # actually taken. The admin API (this method's original call site) never
+    # sets that ambient scope, so this is a no-op there — mirrors
+    # Reservation#room's own Room.unscoped { super } override, same reason.
+    def self.options_for(hold)
+      Room.unscoped do
+        candidates = Room.active.where(location_id: hold.room.location_id)
+                         .where.not(id: hold.room_id).order(:name).to_a
+
+        # uncached: same stale-read footgun .call's own occupancy probe closes
+        # — without it a query cached earlier in this request/test could hand
+        # back a "free" room another admin/member just took.
+        ActiveRecord::Base.uncached do
+          occupied_ids = Reservation.overlapping(hold.datetime_in, hold.datetime_out)
+                                    .where(room_id: candidates.map(&:id)).where.not(id: hold.id)
+                                    .distinct.pluck(:room_id).to_set
+          candidates.reject { |r| occupied_ids.include?(r.id) }
+        end
+      end
+    end
+
     def self.call(hold:, room:)
       if hold.nil? || hold.cancelled? || hold.datetime_out <= Time.current
         return Result.new(false, "That office hold is no longer active.")

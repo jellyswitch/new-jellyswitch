@@ -660,21 +660,50 @@ class Operator::ReservationsController < Operator::BaseController
 
   # Day Office admin reassign (Task 12, ADR 0026): staff-only move of a live
   # hold to a different active room at its location (hidden rooms included —
-  # decision #8). There's no dedicated show page for a hold yet (Task 14 wires
-  # up the member-profile UI that will call this), so unlike its siblings this
-  # redirects back to wherever the admin triggered it from either way, instead
-  # of to reservation_path.
+  # decision #8). Redirects to the member's Day Passes admin page (Task 14)
+  # rather than reservation_path — there's no dedicated show page for a hold.
   def reassign_room
     # Not find_reservation: that goes through Reservation's default scope,
     # which hides a cancelled hold behind a bare 404 before the service ever
     # gets a chance to run its own liveness check and give a clear flash
     # instead (mirrors the admin API's find_reservation, .unscoped for the
-    # same reason). Location scope matches the admin API's posture after
-    # #717: staff act only on holds at the locations they manage.
-    @reservation = Reservation.unscoped.for_location_id(current_location&.id).find(params[:id])
+    # same reason).
+    #
+    # Tenant-scoped, not current_location-scoped (unlike this controller's
+    # other actions): the Task 14 profile page lists every hold for a member
+    # across ALL of the operator's locations, so an admin whose
+    # current_location is site A must still be able to reassign a hold that
+    # lives at site B.
+    #
+    # NOTE this is deliberately WIDER than the admin API's equivalent. PRs
+    # #717/#718 shipped the cross-location tightening there: the API's
+    # find_reservation/find_room/visible_reservations now confine
+    # non-superadmins to allowed_location_ids (managed locations + home), so
+    # the API's reassign_room 404s on a hold outside them. This web action
+    # keeps operator-wide reach because the surface that calls it is the
+    # member profile's all-locations hold list; the tradeoff is that a
+    # location-scoped community manager can move a hold at a location they
+    # do not manage (ReservationPolicy#reassign_room? is role-only, not
+    # location-aware). Bringing the web surface to the API's boundary means
+    # first deciding what the profile page should show for out-of-scope
+    # locations — a follow-up, not a silent change here.
+    #
+    # Room.unscoped, wrapping BOTH lookups below: Room's own
+    # acts_as_scopable(:operator, :location) default scope — populated for
+    # the whole request by Operator::BaseController#set_resource_scopes —
+    # silently narrows any Room-touching query (a join included, per
+    # ActiveRecord's normal behavior of applying a joined model's default
+    # scope) to the admin's current_location. Left in place, that would
+    # undo the tenant-wide fix above: the join here would drop a hold at a
+    # different location right back out, and the room lookup below would
+    # fail to find a same-operator, different-location target room. Mirrors
+    # Reservation#room's own Room.unscoped { super } override, same reason.
+    @reservation = Room.unscoped do
+      Reservation.unscoped.joins(:room).where(rooms: { operator_id: current_tenant.id }).find(params[:id])
+    end
     authorize @reservation, :reassign_room?
 
-    room = current_tenant.rooms.active.find_by(id: params[:room_id])
+    room = Room.unscoped { current_tenant.rooms.active.find_by(id: params[:room_id]) }
     result = DayOffices::ReassignRoom.call(hold: @reservation, room: room)
 
     if result.ok?
@@ -682,7 +711,19 @@ class Operator::ReservationsController < Operator::BaseController
     else
       flash[:error] = result.error
     end
-    turbo_redirect(referrer_or_root)
+
+    # Deterministic redirect to the member's Day Passes page — not
+    # referrer_or_root — so the admin always lands somewhere that reflects
+    # the outcome, regardless of which page the Reassign form was submitted
+    # from. day_office_pass should always be present: the liveness guard
+    # inside ReassignRoom.call already refuses anything that isn't a live Day
+    # Office hold before this point. Fall back rather than raise if that
+    # invariant is ever wrong.
+    if @reservation.day_office_pass
+      turbo_redirect(user_admin_day_passes_path(@reservation.day_office_pass.user))
+    else
+      turbo_redirect(referrer_or_root)
+    end
   end
 
   def needs_billing

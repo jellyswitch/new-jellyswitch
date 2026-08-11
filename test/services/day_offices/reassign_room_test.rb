@@ -241,4 +241,39 @@ class DayOffices::ReassignRoomTest < ActiveSupport::TestCase
       DayOffices::ReassignRoom.call(hold: nil, room: @b)           # nil hold
     end
   end
+
+  # --- options_for (Task 14): the reassign picker's candidate query --------
+  # Parity coverage with Api::V1::Admin::ReservationsControllerTest's
+  # "reassign_options lists free rooms, flags hidden, and excludes the
+  # current/occupied/archived rooms" — same query, now exercised directly at
+  # the service layer since the web profile calls it without going through
+  # that controller action.
+
+  test "options_for offers a free room (hidden included) and excludes the current/occupied/archived rooms" do
+    _pass, hold = office_pass!
+    assert_equal @a, hold.room # sanity: allocator picked the position-1 room
+
+    hidden_room   = Room.create!(name: "Hidden Office", operator: @operator, location: @location, visible: false)
+    occupied_room = Room.create!(name: "Occupied Office", operator: @operator, location: @location)
+    archived_room = Room.create!(name: "Archived Office", operator: @operator, location: @location, archived: true)
+    Reservation.create!(user: @other, room: occupied_room, datetime_in: hold.datetime_in, minutes: hold.minutes)
+
+    ids = DayOffices::ReassignRoom.options_for(hold).map(&:id)
+
+    assert_includes ids, @b.id, "the pool's other free room must be offered"
+    assert_includes ids, hidden_room.id, "a hidden room must still be offered to an admin"
+    refute_includes ids, @a.id, "the hold's current room must not be offered as a target"
+    refute_includes ids, occupied_room.id
+    refute_includes ids, archived_room.id
+  end
+
+  test "options_for returns actual Room records, not just ids, ordered by name" do
+    _pass, hold = office_pass!
+    early = Room.create!(name: "AAA First", operator: @operator, location: @location)
+
+    rooms = DayOffices::ReassignRoom.options_for(hold)
+
+    assert_kind_of Room, rooms.first
+    assert_equal early, rooms.first, "order(:name) should sort this room to the front"
+  end
 end

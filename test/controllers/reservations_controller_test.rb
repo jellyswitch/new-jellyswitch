@@ -56,12 +56,12 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
 
     patch reassign_room_reservation_path(hold), params: { room_id: room_b.id }, env: default_env
 
-    assert_redirected_to root_path
+    assert_redirected_to user_admin_day_passes_path(@member)
     assert_equal "Office hold moved to #{room_b.name}.", flash[:notice]
     assert_equal room_b, hold.reload.room
   end
 
-  test "flashes an error and redirects back when the target room is full" do
+  test "flashes an error and redirects to the member's day passes page when the target room is full" do
     hold, room_a, room_b = make_office_hold
     Reservation.create!(user: users(:cowork_tahoe_non_member), room: room_b,
                         datetime_in: hold.datetime_in, minutes: hold.minutes)
@@ -69,7 +69,7 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
 
     patch reassign_room_reservation_path(hold), params: { room_id: room_b.id }, env: default_env
 
-    assert_redirected_to root_path
+    assert_redirected_to user_admin_day_passes_path(@member)
     assert_match(/already booked/i, flash[:error])
     assert_equal room_a, hold.reload.room
   end
@@ -80,7 +80,7 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
 
     patch reassign_room_reservation_path(hold), params: { room_id: room_a.id }, env: default_env
 
-    assert_redirected_to root_path
+    assert_redirected_to user_admin_day_passes_path(@member)
     assert_equal "Already in #{room_a.name}.", flash[:notice]
     assert_equal room_a, hold.reload.room
   end
@@ -92,7 +92,7 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
 
     patch reassign_room_reservation_path(hold), params: { room_id: room_b.id }, env: default_env
 
-    assert_redirected_to root_path
+    assert_redirected_to user_admin_day_passes_path(@member)
     assert_match(/no longer active/i, flash[:error])
   end
 
@@ -105,5 +105,24 @@ class ReservationsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to root_path # user_not_authorized -> referrer_or_root, no referrer in test -> root
     assert_match(/whoops/i, flash[:alert])
     assert_equal room_a, hold.reload.room, "a denied request must never move the hold"
+  end
+
+  # A hold at a location OTHER than the admin's own current_location must
+  # still be reachable: the Task 14 profile page lists every hold for a
+  # member across all of the operator's locations, and the finder used to be
+  # current_location-scoped (a bare 404 for exactly this case). Deliberately
+  # WIDER than the admin API's equivalent, which 404s here after #717/#718 —
+  # see the reassign_room comment in Operator::ReservationsController for why
+  # the web surface keeps operator-wide reach.
+  test "staff can reassign a hold that lives at a different location than their current_location" do
+    @location = create(:location, operator: @operator, name: "Satellite Office")
+    hold, room_a, room_b = make_office_hold
+    log_in @admin
+
+    patch reassign_room_reservation_path(hold), params: { room_id: room_b.id }, env: default_env
+
+    assert_redirected_to user_admin_day_passes_path(@member)
+    assert_equal "Office hold moved to #{room_b.name}.", flash[:notice]
+    assert_equal room_b, hold.reload.room
   end
 end
