@@ -19,7 +19,7 @@ RSpec.describe Concierge::PublicCheckout do
 
   def stub_purchase(success:, day_pass: nil, message: nil)
     allow(Billing::DayPasses::UpdatePaymentAndCreateDayPass).to receive(:call)
-      .and_return(double(success?: success, day_pass: day_pass, message: message))
+      .and_return(double(success?: success, day_pass: day_pass, message: message, outcome: nil))
   end
 
   it "creates the account then charges the day pass, reusing the billing chain" do
