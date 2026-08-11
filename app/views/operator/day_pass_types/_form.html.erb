@@ -1,100 +1,151 @@
 <%= form_with(model: day_pass_type, url: url) do |form| %>
   <%= render "shared/error_messages" , model: day_pass_type %>
 
-  <div class="form-group">
-    <%= form.label :name, "What is this day pass type called?" %>
-    <%= form.text_field :name, placeholder: "Standard Day Pass", class: "form-control" %>
-  </div>
-
-  <%= form.label :amount_in_cents, "How much does this day pass cost?" %>
-  <div class="input-group">
-    <div class="input-group-prepend">
-      <span class="input-group-text">$</span>
-    </div>
-    <%= form.text_field :amount_in_cents, class: "form-control" %>
-  </div>
-
-  <div class="form-group">
-    <%= form.label :code, "Discount Code (Optional)" %>
-    <%= form.text_field :code, class: "form-control", placeholder: "CODE123" %>
-  </div>
-
-  <div class="form-group">
-    <div class="form-check">
-      <%= form.check_box :available, class: "form-check-input" %>
-      <%= form.label :available, "Check this box if you want this day pass type to be available right away", class: "form-check-label" %>
+  <div data-controller="day-pass-type-form">
+    <div class="form-group">
+      <%= form.label :kind, "Type" %>
+      <%= form.select :kind,
+            options_for_select([["Standard", "standard"], ["Day Office", "day_office"]], day_pass_type.kind),
+            {},
+            class: "form-control",
+            data: { day_pass_type_form_target: "kind", action: "change->day-pass-type-form#kindChanged" } %>
     </div>
 
-    <div class="form-check">
-      <%= form.check_box :visible, class: "form-check-input" %>
-      <%= form.label :visible, "Check this box if you want this day pass type to be visible to new members", class: "form-check-label" %>
+    <div class="form-group">
+      <%= form.label :name, "What is this day pass type called?" %>
+      <%= form.text_field :name, placeholder: "Standard Day Pass", class: "form-control" %>
     </div>
 
-    <div class="form-check">
-      <%= form.check_box :always_allow_building_access,   class: "form-check-input" %>
-      <%= form.label :always_allow_building_access, "Check this box if members on this plan should be granted 24/7 building access", class: "form-check-label" %>
-    </div>
-
-  </div>
-
-  <hr class="my-3">
-  <h6>Meeting Room Limits</h6>
-
-  <div class="form-group">
-    <%= form.label :included_meeting_room_minutes, "Included Meeting Room Hours (per day)" %>
-    <div class="input-group">
-      <%= form.number_field :included_meeting_room_minutes, class: "form-control", placeholder: "e.g. 3", step: 0.5, min: 0 %>
-      <div class="input-group-append">
-        <span class="input-group-text">hours</span>
-      </div>
-    </div>
-    <small class="form-text text-muted">Leave blank for unlimited meeting room access. If set, bookings beyond this limit will incur overage charges.</small>
-  </div>
-
-  <div class="form-group">
-    <%= form.label :overage_rate_in_cents, "Meeting Room Overage Rate" %>
+    <%= form.label :amount_in_cents, "How much does this day pass cost?" %>
     <div class="input-group">
       <div class="input-group-prepend">
         <span class="input-group-text">$</span>
       </div>
-      <%= form.number_field :overage_rate_in_cents, class: "form-control", placeholder: "25.00", step: 0.01, min: 0 %>
-      <div class="input-group-append">
-        <span class="input-group-text">/ hour</span>
-      </div>
+      <%= form.text_field :amount_in_cents, class: "form-control" %>
     </div>
-    <small class="form-text text-muted">Charged in 30-minute increments. Only applies if meeting room hours limit is set above.</small>
-  </div>
 
-  <hr class="my-3">
-  <h6>Bundle &amp; Expiration</h6>
+    <div class="form-group">
+      <%= form.label :code, "Discount Code (Optional)" %>
+      <%= form.text_field :code, class: "form-control", placeholder: "CODE123" %>
+    </div>
 
-  <div class="form-group">
-    <%= form.label :quantity, "Number of passes (1 = single day pass; more = a bundle / N-Pack)" %>
-    <%= form.number_field :quantity, class: "form-control", min: 1, step: 1 %>
-  </div>
+    <div class="form-group">
+      <div class="form-check">
+        <%= form.check_box :available, class: "form-check-input" %>
+        <%= form.label :available, "Check this box if you want this day pass type to be available right away", class: "form-check-label" %>
+      </div>
 
-  <div class="form-group">
-    <%= form.label :expires_after_days, "Passes expire this many days after purchase (leave blank = never expires)" %>
-    <%= form.number_field :expires_after_days, class: "form-control", min: 1, step: 1, placeholder: "Never expires" %>
-    <small class="form-text text-muted"><%= DayPassType::EXPIRATION_DISCLAIMER %></small>
-  </div>
+      <div class="form-check">
+        <%= form.check_box :visible, class: "form-check-input" %>
+        <%= form.label :visible, "Check this box if you want this day pass type to be visible to new members", class: "form-check-label" %>
+      </div>
 
-  <div class="form-group">
-    <%= form.label :daily_limit, "Max sold per day (leave blank = unlimited)" %>
-    <%= form.number_field :daily_limit, class: "form-control", min: 1, step: 1, placeholder: "Unlimited" %>
-    <small class="form-text text-muted">Counts every pass of this type on a given day — purchased, comped, or scheduled from a pack. Staff can always add passes past the limit.</small>
-  </div>
+      <div class="form-check">
+        <%= form.check_box :always_allow_building_access,   class: "form-check-input" %>
+        <%= form.label :always_allow_building_access, "Check this box if members on this plan should be granted 24/7 building access", class: "form-check-label" %>
+      </div>
 
-  <hr class="my-3">
+    </div>
 
-  <div class="form-group">
-    <%= form.label :description %>
-    <%= form.rich_text_area :description %>
+    <hr class="my-3">
+    <div data-day-pass-type-form-target="pool">
+      <h6>Day Office Rooms</h6>
+      <% if current_location %>
+        <% if current_location.posted_hours_span(Date.current).nil? %>
+          <div class="alert alert-warning">
+            This location's posted hours are blank or overnight — Day Offices can't be sold until the hours are fixed in Location settings.
+          </div>
+        <% end %>
+        <p class="text-muted small">Rooms shown for <%= current_location.name %>.</p>
+        <table class="table table-sm">
+          <thead>
+            <tr>
+              <th>Room</th>
+              <th style="width: 8rem;">Pool order</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% current_location.rooms.active.order(:name).each do |room| %>
+              <tr>
+                <td>
+                  <%= room.name %>
+                  <% unless room.visible? %>
+                    <span class="badge badge-secondary">hidden</span>
+                  <% end %>
+                </td>
+                <td>
+                  <%# A bounced create (e.g. a bad expiration setting) must not lose what the
+                      operator just typed here — prefer the just-submitted value over blank. %>
+                  <%= number_field_tag "office_room_positions[#{room.id}]",
+                        params.dig(:office_room_positions, room.id.to_s).presence,
+                        class: "form-control form-control-sm", min: 1, step: 1 %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% end %>
+      <small class="form-text text-muted">1 = first choice. Blank = not in the pool.</small>
+    </div>
+
+    <hr class="my-3">
+    <h6>Meeting Room Limits</h6>
+
+    <div class="form-group">
+      <%= form.label :included_meeting_room_minutes, "Included Meeting Room Hours (per day)" %>
+      <div class="input-group">
+        <%= form.number_field :included_meeting_room_minutes, class: "form-control", placeholder: "e.g. 3", step: 0.5, min: 0, data: { day_pass_type_form_target: "allowance" } %>
+        <div class="input-group-append">
+          <span class="input-group-text">hours</span>
+        </div>
+      </div>
+      <small class="form-text text-muted">Leave blank for unlimited meeting room access. If set, bookings beyond this limit will incur overage charges.</small>
+      <small class="form-text text-muted">Day Office default is 0 — the office is included; extra room time bills at the location overage rate.</small>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :overage_rate_in_cents, "Meeting Room Overage Rate" %>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text">$</span>
+        </div>
+        <%= form.number_field :overage_rate_in_cents, class: "form-control", placeholder: "25.00", step: 0.01, min: 0 %>
+        <div class="input-group-append">
+          <span class="input-group-text">/ hour</span>
+        </div>
+      </div>
+      <small class="form-text text-muted">Charged in 30-minute increments. Only applies if meeting room hours limit is set above.</small>
+    </div>
+
+    <hr class="my-3">
+    <h6>Bundle &amp; Expiration</h6>
+
+    <div class="form-group">
+      <%= form.label :quantity, "Number of passes (1 = single day pass; more = a bundle / N-Pack)" %>
+      <%= form.number_field :quantity, class: "form-control", min: 1, step: 1 %>
+    </div>
+
+    <div class="form-group">
+      <%= form.label :expires_after_days, "Passes expire this many days after purchase (leave blank = never expires)" %>
+      <%= form.number_field :expires_after_days, class: "form-control", min: 1, step: 1, placeholder: "Never expires" %>
+      <small class="form-text text-muted"><%= DayPassType::EXPIRATION_DISCLAIMER %></small>
+    </div>
+
+    <div class="form-group" data-day-pass-type-form-target="dailyLimit">
+      <%= form.label :daily_limit, "Max sold per day (leave blank = unlimited)" %>
+      <%= form.number_field :daily_limit, class: "form-control", min: 1, step: 1, placeholder: "Unlimited" %>
+      <small class="form-text text-muted">Counts every pass of this type on a given day — purchased, comped, or scheduled from a pack. Staff can always add passes past the limit.</small>
+      <small class="form-text text-muted">Ignored for Day Office types — room availability is the capacity.</small>
+    </div>
+
+    <hr class="my-3">
+
+    <div class="form-group">
+      <%= form.label :description %>
+      <%= form.rich_text_area :description %>
+    </div>
   </div>
 
   <%= form.submit "Add day pass type and add another", class: "form-control btn btn-primary mb-2", name: "add_day_pass_type_and_add_another" %>
   <%= form.submit "Just add this day pass type", class: "form-control btn btn-outline-primary", name: "add_day_pass_type" %>
 <% end %>
-
-
-

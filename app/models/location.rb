@@ -207,6 +207,30 @@ class Location < ApplicationRecord
     end
   end
 
+  # The concrete [open, close) instants of `date`'s posted hours in this
+  # location's zone — the span a Day Office hold occupies (ADR 0026). Returns
+  # nil when the working time is blank/unparseable or the window is overnight
+  # or zero-length (a day-office hold needs a same-date daytime span; overnight
+  # posted hours are not supported for office holds). Wall-clock construction
+  # keeps 08:00 meaning 08:00 across DST transitions.
+  #
+  # A validated working_day_end of "24:00" rolls to midnight at the START of
+  # the next day (span.last.to_date == date + 1) — deliberate close-of-day
+  # semantics, not a bug. Callers deriving a duration should compute
+  # ((span.last - span.first) / 60).round: subtraction yields Float seconds,
+  # and .round guards the DST-straddling case where real elapsed minutes
+  # differ from the naive HH:MM difference.
+  def posted_hours_span(date)
+    zone = ActiveSupport::TimeZone[time_zone.presence || "UTC"] || ActiveSupport::TimeZone["UTC"]
+    to_min = ->(hhmm) { (m = hhmm.to_s.match(/\A(\d{1,2}):(\d{2})\z/)) ? m[1].to_i * 60 + m[2].to_i : nil }
+    start_min = to_min.call(working_day_start)
+    end_min   = to_min.call(working_day_end)
+    return nil if start_min.nil? || end_min.nil? || end_min <= start_min
+
+    [zone.local(date.year, date.month, date.day, start_min / 60, start_min % 60),
+     zone.local(date.year, date.month, date.day, end_min / 60, end_min % 60)]
+  end
+
   # Whether the location is open at all on `date`'s weekday (open_<day> flags).
   # The date is taken as already location-local — callers pass a member-facing
   # calendar date, not an instant.

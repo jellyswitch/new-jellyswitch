@@ -45,6 +45,11 @@ class Billing::Reservations::RedeemBundlePass
     bundle = user.day_pass_bundles.active.where(location: location).first
     return unless bundle # no bundle / out of passes → fall through to normal pricing
 
+    # Day Office outcome, computed in the lock and announced after it —
+    # notifications are never enqueued from inside a transaction (ADR 0026).
+    office_pass = nil
+    office_hold = nil
+
     bundle.with_lock do
       # Re-check under the lock to close the concurrent door/reserve race.
       next if covered_for_day?(location, day)
@@ -63,9 +68,43 @@ class Billing::Reservations::RedeemBundlePass
       bundle.burn_locked!(kind: "reservation", performed_by: user, day_pass: day_pass,
                           reservation: reservation, redeemed_at: reservation.datetime_in)
 
+      # A Day Office bundle spent on room coverage still spends an OFFICE day,
+      # so take the office too (ADR 0026) — inside the bundle lock, matching
+      # the lock order everywhere else (bundle row → pool join rows).
+      #
+      # Two DIFFERENT reservations end up attached to this one pass and must
+      # not be confused (ADR 0019): `day_pass.reservation` is the member's own
+      # covered booking, set above and never touched here; the office hold is
+      # linked only through reservations.day_office_pass_id, which
+      # Allocator.allocate! sets on the row it creates.
+      #
+      # Best-effort: a full pool leaves the booking covered and office-less
+      # rather than failing a reservation the member already has.
+      if bundle.day_pass_type.day_office?
+        office_pass = day_pass
+        office_hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
+      end
+
       context.redeemed_bundle = bundle
       context.bundle_redemption_day_pass = day_pass
+      context.office_hold = office_hold
       context.outcome = :redeemed
+    end
+
+    # Narrow known wart: if a LATER organizer step fails, #rollback destroys
+    # the pass (releasing the hold with it) after this has already gone out.
+    # Accepted — the alternative is delaying the member's office confirmation
+    # past the booking flow for a rollback that effectively never fires here
+    # (the minted pass is what zeroes the charge, so ChargeAtBooking no-ops).
+    if office_pass
+      if office_hold
+        DayOffices::Notify.assigned(day_pass: office_pass)
+      else
+        # booked_, not walk_in_: this burn can be weeks ahead of the date, so
+        # both the member push and the staff alert carry the booking's date and
+        # never claim anyone has arrived.
+        DayOffices::Notify.booked_no_office(day_pass: office_pass)
+      end
     end
   rescue DayPassBundle::NoPassesRemaining
     Rails.logger.info("RedeemBundlePass: bundle emptied for reservation #{reservation&.id}; falling through to pricing")

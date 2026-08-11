@@ -24,6 +24,7 @@ class Billing::Reservations::ChargeCalculator
   end
 
   def call
+    return 0 if reservation.day_office_hold? # the hold itself is never charged (ADR 0026)
     return 0 if minutes <= 0
     base_room_or_overage + amenity_cents
   end
@@ -100,6 +101,7 @@ class Billing::Reservations::ChargeCalculator
                             .where(datetime_in: date.beginning_of_day..date.end_of_day)
                             .where(rooms: { include_with_day_pass: true })
                             .where.not(id: reservation.id)
+                            .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                             .sum(:minutes)
     free_remaining = [allotment - other_used, 0].max
     over = [minutes - free_remaining, 0].max
@@ -125,6 +127,7 @@ class Billing::Reservations::ChargeCalculator
     other_used = Reservation.where(user_id: reservation.user_id, cancelled: false)
                             .where(datetime_in: period_start..period_end)
                             .where.not(id: reservation.id)
+                            .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                             .sum(:minutes)
     free_remaining = [allotment - other_used, 0].max
     over = [minutes - free_remaining, 0].max

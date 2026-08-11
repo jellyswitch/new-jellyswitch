@@ -78,6 +78,12 @@
             <% unless day_pass.reschedulable? %>
               <span class="text-muted small">(used)</span>
             <% end %>
+            <% if (hold = day_pass.office_hold) %>
+              <br>
+              <span class="text-muted small">
+                <%= hold.room.name %> &middot; <%= hold.window_label %><%= " (hidden)" unless hold.room.visible %>
+              </span>
+            <% end %>
           </div>
           <div class="d-flex align-items-center">
             <% if day_pass.reschedulable? && policy(day_pass).reschedule? %>
@@ -85,6 +91,29 @@
                 <%= f.date_field :day, value: day_pass.day, min: Time.zone.today, class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
                 <%= f.submit "Move", class: "btn btn-sm btn-outline-secondary",
                       data: { turbo_confirm: "Move this pass to the selected date?" } %>
+              <% end %>
+            <% end %>
+            <%# Room reassign (Task 14, ADR 0026): same staff gate as the Move
+                control above (policy(day_pass).reschedule?) — the office hold
+                itself is admin-reassignable (ReservationPolicy#reassign_room?),
+                but reusing the day-pass gate here keeps one check for every
+                staff control this partial renders. datetime_out > Time.current:
+                a past-window hold is not a live thing to move (mirrors
+                ReassignRoom.call's own liveness guard) — the info line above
+                still shows it, but offering a Reassign control for it would
+                only round-trip into that service's "no longer active" refusal. %>
+            <% if (hold = day_pass.office_hold) && hold.datetime_out > Time.current && policy(day_pass).reschedule? %>
+              <% room_options = DayOffices::ReassignRoom.options_for(hold) %>
+              <% if room_options.any? %>
+                <%= form_with url: reassign_room_reservation_path(hold), method: :patch, class: "d-flex align-items-center ml-1" do |f| %>
+                  <%= select_tag :room_id,
+                        options_for_select(room_options.map { |r| [r.visible ? r.name : "#{r.name} (hidden)", r.id] }),
+                        class: "form-control form-control-sm mr-1", style: "width: 10rem;" %>
+                  <%= f.submit "Reassign", class: "btn btn-sm btn-outline-secondary",
+                        data: { turbo_confirm: "Move this office hold to the selected room?" } %>
+                <% end %>
+              <% else %>
+                <span class="text-muted small ml-1">No other rooms free</span>
               <% end %>
             <% end %>
             <% if bundle_sourced_ids.include?(day_pass.id) && day_pass.day > Time.zone.today %>

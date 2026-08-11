@@ -40,6 +40,10 @@ class Room < ApplicationRecord
   # Electric locks protecting this room (ADR 0021). Nullify, not destroy:
   # detaching a room's lock demotes the door to a Building Door.
   has_many :doors, dependent: :nullify
+  # Day Office pool membership (ADR 0026). Destroy, not nullify: the join row
+  # is meaningless without this room — deleting the room just shrinks the
+  # pool, instead of a room delete raising an unhandled FK-violation 500.
+  has_many :day_pass_type_rooms, dependent: :destroy
   accepts_nested_attributes_for :amenities, reject_if: :all_blank
 
   belongs_to :operator

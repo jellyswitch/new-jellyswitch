@@ -64,18 +64,18 @@ class Billing::Reservations::CoverageState
     user.day_pass_bundles.active.where(location: location)
   end
 
-  # Soonest-expiring, then oldest (matches ADR 0018 draw order).
+  # Soonest-expiring, then oldest (ADR 0018 draw order — DayPassBundle.draw_order
+  # is the single canonical definition; see its comment for why every caller
+  # that picks "the" active bundle must share it).
   def active_bundle
-    active_bundles.order(Arel.sql("expires_at ASC NULLS LAST, created_at ASC")).first
+    active_bundles.draw_order.first
   end
 
-  # The same SKU the old silent auto-buy chose.
+  # The same SKU the old silent auto-buy chose. Office-backed types are
+  # excluded by KIND (was a %office% name-match) — an office pass is never
+  # auto-suggested as mere room coverage (ADR 0026).
   def suggested_day_pass_type
-    scope = DayPassType.where(operator_id: location.operator_id)
-                       .where("location_id = ? OR location_id IS NULL", location.id)
-                       .available.where(visible: true).where("amount_in_cents > 0")
-                       .where.not("name ILIKE ?", "%office%")
-    scope.where(default_for_room_booking: true).first || scope.order(:amount_in_cents).first
+    DayPassType.suggested_standard_for(location)
   end
 
   def today

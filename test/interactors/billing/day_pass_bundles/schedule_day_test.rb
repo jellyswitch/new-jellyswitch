@@ -2,6 +2,7 @@ require "test_helper"
 
 class Billing::DayPassBundles::ScheduleDayTest < ActiveSupport::TestCase
   include ActiveJob::TestHelper
+  include ActionMailer::TestHelper
 
   setup do
     @operator = operators(:cowork_tahoe)
@@ -206,6 +207,305 @@ class Billing::DayPassBundles::ScheduleDayTest < ActiveSupport::TestCase
 
       assert_equal :scheduled, result.outcome
       assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  # --- Day Office bundles (Task 10 / ADR 0026) ------------------------------
+  # Scheduling from a Day Office bundle allocates a pool room the same way a
+  # purchase does; the office is the point, not the access, so coverage
+  # guards (subscription/lease/reservation) that would normally suppress a
+  # standard-bundle mint must NOT suppress an office one. Only an existing
+  # same-date pass blocks.
+
+  # make_office_bundle / fill_office_pool! now live in test/day_office_helper.rb
+  # (DayOfficeHelper, included on ActiveSupport::TestCase) — this file used to
+  # carry its own copies, duplicated across four test files.
+
+  test "scheduling a Day Office bundle day allocates a pool room" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, room_a, _room_b = make_office_bundle
+      date = Date.current + 3
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :scheduled, result.outcome
+      assert result.day_pass.office_hold.present?
+      assert_equal room_a, result.day_pass.office_hold.room
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  test "a member with an active subscription can still schedule an office day" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = users(:cowork_tahoe_member) # carries the cowork_tahoe_subscription fixture
+      assert @member.has_active_subscription?, "sanity: fixture must actually carry an active subscription"
+      bundle, = make_office_bundle
+      date = Date.current + 3
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :scheduled, result.outcome, "subscription coverage must not suppress an office mint"
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  test "a member with a reservation on the target date can still schedule an office day" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, = make_office_bundle
+      date = Date.current + 3
+      meeting_room = Room.create!(name: "Meeting Room", operator: @operator, location: @location)
+      tz = ActiveSupport::TimeZone[@location.time_zone]
+      Reservation.create!(user: @member, room: meeting_room,
+                          datetime_in: tz.local(date.year, date.month, date.day, 10, 0), minutes: 30)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :scheduled, result.outcome, "a same-date reservation must not suppress an office mint"
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  test "an office bundle still refuses a date that already has a pass" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, = make_office_bundle
+      date = Date.current + 4
+      create(:day_pass, user: @member, billable: @member, operator: @operator, location: @location,
+             day_pass_type: bundle.day_pass_type, day: date)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :already_covered, result.outcome
+      assert_equal 5, bundle.reload.passes_remaining
+    end
+  end
+
+  test "member self-serve strict: a sold-out office pool returns :sold_out and burns nothing" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, room_a, room_b = make_office_bundle
+      date = Date.current + 3
+      fill_office_pool!(date, room_a, room_b)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :sold_out, result.outcome
+      assert_equal bundle.day_pass_type, result.day_pass_type
+      assert_equal 5, bundle.reload.passes_remaining, "no pass may be burned on a sold-out office day"
+      assert_equal 0, @member.day_passes.for_day(date).count, "no orphan pass row"
+    end
+  end
+
+  test "staff scheduling (no enforce_daily_limit) also allocates when the pool has room" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, room_a, _room_b = make_office_bundle
+      date = Date.current + 3
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member)
+
+      assert_equal :scheduled, result.outcome
+      assert_equal room_a, result.day_pass.office_hold&.room
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  test "staff scheduling (no enforce_daily_limit) succeeds office-less when the pool is full" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, room_a, room_b = make_office_bundle
+      date = Date.current + 3
+      fill_office_pool!(date, room_a, room_b)
+
+      # Black-box, a full pool with no enforce flag looks identical to "never
+      # tried to allocate at all" — spy on the call so this test can only pass
+      # once staff scheduling genuinely attempts allocation (with the actual
+      # minted pass, not some other row) and then falls back leniently,
+      # rather than passing by coincidence.
+      attempted_with = nil
+      real_allocate = DayOffices::Allocator.method(:allocate!)
+      result = nil
+      DayOffices::Allocator.stub :allocate!, ->(**kwargs) { attempted_with = kwargs[:day_pass]; real_allocate.call(**kwargs) } do
+        result = Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: date, performed_by: @member)
+      end
+
+      assert attempted_with.present?, "staff scheduling must still attempt allocation for an office bundle"
+      assert_equal :scheduled, result.outcome
+      assert_equal result.day_pass.id, attempted_with.id, "allocate! must receive the pass that was actually minted"
+      assert_nil result.day_pass.office_hold, "staff scheduling on a full pool is office-less by design"
+      assert_equal 4, bundle.reload.passes_remaining
+    end
+  end
+
+  test "a race lost inside the lock destroys the minted pass and reports :sold_out" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, = make_office_bundle
+      date = Date.current + 3
+
+      # The pool is genuinely free (the pre-gate above passes); the allocator
+      # itself is stubbed to lose the race inside the lock — the same shape a
+      # real concurrent schedule produces between that snapshot and this
+      # in-lock attempt. Mirrors AllocateDayOffice's own organizer-level
+      # backstop test.
+      result = nil
+      DayOffices::Allocator.stub :allocate!, nil do
+        result = Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+      end
+
+      assert_equal :sold_out, result.outcome
+      assert_equal bundle.day_pass_type, result.day_pass_type
+      assert_equal 5, bundle.reload.passes_remaining
+      assert_equal 0, @member.day_passes.for_day(date).count
+    end
+  end
+
+  # Quality-review fix 1 pin: the expiry-survives-the-date filter is skipped
+  # entirely only for date == today (redeem_today) — it must still apply for
+  # a FUTURE date, exactly like the pre-existing "expiry-boundary" test above
+  # (for a standard bundle). This is the office-bundle counterpart, proving
+  # the `if date > today` conditional restores the filter rather than just
+  # deleting it outright.
+  test "a future date past an office bundle's expiry still refuses (fix 1 preserved for future dates)" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, = make_office_bundle
+      bundle.update!(expires_at: 5.days.from_now)
+      date = Date.current + 10 # past the bundle's expiry
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :no_bundle, result.outcome
+      assert_equal 5, bundle.reload.passes_remaining
+    end
+  end
+
+  # --- Task 11: who gets told ---------------------------------------------
+  #
+  # `enforce_daily_limit` is the flag that distinguishes a member scheduling
+  # for THEMSELVES (mobile redeem_today / pick-a-day) from staff scheduling on
+  # someone's behalf. Only the former is announced: a member who just booked
+  # their own office wants the room name on their phone, while an admin doing
+  # it at the front desk is already talking to the person.
+
+  test "member self-serve scheduling announces the office it just took" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_office_bundle
+      date = Date.current + 3
+
+      result = nil
+      assert_enqueued_with(job: SendNotificationsJob, args: ->(a) { a[1] == "DayOfficeAssigned" }) do
+        result = Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+      end
+
+      assert_equal :scheduled, result.outcome
+      assert_equal result.day_pass.office_hold.id, result.office_hold.id
+      assert_enqueued_email_with UserMailer, :day_office_confirmation, args: [result.day_pass.id]
+    end
+  end
+
+  test "staff scheduling on a member's behalf stays silent" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_office_bundle
+      date = Date.current + 3
+
+      result = nil
+      assert_no_enqueued_emails do
+        assert_no_enqueued_jobs(only: SendNotificationsJob) do
+          result = Billing::DayPassBundles::ScheduleDay.call(
+            user: @member, location: @location, date: date, performed_by: @member)
+        end
+      end
+
+      assert_equal :scheduled, result.outcome
+      assert result.day_pass.office_hold.present?, "staff scheduling still allocates — it just doesn't announce"
+    end
+  end
+
+  # notify_member names the semantics enforce_daily_limit carries by default,
+  # so the two can be split apart without touching either meaning.
+  test "notify_member overrides the enforce_daily_limit default in both directions" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_office_bundle
+
+      # Staff-shaped call (no daily-limit enforcement) that still announces.
+      assert_enqueued_with(job: SendNotificationsJob, args: ->(a) { a[1] == "DayOfficeAssigned" }) do
+        Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: Date.current + 3,
+          performed_by: @member, notify_member: true)
+      end
+
+      # Member-shaped call that deliberately stays quiet.
+      assert_no_enqueued_jobs(only: SendNotificationsJob) do
+        Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: Date.current + 4,
+          performed_by: @member, enforce_daily_limit: true, notify_member: false)
+      end
+    end
+  end
+
+  test "defer_notifications stashes the pass instead of enqueuing" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_office_bundle
+
+      result = nil
+      assert_no_enqueued_jobs(only: SendNotificationsJob) do
+        result = Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: Date.current + 3, performed_by: @member,
+          enforce_daily_limit: true, defer_notifications: true)
+      end
+
+      assert_equal :scheduled, result.outcome
+      assert_equal result.day_pass.id, result.notify_day_pass.id,
+                   "the batch caller needs the pass to announce after it commits"
+    end
+  end
+
+  test "a standard bundle schedules with no Day Office notification" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_bundle(remaining: 5)
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: @member, location: @location, date: Date.current + 3,
+        performed_by: @member, enforce_daily_limit: true)
+
+      assert_equal :scheduled, result.outcome
+      types = enqueued_jobs.select { |j| j[:job] == SendNotificationsJob }.map { |j| j[:args].last }
+      assert_empty types.grep(/DayOffice/)
+    end
+  end
+
+  test "a sold-out member schedule announces nothing (there is no office to name)" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      _bundle, room_a, room_b = make_office_bundle
+      date = Date.current + 3
+      fill_office_pool!(date, room_a, room_b)
+
+      result = nil
+      assert_no_enqueued_jobs(only: SendNotificationsJob) do
+        result = Billing::DayPassBundles::ScheduleDay.call(
+          user: @member, location: @location, date: date, performed_by: @member, enforce_daily_limit: true)
+      end
+
+      assert_equal :sold_out, result.outcome
     end
   end
 end

@@ -65,4 +65,28 @@ class Billing::DayPassBundles::CancelScheduledDayTest < ActiveSupport::TestCase
       assert_equal :not_scheduled, result.outcome
     end
   end
+
+  # Task 10 / ADR 0026: cancelling a scheduled Day Office day must release its
+  # pool hold (not just destroy the pass) — DayPass#before_destroy already
+  # owns that release; this pins CancelScheduledDay to go through the normal
+  # destroy path rather than reimplementing the release itself.
+  test "cancelling a scheduled Day Office day releases its hold and restores the pass" do
+    ActsAsTenant.with_tenant(@operator) do
+      @member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bundle, = make_office_bundle
+
+      day_pass = schedule(Date.current + 4)
+      hold_id = day_pass.office_hold.id
+      assert_equal 4, bundle.reload.passes_remaining
+
+      result = Billing::DayPassBundles::CancelScheduledDay.call(day_pass: day_pass, performed_by: @member)
+
+      assert_equal :cancelled, result.outcome
+      assert_equal 5, bundle.reload.passes_remaining
+      assert_nil DayPass.find_by(id: day_pass.id), "the future pass is removed"
+      # day_passes.reservation_id => reservations FK is nullify-on-delete, so the
+      # released hold must be found by its own id, not by day_office_pass_id.
+      assert Reservation.unscoped.find(hold_id).cancelled?, "the office hold must be released"
+    end
+  end
 end

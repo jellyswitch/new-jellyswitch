@@ -94,3 +94,58 @@ class DayPassReusableCoverageScopeTest < ActiveSupport::TestCase
     end
   end
 end
+
+# ADR 0026: a Day Office pass's live hold is a has_one through the
+# reservations.day_office_pass_id FK (Reservation's default_scope hides a
+# cancelled hold automatically). Destroying the pass must release the hold
+# through DayOffices::ReleaseHold — the single release authority for every
+# destroy path (refund rescind, cancel-scheduled-day, console) — not just rely
+# on the FK's ON DELETE SET NULL backstop, which would free the FK column but
+# leave the reservation live and the room un-bookable.
+class DayPassOfficeHoldTest < ActiveSupport::TestCase
+  setup do
+    @operator = operators(:cowork_tahoe)
+    @location = locations(:cowork_tahoe_location)
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+    @office_type = DayPassType.create!(name: "Day Office", operator: @operator, location: @location,
+                                       kind: "day_office", amount_in_cents: 7500)
+    @room = Room.create!(name: "Office A", operator: @operator, location: @location)
+    @office_type.assign_office_rooms!({ @room.id => 1 })
+    @user = users(:cowork_tahoe_member)
+    @day = Date.current + 7
+    @pass = DayPass.create!(user: @user, billable: @user, operator: @operator,
+                            location: @location, day_pass_type: @office_type, day: @day, imported: true)
+  end
+
+  test "destroying a pass releases its office hold" do
+    hold = DayOffices::Allocator.allocate!(day_pass: @pass)
+    @pass.destroy!
+    assert Reservation.unscoped.find(hold.id).cancelled
+  end
+
+  test "destroying a pass releases its hold even if office_hold was read (and cached nil) before allocation" do
+    @pass.office_hold # arm the memoized nil — reads before any hold exists
+    hold = DayOffices::Allocator.allocate!(day_pass: @pass)
+    @pass.destroy!
+    assert Reservation.unscoped.find(hold.id).cancelled, "before_destroy must reload, not trust the stale cached nil"
+  end
+
+  test "office_hold reflects only the live reservation, nil once released" do
+    hold = DayOffices::Allocator.allocate!(day_pass: @pass)
+    assert_equal hold, @pass.reload.office_hold
+
+    DayOffices::ReleaseHold.call(hold)
+    assert_nil @pass.reload.office_hold, "default_scope hides the now-cancelled reservation"
+  end
+
+  test "day_office? delegates to day_pass_type: true for office, false for standard, nil-safe with no type" do
+    assert @pass.day_office?
+
+    standard_type = DayPassType.create!(name: "Standard", operator: @operator, location: @location)
+    standard_pass = DayPass.create!(user: @user, billable: @user, operator: @operator, location: @location,
+                                    day_pass_type: standard_type, day: @day + 1, imported: true)
+    refute standard_pass.day_office?
+
+    assert_nil DayPass.new.day_office?
+  end
+end

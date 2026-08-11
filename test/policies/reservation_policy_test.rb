@@ -62,6 +62,16 @@ class ReservationPolicyTest < PolicyAssertions::Test
     assert_not_permitted @cowork_tahoe_non_member, reservations(:future_room_reservation) # Not owner
   end
 
+  def test_reassign_room
+    assert_permit @admin, reservations(:future_room_reservation)
+    assert_permit @community_manager, reservations(:future_room_reservation)
+    assert_permit @general_manager, reservations(:future_room_reservation)
+
+    # No owner exception (decision #8): reassigning is an admin action, unlike
+    # extend/cancel/end_now above which the owner may also do.
+    assert_not_permitted @member, reservations(:future_room_reservation)
+  end
+
   def test_long_duration
     assert_not_permitted @member, Reservation
     assert_permit @admin, Reservation

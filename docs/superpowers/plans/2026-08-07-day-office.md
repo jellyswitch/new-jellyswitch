@@ -1156,3 +1156,20 @@ export function officeLine(pass) {
 - Every grill decision (#1–#8) maps to a task: #1/#2 → Tasks 1–2, #3 → Tasks 3–4, #4 → Task 11, #5 → Tasks 9–10, #6 → Tasks 8+15, #7 → Task 5, #8 → Tasks 12/14/16.
 - Names used consistently: `DayOffices::Allocator.{available_room,allocate!}`, `ReleaseHold.call`, `MoveHold.call`, `ReassignRoom.call`, `Notify.{walk_in,reassigned}`, `DayPassType#assign_office_rooms!`, `#day_office?`, `.suggested_standard_for`, `Reservation#day_office_hold?`, `DayPass#office_hold`, payload keys `code/fallback_day_pass_type/confirmation_note/office_room/office_window`.
 - Known small risks called out in-task: fixture names (Tasks 2/4), the type-id param name in `#create` (Task 8), the profile partial location (Task 14), the admin scheduled-days payload (Task 16).
+
+---
+
+## As built (2026-08-10)
+
+Implemented as 17 reviewed commits on `feature/day-office` (each through implementer → spec review → quality review with fix loops, plus final whole-branch reviews). Deviations from the plan text above, all deliberate and review-driven:
+
+- Failure contract is `outcome: :sold_out` (house idiom), not `error_code`; the fallback type is derived controller-side only.
+- `MoveHold` releases the old hold FIRST inside the transaction (the plan's allocate-first pseudocode was buggy against the allocator's idempotency guard).
+- `posted_hours_span` constructs wall-clock times (DST-safe); "24:00" close rolls to next-midnight by design.
+- SIX allowance/coverage exclusions, not three: the two permissions quotes, both ChargeCalculator sums, OveragePreview, and CancelReservation's survivor check — plus a `ChargeCalculator#call` head-gate pricing any hold at 0.
+- Reschedule sold-out returns a PLAIN error on both exits (never a purchase CTA — decision #5); purchase/redeem keep the rich `day_office_sold_out` payload.
+- Allocator + MoveHold wrap their transactions in `ActiveRecord::Base.uncached` (per-request query cache poisons post-lock probes — reviewer-proven).
+- Office holds are excluded from CRM interest tagging and activity logging; notifications enqueue only after commit (ScheduleDays defers to post-transaction).
+- Members cannot cancel their own office hold (staff-only hold management, both API and web); admin reassign is location-scoped on the API (post-#717) and deliberately tenant-wide on web (documented divergence).
+- Added scope shipped with T11: `day_office_confirmation` email (room + window + app CTA) on every allocation path, walk-in/booked no-office alerts (admin-first ordering), reassigned email; follow-up/review emails ride the existing day-pass product-email and bundle lifecycle automations (pinned by tests).
+- Day Office bundles: covered-guards reduced for office kinds in ScheduleDay only; the door burn keeps full guards ("office days are never spent by implication").

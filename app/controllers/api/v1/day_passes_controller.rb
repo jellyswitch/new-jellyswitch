@@ -1,4 +1,9 @@
 class Api::V1::DayPassesController < Api::V1::BaseController
+  # Upper bound on one #schedule request. ScheduleDays is all-or-nothing inside
+  # a single transaction, so batch size is lock-hold time; 30 is a month of
+  # calendar taps, far past any real selection.
+  MAX_SCHEDULE_DATES = 30
+
   def types
     types = DayPassType.where(operator: current_tenant)
       .where(location: current_location)
@@ -12,6 +17,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         price: t.amount_in_cents,
         quantity: t.quantity,
         included_meeting_minutes: t.try(:included_meeting_room_minutes),
+        kind: t.kind,
       }
     }
   end
@@ -19,7 +25,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   def index
     passes = current_api_user.day_passes
       .where(operator: current_tenant)
-      .includes(:day_pass_type, :invoice)
+      .includes(:day_pass_type, :invoice, office_hold: { room: :location })
       .order(day: :desc)
       .limit(20)
 
@@ -33,12 +39,24 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         paid: dp.invoice&.paid? || false,
         complimentary: dp.complimentary,
         can_reschedule: dp.reschedulable?,
+        office_room: dp.office_hold&.room&.name,
+        office_window: dp.office_hold&.window_label,
       }
     }
   end
 
   def create
-    day_pass_type = DayPassType.find(params[:day_pass_type_id])
+    # Location-scoped (lenient-nil: legacy operator-wide types with no
+    # location still resolve) — a multi-location operator's member must not
+    # be able to buy another building's type by crafting the id directly.
+    # acts_as_tenant's default scope already keeps this cross-OPERATOR safe;
+    # this closes the narrower cross-LOCATION gap (T5 review). find_by + an
+    # explicit nil check, not find + a method-level rescue: the rescue would
+    # also swallow an unrelated RecordNotFound raised deeper in this method
+    # (e.g. inside the interactor chain), silently turning a real bug into a
+    # misleading 404 instead of surfacing as a 500 to monitoring.
+    day_pass_type = DayPassType.for_location(current_location).find_by(id: params[:day_pass_type_id])
+    return render json: { error: "Not found" }, status: :not_found if day_pass_type.nil?
     token = params[:stripe_token]
     discount_code = params[:discount_code]
 
@@ -110,6 +128,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     # their rows still count toward the tally. See
     # docs/superpowers/specs/2026-07-12-day-pass-daily-limit-design.md.
     if day_pass_type.daily_limit_reached?(day: date, location: current_location)
+      return render_day_office_sold_out(day_pass_type, date) if day_pass_type.day_office?
       return render_error(sold_out_message(day_pass_type, date))
     end
 
@@ -171,7 +190,21 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     if result.success?
       dp = result.day_pass || DayPass.where(user: current_api_user).order(created_at: :desc).first
-      render json: { success: true, id: dp&.id, date: date.strftime("%B %e, %Y") }, status: :created
+      render json: {
+        success: true,
+        id: dp&.id,
+        date: date.strftime("%B %e, %Y"),
+        confirmation_note: office_confirmation_note(dp),
+      }, status: :created
+    elsif result.outcome == :sold_out && day_pass_type.day_office?
+      # Race backstop: the pre-check gate above passed (pool looked free),
+      # but AllocateDayOffice lost the room to a concurrent purchase before
+      # this organizer reached it. Same structured payload either way — the
+      # client can't tell (and doesn't need to) which gate caught it. The
+      # day_office? guard is future-proofing: if a standard-flow producer
+      # ever sets outcome: :sold_out too, it must fall through to the plain
+      # render_error below, not this office-specific payload.
+      render_day_office_sold_out(day_pass_type, date)
     else
       render_error(result.message || 'Unable to create day pass')
     end
@@ -181,9 +214,16 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # Member schedules one or more future dates from their bundle.
   # Calls ScheduleDays (all-or-nothing) and returns the confirmed dates.
   def schedule
+    dates = Array(params[:dates])
+    # ScheduleDays holds ONE transaction (and a bundle row lock per date) open
+    # across the whole batch, and a Day Office batch takes a pool lock inside
+    # each. An unbounded list is a long-lived lock on rows the door path needs,
+    # so cap it well above any real calendar selection.
+    return render_error("You can schedule up to 30 days at a time.") if dates.size > MAX_SCHEDULE_DATES
+
     result = Billing::DayPassBundles::ScheduleDays.call(
       user: current_api_user, location: current_location,
-      dates: Array(params[:dates]), performed_by: current_api_user,
+      dates: dates, performed_by: current_api_user,
       enforce_daily_limit: true)
 
     case result.outcome
@@ -194,7 +234,14 @@ class Api::V1::DayPassesController < Api::V1::BaseController
         passes_remaining: remaining_bundle_passes,
       }
     when :sold_out
-      render_error(sold_out_message(result.day_pass_type, result.failed_date))
+      # Scheduling a future office day from the calendar is an acquisition
+      # flow like #create (unlike #reschedule, which has nothing for a
+      # suggested-swap to attach to) — offer the same rich fallback payload.
+      if result.day_pass_type&.day_office?
+        render_day_office_sold_out(result.day_pass_type, result.failed_date)
+      else
+        render_error(sold_out_message(result.day_pass_type, result.failed_date))
+      end
     when :already_covered
       render_error("You're already set for #{result.failed_date.strftime('%B %e')}.")
     when :invalid_date
@@ -263,26 +310,97 @@ class Api::V1::DayPassesController < Api::V1::BaseController
     end
 
     old_day = day_pass.day
-    day_pass.update!(day: new_day)
+    moved_hold = nil
+    if day_pass.day_office? && new_day != day_pass.day
+      move = DayOffices::MoveHold.call(day_pass: day_pass, new_day: new_day)
+      # Plain refusal, not the purchase-fallback payload: rescheduling an
+      # existing pass has nothing for a suggested-different-type swap to
+      # attach to (unlike #create's sold-out gate). Same shape as this
+      # method's own pre-check above.
+      return render_error(sold_out_message(day_pass.day_pass_type, new_day)) unless move.ok?
+      moved_hold = move.hold
+    else
+      day_pass.update!(day: new_day)
+    end
     UserMailer.day_pass_rescheduled(day_pass.id, old_day).deliver_later if day_pass.day != old_day
-    render json: { status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y") }
+    render json: {
+      status: "rescheduled", id: day_pass.id, day: day_pass.day.iso8601, date: day_pass.day.strftime("%B %e, %Y"),
+      confirmation_note: office_confirmation_note_for(moved_hold || day_pass.office_hold),
+    }
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Not found" }, status: :not_found
   end
 
   # POST /api/v1/day_passes/redeem_today
   # Member self-redeems one bundle pass to get access today without tapping a door.
-  # Reuses ConsumeOnEntry (idempotent, same logic as door entry) and maps its
-  # outcome to a clear API response so the app can show a meaningful message.
+  # Routed by the KIND of the user's ACTIVE bundle at this location, drawn via
+  # DayPassBundle.draw_order (soonest-expiring first, NULLs/perpetual last) —
+  # the SAME order Billing::DayPassBundles::ScheduleDay#eligible_bundle uses
+  # internally, so this routing decision and the interactor's own draw always
+  # agree on which bundle is "the" one for today (Task 10 fix — they used to
+  # disagree when a location held more than one active bundle: this lookup was
+  # unordered/id-order while the interactor already drew by expiry).
   #
-  # Outcomes:
+  # STANDARD bundle → Billing::DayPassBundles::ConsumeOnEntry (idempotent,
+  # same logic as a door entry). Its dedupe is keyed on
+  # location.business_day_window — a configurable rollover, 4am by default
+  # (ADR 0008) — so a member who redeemed at 11pm and tries again at 1am is
+  # still "already covered" for the same business day.
   #   redeemed          → burned one pass; today now covered    → 200 { status: "redeemed", passes_remaining: N }
   #   already_covered   → already had access for today (sub / lease / reservation
   #                        / non-bundle day pass / bundle already burned)
   #                                                              → 200 { status: "already_active_today" }
   #   no_bundle         → no active bundle and no other coverage → 422 render_error
   #   nil               → NoPassesRemaining rescued inside interactor (race)  → 422 render_error
+  #
+  # DAY OFFICE bundle (Task 10 / ADR 0026) → Billing::DayPassBundles::ScheduleDay
+  # for date: today. Both interactors allocate a pool room on the office branch
+  # (ConsumeOnEntry gained that in Task 11, for the walk-in door burn), but they
+  # differ where it matters for a deliberate self-redeem: ScheduleDay is STRICT
+  # — a full pool refuses and refunds nothing — while ConsumeOnEntry is lenient,
+  # because a member already standing at a door must get in regardless.
+  # Its idempotency instead keys on a plain CALENDAR date (day_passes.day, via
+  # for_day) — NOT the business_day_window above. Known, narrow divergence:
+  # a Day Office redemption between midnight and the rollover hour is judged
+  # against literal "today," not "the same business day as an hour ago."
+  # Accepted for now (documented, not fixed) — see ADR 0026.
+  #   scheduled         → office allocated; burned one pass     → 200 { status: "redeemed", passes_remaining: N, confirmation_note: "<room> is yours <window>." }
+  #   sold_out          → pool full (pre-gate or lost the race) → 422 render_day_office_sold_out (code: "day_office_sold_out", fallback_day_pass_type)
+  #   already_covered   → a pass already exists for today (the ONLY guard for an office bundle — sub/lease/reservation do NOT suppress it, ADR 0026)
+  #                                                              → 200 { status: "already_active_today" }
+  #   else (:no_bundle / :invalid_date)                         → 422 render_error, same copy as the standard path
   def redeem_today
+    active_bundle = current_api_user.day_pass_bundles.active.where(location: current_location).draw_order.first
+
+    if active_bundle&.day_pass_type&.day_office?
+      tz    = ActiveSupport::TimeZone[current_location&.time_zone.presence || "UTC"]
+      today = Time.current.in_time_zone(tz).to_date
+
+      result = Billing::DayPassBundles::ScheduleDay.call(
+        user: current_api_user, location: current_location, date: today,
+        performed_by: current_api_user, enforce_daily_limit: true)
+
+      case result.outcome
+      when :scheduled
+        render json: {
+          status:            "redeemed",
+          passes_remaining:  remaining_bundle_passes,
+          confirmation_note: office_confirmation_note(result.day_pass),
+        }
+      when :sold_out
+        # Entry-acquisition flow like #create — offer the fallback CTA
+        # (unlike #reschedule, which has nothing for a swap to attach to).
+        render_day_office_sold_out(result.day_pass_type, today)
+      when :already_covered
+        render json: { status: "already_active_today" }
+      else
+        # :no_bundle / :invalid_date (the latter shouldn't happen for
+        # "today", kept for safety) — same copy as the standard path below.
+        render_error("You don't have any day passes left.")
+      end
+      return
+    end
+
     result = Billing::DayPassBundles::ConsumeOnEntry.call(
       user:     current_api_user,
       location: current_location,
@@ -383,6 +501,40 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # a deliberate per-surface idiom, not drift.
   def sold_out_message(day_pass_type, day)
     "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
+  end
+
+  # Structured sold-out response for a Day Office purchase (ADR 0026) — used
+  # by both the pre-purchase capacity gate and the post-organizer race
+  # backstop, so a client sees the identical shape either way. Carries a
+  # machine-readable `code` (unlike the plain-string render_error standard
+  # day passes use) plus a suggested standard-type fallback so the client can
+  # offer an immediate swap instead of a dead end.
+  def render_day_office_sold_out(day_pass_type, day)
+    fallback = DayPassType.suggested_standard_for(current_location)
+    render json: {
+      error: sold_out_message(day_pass_type, day),
+      code: "day_office_sold_out",
+      fallback_day_pass_type: fallback && {
+        id: fallback.id, name: fallback.name, price: fallback.amount_in_cents,
+      },
+    }, status: :unprocessable_entity
+  end
+
+  # "Office A is yours 6:00 AM–8:00 PM." nil for a standard (non-office)
+  # pass, whose office_hold is always nil.
+  def office_confirmation_note(day_pass)
+    office_confirmation_note_for(day_pass&.office_hold)
+  end
+
+  # Same note from a hold the caller already has in hand. #reschedule must use
+  # this with DayOffices::MoveHold::Result#hold: the move releases the old hold
+  # and allocates a NEW one (possibly in a different room, since the pool's
+  # first choice may be free on one day and not the other), but day_pass's
+  # office_hold association is still the pre-move one and would name the OLD
+  # room in the confirmation.
+  def office_confirmation_note_for(hold)
+    return nil unless hold
+    "#{hold.room.name} is yours #{hold.window_label}."
   end
 
   # Self-serve purchase window (DayPass::MAX_ADVANCE_DAYS). "Today" is judged

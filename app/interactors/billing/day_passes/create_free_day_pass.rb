@@ -5,8 +5,11 @@ class Billing::DayPasses::CreateFreeDayPass
   organize(
     Billing::DayPasses::FindFreeDayPass,
     Billing::DayPasses::SaveDayPass,
+    Billing::DayPasses::AllocateDayOffice,
     Billing::DayPasses::CreateStripeInvoice,
     CreateNotifications,
-    Billing::DayPasses::ScheduleDayPassEmails
+    Billing::DayPasses::ScheduleDayPassEmails,
+    # LAST: the Day Office confirmation email must imply a cleared charge.
+    Billing::DayPasses::NotifyDayOfficeAssigned
   )
 end

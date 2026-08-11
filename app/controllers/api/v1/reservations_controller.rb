@@ -180,6 +180,17 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # treat as success below.
     reservation = current_api_user.reservations.find(params[:id])
 
+    # A Day Office hold is not a booking the member made — it's the office their
+    # pass entitles them to, allocated by DayOffices::Allocator (ADR 0026).
+    # Cancelling it here would release the room while leaving the pass sold and
+    # spent, so the member would still be charged for an office they no longer
+    # have. Changing or refunding the PASS is the staff-side operation.
+    # Checked before the cutoff guard so the member gets this reason rather
+    # than a timing one.
+    if reservation.day_office_hold?
+      return render_error('Your office comes with your Day Office pass — ask staff to change or refund it.')
+    end
+
     if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
       return render_error('This reservation can no longer be cancelled — it starts within a minute.')
     end

@@ -10,6 +10,7 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
   setup do
     @admin    = users(:cowork_tahoe_admin)
     @operator = operators(:cowork_tahoe)
+    @location = locations(:cowork_tahoe_location)
     @member   = users(:cowork_tahoe_member)
 
     @token = JWT.encode(
@@ -25,6 +26,14 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
       "X-Operator-Subdomain" => @operator.subdomain,
       "Content-Type"         => "application/json",
     }
+  end
+
+  def token_for(user)
+    JWT.encode(
+      { user_id: user.id, operator_id: user.operator_id, exp: 30.days.from_now.to_i },
+      Rails.application.secret_key_base,
+      "HS256",
+    )
   end
 
   test "index payload includes ended_early so the all-bookings list can badge it" do
@@ -342,5 +351,226 @@ class Api::V1::Admin::ReservationsControllerTest < ActionDispatch::IntegrationTe
     ids = JSON.parse(response.body).map { |r| r["id"] }
     assert_includes ids, mine.id, "managed-location booking must still be on the calendar"
     refute_includes ids, other.id, "other location's booking must not leak into the calendar"
+  end
+
+  # --- reassign_room / reassign_options (Task 12, ADR 0026) -----------------
+
+  # Builds a live Day Office hold under @operator/@location and returns
+  # [hold, room_a, room_b] — Allocator fills position order, so the hold
+  # always lands on room_a first (mirrors DayOffices::ReassignRoomTest).
+  def make_office_hold(user: @member, day: 3.days.from_now.to_date)
+    hold = nil
+    room_a = room_b = nil
+    ActsAsTenant.with_tenant(@operator) do
+      _bundle, room_a, room_b = make_office_bundle(member: user)
+      pass = DayPass.create!(user: user, billable: user, operator: @operator, location: @location,
+                             day_pass_type: _bundle.day_pass_type, day: day, imported: true)
+      hold = DayOffices::Allocator.allocate!(day_pass: pass)
+    end
+    [hold, room_a, room_b]
+  end
+
+  test "reassign_room moves the hold and returns the new room's name" do
+    hold, room_a, room_b = make_office_hold
+    assert_equal room_a, hold.room
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body["success"]
+    assert_equal room_b.name, body["room"]
+    assert_equal room_b, hold.reload.room
+  end
+
+  test "reassign_room returns 422 when the target room is already booked for that window" do
+    hold, room_a, room_b = make_office_hold
+    Reservation.create!(user: users(:cowork_tahoe_non_member), room: room_b,
+                        datetime_in: hold.datetime_in, minutes: hold.minutes)
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/already booked/i, JSON.parse(response.body)["error"])
+    assert_equal room_a, hold.reload.room
+  end
+
+  test "reassign_room returns 422 for a reservation that is not a Day Office hold" do
+    ordinary = reservations(:future_room_reservation)
+    target_room = rooms(:small_meeting_room)
+
+    patch "/api/v1/admin/reservations/#{ordinary.id}/reassign_room",
+      params: { room_id: target_room.id }.to_json, headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/not a day office hold/i, JSON.parse(response.body)["error"])
+  end
+
+  test "reassign_room 404s on a reservation belonging to another operator" do
+    other_operator = Operator.create!(name: "Other Space", subdomain: "otherspace-reassign-test")
+    other_location = create(:location, operator: other_operator)
+    foreign_room = Room.create!(name: "Foreign Room", operator: other_operator, location: other_location)
+    foreign_reservation = Reservation.create!(user: users(:cowork_tahoe_member), room: foreign_room,
+                                              datetime_in: 1.day.from_now, minutes: 60)
+
+    patch "/api/v1/admin/reservations/#{foreign_reservation.id}/reassign_room",
+      params: { room_id: foreign_room.id }.to_json, headers: headers
+
+    assert_response :not_found
+  end
+
+  test "reassign_room returns 422 for a cancelled (released) hold instead of a bare 404" do
+    hold, room_a, room_b = make_office_hold
+    hold.update_columns(cancelled: true)
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/no longer active/i, JSON.parse(response.body)["error"])
+  end
+
+  test "reassign_room is forbidden for a non-admin (member) token" do
+    hold, room_a, room_b = make_office_hold
+    member_headers = headers.merge("Authorization" => "Bearer #{token_for(@member)}")
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: member_headers
+
+    assert_response :forbidden
+    assert_equal room_a, hold.reload.room
+  end
+
+  test "reassign_options 404s on a reservation belonging to another operator" do
+    other_operator = Operator.create!(name: "Other Space 2", subdomain: "otherspace-reassign-options-test")
+    other_location = create(:location, operator: other_operator)
+    foreign_room = Room.create!(name: "Foreign Room 2", operator: other_operator, location: other_location)
+    foreign_reservation = Reservation.create!(user: users(:cowork_tahoe_member), room: foreign_room,
+                                              datetime_in: 1.day.from_now, minutes: 60)
+
+    get "/api/v1/admin/reservations/#{foreign_reservation.id}/reassign_options", headers: headers
+
+    assert_response :not_found
+  end
+
+  test "reassign_options returns 422 for a cancelled (released) hold instead of a bare 404" do
+    hold, room_a, room_b = make_office_hold
+    hold.update_columns(cancelled: true)
+
+    get "/api/v1/admin/reservations/#{hold.id}/reassign_options", headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/no longer active/i, JSON.parse(response.body)["error"])
+  end
+
+  test "reassign_options lists free rooms, flags hidden, and excludes the current/occupied/archived rooms" do
+    hold, room_a, _room_b = make_office_hold
+    hidden_room = occupied_room = archived_room = nil
+    ActsAsTenant.with_tenant(@operator) do
+      hidden_room   = Room.create!(name: "Hidden Office", operator: @operator, location: @location, visible: false)
+      occupied_room = Room.create!(name: "Occupied Office", operator: @operator, location: @location)
+      archived_room = Room.create!(name: "Archived Office", operator: @operator, location: @location, archived: true)
+    end
+    Reservation.create!(user: users(:cowork_tahoe_non_member), room: occupied_room,
+                        datetime_in: hold.datetime_in, minutes: hold.minutes)
+
+    get "/api/v1/admin/reservations/#{hold.id}/reassign_options", headers: headers
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    ids = body.map { |r| r["id"] }
+
+    assert_includes ids, hidden_room.id, "a hidden room must still be offered to an admin"
+    hidden_entry = body.find { |r| r["id"] == hidden_room.id }
+    assert_equal true, hidden_entry["hidden"]
+
+    refute_includes ids, room_a.id, "the hold's current room must not be offered as a target"
+    refute_includes ids, occupied_room.id
+    refute_includes ids, archived_room.id
+  end
+
+  test "reassign_options returns an error for a reservation that is not a Day Office hold" do
+    ordinary = reservations(:future_room_reservation)
+
+    get "/api/v1/admin/reservations/#{ordinary.id}/reassign_options", headers: headers
+
+    assert_response :unprocessable_entity
+    assert_match(/not a day office hold/i, JSON.parse(response.body)["error"])
+  end
+
+  # The member-side cancel refuses to release an office hold (it would leave
+  # the pass sold and spent). Staff are the ones who CAN — refunding or
+  # reworking the pass is their job, so the admin path must stay open.
+  test "admin can still cancel a Day Office hold" do
+    hold, _room_a, _room_b = make_office_hold
+
+    delete "/api/v1/admin/reservations/#{hold.id}", headers: headers
+
+    assert_response :success
+    assert hold.reload.cancelled
+  end
+
+  # --- Cross-location guard on the reassign endpoints -------------------------
+  #
+  # Both reassign actions resolve through find_reservation, so they inherit the
+  # boundary #717 put on destroy/extend and must be held to it: staff can
+  # neither MOVE a hold nor ENUMERATE rooms for one at a location they don't
+  # manage. reassign_options matters as much as reassign_room — it leaks the
+  # room inventory and occupancy of a location the caller has no business
+  # seeing. Superadmins keep the operator-wide reach.
+  #
+  # NOTE the operator WEB reassign action is deliberately wider than this (it
+  # is tenant-scoped, so the profile page can list a member's holds across
+  # every location) — see the reassign_room comment in
+  # Operator::ReservationsController.
+
+  # A live Day Office hold in a second location of the same operator — one the
+  # fixture staff (all scoped to cowork_tahoe_location) do not manage. Points
+  # @location at location B first: make_office_hold builds the day-pass type,
+  # room pool and pass ambiently off @location, same as the tests above.
+  # Returns [hold, room_a, room_b], with the hold allocated to room_a.
+  def make_other_location_office_hold
+    @location_b = Geocoder.stub(:search, ->(*_) { [] }) do
+      ActsAsTenant.with_tenant(@operator) { create(:location, operator: @operator) }
+    end
+    @location = @location_b
+    make_office_hold
+  end
+
+  test "community manager cannot reassign a hold at a location they do not manage" do
+    hold, room_a, room_b = make_other_location_office_hold
+    cm = users(:cowork_tahoe_community_manager)
+    refute cm.managed_location_ids.include?(@location_b.id), "fixture CM must not manage location B"
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers_for(cm)
+
+    assert_response :not_found
+    assert_equal room_a, hold.reload.room, "cross-location reassign must not move the hold"
+  end
+
+  test "community manager cannot list reassign options for a hold at a location they do not manage" do
+    hold, _room_a, _room_b = make_other_location_office_hold
+    cm = users(:cowork_tahoe_community_manager)
+    refute cm.managed_location_ids.include?(@location_b.id), "fixture CM must not manage location B"
+
+    get "/api/v1/admin/reservations/#{hold.id}/reassign_options", headers: headers_for(cm)
+
+    assert_response :not_found
+  end
+
+  test "superadmin can reassign a hold across locations within their operator" do
+    hold, _room_a, room_b = make_other_location_office_hold
+    owner = users(:cowork_tahoe_superadmin)
+    refute owner.managed_location_ids.include?(@location_b.id),
+      "success below must be the superadmin bypass, not a management row"
+
+    patch "/api/v1/admin/reservations/#{hold.id}/reassign_room",
+      params: { room_id: room_b.id }.to_json, headers: headers_for(owner)
+
+    assert_response :success
+    assert_equal room_b, hold.reload.room
   end
 end

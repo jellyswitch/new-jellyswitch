@@ -263,6 +263,10 @@ Rails.application.routes.draw do
         post 'reservations', to: 'reservations#create'
         patch 'reservations/:id/extend', to: 'reservations#extend'
         delete 'reservations/:id', to: 'reservations#destroy'
+        # Day Office admin reassign (Task 12, ADR 0026): move a live hold to
+        # any other active room at its location; options lists the free ones.
+        patch 'reservations/:id/reassign_room', to: 'reservations#reassign_room'
+        get 'reservations/:id/reassign_options', to: 'reservations#reassign_options'
 
         # Rooms
         resources :rooms, only: [:index, :create, :update, :destroy] do
@@ -875,6 +879,9 @@ Rails.application.routes.draw do
       put :extend_reservation, to: "operator/reservations#extend_reservation"
       put :end_now, to: "operator/reservations#end_now"
       put :update_note, to: "operator/reservations#update_note"
+      # Day Office admin reassign (Task 12, ADR 0026): staff-only move to a
+      # different room at the hold's location.
+      patch :reassign_room, to: "operator/reservations#reassign_room"
     end
   end
   resources :rooms, controller: "operator/rooms" do

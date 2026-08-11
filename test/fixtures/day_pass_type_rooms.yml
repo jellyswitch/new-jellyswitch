@@ -1,0 +1,1 @@
+# Empty on purpose: puts day_pass_type_rooms in the fixture delete set so stray committed rows can't become phantom pool rooms on the shared test DB.

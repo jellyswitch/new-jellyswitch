@@ -54,6 +54,14 @@ class Billing::DayPassBundles::ConsumeOnEntry
     # where Guards 3/4 key on the calendar date and can miss it) is seen here and
     # the door does not burn a second pass.
     window_start, window_end = location.business_day_window
+
+    # Computed inside the lock, acted on after it. Notifications must never be
+    # enqueued from inside a transaction (ADR 0026) — the door has already
+    # opened by the time we get here and nothing about telling the member is
+    # worth holding the bundle row for.
+    office_pass = nil
+    office_hold = nil
+
     bundle.with_lock do
       already = bundle.redemptions
                       .where(kind: %w[entry reservation])
@@ -84,7 +92,33 @@ class Billing::DayPassBundles::ConsumeOnEntry
         imported:      true
       )
       bundle.burn_locked!(kind: :entry, performed_by: user, day_pass: day_pass)
-      context.outcome = :redeemed
+
+      # Day Office walk-in (ADR 0026, decision #4). The member tapped a door
+      # without scheduling, so nobody has reserved them a room yet — take one
+      # now, INSIDE the bundle lock (lock order: bundle row → pool join rows).
+      # Best-effort by design: a full pool must NOT undo the burn or refuse
+      # entry. The pass is spent, the door opens, the member is told their
+      # access still works, and staff are paged to reassign or restore. Any
+      # other outcome would leave someone standing at a door they are entitled
+      # to walk through.
+      if bundle.day_pass_type.day_office?
+        office_pass = day_pass
+        office_hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
+      end
+
+      context.day_pass    = day_pass
+      context.office_hold = office_hold
+      context.outcome     = :redeemed
+    end
+
+    # Outcome is :redeemed either way — the office is a bonus on top of access,
+    # never a precondition for it.
+    if context.outcome == :redeemed && office_pass
+      if office_hold
+        DayOffices::Notify.assigned(day_pass: office_pass)
+      else
+        DayOffices::Notify.walk_in_no_office(day_pass: office_pass)
+      end
     end
   rescue DayPassBundle::NoPassesRemaining
     # emptied between gate and burn — door already authorized; admin can restore

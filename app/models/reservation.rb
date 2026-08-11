@@ -34,6 +34,10 @@ class Reservation < ApplicationRecord
   belongs_to :room
   belongs_to :user
   belongs_to :recurring_reservation, optional: true
+  # The day-office pass whose purchase MINTED this reservation as a hold (ADR
+  # 0026) — nil for every ordinary booking. optional: true because the FK is
+  # only ever set on that one reservation-per-pass path.
+  belongs_to :day_office_pass, class_name: "DayPass", optional: true
   has_and_belongs_to_many :amenities
   has_many :discount_redemptions, as: :discountable, dependent: :nullify
   # Booking-capture + extension-delta invoices (ADR 0010/0011). A cancel refunds
@@ -72,6 +76,7 @@ class Reservation < ApplicationRecord
   after_create_commit :record_meeting_room_interest
 
   def log_activity
+    return if day_office_hold? # the pass's own activity is the timeline entry; holds (and re-holds on reschedule) are artifacts (ADR 0026)
     Activity.log(user: user, kind: :reservation, subject: self)
   end
 
@@ -79,6 +84,7 @@ class Reservation < ApplicationRecord
   # Gate on the room being paid — NOT reservation.paid, which is false when a
   # member/staff books a paid room and true for free call-room overages.
   def record_meeting_room_interest
+    return if day_office_pass_id.present? # an office hold is not meeting-room interest (ADR 0026)
     return unless user && room&.paid_room?
     InterestTag.record(user: user, product: "meeting_room", source: "last_purchase")
   end
@@ -272,5 +278,11 @@ class Reservation < ApplicationRecord
 
   def part_of_series?
     recurring_reservation_id.present?
+  end
+
+  # A Day Office hold: the $0 reservation minted BY a day-office pass purchase
+  # (ADR 0026) — never charged, never drawing meeting-room allowances.
+  def day_office_hold?
+    day_office_pass_id.present?
   end
 end

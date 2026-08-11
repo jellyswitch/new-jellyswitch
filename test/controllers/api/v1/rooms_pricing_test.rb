@@ -83,4 +83,30 @@ class Api::V1::RoomsPricingTest < ActionDispatch::IntegrationTest
       "a day-passer must be quoted the hourly rate for a premium room (no free coverage)"
     assert_not body["included_in_plan"]
   end
+
+  # ADR 0026: the day-pass suggested for room coverage (needs_day_pass/day_pass)
+  # excludes office-backed types by KIND, not by the old %office% name-match.
+  test "day pass suggestion for a free room excludes office-kind types, not office-named ones" do
+    free_room = rooms(:small_meeting_room) # $0, untouched by setup's @priced_room mutation
+    # #pricing reads current_location, i.e. current_api_user.original_location —
+    # NOT the room's location — so the suggestion types are scoped there (they
+    # coincide with free_room.location in fixtures, but this is what's under test).
+    suggestion_location = @non_member.original_location
+    # Cheapest, but kind: day_office — must never be suggested, regardless of name.
+    create(:day_pass_type, operator: @operator, location: suggestion_location,
+           name: "Private Suite", kind: "day_office", amount_in_cents: 500)
+    # Named the way the old ILIKE would have wrongly excluded — must now be suggestible.
+    office_named = create(:day_pass_type, operator: @operator, location: suggestion_location,
+                          name: "Office Hours Pass", amount_in_cents: 3000)
+
+    get "/api/v1/rooms/#{free_room.id}/pricing",
+        params: { date: Date.current.to_s, minutes: 60 },
+        headers: headers_for(@non_member)
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body["needs_day_pass"]
+    assert_equal office_named.id, body.dig("day_pass", "type_id"),
+      "an office-NAMED standard type must be suggestible; the cheaper office-KIND type must never be"
+  end
 end

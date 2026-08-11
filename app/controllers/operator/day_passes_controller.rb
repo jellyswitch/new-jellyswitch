@@ -87,7 +87,17 @@ class Operator::DayPassesController < Operator::BaseController
     # intentionally ungated, though its rows still count. Checked before the
     # duplicate-purchase confirm — a sold-out day is sold out regardless.
     if prospective_day && day_pass_type&.daily_limit_reached?(day: prospective_day, location: current_location)
-      flash[:error] = "#{day_pass_type.name.pluralize} are fully booked for #{short_date(prospective_day)}. Try another day."
+      message = "#{day_pass_type.name.pluralize} are fully booked for #{short_date(prospective_day)}. Try another day."
+      # Point the buyer at an immediate alternative instead of a dead end
+      # (mirrors the mobile API's day-office sold-out fallback, ADR 0026) —
+      # never an office or bundle type, and nil when nothing else qualifies.
+      # suggested.id != day_pass_type.id: when the sold-out type is itself
+      # the only qualifying candidate (a standard type with no sibling),
+      # suggested_standard_for has nothing else to offer but itself — never
+      # echo the same sold-out type back as its own "alternative".
+      suggested = DayPassType.suggested_standard_for(current_location)
+      message += " A #{suggested.name} is available instead." if suggested && suggested.id != day_pass_type.id
+      flash[:error] = message
       turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
       return
     end
@@ -252,10 +262,17 @@ class Operator::DayPassesController < Operator::BaseController
   end
 
   # POST /day_passes/redeem_today
-  # Member self-redeems one bundle pass for "today" from the web — parity with
-  # the mobile API's redeem_today, through the SAME single authority
-  # (Billing::DayPassBundles::ConsumeOnEntry): today-only, idempotent, and a
-  # no-op when other coverage already grants access.
+  # Member self-redeems one bundle pass for "today" from the web. Always
+  # routes through Billing::DayPassBundles::ConsumeOnEntry: today-only,
+  # idempotent, and a no-op when other coverage already grants access.
+  #
+  # Day Office bundles (ADR 0026) need no special-casing here: as of Task 11
+  # ConsumeOnEntry allocates a pool room itself on the office branch, and
+  # notifies the member either way — with the room when one was free, or with
+  # the walk-in "your pass still works, see staff" message (plus a staff alert)
+  # when the pool was full. The divergence from the mobile API's redeem_today,
+  # which routes an office bundle through ScheduleDay, is now only about which
+  # idempotency window applies (business day here, calendar date there).
   #
   # ADR 0017: a redemption mints today's DayPass (the right to be present) but
   # does NOT open a door — so the success copy hands the member off to the app.
@@ -300,7 +317,15 @@ class Operator::DayPassesController < Operator::BaseController
       flash[:error] = "Pick today or a future date."
     else
       old_day = @day_pass.day
-      @day_pass.update!(day: new_day)
+      if @day_pass.day_office? && new_day != @day_pass.day
+        move = DayOffices::MoveHold.call(day_pass: @day_pass, new_day: new_day)
+        unless move.ok?
+          flash[:error] = "#{@day_pass.day_pass_type.name.pluralize} are fully booked for #{new_day.strftime('%B %e')}. Try another day."
+          return turbo_redirect(user_admin_day_passes_path(@day_pass.user))
+        end
+      else
+        @day_pass.update!(day: new_day)
+      end
       UserMailer.day_pass_rescheduled(@day_pass.id, old_day).deliver_later if @day_pass.day != old_day
       flash[:success] = "Day pass moved to #{@day_pass.pretty_day}."
     end

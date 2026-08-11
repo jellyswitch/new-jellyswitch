@@ -113,6 +113,48 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
     render_error('Reservation not found', status: :not_found)
   end
 
+  # Day Office admin reassign (Task 12, ADR 0026): move a live hold to any
+  # other active room at its location, hidden included. Goes through the same
+  # find_reservation lookup extend/destroy use, so the boundary is identical
+  # and can't drift: a cross-TENANT id 404s, and (since #717) so does a
+  # cross-LOCATION one — non-superadmin staff can only move holds at the
+  # locations they manage. The target room needs no location filter of its
+  # own: ReassignRoom refuses any room whose location_id differs from the
+  # hold's, and the hold is already confined to an allowed location.
+  def reassign_room
+    hold = find_reservation
+    room = current_tenant.rooms.active.find_by(id: params[:room_id])
+
+    result = DayOffices::ReassignRoom.call(hold: hold, room: room)
+    return render_error(result.error) unless result.ok?
+
+    render json: { success: true, room: hold.reload.room.name }
+  rescue ActiveRecord::RecordNotFound
+    render_error("Reservation not found", status: :not_found)
+  end
+
+  # Free active rooms at the hold's location for its exact window — what the
+  # reassign picker offers. hidden mirrors Room#visible inverted so the admin
+  # UI can badge a hidden-but-usable room instead of hiding it outright
+  # (decision #8: hidden rooms are fair game for an admin-driven move). The
+  # candidate query itself lives in DayOffices::ReassignRoom.options_for
+  # (Task 14) so the web profile's Reassign select can't drift from this list.
+  def reassign_options
+    hold = find_reservation
+    # Duplicated from ReassignRoom's own guard: this action never calls the
+    # service (it only lists candidates), so it needs the same liveness
+    # check to give the same clear refusal instead of listing options for a
+    # hold that can no longer be moved.
+    return render_error("That office hold is no longer active.") if hold.cancelled? || hold.datetime_out <= Time.current
+    return render_error("Not a Day Office hold.") unless hold.day_office_hold?
+
+    rooms = DayOffices::ReassignRoom.options_for(hold)
+
+    render json: rooms.map { |r| { id: r.id, name: r.name, hidden: !r.visible } }
+  rescue ActiveRecord::RecordNotFound
+    render_error("Reservation not found", status: :not_found)
+  end
+
   private
 
   # Base relation for the list endpoints (index/calendar). Operator-wide was
@@ -152,7 +194,11 @@ class Api::V1::Admin::ReservationsController < Api::V1::Admin::BaseController
   # could here. Confine non-superadmins to the same location set
   # enforce_location_scope! uses (managed locations + home). Stays .unscoped
   # because destroy's already-cancelled early return must still find
-  # cancelled rows past the model's default_scope.
+  # cancelled rows past the model's default_scope — and the Day Office
+  # reassign actions need that same reach for their own reason: they must be
+  # able to FIND a cancelled/ended hold so ReassignRoom's liveness guard can
+  # answer with a clear "no longer active" 422, instead of a bare 404 that
+  # would look identical to "wrong id".
   def find_reservation
     scope = Reservation.unscoped
                        .joins(:room)

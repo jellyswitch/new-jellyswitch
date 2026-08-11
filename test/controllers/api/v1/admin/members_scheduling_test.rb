@@ -161,4 +161,48 @@ class Api::V1::Admin::MembersSchedulingTest < ActionDispatch::IntegrationTest
     assert_no_match(/too_late/, error)
     assert_equal 4, @bundle.reload.passes_remaining
   end
+
+  # --- Task 11: office_room on the listing (additive, ADR 0026) -----------
+
+  test "the scheduled-days listing names the office for a Day Office pass" do
+    @location.update!(working_day_start: "08:00", working_day_end: "18:00")
+    date = Date.current + 2
+    dp = nil
+    ActsAsTenant.with_tenant(@operator) do
+      # A second member so the standard bundle from setup doesn't collide.
+      @office_member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      make_office_bundle(member: @office_member)
+      dp = Billing::DayPassBundles::ScheduleDay.call(user: @office_member, location: @location,
+                                                date: date, performed_by: @admin).day_pass
+    end
+
+    get "/api/v1/admin/members/#{@office_member.id}/scheduled_bundle_days", headers: headers
+
+    assert_response :success
+    row = JSON.parse(response.body).first
+    assert_equal "Office A", row["office_room"]
+    # Task 16: office_hold_id lets the mobile/web reassign UI target the
+    # Reservation/hold id directly instead of re-deriving it.
+    assert_equal dp.office_hold.id, row["office_hold_id"]
+    # Shape stays additive — the keys old clients read are untouched.
+    assert_equal date.iso8601, row["day"]
+    assert row["date"].present?
+  end
+
+  test "the scheduled-days listing reports a nil office_room for a standard pass" do
+    date = Date.current + 2
+    ActsAsTenant.with_tenant(@operator) do
+      Billing::DayPassBundles::ScheduleDay.call(user: @member, location: @location,
+                                                date: date, performed_by: @admin)
+    end
+
+    get "/api/v1/admin/members/#{@member.id}/scheduled_bundle_days", headers: headers
+
+    assert_response :success
+    row = JSON.parse(response.body).first
+    assert row.key?("office_room"), "the key is always present so clients can read it unconditionally"
+    assert_nil row["office_room"]
+    assert row.key?("office_hold_id"), "the key is always present so clients can read it unconditionally"
+    assert_nil row["office_hold_id"]
+  end
 end

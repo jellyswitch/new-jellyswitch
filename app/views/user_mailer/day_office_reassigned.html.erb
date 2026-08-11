@@ -1,0 +1,40 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">Hi <%= @user.name.to_s.split(" ").first %>,</p>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    Your day office for <%= @day.strftime("%A, %B %e") %> has moved to a different room<%= " at #{@location.name}" if @location %>.
+  </p>
+
+  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; width: 100%; margin-bottom: 16px;">
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>New office:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @room.name %></td>
+    </tr>
+    <% if @old_room_name %>
+      <tr>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Previously:</strong></td>
+        <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @old_room_name %></td>
+      </tr>
+    <% end %>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Date:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @day.strftime("%A, %B %e, %Y") %></td>
+    </tr>
+    <tr>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><strong>Hours:</strong></td>
+      <td style="font-family: Helvetica, sans-serif; font-size: 14px; padding: 8px 0;"><%= @hold.window_label %></td>
+    </tr>
+  </table>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 14px; font-weight: normal; margin: 0; margin-bottom: 16px;">
+    Open the <%= @operator.name %> app to unlock the door when you arrive.
+  </p>
+
+  <% if @operator.has_mobile_app_links? %>
+    <%= render "user_mailer/app_links", operator: @operator, host: @host %>
+  <% end %>
+
+  <p style="font-family: Helvetica, sans-serif; font-size: 13px; color: #666; margin: 0;">
+    If this change doesn't work for you, just reply to this email and we'll sort it out.
+  </p>
+<% end %>

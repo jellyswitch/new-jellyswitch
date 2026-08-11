@@ -653,18 +653,11 @@ class Api::V1::RoomsController < Api::V1::BaseController
   end
 
   # Prefer the day pass type explicitly marked as the default for room
-  # bookings. Fall back to cheapest non-free, non-Day-Office type.
+  # bookings. Fall back to cheapest non-free, non-Day-Office type — excluded
+  # by KIND (was a %office% name-match), same preference order CoverageState
+  # uses for its suggestion (ADR 0026).
   def pick_default_room_booking_day_pass_type(location)
-    scope = DayPassType
-      .where(operator_id: location.operator_id)
-      .where("location_id = ? OR location_id IS NULL", location.id)
-      .available
-      .where(visible: true)
-      .where("amount_in_cents > 0")
-      .where.not("name ILIKE ?", "%office%")
-
-    scope.where(default_for_room_booking: true).first ||
-      scope.order(:amount_in_cents).first
+    DayPassType.suggested_standard_for(location)
   end
 
   def room_json(room)

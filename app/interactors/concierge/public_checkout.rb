@@ -8,7 +8,7 @@ module Concierge
   # context in:  operator, location, email, name, password, token (Stripe), and
   #              exactly one of: day_pass_type | plan
   # context out: user + one of (day_pass | day_pass_bundle | subscription)
-  #              on failure: error (account_exists/account/payment) + message
+  #              on failure: error (account_exists/account/payment/sold_out) + message
   class PublicCheckout
     include Interactor
 
@@ -92,9 +92,21 @@ module Concierge
     end
 
     # The account exists now even if the charge fails — a clear error lets them
-    # sign in and retry payment, which beats a silent half-purchase.
+    # sign in and retry payment, which beats a silent half-purchase. Shared by
+    # all three purchase paths, but only purchase_day_pass's organizer can
+    # ever set outcome: :sold_out (AllocateDayOffice, ADR 0026) — a lost Day
+    # Office allocation race after purchase_day_pass's own pre-gate above
+    # already passed. That's not a payment problem and must not be relabeled
+    # as one; check for it first and pass its error/message through
+    # unchanged. Bundle/membership failures never carry this outcome, so they
+    # always fall through to the "payment" branch as before.
     def fail_payment!(result)
-      context.fail!(error: "payment", message: result.message) unless result.success?
+      return if result.success?
+      if result.outcome == :sold_out
+        context.fail!(error: "sold_out", message: result.message)
+      else
+        context.fail!(error: "payment", message: result.message)
+      end
     end
   end
 end
