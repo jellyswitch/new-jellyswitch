@@ -20,14 +20,24 @@
               <span class="text-muted small">(expires <%= bundle.expires_at.to_date %>)</span>
             <% end %>
           </div>
-          <div class="d-flex">
+          <div class="d-flex align-items-center">
             <% if bundle.active? %>
-              <%= button_to "Burn a pass",
-                    user_day_pass_bundle_burns_path(user),
-                    method: :post,
-                    params: { day_pass_bundle_id: bundle.id, reason: "admin burn" },
-                    class: "btn btn-sm btn-outline-secondary mr-1",
-                    form: { data: { turbo_confirm: "Burn one pass from this bundle without scheduling a day?" } } %>
+              <%# Burn covers today or a PAST day (logging a visit that already
+                  happened — redeemed_at carries the day, no DayPass is minted).
+                  Future days are the "Use a pass" form below, which mints the
+                  dated pass. %>
+              <%= form_with url: user_day_pass_bundle_burns_path(user), method: :post,
+                    class: "d-flex align-items-center mr-1" do |f| %>
+                <%= hidden_field_tag :day_pass_bundle_id, bundle.id %>
+                <%= f.date_field :day, value: Time.zone.today,
+                      min: Time.zone.today - Operator::DayPassBundleBurnsController::LOOKBACK_DAYS,
+                      max: Time.zone.today,
+                      class: "form-control form-control-sm mr-1", style: "width: 9.5rem;" %>
+                <%= f.text_field :reason, placeholder: "Reason",
+                      class: "form-control form-control-sm mr-1", style: "width: 9rem;" %>
+                <%= f.submit "Burn a pass", class: "btn btn-sm btn-outline-secondary",
+                      data: { turbo_confirm: "Burn one pass from this bundle for the selected day? A past day logs a visit that already happened." } %>
+              <% end %>
             <% end %>
             <%= button_to "Restore a pass",
                   user_day_pass_bundle_restores_path(user),
