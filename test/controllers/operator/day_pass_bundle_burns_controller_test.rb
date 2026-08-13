@@ -59,4 +59,110 @@ class Operator::DayPassBundleBurnsControllerTest < ActionDispatch::IntegrationTe
     assert_equal 2, @bundle.reload.passes_remaining,
       "a member must not be able to burn another member's pass"
   end
+
+  # --- dated burns: logging a visit on a specific past day ---
+
+  # "Today" as the controller sees it — the location's timezone, not the test
+  # process's (same convention as AdminBundleScheduleTest#location_today).
+  def location_tz
+    ActiveSupport::TimeZone[@location.time_zone.presence || "UTC"]
+  end
+
+  def location_today
+    Time.current.in_time_zone(location_tz).to_date
+  end
+
+  test "burn for a past day stamps the redemption on that day, mints no DayPass" do
+    day = location_today - 3
+
+    assert_no_difference -> { DayPass.count } do
+      post user_day_pass_bundle_burns_path(@member),
+        params: { day_pass_bundle_id: @bundle.id, day: day.iso8601, reason: "door was propped open" },
+        env: default_env
+    end
+
+    assert_response :redirect
+    assert_match "for #{day.strftime('%b %-d')}", flash[:notice]
+    assert_equal 1, @bundle.reload.passes_remaining
+
+    redemption = @bundle.redemptions.order(:id).last
+    assert_equal "admin_burn", redemption.kind
+    assert_equal "door was propped open", redemption.guest_name
+    assert_equal day, redemption.redeemed_at.in_time_zone(location_tz).to_date
+  end
+
+  test "burn refuses a future day" do
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: (location_today + 1).iso8601 }, env: default_env
+
+    assert_equal 2, @bundle.reload.passes_remaining
+    assert_match(/future days/, flash[:alert])
+  end
+
+  test "burn refuses a day beyond the lookback window" do
+    too_old = location_today - Operator::DayPassBundleBurnsController::LOOKBACK_DAYS - 1
+
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: too_old.iso8601 }, env: default_env
+
+    assert_equal 2, @bundle.reload.passes_remaining
+    assert_match(/last 90 days/, flash[:alert])
+  end
+
+  test "burn refuses a day the member already had a pass for" do
+    day = location_today - 2
+    ActsAsTenant.with_tenant(@operator) do
+      DayPass.create!(user: @member, billable: @member, operator: @operator, location: @location,
+                      day_pass_type: @bundle.day_pass_type, day: day)
+    end
+
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: day.iso8601 }, env: default_env
+
+    assert_equal 2, @bundle.reload.passes_remaining
+    assert_match(/already has coverage/, flash[:alert])
+  end
+
+  test "burn refuses a day the member had a reservation" do
+    day = location_today - 4
+    ActsAsTenant.with_tenant(@operator) do
+      room = create(:room, location: @location, operator: @operator)
+      create(:reservation, user: @member, room: room,
+             datetime_in: location_tz.local(day.year, day.month, day.day, 10), minutes: 60)
+    end
+
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: day.iso8601 }, env: default_env
+
+    assert_equal 2, @bundle.reload.passes_remaining
+    assert_match(/already has coverage/, flash[:alert])
+  end
+
+  test "burn refuses a day the pack already covered" do
+    day = location_today - 5
+    ActsAsTenant.with_tenant(@operator) do
+      @bundle.redemptions.create!(operator: @operator, kind: "entry",
+                                  redeemed_at: location_tz.local(day.year, day.month, day.day, 9))
+    end
+
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: day.iso8601 }, env: default_env
+
+    assert_equal 2, @bundle.reload.passes_remaining
+    assert_match(/already used/, flash[:alert])
+  end
+
+  test "a restore on a day does not block burning it" do
+    day = location_today - 6
+    ActsAsTenant.with_tenant(@operator) do
+      @bundle.redemptions.create!(operator: @operator, kind: "admin_restore",
+                                  redeemed_at: location_tz.local(day.year, day.month, day.day, 9))
+    end
+
+    post user_day_pass_bundle_burns_path(@member),
+      params: { day_pass_bundle_id: @bundle.id, day: day.iso8601 }, env: default_env
+
+    assert_equal 1, @bundle.reload.passes_remaining
+    assert_match "Burned a pass", flash[:notice]
+  end
 end
