@@ -207,4 +207,41 @@ class Api::V1::ReservationsControllerTest < ActionDispatch::IntegrationTest
     assert_response :conflict
     assert_equal @room.id, res.reload.room_id
   end
+
+  # The refusal has to name the member's actual situation. A member whose
+  # reservation is IN SESSION and who is told it "starts within a minute"
+  # reads that as a bug and retries (member_feedback 24800) — the started
+  # case must instead point at end-early, which is the action that works.
+  test "cancelling a started reservation explains end-early, not 'starts within a minute'" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 10.minutes.ago, minutes: 60)
+
+    delete "/api/v1/reservations/#{res.id}", headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    error = JSON.parse(response.body)["error"]
+    assert_match(/already started/i, error)
+    assert_match(/end it early/i, error)
+    refute res.reload.cancelled
+  end
+
+  test "cancelling inside the pre-start cutoff still says it starts within a minute" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 30.seconds.from_now, minutes: 60)
+
+    delete "/api/v1/reservations/#{res.id}", headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_match(/starts within a minute/i, JSON.parse(response.body)["error"])
+    refute res.reload.cancelled
+  end
+
+  test "editing a started reservation explains it already started" do
+    res = Reservation.create!(user: @viewer, room: @room, datetime_in: 10.minutes.ago, minutes: 60)
+
+    patch "/api/v1/reservations/#{res.id}",
+          params: { reservation: { minutes: 30 } }.to_json, headers: headers(@viewer)
+
+    assert_response :unprocessable_entity
+    assert_match(/already started/i, JSON.parse(response.body)["error"])
+    assert_equal 60, res.reload.minutes
+  end
 end
