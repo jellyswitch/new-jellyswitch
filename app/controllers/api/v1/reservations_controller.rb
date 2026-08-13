@@ -122,6 +122,9 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     # Editable until the 1-minute cutoff before start. (Capture now happens AT
     # BOOKING, so captured_at is set immediately and is no longer an editability
     # signal — an edit re-prices via a delta charge; ADR 0010.)
+    if reservation.datetime_in <= Time.current
+      return render_error('This reservation has already started, so it can no longer be changed — you can end it early to free the room.')
+    end
     if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
       return render_error('This reservation can no longer be changed — it starts within a minute.')
     end
@@ -191,6 +194,15 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       return render_error('Your office comes with your Day Office pass — ask staff to change or refund it.')
     end
 
+    # Two refusals with different fixes for the member: a reservation that
+    # already STARTED can still be ended early (elapsed time counts, the
+    # rest frees up), while one starting within the cutoff is simply
+    # committed. The old single message told a member mid-session their
+    # booking "starts within a minute" — nonsense that read as a bug and
+    # invited retries (member_feedback 24800).
+    if reservation.datetime_in <= Time.current
+      return render_error('This reservation has already started, so it can no longer be cancelled — you can end it early instead.')
+    end
     if reservation.datetime_in <= Time.current + CANCEL_CUTOFF
       return render_error('This reservation can no longer be cancelled — it starts within a minute.')
     end

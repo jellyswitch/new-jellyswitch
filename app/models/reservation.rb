@@ -261,12 +261,14 @@ class Reservation < ApplicationRecord
   end
 
   def end_now!
-    # End-early is a "release the room" action only — billing already
-    # captured at start (or will at start, if the user end_now's
-    # something they booked just before that captured). Shortening
-    # minutes flips ongoing? to false so the room frees up immediately
-    # for the next member; the captured charge stays at the booked
-    # amount (the slot was held against other members regardless).
+    # End-early releases the room: shortening minutes flips ongoing? to
+    # false so the next member can book immediately. Money charges are
+    # unaffected (captured at booking, ADR 0010), but stored minutes ARE
+    # the billing quantity for included-hours usage — allowance
+    # calculators sum minutes of non-cancelled reservations — so
+    # truncating deliberately returns the unused time to the member's
+    # day-pass/plan allowance. The mobile end-early dialog states both
+    # outcomes; keep them in sync if this changes.
     actual_duration = [(Time.current - datetime_in) / 60, minutes].min.floor
     update(minutes: actual_duration, ended_early: true)
     true
