@@ -510,6 +510,13 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # day passes use) plus a suggested standard-type fallback so the client can
   # offer an immediate swap instead of a dead end.
   def render_day_office_sold_out(day_pass_type, day)
+    # Every app-side Day Office rejection (purchase pre-gate, purchase race
+    # backstop, calendar scheduling) funnels through here — record the turned-
+    # away demand for the management feed. Best-effort; the 422 renders anyway.
+    DayOffices::RecordSoldOut.call(
+      user: current_api_user, day_pass_type: day_pass_type, day: day,
+      location: current_location, operator: current_tenant,
+    )
     fallback = DayPassType.suggested_standard_for(current_location)
     render json: {
       error: sold_out_message(day_pass_type, day),

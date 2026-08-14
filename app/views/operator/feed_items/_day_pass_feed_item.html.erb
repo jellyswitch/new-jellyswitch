@@ -26,5 +26,14 @@
     <dd class="col">
       <%= link_to feed_item.day_pass.pretty_day, day_pass_path(feed_item.day_pass) %>
     </dd>
+
+    <% if (office_room = feed_item.day_pass.office_hold&.room) %>
+      <dt class="col-6">
+        Office:
+      </dt>
+      <dd class="col">
+        <%= office_room.name %>
+      </dd>
+    <% end %>
   </dt>
 <% end %>

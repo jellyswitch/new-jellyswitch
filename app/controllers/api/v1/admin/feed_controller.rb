@@ -203,7 +203,18 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
         day_pass_type: dp&.day_pass_type&.name,
         amount: dp&.day_pass_type&.amount_in_cents,
         day: dp&.day&.strftime("%B %e, %Y"),
+        # Day Office purchases: name the pool room the pass holds, read LIVE
+        # off the hold so a staff reassign updates the card (nil for standard
+        # passes and released holds — the mobile card hides the row).
+        room_name: dp&.office_hold&.room&.name,
         requires_approval: true,
+      )
+    when 'day-office-sold-out'
+      base.merge(
+        action_text: 'wanted a Day Office — sold out',
+        day_pass_type: DayPassType.find_by(id: fi.blob['day_pass_type_id'])&.name,
+        day: (Date.parse(fi.blob['day']).strftime("%B %e, %Y") rescue nil),
+        body: fi.blob['text'],
       )
     when 'day-pass-bundle'
       bundle = DayPassBundle.find_by(id: fi.blob['day_pass_bundle_id'])

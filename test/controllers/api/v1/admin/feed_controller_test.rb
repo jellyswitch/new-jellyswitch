@@ -45,6 +45,69 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     JSON.parse(response.body).find { |i| i["id"] == feed_item.id }
   end
 
+  test "a day-office pass card names the pool room its hold occupies" do
+    feed_item = nil
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      office_type = DayPassType.create!(name: "Day Office", operator: @operator, location: @location,
+                                        kind: "day_office", amount_in_cents: 7500,
+                                        included_meeting_room_minutes: 0, available: true, visible: true)
+      room = Room.create!(name: "Office A", operator: @operator, location: @location)
+      office_type.assign_office_rooms!({ room.id => 1 })
+      pass = DayPass.create!(user: member, billable: member, operator: @operator, location: @location,
+                             day_pass_type: office_type, day: Date.current + 7, imported: true)
+      hold = DayOffices::Allocator.allocate!(day_pass: pass)
+      assert hold.present?, "sanity: allocation must have succeeded"
+
+      feed_item = FeedItem.create!(
+        operator: @operator, location: @location, user: member,
+        blob: { "type" => "day-pass", "day_pass_id" => pass.id, "user_name" => member.name },
+      )
+    end
+
+    item = fetch_item(feed_item)
+    assert_equal "Office A", item["room_name"]
+    assert_equal "Day Office", item["day_pass_type"]
+  end
+
+  test "a standard day-pass card has no room_name" do
+    feed_item = nil
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      dpt  = create(:day_pass_type, operator: @operator, location: @location)
+      pass = create(:day_pass, user: member, billable: member, operator: @operator, location: @location,
+                    day_pass_type: dpt, day: Date.current + 7)
+      feed_item = FeedItem.create!(
+        operator: @operator, location: @location, user: member,
+        blob: { "type" => "day-pass", "day_pass_id" => pass.id, "user_name" => member.name },
+      )
+    end
+
+    item = fetch_item(feed_item)
+    assert_nil item["room_name"]
+  end
+
+  test "a day-office-sold-out card carries the action text, type, day, and body" do
+    feed_item = nil
+    ActsAsTenant.with_tenant(@operator) do
+      member = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      office_type = DayPassType.create!(name: "Day Office", operator: @operator, location: @location,
+                                        kind: "day_office", amount_in_cents: 7500,
+                                        included_meeting_room_minutes: 0, available: true, visible: true)
+      DayOffices::RecordSoldOut.call(user: member, day_pass_type: office_type, day: Date.current + 7,
+                                     location: @location, operator: @operator)
+      feed_item = FeedItem.unscoped.where(operator_id: @operator.id)
+                          .where("blob->>'type' = ?", "day-office-sold-out").last
+      assert feed_item.present?, "sanity: the sold-out card must exist"
+    end
+
+    item = fetch_item(feed_item)
+    assert_equal "wanted a Day Office — sold out", item["action_text"]
+    assert_equal "Day Office", item["day_pass_type"]
+    assert_includes item["body"], "sold out"
+    assert_includes item["day"], (Date.current + 7).strftime("%B")
+  end
+
   test "day-pass overage on a free room shows the overage charge, not $0" do
     feed_item = nil
     expected_cents = 6000 # 120 min used − 60 included = 60 min over; $60/hr overage

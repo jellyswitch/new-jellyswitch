@@ -60,6 +60,15 @@ module Concierge
       # most public path in the app, so it gets the same gate as the four
       # logged-in member entry points. Staff paths stay ungated by design.
       if day_pass_type.daily_limit_reached?(day: day, location: context.location)
+        # Turned-away Day Office demand goes to the management feed (parity
+        # with the app's render_day_office_sold_out). The account was already
+        # created above, so the card names a real member. Best-effort.
+        if day_pass_type.day_office?
+          DayOffices::RecordSoldOut.call(
+            user: user, day_pass_type: day_pass_type, day: day,
+            location: context.location, operator: context.operator,
+          )
+        end
         context.fail!(error: "sold_out",
                       message: "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day.")
       end
