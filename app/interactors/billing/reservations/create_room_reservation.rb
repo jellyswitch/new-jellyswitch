@@ -31,6 +31,10 @@ class Billing::Reservations::CreateRoomReservation
     Billing::Reservations::RedeemBundlePass,
     Billing::Reservations::BuyCoverageDayPass,
     Billing::Reservations::EnforceCoverage,
+    # A metered pass's included-minutes cap is only enforceable as money when
+    # the location has an overage rate; where the rate is $0 this blocks an
+    # over-allowance booking instead of letting it through free.
+    Billing::Reservations::EnforceMeteredRoomLimit,
     Billing::Reservations::ChargeAtBooking,
     Reservations::ScheduleUpcomingReservationReminder,
     CreateNotificationsAsync,

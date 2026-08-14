@@ -5,6 +5,19 @@ class Billing::Reservations::OveragePreview
   # ChargeCalculator#day_pass_overage_cents so the quote matches the capture.
   # `day_pass_type` may be one that will be minted/bought post-commit.
   def self.cents(user:, location:, date:, minutes:, day_pass_type:, reservation_id: nil)
+    over = over_minutes(user: user, date: date, minutes: minutes,
+                        day_pass_type: day_pass_type, reservation_id: reservation_id)
+    return 0 if over <= 0
+
+    over_rounded = (over / 15.0).ceil * 15
+    ((location.overage_rate_in_cents.to_f / 60.0) * over_rounded).round
+  end
+
+  # RAW minutes past the pass's remaining allowance (no 15-minute billing
+  # rounding, no rate applied). EnforceMeteredRoomLimit uses this to make a
+  # configured cap real even where the overage rate is $0 and there is
+  # therefore nothing to charge.
+  def self.over_minutes(user:, date:, minutes:, day_pass_type:, reservation_id: nil)
     return 0 unless day_pass_type&.has_meeting_room_limit?
 
     allotment = day_pass_type.included_meeting_room_minutes.to_i
@@ -16,10 +29,6 @@ class Billing::Reservations::OveragePreview
                        .where(day_office_pass_id: nil) # office holds never draw the allowance (ADR 0026)
                        .sum(:minutes)
     free_remaining = [allotment - other, 0].max
-    over = [minutes.to_i - free_remaining, 0].max
-    return 0 if over <= 0
-
-    over_rounded = (over / 15.0).ceil * 15
-    ((location.overage_rate_in_cents.to_f / 60.0) * over_rounded).round
+    [minutes.to_i - free_remaining, 0].max
   end
 end
