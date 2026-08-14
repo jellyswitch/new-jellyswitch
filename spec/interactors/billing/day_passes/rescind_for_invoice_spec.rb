@@ -60,6 +60,80 @@ RSpec.describe Billing::DayPasses::RescindForInvoice do
     expect { described_class.call(invoice: invoice) }.not_to raise_error
   end
 
+  # A refunded PACK (DayPassBundle) used to stay fully spendable: the pack mints
+  # no DayPass at purchase, so the day-pass sweep matched nothing (the Kost/TLH
+  # case). The pack links to its purchase invoice via DayPassBundle#invoice_id,
+  # and zeroing passes_remaining is the revoke — `.active` (passes_remaining > 0)
+  # is the sole redemption/access gate.
+  describe "pack (bundle) refunds" do
+    let(:pack_type) { create(:day_pass_type, operator: operator, location: location, quantity: 2) }
+
+    def make_bundle(on_invoice: invoice, remaining: 2)
+      create(:day_pass_bundle,
+             user: user, operator: operator, location: location,
+             day_pass_type: pack_type, quantity_purchased: 2,
+             passes_remaining: remaining, invoice: on_invoice)
+    end
+
+    it "zeroes the pack tied to the refunded invoice, one admin_burn ledger row per unused pass" do
+      bundle = make_bundle
+      expect { described_class.call(invoice: invoice) }
+        .to change { bundle.reload.passes_remaining }.from(2).to(0)
+
+      rows = bundle.redemptions.where(kind: "admin_burn")
+      expect(rows.count).to eq(2)
+      expect(rows.pluck(:guest_name)).to all(include(invoice.id.to_s))
+      expect(rows.pluck(:performed_by_id)).to all(be_nil)
+    end
+
+    it "takes the pack out of the redeemable scope so the door no longer burns it" do
+      make_bundle
+      described_class.call(invoice: invoice)
+
+      expect(user.day_pass_bundles.active).to be_empty
+      result = Billing::DayPassBundles::ConsumeOnEntry.call(user: user, location: location)
+      expect(result.outcome).to eq(:no_bundle)
+    end
+
+    it "leaves already-burned days as usage history" do
+      bundle = make_bundle(remaining: 1)
+      burned_day = create(:day_pass,
+                          user: user, billable: user, operator: operator, location: location,
+                          day_pass_type: pack_type, day: Date.current - 2, invoice: nil)
+      entry = bundle.redemptions.create!(operator: operator, kind: "entry", performed_by: user,
+                                         day_pass: burned_day, redeemed_at: 2.days.ago)
+
+      described_class.call(invoice: invoice)
+
+      expect(bundle.reload.passes_remaining).to eq(0)
+      expect(DayPassBundleRedemption.exists?(entry.id)).to be(true)
+      expect(DayPass.exists?(burned_day.id)).to be(true)
+    end
+
+    it "does not touch a pack tied to a different invoice" do
+      other_invoice = create(:invoice, operator: operator, location: location, billable: user)
+      other = make_bundle(on_invoice: other_invoice)
+
+      described_class.call(invoice: invoice)
+
+      expect(other.reload.passes_remaining).to eq(2)
+    end
+
+    it "enqueues no lifecycle emails (a refunded buyer gets no replenishment nudge)" do
+      make_bundle
+      expect { described_class.call(invoice: invoice) }
+        .not_to have_enqueued_job(SendProductEmailJob)
+    end
+
+    it "is idempotent — a second call adds no ledger rows" do
+      bundle = make_bundle
+      described_class.call(invoice: invoice)
+
+      expect { described_class.call(invoice: invoice) }
+        .not_to change { bundle.redemptions.count }
+    end
+  end
+
   # Headline regression: the reported clash.
   describe "bundle-redeem clash" do
     it "stops a refunded pass from masking bundle redemption once rescinded" do
