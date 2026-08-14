@@ -172,7 +172,16 @@
             <% email_sends.each do |es| %>
               <tr>
                 <td><%= es.created_at.strftime("%b %e, %Y %l:%M%P") %></td>
-                <td><%= es.product_type.titleize %> — <%= es.email_type.titleize %></td>
+                <td>
+                  <%# ProductEmailSend has no product_type (that's ProductEmailTemplate).
+                      Rows here have sendable == the user (signup-nudge / drip ledger);
+                      a product sendable would prefix its type instead. %>
+                  <% if es.sendable_type == "User" %>
+                    <%= es.email_type == "nudge" ? "Signup Nudge" : es.email_type.titleize %>
+                  <% else %>
+                    <%= es.sendable_type.titleize %> — <%= es.email_type.titleize %>
+                  <% end %>
+                </td>
                 <td><span class="badge badge-<%= es.status == 'sent' ? 'success' : 'danger' %>"><%= es.status %></span></td>
               </tr>
             <% end %>
