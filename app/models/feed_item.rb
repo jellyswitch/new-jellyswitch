@@ -107,6 +107,8 @@ class FeedItem < ApplicationRecord
       "became a member"
     when "day-pass"
       "bought a day pass"
+    when "day-office-sold-out"
+      "wanted a Day Office — sold out"
     when "post"
       if expense?
         "posted an expense"

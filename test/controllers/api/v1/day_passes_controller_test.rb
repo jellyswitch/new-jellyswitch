@@ -110,6 +110,29 @@ class Api::V1::DayPassesControllerTest < ActionDispatch::IntegrationTest
     assert_equal @std.amount_in_cents, fallback["price"]
   end
 
+  test "a sold-out rejection lands in the management feed once, even on retap" do
+    fill_all_pool_rooms!
+    sold_out_items = -> {
+      FeedItem.unscoped.where(operator_id: @operator.id, user_id: @member.id)
+              .where("blob->>'type' = ?", "day-office-sold-out")
+    }
+
+    assert_difference -> { sold_out_items.call.count }, 1 do
+      post "/api/v1/day_passes", params: { day_pass_type_id: @type.id, date: @day.iso8601 }, headers: headers
+    end
+    assert_response :unprocessable_entity
+
+    item = sold_out_items.call.last
+    assert_equal @day.iso8601, item.blob["day"]
+    assert_includes item.blob["text"], "sold out"
+
+    # Retapping the same sold-out day must not stack cards.
+    assert_no_difference -> { sold_out_items.call.count } do
+      post "/api/v1/day_passes", params: { day_pass_type_id: @type.id, date: @day.iso8601 }, headers: headers
+    end
+    assert_response :unprocessable_entity
+  end
+
   test "sold-out fallback is null when no standard type qualifies" do
     # Neutralize every OTHER qualifying standard type — the operator's
     # fixture standard type ($200, available+visible) would otherwise win

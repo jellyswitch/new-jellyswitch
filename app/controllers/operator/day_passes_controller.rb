@@ -97,6 +97,14 @@ class Operator::DayPassesController < Operator::BaseController
       # echo the same sold-out type back as its own "alternative".
       suggested = DayPassType.suggested_standard_for(current_location)
       message += " A #{suggested.name} is available instead." if suggested && suggested.id != day_pass_type.id
+      # Turned-away Day Office demand goes to the management feed (parity with
+      # the mobile API's render_day_office_sold_out). Best-effort.
+      if day_pass_type.day_office?
+        DayOffices::RecordSoldOut.call(
+          user: current_user, day_pass_type: day_pass_type, day: prospective_day,
+          location: current_location, operator: current_tenant,
+        )
+      end
       flash[:error] = message
       turbo_redirect(new_day_pass_path(day_pass_type_id: day_pass_type.id))
       return
