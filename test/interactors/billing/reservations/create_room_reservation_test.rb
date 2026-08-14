@@ -18,6 +18,7 @@ class Billing::Reservations::CreateRoomReservationTest < ActiveSupport::TestCase
       Billing::Reservations::RedeemBundlePass,
       Billing::Reservations::BuyCoverageDayPass,
       Billing::Reservations::EnforceCoverage,
+      Billing::Reservations::EnforceMeteredRoomLimit,
       Billing::Reservations::ChargeAtBooking,
       Reservations::ScheduleUpcomingReservationReminder,
       CreateNotificationsAsync,
