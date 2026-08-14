@@ -119,4 +119,27 @@ class DayPassBundle < ApplicationRecord
                         guest_name: reason, redeemed_at: Time.current)
     true
   end
+
+  # Zero the pack when its purchase invoice is refunded / voided — the bundle
+  # counterpart of destroying a refunded DayPass row. The `.active` scope
+  # (passes_remaining > 0) is the sole redemption/access gate, so zeroing is the
+  # revoke that can't be missed. One admin_burn ledger row per rescinded pass
+  # keeps the ledger 1:1 with decrements (reason in guest_name; performed_by nil
+  # = system — the refund itself records who acted). Already-burned days stay
+  # history. Deliberately NOT burn_locked!: a refunded buyer must not receive
+  # the review / replenishment ("grab another pack") lifecycle emails.
+  # Returns the number of passes rescinded (0 = nothing to do).
+  def rescind_remaining!(reason:, by: nil)
+    with_lock do
+      count = passes_remaining.to_i
+      if count > 0
+        update!(passes_remaining: 0)
+        count.times do
+          redemptions.create!(operator: operator, kind: "admin_burn", performed_by: by,
+                              guest_name: reason, redeemed_at: Time.current)
+        end
+      end
+      count
+    end
+  end
 end
