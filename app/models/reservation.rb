@@ -74,10 +74,26 @@ class Reservation < ApplicationRecord
   after_create :log_activity
   # after_create_COMMIT so a tag write can never roll back the booking.
   after_create_commit :record_meeting_room_interest
+  after_update :sync_activity_payload, if: :activity_payload_stale?
 
   def log_activity
     return if day_office_hold? # the pass's own activity is the timeline entry; holds (and re-holds on reschedule) are artifacts (ADR 0026)
     Activity.log(user: user, kind: :reservation, subject: self)
+  end
+
+  # The timeline card reads the denormalized payload and never the reservation
+  # (ADR 0001), so a moved booking, an early end, or a cancel has to be written
+  # back or the card keeps advertising the original window forever.
+  def activity_payload_stale?
+    saved_change_to_datetime_in? || saved_change_to_minutes? ||
+      saved_change_to_cancelled? || saved_change_to_room_id?
+  end
+
+  def sync_activity_payload
+    ActsAsTenant.with_tenant(operator) do
+      Activity.where(kind: "reservation", subject_type: "Reservation", subject_id: id)
+              .find_each { |activity| activity.update_columns(payload: to_activity_payload) }
+    end
   end
 
   # Seed a meeting_room interest tag from a PAID meeting-room booking (ADR 0022).
@@ -103,6 +119,7 @@ class Reservation < ApplicationRecord
       "location_name" => room&.location&.name,
       "datetime_in" => datetime_in&.iso8601,
       "minutes" => minutes,
+      "cancelled" => cancelled,
     }
   end
 

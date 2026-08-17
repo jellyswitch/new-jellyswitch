@@ -34,6 +34,7 @@ class Activity < ApplicationRecord
     door_punch
     reservation
     day_pass
+    day_pass_bundle
     subscription_started
     subscription_ended
     office_lease

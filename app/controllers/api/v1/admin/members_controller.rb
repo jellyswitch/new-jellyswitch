@@ -617,9 +617,12 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
         user.activities.recent.where(kind: ActivityTimelineHelper::KIND_GROUPS.fetch(tab)).limit(50)
       end
 
+    activities = scope.to_a
+    hours = TimelineHoursIndex.build(user: user, activities: activities)
+
     render json: {
       tab: tab,
-      activities: scope.map { |a| activity_json(a) },
+      activities: activities.map { |a| activity_json(a, hours) },
     }
   end
 
@@ -724,12 +727,16 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     user.interest_tags.order(:product).map { |tag| { product: tag.product, source: tag.source } }
   end
 
-  def activity_json(activity)
+  # `subtitle` is rendered server-side so mobile and web read identically and
+  # the app never has to redo the room-zone date math. Older builds ignore it
+  # and keep formatting occurred_at themselves.
+  def activity_json(activity, hours = nil)
     {
       id: activity.id,
       kind: activity.kind,
       occurred_at: activity.occurred_at.iso8601,
       label: ApplicationController.helpers.activity_label(activity),
+      subtitle: ApplicationController.helpers.activity_timeline_subtitle(activity, hours: hours),
       icon: ActivityTimelineHelper::ICONS[activity.kind],
       payload: activity.payload || {},
     }

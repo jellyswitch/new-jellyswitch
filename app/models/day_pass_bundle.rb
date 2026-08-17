@@ -21,6 +21,25 @@ class DayPassBundle < ApplicationRecord
 
   scope :active, -> { where("passes_remaining > 0").where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
+  after_create :log_activity
+
+  # The pack purchase is its own timeline card. Each pass burned off it still
+  # logs the usual day_pass activity — the bundle card is the rollup, not a
+  # replacement, so staff can see "4 of 10 used" beside the individual days.
+  def log_activity
+    Activity.log(user: user, kind: :day_pass_bundle, subject: self, operator: operator)
+  end
+
+  # passes_remaining is deliberately absent: it moves after purchase, and the
+  # timeline reads the live count through TimelineHoursIndex instead.
+  def to_activity_payload
+    {
+      "quantity" => quantity_purchased,
+      "day_pass_type_name" => day_pass_type&.name,
+      "location_name" => location&.name,
+    }
+  end
+
   # Soonest-expiring first (NULLs/perpetual last), then oldest — "use it before
   # you lose it" (ADR 0018). The single canonical draw order: every caller that
   # picks "the" active bundle for a user/location (ScheduleDay#eligible_bundle,

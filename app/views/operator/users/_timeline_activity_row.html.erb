@@ -4,13 +4,6 @@
   </div>
   <div class="flex-grow-1">
     <div style="font-size: 14px;"><%= activity_label(activity) %></div>
-    <% if (campaign = attributed_campaign(activity)) %>
-      <div>
-        <span class="badge badge-light border text-muted" title="Opened this campaign within 14 days before converting">
-          <i class="fas fa-bullseye"></i> Likely from: <%= campaign.name %>
-        </span>
-      </div>
-    <% end %>
-    <small class="text-muted"><%= activity_timeline_pretty_time(activity) %></small>
+    <small class="text-muted"><%= activity_timeline_subtitle(activity, hours: local_assigns[:hours]) %></small>
   </div>
 </div>
