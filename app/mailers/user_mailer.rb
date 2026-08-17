@@ -506,30 +506,30 @@ class UserMailer < ApplicationMailer
     body_html = template.body.to_s
     host = ENV['ASSET_HOST']
 
-    # Replace relative ActiveStorage blob URLs with absolute service URLs
-    # so attachments work in email clients
-    body_html = replace_blob_urls(body_html)
+    body_html = replace_blob_urls(body_html, host: host)
 
     ProductEmailTemplate.replace_merge_tags(body_html, user: user, operator: operator, location: location, sendable: sendable, host: host).html_safe
   end
 
-  def replace_blob_urls(html)
-    # Match ActiveStorage blob URLs (redirect, proxy, or representation patterns)
-    html.gsub(%r{(href|src)="(/rails/active_storage/(?:blobs|representations)/(?:redirect|proxy)/([^/]+)/[^"]+)"}) do
-      attr = $1
-      path = $2
-      signed_id = $3
-      begin
-        blob = ActiveStorage::Blob.find_signed(signed_id)
-        if blob
-          "#{attr}=\"#{blob.url}\""
-        else
-          "#{attr}=\"#{path}\""
-        end
-      rescue => e
-        Rails.logger.error("Blob URL replacement error: #{e.message}")
-        "#{attr}=\"#{path}\""
-      end
-    end
+  # Rehost embedded ActiveStorage images/links onto a real app host.
+  #
+  # Rendering a rich-text body outside a request (this mailer runs from
+  # Sidekiq) makes ActionText emit ABSOLUTE URLs on the renderer's placeholder
+  # host — literally https://example.org/rails/active_storage/… — so every
+  # embedded image shipped broken (Cowork Tahoe's space map, 2026-08). The
+  # previous version of this method only matched relative "/rails/…" paths, so
+  # it never fired on what ActionText actually emits; and rewriting to
+  # blob.url would break differently — that's a presigned S3 URL that expires
+  # minutes after render, long before most recipients open the email.
+  #
+  # Keeping the app's own redirect URL is the durable choice: the signed ids
+  # inside it never expire (exp:null), and each open 302s to a
+  # freshly-presigned S3 URL. Only the host needs fixing.
+  BLOB_URL_PATTERN = %r{(href|src)="(?:https?://[^/"]+)?(/rails/active_storage/(?:blobs|representations)/(?:redirect|proxy)/[^"]+)"}
+
+  def replace_blob_urls(html, host: ENV['ASSET_HOST'])
+    return html if host.blank?
+
+    html.gsub(BLOB_URL_PATTERN) { "#{$1}=\"#{host.chomp('/')}#{$2}\"" }
   end
 end
