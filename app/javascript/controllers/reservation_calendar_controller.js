@@ -27,6 +27,7 @@ export default class extends Controller {
     this.handleReserveNowFlow();
     this.handleReservationListToggle();
     this.initializeBottomSheet();
+    this.initializeTapOutsideDismiss();
 
     this.USDollar = new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -44,7 +45,7 @@ export default class extends Controller {
     $("#time-slots-container").off("click.timeslot touchend.timeslot");
     $("#rooms-select").off("change");
     $("#add-reservation").off("submit");
-    $("#modal-view-event-add").off("hidden.bs.modal");
+    $("#modal-view-event-add").off("hidden.bs.modal touchstart.tapoutside touchend.tapoutside");
     $("#room-filter").off("change");
     $(".reservations-list-toggle").off("click");
 
@@ -973,6 +974,31 @@ export default class extends Controller {
       if (swipeDistance > 100) {
         $("#modal-view-event-add").modal("hide");
       }
+    });
+  }
+
+  // Bootstrap dismisses on CLICK of the backdrop area, but a tap on a
+  // non-interactive element never synthesizes a click on iOS Safari — so on
+  // exactly the devices the bottom sheet is for, tapping outside the sheet
+  // did nothing and the only way out was the Close button. Handle touch
+  // ourselves: a tap that both starts and ends on the modal element itself
+  // (the dimmed area — anywhere inside the dialog has a different target)
+  // closes it, matching the desktop backdrop-click behavior.
+  initializeTapOutsideDismiss() {
+    const $modal = $("#modal-view-event-add");
+    let touchStartedOnBackdrop = false;
+
+    $modal.on("touchstart.tapoutside", (e) => {
+      touchStartedOnBackdrop = e.target === e.currentTarget;
+    });
+
+    $modal.on("touchend.tapoutside", (e) => {
+      // Both ends on the backdrop, so a swipe that wanders in or out of the
+      // sheet (scrolling the time grid, the handle drag) never dismisses.
+      if (touchStartedOnBackdrop && e.target === e.currentTarget) {
+        $modal.modal("hide");
+      }
+      touchStartedOnBackdrop = false;
     });
   }
 }
