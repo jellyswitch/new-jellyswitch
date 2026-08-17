@@ -51,6 +51,16 @@ class Subscription < ApplicationRecord
           joins(:plan).where(plans: { id: Plan.for_location(location).map(&:id) })
         end
   scope :for_week, ->(week_start, week_end) { where("created_at > ? and created_at <= ?", week_start, week_end) }
+  # Memberships only — office leases excluded. A subscribable may legitimately
+  # hold several leases at once (an org renting three offices), so anything
+  # backed by a lease plan or an actual OfficeLease is not a membership.
+  # NULL subscription_ids are filtered out of the subquery on purpose: a
+  # `NOT IN` list containing NULL matches nothing at all in SQL.
+  scope :memberships, -> {
+          joins(:plan)
+            .where.not(plans: { plan_type: "lease" })
+            .where.not(id: OfficeLease.where.not(subscription_id: nil).select(:subscription_id))
+        }
 
   accepts_nested_attributes_for :plan
 
@@ -243,6 +253,29 @@ class Subscription < ApplicationRecord
   # can't slip a real lease through.
   def backs_office_lease?
     office_leases.exists? || plan&.lease? || false
+  end
+
+  DUPLICATE_MEMBERSHIP_MESSAGE =
+    "This person already has an active membership. Switch their existing plan instead of adding a second one.".freeze
+
+  # True when saving this would leave the subscribable holding two active
+  # memberships — which means two Stripe subscriptions and two charges a month.
+  #
+  # Nothing used to check this, so a member who fired a second "Subscribe"
+  # while the first was still in flight ended up billed for both (Aaron Squier,
+  # 2026-06-24: Flex at 07:52:44 and Full Time at 07:52:46, two Stripe subs,
+  # two welcome emails). Switching plans is a different path entirely —
+  # SwitchMembership reuses the one Stripe subscription — so it never trips this.
+  def duplicate_active_membership?
+    return false if backs_office_lease?
+    return false if subscribable_id.blank?
+
+    scope = self.class.memberships.active.where(
+      subscribable_type: subscribable_type,
+      subscribable_id: subscribable_id,
+    )
+    scope = scope.where.not(id: id) if persisted?
+    scope.exists?
   end
 
   # Member-initiated cancellation during a commitment: don't end immediately —

@@ -17,6 +17,13 @@ class Billing::Subscription::CreatePendingSubscription
       context.fail!(message: "Can't add more than one pending memberships. Cancel any existing pending memberships first, and try again.")
     end
 
+    # The sibling guard to the pending one above: a second ACTIVE membership is
+    # two Stripe subscriptions and two charges a month. This path doesn't go
+    # through SaveSubscription, so it needs the check of its own.
+    if subscription.duplicate_active_membership?
+      context.fail!(message: Subscription::DUPLICATE_MEMBERSHIP_MESSAGE)
+    end
+
     subscription.billable = BillableFactory.for(subscription).billable
     subscription.start_date = start_day
 
