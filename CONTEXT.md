@@ -193,7 +193,7 @@ A timestamped event in a Person's history. Stored as one row in the `activities`
 **Schema invariants:**
 - Every Activity belongs to a User and an Operator (multi-tenant scoping).
 - Every Activity has a `kind` (enum of 14 values; see below) and an `occurred_at` timestamp.
-- Every Activity carries denormalized `payload` JSONB so the timeline renders without N+1 joins.
+- Every Activity carries denormalized `payload` JSONB so the timeline renders without N+1 joins. The one deliberate exception: the room hours booked against a day pass or bundle accrue *after* the row is written, so they can't be denormalized — `TimelineHoursIndex` resolves those at read time for a whole page at once. Anything knowable at write time still belongs in the payload, and a subject that can change after the fact (see `Reservation#sync_activity_payload`) writes back rather than being read live.
 - Every Activity also carries a polymorphic `subject` foreign key back to the source record (CampaignSend, Reservation, etc.) so operators can drill in for full detail.
 - Activity rows are written at the moment the event happens, via `Activity.log(user:, kind:, subject:, payload:)`.
 
