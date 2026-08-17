@@ -8,6 +8,7 @@ module ActivityTimelineHelper
     "door_punch"          => "fas fa-door-open text-secondary",
     "reservation"         => "fas fa-calendar-check text-primary",
     "day_pass"            => "fas fa-ticket-alt text-primary",
+    "day_pass_bundle"     => "fas fa-layer-group text-primary",
     "subscription_started"=> "fas fa-users text-success",
     "subscription_ended"  => "fas fa-user-slash text-warning",
     "office_lease"        => "fas fa-building text-success",
@@ -39,6 +40,7 @@ module ActivityTimelineHelper
     when "door_punch"           then "Entered #{p['door_name'] || 'a door'}"
     when "reservation"          then "Booked #{p['room_name'] || 'a room'}"
     when "day_pass"             then p["complimentary"] ? "Comped a day pass" : "Bought a day pass"
+    when "day_pass_bundle"      then p["quantity"].to_i > 0 ? "Bought a #{p['quantity']}-pack day pass bundle" : "Bought a day pass bundle"
     when "subscription_started" then "Started membership: #{p['plan_name'] || 'plan'}"
     when "subscription_ended"   then "Ended membership: #{p['plan_name'] || 'plan'}"
     when "office_lease"         then "Leased office: #{p['office_name'] || 'office'}"
@@ -136,5 +138,89 @@ module ActivityTimelineHelper
 
   def activity_timeline_pretty_time(activity)
     activity.occurred_at.strftime("%b %-d, %Y · %-l:%M%P")
+  end
+
+  # The secondary line under a timeline card.
+  #
+  # For most kinds that is `occurred_at` — when the thing happened. Reservations
+  # are the exception: `occurred_at` is when the member clicked "book", which
+  # tells staff nothing about when the room was actually held, so those cards
+  # show the booked window and its duration instead. Day-pass and bundle cards
+  # roll up the room time booked against them, which is what `hours` carries —
+  # pass a TimelineHoursIndex built for the whole page (see TimelineHoursIndex).
+  def activity_timeline_subtitle(activity, hours: nil)
+    subtitle =
+      case activity.kind
+      when "reservation"     then reservation_subtitle(activity)
+      when "day_pass"        then day_pass_subtitle(activity, hours)
+      when "day_pass_bundle" then day_pass_bundle_subtitle(activity, hours)
+      end
+
+    subtitle.presence || activity_timeline_pretty_time(activity)
+  end
+
+  # "Aug 18, 2026 · 2pm–3:30pm · 1h 30m". Reads the denormalized payload, which
+  # Reservation keeps in step on edit, early-end, and cancel.
+  def reservation_subtitle(activity)
+    p = activity.payload || {}
+    starts_at = parse_payload_time(p["datetime_in"])
+    return nil if starts_at.nil?
+
+    minutes = p["minutes"].to_i
+    parts = [
+      "#{starts_at.strftime('%b %-d, %Y')} · " \
+      "#{pretty_clock(starts_at)}–#{pretty_clock(starts_at + minutes.minutes)} · " \
+      "#{pretty_duration(minutes)}",
+    ]
+    parts << "cancelled" if p["cancelled"]
+    parts.join(" · ")
+  end
+
+  def day_pass_subtitle(activity, hours)
+    day = parse_payload_date(activity.payload&.dig("day"))
+    return nil if day.nil?
+
+    "#{day.strftime('%b %-d, %Y')} · #{pretty_booked(hours&.minutes_on(day).to_i)}"
+  end
+
+  def day_pass_bundle_subtitle(activity, hours)
+    return nil if activity.subject_id.nil?
+
+    summary = hours&.bundle(activity.subject_id)
+    return nil if summary.nil? || summary[:quantity].to_i.zero?
+
+    "#{activity.occurred_at.strftime('%b %-d, %Y')} · " \
+      "#{summary[:used]} of #{summary[:quantity]} used · #{pretty_booked(summary[:minutes].to_i)}"
+  end
+
+  def pretty_booked(minutes)
+    minutes.positive? ? "#{pretty_duration(minutes)} booked" : "no room time booked"
+  end
+
+  def pretty_duration(minutes)
+    hours, remainder = minutes.to_i.divmod(60)
+    return "#{remainder}m" if hours.zero?
+    return "#{hours}h" if remainder.zero?
+    "#{hours}h #{remainder}m"
+  end
+
+  # Drops the ":00" on the hour so a window reads "2pm–3:30pm", not "2:00pm–3:30pm".
+  def pretty_clock(time)
+    time.min.zero? ? time.strftime("%-l%P") : time.strftime("%-l:%M%P")
+  end
+
+  # Time.parse, not Time.zone.parse: the payload stores the room's local time
+  # with its offset, and Time.zone.parse would re-render it in the app zone
+  # (UTC on Heroku), shifting every displayed window.
+  def parse_payload_time(value)
+    value.present? ? Time.parse(value.to_s) : nil
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  def parse_payload_date(value)
+    value.present? ? Date.parse(value.to_s) : nil
+  rescue ArgumentError, TypeError
+    nil
   end
 end

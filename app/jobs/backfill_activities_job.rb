@@ -10,6 +10,7 @@ class BackfillActivitiesJob < ApplicationJob
     backfill_checkins(operator, since)
     backfill_door_punches(operator, since)
     backfill_day_passes(operator, since)
+    backfill_day_pass_bundles(operator, since)
     backfill_subscriptions(operator, since)
     backfill_invoices(operator, since)
     backfill_lead_notes(operator, since)
@@ -87,6 +88,24 @@ class BackfillActivitiesJob < ApplicationJob
           source: day_pass,
           user: day_pass.user,
           occurred_at: day_pass.created_at,
+          operator: operator,
+        )
+      end
+  end
+
+  # Bundles only started logging their own activity when the timeline began
+  # reporting passes-used and hours-booked per pack, so every pack bought
+  # before that has no card. purchased_at is the real buy moment; created_at
+  # backs it up for rows seeded or imported without one.
+  def backfill_day_pass_bundles(operator, since)
+    DayPassBundle.where(operator_id: operator.id)
+      .where("created_at >= ?", since)
+      .find_each(batch_size: BATCH_SIZE) do |bundle|
+        log_unless_exists(
+          kind: :day_pass_bundle,
+          source: bundle,
+          user: bundle.user,
+          occurred_at: bundle.purchased_at || bundle.created_at,
           operator: operator,
         )
       end
