@@ -1541,9 +1541,13 @@
     }
   }
 
+  // Grid, not wrapped flex: content-sized chips left a dead right gutter on
+  // phones (341px sheet fit 3×80px chips + 76px of nothing) and read as
+  // "bunched up". auto-fill + 1fr stretches however many columns fit to
+  // fill the row edge-to-edge, at every width.
   #time-slots-container {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 11px;
     user-select: none;
   }
