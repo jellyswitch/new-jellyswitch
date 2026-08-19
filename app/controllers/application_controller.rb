@@ -48,8 +48,22 @@ class ApplicationController < ActionController::Base
     # redirecting there re-triggers the denial and produces an infinite 302
     # loop (ERR_TOO_MANY_REDIRECTS). Fall back to root in that case.
     return root_path if referrer.blank? || same_path?(referrer, request.url)
+    # And never bounce to another HOST. Hopping between brands leaves a
+    # foreign referrer (logged in on untethered.space, click a link into
+    # tml.jellyswitch.com, Pundit denies → Referer is untethered.space), and
+    # a bare redirect_to raises UnsafeRedirectError — the "Whoops, not
+    # allowed" flash became a 500 (2026-08-19). A denied visitor belongs on
+    # THIS brand's landing page, not shipped off-site.
+    return root_path unless same_host?(referrer)
 
     referrer
+  end
+
+  def same_host?(url)
+    host = URI.parse(url).host
+    host.nil? || host == request.host
+  rescue URI::InvalidURIError
+    false
   end
 
   def same_path?(url_a, url_b)
