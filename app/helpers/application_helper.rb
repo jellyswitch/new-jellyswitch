@@ -227,20 +227,32 @@ module ApplicationHelper
   end
 
   def set_tracking_pixels
-    return unless current_location.present?
+    return unless defined?(current_tenant) && current_tenant
 
-    # Always-on pixels (e.g. Google Analytics) load on every page
-    @head_pixels = current_location.tracking_pixels.head.always_on.to_a
-    @body_pixels = current_location.tracking_pixels.body.always_on.to_a
-    @footer_pixels = current_location.tracking_pixels.footer.always_on.to_a
+    # Brand-global, not per-location: ad tags (Google Tag Manager, GA4) must
+    # load on every page, including for logged-out visitors on multi-location
+    # operators — there no current_location resolves, so per-location pixels
+    # silently never injected. Rows still hang off a location (the settings UI
+    # is location-tabbed), so the same snippet saved under several locations
+    # dedupes to a single inject.
+    pixels = TrackingPixel.where(operator: current_tenant).order(:id).to_a
+    pixels.uniq! { |p| [p.position, p.script] }
+    always_on, conversion_only = pixels.partition(&:always_on)
 
-    # Conversion-only pixels fire once after membership activation
+    # Always-on pixels (e.g. Google Tag Manager, Google Analytics) load on every page
+    @head_pixels = always_on.select(&:head?)
+    @body_pixels = always_on.select(&:body?)
+    @footer_pixels = always_on.select(&:footer?)
+
+    # Conversion-only pixels and the dataLayer purchase event fire once, on the
+    # page rendered after a purchase (ApplicationController#track_conversion)
     if session[:should_track_pixels]
       # workaround for turbo redirect because it effectively renders twice
       if session[:first_pixel_render]
-        @head_pixels += current_location.tracking_pixels.head.conversion_only.to_a
-        @body_pixels += current_location.tracking_pixels.body.conversion_only.to_a
-        @footer_pixels += current_location.tracking_pixels.footer.conversion_only.to_a
+        @head_pixels += conversion_only.select(&:head?)
+        @body_pixels += conversion_only.select(&:body?)
+        @footer_pixels += conversion_only.select(&:footer?)
+        @conversion_event = session.delete(:conversion_event)
         session.delete(:first_pixel_render)
         session.delete(:should_track_pixels)
       else

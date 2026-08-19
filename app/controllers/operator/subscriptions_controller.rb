@@ -85,7 +85,10 @@ class Operator::SubscriptionsController < Operator::BaseController
 
     if result.success?
       flash[:success] = append_email_handoff("Welcome to #{current_location.name}!")
-      session[:should_track_pixels] = true
+      track_conversion("membership",
+                       product_name: @subscription.plan&.name,
+                       amount_in_cents: @subscription.plan&.amount_in_cents,
+                       transaction_id: "sub_#{@subscription.id}")
       turbo_redirect(root_path)
     else
       flash[:error] = result.message

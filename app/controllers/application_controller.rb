@@ -90,4 +90,19 @@ class ApplicationController < ActionController::Base
       end
     end
   end
+
+  # Arms the one-shot post-purchase pixel render (conversion-only tracking
+  # pixels) and carries a `purchase` dataLayer event with product details so
+  # GTM/ad platforms can attribute conversions per product. Fires on the page
+  # rendered after the purchase redirect (ApplicationHelper#set_tracking_pixels).
+  def track_conversion(product_type, product_name: nil, amount_in_cents: nil, transaction_id: nil)
+    session[:should_track_pixels] = true
+    session[:conversion_event] = {
+      product_type: product_type,
+      product_name: product_name,
+      value: amount_in_cents.present? ? amount_in_cents / 100.0 : nil,
+      currency: "USD",
+      transaction_id: transaction_id,
+    }.compact
+  end
 end

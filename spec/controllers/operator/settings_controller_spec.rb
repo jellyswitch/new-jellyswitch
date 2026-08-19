@@ -296,6 +296,16 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(location.tracking_pixels.count).to eq(1)
       expect(location.tracking_pixels.first.name).to eq("GA")
     end
+
+    it "saves the pixel placement (position) so GTM's noscript tag can target the body" do
+      patch :update_wifi_and_pixels, params: {
+        location_id: location.id,
+        location: {
+          tracking_pixels_attributes: [{ name: "GTM noscript", script: "<noscript>gtm</noscript>", position: "body", operator_id: operator.id }]
+        }
+      }
+      expect(location.reload.tracking_pixels.first.position).to eq("body")
+    end
   end
 
   describe "GET #payments" do

@@ -84,7 +84,10 @@ class Operator::OfficeLeasesController < Operator::BaseController
 
     if result.success?
       flash[:notice] = "Office lease created."
-      session[:should_track_pixels] = true
+      track_conversion("office_lease",
+                       product_name: @office_lease.subscription&.plan&.name,
+                       amount_in_cents: @office_lease.subscription&.plan&.amount_in_cents,
+                       transaction_id: "lease_#{result.office_lease.id}")
       turbo_redirect(office_lease_path(result.office_lease))
     else
       flash[:error] = result.message

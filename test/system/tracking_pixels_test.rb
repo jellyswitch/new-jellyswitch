@@ -103,8 +103,9 @@ class TrackingPixelsTest < ApplicationSystemTestCase
 
     assert_text "Building Access"
 
-    # assert the tracking pixel is present
-    assert page.html.include?("UA-12345678-1")
+    # assert the tracking pixel is present AND unescaped — an escaped snippet
+    # (&lt;script&gt;…) still contains the bare id, but can never execute
+    assert page.html.include?("<script>console.log('UA-12345678-1');</script>")
 
     StripeMock.stop
   end

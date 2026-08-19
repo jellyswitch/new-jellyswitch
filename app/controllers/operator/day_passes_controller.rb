@@ -183,7 +183,10 @@ class Operator::DayPassesController < Operator::BaseController
         flash[:success] = append_email_handoff("Thanks! Your day pass will be available on #{short_date(@day_pass.day)}.")
       end
       flash.keep
-      session[:should_track_pixels] = true
+      track_conversion("day_pass",
+                       product_name: @day_pass.day_pass_type&.name,
+                       amount_in_cents: @day_pass.day_pass_type&.amount_in_cents,
+                       transaction_id: "dp_#{@day_pass.id}")
       # An unapproved member just buying their way in during onboarding should
       # land on the "You're almost in!" confirmation (/wait) so the purchase is
       # clearly acknowledged — not back on home_path, which resolves to the
@@ -425,7 +428,10 @@ class Operator::DayPassesController < Operator::BaseController
       bundle = result.day_pass_bundle
       flash[:success] = append_email_handoff("Thanks! #{bundle.passes_remaining} day passes added to your account.")
       flash.keep
-      session[:should_track_pixels] = true
+      track_conversion("day_pass_bundle",
+                       product_name: day_pass_type.name,
+                       amount_in_cents: day_pass_type.amount_in_cents,
+                       transaction_id: "dpb_#{bundle.id}")
       turbo_redirect(approved? ? home_path : wait_path)
     else
       flash[:error] = result.message
