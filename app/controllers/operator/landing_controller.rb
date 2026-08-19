@@ -53,8 +53,9 @@ class Operator::LandingController < Operator::BaseController
 
   def activate
     if current_user.out_of_band?
+      pending_subscription = current_user.subscriptions.pending.first
       result = Billing::Subscription::ActivatePendingSubscription.call(
-        subscription: current_user.subscriptions.pending.first,
+        subscription: pending_subscription,
         user: current_user,
         operator: current_tenant,
         location: current_location,
@@ -63,7 +64,7 @@ class Operator::LandingController < Operator::BaseController
       if result.success?
         # redirect to home
         flash[:success] = "Welcome!"
-        session[:should_track_pixels] = true
+        track_membership_activation(pending_subscription)
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result.message
@@ -85,8 +86,9 @@ class Operator::LandingController < Operator::BaseController
     )
     if result.success?
       # activate membership
+      pending_subscription = current_user.subscriptions.pending.first
       result2 = Billing::Subscription::ActivatePendingSubscription.call(
-        subscription: current_user.subscriptions.pending.first,
+        subscription: pending_subscription,
         user: current_user,
         operator: current_tenant,
         location: current_location,
@@ -95,7 +97,7 @@ class Operator::LandingController < Operator::BaseController
       if result2.success?
         # redirect to home
         flash[:success] = "Welcome!"
-        session[:should_track_pixels] = true
+        track_membership_activation(pending_subscription)
         turbo_redirect(home_path, action: restore_if_possible)
       else
         flash[:error] = result2.message
@@ -171,6 +173,13 @@ class Operator::LandingController < Operator::BaseController
   end
 
   private
+
+  def track_membership_activation(subscription)
+    track_conversion("membership",
+                     product_name: subscription&.plan&.name,
+                     amount_in_cents: subscription&.plan&.amount_in_cents,
+                     transaction_id: subscription ? "sub_#{subscription.id}" : nil)
+  end
 
   def find_doors
     @doors = current_location&.doors || Door.none

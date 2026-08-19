@@ -135,15 +135,34 @@
     <% end %>
   </head>
 
-  <% if @background_image %>
-    <% if @background_image.attached? %>
-      <body style="background-image: url('<%= url_for(@background_image) %>'); background-repeat: no-repeat; background-size: cover;">
-    <% else %>
-      <body style="background-color: #f5f5f7;">
+  <% body_style = if @background_image&.attached?
+       "background-image: url('#{url_for(@background_image)}'); background-repeat: no-repeat; background-size: cover;"
+     else
+       "background-color: #f5f5f7;"
+     end %>
+  <body style="<%= body_style %>">
+    <%# Body pixels (e.g. Google Tag Manager's <noscript> tag) belong immediately
+        after the opening <body> tag. %>
+    <% if @body_pixels %>
+      <% @body_pixels.each do |pixel| %>
+        <%= raw pixel.script %>
+      <% end %>
     <% end %>
-  <% else %>
-    <body style="background-color: #f5f5f7;">
-  <% end %>
+    <% if @conversion_event %>
+      <script>
+        (function() {
+          var payload = <%= raw ERB::Util.json_escape({ "event" => "purchase" }.merge(@conversion_event.to_h.stringify_keys).to_json) %>;
+          // Turbo can restore a cached snapshot of this page; never double-report.
+          window.__jswConversions = window.__jswConversions || {};
+          var key = JSON.stringify(payload);
+          if (!window.__jswConversions[key]) {
+            window.__jswConversions[key] = true;
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push(payload);
+          }
+        })();
+      </script>
+    <% end %>
     <%= render "layouts/nav_renderer" %>
     <%= render "layouts/verify_email_banner" %>
     <%= render "layouts/unread_replies_banner" %>
@@ -180,17 +199,10 @@
     <% elsif mobile_app_request? %>
       <div style="min-height: 6em;">&nbsp;</div>
     <% end %>
-    <% if @body_pixels %>
-      <% @body_pixels.each do |pixel| %>
-        <%= pixel.script %>
-      <% end %>
-    <% end %>
-  </body>
-  <footer>
     <% if @footer_pixels %>
       <% @footer_pixels.each do |pixel| %>
         <%= raw pixel.script %>
       <% end %>
     <% end %>
-  </footer>
+  </body>
 </html>

@@ -240,7 +240,7 @@ class Operator::SettingsController < Operator::BaseController
   def wifi_and_pixels_params
     params.require(:location).permit(
       :wifi_name, :wifi_password,
-      tracking_pixels_attributes: [:id, :operator_id, :name, :script, :always_on, :_destroy]
+      tracking_pixels_attributes: [:id, :operator_id, :name, :script, :position, :always_on, :_destroy]
     )
   end
 
