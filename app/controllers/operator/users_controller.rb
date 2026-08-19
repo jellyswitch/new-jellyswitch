@@ -425,6 +425,7 @@ class Operator::UsersController < Operator::BaseController
   def approve
     find_user(:user_id)
     @user.update_column(:approved, true)
+    Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :approved)
 
     # Auto-activate pending subscription if user already selected a plan
     pending_sub = @user.subscriptions.pending.first
@@ -453,6 +454,7 @@ class Operator::UsersController < Operator::BaseController
   def unapprove
     find_user(:user_id)
     @user.update_column(:approved, false)
+    Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :unapproved)
     flash[:success] = "User unapproved."
     turbo_redirect(approval_redirect_path)
   end
@@ -465,6 +467,7 @@ class Operator::UsersController < Operator::BaseController
       flash[:error] = "Cannot archive an active member."
     else
       @user.update_columns(archived: true, approved: false)
+      Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :archived)
       @user.feed_items.where("blob->>'type' = ?", "new-user").destroy_all
       flash[:success] = "User archived (and unapproved)."
     end
@@ -475,6 +478,7 @@ class Operator::UsersController < Operator::BaseController
     find_user(:user_id)
     authorize @user
     @user.update_columns(archived: false, approved: true)
+    Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :unarchived)
     flash[:success] = "User unarchived."
     turbo_redirect(user_path(@user))
   end

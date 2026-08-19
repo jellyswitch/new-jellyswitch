@@ -35,6 +35,7 @@ class Activity < ApplicationRecord
     reservation
     day_pass
     day_pass_bundle
+    admin_action
     subscription_started
     subscription_ended
     office_lease
@@ -74,6 +75,28 @@ class Activity < ApplicationRecord
 
   def self.log(**kwargs)
     ActivityLogger.log(**kwargs)
+  end
+
+  # Audit trail for account-state changes (archive/unarchive/approve/
+  # unapprove/self-delete). Born from a five-day mystery: someone archived
+  # the Cowork Tahoe space host's account via the mobile admin app on
+  # 2026-08-14 and NOTHING recorded who — no actor, no timestamp beyond the
+  # row's updated_at. These land on the affected member's timeline as
+  # "Archived by <actor>". Failures never block the admin action itself.
+  def self.log_admin_action(user:, actor:, operator:, action:)
+    log(
+      user: user,
+      operator: operator,
+      kind: :admin_action,
+      payload: {
+        "action" => action.to_s,
+        "actor_id" => actor&.id,
+        "actor_name" => actor&.name,
+      },
+    )
+  rescue => e
+    Rails.logger.error("log_admin_action failed: #{e.message}")
+    nil
   end
 
   private

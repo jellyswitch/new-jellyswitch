@@ -175,6 +175,7 @@ class Api::V1::UsersController < Api::V1::BaseController
     end
     # Soft-delete: archive and remove access
     user.update(approved: false, archived: true)
+    Activity.log_admin_action(user: user, actor: user, operator: current_tenant, action: :self_deleted)
     render json: { success: true }
   end
 
