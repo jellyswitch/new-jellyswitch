@@ -9,6 +9,7 @@ module ActivityTimelineHelper
     "reservation"         => "fas fa-calendar-check text-primary",
     "day_pass"            => "fas fa-ticket-alt text-primary",
     "day_pass_bundle"     => "fas fa-layer-group text-primary",
+    "admin_action"        => "fas fa-user-shield text-muted",
     "subscription_started"=> "fas fa-users text-success",
     "subscription_ended"  => "fas fa-user-slash text-warning",
     "office_lease"        => "fas fa-building text-success",
@@ -41,6 +42,7 @@ module ActivityTimelineHelper
     when "reservation"          then "Booked #{p['room_name'] || 'a room'}"
     when "day_pass"             then p["complimentary"] ? "Comped a day pass" : "Bought a day pass"
     when "day_pass_bundle"      then p["quantity"].to_i > 0 ? "Bought a #{p['quantity']}-pack day pass bundle" : "Bought a day pass bundle"
+    when "admin_action"         then admin_action_label(p)
     when "subscription_started" then "Started membership: #{p['plan_name'] || 'plan'}"
     when "subscription_ended"   then "Ended membership: #{p['plan_name'] || 'plan'}"
     when "office_lease"         then "Leased office: #{p['office_name'] || 'office'}"
@@ -58,6 +60,22 @@ module ActivityTimelineHelper
     when "email_replied"        then "Replied to: #{engagement_subject(activity, p)}"
     else activity.kind.humanize
     end
+  end
+
+  # Account-state audit rows: "Archived by Jamie Orr". self_deleted has no
+  # meaningful actor line (the actor IS the member), so it reads plainly.
+  ADMIN_ACTION_VERBS = {
+    "archived"     => "Archived",
+    "unarchived"   => "Unarchived",
+    "approved"     => "Approved",
+    "unapproved"   => "Unapproved",
+    "self_deleted" => "Deleted their account",
+  }.freeze
+
+  def admin_action_label(p)
+    verb = ADMIN_ACTION_VERBS[p["action"]] || p["action"].to_s.humanize
+    return verb if p["action"] == "self_deleted"
+    "#{verb} by #{p['actor_name'] || 'staff'}"
   end
 
   # The widget request row carries what the prospect actually typed — staff

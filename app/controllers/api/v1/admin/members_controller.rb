@@ -194,6 +194,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     end
 
     SendNotificationsJob.perform_later(user)
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :approved)
 
     render json: { success: true, approved: true }
   end
@@ -201,6 +202,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   def unapprove
     user = current_tenant.users.find(params[:id])
     user.update!(approved: false)
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :unapproved)
 
     render json: { success: true, approved: false }
   end
@@ -208,6 +210,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   def archive
     user = current_tenant.users.find(params[:id])
     user.update!(archived: true)
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :archived)
 
     render json: { success: true, archived: true }
   end
@@ -215,6 +218,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   def unarchive
     user = current_tenant.users.find(params[:id])
     user.update!(archived: false)
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :unarchived)
 
     render json: { success: true, archived: false }
   end
