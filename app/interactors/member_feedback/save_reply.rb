@@ -12,7 +12,7 @@ class MemberFeedback::SaveReply
     context.feedback_reply = reply
 
     if !reply.save
-      context.fail!(message: "Could not save reply.")
+      context.fail!(message: reply.errors.full_messages.first || "Could not save reply.")
     end
 
     # Parent updated_at is bumped automatically by FeedbackReply's
