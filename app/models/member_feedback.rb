@@ -28,6 +28,19 @@ class MemberFeedback < ApplicationRecord
 
   acts_as_tenant :operator
 
+  ARCHIVED_AUTHOR_MESSAGE =
+    "This account is no longer active. Please contact the space directly.".freeze
+
+  # Archiving is the admin's "deactivate" gesture, but the API deliberately
+  # keeps archived users able to LOG IN (cross-tenant reasons — see
+  # Api::V1::AuthController#login). Nothing stopped them from messaging, so
+  # archiving someone who was flooding the inbox changed nothing (LaTasha,
+  # Untethered, 2026-08). New threads and replies now refuse an archived
+  # author at the model layer, which covers every entry path — interactors,
+  # the API's bare-save fallback, and web — while staff replying INTO an
+  # archived member's old thread is untouched (the author there is staff).
+  validate :author_not_archived, on: :create
+
   scope :recent, ->() { where('created_at > ?', Time.now - 7.days) }
 
   # Not hidden from the admin conversations inbox.
@@ -99,5 +112,11 @@ class MemberFeedback < ApplicationRecord
     return 0 if feedback_replies.empty?
     return feedback_replies.count if last_read_at.nil?
     feedback_replies.where("created_at > ?", last_read_at).count
+  end
+
+  private
+
+  def author_not_archived
+    errors.add(:base, ARCHIVED_AUTHOR_MESSAGE) if user&.archived?
   end
 end

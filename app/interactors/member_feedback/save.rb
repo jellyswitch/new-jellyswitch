@@ -10,7 +10,7 @@ class MemberFeedback::Save
     member_feedback.location = context.location
 
     if !member_feedback.save
-      context.fail!(message: "Couldn't submit feedback.")
+      context.fail!(message: member_feedback.errors.full_messages.first || "Couldn't submit feedback.")
     end
 
     context.member_feedback = member_feedback

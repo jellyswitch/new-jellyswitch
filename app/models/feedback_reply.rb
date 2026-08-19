@@ -35,6 +35,12 @@ class FeedbackReply < ApplicationRecord
 
   validates :body, presence: true
 
+  # The sibling of MemberFeedback's guard (see the comment there): archived
+  # users can still log in by design, so the model layer is what makes
+  # archiving actually silence a sender. Keys on the REPLY's author, so staff
+  # answering into an archived member's old thread is unaffected.
+  validate :author_not_archived, on: :create
+
   # Restarting a conversation (a new reply from either side) brings it back to
   # the admin inbox if it had been dismissed. touch: true already bumps the
   # thread's updated_at so it floats to the top.
@@ -59,5 +65,9 @@ class FeedbackReply < ApplicationRecord
   def resurface_dismissed_thread
     return if member_feedback.nil? || member_feedback.dismissed_at.nil?
     member_feedback.update_columns(dismissed_at: nil)
+  end
+
+  def author_not_archived
+    errors.add(:base, MemberFeedback::ARCHIVED_AUTHOR_MESSAGE) if user&.archived?
   end
 end
