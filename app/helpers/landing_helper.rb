@@ -77,13 +77,21 @@ module LandingHelper
   #   3. Oldest admin on the operator (last-resort fallback).
   #
   # Returns nil when none of those exist.
+  # Never returns an archived user: the host authors greeting replies, and
+  # FeedbackReply refuses archived authors (#731) — an archived configured
+  # host (Cowork Tahoe pointed at a long-archived admin account) turned every
+  # new member's first message into a 500. An archived host falls through to
+  # the live-GM/admin chain like no host was configured at all.
   def space_host_for(location)
     return nil unless location
-    return location.space_host if location.space_host_id.present?
 
-    gm = location.operator.users.where(role: User::GENERAL_MANAGER, current_location_id: location.id)
-                                .order(:created_at).first
-    gm || location.operator.users.where(role: User::ADMIN).order(:created_at).first
+    configured = location.space_host_id.present? ? location.space_host : nil
+    return configured if configured && !configured.archived?
+
+    gm = location.operator.users.visible
+                 .where(role: User::GENERAL_MANAGER, current_location_id: location.id)
+                 .order(:created_at).first
+    gm || location.operator.users.visible.where(role: User::ADMIN).order(:created_at).first
   end
 
   # All of the member's feedback threads with at least one unread admin reply,

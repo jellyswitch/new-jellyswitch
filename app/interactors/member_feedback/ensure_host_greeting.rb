@@ -29,26 +29,43 @@ class MemberFeedback::EnsureHostGreeting
 
     host = context.host
     return if host.blank?
+    # An archived host can't author the greeting (FeedbackReply refuses
+    # archived authors, #731). space_host_for no longer hands one out, but
+    # this interactor takes any host — skip the greeting rather than raise;
+    # the caller then opens a plain thread from the member's own message.
+    return if host.archived?
 
-    # Empty comment because the host is "messaging first" — the show view
-    # skips rendering a blank original-message bubble so the conversation
-    # starts with the host's greeting.
-    feedback = MemberFeedback.new(
-      user: user,
-      operator: operator,
-      location: location,
-      comment: nil,
-      anonymous: false,
-    )
-    return unless feedback.save
+    # One transaction, no bangs: if the greeting can't save for any reason,
+    # the empty thread shell must not survive without it — a create! here
+    # once turned a refused greeting author into a 500 AND left an orphan
+    # thread behind (Cowork Tahoe, 2026-08-19).
+    feedback = nil
+    ActiveRecord::Base.transaction do
+      # Empty comment because the host is "messaging first" — the show view
+      # skips rendering a blank original-message bubble so the conversation
+      # starts with the host's greeting.
+      feedback = MemberFeedback.new(
+        user: user,
+        operator: operator,
+        location: location,
+        comment: nil,
+        anonymous: false,
+      )
+      raise ActiveRecord::Rollback unless feedback.save
 
-    greeting = context.greeting.presence || default_greeting(user, location)
-    FeedbackReply.create!(
-      member_feedback: feedback,
-      user: host,
-      operator: operator,
-      body: greeting,
-    )
+      greeting = context.greeting.presence || default_greeting(user, location)
+      reply = FeedbackReply.new(
+        member_feedback: feedback,
+        user: host,
+        operator: operator,
+        body: greeting,
+      )
+      unless reply.save
+        feedback = nil
+        raise ActiveRecord::Rollback
+      end
+    end
+    return if feedback.nil? || !feedback.persisted?
 
     context.member_feedback = feedback
   end
