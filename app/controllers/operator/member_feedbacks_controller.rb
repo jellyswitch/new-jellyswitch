@@ -55,6 +55,11 @@ class Operator::MemberFeedbacksController < Operator::BaseController
       flash[:success] = "Thank you — staff will reply right here."
       turbo_redirect(member_feedback_path(@member_feedback), action: restore_if_possible)
     else
+      # The form is re-rendered on failure, and form_for raises on a nil model —
+      # so never hand the view nothing. An interactor that refused before it
+      # built a record (or built none at all) still has to land on the 422 that
+      # explains itself, not a 500.
+      @member_feedback ||= MemberFeedback.new(member_feedback_params)
       flash[:error] = result.message
       background_image
       render :new, status: 422

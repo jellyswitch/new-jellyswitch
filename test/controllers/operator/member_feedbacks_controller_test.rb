@@ -79,6 +79,29 @@ class Operator::MemberFeedbacksControllerTest < ActionDispatch::IntegrationTest
     assert_nil flash[:alert], "anonymous denials must not set a sticky flash"
   end
 
+  # Regression: an archived member posting from the web chat card. The
+  # archived-author guard (#731) refuses the thread, MemberFeedback::Save
+  # failed before it put the record on the context, and the failure branch
+  # re-rendered the form with nil — ActionView blew up with "First argument in
+  # form cannot contain nil or be empty" (Honeybadger, Choose Folsom
+  # Workspace). The refusal has to land as a 422 that says why.
+  test "an archived member's post is refused with a 422, not a 500" do
+    delete logout_path, env: default_env
+    @member.member_feedbacks.destroy_all
+    @member.update!(archived: true, current_location: @location)
+    log_in @member
+
+    assert_no_difference -> { MemberFeedback.where(user: @member).count } do
+      post member_feedbacks_path,
+           params: { member_feedback: { comment: "Can I still get in?" } },
+           env: default_env
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal MemberFeedback::ARCHIVED_AUTHOR_MESSAGE, flash[:error]
+    assert_select "form"
+  end
+
   test "anonymous visit to an unknown thread id is not found, not a 500" do
     delete logout_path, env: default_env
 
