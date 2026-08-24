@@ -11,6 +11,14 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
                     .includes(:user, :feed_item_comments, :rich_text_text)
                     .order(updated_at: :desc)
 
+    # Scope to the admin's location, exactly as the web dashboard does
+    # (FeedItemsHelper#generic_feed_items). Without this the mobile feed was
+    # operator-wide, so a multi-location operator's admins saw every sibling
+    # location's activity: Untethered's Fulton staff got a feed that was 27-of-30
+    # Zephyr Cove items, including that location's weekly update. `for_location`
+    # keeps location-less legacy rows visible, same as the web.
+    items = items.for_location(feed_location) if feed_location
+
     items = apply_filter(items, params[:filter]) if params[:filter].present?
 
     # Per-operator toggles — hide types the operator has muted.
@@ -44,7 +52,9 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     feed_item = FeedItem.new(
       blob: { 'type' => 'post', 'body' => body, 'text' => body, 'user_name' => current_api_user.name },
       operator: current_tenant,
-      location: current_location,
+      # Same location the admin is reading, so a note posted from the feed
+      # lands in the feed it was posted to.
+      location: feed_location,
       user: current_api_user,
     )
     feed_item.text = body
@@ -103,6 +113,17 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
   end
 
   private
+
+  # The location whose feed this admin is looking at.
+  #
+  # Deliberately NOT the API's shared `current_location`, which resolves
+  # `original_location` FIRST: that's the location an account was created at, so
+  # an admin who used the in-app Location Switch screen (which writes
+  # current_location) would switch locations and still be shown their home
+  # feed. Prefer where they are now, fall back to home.
+  def feed_location
+    @feed_location ||= current_api_user&.current_location || current_api_user&.original_location
+  end
 
   def apply_filter(items, filter)
     case filter
