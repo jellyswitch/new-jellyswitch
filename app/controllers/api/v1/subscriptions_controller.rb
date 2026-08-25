@@ -365,6 +365,11 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
       # Office leases are admin-managed contracts — the app hides the
       # cancel/change-plan affordances when this is true (server still enforces).
       is_office_lease: sub.try(:backs_office_lease?) || false,
+      # The location's house rule about pausing, shown as a confirm before the
+      # app pauses anything (a Tahoe Longhouse member paused from the app and
+      # left a dedicated desk full of belongings behind, 2026-08-19). nil =
+      # nothing to warn about; the app pauses straight through.
+      pause_warning: plan.location&.pause_warning.presence,
       # Day Pool resets with the billing period; period_end_date above is that date.
       included_meeting_minutes: plan.try(:included_meeting_room_minutes),
       billed_to: sub.subscribable_type == 'Organization' ? 'organization' : 'user',

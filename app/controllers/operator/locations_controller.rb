@@ -171,6 +171,7 @@ class Operator::LocationsController < Operator::BaseController
       :open_sunday, :open_monday, :open_tuesday, :open_wednesday, :open_thursday,
       :open_friday, :open_saturday, :working_day_start, :working_day_end, :kisi_api_key,
       :credit_cost_in_cents, :sender_email, :google_reviews_url, :renewal_reminder_days,
+      :pause_warning,
     ]
     permitted << :space_host_id if policy(@location || Location).set_space_host?
     attrs = params.require(:location).permit(

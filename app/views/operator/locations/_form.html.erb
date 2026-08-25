@@ -115,6 +115,16 @@
     <%= f.text_field :building_access_instructions, placeholder: "Please see a host for your key...", class: "form-control" %>
   </div>
 
+  <div class="form-group">
+    <%= f.label :pause_warning, "Pause membership warning" %>
+    <%= f.text_area :pause_warning, rows: 4, class: "form-control",
+          placeholder: "Heads up! If you have belongings stored at a dedicated desk, pausing means giving up that desk..." %>
+    <small class="form-text text-muted">
+      Shown to a member for confirmation before they pause a membership, in the app and on the web.
+      Leave blank for no warning.
+    </small>
+  </div>
+
 
   <div class="form-group">
     <%= f.label :building_address %>
