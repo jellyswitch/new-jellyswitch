@@ -54,9 +54,9 @@ class Api::V1::PauseWarningTest < ActionDispatch::IntegrationTest
   end
 
   test "the location's pause warning rides along on the subscription" do
-    warning = "Heads up! Pausing your desk membership means you have to give up your desk. " \
-              "Please remove all of your belongings. If not cleared, they will be stored " \
-              "for up to 3 months before being disposed of."
+    warning = "Heads up! If you have belongings stored at a dedicated desk, pausing your " \
+              "membership means giving up that desk. Please remove all of your belongings. " \
+              "Anything left behind will be stored for up to 3 months before being disposed of."
     @location.update!(pause_warning: warning)
 
     assert_equal warning, my_subscription["pause_warning"]

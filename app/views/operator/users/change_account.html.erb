@@ -13,20 +13,26 @@
         <% end %>
       <% else %>
 
-        <% if !@subscription.cancelling_at_end_of_billing_period? # && !@subscription.paused? %>
+        <% if !@subscription.cancelling_at_end_of_billing_period? && !@subscription.paused? %>
           <h3 class="text-center">Downgrade your membership</h3>
           <%= render "operator/subscriptions/form", subscription: @subscription, label: "Switch my membership", cc: false %>
           <hr/>
-          <!-- <h3 class="text-center">Pause Membership</h3> -->
         <% end %>
 
         <div class="d-grid text-center m-2">
-          <%# if @subscription.paused? %>
-            <%#= link_to "Unpause Membership", unpause_membership_path(@subscription), method: :delete, class: "btn btn-sm btn-success" %>
-          <%# else %>
+          <% if @subscription.paused? %>
+            <h3 class="text-center">Unpause Membership</h3>
+            <%# button_to, not link_to + method: :delete — same WKWebView %>
+            <%# GET-downgrade trap as the cancel button below. %>
+            <%= button_to "Unpause Membership", unpause_membership_path(@subscription),
+                method: :delete,
+                class: "btn btn-sm btn-success m-2" %>
+            <hr />
+          <% else %>
             <% if !@subscription.cancelling_at_end_of_billing_period? %>
-              <%#= render "operator/users/pause_membership_form", subscription: @subscription %>
-              <!-- <hr /> -->
+              <h3 class="text-center">Pause Membership</h3>
+              <%= render "operator/users/pause_membership_form", subscription: @subscription %>
+              <hr />
               <h3 class="text-center mt-3">Cancel Membership</h3>
               <%# button_to instead of link_to + data-turbo-method=delete: %>
               <%# the link variant gets routed through navigation interception %>
@@ -39,7 +45,7 @@
                   class: "btn btn-sm btn-warning m-2" %>
               <hr />
             <% end %>
-          <%# end %>
+          <% end %>
       <% end %>
       <h3 class="text-center mt-3">Account Deletion</h3>
       <%= link_to "#", data: { toggle: "modal", target: "#accountDeletionModal" }, class: "btn btn-sm btn-danger" do %>
