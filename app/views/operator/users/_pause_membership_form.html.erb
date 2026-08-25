@@ -1,8 +1,14 @@
+<%# The location's house rule about pausing (e.g. "you have to give up your
+    desk"), shown as a confirm the member has to accept. Blank = no warning,
+    and the form behaves exactly as it did before. Mirrors the app's
+    MembershipScreen pause flow. %>
+<% pause_warning = subscription.plan.location&.pause_warning.presence %>
 <%= form_with(url: pause_membership_path(subscription), html: {id: "stripe-form" }) do |f| %>
   <div>
     <%= select_tag(:resumes_at, options_for_select([["Pause Membership (30 Days)", 30], ["Pause Membership (60 Days)", 60], ["Pause Membership (90 Days)", 90], ["Pause Membership (Indefinitely)"]], selected: params[:resumes_at]), class: "custom-select") %>
   </div>
   <div class="text-center m-1">
-    <%= f.submit "Pause Membership", class: "btn btn-sm btn-primary" %>
+    <%= f.submit "Pause Membership", class: "btn btn-sm btn-primary",
+          data: (pause_warning ? { turbo_confirm: pause_warning } : {}) %>
   </div>
 <% end %>
