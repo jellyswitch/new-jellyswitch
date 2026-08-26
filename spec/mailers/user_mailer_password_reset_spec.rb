@@ -53,6 +53,25 @@ RSpec.describe UserMailer, type: :mailer do
 
     end
 
+    # The mobile app's "I have a reset code" screen asks the member to paste a
+    # code, but the email only ever contained a link -- the token was reachable
+    # only by hand-editing the URL, so that screen was unusable.
+    context "reset code for the mobile app" do
+      let(:mail) { described_class.password_reset(user, operator, user.reset_token) }
+
+      it "prints the raw token as a pasteable code in the HTML part" do
+        body = mail.html_part&.body&.decoded || mail.body.decoded
+        expect(body).to include("I have a reset code")
+        expect(body).to include(user.reset_token)
+      end
+
+      it "prints the raw token as a pasteable code in the text part" do
+        body = mail.text_part&.body&.decoded || mail.body.decoded
+        expect(body).to include("I have a reset code")
+        expect(body).to include(user.reset_token)
+      end
+    end
+
     context "end-to-end: send_password_reset_email passes token correctly" do
       it "calls UserMailer.password_reset with the reset_token" do
         expect(UserMailer).to receive(:password_reset).with(
