@@ -51,6 +51,14 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
+  # ...and build emailed links as https to begin with. application.rb sets only
+  # `host`, so every URL helper called from a mailer defaulted to http://. That
+  # link does reach https via the force_ssl redirect above, but only after the
+  # first request has already crossed the network in cleartext -- with whatever
+  # is in the path, which for a password reset is the reset token itself.
+  # HSTS covers repeat visitors; it does nothing for a first-ever click.
+  config.action_mailer.default_url_options = { host: ENV['HOST'], protocol: 'https' }
+
   # Use the lowest log level to ensure availability of diagnostic information
   # when problems arise.
   config.log_level = :info
