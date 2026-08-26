@@ -1,4 +1,16 @@
 class Operator::PasswordResetsController < Operator::BaseController
+  # Password recovery has to work for someone who is signed out and has never
+  # picked a location -- which is every person following a reset link from
+  # their inbox. Operator::BaseController#reset_location bounces logged-out
+  # visitors to the landing page whenever current_location is blank, and it is
+  # blank for any operator with more than one location (SessionsHelper only
+  # auto-resolves when locations.count == 1). On Untethered, our one live
+  # multi-location operator, that redirected BOTH /password_resets/new and the
+  # emailed /password_resets/:token/edit to "/" and threw the token away, so
+  # members there had no way to recover an account at all. Nothing in this
+  # controller reads current_location, so opt out of the filter.
+  skip_before_action :reset_location
+
   before_action :background_image
 
   def new
