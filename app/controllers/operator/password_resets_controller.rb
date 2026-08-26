@@ -16,23 +16,35 @@ class Operator::PasswordResetsController < Operator::BaseController
   def new
   end
 
+  # Answers identically whether or not the address belongs to an account.
+  # "Email address not found." turned this public form into an oracle for
+  # testing whether a given person is a member here -- and the same address is
+  # usually the login, so it also confirms half of a credential-stuffing pair.
+  # Matches Api::V1::AuthController#forgot_password, which already did this.
   def create
-    @user = User.find_by_operator(email: params[:password_reset][:email].downcase, operator_id: current_tenant.id)
+    @user = find_user_for_email(params.dig(:password_reset, :email))
 
     if @user
-      @user.create_reset_digest
-      @user.send_password_reset_email
-      flash[:success] = "Email sent with password reset instructions"
-      turbo_redirect(root_path, action: "replace")
-    else
-      flash[:error] = "Email address not found."
-      turbo_redirect(new_password_reset_path, action: "replace")
+      begin
+        @user.create_reset_digest
+        @user.send_password_reset_email
+      rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
+        raise
+      rescue => e
+        # A delivery failure must not become a signal either -- log it and give
+        # the same answer as every other outcome.
+        Rails.logger.error("Password reset email failed for user #{@user.id}: #{e.class}: #{e.message}")
+        Honeybadger.notify(e)
+      end
     end
+
+    flash[:success] = "If an account exists for that email address, password reset instructions are on their way."
+    turbo_redirect(root_path, action: "replace")
   rescue Pundit::NotAuthorizedError, ActiveRecord::RecordNotFound
     raise
   rescue => e
     Honeybadger.notify(e)
-    flash[:error] = "An error occurred: #{e.message}"
+    flash[:error] = "An error occurred. Please try again."
     turbo_redirect(referrer_or_root)
   end
 
@@ -95,7 +107,11 @@ class Operator::PasswordResetsController < Operator::BaseController
   end
 
   def find_user
-    email = params[:email].to_s.downcase
+    find_user_for_email(params[:email])
+  end
+
+  def find_user_for_email(raw_email)
+    email = raw_email.to_s.downcase.strip
     return nil if email.blank?
 
     User.find_by_operator(email: email, operator_id: current_tenant.id)
