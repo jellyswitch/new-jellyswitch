@@ -678,8 +678,30 @@ class User < ApplicationRecord
     UserMailer.password_reset(self, operator, reset_token).deliver_now
   end
 
+  # A reset link only proves identity if the token in it matches the digest we
+  # stored -- the counterpart to valid_confirmation_token? above. Both the web
+  # flow (Operator::PasswordResetsController) and the API flow
+  # (Api::V1::AuthController#reset_password) go through this one predicate so
+  # they can't drift apart.
+  def valid_reset_token?(token)
+    return false if reset_digest.blank? || token.blank?
+
+    BCrypt::Password.new(reset_digest).is_password?(token)
+  rescue BCrypt::Errors::InvalidHash
+    false
+  end
+
+  # Single-use: consume the token the moment a reset succeeds, so a link that
+  # has already been used (or leaked afterwards) can't be replayed.
+  def clear_reset_digest!
+    update_columns(reset_digest: nil, reset_sent_at: nil)
+  end
+
+  # nil reset_sent_at means "no reset was ever requested", which is expired for
+  # every purpose here. It used to raise NoMethodError on nil, which surfaced as
+  # a 500 on the reset page instead of a clean "link expired" bounce.
   def password_reset_expired?
-    reset_sent_at < 2.hours.ago
+    reset_sent_at.nil? || reset_sent_at < 2.hours.ago
   end
 
   # Email confirmation
