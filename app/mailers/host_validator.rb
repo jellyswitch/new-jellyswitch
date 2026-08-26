@@ -6,10 +6,13 @@ module HostValidator
 
   protected
 
+  # Merge onto the app-level options rather than replacing them. Returning a
+  # bare hash here silently dropped everything configured in application.rb /
+  # production.rb -- most recently `protocol: 'https'`, so this mailer kept
+  # emitting http:// links after every other mailer had been fixed. An instance
+  # method fully overrides the config hash, so anything not merged is lost.
   def default_url_options
-    {
-      host: "#{@operator.subdomain}.#{ENV['HOST']}"
-    }
+    super.merge(host: "#{@operator.subdomain}.#{ENV['HOST']}")
   end
 
   def mail(headers = {}, &block)

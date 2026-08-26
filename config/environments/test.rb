@@ -48,6 +48,15 @@ Rails.application.configure do
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
 
+  # ENV['HOST'] is unset in test, so application.rb left this as {host: nil} and
+  # EVERY *_url helper in a mailer template raised "Missing host to link to!".
+  # Mailer tests that wanted to render a URL had to set the host by hand, which
+  # meant any template that didn't have such a test could ship a broken link and
+  # still go green. Give the whole suite a host so rendering is exercised for
+  # real. Protocol mirrors production so mailer_url_options_test can assert that
+  # no mailer drops it.
+  config.action_mailer.default_url_options = { host: "example.com", protocol: "https" }
+
   # Print deprecation notices to the stderr.
   config.active_support.deprecation = :stderr
 
