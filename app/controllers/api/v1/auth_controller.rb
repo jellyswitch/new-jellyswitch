@@ -231,19 +231,19 @@ class Api::V1::AuthController < Api::V1::BaseController
 
     set_current_tenant(operator)
 
+    # Same predicates as the web flow (Operator::PasswordResetsController) so the
+    # two reset surfaces can't drift apart on what counts as a valid token.
     user = operator.users.find_by("lower(email) = ?", params[:email]&.downcase)
-    return render_error('Invalid reset link', status: :unprocessable_entity) unless user&.reset_digest.present?
-
-    unless BCrypt::Password.new(user.reset_digest).is_password?(params[:reset_token])
+    unless user&.valid_reset_token?(params[:reset_token])
       return render_error('Invalid reset link', status: :unprocessable_entity)
     end
 
-    if user.reset_sent_at < 2.hours.ago
+    if user.password_reset_expired?
       return render_error('Reset link has expired', status: :unprocessable_entity)
     end
 
     if user.update(password: params[:password])
-      user.update_columns(reset_digest: nil, reset_sent_at: nil)
+      user.clear_reset_digest!
       token = generate_token(user)
       render json: { token: token, user: user_json(user) }
     else
