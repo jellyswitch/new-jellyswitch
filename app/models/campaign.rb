@@ -35,7 +35,9 @@ class Campaign < ApplicationRecord
 
   TYPES = %w[single drip].freeze
   STATUSES = %w[draft active paused completed cancelled].freeze
-  CUSTOMER_TYPES = %w[day_pass membership office_lease room_booking].freeze
+  # tour_request / concierge_chat are LEAD segments: people captured by the
+  # embed widgets (Activity kinds :tour_request / :chat), not yet customers.
+  CUSTOMER_TYPES = %w[day_pass membership office_lease room_booking tour_request concierge_chat].freeze
 
   validates :name, presence: true
   validates :campaign_type, inclusion: { in: TYPES }
@@ -148,6 +150,20 @@ class Campaign < ApplicationRecord
       if types.include?("room_booking")
         scope = Reservation.joins(:user).where(users: { operator_id: operator.id })
         scope = scope.where(created_at: date_range) if date_range
+        user_ids.merge(scope.pluck(:user_id))
+      end
+
+      # Widget-lead segments come off the Activity timeline (occurred_at, not
+      # created_at — backfilled activities keep their real date).
+      if types.include?("tour_request")
+        scope = Activity.where(operator_id: operator.id, kind: "tour_request")
+        scope = scope.where(occurred_at: date_range) if date_range
+        user_ids.merge(scope.pluck(:user_id))
+      end
+
+      if types.include?("concierge_chat")
+        scope = Activity.where(operator_id: operator.id, kind: "chat")
+        scope = scope.where(occurred_at: date_range) if date_range
         user_ids.merge(scope.pluck(:user_id))
       end
 

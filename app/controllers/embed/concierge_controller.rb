@@ -26,14 +26,23 @@ module Embed
     end
 
     def show
-      @location = @operator.locations.find_by(id: params[:location_id]) ||
-                  @operator.locations.where(visible: true).order(:name).first
-      @options = Concierge::Recommender.new(operator: @operator, location: @location).options
       @theme = {
         primary: @operator.embed_primary_color,
         accent: @operator.embed_accent_color,
         font: @operator.embed_font_family,
       }
+      visible = @operator.locations.where(visible: true).order(:name)
+      @location = @operator.locations.find_by(id: params[:location_id])
+      # A global (unpinned) embed at a multi-location operator must not guess a
+      # location: catalog, prices, the offer, and lead/question routing are all
+      # location-scoped, so ask the visitor first. Picking navigates to the
+      # location-pinned URL and everything downstream stays server-resolved.
+      if @location.nil? && visible.count > 1
+        @locations = visible
+        return render :choose_location
+      end
+      @location ||= visible.first
+      @options = Concierge::Recommender.new(operator: @operator, location: @location).options
       render :show
     end
 

@@ -140,6 +140,57 @@ RSpec.describe Campaign, type: :model do
     end
   end
 
+  describe "#build_recipient_query widget-lead segments (tour_request / concierge_chat)" do
+    def sendable_user
+      create(:user, operator: operator, original_location: location, current_location: location,
+                    email_opted_out: false, email_bounced: false, marketing_suppressed: false)
+    end
+
+    let!(:tour_lead) do
+      u = sendable_user
+      Activity.create!(user: u, operator: operator, kind: "tour_request",
+                       occurred_at: 2.days.ago, subject: location, payload: {})
+      u
+    end
+    let!(:chat_lead) do
+      u = sendable_user
+      Activity.create!(user: u, operator: operator, kind: "chat",
+                       occurred_at: 3.days.ago, payload: {})
+      u
+    end
+    let!(:customer_only) { sendable_user }
+
+    def recipient_ids(segment)
+      campaign.update!(segment: segment)
+      campaign.build_recipient_query(location, apply_spam_guard: false).pluck(:id)
+    end
+
+    it "tour_request targets people with a tour_request activity" do
+      ids = recipient_ids("customer_types" => %w[tour_request])
+      expect(ids).to include(tour_lead.id)
+      expect(ids).not_to include(chat_lead.id, customer_only.id)
+    end
+
+    it "concierge_chat targets people with a chat activity" do
+      ids = recipient_ids("customer_types" => %w[concierge_chat])
+      expect(ids).to include(chat_lead.id)
+      expect(ids).not_to include(tour_lead.id, customer_only.id)
+    end
+
+    it "respects the segment date range via occurred_at" do
+      old_lead = sendable_user
+      Activity.create!(user: old_lead, operator: operator, kind: "tour_request",
+                       occurred_at: 90.days.ago, payload: {})
+
+      ids = recipient_ids(
+        "customer_types" => %w[tour_request],
+        "date_range" => { "from" => 30.days.ago.to_date.to_s, "to" => Date.current.to_s },
+      )
+      expect(ids).to include(tour_lead.id)
+      expect(ids).not_to include(old_lead.id)
+    end
+  end
+
   describe "#build_recipient_query interest targeting (ADR 0022)" do
     def sendable_user
       create(:user, operator: operator, original_location: location, current_location: location,
