@@ -4,6 +4,45 @@ RSpec.describe "Embed::Concierge show", type: :request do
   let(:operator)  { create(:operator, concierge_enabled: true, primary_color: "112233") }
   let!(:location) { create(:location, operator: operator, visible: true) }
 
+  it "asks the visitor to pick a location when unpinned at a multi-location operator" do
+    fulton = create(:location, operator: operator, visible: true, name: "Fulton")
+    create(:day_pass_type, operator: operator, location: location, name: "Zephyr Day Pass",
+                           quantity: 1, amount_in_cents: 2_500)
+
+    get "/embed/concierge/#{operator.subdomain}"
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("Which location are you interested in?")
+    expect(response.body).to include(location.name)
+    expect(response.body).to include("Fulton")
+    expect(response.body).to include("/embed/concierge/#{operator.subdomain}/locations/#{fulton.id}")
+    expect(response.body).not_to include("Zephyr Day Pass") # no catalog until a location is picked
+  end
+
+  it "skips the location step when pinned via the URL" do
+    create(:location, operator: operator, visible: true)
+    create(:day_pass_type, operator: operator, location: location, name: "Zephyr Day Pass",
+                           quantity: 1, amount_in_cents: 2_500)
+
+    get "/embed/concierge/#{operator.subdomain}/locations/#{location.id}"
+
+    expect(response.body).not_to include("Which location are you interested in?")
+    expect(response.body).to include("Zephyr Day Pass")
+  end
+
+  it "carries the admin preview token through the location chooser links" do
+    create(:location, operator: operator, visible: true)
+    operator.update!(concierge_enabled: false)
+    token = Embed::ConciergeController.verifier.generate(
+      { "operator_id" => operator.id, "exp" => 1.hour.from_now.to_i },
+    )
+
+    get "/embed/concierge/#{operator.subdomain}", params: { preview_token: token }
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("preview_token=")
+  end
+
   it "renders the location's own offer when pinned to a location" do
     operator.update!(concierge_offer_text: "Brand-wide offer")
     fulton = create(:location, operator: operator, visible: true,
