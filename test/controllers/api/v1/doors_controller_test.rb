@@ -49,6 +49,41 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     assert_requested :post, @kisi_url, times: 1
   end
 
+  # Kisi-side failure (controller offline, fac001 — Zephyr Cove 2026-08-13 and
+  # 2026-08-27): the unlock must NOT report success. Before the fix the
+  # controller rescued exceptions only, and Kisi::Client returns (never raises)
+  # on a non-2xx — so the member saw "Door unlocked" while the door stayed shut,
+  # and the punch row said "unlocked" with the error buried in json.
+  test "Kisi controller offline reports failure to the member and stamps the punch failed" do
+    stub_request(:post, @kisi_url).to_return(
+      status:  503,
+      body:    { code: "fac001", error: "The Kisi controller is currently unavailable." }.to_json,
+      headers: { "Content-Type" => "application/json" },
+    )
+
+    assert_difference -> { DoorPunch.where(method: "manual").count }, 2 do
+      post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@member)
+    end
+
+    assert_response :success # 200 + success:false is the shape every app surface alerts on
+    body = JSON.parse(response.body)
+    assert_equal false, body["success"]
+    assert_match(/offline/i, body["message"])
+
+    punch = DoorPunch.where(method: "manual").where.not(json: nil).order(:id).last
+    assert_equal "failed", punch.status
+    assert_equal "fac001", punch.json["code"]
+  end
+
+  test "successful unlock stamps the reconciled punch unlocked" do
+    post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@member)
+
+    assert_response :success
+    assert_equal "Door unlocked", JSON.parse(response.body)["message"]
+    punch = DoorPunch.where(method: "manual").where.not(json: nil).order(:id).last
+    assert_equal "unlocked", punch.status
+  end
+
   test "non-member is denied" do
     post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@non_member)
     assert_response :forbidden

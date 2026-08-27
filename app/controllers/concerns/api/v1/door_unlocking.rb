@@ -85,13 +85,6 @@ module Api::V1::DoorUnlocking
     door.openable_as_room_lock_by?(user)
   end
 
-  def call_kisi_unlock(door, _location = nil)
-    # Routed through Kisi::Client so the manual /doors/:id/unlock path
-    # benefits from the same persistent connection the async job uses.
-    # `location` is ignored (Kisi::Client reads door.location internally).
-    Kisi::Client.unlock(door)[:parsed]
-  end
-
   def perform_unlock(door:, user:, location:, method:)
     room_entry = door.room_lock?
     DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, room_entry: room_entry)
@@ -106,8 +99,19 @@ module Api::V1::DoorUnlocking
         Honeybadger.notify(e) rescue nil
       end
     end
-    response = call_kisi_unlock(door, location)
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, json: response, room_entry: room_entry)
-    response
+    # Routed through Kisi::Client so the manual /doors/:id/unlock path
+    # benefits from the same persistent connection the async job uses.
+    result = Kisi::Client.unlock(door)
+    # Record what Kisi actually answered, mirroring KisiUnlockJob's
+    # reconciliation: a Kisi-side refusal (controller offline, fac001) is a
+    # "failed" punch. Before this, the row said "unlocked" with the error
+    # buried in json — and the member was told the door opened.
+    DoorPunch.create!(
+      user: user, door: door, operator: current_tenant, method: method,
+      json: result[:parsed] || result[:body],
+      status: result[:success] ? "unlocked" : "failed",
+      room_entry: room_entry,
+    )
+    result
   end
 end

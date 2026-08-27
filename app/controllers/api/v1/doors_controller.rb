@@ -93,8 +93,20 @@ class Api::V1::DoorsController < Api::V1::BaseController
     end
 
     begin
-      perform_unlock(door: door, user: user, location: location, method: "manual")
-      render json: { success: true, door: door.name, message: "Door unlocked" }
+      result = perform_unlock(door: door, user: user, location: location, method: "manual")
+      # Kisi answers 2xx only when the door actually fired. A controller-offline
+      # blip (fac001, Zephyr Cove 2026-08-13 / 2026-08-27) comes back as a non-2xx
+      # the client wraps in success:false — before this check the member was told
+      # "Door unlocked" while the door stayed shut, so they kept re-tapping.
+      if result[:success]
+        render json: { success: true, door: door.name, message: "Door unlocked" }
+      else
+        render json: {
+          success: false,
+          door:    door.name,
+          message: "The door system is offline right now. Please try again in a minute.",
+        }
+      end
     rescue => e
       render json: { success: false, door: door.name, message: e.message }
     end
