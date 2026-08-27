@@ -23,6 +23,25 @@ RSpec.describe "Embed::Concierge launcher", type: :request do
     expect(response.body).to include("location_id=#{other.id}")
   end
 
+  it "uses the location's own offer in the teaser when location_id is given" do
+    operator.update!(concierge_offer_text: "Brand-wide offer")
+    fulton = create(:location, operator: operator, visible: true,
+                    concierge_offer_text: "Fulton: first day pass on us")
+
+    get "/embed/concierge/#{operator.subdomain}/launcher.js", params: { location_id: fulton.id }
+
+    expect(response.body).to include("Fulton: first day pass on us")
+    expect(response.body).not_to include("Brand-wide offer")
+  end
+
+  it "falls back to the operator offer when the location has no override" do
+    operator.update!(concierge_offer_text: "Brand-wide offer")
+
+    get "/embed/concierge/#{operator.subdomain}/launcher.js", params: { location_id: location.id }
+
+    expect(response.body).to include("Brand-wide offer")
+  end
+
   it "serves a no-op instead of a 404 when the Concierge is disabled" do
     operator.update!(concierge_enabled: false)
 

@@ -63,6 +63,25 @@
       <small class="form-text text-muted">Shown as a gift bubble in the chat and as the floating launcher's teaser.</small>
     </div>
 
+    <% offer_locations = @operator.locations.where(visible: true).order(:name) %>
+    <% if offer_locations.count > 1 %>
+      <div class="form-group mb-3">
+        <label>Per-location offers (optional)</label>
+        <% offer_locations.each do |loc| %>
+          <div class="input-group mb-2">
+            <span class="input-group-text"><%= loc.name %></span>
+            <%= text_field_tag "locations[#{loc.id}][concierge_offer_text]",
+                  loc.concierge_offer_text, class: "form-control",
+                  placeholder: "Uses the shared offer above" %>
+          </div>
+        <% end %>
+        <small class="form-text text-muted">
+          Each location can run its own promo; leave blank to use the shared offer.
+          Point an embed at a location by adding <code>?location_id=&lt;id&gt;</code> to the launcher script URL.
+        </small>
+      </div>
+    <% end %>
+
     <h5>Look &amp; feel <small class="text-muted">(shared with your tour widget)</small></h5>
     <div class="form-group mb-3">
       <%= f.label :embed_font, "Font" %>

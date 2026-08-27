@@ -417,6 +417,35 @@ RSpec.describe Operator::SettingsController, type: :controller do
       end
     end
 
+    it "PATCH #update_concierge saves per-location offer overrides" do
+      loc_a = operator.locations.first || create(:location, operator: operator, visible: true)
+      loc_b = create(:location, operator: operator, visible: true)
+
+      patch :update_concierge, params: {
+        operator: { concierge_offer_text: "Shared offer" },
+        locations: {
+          loc_a.id.to_s => { concierge_offer_text: "Location A special" },
+          loc_b.id.to_s => { concierge_offer_text: "" },
+        },
+      }
+
+      expect(loc_a.reload.concierge_offer_text).to eq("Location A special")
+      expect(loc_b.reload.concierge_offer_text).to be_nil
+      expect(loc_a.concierge_offer).to eq("Location A special")
+      expect(loc_b.concierge_offer).to eq("Shared offer")
+    end
+
+    it "PATCH #update_concierge ignores locations belonging to another operator" do
+      foreign = create(:location, operator: create(:operator), concierge_offer_text: "keep me")
+
+      patch :update_concierge, params: {
+        operator: { concierge_offer_text: "x" },
+        locations: { foreign.id.to_s => { concierge_offer_text: "hijacked" } },
+      }
+
+      expect(foreign.reload.concierge_offer_text).to eq("keep me")
+    end
+
     it "PATCH #update_concierge saves the lean per-brand settings" do
       patch :update_concierge, params: { operator: {
         concierge_enabled: "1",

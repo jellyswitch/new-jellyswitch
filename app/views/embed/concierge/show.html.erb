@@ -1,7 +1,7 @@
 <%
   assistant_name = @operator.concierge_display_name
   greeting = @operator.concierge_greeting_text
-  offer = @operator.concierge_offer_text.presence
+  offer = (@location ? @location.concierge_offer : @operator.concierge_offer_text).presence
 %>
 <div id="cx"
      data-capture-url="<%= embed_concierge_capture_path(operator_subdomain: @operator.subdomain) %>"

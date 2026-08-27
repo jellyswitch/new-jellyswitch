@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_25_000000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -665,6 +665,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_25_000000) do
     t.string "day_pass_period_start", default: "04:00", null: false
     t.integer "overage_rate_in_cents", default: 0, null: false
     t.text "pause_warning"
+    t.string "concierge_offer_text"
     t.index ["operator_id"], name: "index_locations_on_operator_id"
     t.index ["space_host_id"], name: "index_locations_on_space_host_id"
     t.index ["state", "city"], name: "index_locations_on_state_and_city"

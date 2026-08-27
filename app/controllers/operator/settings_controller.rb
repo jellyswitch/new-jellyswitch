@@ -53,6 +53,7 @@ class Operator::SettingsController < Operator::BaseController
   def update_concierge
     @operator = current_operator
     if @operator.update(concierge_params)
+      update_location_concierge_offers
       redirect_to settings_concierge_path, notice: "Concierge settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence
@@ -274,6 +275,18 @@ class Operator::SettingsController < Operator::BaseController
       :tour_widget_thank_you_url,
       :tour_widget_intro_html,
     )
+  end
+
+  # Per-location offer overrides, posted as locations[<id>][concierge_offer_text].
+  # Blank clears the override so the location falls back to the shared offer.
+  def update_location_concierge_offers
+    params.fetch(:locations, {}).each do |id, attrs|
+      location = @operator.locations.find_by(id: id)
+      next unless location
+
+      text = attrs.permit(:concierge_offer_text)[:concierge_offer_text]
+      location.update(concierge_offer_text: text.presence) unless text.nil?
+    end
   end
 
   def concierge_params

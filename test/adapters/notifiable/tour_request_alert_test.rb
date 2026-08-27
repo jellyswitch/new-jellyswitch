@@ -1,6 +1,8 @@
 require 'test_helper'
 
 class Notifiable::TourRequestAlertTest < ActiveSupport::TestCase
+  include ActionMailer::TestHelper
+
   setup do
     setup_initial_user_fixtures
     @operator = operators(:cowork_tahoe)
@@ -50,6 +52,21 @@ class Notifiable::TourRequestAlertTest < ActiveSupport::TestCase
     assert @notifiable.send(:should_send_notification?)
     other = Activity.create!(user: @requester, operator: @operator, kind: "signup", occurred_at: Time.current, payload: {})
     refute Notifiable::TourRequestAlert.new(other).send(:should_send_notification?)
+  end
+
+  test "notify enqueues a visitor confirmation email to the requester" do
+    assert_enqueued_email_with TourRequestMailer, :confirmation,
+                               params: { activity: @activity } do
+      @notifiable.send(:send_visitor_confirmation)
+    end
+  end
+
+  test "no visitor confirmation for a non-tour_request activity" do
+    other = Activity.create!(user: @requester, operator: @operator, kind: "signup",
+                             occurred_at: Time.current, payload: {})
+    assert_no_enqueued_emails do
+      Notifiable::TourRequestAlert.new(other).send(:send_visitor_confirmation)
+    end
   end
 
   test "message includes requester name and message preview" do
