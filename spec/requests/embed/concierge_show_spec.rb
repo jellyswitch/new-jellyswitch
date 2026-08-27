@@ -4,6 +4,17 @@ RSpec.describe "Embed::Concierge show", type: :request do
   let(:operator)  { create(:operator, concierge_enabled: true, primary_color: "112233") }
   let!(:location) { create(:location, operator: operator, visible: true) }
 
+  it "renders the location's own offer when pinned to a location" do
+    operator.update!(concierge_offer_text: "Brand-wide offer")
+    fulton = create(:location, operator: operator, visible: true,
+                    concierge_offer_text: "Fulton: day pass refunded if you upgrade")
+
+    get "/embed/concierge/#{operator.subdomain}/locations/#{fulton.id}"
+
+    expect(response.body).to include("Fulton: day pass refunded if you upgrade")
+    expect(response.body).not_to include("Brand-wide offer")
+  end
+
   it "renders the widget with the real catalog and inherited theming when active" do
     create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
                            quantity: 1, amount_in_cents: 2_500)

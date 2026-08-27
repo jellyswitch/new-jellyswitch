@@ -1,0 +1,9 @@
+Hi <%= @user.name %>,
+
+<%= @author&.name || @operator.name %> replied to your message:
+
+<%= @reply.body %>
+
+Just reply to this email to continue the conversation.
+
+— The <%= @operator.name %> team

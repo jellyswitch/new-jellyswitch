@@ -1,0 +1,11 @@
+<p>Hi <%= @user.name %>,</p>
+
+<p><%= @author&.name || @operator.name %> replied to your message:</p>
+
+<blockquote style="margin: 0 0 16px; padding: 12px 16px; background: #f3f4f6; border-left: 3px solid #9ca3af;">
+  <%= simple_format(@reply.body) %>
+</blockquote>
+
+<p>Just reply to this email to continue the conversation.</p>
+
+<p>— The <%= @operator.name %> team</p>

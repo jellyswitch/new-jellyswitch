@@ -1,0 +1,15 @@
+Hi <%= @requester.name %>,
+
+Thanks for requesting a tour at <%= @location&.name || @operator.name %> — we got it!
+<% if @location && [@location.building_address, @location.city].any?(&:present?) %>
+You'll find us at <%= [@location.building_address, @location.city, @location.state].select(&:present?).join(", ") %>.
+<% end %>
+<% if @preferred_time.present? %>
+You mentioned "<%= @preferred_time %>" works for you — someone from the team will reach out shortly to confirm a time.
+<% else %>
+Someone from the team will reach out shortly to set up a time.
+<% end %>
+
+See you soon!
+
+— The <%= @operator.name %> team

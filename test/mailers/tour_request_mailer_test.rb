@@ -40,4 +40,25 @@ class TourRequestMailerTest < ActionMailer::TestCase
     assert_match "Next Tuesday afternoon", html_body
     assert_match "Next Tuesday afternoon", text_body
   end
+  test "confirmation email goes to the requester with branded from and tour details" do
+    mail = TourRequestMailer.with(activity: @activity).confirmation
+
+    assert_equal [@requester.email], mail.to
+    assert_match "Your tour request", mail.subject
+    assert_match @operator.name, mail.subject
+
+    [mail.html_part.body.to_s, mail.text_part.body.to_s].each do |body|
+      assert_match @requester.name, body
+      assert_match @location.name, body
+      assert_match "Next Tuesday afternoon", body
+    end
+  end
+
+  test "confirmation without a preferred time still promises follow-up" do
+    @activity.update!(payload: { "message" => "hi" })
+    mail = TourRequestMailer.with(activity: @activity).confirmation
+
+    assert_match(/reach out shortly/i, mail.text_part.body.to_s)
+  end
+
 end

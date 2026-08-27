@@ -1,0 +1,17 @@
+<p>Hi <%= @requester.name %>,</p>
+
+<p>Thanks for requesting a tour at <strong><%= @location&.name || @operator.name %></strong> — we got it!</p>
+
+<% if @location && [@location.building_address, @location.city].any?(&:present?) %>
+  <p>You'll find us at <%= [@location.building_address, @location.city, @location.state].select(&:present?).join(", ") %>.</p>
+<% end %>
+
+<% if @preferred_time.present? %>
+  <p>You mentioned <strong><%= @preferred_time %></strong> works for you — someone from the team will reach out shortly to confirm a time.</p>
+<% else %>
+  <p>Someone from the team will reach out shortly to set up a time.</p>
+<% end %>
+
+<p>See you soon!</p>
+
+<p>— The <%= @operator.name %> team</p>

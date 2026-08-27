@@ -48,6 +48,8 @@ module Embed
         return render(js: "/* Concierge is not enabled for #{@operator.subdomain} */")
       end
 
+      # Resolve the location so the teaser can carry a per-location offer.
+      @location = @operator.locations.find_by(id: params[:location_id])
       @widget_url = embed_concierge_url(
         operator_subdomain: @operator.subdomain,
         host: request.host_with_port,

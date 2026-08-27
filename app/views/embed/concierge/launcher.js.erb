@@ -10,7 +10,7 @@
   var WIDGET_URL = <%= raw @widget_url.to_json %>;
   var ACCENT = <%= raw @operator.embed_accent_color.to_json %>;
   var NAME = <%= raw @operator.concierge_display_name.to_json %>;
-  var TEASER_TEXT = <%= raw (@operator.concierge_offer_text.presence || @operator.concierge_greeting_text).to_json %>;
+  var TEASER_TEXT = <%= raw ((@location ? @location.concierge_offer : @operator.concierge_offer_text).presence || @operator.concierge_greeting_text).to_json %>;
   var KEY = "jswcx-" + <%= raw @operator.subdomain.to_json %>;
   var Z = 2147483000;
 

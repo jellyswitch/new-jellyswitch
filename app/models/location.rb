@@ -434,6 +434,12 @@ class Location < ApplicationRecord
     [start, start + 1.day]
   end
 
+  # Per-location Concierge offer/promo, falling back to the operator-level
+  # text so single-location brands keep configuring one field.
+  def concierge_offer
+    concierge_offer_text.presence || operator.concierge_offer_text
+  end
+
   private
 
   def renormalize_working_times

@@ -10,6 +10,7 @@ module Notifiable
     def notify
       super
       send_email
+      send_visitor_confirmation
     end
 
     private
@@ -52,6 +53,14 @@ module Notifiable
       end
 
       (admins.to_a + managers.to_a).uniq
+    end
+
+    def send_visitor_confirmation
+      return unless should_send_notification?
+      requester = __getobj__.user
+      return if requester.nil? || requester.email.blank?
+
+      TourRequestMailer.with(activity: __getobj__).confirmation.deliver_later
     end
 
     def send_email

@@ -1,6 +1,26 @@
 module Notifiable
   class FeedbackReply < Notifiable::Default
+    def notify
+      super
+      send_email_fallback
+    end
+
     private
+
+    # A web/Concierge visitor has no app, so the push in send_notification
+    # can't reach them — and the widget promised "the team will reach out."
+    # Email the admin's reply when the member has no device tokens; app users
+    # keep getting push only.
+    def send_email_fallback
+      return unless from_admin?
+      return unless should_send_notification?
+
+      member = member_feedback.user
+      return if member.nil? || member.email.blank?
+      return if member.ios_token.present? || member.android_token.present?
+
+      FeedbackReplyMailer.with(reply: __getobj__).admin_reply.deliver_later
+    end
 
     def create_feed_item
       # Admin → member replies stay private (they're a notification to the
