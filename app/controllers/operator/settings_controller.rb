@@ -60,6 +60,25 @@ class Operator::SettingsController < Operator::BaseController
       render :concierge, status: :unprocessable_entity
     end
   end
+  # Consolidated home for the embed widget family (2026-08-27 plan §11):
+  # shared Look & Feel + Showcase config here; Concierge and Tour keep their
+  # own sub-pages, linked from this tab.
+  def website_widgets
+    @operator = current_operator
+    @cards = ShowcaseCard.where(operator: @operator).order(:location_id, :slot, :display_order)
+  end
+
+  def update_website_widgets
+    @operator = current_operator
+    if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled))
+      redirect_to settings_website_widgets_path, notice: "Website widget settings saved."
+    else
+      flash.now[:error] = @operator.errors.full_messages.to_sentence
+      @cards = ShowcaseCard.where(operator: @operator).order(:location_id, :slot, :display_order)
+      render :website_widgets, status: :unprocessable_entity
+    end
+  end
+
   def modules
     # Module flags are location-scoped: every module policy reads
     # location.<module>_enabled, so the form must bind to the location (the

@@ -10,7 +10,8 @@ module DayPassTypesHelper
   end
 
   def day_pass_type_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text)
+    convert_showcase_features!(p)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
     # Convert hours input to minutes
@@ -35,7 +36,8 @@ module DayPassTypesHelper
 
 
   def day_pass_type_update_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text)
+    convert_showcase_features!(p)
     # Convert dollars input to cents for price
     if p[:amount_in_cents].present?
       p[:amount_in_cents] = Money.from_amount(p[:amount_in_cents].to_f, "USD").cents
@@ -86,4 +88,12 @@ module DayPassTypesHelper
     return unless p[:kind] == "day_office" && p[:included_meeting_room_minutes].nil?
     p[:included_meeting_room_minutes] = 0
   end
+  # Showcase what's-included lines arrive as a textarea (one per line) and are
+  # stored as the features array.
+  def convert_showcase_features!(p)
+    return unless p.key?(:features_text)
+
+    p[:features] = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+  end
+
 end

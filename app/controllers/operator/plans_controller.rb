@@ -137,8 +137,12 @@ class Operator::PlansController < Operator::BaseController
       :credits, :description, :plan_category_id, :childcare_reservations,
       :included_meeting_room_minutes, :overage_rate_in_cents,
       :has_day_limit, :day_limit, :commitment_interval,
+      :featured, :display_order, :features_text,
       location_ids: [])
     convert_meeting_room_params!(p)
+    if p.key?(:features_text)
+      p[:features] = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+    end
     p
   end
 end

@@ -6,8 +6,7 @@
     { key: :hours_and_address,  label: "Hours & Address",    icon: "fas fa-map-marker-alt" },
     { key: :wifi_and_pixels,    label: "WiFi & Pixels",      icon: "fas fa-wifi" },
     { key: :notifications,      label: "Notifications",      icon: "fas fa-envelope" },
-    { key: :tour_widget,        label: "Tour Widget",        icon: "fas fa-paste" },
-    { key: :concierge,          label: "AI Concierge",       icon: "fas fa-comments" },
+    { key: :website_widgets,    label: "Website Widgets",    icon: "fas fa-code" },
     { key: :modules,            label: "Modules",            icon: "fas fa-th-large" },
     { key: :policies,           label: "Policies",           icon: "fas fa-balance-scale" },
   ]
@@ -28,7 +27,9 @@
     </div>
   </aside>
   <main class="col-md-9 col-lg-10">
-    <h2 class="mb-3"><%= tabs.find { |t| t[:key] == active }&.dig(:label) || active.to_s.humanize %></h2>
+    <%# Sub-pages of a consolidated tab (Tour Widget / Concierge under Website
+        Widgets) keep their own heading while highlighting the shared tab. %>
+    <h2 class="mb-3"><%= local_assigns[:heading] || tabs.find { |t| t[:key] == active }&.dig(:label) || active.to_s.humanize %></h2>
     <%= yield %>
   </main>
 </div>

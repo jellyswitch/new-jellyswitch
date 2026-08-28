@@ -417,6 +417,27 @@ RSpec.describe Operator::SettingsController, type: :controller do
       end
     end
 
+    describe "website widgets tab" do
+      render_views
+
+      it "GET #website_widgets renders the consolidated tab with Showcase snippets" do
+        get :website_widgets
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Website Widgets")
+        expect(response.body).to include("/embed/showcase/#{operator.subdomain}")
+      end
+    end
+
+    it "PATCH #update_website_widgets toggles the Showcase and saves the shared theme" do
+      patch :update_website_widgets, params: { operator: {
+        showcase_enabled: "1", embed_accent_override: "112233",
+      } }
+      expect(response).to redirect_to(settings_website_widgets_path)
+      operator.reload
+      expect(operator.showcase_enabled).to be true
+      expect(operator.embed_accent_override).to eq("112233")
+    end
+
     it "PATCH #update_concierge saves per-location offer overrides" do
       loc_a = operator.locations.first || create(:location, operator: operator, visible: true)
       loc_b = create(:location, operator: operator, visible: true)

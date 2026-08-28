@@ -51,6 +51,28 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
       expect(JSON.parse(response.body)["ok"]).to be true
     end
 
+    it "tells an unapproved buyer about the approval gate, with both store links and a summary" do
+      operator.update!(approval_required: true, ios_url: "https://apps.example/i", android_url: "https://play.example/a")
+      buyer.update!(approved: false)
+      stub_success
+      post url, params: params
+
+      body = JSON.parse(response.body)
+      expect(body["approval_pending"]).to be true
+      expect(body["summary"]).to include(pass_type.name)
+      expect(body["summary"]).to include(location.name)
+      expect(body["app"]["ios"]).to be_present
+      expect(body["app"]["android"]).to be_present
+    end
+
+    it "does not warn about approval when the operator does not require it" do
+      operator.update!(approval_required: false)
+      stub_success
+      post url, params: params
+
+      expect(JSON.parse(response.body)["approval_pending"]).to be false
+    end
+
     it "surfaces a payment error from the orchestration" do
       allow(Concierge::PublicCheckout).to receive(:call)
         .and_return(double(success?: false, error: "payment", message: "Your card was declined."))

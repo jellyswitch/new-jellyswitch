@@ -8,11 +8,15 @@ module PlansHelper
     p = params.require(:plan).permit(:name, :plan_type, :interval, :amount_in_cents,
       :visible, :available, :building_access_level, :has_day_limit, :day_limit,
       :credits, :commitment_interval, :description, :childcare_reservations, :plan_category_id,
-      :included_meeting_room_minutes, :overage_rate_in_cents, location_ids: [])
+      :included_meeting_room_minutes, :overage_rate_in_cents,
+      :featured, :display_order, :features_text, location_ids: [])
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
     p[:location_id] = current_location.id if current_location
     convert_meeting_room_params!(p)
+    if p.key?(:features_text)
+      p[:features] = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+    end
     p
   end
 
