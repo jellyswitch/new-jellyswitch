@@ -1,0 +1,14 @@
+<%# Multi-location operator, no location pin: never guess a catalog (plan §4).
+    Render a webmaster-facing setup nudge with the pinned snippet lines. %>
+(function () {
+  var script = document.currentScript;
+  if (!script) return;
+  var box = document.createElement("div");
+  box.style.cssText = "border:2px dashed #d1d5db;border-radius:10px;padding:14px 16px;font:13px/1.6 monospace;color:#6b7280;margin:16px 0;";
+  box.textContent = "Showcase setup: this operator has multiple locations — add one to the embed URL:";
+  <% @nudge_locations.each do |loc| %>
+  box.appendChild(document.createElement("br"));
+  box.appendChild(document.createTextNode(<%= raw "#{loc.name}: …?products=#{params[:products].presence || 'all'}&location_id=#{loc.id}".to_json %>));
+  <% end %>
+  script.insertAdjacentElement("afterend", box);
+})();

@@ -1,6 +1,6 @@
 <% provide(:title, "Tour Widget") %>
 
-<%= render "tab_layout", active: :tour_widget do %>
+<%= render "tab_layout", active: :website_widgets, heading: "Tour Widget" do %>
   <%= form_with model: @operator, url: settings_update_tour_widget_path, method: :patch, local: true do |f| %>
     <div class="form-group">
       <div class="custom-control custom-switch">

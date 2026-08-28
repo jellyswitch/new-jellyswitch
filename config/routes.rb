@@ -14,6 +14,12 @@ Rails.application.routes.draw do
 
     # Public embeddable Concierge widget. `show` serves the in-iframe scripted
     # conversation UI; `create` is the JSON capture endpoint.
+    # Showcase: script-injected product-tier widget (inline DOM + JSON-LD,
+    # ADR 0027). Serves JS; the page content renders into the host page.
+    scope "showcase/:operator_subdomain" do
+      get "/", to: "showcase#widget", as: :showcase, defaults: { format: :js }
+    end
+
     scope "concierge/:operator_subdomain" do
       get  "/",                       to: "concierge#show", as: :concierge
       get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
@@ -917,7 +923,10 @@ Rails.application.routes.draw do
     patch "update_tour_widget",        to: "operator/settings#update_tour_widget",         as: :update_tour_widget
     get   "concierge",                 to: "operator/settings#concierge",                  as: :concierge
     patch "update_concierge",          to: "operator/settings#update_concierge",           as: :update_concierge
+    get   "website_widgets",           to: "operator/settings#website_widgets",            as: :website_widgets
+    patch "update_website_widgets",    to: "operator/settings#update_website_widgets",     as: :update_website_widgets
   end
+  resources :showcase_cards, only: [:create, :destroy], controller: "operator/showcase_cards"
   get "/operator/operators/:id/edit", to: "operator/settings#legacy_redirect"
   resources :subscriptions, controller: "operator/subscriptions"
   delete "destroy_subscription_now/:id", to: "operator/subscriptions#destroy_subscription_now", as: "destroy_subscription_now"

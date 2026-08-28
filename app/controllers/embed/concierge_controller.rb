@@ -94,7 +94,16 @@ module Embed
 
       if result.success?
         log_purchase_chat(result.user, product, location)
-        render json: { ok: true, app: { ios: @operator.ios_url, android: @operator.android_url } }
+        # Post-purchase expectations (2026-08-27 plan §6): every brand runs
+        # approval_required, so a fresh buyer is created UNAPPROVED and the
+        # door will not open until staff approve — the screen must say so
+        # instead of "You're in!".
+        render json: {
+          ok: true,
+          app: { ios: @operator.ios_url, android: @operator.android_url },
+          summary: purchase_summary(product, location),
+          approval_pending: @operator.approval_required && !result.user.approved?,
+        }
       else
         render json: { ok: false, error: result.error, message: result.message }, status: :unprocessable_entity
       end
@@ -191,6 +200,16 @@ module Embed
       }[intent]
       parts = [label, message.to_s.strip.presence].compact
       parts.empty? ? "Question from the website Concierge" : parts.join(": ")
+    end
+
+    def purchase_summary(product, location)
+      where = [location.name, location.building_address, location.city].compact_blank.join(", ")
+      if product.is_a?(Plan)
+        "#{product.name} at #{where}"
+      else
+        day = (checkout_day || Date.current).strftime("%A, %b %-d")
+        "#{product.name} for #{day} at #{where}"
+      end
     end
 
     def checkout_location

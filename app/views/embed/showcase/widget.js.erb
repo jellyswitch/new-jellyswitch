@@ -1,0 +1,82 @@
+<%# Inline-DOM Showcase (ADR 0027): renders real content into the host page at
+    the script's own position, plus JSON-LD Product/Offer markup in <head>.
+    All classes namespaced jsw-sc; accent from the shared embed-theme. %>
+(function () {
+  var DATA = <%= raw({ sections: @sections, accent: @operator.embed_accent_color, font: @operator.embed_font_family.presence }.to_json) %>;
+  var script = document.currentScript;
+  if (!script || !DATA.sections.length) return;
+
+  var css =
+    ".jsw-sc{--jsw-accent:" + DATA.accent + ";margin:16px 0;color:inherit;}" +
+    ".jsw-sc *{box-sizing:border-box;}" +
+    ".jsw-sc-title{font-size:1.4em;font-weight:700;margin:0 0 12px;}" +
+    ".jsw-sc-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;}" +
+    ".jsw-sc-tier{flex:1 1 240px;max-width:340px;border:1px solid #e5e7eb;border-radius:14px;padding:20px;display:flex;flex-direction:column;background:#fff;color:#111827;}" +
+    ".jsw-sc-tier.jsw-sc-featured{border:2px solid var(--jsw-accent);box-shadow:0 6px 20px rgba(0,0,0,.08);position:relative;}" +
+    ".jsw-sc-flag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--jsw-accent);color:#fff;font-size:11px;font-weight:700;letter-spacing:.04em;padding:3px 10px;border-radius:99px;}" +
+    ".jsw-sc-name{font-weight:700;font-size:1.05em;margin:0 0 2px;}" +
+    ".jsw-sc-price{font-size:1.5em;font-weight:800;margin:2px 0 10px;}" +
+    ".jsw-sc-list{list-style:none;margin:0 0 16px;padding:0;flex:1;}" +
+    ".jsw-sc-list li{padding:4px 0 4px 22px;position:relative;font-size:.95em;line-height:1.4;}" +
+    ".jsw-sc-list li:before{content:'\\2713';position:absolute;left:2px;color:var(--jsw-accent);font-weight:700;}" +
+    ".jsw-sc-cta{display:block;text-align:center;background:var(--jsw-accent);color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;}" +
+    ".jsw-sc-cta.jsw-sc-out{background:#fff;color:var(--jsw-accent);border:1.5px solid var(--jsw-accent);}" +
+    (DATA.font ? ".jsw-sc{font-family:" + DATA.font + ";}" : "");
+  var style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  var root = el("div", "jsw-sc");
+  DATA.sections.forEach(function (section) {
+    if (section.title && DATA.sections.length > 1) root.appendChild(el("h2", "jsw-sc-title", section.title));
+    var grid = el("div", "jsw-sc-grid");
+    section.tiers.forEach(function (tier) {
+      var card = el("div", "jsw-sc-tier" + (tier.featured ? " jsw-sc-featured" : ""));
+      if (tier.featured) card.appendChild(el("div", "jsw-sc-flag", "MOST POPULAR"));
+      card.appendChild(el("div", "jsw-sc-name", tier.name));
+      if (tier.price_label) card.appendChild(el("div", "jsw-sc-price", tier.price_label));
+      if (tier.bullets && tier.bullets.length) {
+        var ul = el("ul", "jsw-sc-list");
+        tier.bullets.forEach(function (b) { ul.appendChild(el("li", null, b)); });
+        card.appendChild(ul);
+      }
+      var cta = el("a", "jsw-sc-cta" + (tier.external ? " jsw-sc-out" : ""),
+                   tier.external ? "Learn more" : (tier.kind === "plan" ? "Sign up" : "Buy now"));
+      cta.href = tier.cta;
+      if (tier.external) { cta.rel = "noopener"; }
+      card.appendChild(cta);
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+  });
+  script.insertAdjacentElement("afterend", root);
+
+  // JSON-LD: purchasable products only (link-out cards describe someone
+  // else's service — not ours to mark up).
+  var products = [];
+  DATA.sections.forEach(function (section) {
+    section.tiers.forEach(function (tier) {
+      if (tier.kind === "card" || !tier.amount_in_cents) return;
+      products.push({
+        "@context": "https://schema.org", "@type": "Product", "name": tier.name,
+        "description": (tier.bullets || []).join(". "),
+        "offers": { "@type": "Offer", "price": (tier.amount_in_cents / 100).toFixed(2),
+                    "priceCurrency": "USD", "url": tier.cta,
+                    "availability": "https://schema.org/InStock" },
+      });
+    });
+  });
+  if (products.length) {
+    var ld = document.createElement("script");
+    ld.type = "application/ld+json";
+    ld.textContent = JSON.stringify(products);
+    document.head.appendChild(ld);
+  }
+})();

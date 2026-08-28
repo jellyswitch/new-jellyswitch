@@ -104,8 +104,20 @@
         .then(function (x) {
           if (x.d && x.d.ok) {
             form.style.display = "none";
-            show("You're in! 🎉 Download the app to open the door and manage your pass.", "ok");
-            if (x.d.app && x.d.app.ios) { var a = document.createElement("a"); a.href = x.d.app.ios; a.textContent = "Get the app"; a.style.cssText = "display:block;margin-top:10px;color:var(--accent);"; root.appendChild(a); }
+            var lines = ["🎉 Payment received" + (x.d.summary ? " — " + x.d.summary + "." : "!")];
+            if (x.d.approval_pending) {
+              lines.push("The team reviews new members before your first visit — you'll get an email as soon as you're approved, and then the app opens the door.");
+            } else {
+              lines.push("Download the app to open the door and manage your access.");
+            }
+            show(lines.join(" "), "ok");
+            var stores = [["Get the iOS app", x.d.app && x.d.app.ios], ["Get the Android app", x.d.app && x.d.app.android]];
+            stores.forEach(function (s) {
+              if (!s[1]) return;
+              var a = document.createElement("a"); a.href = s[1]; a.textContent = s[0];
+              a.style.cssText = "display:block;margin-top:10px;color:var(--accent);";
+              root.appendChild(a);
+            });
           } else {
             show((x.d && x.d.message) || "Payment failed — please try again.", "err");
             pay.disabled = false;

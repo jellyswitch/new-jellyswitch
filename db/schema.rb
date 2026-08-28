@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_27_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -349,6 +349,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
     t.integer "expires_after_days"
     t.integer "daily_limit"
     t.string "kind", default: "standard", null: false
+    t.text "features", default: [], null: false, array: true
+    t.boolean "featured", default: false, null: false
+    t.integer "display_order", default: 0, null: false
     t.index ["location_id"], name: "index_day_pass_types_on_location_id"
     t.index ["operator_id", "location_id", "default_for_room_booking"], name: "index_dpt_on_op_loc_default"
   end
@@ -855,6 +858,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
     t.string "embed_font"
     t.string "embed_accent_override"
     t.integer "building_access_window_minutes", default: 60, null: false
+    t.boolean "showcase_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -907,6 +911,9 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
     t.integer "included_meeting_room_minutes"
     t.integer "overage_rate_in_cents", default: 0
     t.integer "building_access_level", default: 1, null: false
+    t.text "features", default: [], null: false, array: true
+    t.boolean "featured", default: false, null: false
+    t.integer "display_order", default: 0, null: false
     t.index ["location_id"], name: "index_plans_on_location_id"
     t.index ["operator_id"], name: "index_plans_on_operator_id"
   end
@@ -1075,6 +1082,22 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000001) do
     t.datetime "created_at", precision: nil, null: false
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "ahoy_visit_id"
+  end
+
+  create_table "showcase_cards", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id", null: false
+    t.string "label", null: false
+    t.text "description"
+    t.string "price_text"
+    t.string "url", null: false
+    t.string "slot", default: "standalone", null: false
+    t.integer "display_order", default: 0, null: false
+    t.boolean "visible", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["location_id"], name: "index_showcase_cards_on_location_id"
+    t.index ["operator_id"], name: "index_showcase_cards_on_operator_id"
   end
 
   create_table "subdomains", force: :cascade do |t|
