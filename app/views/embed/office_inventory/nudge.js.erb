@@ -1,0 +1,12 @@
+(function () {
+  var script = document.currentScript;
+  if (!script) return;
+  var box = document.createElement("div");
+  box.style.cssText = "border:2px dashed #d1d5db;border-radius:10px;padding:14px 16px;font:13px/1.6 monospace;color:#6b7280;margin:16px 0;";
+  box.textContent = "Office Inventory setup: this operator has multiple locations — add one to the embed URL:";
+  <% @nudge_locations.each do |loc| %>
+  box.appendChild(document.createElement("br"));
+  box.appendChild(document.createTextNode(<%= raw "#{loc.name}: …?location_id=#{loc.id}".to_json %>));
+  <% end %>
+  script.insertAdjacentElement("afterend", box);
+})();

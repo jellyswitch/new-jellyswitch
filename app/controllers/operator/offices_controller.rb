@@ -84,6 +84,14 @@ class Operator::OfficesController < Operator::BaseController
   end
 
   def office_params
-    params.require(:office).permit(:name, :description, :capacity, :square_footage, :photo, :lease, :visible)
+    p = params.require(:office).permit(:name, :description, :capacity, :square_footage, :photo, :lease, :visible,
+                                       :asking_rate_in_cents, :coming_available)
+    # The form takes dollars; store cents. Blank clears the rate ("Contact
+    # for pricing" on the website).
+    if p.key?(:asking_rate_in_cents)
+      raw = p[:asking_rate_in_cents]
+      p[:asking_rate_in_cents] = raw.present? ? Money.from_amount(raw.to_f, "USD").cents : nil
+    end
+    p
   end
 end

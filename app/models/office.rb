@@ -108,4 +108,21 @@ class Office < ApplicationRecord
   def thumbnail
     photo.variant(resize: "180x180", auto_orient: true)
   end
+  # Office Inventory listing rule (2026-08-27 plan §8):
+  #   :now  — visible and no active lease (auto-listed)
+  #   Date  — leased, but staff flipped coming_available: the current lease's
+  #           end date ("Available from <date>"); NEVER derived automatically —
+  #           a tenant might renew, and their departure is not public until
+  #           staff say so.
+  #   nil   — not listed.
+  def listed_availability
+    return nil unless visible?
+
+    lease = office_leases.active.order(end_date: :desc).first
+    return :now if lease.nil?
+    return lease.end_date if coming_available?
+
+    nil
+  end
+
 end

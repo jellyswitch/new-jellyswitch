@@ -1,0 +1,9 @@
+<div style="max-width: 480px; margin: 60px auto; text-align: center; padding: 0 20px;">
+  <% if params[:ok] == "0" %>
+    <h2>Something was missing</h2>
+    <p>We need at least your name and email — please go back and try again.</p>
+  <% else %>
+    <h2>Thanks — we got your inquiry! 🎉</h2>
+    <p>Someone from the <%= @operator.name %> team will reach out shortly to set up a tour and talk details.</p>
+  <% end %>
+</div>

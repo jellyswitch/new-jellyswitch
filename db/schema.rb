@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_27_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_27_000004) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -770,6 +770,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000003) do
     t.datetime "updated_at", precision: nil, null: false
     t.bigint "location_id"
     t.integer "square_footage", default: 0, null: false
+    t.integer "asking_rate_in_cents"
+    t.boolean "coming_available", default: false, null: false
     t.index ["location_id"], name: "index_offices_on_location_id"
     t.index ["operator_id"], name: "index_offices_on_operator_id"
   end
@@ -859,6 +861,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_27_000003) do
     t.string "embed_accent_override"
     t.integer "building_access_window_minutes", default: 60, null: false
     t.boolean "showcase_enabled", default: false, null: false
+    t.boolean "office_inventory_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 

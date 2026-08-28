@@ -70,7 +70,7 @@ class Operator::SettingsController < Operator::BaseController
 
   def update_website_widgets
     @operator = current_operator
-    if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled))
+    if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled, :office_inventory_enabled))
       redirect_to settings_website_widgets_path, notice: "Website widget settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence
