@@ -20,6 +20,15 @@ Rails.application.routes.draw do
       get "/", to: "showcase#widget", as: :showcase, defaults: { format: :js }
     end
 
+    # Office Inventory: inline-DOM listing of available offices (ADR 0027).
+    # The inquiry is a plain top-level form POST (tour-widget precedent — no
+    # CORS surface), landing on a small thank-you page.
+    scope "office_inventory/:operator_subdomain" do
+      get  "/",          to: "office_inventory#widget",    as: :office_inventory, defaults: { format: :js }
+      post "/inquiries", to: "office_inventory#inquire",   as: :office_inventory_inquiry
+      get  "/thank_you", to: "office_inventory#thank_you", as: :office_inventory_thank_you
+    end
+
     scope "concierge/:operator_subdomain" do
       get  "/",                       to: "concierge#show", as: :concierge
       get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location

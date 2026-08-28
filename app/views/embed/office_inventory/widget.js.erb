@@ -1,0 +1,102 @@
+<%# Inline-DOM Office Inventory (ADR 0027). Cards for each listed office with
+    an expandable inquiry form that POSTs top-level (no CORS). %>
+(function () {
+  var DATA = <%= raw({
+    offices: @offices,
+    accent: @operator.embed_accent_color,
+    font: @operator.embed_font_family.presence,
+    action: embed_office_inventory_inquiry_url(operator_subdomain: @operator.subdomain, host: request.host_with_port),
+    location_id: @location.id,
+  }.to_json) %>;
+  var script = document.currentScript;
+  if (!script) return;
+
+  var css =
+    ".jsw-oi{--jsw-accent:" + DATA.accent + ";margin:16px 0;color:inherit;}" +
+    ".jsw-oi *{box-sizing:border-box;}" +
+    ".jsw-oi-grid{display:flex;flex-wrap:wrap;gap:16px;}" +
+    ".jsw-oi-card{flex:1 1 260px;max-width:360px;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff;color:#111827;display:flex;flex-direction:column;}" +
+    ".jsw-oi-photo{width:100%;height:150px;object-fit:cover;display:block;}" +
+    ".jsw-oi-body{padding:16px;display:flex;flex-direction:column;flex:1;}" +
+    ".jsw-oi-name{font-weight:700;font-size:1.05em;}" +
+    ".jsw-oi-badge{display:inline-block;background:#ecfdf5;color:#047857;font-size:12px;font-weight:700;border-radius:99px;padding:2px 10px;margin:6px 0;align-self:flex-start;}" +
+    ".jsw-oi-meta{font-size:.9em;color:#6b7280;margin-bottom:6px;}" +
+    ".jsw-oi-rate{font-weight:800;font-size:1.2em;margin:4px 0 10px;}" +
+    ".jsw-oi-desc{font-size:.92em;line-height:1.45;margin-bottom:12px;flex:1;}" +
+    ".jsw-oi-cta{display:block;text-align:center;background:var(--jsw-accent);color:#fff;border:none;border-radius:10px;padding:11px;font-weight:700;cursor:pointer;width:100%;font-size:15px;}" +
+    ".jsw-oi-form{display:none;flex-direction:column;gap:8px;margin-top:10px;}" +
+    ".jsw-oi-form.jsw-oi-open{display:flex;}" +
+    ".jsw-oi-form input,.jsw-oi-form textarea{padding:9px 11px;border:1px solid #d1d5db;border-radius:9px;font-size:14px;width:100%;}" +
+    ".jsw-oi-empty{border:1px dashed #d1d5db;border-radius:12px;padding:18px;color:#6b7280;font-size:.95em;}" +
+    (DATA.font ? ".jsw-oi{font-family:" + DATA.font + ";}" : "");
+  var style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  var root = el("div", "jsw-oi");
+  if (!DATA.offices.length) {
+    root.appendChild(el("div", "jsw-oi-empty",
+      "All our offices are spoken for right now — ask about upcoming availability and we'll reach out."));
+  }
+  var grid = el("div", "jsw-oi-grid");
+  DATA.offices.forEach(function (office) {
+    var card = el("div", "jsw-oi-card");
+    if (office.photo_url) {
+      var img = el("img", "jsw-oi-photo");
+      img.src = office.photo_url; img.alt = office.name; img.loading = "lazy";
+      card.appendChild(img);
+    }
+    var body = el("div", "jsw-oi-body");
+    body.appendChild(el("div", "jsw-oi-name", office.name));
+    body.appendChild(el("span", "jsw-oi-badge", office.availability_label));
+    var meta = [];
+    if (office.capacity) meta.push(office.capacity + (office.capacity === 1 ? " person" : " people"));
+    if (office.square_footage) meta.push(office.square_footage + " sqft");
+    if (meta.length) body.appendChild(el("div", "jsw-oi-meta", meta.join(" · ")));
+    body.appendChild(el("div", "jsw-oi-rate", office.rate_label));
+    if (office.description) body.appendChild(el("div", "jsw-oi-desc", office.description));
+
+    var btn = el("button", "jsw-oi-cta", "Inquire / book a tour");
+    var form = document.createElement("form");
+    form.className = "jsw-oi-form";
+    form.method = "post";
+    form.action = DATA.action;
+    [["office_id", office.id], ["location_id", DATA.location_id]].forEach(function (h) {
+      var i = document.createElement("input");
+      i.type = "hidden"; i.name = h[0]; i.value = h[1];
+      form.appendChild(i);
+    });
+    var hp = document.createElement("input");
+    hp.type = "text"; hp.name = "_hp"; hp.tabIndex = -1; hp.autocomplete = "off";
+    hp.style.cssText = "position:absolute;left:-9999px;height:0;";
+    form.appendChild(hp);
+    [["name", "Your name", "text", true], ["email", "Email", "email", true], ["phone", "Phone (optional)", "tel", false]].forEach(function (f) {
+      var i = document.createElement("input");
+      i.name = f[0]; i.placeholder = f[1]; i.type = f[2]; i.required = f[3];
+      form.appendChild(i);
+    });
+    var msg = document.createElement("textarea");
+    msg.name = "message"; msg.rows = 2; msg.placeholder = "Anything we should know? (move-in date, team size…)";
+    form.appendChild(msg);
+    var send = el("button", "jsw-oi-cta", "Send inquiry");
+    send.type = "submit";
+    form.appendChild(send);
+
+    btn.addEventListener("click", function () {
+      form.classList.toggle("jsw-oi-open");
+    });
+    body.appendChild(btn);
+    body.appendChild(form);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+  root.appendChild(grid);
+  script.insertAdjacentElement("afterend", root);
+})();

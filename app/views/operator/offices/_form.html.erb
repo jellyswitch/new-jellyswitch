@@ -22,7 +22,20 @@
   </div>
 
   <div class="form-group">
-    <div class="form-check">
+    
+  <div class="form-group mb-3">
+    <%= f.label :asking_rate_in_cents, "Asking rate ($/month, optional)" %>
+    <%= f.number_field :asking_rate_in_cents, class: "form-control", step: 1, min: 0,
+          value: (f.object.asking_rate_in_cents ? f.object.asking_rate_in_cents / 100 : nil) %>
+    <small class="form-text text-muted">Shown on the website's Office Inventory. Blank = "Contact for pricing". The lease still sets the real price.</small>
+  </div>
+  <div class="form-check mb-3">
+    <%= f.check_box :coming_available, class: "form-check-input" %>
+    <%= f.label :coming_available, "List as coming available (leased offices only)", class: "form-check-label" %>
+    <small class="form-text text-muted d-block">Only flip this when a departure is confirmed and public — the website will show "Available from" the current lease's end date. Vacant offices list automatically.</small>
+  </div>
+
+  <div class="form-check">
       <%= f.check_box :visible, class: "form-check-input" %>
       <%= f.label :visible, "Check this box to make this office visible", {class: "form-check-label"} %>
     </div>
