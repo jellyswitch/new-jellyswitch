@@ -72,7 +72,7 @@ RSpec.describe ProductEmailTemplate, type: :model do
     end
 
     describe ".replace_merge_tags with a DayPassBundle sendable" do
-      let(:pack_type) { create(:day_pass_type, operator: operator, location: location, name: "10-Pack") }
+      let(:pack_type) { create(:day_pass_type, operator: operator, location: location, name: "10-Pack", quantity: 10) }
       let(:bundle) do
         create(:day_pass_bundle, user: user, day_pass_type: pack_type, operator: operator,
                                  quantity_purchased: 10, passes_remaining: 7,

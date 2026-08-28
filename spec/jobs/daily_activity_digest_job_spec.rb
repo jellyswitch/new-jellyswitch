@@ -18,7 +18,7 @@ RSpec.describe DailyActivityDigestJob, type: :job do
   let(:single_type) { create(:day_pass_type, operator: operator, location: location,
                                              name: "Single", amount_in_cents: 2_500) }
   let(:pack_type)   { create(:day_pass_type, operator: operator, location: location,
-                                             name: "10-Pack", amount_in_cents: 20_000) }
+                                             name: "10-Pack", quantity: 10, amount_in_cents: 20_000) }
 
   let(:individual) { create(:user, operator: operator, original_location: location,
                                    current_location: location, name: "Individual Ida") }
