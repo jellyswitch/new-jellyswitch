@@ -53,7 +53,7 @@ RSpec.describe Operator::TodaysActivityController, type: :controller do
   # total must exclude bundle entries while still showing them as visits.
   describe "GET #index day-pass revenue with bundle entries" do
     let(:single_type) { create(:day_pass_type, operator: operator, location: zephyr, name: "Single", amount_in_cents: 2_500) }
-    let(:pack_type)   { create(:day_pass_type, operator: operator, location: zephyr, name: "10-Pack", amount_in_cents: 20_000) }
+    let(:pack_type)   { create(:day_pass_type, operator: operator, location: zephyr, name: "10-Pack", quantity: 10, amount_in_cents: 20_000) }
 
     let(:individual)  { create(:user, operator: operator, original_location: zephyr, current_location: zephyr, name: "Individual Ida") }
     let(:bundler)     { create(:user, operator: operator, original_location: zephyr, current_location: zephyr, name: "Bundle Bob") }

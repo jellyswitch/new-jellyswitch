@@ -290,4 +290,26 @@ class DayPassTypeTest < ActiveSupport::TestCase
                                  amount_in_cents: 5000, quantity: 1)
     assert_equal single, DayPassType.suggested_standard_for(@location)
   end
+  # Pack-name/quantity guard (TLH 2026-08-10, Fulton 2026-08-27 mis-sells).
+  test "an N-pack name with a mismatched quantity is invalid" do
+    t = DayPassType.new(name: "2 day pass pack", quantity: 1, amount_in_cents: 5900,
+                        operator: operators(:cowork_tahoe))
+    refute t.valid?
+    assert_match(/name says 2-pack/, t.errors[:quantity].join)
+  end
+
+  test "an N-pack name with the matching quantity is valid on that rule" do
+    t = DayPassType.new(name: "5-Day Pack", quantity: 5, amount_in_cents: 15000,
+                        operator: operators(:cowork_tahoe))
+    t.valid?
+    assert_empty t.errors[:quantity]
+  end
+
+  test "non-pack names are not guarded" do
+    t = DayPassType.new(name: "Coworking Day Pass", quantity: 1, amount_in_cents: 4000,
+                        operator: operators(:cowork_tahoe))
+    t.valid?
+    assert_empty t.errors[:quantity]
+  end
+
 end
