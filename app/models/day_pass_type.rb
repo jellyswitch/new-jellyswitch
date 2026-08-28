@@ -100,6 +100,22 @@ class DayPassType < ApplicationRecord
     "including California (Civil Code §1749.5). It can't be enabled for this location.".freeze
 
   validate :expiration_allowed_for_location
+  validate :pack_name_matches_quantity
+
+  # A SKU named like an N-pack must mint N passes. Guards the fake-bundle
+  # mis-sell shipped twice (TLH 2026-08-10, Untethered Fulton 2026-08-27):
+  # "2 day pass pack" with quantity 1 sells two-pack money for one pass.
+  # The pattern was audited against every production SKU — zero false
+  # positives; a name it doesn't match is simply not guarded.
+  def pack_name_matches_quantity
+    match = name.to_s.match(/(\d+)[\s-]*(day\s*)?(pass\s*)?(es)?\s*pack/i)
+    return unless match
+
+    expected = match[1].to_i
+    return if expected.zero? || quantity == expected
+
+    errors.add(:quantity, "is #{quantity}, but the name says #{expected}-pack — a buyer would pay for #{expected} passes and receive #{quantity}")
+  end
 
   def expiration_allowed_for_location
     return if expires_after_days.blank?

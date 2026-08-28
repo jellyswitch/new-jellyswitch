@@ -35,7 +35,7 @@ RSpec.describe Api::V1::Admin::FeedController, type: :controller do
 
   describe "GET #index — day pass bundle purchase" do
     let(:buyer)     { create(:user, operator: operator, role: "unassigned", approved: false, name: "Penny Pack") }
-    let(:pack_type) { create(:day_pass_type, operator: operator, name: "5-Pack", amount_in_cents: 20_000) }
+    let(:pack_type) { create(:day_pass_type, operator: operator, name: "5-Pack", quantity: 5, amount_in_cents: 20_000) }
     let(:bundle) do
       create(:day_pass_bundle, user: buyer, day_pass_type: pack_type, operator: operator,
                                quantity_purchased: 5, passes_remaining: 5)

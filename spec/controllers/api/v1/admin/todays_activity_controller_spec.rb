@@ -12,7 +12,7 @@ RSpec.describe Api::V1::Admin::TodaysActivityController, type: :controller do
   let(:admin)    { create(:user, operator: operator, role: "superadmin", name: "Adam Admin") }
 
   let(:single_type) { create(:day_pass_type, operator: operator, location: location, name: "Single", amount_in_cents: 2_500) }
-  let(:pack_type)   { create(:day_pass_type, operator: operator, location: location, name: "10-Pack", amount_in_cents: 20_000) }
+  let(:pack_type)   { create(:day_pass_type, operator: operator, location: location, name: "10-Pack", quantity: 10, amount_in_cents: 20_000) }
 
   let(:individual) { create(:user, operator: operator, name: "Individual Ida") }
   let(:bundler)    { create(:user, operator: operator, name: "Bundle Bob") }
