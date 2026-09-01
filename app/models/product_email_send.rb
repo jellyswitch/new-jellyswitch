@@ -38,4 +38,24 @@ class ProductEmailSend < ApplicationRecord
   def self.already_sent?(sendable, email_type)
     where(sendable: sendable, email_type: email_type).exists?
   end
+
+  # Claim a send exactly once — returns true if this call recorded the row,
+  # false if it already existed. The unique index on
+  # (sendable_type, sendable_id, email_type) makes this race-proof, so callers
+  # can gate the actual delivery on the return value (used by the
+  # non-payment cutoff drip, where Stripe re-fires payment_failed per retry).
+  # operator must be passed where no tenant is set (the webhook endpoint).
+  def self.record_once(sendable:, email_type:, user:, operator: nil, sent_at: Time.current)
+    create!(
+      user: user,
+      operator: operator || ActsAsTenant.current_tenant || user.operator,
+      sendable: sendable,
+      email_type: email_type,
+      status: "sent",
+      sent_at: sent_at,
+    )
+    true
+  rescue ActiveRecord::RecordNotUnique
+    false
+  end
 end

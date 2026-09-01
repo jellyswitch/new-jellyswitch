@@ -246,7 +246,10 @@ class Operator::ReservationsController < Operator::BaseController
                                                                # cap from context.user (the booked member), so the flag must
                                                                # stay off when staff book on behalf — the member's 4h free-room
                                                                # cap must not block a staff booking (12h admin allowance).
-                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location))
+                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location),
+                                                               # Non-payment cutoff, gated on the BOOKER the same way: staff
+                                                               # may still book on behalf of a suspended member (admin bypass).
+                                                               enforce_payment_standing: !current_user.admin_or_manager?(current_location))
 
     @reservation = result.reservation
 
@@ -581,6 +584,8 @@ class Operator::ReservationsController < Operator::BaseController
                              day_pass_type: coverage_day_pass_type,
                              enforce_coverage: true,
                              enforce_posted_hours: true,
+                             # Non-payment cutoff (PaymentCutoff); no-op for staff.
+                             enforce_payment_standing: true,
                              # Server-side duration cap (member self-serve only;
                              # the staff calendar flows keep the admin allowance).
                              enforce_duration_cap: true,

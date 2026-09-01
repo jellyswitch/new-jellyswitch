@@ -16,6 +16,16 @@ module Api::V1::DoorUnlocking
     # Purchasing and booking stay self-serve (coverage-gated only).
     return false unless user.approved?
 
+    # Non-payment cutoff (PaymentCutoff): once the suspension notice has gone
+    # out and the invoice is STILL unpaid, the building closes to the member —
+    # membership, passes, leases, and existing reservations included
+    # (reservations are kept, they just don't admit until the balance is
+    # settled). Sitting above every grant also hides the keys list and the
+    # dashboard unlock indicator. Derived state: paying by any path restores
+    # access instantly. Staff are exempt inside the predicate (and via the
+    # admin_or_manager early return above).
+    return false if user.payment_suspended?
+
     zone  = location&.time_zone.presence || "UTC"
     today = Time.current.in_time_zone(zone).to_date
 
@@ -81,6 +91,22 @@ module Api::V1::DoorUnlocking
   # incl. the early grace when the room is free). The logic lives on the
   # model — Door#openable_as_room_lock_by? — so the operator web and legacy
   # /api unlock paths share the exact same rule.
+  # One message for every unlock surface (mobile, web, BLE auto-unlock) so a
+  # denied member is told the actual reason — pending approval and payment
+  # suspension each have a fix the generic "buy a day pass" copy would hide.
+  def building_access_denial_message(user, location)
+    if user && !user.approved? && !user.superadmin? && !user.admin_or_manager?(location)
+      # Tell an unapproved member the truth — they're pending screening —
+      # instead of steering them to buy a pass that won't open the door yet
+      # (the exact trap from the Nash incident, 2026-08-07).
+      "Your account is pending approval. You'll get building access as soon as the team approves you."
+    elsif user&.payment_suspended?
+      "Your account has a past-due balance, so access is paused. Update your payment method to restore it instantly."
+    else
+      "You don't have access today. Buy a day pass or activate a membership to unlock the doors."
+    end
+  end
+
   def user_can_open_room_lock?(user, door)
     door.openable_as_room_lock_by?(user)
   end

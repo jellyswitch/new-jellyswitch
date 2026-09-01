@@ -150,6 +150,30 @@ class UserMailer < ApplicationMailer
     mail to: user.email, subject: "Action Required: Your recent payment failed", from: from_address, reply_to: operator.contact_email
   end
 
+  # Step 2 of the non-payment drip (PaymentCutoff): 48h after the failure
+  # notice, warn that access pauses in another 48h.
+  def payment_cutoff_warning_email(user, operator, invoice, location = nil)
+    @user = user
+    @operator = operator
+    @invoice = invoice
+    @location = location
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Action Required: Your access will be paused in 48 hours", from: from_address, reply_to: operator.contact_email
+  end
+
+  # Step 3 of the non-payment drip (PaymentCutoff): access is now paused;
+  # paying the invoice restores it instantly.
+  def payment_suspended_email(user, operator, invoice, location = nil)
+    @user = user
+    @operator = operator
+    @invoice = invoice
+    @location = location
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Your access is paused — settle your balance to restore it", from: from_address, reply_to: operator.contact_email
+  end
+
   def renewal_reminder_email(user, operator, subscription, location = nil)
     @user = user
     @operator = operator

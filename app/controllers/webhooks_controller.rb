@@ -34,13 +34,29 @@ class WebhooksController < ApplicationController
         begin
           invoice = Invoice.find_by(stripe_invoice_id: @event.data.object.id)
           if invoice
-            SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id)
-            # Push counterpart of the email ("failed-card save") — nudges the
-            # member's phone to fix their card on every dunning attempt.
-            SendNotificationsJob.perform_later(invoice, "PaymentFailed")
-
-            # Create feed item to alert admins
             user = invoice.billable.is_a?(User) ? invoice.billable : invoice.billable.try(:owner)
+
+            # Exactly ONE failed-payment email + push per invoice (PaymentCutoff
+            # drip, step 1): Stripe re-fires invoice.payment_failed on every
+            # dunning retry, but the follow-ups belong to PaymentCutoffJob
+            # (warning at +48h, suspension at +96h) — not four copies of this
+            # notice. record_once claims the send atomically, so a replayed
+            # webhook can't double-send either.
+            first_failure = user && ProductEmailSend.record_once(
+              sendable: invoice,
+              email_type: PaymentCutoff::FAILED_NOTICE,
+              user: user,
+              operator: invoice.operator,
+            )
+            if first_failure
+              SendPaymentFailedEmailJob.perform_later(invoice.stripe_invoice_id, invoice.operator_id)
+              # Push counterpart of the email ("failed-card save") — nudges the
+              # member's phone to fix their card.
+              SendNotificationsJob.perform_later(invoice, "PaymentFailed")
+            end
+
+            # Create feed item to alert admins (every attempt — staff should
+            # see that the retries are still failing)
             if user
               amount = ActionController::Base.helpers.number_to_currency(invoice.amount_due / 100.0)
               FeedItemCreator.create_feed_item(

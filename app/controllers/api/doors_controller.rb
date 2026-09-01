@@ -70,7 +70,7 @@ class Api::DoorsController < ApplicationController
         return render json: {
           success: false,
           door:    @door.name,
-          message: "You don't have access today. Buy a day pass or activate a membership to unlock the doors.",
+          message: building_access_denial_message(current_user, @door.location),
         }, status: :forbidden
       end
 
