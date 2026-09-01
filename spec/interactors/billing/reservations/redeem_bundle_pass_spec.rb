@@ -60,6 +60,43 @@ RSpec.describe Billing::Reservations::RedeemBundlePass do
     expect(user.day_passes.count).to eq(0)
   end
 
+  # ADR 0029 (Pratik/Cowork Tahoe 2026-08-26): holding a bundle IS the intent —
+  # member self-serve bookings (enforce_coverage) burn a pass automatically,
+  # with no use_bundle_pass flag from the client.
+  describe "auto-redeem for member self-serve bookings" do
+    def auto_redeem(reservation)
+      described_class.call(reservation: reservation, user: user, enforce_coverage: true)
+    end
+
+    it "burns a pass for an included room with no flag from the client" do
+      bundle = make_bundle(passes: 2)
+      r = reservation_for # 2 days from now — the future date is the point
+
+      result = auto_redeem(r)
+
+      expect(result).to be_a_success
+      expect(bundle.reload.passes_remaining).to eq(1)
+      expect(user.day_passes.for_day(r.datetime_in.to_date).count).to eq(1)
+    end
+
+    it "never auto-burns for a free room that is NOT included with a day pass" do
+      bundle = make_bundle
+      free_uncovered = create(:room, operator: operator, location: location,
+                                     hourly_rate_in_cents: 0, include_with_day_pass: false)
+      auto_redeem(reservation_for(room: free_uncovered))
+      expect(bundle.reload.passes_remaining).to eq(5)
+    end
+
+    it "still defers to an existing pass covering that date" do
+      bundle = make_bundle
+      r = reservation_for
+      create(:day_pass, user: user, billable: user, operator: operator, location: location,
+                        day_pass_type: bundle_type, day: r.datetime_in.to_date)
+      auto_redeem(r)
+      expect(bundle.reload.passes_remaining).to eq(5)
+    end
+  end
+
   it "does nothing for a paid room (passes never cover priced rooms)" do
     bundle = make_bundle
     r = reservation_for(room: paid_room)

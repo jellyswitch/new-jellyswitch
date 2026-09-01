@@ -47,6 +47,24 @@ RSpec.describe "API v1 reserve-time bundle redemption", type: :request do
     expect(redemption).to be_present
   end
 
+  # ADR 0029 (Pratik/Cowork Tahoe 2026-08-26): a client that sends NO coverage
+  # flags at all — the web calendar sheet, or a mobile build predating the
+  # coverage-confirm prompt — books anyway; the server burns the bundle pass
+  # itself instead of 422ing "This room needs a day pass".
+  it "auto-redeems for a flag-less booking of an included room (no 422 dead-end)" do
+    booking_day = Date.current.next_occurring(:tuesday) + 7
+    post "/api/v1/reservations",
+         params: { reservation: { room_id: call_room.id, minutes: 60,
+                                  datetime_in: booking_day.in_time_zone.change(hour: 10, min: 0).iso8601 } },
+         headers: auth_headers_for(user)
+
+    expect(response).to have_http_status(:created)
+    expect(bundle.reload.passes_remaining).to eq(4)
+    reservation = Reservation.find(JSON.parse(response.body)["id"])
+    expect(user.day_passes.for_day(booking_day).count).to eq(1)
+    expect(DayPassBundleRedemption.find_by(reservation_id: reservation.id, kind: "reservation")).to be_present
+  end
+
   it "does not touch the bundle when the booker doesn't opt in" do
     # Member (so the booking succeeds via membership, not the bundle) who also
     # holds a bundle — without opting in, the bundle must stay untouched.

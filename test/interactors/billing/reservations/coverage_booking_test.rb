@@ -43,7 +43,28 @@ class Billing::Reservations::CoverageBookingTest < ActiveSupport::TestCase
     end
   end
 
-  test "an included booking with NO coverage decision is blocked and rolled back" do
+  # ADR 0029 (Pratik incident): holding a bundle IS the coverage decision — a
+  # flag-less member self-serve booking burns a pass automatically instead of
+  # dead-ending in EnforceCoverage's 422 (the web calendar sheet sends no flags).
+  test "a bundle holder with NO coverage decision books anyway — a pass burns automatically" do
+    ActsAsTenant.with_tenant(@op) do
+      u = create(:user, operator: @op, original_location: @loc, current_location: @loc)
+      room = included_room
+      t = create(:day_pass_type, operator: @op, location: @loc, included_meeting_room_minutes: 120,
+                 amount_in_cents: 4000, available: true, visible: true)
+      DayPassBundle.create!(user: u, operator: @op, location: @loc, day_pass_type: t,
+                            quantity_purchased: 5, passes_remaining: 5, purchased_at: Time.current)
+
+      r = call(user: u, room: room) # no flags — the auto path
+
+      assert r.success?, "booking should succeed: #{r.message}"
+      dp = u.day_passes.for_day((Date.current + 3)).first
+      assert dp, "a bundle-minted pass covers the reservation date"
+      assert_equal 4, u.day_pass_bundles.first.reload.passes_remaining
+    end
+  end
+
+  test "an included booking with NO coverage decision and NO bundle is blocked and rolled back" do
     ActsAsTenant.with_tenant(@op) do
       u = create(:user, operator: @op, original_location: @loc, current_location: @loc)
       room = included_room
