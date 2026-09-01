@@ -277,6 +277,57 @@ RSpec.describe Operator::ReservationsController, type: :controller do
       end
     end
 
+    # ADR 0019 in the wizard: the default factory room is $0 + include_with_day_pass,
+    # so a member booking it here must commit day-pass coverage (enforce_coverage,
+    # gated on the BOOKER like the other flags). Before this the wizard was the one
+    # booking surface with no coverage enforcement — free room, no burn, no access.
+    context "as a member booking an included room (coverage)" do
+      let(:booking_day) { Date.current.next_occurring(:tuesday) + 7 }
+      let(:coverage_params) { wizard_params.merge(duration: "60") }
+
+      it "blocks an uncovered booking with the buy prompt instead of a free room" do
+        expect {
+          post :create_reservation, params: coverage_params
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to match(/day pass/i)
+      end
+
+      it "books when the member already holds a pass for the date" do
+        create(:day_pass, user: regular_user, billable: regular_user, operator: operator,
+               location: location, day: booking_day)
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
+
+        expect {
+          post :create_reservation, params: coverage_params
+        }.to change(Reservation, :count).by(1)
+        expect(flash[:error]).to be_nil
+      end
+
+      # ADR 0029: the wizard confirm page has no coverage UI and sends no flags,
+      # so a bundle holder must burn automatically rather than dead-end in the
+      # buy prompt (the Pratik incident, on the calendar sheet's flagless POST).
+      it "burns a bundle pass automatically for a bundle holder" do
+        t = create(:day_pass_type, operator: operator, location: location,
+                   included_meeting_room_minutes: 120, amount_in_cents: 4000,
+                   available: true, visible: true)
+        bundle = DayPassBundle.create!(user: regular_user, operator: operator, location: location,
+                                       day_pass_type: t, quantity_purchased: 5, passes_remaining: 5,
+                                       purchased_at: Time.current)
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
+
+        expect {
+          post :create_reservation, params: coverage_params
+        }.to change(Reservation, :count).by(1)
+        expect(bundle.reload.passes_remaining).to eq(4)
+        expect(regular_user.day_passes.for_day(booking_day).count).to eq(1)
+      end
+    end
+
+    # The staff on-behalf examples below also pin the coverage gate's other half:
+    # they book this same included room for an uncovered member and must keep
+    # succeeding — enforce_coverage stays off for admin/manager bookers.
     context "as staff booking on behalf of a member" do
       before do
         allow(controller).to receive(:current_user).and_return(admin_user)
@@ -337,6 +388,37 @@ RSpec.describe Operator::ReservationsController, type: :controller do
         }
       }.not_to change(Reservation, :count)
       expect(flash[:error]).to eq("#{location.name} is open #{location.posted_hours_label}. Rooms can be booked during open hours.")
+    end
+
+    # ADR 0019: a non-member bundle/no-pass holder has should_charge_for_reservation?
+    # true, so with no card on file the confirm page routes them through THIS action —
+    # it must enforce coverage exactly like create_reservation (same booker gate).
+    context "booking an included room (coverage)" do
+      let(:booking_day) { Date.current.next_occurring(:tuesday) + 7 }
+      let(:card_params) do
+        { room_id: room.id, day: booking_day.to_s, hour: "10:00am", duration: "60", stripeToken: "tok_visa" }
+      end
+
+      before { allow(Billing::Payment::UpdateUserPayment).to receive(:call!) }
+
+      it "blocks an uncovered booking with the buy prompt instead of a free room" do
+        expect {
+          post :update_billing_and_create_reservation, params: card_params
+        }.not_to change(Reservation, :count)
+        expect(flash[:error]).to match(/day pass/i)
+      end
+
+      it "books when the member already holds a pass for the date" do
+        create(:day_pass, user: regular_user, billable: regular_user, operator: operator,
+               location: location, day: booking_day)
+        allow(SendUpcomingReservationReminderJob).to receive_message_chain(:set, :perform_later)
+        allow(Billing::Reservations::ChargeAtBooking).to receive(:call!) { |context| context }
+
+        expect {
+          post :update_billing_and_create_reservation, params: card_params
+        }.to change(Reservation, :count).by(1)
+        expect(flash[:error]).to be_nil
+      end
     end
   end
 
