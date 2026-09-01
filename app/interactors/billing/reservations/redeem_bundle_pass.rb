@@ -1,12 +1,18 @@
 class Billing::Reservations::RedeemBundlePass
   include Interactor
 
-  # Opt-in reserve-time bundle redemption (ADR 0015). When the booker chose
-  # "use 1 pass for today", spend one prepaid day-pass-bundle pass to cover a $0
-  # (call) room: mint a DayPass for the reservation's date (the same artifact
-  # ConsumeOnEntry mints on door entry) and burn one pass. The minted DayPass is
-  # what makes ChargeCalculator return 0 (so ChargeAtBooking no-ops) and grants
-  # access — pricing/permissions recognize bundles only via a DayPass.
+  # Reserve-time bundle redemption (ADR 0015, auto since ADR 0029). Spend one
+  # prepaid day-pass-bundle pass to cover a $0 (call) room: mint a DayPass for
+  # the reservation's date (the same artifact ConsumeOnEntry mints on door
+  # entry) and burn one pass. The minted DayPass is what makes ChargeCalculator
+  # return 0 (so ChargeAtBooking no-ops) and grants access — pricing/permissions
+  # recognize bundles only via a DayPass.
+  #
+  # Two triggers: the client's explicit use_bundle_pass decision, or — for
+  # member self-serve bookings of an INCLUDED room (ADR 0029, Pratik/Cowork
+  # Tahoe 2026-08-26) — automatically: holding a bundle IS the intent to spend
+  # a pass on the dates you book, so a client that never sends the flag (older
+  # app build, any web path) must not dead-end in EnforceCoverage's 422.
   #
   # Runs after SaveRoomReservation (validated, persisted reservation) and before
   # ChargeAtBooking (so the minted pass zeroes the charge). Paid rooms are never
@@ -26,11 +32,11 @@ class Billing::Reservations::RedeemBundlePass
   delegate :reservation, :user, :use_bundle_pass, to: :context
 
   def call
-    return unless use_bundle_pass
     return unless reservation&.persisted?
 
     room = reservation.room
     return if room.hourly_rate_in_cents.to_i > 0 # paid rooms aren't covered by passes
+    return unless use_bundle_pass || auto_redeem?(room)
 
     location = room.location
     return if user.has_active_subscription?     # already covered — never spend a pass
@@ -129,6 +135,18 @@ class Billing::Reservations::RedeemBundlePass
   end
 
   private
+
+  # Auto-burn (ADR 0029): scoped to member self-serve via enforce_coverage —
+  # the same opt-in the 422 guard uses, so exactly the flows that would BLOCK
+  # an uncovered booking now cover it themselves instead; admin/on-behalf
+  # flows (which don't set it) keep explicit control via schedule_bundle_days.
+  # Scoped to included rooms so a free NON-included room never silently spends
+  # a pass. Every other guard still applies: already covered, burned in the
+  # business-day window, subscriber/leaseholder, and no-bundle all fall
+  # through without burning.
+  def auto_redeem?(room)
+    context.enforce_coverage && room.include_with_day_pass?
+  end
 
   # A purchased day pass or a prior bundle mint already covers that calendar day.
   def covered_for_day?(location, day)

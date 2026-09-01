@@ -18,7 +18,12 @@ class Billing::Reservations::EnforceCoverage
     return if room.hourly_rate_in_cents.to_i > 0 || !room.include_with_day_pass?
 
     date = reservation.datetime_in.to_date
-    state = Billing::Reservations::CoverageState.for(user: user, room: room, date: date, location: location)
+    # Evaluate against the ROOM's location, not the caller's current_location —
+    # RedeemBundlePass mints the coverage pass against room.location, so at a
+    # multi-location operator a mismatched current_location would burn a pass
+    # and then fail the booking as "uncovered" anyway.
+    state = Billing::Reservations::CoverageState.for(user: user, room: room, date: date,
+                                                     location: room.location || location)
     return if state.outcome == :already_covered # a step just committed a pass, or they were covered
 
     context.fail!(
