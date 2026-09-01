@@ -76,7 +76,9 @@ class DayPass < ApplicationRecord
   scope :purchased, -> { where(complimentary: [false, nil]) }
   scope :complimentary, -> { where(complimentary: true) }
   scope :last_30_days, -> { where('day > ?', 30.days.ago ) }
-  scope :this_month, -> () { where("day > ?", Time.current.beginning_of_month) }
+  # >= — day is a DATE, so strict > against beginning_of_month (a midnight
+  # timestamp) silently excluded passes dated the 1st for the whole month.
+  scope :this_month, -> () { where("day >= ?", Time.current.beginning_of_month.to_date) }
   scope :for_week, -> (week_start, week_end) { where('day > ? and day <= ?', week_start, week_end) }
 
   # A purchased (non-bundle-sourced) pass bought for a booking that was then
