@@ -408,7 +408,9 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     case result.outcome
     when :redeemed
-      bundle = current_api_user.day_pass_bundles.active.where(location: current_location).first
+      # draw_order so the count shown is the bundle ConsumeOnEntry just drew
+      # from (or, if that emptied, the next pack the member will draw on).
+      bundle = current_api_user.day_pass_bundles.active.where(location: current_location).draw_order.first
       render json: {
         status:          "redeemed",
         passes_remaining: bundle&.passes_remaining,

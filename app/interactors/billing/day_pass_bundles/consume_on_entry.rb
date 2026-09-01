@@ -40,8 +40,11 @@ class Billing::DayPassBundles::ConsumeOnEntry
       return
     end
 
-    # Find the active bundle for this location
-    bundle = user.day_pass_bundles.active.where(location: location).first
+    # Find the active bundle for this location. draw_order: the canonical
+    # soonest-expiring-first pick (ADR 0018) — a member holding an expiring
+    # pack plus a perpetual one must spend the expiring pack at the door,
+    # matching every other spender.
+    bundle = user.day_pass_bundles.active.where(location: location).draw_order.first
     unless bundle
       context.outcome = :no_bundle
       return

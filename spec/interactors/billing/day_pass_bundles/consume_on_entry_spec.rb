@@ -57,6 +57,18 @@ RSpec.describe Billing::DayPassBundles::ConsumeOnEntry do
     expect { consume }.not_to change { Activity.where(kind: :day_pass).count }
   end
 
+  # draw_order (ADR 0018): the perpetual pack is created first (lowest id), so
+  # an unordered pick would burn it while the expiring passes lapse.
+  it "burns the soonest-expiring bundle before a perpetual one" do
+    perpetual = active_bundle
+    expiring  = DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
+                                      day_pass_type: type, quantity_purchased: 5, passes_remaining: 5,
+                                      purchased_at: Time.current, expires_at: 10.days.from_now)
+    consume
+    expect(expiring.reload.passes_remaining).to eq(4)
+    expect(perpetual.reload.passes_remaining).to eq(5)
+  end
+
   it "is idempotent — a second entry the same calendar day does NOT burn again" do
     b = active_bundle
     consume
