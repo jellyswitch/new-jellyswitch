@@ -14,10 +14,10 @@ RSpec.describe Billing::Reservations::RedeemBundlePass do
   before { ActsAsTenant.current_tenant = operator }
   after { ActsAsTenant.current_tenant = nil }
 
-  def make_bundle(passes: 5)
+  def make_bundle(passes: 5, expires_at: nil)
     DayPassBundle.create!(user: user, billable: user, operator: operator, location: location,
                           day_pass_type: bundle_type, quantity_purchased: 5,
-                          passes_remaining: passes, purchased_at: Time.current)
+                          passes_remaining: passes, expires_at: expires_at, purchased_at: Time.current)
   end
 
   def reservation_for(room: call_room, at: 2.days.from_now.change(hour: 12), u: user)
@@ -118,6 +118,56 @@ RSpec.describe Billing::Reservations::RedeemBundlePass do
     r = reservation_for
     redeem(r)
     expect(user.day_passes.count).to eq(0)
+  end
+
+  # ADR 0018 alignment: a pass may not cover a date past its bundle's expiration.
+  # Booking-time redemption must apply the same date rule as ScheduleDay — an
+  # expiring pack can't be emptied onto bookings dated after it lapses.
+  describe "bundle expiration vs the reservation's date" do
+    it "does not burn a pass when the bundle expires between now and the booked day" do
+      bundle = make_bundle(expires_at: 1.day.from_now.change(hour: 12))
+      r = reservation_for(at: 3.days.from_now.change(hour: 12))
+
+      redeem(r)
+
+      expect(bundle.reload.passes_remaining).to eq(5)
+      expect(user.day_passes.count).to eq(0)
+      expect(DayPassBundleRedemption.where(kind: "reservation")).to be_empty
+    end
+
+    it "a bundle expiring later today still covers a same-day booking" do
+      travel_to Time.current.change(hour: 9) do
+        bundle = make_bundle(expires_at: Time.current.change(hour: 18))
+        r = reservation_for(at: Time.current.change(hour: 14))
+
+        redeem(r)
+
+        expect(bundle.reload.passes_remaining).to eq(4)
+        expect(user.day_passes.for_day(Date.current).count).to eq(1)
+      end
+    end
+
+    it "a booking past the expiring bundle's window draws the surviving bundle instead" do
+      expiring  = make_bundle(expires_at: 2.days.from_now.change(hour: 12))
+      perpetual = make_bundle
+      r = reservation_for(at: 5.days.from_now.change(hour: 12))
+
+      redeem(r)
+
+      expect(expiring.reload.passes_remaining).to eq(5)
+      expect(perpetual.reload.passes_remaining).to eq(4)
+    end
+
+    it "draws the soonest-expiring bundle first when both survive the booked day (draw order)" do
+      perpetual = make_bundle
+      expiring  = make_bundle(expires_at: 10.days.from_now.change(hour: 12))
+      r = reservation_for(at: 2.days.from_now.change(hour: 12))
+
+      redeem(r)
+
+      expect(expiring.reload.passes_remaining).to eq(4)
+      expect(perpetual.reload.passes_remaining).to eq(5)
+    end
   end
 
   describe "reconciliation with burn-on-entry (one pass per business-day period)" do

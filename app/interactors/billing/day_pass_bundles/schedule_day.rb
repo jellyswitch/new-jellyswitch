@@ -156,20 +156,14 @@ class Billing::DayPassBundles::ScheduleDay
     user.day_passes.for_location(location).for_day(date).exists?
   end
 
-  # Active, covers the location, draw_order (soonest-expiring first, then
-  # oldest). The "must survive until the target date" filter only applies to
-  # a FUTURE date — .active already guarantees "not expired as of right now,"
-  # so a bundle expiring LATER TODAY must still be eligible for a same-day
-  # schedule (redeem_today); requiring it to survive all the way to
-  # date.end_of_day wrongly excluded it (Task 10 fix). Memoized: this is now
-  # looked up twice per #call (the already_covered? office check, then the
-  # real assignment) and must return the identical row both times — safe
-  # because a ScheduleDay instance is one-shot (a fresh instance per .call).
+  # usable_on carries the date rule (ADR 0018: the bundle must survive a FUTURE
+  # target date; expiring-later-today still covers a same-day schedule — Task 10
+  # fix), draw_order the canonical pick. Memoized: this is looked up twice per
+  # #call (the already_covered? office check, then the real assignment) and must
+  # return the identical row both times — safe because a ScheduleDay instance is
+  # one-shot (a fresh instance per .call).
   def eligible_bundle(date, tz)
     return @eligible_bundle if defined?(@eligible_bundle)
-    today = Time.current.in_time_zone(tz).to_date
-    scope = user.day_pass_bundles.active.where(location: location)
-    scope = scope.where("expires_at IS NULL OR expires_at > ?", date.in_time_zone(tz).end_of_day) if date > today
-    @eligible_bundle = scope.draw_order.first
+    @eligible_bundle = user.day_pass_bundles.usable_on(date, tz).where(location: location).draw_order.first
   end
 end

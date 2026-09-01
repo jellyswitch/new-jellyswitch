@@ -60,8 +60,13 @@ class Billing::Reservations::CoverageState
         .first
   end
 
+  # usable_on, not .active: coverage is FOR the requested date, and a pass may
+  # not cover a date past its bundle's expiration (ADR 0018). A pack expiring
+  # before the booked day previews as :needs_purchase — matching what
+  # RedeemBundlePass will actually do — instead of offering a burn the booking
+  # path must refuse.
   def active_bundles
-    user.day_pass_bundles.active.where(location: location)
+    user.day_pass_bundles.usable_on(date, tz).where(location: location)
   end
 
   # Soonest-expiring, then oldest (ADR 0018 draw order — DayPassBundle.draw_order
@@ -79,6 +84,10 @@ class Billing::Reservations::CoverageState
   end
 
   def today
-    ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"].today
+    tz.today
+  end
+
+  def tz
+    @tz ||= ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
   end
 end

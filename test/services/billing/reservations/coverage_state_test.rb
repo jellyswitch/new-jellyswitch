@@ -67,6 +67,48 @@ class Billing::Reservations::CoverageStateTest < ActiveSupport::TestCase
     end
   end
 
+  # ADR 0018: a pass may not cover a date past its bundle's expiration — the
+  # preview must not offer a bundle the booking path (RedeemBundlePass) refuses.
+  test "a bundle expiring before the requested date is needs_purchase, not bundle_available" do
+    ActsAsTenant.with_tenant(@operator) do
+      user = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      DayPassBundle.create!(user: user, operator: @operator, location: @location, day_pass_type: dpt,
+                            quantity_purchased: 5, passes_remaining: 3, purchased_at: Time.current,
+                            expires_at: 1.day.from_now.change(hour: 12))
+      state = Billing::Reservations::CoverageState.for(user: user, room: included_room, date: Date.current + 3, location: @location)
+      assert_equal :needs_purchase, state.outcome
+    end
+  end
+
+  test "a bundle expiring later today still covers a same-day booking" do
+    travel_to Time.current.change(hour: 9) do
+      ActsAsTenant.with_tenant(@operator) do
+        user = create(:user, operator: @operator, original_location: @location, current_location: @location)
+        DayPassBundle.create!(user: user, operator: @operator, location: @location, day_pass_type: dpt,
+                              quantity_purchased: 5, passes_remaining: 3, purchased_at: Time.current,
+                              expires_at: Time.current.change(hour: 18))
+        state = Billing::Reservations::CoverageState.for(user: user, room: included_room, date: Date.current, location: @location)
+        assert_equal :bundle_available, state.outcome
+      end
+    end
+  end
+
+  test "only bundles surviving the requested date count: draws the survivor and sums only its passes" do
+    ActsAsTenant.with_tenant(@operator) do
+      user = create(:user, operator: @operator, original_location: @location, current_location: @location)
+      bt = dpt
+      DayPassBundle.create!(user: user, operator: @operator, location: @location, day_pass_type: bt,
+                            quantity_purchased: 5, passes_remaining: 3, purchased_at: Time.current,
+                            expires_at: 1.day.from_now.change(hour: 12))
+      survivor = DayPassBundle.create!(user: user, operator: @operator, location: @location, day_pass_type: bt,
+                                       quantity_purchased: 5, passes_remaining: 2, purchased_at: Time.current)
+      state = Billing::Reservations::CoverageState.for(user: user, room: included_room, date: Date.current + 3, location: @location)
+      assert_equal :bundle_available, state.outcome
+      assert_equal survivor.id, state.bundle.id
+      assert_equal 2, state.passes_remaining
+    end
+  end
+
   test "no coverage is needs_purchase and carries the suggested type + price" do
     ActsAsTenant.with_tenant(@operator) do
       user = create(:user, operator: @operator, original_location: @location, current_location: @location)

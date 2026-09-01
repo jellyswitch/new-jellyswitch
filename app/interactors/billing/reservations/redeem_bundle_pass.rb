@@ -48,8 +48,15 @@ class Billing::Reservations::RedeemBundlePass
     return if covered_for_day?(location, day)
     return if burned_in_window?(location, window_start, window_end)
 
-    bundle = user.day_pass_bundles.active.where(location: location).first
-    return unless bundle # no bundle / out of passes → fall through to normal pricing
+    # usable_on (ADR 0018): a pass may not cover a date past its bundle's
+    # expiration — a future-dated booking must draw a bundle that survives the
+    # reservation's day, exactly like ScheduleDay (an expiring pack can't be
+    # emptied onto far-future bookings). draw_order: the canonical
+    # soonest-expiring-first pick, matching the CoverageState preview so the
+    # bundle it showed is the bundle that burns.
+    tz = ActiveSupport::TimeZone[location&.time_zone.presence || "UTC"]
+    bundle = user.day_pass_bundles.usable_on(day, tz).where(location: location).draw_order.first
+    return unless bundle # no bundle usable for that date → fall through to normal pricing
 
     # Day Office outcome, computed in the lock and announced after it —
     # notifications are never enqueued from inside a transaction (ADR 0026).
