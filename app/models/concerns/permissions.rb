@@ -189,6 +189,11 @@ module Permissions
     # so the web Keys list and the unlock path can't diverge (PR #668 invariant).
     return false unless approved?
 
+    # Non-payment cutoff (PaymentCutoff) — same rule as the unlock path, for
+    # the same lockstep reason: a payment-suspended member sees no keys on any
+    # surface. Lifts itself the moment the past-due invoice is paid.
+    return false if payment_suspended?
+
     always_allow_building_access? ||
     has_building_access_day_pass?(location) ||
     has_building_access_membership?(location) ||

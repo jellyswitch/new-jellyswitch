@@ -98,6 +98,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
       day_pass_type: coverage_day_pass_type,
       enforce_coverage: true, # member self-service: ADR 0019 block-if-uncovered
       enforce_posted_hours: true, # member self-service: bookings stay inside posted hours
+      enforce_payment_standing: true, # non-payment cutoff (PaymentCutoff); no-op for staff
     )
 
     if result.success?

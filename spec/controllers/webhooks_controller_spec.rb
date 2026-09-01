@@ -158,6 +158,34 @@ RSpec.describe WebhooksController, type: :controller do
         post :stripe, body: "{}"
       }.to have_enqueued_job(SendNotificationsJob).with(invoice, "PaymentFailed")
     end
+
+    # PaymentCutoff drip, step 1: Stripe re-fires payment_failed on every
+    # dunning retry (Kara Morison got 4 identical emails, 2026-08) — the member
+    # notice goes out exactly once per invoice; retries only refresh the admin
+    # feed card. The later warning/suspension steps belong to PaymentCutoffJob.
+    it "records the failure notice and does NOT re-send email or push on a retry" do
+      allow(Stripe::Event).to receive(:construct_from).and_return(make_event)
+      post :stripe, body: "{}"
+      expect(ProductEmailSend.where(sendable: invoice,
+                                    email_type: PaymentCutoff::FAILED_NOTICE).count).to eq(1)
+
+      expect {
+        expect {
+          post :stripe, body: "{}"
+        }.not_to have_enqueued_job(SendPaymentFailedEmailJob)
+      }.not_to have_enqueued_job(SendNotificationsJob)
+      expect(response).to have_http_status(:ok)
+      expect(ProductEmailSend.where(sendable: invoice,
+                                    email_type: PaymentCutoff::FAILED_NOTICE).count).to eq(1)
+    end
+
+    it "still posts the admin feed item on a retry" do
+      allow(Stripe::Event).to receive(:construct_from).and_return(make_event)
+      post :stripe, body: "{}"
+      expect(FeedItemCreator).to receive(:create_feed_item)
+        .with(operator, location, user, hash_including(type: "payment_failed"))
+      post :stripe, body: "{}"
+    end
   end
 
   describe "POST #stripe — signature verification (staged rollout)" do

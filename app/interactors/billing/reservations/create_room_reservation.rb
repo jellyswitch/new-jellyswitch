@@ -13,9 +13,13 @@ class Billing::Reservations::CreateRoomReservation
   # active reservation (User#allowed_in? → has_active_reservation?); Phase 4 will
   # narrow that to a ±window.
   organize(
-    # Posted-hours backstop runs FIRST (nothing persisted yet, nothing to roll
-    # back): member self-serve bookings stay inside the location's posted
-    # hours. No-op unless the caller sets enforce_posted_hours.
+    # Non-payment cutoff runs FIRST (nothing persisted yet, nothing to roll
+    # back): a payment-suspended member can't book self-serve. No-op unless
+    # the caller sets enforce_payment_standing.
+    Billing::Reservations::EnforcePaymentStanding,
+    # Posted-hours backstop: member self-serve bookings stay inside the
+    # location's posted hours. No-op unless the caller sets
+    # enforce_posted_hours.
     Billing::Reservations::EnforcePostedHours,
     # Duration backstop, same shape (still nothing persisted): member
     # self-serve bookings can't exceed the room's bookable cap. No-op unless

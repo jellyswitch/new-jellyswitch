@@ -880,6 +880,25 @@ class User < ApplicationRecord
     stripe_customer.delinquent == true
   end
 
+  # Non-payment cutoff (see PaymentCutoff): suspended once the drip's
+  # suspension notice has gone out for an invoice that is STILL open. Derived
+  # state — the moment the invoice is paid by any path (a Stripe retry, member
+  # Pay Now, an admin retry) this flips back and access restores itself; there
+  # is no flag to reset. Suspension rows are only ever created for individual,
+  # auto-charged members (PaymentCutoffJob filters org-billed / out-of-band /
+  # staff), and staff are exempt here too. Gates the door unlock + keys list
+  # (user_can_access_building?) and member self-serve room booking
+  # (Billing::Reservations::EnforcePaymentStanding).
+  def payment_suspended?
+    return false if superadmin? || admin?
+
+    Invoice.where(billable: self, status: "open")
+           .where(id: ProductEmailSend.where(sendable_type: "Invoice",
+                                             email_type: PaymentCutoff::SUSPENSION_NOTICE)
+                                      .select(:sendable_id))
+           .exists?
+  end
+
   def card_last_4_digits(location)
     stripe_customer = stripe_customer_for_location(location)
 
