@@ -21,6 +21,23 @@ class DayPassBundle < ApplicationRecord
 
   scope :active, -> { where("passes_remaining > 0").where("expires_at IS NULL OR expires_at > ?", Time.current) }
 
+  # ADR 0018: a covered date may not exceed the bundle's expiration — a pass can
+  # only be spent on a day the bundle survives. For a FUTURE date that means
+  # expires_at must clear the whole target day; for TODAY, .active's "not
+  # expired right now" is the whole rule — a bundle expiring later today must
+  # still cover a same-day redeem/booking (Task 10). The single canonical
+  # date-addressed eligibility filter: every path that spends or offers a pass
+  # FOR A GIVEN DATE (ScheduleDay#eligible_bundle, RedeemBundlePass,
+  # CoverageState, the rooms#pricing bundle_pass_redeemable flag) must use it,
+  # or scheduling and booking disagree on which dates a pack covers. As-of-now
+  # checks (door entry, balance displays) stay on .active.
+  scope :usable_on, ->(date, tz) {
+    today = Time.current.in_time_zone(tz).to_date
+    scope = active
+    scope = scope.where("expires_at IS NULL OR expires_at > ?", date.in_time_zone(tz).end_of_day) if date > today
+    scope
+  }
+
   after_create :log_activity
 
   # The pack purchase is its own timeline card. Each pass burned off it still
