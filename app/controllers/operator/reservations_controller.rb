@@ -182,7 +182,15 @@ class Operator::ReservationsController < Operator::BaseController
                                                                                # Duration backstop, gated on the booker like the API's
                                                                                # staff_booker? (this endpoint books for current_user, so
                                                                                # booker == booked): staff keep the 12h admin allowance.
-                                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location))
+                                                                               enforce_duration_cap: !current_user.admin_or_manager?(current_location),
+                                                                               # Included-room coverage (ADR 0019), same gate as
+                                                                               # create_reservation below: a non-member bundle holder has
+                                                                               # should_charge_for_reservation? true, so with no card on file
+                                                                               # the confirm page routes them HERE — the same wizard hole.
+                                                                               # No decision flags are sent: bundle holders burn
+                                                                               # automatically (ADR 0029), non-holders get EnforceCoverage's
+                                                                               # buy prompt.
+                                                                               enforce_coverage: !current_user.admin_or_manager?(current_location))
     @reservation = result.reservation
 
     if result.success?
@@ -249,7 +257,16 @@ class Operator::ReservationsController < Operator::BaseController
                                                                enforce_duration_cap: !current_user.admin_or_manager?(current_location),
                                                                # Non-payment cutoff, gated on the BOOKER the same way: staff
                                                                # may still book on behalf of a suspended member (admin bypass).
-                                                               enforce_payment_standing: !current_user.admin_or_manager?(current_location))
+                                                               enforce_payment_standing: !current_user.admin_or_manager?(current_location),
+                                                               # Included-room coverage (ADR 0019), same BOOKER gate: without it a
+                                                               # member could book a $0 include_with_day_pass room through this
+                                                               # wizard with no pass committed — free room, no bundle burn, no
+                                                               # building access that day. The wizard confirm page carries no
+                                                               # coverage UI, so no decision flags are sent: bundle holders burn
+                                                               # automatically (ADR 0029) and non-holders get EnforceCoverage's
+                                                               # buy prompt. Staff on-behalf stays unenforced — an operator may
+                                                               # still book an uncovered included room.
+                                                               enforce_coverage: !current_user.admin_or_manager?(current_location))
 
     @reservation = result.reservation
 
