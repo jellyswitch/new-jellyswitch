@@ -100,9 +100,11 @@ module Embed
         # instead of "You're in!".
         render json: {
           ok: true,
-          app: { ios: @operator.ios_url, android: @operator.android_url },
+          app: { name: @operator.name, ios: @operator.ios_url, android: @operator.android_url },
           summary: purchase_summary(product, location),
           approval_pending: @operator.approval_required && !result.user.approved?,
+          # A bundle isn't for a day — the buyer picks days in the app later.
+          schedule_days: !product.is_a?(Plan) && product.bundle?,
         }
       else
         render json: { ok: false, error: result.error, message: result.message }, status: :unprocessable_entity
@@ -204,7 +206,7 @@ module Embed
 
     def purchase_summary(product, location)
       where = [location.name, location.building_address, location.city].compact_blank.join(", ")
-      if product.is_a?(Plan)
+      if product.is_a?(Plan) || product.bundle?
         "#{product.name} at #{where}"
       else
         day = (checkout_day || Date.current).strftime("%A, %b %-d")

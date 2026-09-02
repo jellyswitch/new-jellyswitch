@@ -13,6 +13,7 @@
      data-product-param="<%= product_param %>"
      data-product-id="<%= @product.id %>"
      data-location-id="<%= @location.id %>"
+     data-app-name="<%= @operator.name %>"
      data-ios="<%= @operator.ios_url %>"
      data-android="<%= @operator.android_url %>"
      style="--accent: <%= accent %>;">
@@ -106,10 +107,13 @@
             form.style.display = "none";
             var lines = ["🎉 Payment received" + (x.d.summary ? " — " + x.d.summary + "." : "!")];
             if (x.d.approval_pending) {
-              lines.push("The team reviews new members before your first visit — you'll get an email as soon as you're approved, and then the app opens the door.");
-            } else {
-              lines.push("Download the app to open the door and manage your access.");
+              lines.push("The team reviews new members before your first visit — you'll get an email as soon as you're approved.");
             }
+            if (x.d.schedule_days) {
+              lines.push((x.d.approval_pending ? "Once you're approved, pick" : "Pick") + " the days you want to use your passes in the app.");
+            }
+            var appName = (x.d.app && x.d.app.name) || root.dataset.appName;
+            lines.push("To access the space, book meeting rooms, and connect to wifi, download and log in to the " + appName + " app.");
             show(lines.join(" "), "ok");
             var stores = [["Get the iOS app", x.d.app && x.d.app.ios], ["Get the Android app", x.d.app && x.d.app.android]];
             stores.forEach(function (s) {
