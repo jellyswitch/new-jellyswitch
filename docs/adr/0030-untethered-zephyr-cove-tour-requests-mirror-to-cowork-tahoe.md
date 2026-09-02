@@ -1,0 +1,14 @@
+# Untethered Zephyr Cove tour requests mirror to Cowork Tahoe
+
+A tour request submitted through **Untethered's** tour widget for their Lake Tahoe, NV location (city: Zephyr Cove) is also logged as a tour request at **Cowork Tahoe** — a separate operator/tenant across the lake run by the same people. Decided by David 2026-09-02: a Tahoe prospect is a prospect for both spaces, and since a tour request is just an inquiry, the Zephyr Cove staff who already receive the Untethered alert are the right people to handle the Cowork Tahoe side too.
+
+**The rule:** `TourRequests::SisterSpaceMirror` runs right after the primary `tour_request` Activity is logged. When the source operator is `untethered` and the requested location's city is `Zephyr Cove`, it finds-or-creates the same email as a Person under `tml` (Cowork Tahoe) and logs a `tour_request` Activity there against Cowork Tahoe's visible location, with `payload.mirrored_from` pointing back. The source Activity gets `payload.mirrored_to`, and the existing Untethered staff alert email adds one line ("Also logged as a tour request at Cowork Tahoe") with a link into the Cowork Tahoe CRM. Nothing else fires for the mirror: Cowork Tahoe's admin roster is not emailed or pushed, and the visitor receives a single confirmation from Untethered. A mirror failure is logged and never fails the visitor's request. Fulton, MO requests do not mirror. (When the email is new to Cowork Tahoe, creating the Person there logs the usual `signup` Activity, so Cowork Tahoe's default point of contact gets the standard "New signup" push — exactly what any widget-created prospect triggers; not a second tour alert.)
+
+This is a tenant-specific customization, deliberately hardcoded (subdomain + city, no ids, no operator setting) because it applies to exactly one pair of operators that share an ownership team. If a second pair ever needs it, promote the rule to an operator setting then.
+
+## Considered Options
+
+- **Run the full `TourRequestAlert` for the mirrored Activity** — rejected: pages Cowork Tahoe's whole admin list and sends the visitor a second "Your tour request at Cowork Tahoe" email for one inquiry. David explicitly said the Zephyr Cove admins are enough.
+- **Mirror every Untethered request (including Fulton, MO)** — rejected: a Missouri prospect is not a Tahoe prospect; a Cowork Tahoe record for them would be noise in Cowork Tahoe's CRM.
+- **Show "Cowork Tahoe" as a pickable location in Untethered's widget** — rejected: the hidden `Cowork Tahoe` location under Untethered is a legacy row, and a tour request there would still not exist in Cowork Tahoe's own tenant, where their CRM lives.
+- **An operator-level "mirror tour requests to" setting** — rejected for now: settings UI, validation, and cross-tenant picker for a one-off. Hardcode, document, promote if a second case appears.

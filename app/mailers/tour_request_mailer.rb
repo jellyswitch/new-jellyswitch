@@ -7,6 +7,7 @@ class TourRequestMailer < ApplicationMailer
     @operator  = @activity.operator
     @message   = @activity.payload["message"]
     @preferred_time = @activity.payload["preferred_time"]
+    @mirrored_to    = @activity.payload["mirrored_to"]
 
     mail(
       to: @recipient.email,

@@ -12,3 +12,7 @@ Message:
 
 <% end %>
 Open in Jellyswitch: https://<%= @operator.subdomain %>.jellyswitch.com/users/<%= @requester.id %>
+<% if @mirrored_to.present? %>
+Also logged as a tour request at <%= @mirrored_to["operator_name"] %><% if @mirrored_to["location_name"].present? %> (<%= @mirrored_to["location_name"] %>)<% end %>.
+Open in Jellyswitch: https://<%= @mirrored_to["operator_subdomain"] %>.jellyswitch.com/users/<%= @mirrored_to["user_id"] %>
+<% end %>

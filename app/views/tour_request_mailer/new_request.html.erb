@@ -21,3 +21,11 @@
   <%= link_to "Open in Jellyswitch",
               "https://#{@operator.subdomain}.jellyswitch.com/users/#{@requester.id}" %>
 </p>
+
+<% if @mirrored_to.present? %>
+  <p>
+    Also logged as a tour request at <strong><%= @mirrored_to["operator_name"] %></strong><% if @mirrored_to["location_name"].present? %> (<%= @mirrored_to["location_name"] %>)<% end %>.
+    <%= link_to "Open in Jellyswitch",
+                "https://#{@mirrored_to["operator_subdomain"]}.jellyswitch.com/users/#{@mirrored_to["user_id"]}" %>
+  </p>
+<% end %>

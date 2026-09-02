@@ -71,6 +71,10 @@ module Embed
         },
       )
 
+      # Untethered-only: Zephyr Cove requests are also logged at Cowork Tahoe
+      # (ADR 0030). Runs before the alert so the staff email can link to it.
+      TourRequests::SisterSpaceMirror.call(activity)
+
       SendNotificationsJob.perform_later(activity, "TourRequestAlert")
 
       if @operator.tour_widget_thank_you_url.present?
