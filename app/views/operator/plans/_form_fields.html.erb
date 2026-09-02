@@ -157,8 +157,10 @@
       <%= f.number_field :display_order, class: "form-control", step: 1 %>
     </div>
     <div class="form-group mb-2">
-      <%= f.label :features_text, "What's included — one line each (shown after the automatic lines)" %>
-      <%= f.text_area :features_text, value: f.object.features.join("\n"), rows: 4, class: "form-control", placeholder: "Free coffee & tea\nMail service" %>
+      <% showcase_defaults = f.object.persisted? ? Showcase::ProductPresenter.new(f.object).default_bullets : [] %>
+      <%= f.label :features_text, "Bullet points — one per line (add or remove; clear the box to go back to the automatic lines)" %>
+      <%= f.text_area :features_text, value: (f.object.features.presence || showcase_defaults).join("\n"), rows: 5, class: "form-control", placeholder: "Free coffee & tea\nMail service" %>
+      <%= f.hidden_field :features_default, value: showcase_defaults.join("\n") %>
     </div>
   </fieldset>
 

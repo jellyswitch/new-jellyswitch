@@ -19,13 +19,22 @@ RSpec.describe Operator, "Concierge + embed-theme settings" do
   describe "shared embed-theme (Concierge + tour widget)" do
     it "inherits brand colors, with sensible fallbacks" do
       operator.update!(primary_color: "112233", accent_color: "445566")
-      expect(operator.embed_primary_color).to eq("112233")
-      expect(operator.embed_accent_color).to eq("445566")
+      expect(operator.embed_primary_color).to eq("#112233")
+      expect(operator.embed_accent_color).to eq("#445566")
     end
 
-    it "lets an accent override beat the inherited accent" do
+    it "lets an accent override beat the inherited accent, normalized to CSS hex" do
       operator.update!(accent_color: "445566", embed_accent_override: "ff0000")
-      expect(operator.embed_accent_color).to eq("ff0000")
+      expect(operator.embed_accent_color).to eq("#ff0000")
+
+      operator.update!(embed_accent_override: "#00ff00")
+      expect(operator.embed_accent_color).to eq("#00ff00")
+    end
+
+    it "rejects an accent override that is not a hex color" do
+      operator.embed_accent_override = "blue"
+      expect(operator).not_to be_valid
+      expect(operator.errors[:embed_accent_override]).to be_present
     end
 
     it "falls back to a default font and accent when nothing is set" do

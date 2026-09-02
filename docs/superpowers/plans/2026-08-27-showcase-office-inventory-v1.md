@@ -16,7 +16,10 @@ resolved with David in the 2026-08-27 grilling session.
 3. **What's-included = derived facts first, then free text.** System-derived
    bullets (meeting-room minutes, day limits, building-access level, bundle
    size) render verbatim, always-on, uneditable; operator free-text features
-   follow. Enforced limits are never softened.
+   follow. Enforced limits are never softened. *Amended 2026-09-02 (David):*
+   the derived lines are now the **default** — the product form prefills them
+   and an operator's own lines **replace** them entirely (add/remove any
+   bullet); clearing the box returns the product to the automatic lines.
 4. **Pinned-only at multi-location operators.** Every embed pins product type;
    multi-location operators must also pin location (prices live on location
    pages — verified against untethered.space's actual structure). Unpinned at
@@ -25,7 +28,9 @@ resolved with David in the 2026-08-27 grilling session.
 5. **CTA goes straight to checkout** (fewest hops to a transaction). The
    Concierge bubble on the same page is the questions path. Tier clicks record
    behavioral interest tags (`source: showcase`); no page-view tracking. Day
-   Office rides the day-pass Showcase (it is a DayPassType).
+   Office rides the day-pass Showcase (it is a DayPassType) — *amended
+   2026-09-02 (David):* as its own titled group ("Day Offices": singles and
+   their packs together), apart from regular day passes and their packs.
 6. **Post-purchase screen becomes product- and approval-aware** (upgrades the
    existing concierge checkout too): all four brands have
    `approval_required: true`, so buyers are created unapproved and must be told

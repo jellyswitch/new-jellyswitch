@@ -47,7 +47,10 @@ module Embed
     def build_sections
       sections = []
       if %w[day_passes all].include?(@mode)
-        sections << { key: "day_passes", title: "Day Passes", tiers: day_pass_tiers + card_tiers("day_passes") }
+        sections << { key: "day_passes", title: "Day Passes", tiers: day_pass_tiers(:standard) + card_tiers("day_passes") }
+        # Day Office types and their packs are one family, regular day passes
+        # and their packs another — never interleaved by price (2026-09-02).
+        sections << { key: "day_offices", title: "Day Offices", tiers: day_pass_tiers(:day_office) }
       end
       if %w[memberships all].include?(@mode)
         sections << { key: "memberships", title: "Memberships", tiers: membership_tiers + card_tiers("memberships") }
@@ -56,8 +59,8 @@ module Embed
       sections.reject { |s| s[:tiers].empty? }
     end
 
-    def day_pass_tiers
-      DayPassType.where(operator: @operator).available.visible
+    def day_pass_tiers(kind)
+      DayPassType.where(operator: @operator, kind: kind).available.visible
                  .for_location(@location)
                  .order(:display_order, :amount_in_cents)
                  .map { |p| Showcase::ProductPresenter.new(p).tier.merge(cta: checkout_url(day_pass_type_id: p.id)) }

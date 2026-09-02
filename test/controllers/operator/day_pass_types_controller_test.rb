@@ -80,6 +80,31 @@ class Operator::DayPassTypesControllerTest < ActionDispatch::IntegrationTest
                  "room_b was omitted from the submission and must be removed; room_a repositioned; room_c added"
   end
 
+  test "showcase bullets: the edit form prefills the automatic lines and saving them untouched keeps automatic" do
+    type = DayPassType.create!(name: "5 Pack", quantity: 5, operator: @operator, location: @location,
+                               amount_in_cents: 16_000, included_meeting_room_minutes: 60)
+    defaults = "5 day passes\n60 min meeting room time per day\nBuilding access during open hours"
+
+    get edit_day_pass_type_path(type), env: default_env
+    assert_response :success
+    assert_includes response.body, "60 min meeting room time per day"
+
+    patch day_pass_type_path(type),
+          params: { day_pass_type: { name: type.name, features_text: defaults, features_default: defaults } },
+          env: default_env
+    assert_equal [], type.reload.features, "unedited automatic lines must not be frozen as operator lines"
+
+    patch day_pass_type_path(type),
+          params: { day_pass_type: { name: type.name, features_text: "5 day passes\nFree coffee", features_default: defaults } },
+          env: default_env
+    assert_equal ["5 day passes", "Free coffee"], type.reload.features, "edited lines replace the automatic ones"
+
+    patch day_pass_type_path(type),
+          params: { day_pass_type: { name: type.name, features_text: "", features_default: "5 day passes\nFree coffee" } },
+          env: default_env
+    assert_equal [], type.reload.features, "clearing the box returns the product to automatic"
+  end
+
   test "a pool-only failure keeps the type saved and sets a specific flash, without a 500" do
     type = DayPassType.create!(name: "Office", operator: @operator, location: @location,
                                amount_in_cents: 100, kind: "day_office", included_meeting_room_minutes: 0)
