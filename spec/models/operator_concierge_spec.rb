@@ -31,6 +31,15 @@ RSpec.describe Operator, "Concierge + embed-theme settings" do
       expect(operator.embed_accent_color).to eq("#00ff00")
     end
 
+    it "gives Showcase buttons their own color when set, else the accent" do
+      operator.update!(embed_accent_override: "ff0000")
+      expect(operator.embed_button_color).to eq("#ff0000")
+
+      operator.update!(showcase_button_color: "16a34a")
+      expect(operator.embed_button_color).to eq("#16a34a")
+      expect(operator.embed_accent_color).to eq("#ff0000")
+    end
+
     it "rejects an accent override that is not a hex color" do
       operator.embed_accent_override = "blue"
       expect(operator).not_to be_valid

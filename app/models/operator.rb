@@ -107,6 +107,7 @@ class Operator < ApplicationRecord
   validates :primary_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
   validates :accent_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
   validates :embed_accent_override, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+  validates :showcase_button_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
 
   has_many :announcements
   has_many :automated_workflows
@@ -216,6 +217,11 @@ class Operator < ApplicationRecord
   def css_hex(value)
     hex = value.to_s.strip.delete_prefix("#")
     hex.present? ? "##{hex}" : nil
+  end
+
+  # Showcase product buttons: their own color when set, else the shared accent.
+  def embed_button_color
+    css_hex(showcase_button_color) || embed_accent_color
   end
 
   def embed_font_family

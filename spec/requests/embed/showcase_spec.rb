@@ -33,6 +33,16 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.body).to include("#ff5500")
   end
 
+  it "colors the product buttons with the dedicated button color when set" do
+    operator.update!(showcase_button_color: "16a34a")
+    create(:day_pass_type, operator: operator, location: location, name: "Day Pass", amount_in_cents: 4_000)
+
+    get_widget(products: "day_passes")
+
+    expect(response.body).to include('"button":"#16a34a"')
+    expect(response.body).to include('"accent":"#ff5500"')
+  end
+
   it "lets the operator's own bullet lines replace the automatic ones" do
     create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
                            amount_in_cents: 4_000, included_meeting_room_minutes: 180,
