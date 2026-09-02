@@ -1,0 +1,124 @@
+<%= form_with model: @operator, url: settings_update_tour_widget_path, method: :patch, local: true do |f| %>
+  <div class="form-group">
+    <div class="custom-control custom-switch">
+      <%= f.check_box :tour_widget_enabled, class: "custom-control-input" %>
+      <%= f.label :tour_widget_enabled, "Allow public tour requests", class: "custom-control-label" %>
+    </div>
+    <small class="form-text text-muted">When off, the public endpoint returns 404 to any visitor.</small>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :tour_widget_intro_html, "Intro text shown above the form" %>
+    <%= f.rich_text_area :tour_widget_intro_html %>
+  </div>
+
+  <div class="form-group">
+    <%= f.label :tour_widget_thank_you_url, "Custom thank-you redirect URL (optional)" %>
+    <%= f.url_field :tour_widget_thank_you_url, class: "form-control", placeholder: "https://your-marketing-site.com/thanks" %>
+    <small class="form-text text-muted">Blank = use Jellyswitch's hosted thank-you page.</small>
+  </div>
+
+  <%= f.submit "Save Tour Request settings", class: "btn btn-primary" %>
+<% end %>
+
+<hr>
+
+<h5>Embed snippets</h5>
+
+<h6>Pin to a location (optional)</h6>
+<select id="tour-widget-location-picker" class="form-control mb-3">
+  <option value="">All locations (visitors pick)</option>
+  <% locations.each do |loc| %>
+    <option value="<%= loc.id %>"><%= loc.name %></option>
+  <% end %>
+</select>
+
+<h6>Iframe (recommended)</h6>
+<div class="input-group mb-3">
+  <textarea id="iframe-snippet" class="form-control" rows="4" readonly></textarea>
+  <button class="btn btn-outline-secondary" type="button" data-clipboard-target="iframe-snippet">Copy</button>
+</div>
+
+<h6>HTML form (advanced)</h6>
+<div class="input-group mb-3">
+  <textarea id="form-snippet" class="form-control" rows="10" readonly></textarea>
+  <button class="btn btn-outline-secondary" type="button" data-clipboard-target="form-snippet">Copy</button>
+</div>
+
+<%# Sign a short-lived token so the iframe can preview the widget even
+    when tour_widget_enabled is off. The Embed controller verifies the
+    token instead of trusting the session cookie, which doesn't always
+    cross the embed boundary cleanly. %>
+<% preview_token = Embed::TourRequestsController.verifier.generate({
+     "operator_id" => @operator.id, "exp" => 1.hour.from_now.to_i,
+   }) %>
+<% preview_url = embed_tour_request_url(operator_subdomain: @operator.subdomain, host: request.host_with_port, preview_token: preview_token) %>
+<% public_url = embed_tour_request_url(operator_subdomain: @operator.subdomain, host: request.host_with_port) %>
+
+<h5 class="mt-4">Live preview</h5>
+<iframe id="widget-preview"
+        src="<%= preview_url %>"
+        width="100%" height="500" style="border: 1px solid #ddd; border-radius: 4px;"
+        title="Tour widget preview">
+</iframe>
+
+<script>
+  (function() {
+    var picker = document.getElementById('tour-widget-location-picker');
+    var iframeBox = document.getElementById('iframe-snippet');
+    var formBox = document.getElementById('form-snippet');
+    var preview = document.getElementById('widget-preview');
+    // Two URLs: the public one (what the operator embeds on their marketing
+    // site) and the preview one (token-signed so the iframe shows the widget
+    // even when it's disabled).
+    var publicBase  = <%= raw public_url.to_json %>;
+    var previewBase = <%= raw preview_url.to_json %>;
+
+    function withLocation(base, locationId) {
+      if (!locationId) return base;
+      var url = new URL(base);
+      url.pathname = url.pathname.replace(/\/?$/, "") + "/locations/" + locationId;
+      return url.toString();
+    }
+
+    function render() {
+      var publicPath = withLocation(publicBase, picker.value);
+      var previewPath = withLocation(previewBase, picker.value);
+      // The widget posts { jswEmbedHeight } (see the embed layout), so the
+      // snippet ships a listener that grows the iframe past the 600px fallback.
+      iframeBox.value =
+        '<iframe src="' + publicPath + '" width="100%" height="600" style="border:none;width:100%;" title="Request a tour"></iframe>\n' +
+        '<script>window.addEventListener("message",function(e){if(!e.data||!e.data.jswEmbedHeight)return;' +
+        'document.querySelectorAll("iframe").forEach(function(f){if(f.contentWindow===e.source)f.style.height=e.data.jswEmbedHeight+"px";});});<\/script>';
+      formBox.value = '<form action="' + publicPath + '" method="post">\n' +
+                      '  <input name="name" placeholder="Your name" required>\n' +
+                      '  <input name="email" type="email" placeholder="Email" required>\n' +
+                      '  <textarea name="message" placeholder="What are you looking for?"></textarea>\n' +
+                      '  <input name="_hp" tabindex="-1" autocomplete="off" style="display:none">\n' +
+                      '  <button type="submit">Request a tour</button>\n' +
+                      '</form>';
+      preview.src = previewPath;
+    }
+
+    picker.addEventListener('change', render);
+
+    // Mirror the snippet's auto-height listener so the live preview grows too.
+    window.addEventListener('message', function (e) {
+      if (e.data && e.data.jswEmbedHeight && preview.contentWindow === e.source) {
+        preview.style.height = e.data.jswEmbedHeight + 'px';
+      }
+    });
+
+    document.querySelectorAll('[data-clipboard-target]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var box = document.getElementById(btn.getAttribute('data-clipboard-target'));
+        box.select();
+        document.execCommand('copy');
+        btn.textContent = 'Copied!';
+        setTimeout(function() { btn.textContent = 'Copy'; }, 1500);
+      });
+    });
+
+    render();
+  })();
+</script>

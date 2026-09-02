@@ -1,0 +1,24 @@
+<p class="text-muted">
+  A live listing of available offices (vacant, plus any staff-flagged "coming available") with
+  an inquiry form that feeds the office waitlist. Asking rate and the coming-available flag are
+  set on each office's edit form.
+</p>
+<%= form_with url: settings_update_website_widgets_path, method: :patch, scope: :operator, model: @operator, local: true do |f| %>
+  <%= hidden_field_tag :widget, "offices" %>
+  <div class="form-check mb-3">
+    <%= f.check_box :office_inventory_enabled, class: "form-check-input" %>
+    <%= f.label :office_inventory_enabled, "Enable the Office Inventory embed", class: "form-check-label" %>
+  </div>
+  <%= f.submit "Save Office Inventory settings", class: "btn btn-primary mb-3" %>
+<% end %>
+
+<h5>Embed snippets</h5>
+<% locations.each do |loc| %>
+  <% oi_url = embed_office_inventory_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
+                                         location_id: (locations.count > 1 ? loc.id : nil)) %>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="min-width:110px;"><%= loc.name %></span>
+    <input class="form-control" readonly value='<script src="<%= oi_url %>" async></script>'
+           onclick="this.select();navigator.clipboard.writeText(this.value)">
+  </div>
+<% end %>
