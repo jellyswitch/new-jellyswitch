@@ -46,34 +46,16 @@ class Users::Save
       context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
     end
 
-    # One transaction so a claim that dies at Stripe rolls the stub back to
-    # exactly what it was (still claimable on retry) instead of leaving it
-    # half-completed with terms stamped and therefore un-claimable.
-    User.transaction do
-      begin
-        if !@user.save
-          context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
-        end
-      rescue ActiveRecord::RecordNotUnique
-        # Unique index on (operator_id, lower(email)) — a concurrent signup
-        # slipped past the validation; surface it like a validation failure.
-        context.fail!(message: "Unable to sign up. Please review errors. Email has already been taken")
-      end
-
-      context.notifiable = @user
-
-      result = CreateStripeCustomer.call(user: @user, location: @user.original_location)
-
-      if !result.success?
-        # SELF-signups must not leave a half-created account behind — the
-        # person's retry hits the unique-email check and gets "Email has
-        # already been taken" forever. ADMIN-created members are kept even when
-        # the Stripe step fails (staff/comp members may never pay; the customer
-        # is created lazily at first purchase) — the admin still sees the error.
-        # A claimed stub is never destroyed — the rollback restores it.
-        @user.destroy if @user.persisted? && !context.admin_created && !context.claimed
-        context.fail!(message: result.message)
-      end
+    # A claim runs save + Stripe in one transaction so a Stripe failure rolls
+    # the stub back to exactly what it was (still claimable on retry) instead
+    # of leaving it half-completed with terms stamped and un-claimable. Fresh
+    # signups keep their existing non-transactional behavior — an admin-created
+    # member must SURVIVE a Stripe failure (see below), which a rollback would
+    # undo.
+    if context.claimed
+      User.transaction { persist_and_bill! }
+    else
+      persist_and_bill!
     end
 
     # Send confirmation email for self-signup users
@@ -98,6 +80,35 @@ class Users::Save
   end
 
   private
+
+  def persist_and_bill!
+    @user = context.user
+
+    begin
+      if !@user.save
+        context.fail!(message: "Unable to sign up. Please review errors. #{errors_for(@user)}")
+      end
+    rescue ActiveRecord::RecordNotUnique
+      # Unique index on (operator_id, lower(email)) — a concurrent signup
+      # slipped past the validation; surface it like a validation failure.
+      context.fail!(message: "Unable to sign up. Please review errors. Email has already been taken")
+    end
+
+    context.notifiable = @user
+
+    result = CreateStripeCustomer.call(user: @user, location: @user.original_location)
+
+    if !result.success?
+      # SELF-signups must not leave a half-created account behind — the
+      # person's retry hits the unique-email check and gets "Email has
+      # already been taken" forever. ADMIN-created members are kept even when
+      # the Stripe step fails (staff/comp members may never pay; the customer
+      # is created lazily at first purchase) — the admin still sees the error.
+      # A claimed stub is never destroyed — the transaction rollback restores it.
+      @user.destroy if @user.persisted? && !context.admin_created && !context.claimed
+      context.fail!(message: result.message)
+    end
+  end
 
   def claimable_stub
     email = context.params[:email].to_s.downcase.strip
