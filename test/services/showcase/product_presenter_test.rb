@@ -27,15 +27,25 @@ class Showcase::ProductPresenterTest < ActiveSupport::TestCase
     assert_includes bullets, "Anytime building access"
   end
 
-  test "plan bullets render enforced limits verbatim, then free-text features" do
+  test "plan bullets render enforced limits verbatim when the operator wrote none" do
     plan = Plan.new(name: "Flex", interval: "monthly", amount_in_cents: 22_500,
                     building_access_level: :business_hours, has_day_limit: true, day_limit: 10,
-                    commitment_interval: 3, features: ["Free coffee"], operator: @operator)
+                    commitment_interval: 3, operator: @operator)
     tier = Showcase::ProductPresenter.new(plan).tier
 
     assert_equal "$225/month", tier[:price_label]
     assert_equal ["10 days per month", "Building access during business hours",
-                  "3-month minimum commitment", "Free coffee"], tier[:bullets]
+                  "3-month minimum commitment"], tier[:bullets]
+  end
+
+  test "operator bullet lines replace the automatic ones; default_bullets keeps them for the form" do
+    plan = Plan.new(name: "Flex", interval: "monthly", amount_in_cents: 22_500,
+                    building_access_level: :business_hours, has_day_limit: true, day_limit: 10,
+                    features: ["Free coffee", "Mail service"], operator: @operator)
+    presenter = Showcase::ProductPresenter.new(plan)
+
+    assert_equal ["Free coffee", "Mail service"], presenter.tier[:bullets]
+    assert_equal ["10 days per month", "Building access during business hours"], presenter.default_bullets
   end
 
   test "no-access plan says so" do

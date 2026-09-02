@@ -25,7 +25,11 @@
     </div>
     <div class="form-group mb-3">
       <%= f.label :embed_accent_override, "Accent color override (hex, optional)" %>
-      <%= f.text_field :embed_accent_override, class: "form-control", placeholder: "e.g. 0d6efd" %>
+      <%= f.text_field :embed_accent_override, class: "form-control", placeholder: "e.g. #0d6efd" %>
+      <small class="form-text text-muted">
+        Colors the Showcase check marks and featured border, the Concierge bubble, and the tour form
+        button. Leave blank to use your brand accent color.
+      </small>
     </div>
 
     <h5>Showcase</h5>
@@ -33,9 +37,15 @@
       <%= f.check_box :showcase_enabled, class: "form-check-input" %>
       <%= f.label :showcase_enabled, "Enable the Showcase embeds", class: "form-check-label" %>
     </div>
+    <div class="form-group mb-2">
+      <%= f.label :showcase_button_color, "Product button color (hex, optional)" %>
+      <%= f.text_field :showcase_button_color, class: "form-control", placeholder: "e.g. #16a34a" %>
+      <small class="form-text text-muted">Colors the Buy now / Sign up buttons only. Leave blank to use the accent color above.</small>
+    </div>
     <small class="form-text text-muted mb-3">
       Tiers come from your visible day passes and individual plans — order, the featured
-      badge, and extra "what's included" lines are edited on each product's form.
+      badge, and the bullet points are edited on each product's form. Day passes and their
+      packs show as one group; Day Office types and their packs as another.
     </small>
     <%= f.submit "Save", class: "btn btn-primary" %>
   <% end %>

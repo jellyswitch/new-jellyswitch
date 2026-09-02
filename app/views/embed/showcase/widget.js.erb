@@ -2,12 +2,12 @@
     the script's own position, plus JSON-LD Product/Offer markup in <head>.
     All classes namespaced jsw-sc; accent from the shared embed-theme. %>
 (function () {
-  var DATA = <%= raw({ sections: @sections, accent: @operator.embed_accent_color, font: @operator.embed_font_family.presence }.to_json) %>;
+  var DATA = <%= raw({ sections: @sections, accent: @operator.embed_accent_color, button: @operator.embed_button_color, font: @operator.embed_font_family.presence }.to_json) %>;
   var script = document.currentScript;
   if (!script || !DATA.sections.length) return;
 
   var css =
-    ".jsw-sc{--jsw-accent:" + DATA.accent + ";margin:16px 0;color:inherit;}" +
+    ".jsw-sc{--jsw-accent:" + DATA.accent + ";--jsw-button:" + DATA.button + ";margin:16px 0;color:inherit;}" +
     ".jsw-sc *{box-sizing:border-box;}" +
     ".jsw-sc-title{font-size:1.4em;font-weight:700;margin:0 0 12px;}" +
     ".jsw-sc-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;}" +
@@ -19,8 +19,8 @@
     ".jsw-sc-list{list-style:none;margin:0 0 16px;padding:0;flex:1;}" +
     ".jsw-sc-list li{padding:4px 0 4px 22px;position:relative;font-size:.95em;line-height:1.4;}" +
     ".jsw-sc-list li:before{content:'\\2713';position:absolute;left:2px;color:var(--jsw-accent);font-weight:700;}" +
-    ".jsw-sc-cta{display:block;text-align:center;background:var(--jsw-accent);color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;}" +
-    ".jsw-sc-cta.jsw-sc-out{background:#fff;color:var(--jsw-accent);border:1.5px solid var(--jsw-accent);}" +
+    ".jsw-sc-cta{display:block;text-align:center;background:var(--jsw-button);color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;}" +
+    ".jsw-sc-cta.jsw-sc-out{background:#fff;color:var(--jsw-button);border:1.5px solid var(--jsw-button);}" +
     (DATA.font ? ".jsw-sc{font-family:" + DATA.font + ";}" : "");
   var style = document.createElement("style");
   style.textContent = css;

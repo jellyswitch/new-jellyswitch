@@ -137,11 +137,15 @@ class Operator::PlansController < Operator::BaseController
       :credits, :description, :plan_category_id, :childcare_reservations,
       :included_meeting_room_minutes, :overage_rate_in_cents,
       :has_day_limit, :day_limit, :commitment_interval,
-      :featured, :display_order, :features_text,
+      :featured, :display_order, :features_text, :features_default,
       location_ids: [])
     convert_meeting_room_params!(p)
     if p.key?(:features_text)
-      p[:features] = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+      lines = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+      defaults = p.delete(:features_default).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+      # The form prefills the automatic lines; saving them untouched keeps the
+      # product on automatic, so later config changes still flow to the website.
+      p[:features] = lines == defaults ? [] : lines
     end
     p
   end

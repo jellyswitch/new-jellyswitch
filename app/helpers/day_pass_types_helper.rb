@@ -10,7 +10,7 @@ module DayPassTypesHelper
   end
 
   def day_pass_type_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :available, :visible, :always_allow_building_access, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text, :features_default)
     convert_showcase_features!(p)
     dollars = Money.from_amount(p[:amount_in_cents].to_i, "USD")
     p[:amount_in_cents] = dollars.cents
@@ -36,7 +36,7 @@ module DayPassTypesHelper
 
 
   def day_pass_type_update_params
-    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text)
+    p = params.require(:day_pass_type).permit(:name, :amount_in_cents, :code, :description, :included_meeting_room_minutes, :overage_rate_in_cents, :quantity, :expires_after_days, :daily_limit, :kind, :featured, :display_order, :features_text, :features_default)
     convert_showcase_features!(p)
     # Convert dollars input to cents for price
     if p[:amount_in_cents].present?
@@ -93,7 +93,11 @@ module DayPassTypesHelper
   def convert_showcase_features!(p)
     return unless p.key?(:features_text)
 
-    p[:features] = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+    lines = p.delete(:features_text).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+    defaults = p.delete(:features_default).to_s.split(/\r?\n/).map(&:strip).reject(&:blank?)
+    # The form prefills the automatic lines; saving them untouched keeps the
+    # product on automatic, so later config changes still flow to the website.
+    p[:features] = lines == defaults ? [] : lines
   end
 
 end

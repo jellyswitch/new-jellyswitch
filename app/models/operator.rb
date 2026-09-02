@@ -106,6 +106,8 @@ class Operator < ApplicationRecord
   BRAND_HEX_COLOR = /\A#?[0-9a-fA-F]{6}\z/
   validates :primary_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
   validates :accent_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+  validates :embed_accent_override, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+  validates :showcase_button_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
 
   has_many :announcements
   has_many :automated_workflows
@@ -201,11 +203,25 @@ class Operator < ApplicationRecord
   # Shared embed-theme — inherited brand identity + optional overrides. Used by
   # BOTH the Concierge and the tour widget so the two always look consistent.
   def embed_primary_color
-    primary_color.presence || "#111827"
+    css_hex(primary_color) || "#111827"
   end
 
   def embed_accent_color
-    embed_accent_override.presence || accent_color.presence || "#2563eb"
+    css_hex(embed_accent_override) || css_hex(accent_color) || "#2563eb"
+  end
+
+  # Brand colors are stored with or without the leading "#" (BRAND_HEX_COLOR
+  # accepts both) but CSS needs it — a bare "0d6efd" made every widget button
+  # fall back to the browser default and looked like the color could not be
+  # changed (2026-09-02).
+  def css_hex(value)
+    hex = value.to_s.strip.delete_prefix("#")
+    hex.present? ? "##{hex}" : nil
+  end
+
+  # Showcase product buttons: their own color when set, else the shared accent.
+  def embed_button_color
+    css_hex(showcase_button_color) || embed_accent_color
   end
 
   def embed_font_family

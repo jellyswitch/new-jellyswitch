@@ -19,17 +19,55 @@ RSpec.describe "Embed::Showcase", type: :request do
   it "renders day-pass tiers with derived bullets, features, price, and checkout CTA" do
     create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
                            quantity: 1, amount_in_cents: 4_000, included_meeting_room_minutes: 180,
-                           features: ["Free coffee"], featured: true)
+                           featured: true)
 
     get_widget(products: "day_passes")
 
     expect(response.body).to include("Coworking Day Pass")
     expect(response.body).to include("$40")
     expect(response.body).to include("180 min meeting room time")
-    expect(response.body).to include("Free coffee")
+    expect(response.body).to include("Building access during open hours")
     expect(response.body).to include("MOST POPULAR")
     expect(response.body).to include("/embed/concierge/#{operator.subdomain}/checkout")
-    expect(response.body).to include("ff5500")
+    # A bare hex override is normalized to CSS form so the buttons actually take the color.
+    expect(response.body).to include("#ff5500")
+  end
+
+  it "colors the product buttons with the dedicated button color when set" do
+    operator.update!(showcase_button_color: "16a34a")
+    create(:day_pass_type, operator: operator, location: location, name: "Day Pass", amount_in_cents: 4_000)
+
+    get_widget(products: "day_passes")
+
+    expect(response.body).to include('"button":"#16a34a"')
+    expect(response.body).to include('"accent":"#ff5500"')
+  end
+
+  it "lets the operator's own bullet lines replace the automatic ones" do
+    create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
+                           amount_in_cents: 4_000, included_meeting_room_minutes: 180,
+                           features: ["Fast wifi", "Free coffee"])
+
+    get_widget(products: "day_passes")
+
+    expect(response.body).to include("Fast wifi")
+    expect(response.body).to include("Free coffee")
+    expect(response.body).not_to include("180 min meeting room time")
+    expect(response.body).not_to include("Building access during open hours")
+  end
+
+  it "groups Day Office types with their packs, apart from day passes and theirs" do
+    create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass", amount_in_cents: 4_000)
+    create(:day_pass_type, operator: operator, location: location, name: "Day Office", kind: "day_office", amount_in_cents: 10_000)
+    create(:day_pass_type, operator: operator, location: location, name: "5 Pack", quantity: 5, amount_in_cents: 16_000)
+    create(:day_pass_type, operator: operator, location: location, name: "Day Office 3 Pack", kind: "day_office", quantity: 3, amount_in_cents: 27_000)
+
+    get_widget(products: "day_passes")
+
+    data = JSON.parse(response.body[/var DATA = (\{.*\});/, 1])
+    expect(data["sections"].map { |s| s["key"] }).to eq(%w[day_passes day_offices])
+    expect(data["sections"][0]["tiers"].map { |t| t["name"] }).to eq(["Coworking Day Pass", "5 Pack"])
+    expect(data["sections"][1]["tiers"].map { |t| t["name"] }).to eq(["Day Office", "Day Office 3 Pack"])
   end
 
   it "emits JSON-LD Product offers for purchasable tiers" do
@@ -42,7 +80,7 @@ RSpec.describe "Embed::Showcase", type: :request do
   it "renders membership tiers with commitment and access bullets" do
     create(:plan, operator: operator, location_id: location.id, name: "Resident",
                   amount_in_cents: 30_000, building_access_level: :all_hours,
-                  commitment_interval: 6, features: ["Mail service"])
+                  commitment_interval: 6)
 
     get_widget(products: "memberships")
 
@@ -50,7 +88,6 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.body).to include("$300/month")
     expect(response.body).to include("24/7 building access")
     expect(response.body).to include("6-month minimum commitment")
-    expect(response.body).to include("Mail service")
   end
 
   it "renders the setup nudge when unpinned at a multi-location operator" do
