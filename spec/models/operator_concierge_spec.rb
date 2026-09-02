@@ -40,6 +40,19 @@ RSpec.describe Operator, "Concierge + embed-theme settings" do
       expect(operator.embed_accent_color).to eq("#ff0000")
     end
 
+    it "tidies pasted colors: whitespace, 3-digit shorthand, trailing semicolon" do
+      operator.update!(showcase_button_color: "  #FFF ", embed_accent_override: "16a34a;")
+      expect(operator.showcase_button_color).to eq("#FFFFFF")
+      expect(operator.embed_accent_override).to eq("#16a34a")
+      expect(operator.embed_button_color).to eq("#FFFFFF")
+    end
+
+    it "explains what a bad button color should look like" do
+      operator.showcase_button_color = "rgb(22, 163, 74)"
+      expect(operator).not_to be_valid
+      expect(operator.errors.full_messages).to include("Showcase button color must be a hex color like #16a34a")
+    end
+
     it "rejects an accent override that is not a hex color" do
       operator.embed_accent_override = "blue"
       expect(operator).not_to be_valid

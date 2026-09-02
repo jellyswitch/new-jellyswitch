@@ -106,8 +106,25 @@ class Operator < ApplicationRecord
   BRAND_HEX_COLOR = /\A#?[0-9a-fA-F]{6}\z/
   validates :primary_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
   validates :accent_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
-  validates :embed_accent_override, format: { with: BRAND_HEX_COLOR }, allow_blank: true
-  validates :showcase_button_color, format: { with: BRAND_HEX_COLOR }, allow_blank: true
+  HEX_COLOR_MESSAGE = "must be a hex color like #16a34a".freeze
+  validates :embed_accent_override, format: { with: BRAND_HEX_COLOR, message: HEX_COLOR_MESSAGE }, allow_blank: true
+  validates :showcase_button_color, format: { with: BRAND_HEX_COLOR, message: HEX_COLOR_MESSAGE }, allow_blank: true
+  # People paste colors in every shape ("#FFF", " 16a34a ", "#16A34A;"): tidy
+  # the widget colors before the format check so only real non-colors fail.
+  before_validation :normalize_widget_colors
+
+  def normalize_widget_colors
+    self.embed_accent_override = self.class.tidy_hex(embed_accent_override)
+    self.showcase_button_color = self.class.tidy_hex(showcase_button_color)
+  end
+
+  def self.tidy_hex(value)
+    return value if value.nil?
+
+    hex = value.to_s.strip.delete_prefix("#").delete_suffix(";").strip
+    hex = hex.chars.map { |c| c * 2 }.join if hex.match?(/\A\h{3}\z/)
+    hex.blank? ? "" : "##{hex}"
+  end
 
   has_many :announcements
   has_many :automated_workflows
