@@ -13,6 +13,12 @@ class Operator::Admin::DayPassesController < Operator::BaseController
     user = User.find(day_pass_params[:user_id])
     token = params[:stripeToken]
     out_of_band = pay_by_check_params[:out_of_band]
+    # comp: staff adds the pass on the house — no Stripe invoice, no charge,
+    # pass flagged complimentary (reports already exclude those from revenue).
+    # DayPassPolicy#create? also admits members with billing enabled, so the
+    # flag is gated server-side on staff — same predicate as the web comp
+    # booking (#671). A member posting comp=1 just buys the pass normally.
+    comp = staff? && params.dig(:day_pass, :comp) == "1"
 
     result = DayPassInteractorFactory.for(token, current_tenant).call(
       params: day_pass_params,
@@ -20,7 +26,8 @@ class Operator::Admin::DayPassesController < Operator::BaseController
       token: token,
       operator: current_tenant,
       out_of_band: out_of_band,
-      location: current_location
+      location: current_location,
+      comp: comp
     )
 
     @day_pass = result.day_pass
@@ -40,6 +47,13 @@ class Operator::Admin::DayPassesController < Operator::BaseController
   end
 
   private
+
+  def staff?
+    return false unless current_user.present?
+    current_user.admin_of_location?(current_location) ||
+      current_user.general_manager_of_location?(current_location) ||
+      current_user.community_manager_of_location?(current_location)
+  end
 
   def day_pass_params
     params.require(:day_pass).permit(:day_pass_type, :day, :user_id)

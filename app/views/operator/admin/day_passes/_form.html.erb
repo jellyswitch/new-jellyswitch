@@ -10,9 +10,30 @@
     <div class="col-1"></div>
   </div>
 
+  <%# Staff see every available type. Until 9/2026 this list hid paid types
+      whenever the member had no card on file, which read as "no options"
+      (the only survivor was the hidden $0 type). A paid pick for a card-less
+      member now either goes through as a comp (checkbox below) or fails at
+      charge time with the normal "update your payment method" message. %>
   <div class="form-group row">
     <div class="col-1"></div>
-    <%= f.select :day_pass_type, day_pass_type_options(DayPassType.all_options_for_select(current_location, user)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <%= f.select :day_pass_type, day_pass_type_options(current_location.day_pass_types.available.order(:amount_in_cents)), {}, { class: "form-control form-control-sm col ml-1 mr-1" } %>
+    <div class="col-1"></div>
+  </div>
+
+  <div class="form-group row">
+    <div class="col-1"></div>
+    <div class="col ml-1 mr-1">
+      <div class="form-check">
+        <%= check_box_tag "day_pass[comp]", "1", false, class: "form-check-input", id: "day_pass_comp" %>
+        <%= label_tag "day_pass_comp", "Comp — don't charge #{user.name}", class: "form-check-label" %>
+      </div>
+      <% unless user.has_billing_for_location?(current_location) || user.out_of_band? %>
+        <small class="form-text text-muted">
+          <%= user.name %> has no card on file — a paid pass will only go through as a comp.
+        </small>
+      <% end %>
+    </div>
     <div class="col-1"></div>
   </div>
 

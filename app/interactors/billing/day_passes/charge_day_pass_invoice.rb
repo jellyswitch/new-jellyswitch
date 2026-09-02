@@ -6,6 +6,7 @@ class Billing::DayPasses::ChargeDayPassInvoice
 
   def call
     return if day_pass.day_pass_type.free?
+    return if context.comp
     return if day_pass.billable.out_of_band?
     # Note: previously short-circuited when context.token.present? on the
     # assumption Stripe auto-advance would charge later. That deferred charge

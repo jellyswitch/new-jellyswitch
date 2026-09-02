@@ -20,7 +20,11 @@ class Billing::DayPasses::SaveDayPass
     day_pass.location = location
     day_pass.billable = BillableFactory.for(day_pass).billable
 
-    unless day_pass_type.free? || day_pass.billable.has_stripe_customer_for_location?(location)
+    # A comp never bills, so it needs no Stripe customer. It is recorded as
+    # complimentary so revenue reports and the timeline read it right.
+    day_pass.complimentary = true if context.comp
+
+    unless day_pass_type.free? || context.comp || day_pass.billable.has_stripe_customer_for_location?(location)
       context.fail!(message: "Cannot create paid day pass for user without billing info.")
     end
 
