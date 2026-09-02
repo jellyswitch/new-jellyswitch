@@ -40,6 +40,27 @@ class TourRequestMailerTest < ActionMailer::TestCase
     assert_match "Next Tuesday afternoon", html_body
     assert_match "Next Tuesday afternoon", text_body
   end
+  test "new_request email mentions a mirrored Cowork Tahoe request and links to it" do
+    @activity.update!(payload: @activity.payload.merge(
+      "mirrored_to" => {
+        "operator_subdomain" => "tml", "operator_name" => "Cowork Tahoe",
+        "location_name" => "Cowork Tahoe", "user_id" => 4242, "activity_id" => 99,
+      },
+    ))
+    mail = TourRequestMailer.with(recipient: @recipient, activity: @activity).new_request
+
+    [mail.html_part.body.to_s, mail.text_part.body.to_s].each do |body|
+      assert_match "Also logged as a tour request at", body
+      assert_match "Cowork Tahoe", body
+      assert_match "https://tml.jellyswitch.com/users/4242", body
+    end
+  end
+
+  test "new_request email says nothing about a mirror when there is none" do
+    mail = TourRequestMailer.with(recipient: @recipient, activity: @activity).new_request
+    refute_match "Also logged", mail.text_part.body.to_s
+  end
+
   test "confirmation email goes to the requester with branded from and tour details" do
     mail = TourRequestMailer.with(activity: @activity).confirmation
 

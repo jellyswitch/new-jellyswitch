@@ -123,6 +123,47 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_redirected_to embed_tour_request_thank_you_path(operator_subdomain: @operator.subdomain)
   end
 
+  test "POST create at Untethered's Zephyr Cove location also logs a tour request at Cowork Tahoe" do
+    untethered = Operator.create!(name: "Untethered", subdomain: "untethered", tour_widget_enabled: true)
+    zephyr = ActsAsTenant.with_tenant(untethered) do
+      untethered.locations.create!(name: "Untethered - Lake Tahoe, NV", city: "Zephyr Cove", visible: true)
+    end
+
+    assert_difference -> { User.where(operator: untethered).count } => 1,
+                      -> { User.where(operator: @operator).count } => 1,
+                      -> { Activity.where(kind: "tour_request").count } => 2 do
+      post embed_tour_request_path(operator_subdomain: "untethered"), params: {
+        name: "Tahoe Prospect", email: "tahoe+prospect@example.com", phone: "555-0100",
+        message: "Curious about both spaces", location_id: zephyr.id,
+      }
+    end
+    assert_redirected_to embed_tour_request_thank_you_path(operator_subdomain: "untethered")
+
+    source = Activity.where(kind: "tour_request", operator: untethered).last
+    mirror = Activity.where(kind: "tour_request", operator: @operator).last
+    assert_equal zephyr.id, source.subject_id
+    assert_equal @location.id, mirror.subject_id
+    assert_equal "Curious about both spaces", mirror.payload["message"]
+    assert_equal source.id, mirror.payload.dig("mirrored_from", "activity_id")
+    assert_equal mirror.id, source.payload.dig("mirrored_to", "activity_id")
+    assert_equal "tahoe+prospect@example.com", mirror.user.email
+    assert_equal @operator.id, mirror.user.operator_id
+
+    # One staff alert (for the Untethered activity), none for the mirror.
+    assert_enqueued_with(job: SendNotificationsJob, args: [source, "TourRequestAlert"])
+    tour_alerts = enqueued_jobs.select { |j| j["job_class"] == "SendNotificationsJob" && j["arguments"].last == "TourRequestAlert" }
+    assert_equal 1, tour_alerts.size
+  end
+
+  test "POST create at Cowork Tahoe does not mirror anywhere" do
+    assert_difference -> { Activity.where(kind: "tour_request").count } => 1 do
+      post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
+        name: "Local", email: "local@example.com", location_id: @location.id,
+      }
+    end
+    assert_nil Activity.where(kind: "tour_request").last.payload["mirrored_to"]
+  end
+
   test "POST create with existing email reuses the User and still logs Activity" do
     existing = User.create!(
       email: "existing+tour@example.com", name: "Existing", operator: @operator,
