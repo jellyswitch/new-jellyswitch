@@ -28,6 +28,12 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
       expect(response.body).not_to include("pk_test_123")
     end
 
+    it "tells the buyer to download and log in to the brand's app for access, rooms, and wifi" do
+      get url, params: { day_pass_type_id: pass_type.id }
+      expect(response.body).to include("To access the space, book meeting rooms, and connect to wifi, download and log in to the")
+      expect(response.body).to include(%(data-app-name="#{operator.name}"))
+    end
+
     it "404s when the location is not connected to Stripe" do
       location.update!(stripe_user_id: nil)
       get url, params: { day_pass_type_id: pass_type.id }
@@ -63,6 +69,32 @@ RSpec.describe "Embed::Concierge checkout", type: :request do
       expect(body["summary"]).to include(location.name)
       expect(body["app"]["ios"]).to be_present
       expect(body["app"]["android"]).to be_present
+    end
+
+    it "names the brand's app so the confirmation can say which app to install" do
+      stub_success
+      post url, params: params
+      expect(JSON.parse(response.body)["app"]["name"]).to eq(operator.name)
+    end
+
+    it "dates a single day pass and does not ask the buyer to schedule days" do
+      stub_success
+      post url, params: params.merge(day: (Date.current + 2).iso8601)
+
+      body = JSON.parse(response.body)
+      expect(body["summary"]).to include((Date.current + 2).strftime("%b %-d"))
+      expect(body["schedule_days"]).to be false
+    end
+
+    it "does not date a bundle and tells the buyer to schedule days in the app" do
+      bundle = create(:day_pass_type, operator: operator, location: location, name: "10-Pass Bundle", quantity: 10, amount_in_cents: 20_000)
+      stub_success
+      post url, params: params.merge(day_pass_type_id: bundle.id)
+
+      body = JSON.parse(response.body)
+      expect(body["summary"]).to eq("10-Pass Bundle at #{[location.name, location.building_address, location.city].compact_blank.join(', ')}")
+      expect(body["summary"]).not_to include(Date.current.strftime("%A"))
+      expect(body["schedule_days"]).to be true
     end
 
     it "does not warn about approval when the operator does not require it" do
