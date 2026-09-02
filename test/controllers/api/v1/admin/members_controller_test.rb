@@ -311,6 +311,26 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert_equal future, day_pass.day
   end
 
+  test "create_day_pass with comp mints a paid pass without invoicing" do
+    Stripe::InvoiceItem.expects(:create).never
+    Stripe::Invoice.expects(:create).never
+    paid_type = DayPassType.create!(
+      operator: @operator, location: locations(:cowork_tahoe_location),
+      name: "Private Office Day Pass", amount_in_cents: 10000, available: true,
+    )
+
+    post "/api/v1/admin/members/#{@member.id}/create_day_pass",
+      params: { day_pass_type_id: paid_type.id, comp: true }.to_json,
+      headers: headers
+
+    assert_response :created
+    day_pass = DayPass.order(:created_at).last
+    assert_equal @member.id, day_pass.user_id
+    assert_equal paid_type, day_pass.day_pass_type
+    assert day_pass.complimentary?
+    assert_nil day_pass.invoice_id
+  end
+
   test "usage reports visit_days derived from collected activity" do
     @member.checkins.destroy_all
     door = Door.create!(name: "Front Door", operator: @operator,

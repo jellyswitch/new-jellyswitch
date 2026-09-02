@@ -5,6 +5,8 @@ class Billing::DayPasses::CreateStripeInvoice
   delegate :day_pass, :token, :operator, :location, :out_of_band, :params, :user_id, :user, to: :context
 
   def call
+    return if context.comp # staff comp: nothing to invoice
+
     charge_amount = day_pass.day_pass_type.amount_in_cents
     discount_code = context.discount_code
 

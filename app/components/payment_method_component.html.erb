@@ -26,6 +26,10 @@
         <% end %>
       <% end %>
     <% end %>
+  <% elsif cash_or_check? && !bill_to_group? %>
+    <%# Out of band with no card: still needs an exit back to card billing,
+        otherwise the flag is one-way until a card shows up. %>
+    <%= link_to "Credit card (none on file yet)", credit_card_path, class: "list-group-item" %>
   <% else %>
     <li class="list-group-item disabled">
       No card on file

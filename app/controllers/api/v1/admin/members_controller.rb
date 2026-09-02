@@ -392,10 +392,13 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     user = current_tenant.users.find(params[:id])
     day_pass_type = DayPassType.find(params[:day_pass_type_id])
 
+    # comp: on the house — no invoice, no charge, pass flagged complimentary.
+    # Same flag the web admin form sends; staff-only endpoint.
     result = Billing::DayPasses::CreateDayPass.call(
       user_id: user.id,
       operator: current_tenant,
       location: current_location,
+      comp: ActiveModel::Type::Boolean.new.cast(params[:comp]) == true,
       params: {
         day_pass_type: day_pass_type.id.to_s,
         day: params[:date] || Date.current,
