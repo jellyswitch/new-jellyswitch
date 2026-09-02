@@ -45,6 +45,25 @@ class Operator::UsersControllerTest < ActionDispatch::IntegrationTest
     assert_match(/Email is invalid/, response.body)
   end
 
+  test "web signup with a widget-created stub's email claims it and lands on confirmation pending" do
+    delete logout_path, env: default_env
+    stub = User.create!(
+      email: "stub@example.com", name: "Stub", operator: operators(:cowork_tahoe),
+      original_location_id: locations(:cowork_tahoe_location).id,
+      admin_created: true, password: SecureRandom.hex(16),
+    )
+
+    assert_no_difference -> { User.count } do
+      post users_path, params: { user: {
+        name: "Claimed", email: "stub@example.com",
+        password: "password123", password_confirmation: "password123", phone: "5305551234",
+      } }, env: default_env
+    end
+    assert_redirected_to confirmation_pending_users_path(email: "stub@example.com")
+    assert_equal "Claimed", stub.reload.name
+    assert stub.authenticate("password123")
+  end
+
   test "should scrub user data and redirect to signup page if user is not part of an organization" do
     @user.update(organization_id: nil)
     @user.reload.organization_id

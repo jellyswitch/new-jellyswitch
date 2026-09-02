@@ -78,6 +78,25 @@ class Api::V1::AuthControllerTest < ActionDispatch::IntegrationTest
     }.merge(overrides)
   end
 
+  test "signup with a widget-created stub's email claims it and logs in" do
+    stub = User.create!(
+      email: "stub@example.com", name: "Stub", operator: @operator,
+      original_location_id: @operator.locations.visible.first.id,
+      admin_created: true, password: SecureRandom.hex(16),
+    )
+
+    assert_no_difference -> { User.count } do
+      post "/api/v1/auth/signup", params: signup_params(email: "stub@example.com", name: "Claimed")
+    end
+
+    assert_response :created
+    body = JSON.parse(response.body)
+    assert body["token"].present?
+    assert_equal stub.id, body["user"]["id"]
+    assert_equal "Claimed", stub.reload.name
+    assert stub.authenticate("password123")
+  end
+
   test "signup without a Turnstile token creates the account and never verifies (lenient)" do
     Turnstile::Verifier.expects(:call).never
     assert_difference -> { User.count }, 1 do
