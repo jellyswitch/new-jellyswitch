@@ -12,6 +12,12 @@
   <%= f.submit "Save Office Inventory settings", class: "btn btn-primary mb-3" %>
 <% end %>
 
+<%= render "operator/settings/widgets/script_preview",
+      id: "offices-preview", title: "Office Inventory preview", locations: locations,
+      base_url: embed_office_inventory_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
+                                           preview_token: Embed::OfficeInventoryController.preview_token_for(@operator)) %>
+
+<hr>
 <h5>Embed snippets</h5>
 <% locations.each do |loc| %>
   <% oi_url = embed_office_inventory_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,

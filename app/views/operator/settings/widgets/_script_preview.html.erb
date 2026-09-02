@@ -1,0 +1,56 @@
+<%# Live preview for a script-embed widget (Showcase, Office Inventory). The
+    widget renders inline DOM at its own <script> tag, so the preview hosts
+    that tag inside a srcdoc iframe — an isolated mini page on this origin —
+    and grows the frame to fit. base_url carries a signed preview token so
+    the widget shows even while disabled. %>
+<% id = local_assigns.fetch(:id); modes = local_assigns[:modes] %>
+<h5 class="mt-4">Live preview</h5>
+<div class="form-row row mb-2">
+  <% if locations.count > 1 %>
+    <div class="col-md-4 mb-2">
+      <select id="<%= id %>-location" class="form-control form-control-sm" aria-label="Preview location">
+        <% locations.each do |loc| %><option value="<%= loc.id %>"><%= loc.name %></option><% end %>
+      </select>
+    </div>
+  <% end %>
+  <% if modes %>
+    <div class="col-md-4 mb-2">
+      <select id="<%= id %>-mode" class="form-control form-control-sm" aria-label="Preview products">
+        <% modes.each do |label, value| %><option value="<%= value %>"><%= label %></option><% end %>
+      </select>
+    </div>
+  <% end %>
+</div>
+<iframe id="<%= id %>-frame" width="100%" height="420" style="border: 1px solid #ddd; border-radius: 4px; background: #fff;"
+        title="<%= title %>"></iframe>
+<script>
+  (function () {
+    var id = <%= raw id.to_json %>;
+    var base = <%= raw base_url.to_json %>;
+    var frame = document.getElementById(id + "-frame");
+    var loc = document.getElementById(id + "-location");
+    var mode = document.getElementById(id + "-mode");
+    if (!frame) return;
+
+    function render() {
+      var url = new URL(base);
+      if (loc && loc.value) url.searchParams.set("location_id", loc.value);
+      if (mode && mode.value) url.searchParams.set("products", mode.value);
+      var src = url.toString().replace(/"/g, "&quot;");
+      frame.srcdoc =
+        '<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head>' +
+        '<body style="margin:16px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;">' +
+        '<script src="' + src + '"><\/script>' +
+        '<script>new ResizeObserver(function(){parent.postMessage({jswPreviewHeight:document.documentElement.scrollHeight,jswPreviewId:' + JSON.stringify(id) + '},"*");}).observe(document.body);<\/script>' +
+        '</body></html>';
+    }
+
+    window.addEventListener("message", function (e) {
+      if (!e.data || e.data.jswPreviewId !== id || !e.data.jswPreviewHeight) return;
+      frame.style.height = Math.max(200, e.data.jswPreviewHeight + 24) + "px";
+    });
+    if (loc) loc.addEventListener("change", render);
+    if (mode) mode.addEventListener("change", render);
+    render();
+  })();
+</script>

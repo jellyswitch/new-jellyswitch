@@ -18,9 +18,15 @@
 <% end %>
 
 <hr>
+<% modes = [["Day passes", "day_passes"], ["Memberships", "memberships"], ["Both", "all"], ["Standalone cards (e.g. Virtual Office page)", "cards"]] %>
+<%= render "operator/settings/widgets/script_preview",
+      id: "showcase-preview", title: "Showcase preview", locations: locations, modes: modes,
+      base_url: embed_showcase_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
+                                   preview_token: Embed::ShowcaseController.preview_token_for(@operator)) %>
+
+<hr>
 <h5>Embed snippets</h5>
 <p class="text-muted mb-2">Paste on the matching page with a Custom HTML block. One line each.</p>
-<% modes = [["Day passes", "day_passes"], ["Memberships", "memberships"], ["Both", "all"], ["Standalone cards (e.g. Virtual Office page)", "cards"]] %>
 <% locations.each do |loc| %>
   <h6 class="mt-3"><%= loc.name %></h6>
   <% modes.each do |label, mode| %>

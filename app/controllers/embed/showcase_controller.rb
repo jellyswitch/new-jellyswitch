@@ -9,13 +9,21 @@ module Embed
     # changes happen here (purchases go through the checkout's own perimeter).
     skip_forgery_protection
 
+    include Embed::AdminPreview
+
     before_action :load_operator
 
     PRODUCT_MODES = %w[day_passes memberships all cards].freeze
 
     def widget
-      expires_in 5.minutes, public: true
-      return render_noop("Showcase is not enabled for #{@operator.subdomain}") unless @operator.showcase_enabled?
+      # Settings-page preview: signed token, never cached, shows the widget
+      # even while it's disabled. Public traffic keeps the 5-minute cache.
+      if admin_previewing?
+        expires_now
+      else
+        expires_in 5.minutes, public: true
+        return render_noop("Showcase is not enabled for #{@operator.subdomain}") unless @operator.showcase_enabled?
+      end
 
       visible = @operator.locations.where(visible: true).order(:name)
       @location = @operator.locations.find_by(id: params[:location_id])

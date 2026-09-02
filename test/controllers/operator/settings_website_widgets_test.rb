@@ -27,6 +27,17 @@ class Operator::SettingsWebsiteWidgetsTest < ActionDispatch::IntegrationTest
     assert_select "#widget-concierge iframe[title='Concierge preview']"
   end
 
+  test "every widget panel carries a live preview" do
+    get settings_website_widgets_path, env: default_env
+    assert_select "#widget-concierge iframe[title='Concierge preview']"
+    assert_select "#widget-tour iframe[title='Tour widget preview']"
+    assert_select "#widget-showcase iframe[title='Showcase preview']"
+    assert_select "#widget-offices iframe[title='Office Inventory preview']"
+    # Script embeds preview through a signed token so they show even while disabled.
+    assert_match %r{/embed/showcase/#{@admin.operator.subdomain}\?preview_token=}, response.body
+    assert_match %r{/embed/office_inventory/#{@admin.operator.subdomain}\?preview_token=}, response.body
+  end
+
   test "?widget= picks the open panel" do
     get settings_website_widgets_path(widget: "showcase"), env: default_env
     assert_select "#widget-picker a.nav-link.active[data-widget=showcase]"
