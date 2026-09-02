@@ -435,7 +435,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(response).to redirect_to(settings_website_widgets_path)
       operator.reload
       expect(operator.showcase_enabled).to be true
-      expect(operator.embed_accent_override).to eq("112233")
+      expect(operator.embed_accent_override).to eq("#112233")
     end
 
     it "PATCH #update_concierge saves per-location offer overrides" do
@@ -480,7 +480,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
       operator.reload
       expect(operator.concierge_enabled).to be true
       expect(operator.concierge_assistant_name).to eq("Tahoe Concierge")
-      expect(operator.embed_accent_override).to eq("ff0000")
+      expect(operator.embed_accent_override).to eq("#ff0000")
     end
   end
 end
