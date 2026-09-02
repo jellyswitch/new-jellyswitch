@@ -230,7 +230,7 @@ class Operator::SettingsController < Operator::BaseController
   end
 
   def branding_params
-    params.require(:operator).permit(:logo_image, :background_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)
+    params.require(:operator).permit(:logo_image, :app_icon_image, :background_image, :snippet, :membership_text, :terms_of_service, :google_reviews_url)
   end
 
   def notifications_params

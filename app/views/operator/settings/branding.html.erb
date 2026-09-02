@@ -11,6 +11,15 @@
     </div>
 
     <div class="form-group">
+      <%= f.label :app_icon_image, "App icon" %>
+      <% if @operator.app_icon_image.attached? %>
+        <div class="mb-2"><%= image_tag @operator.app_icon_image, width: 88 %></div>
+      <% end %>
+      <%= f.file_field :app_icon_image, accept: "image/*", class: "form-control-file" %>
+      <small class="form-text text-muted">Square mark. Used as the favicon and the Concierge chat avatar (the logo above is used when this is blank).</small>
+    </div>
+
+    <div class="form-group">
       <%= f.label :background_image, "Background image" %>
       <% if @operator.background_image.attached? %>
         <div class="mb-2"><%= image_tag @operator.background_image, width: 88 %></div>
