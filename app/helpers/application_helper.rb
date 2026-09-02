@@ -81,11 +81,8 @@ module ApplicationHelper
   end
 
   def favicon(operator)
-    if operator.logo_image.attached?
-      url_for(operator.logo_image)
-    else
-      nil
-    end
+    icon = operator.icon_image
+    url_for(icon) if icon.attached?
   end
 
   def stripe_oauth_url(operator, options = {})

@@ -17,8 +17,8 @@
   <% end %>
 
   <header class="cx-head">
-    <% if @operator.logo_image.attached? %>
-      <%= image_tag @operator.logo_image, class: "cx-avatar", alt: assistant_name %>
+    <% if @operator.icon_image.attached? %>
+      <%= image_tag @operator.icon_image, class: "cx-avatar", alt: assistant_name %>
     <% end %>
     <strong><%= assistant_name %></strong>
   </header>

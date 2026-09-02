@@ -189,6 +189,12 @@ class Operator < ApplicationRecord
     concierge_enabled? && locations.where(visible: true).exists?
   end
 
+  # Square brand mark for small surfaces (favicon, Concierge chat avatar).
+  # Falls back to the logo, which is often a wide wordmark that crops badly.
+  def icon_image
+    app_icon_image.attached? ? app_icon_image : logo_image
+  end
+
   # Concierge copy — sensible brand-derived defaults so it works pre-config.
   def concierge_display_name
     concierge_assistant_name.presence || name

@@ -111,4 +111,16 @@ RSpec.describe "Embed::Concierge show", type: :request do
       expect(response.body).not_to include("challenges.cloudflare.com")
     end
   end
+  it "uses the square app icon as the chat avatar, falling back to the logo" do
+    operator.logo_image.attach(io: File.open(Rails.root.join("spec/fixtures/test.jpg")), filename: "wide-wordmark.jpg", content_type: "image/jpeg")
+
+    get "/embed/concierge/#{operator.subdomain}"
+    expect(response.body).to include("wide-wordmark.jpg") # no app icon yet: logo is the avatar
+
+    operator.app_icon_image.attach(io: File.open(Rails.root.join("spec/fixtures/test.jpg")), filename: "square-icon.jpg", content_type: "image/jpeg")
+
+    get "/embed/concierge/#{operator.subdomain}"
+    expect(response.body).to include("square-icon.jpg")
+    expect(response.body).not_to include("wide-wordmark.jpg")
+  end
 end

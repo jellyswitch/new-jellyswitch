@@ -4,8 +4,8 @@
     server-rendered — no JS state to carry. %>
 <div id="cx" style="--cx-primary: <%= @theme[:primary] %>; --cx-accent: <%= @theme[:accent] %>;">
   <header class="cx-head">
-    <% if @operator.logo_image.attached? %>
-      <%= image_tag @operator.logo_image, class: "cx-avatar", alt: @operator.concierge_display_name %>
+    <% if @operator.icon_image.attached? %>
+      <%= image_tag @operator.icon_image, class: "cx-avatar", alt: @operator.concierge_display_name %>
     <% end %>
     <strong><%= @operator.concierge_display_name %></strong>
   </header>

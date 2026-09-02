@@ -52,6 +52,14 @@ RSpec.describe Operator::SettingsController, type: :controller do
       expect(response).to redirect_to(settings_branding_path)
       expect(operator.reload.background_image).to be_attached
     end
+
+    it "attaches an uploaded app icon" do
+      patch :update_branding, params: {
+        operator: { app_icon_image: fixture_file_upload("spec/fixtures/test.jpg", "image/jpeg") }
+      }
+      expect(response).to redirect_to(settings_branding_path)
+      expect(operator.reload.app_icon_image).to be_attached
+    end
   end
 
   describe "GET #branding (snippet field)" do
@@ -72,6 +80,14 @@ RSpec.describe Operator::SettingsController, type: :controller do
       get :branding
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("name=\"operator[background_image]\"")
+    end
+
+    it "renders the app icon field and prefers the app icon over the logo for the favicon" do
+      operator.logo_image.attach(io: File.open(Rails.root.join("spec/fixtures/test.jpg")), filename: "wide-wordmark.jpg", content_type: "image/jpeg")
+      operator.app_icon_image.attach(io: File.open(Rails.root.join("spec/fixtures/test.jpg")), filename: "square-icon.jpg", content_type: "image/jpeg")
+      get :branding
+      expect(response.body).to include("name=\"operator[app_icon_image]\"")
+      expect(response.body).to match(/<link rel="icon" href="[^"]*square-icon\.jpg"/)
     end
   end
 
