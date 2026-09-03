@@ -1,150 +1,92 @@
 <% provide(:title, "Website Widgets") %>
+<%
+  widgets = [
+    { key: "concierge", label: "Concierge",        icon: "fas fa-comments" },
+    { key: "tour",      label: "Tour Request",     icon: "fas fa-calendar-check" },
+    { key: "showcase",  label: "Showcase",         icon: "fas fa-th" },
+    { key: "offices",   label: "Office Inventory", icon: "fas fa-building" },
+  ]
+  locations = @operator.locations.where(visible: true).order(:name)
+%>
 
 <%= render "tab_layout", active: :website_widgets do %>
   <p class="text-muted">
-    Everything your marketing site embeds: the Concierge chat bubble, the tour form,
-    and the Showcase product tiers. Look &amp; Feel below themes all of them.
+    Everything your marketing site embeds. Look &amp; feel below themes every widget;
+    pick a widget to configure it and grab its embed snippet.
   </p>
 
-  <div class="mb-4">
-    <%= link_to "Configure the Concierge →", settings_concierge_path, class: "btn btn-outline-secondary btn-sm mr-2" %>
-    <%= link_to "Configure the Tour Widget →", settings_tour_widget_path, class: "btn btn-outline-secondary btn-sm" %>
+  <%= form_with url: settings_update_website_widgets_path, method: :patch, scope: :operator, model: @operator, local: true, html: { class: "card mb-4" } do |f| %>
+    <div class="card-body">
+      <h5 class="card-title mb-3">Look &amp; feel <small class="text-muted">(shared by every widget)</small></h5>
+      <%= hidden_field_tag :widget, @widget %>
+      <div class="form-row row">
+        <div class="form-group col-md-4">
+          <%= f.label :embed_font, "Font" %>
+          <%= f.select :embed_font,
+                options_for_select(
+                  ["", "Arial, sans-serif", "Georgia, serif", "Helvetica, Arial, sans-serif",
+                   "'Inter', system-ui, sans-serif", "'Poppins', system-ui, sans-serif",
+                   "'Roboto', system-ui, sans-serif", "system-ui, sans-serif"],
+                  @operator.embed_font),
+                { include_blank: "Default (Showcase inherits your site's font)" }, class: "form-control" %>
+        </div>
+        <div class="form-group col-md-4">
+          <%= f.label :embed_accent_override, "Accent color (hex, optional)" %>
+          <%= f.text_field :embed_accent_override, class: "form-control", placeholder: @operator.accent_color.presence || "#2563eb" %>
+          <small class="form-text text-muted">Buttons, check marks, and the chat bubble. Blank = your brand accent.</small>
+        </div>
+        <div class="form-group col-md-4">
+          <%= f.label :showcase_button_color, "Buy / Sign up button color (hex, optional)" %>
+          <%= f.text_field :showcase_button_color, class: "form-control", placeholder: "e.g. #16a34a" %>
+          <small class="form-text text-muted">Showcase buttons only. Blank = accent color.</small>
+        </div>
+      </div>
+      <small class="form-text text-muted mb-3">
+        Brand colors and logo come from <%= link_to "Branding & Content", settings_branding_path %>.
+      </small>
+      <%= f.submit "Save look & feel", class: "btn btn-primary" %>
+    </div>
+  <% end %>
+
+  <ul class="nav nav-pills mb-4" id="widget-picker" role="tablist">
+    <% widgets.each do |w| %>
+      <li class="nav-item">
+        <a class="nav-link <%= 'active' if @widget == w[:key] %>" data-toggle="pill" role="tab"
+           href="#widget-<%= w[:key] %>" data-widget="<%= w[:key] %>">
+          <i class="<%= w[:icon] %> mr-1"></i><%= w[:label] %>
+        </a>
+      </li>
+    <% end %>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade <%= 'show active' if @widget == 'concierge' %>" id="widget-concierge" role="tabpanel">
+      <%= render "operator/settings/widgets/concierge", locations: locations %>
+    </div>
+    <div class="tab-pane fade <%= 'show active' if @widget == 'tour' %>" id="widget-tour" role="tabpanel">
+      <%= render "operator/settings/widgets/tour", locations: locations %>
+    </div>
+    <div class="tab-pane fade <%= 'show active' if @widget == 'showcase' %>" id="widget-showcase" role="tabpanel">
+      <%= render "operator/settings/widgets/showcase", locations: locations %>
+    </div>
+    <div class="tab-pane fade <%= 'show active' if @widget == 'offices' %>" id="widget-offices" role="tabpanel">
+      <%= render "operator/settings/widgets/offices", locations: locations %>
+    </div>
   </div>
 
-  <%= form_with url: settings_update_website_widgets_path, method: :patch, scope: :operator, model: @operator, local: true do |f| %>
-    <h5>Look &amp; feel <small class="text-muted">(shared by every widget)</small></h5>
-    <div class="form-group mb-3">
-      <%= f.label :embed_font, "Font" %>
-      <%= f.select :embed_font,
-            options_for_select(
-              ["", "Arial, sans-serif", "Georgia, serif", "Helvetica, Arial, sans-serif",
-               "'Inter', system-ui, sans-serif", "'Poppins', system-ui, sans-serif",
-               "'Roboto', system-ui, sans-serif", "system-ui, sans-serif"],
-              @operator.embed_font),
-            { include_blank: "Default (Showcase inherits your site's font)" }, class: "form-control" %>
-    </div>
-    <div class="form-group mb-3">
-      <%= f.label :embed_accent_override, "Accent color override (hex, optional)" %>
-      <%= f.text_field :embed_accent_override, class: "form-control", placeholder: "e.g. #0d6efd" %>
-      <small class="form-text text-muted">
-        Colors the Showcase check marks and featured border, the Concierge bubble, and the tour form
-        button. Leave blank to use your brand accent color.
-      </small>
-    </div>
-
-    <h5>Showcase</h5>
-    <div class="form-check mb-2">
-      <%= f.check_box :showcase_enabled, class: "form-check-input" %>
-      <%= f.label :showcase_enabled, "Enable the Showcase embeds", class: "form-check-label" %>
-    </div>
-    <div class="form-group mb-2">
-      <%= f.label :showcase_button_color, "Product button color (hex, optional)" %>
-      <%= f.text_field :showcase_button_color, class: "form-control", placeholder: "e.g. #16a34a" %>
-      <small class="form-text text-muted">Colors the Buy now / Sign up buttons only. Leave blank to use the accent color above.</small>
-    </div>
-    <small class="form-text text-muted mb-3">
-      Tiers come from your visible day passes and individual plans — order, the featured
-      badge, and the bullet points are edited on each product's form. Day passes and their
-      packs show as one group; Day Office types and their packs as another.
-    </small>
-    <%= f.submit "Save", class: "btn btn-primary" %>
-  <% end %>
-
-  <hr>
-  <h5>Showcase embed snippets</h5>
-  <p class="text-muted mb-2">Paste on the matching page with a Custom HTML block. One line each.</p>
-  <% locations = @operator.locations.where(visible: true).order(:name) %>
-  <% modes = [["Day passes", "day_passes"], ["Memberships", "memberships"], ["Both", "all"], ["Standalone cards (e.g. Virtual Office page)", "cards"]] %>
-  <% locations.each do |loc| %>
-    <h6 class="mt-3"><%= loc.name %></h6>
-    <% modes.each do |label, mode| %>
-      <% url = embed_showcase_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
-                                  products: mode, location_id: (locations.count > 1 ? loc.id : nil)) %>
-      <div class="input-group input-group-sm mb-1">
-        <span class="input-group-text" style="min-width:110px;"><%= label %></span>
-        <input class="form-control" readonly value='<script src="<%= url %>" async></script>'
-               onclick="this.select();navigator.clipboard.writeText(this.value)">
-      </div>
-    <% end %>
-  <% end %>
-
-  <hr>
-  <h5>Link-out cards</h5>
-  <p class="text-muted mb-2">
-    Cards for services sold elsewhere (e.g. Virtual Office) — they render among the tiers
-    or standalone, and link out to where sign-up happens.
-  </p>
-  <% if @cards.any? %>
-    <table class="table table-sm">
-      <thead><tr><th>Location</th><th>Label</th><th>Price</th><th>Slot</th><th>URL</th><th></th></tr></thead>
-      <tbody>
-        <% @cards.each do |card| %>
-          <tr>
-            <td><%= card.location.name %></td>
-            <td><%= card.label %></td>
-            <td><%= card.price_text %></td>
-            <td><%= card.slot.humanize %></td>
-            <td class="text-truncate" style="max-width:180px;"><%= card.url %></td>
-            <td><%= button_to "Remove", showcase_card_path(card), method: :delete, class: "btn btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Remove this card?" } } %></td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% end %>
-
-  <%= form_with url: showcase_cards_path, scope: :showcase_card, local: true do |f| %>
-    <div class="form-row row g-2 align-items-end">
-      <div class="col-md-2">
-        <%= f.label :location_id, "Location" %>
-        <%= f.select :location_id, options_from_collection_for_select(locations, :id, :name), {}, class: "form-control form-control-sm" %>
-      </div>
-      <div class="col-md-2">
-        <%= f.label :label, "Label" %>
-        <%= f.text_field :label, class: "form-control form-control-sm", placeholder: "Virtual Office" %>
-      </div>
-      <div class="col-md-2">
-        <%= f.label :price_text, "Price line" %>
-        <%= f.text_field :price_text, class: "form-control form-control-sm", placeholder: "From $49/mo" %>
-      </div>
-      <div class="col-md-2">
-        <%= f.label :slot, "Slot" %>
-        <%= f.select :slot, options_for_select(ShowcaseCard::SLOTS.map { |s| [s.humanize, s] }), {}, class: "form-control form-control-sm" %>
-      </div>
-      <div class="col-md-3">
-        <%= f.label :url, "Outbound URL" %>
-        <%= f.text_field :url, class: "form-control form-control-sm", placeholder: "https://…" %>
-      </div>
-      <div class="col-md-1">
-        <%= f.submit "Add", class: "btn btn-sm btn-primary" %>
-      </div>
-    </div>
-    <div class="form-group mt-2">
-      <%= f.label :description, "Blurb (one line, optional)" %>
-      <%= f.text_field :description, class: "form-control form-control-sm" %>
-    </div>
-  <% end %>
-
-  <hr>
-  <h5>Office Inventory</h5>
-  <p class="text-muted mb-2">
-    A live listing of available offices (vacant, plus any staff-flagged "coming available") with
-    an inquiry form that feeds the office waitlist. Asking rate and the coming-available flag are
-    set on each office's edit form.
-  </p>
-  <%= form_with url: settings_update_website_widgets_path, method: :patch, scope: :operator, model: @operator, local: true do |f| %>
-    <div class="form-check mb-2">
-      <%= f.check_box :office_inventory_enabled, class: "form-check-input" %>
-      <%= f.label :office_inventory_enabled, "Enable the Office Inventory embed", class: "form-check-label" %>
-    </div>
-    <%= f.submit "Save", class: "btn btn-sm btn-primary mb-3" %>
-  <% end %>
-  <% locations.each do |loc| %>
-    <% oi_url = embed_office_inventory_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
-                                           location_id: (locations.count > 1 ? loc.id : nil)) %>
-    <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="min-width:110px;"><%= loc.name %></span>
-      <input class="form-control" readonly value='<script src="<%= oi_url %>" async></script>'
-             onclick="this.select();navigator.clipboard.writeText(this.value)">
-    </div>
-  <% end %>
+  <script>
+    // Keep the picked widget in the URL so a save, a refresh, or a shared
+    // link lands on the same widget instead of the first one.
+    (function () {
+      var picker = document.getElementById("widget-picker");
+      if (!picker || !window.jQuery) return;
+      jQuery(picker).on("shown.bs.tab", 'a[data-toggle="pill"]', function (e) {
+        var key = e.target.getAttribute("data-widget");
+        var url = new URL(window.location.href);
+        url.searchParams.set("widget", key);
+        history.replaceState(null, "", url.toString());
+        document.querySelectorAll("input[name=widget]").forEach(function (i) { i.value = key; });
+      });
+    })();
+  </script>
 <% end %>

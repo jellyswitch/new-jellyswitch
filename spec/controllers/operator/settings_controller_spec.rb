@@ -416,8 +416,13 @@ RSpec.describe Operator::SettingsController, type: :controller do
   end
 
   describe "Concierge tab" do
-    it "GET #concierge returns 200 and computes the conversion-lift report" do
+    it "GET #concierge redirects into the Website Widgets picker" do
       get :concierge
+      expect(response).to redirect_to(settings_website_widgets_path(widget: "concierge"))
+    end
+
+    it "GET #website_widgets computes the conversion-lift report for the Concierge panel" do
+      get :website_widgets
       expect(response).to have_http_status(:ok)
       expect(assigns(:report)).to include(:chatters, :non_chatters, :lift)
     end
@@ -426,7 +431,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
       render_views
 
       it "offers the one-line launcher script as the recommended embed" do
-        get :concierge
+        get :website_widgets, params: { widget: "concierge" }
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("launcher.js")
         expect(response.body).to include("floating chat bubble")
@@ -492,7 +497,7 @@ RSpec.describe Operator::SettingsController, type: :controller do
         embed_accent_override: "ff0000",
       } }
 
-      expect(response).to redirect_to(settings_concierge_path)
+      expect(response).to redirect_to(settings_website_widgets_path(widget: "concierge"))
       operator.reload
       expect(operator.concierge_enabled).to be true
       expect(operator.concierge_assistant_name).to eq("Tahoe Concierge")

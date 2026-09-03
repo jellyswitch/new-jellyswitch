@@ -7,14 +7,18 @@ class Operator::SettingsTourWidgetTest < ActionDispatch::IntegrationTest
     log_in @admin
   end
 
-  test "GET tour_widget renders as admin" do
+  test "GET tour_widget lands on the Website Widgets picker with the tour panel open" do
     get settings_tour_widget_path, env: default_env
+    assert_redirected_to settings_website_widgets_path(widget: "tour")
+    get settings_website_widgets_path(widget: "tour"), env: default_env
     assert_response :success
-    assert_select "h2", /Tour Widget/i
+    assert_select "h2", /Website Widgets/i
+    assert_select "#widget-picker a.nav-link.active[data-widget=tour]", text: /Tour Request/
+    assert_select "#widget-tour.tab-pane.active input[name='operator[tour_widget_enabled]']"
   end
 
   test "tour_widget_enabled toggle: label[for] matches checkbox id (custom-switch clickability)" do
-    get settings_tour_widget_path, env: default_env
+    get settings_website_widgets_path(widget: "tour"), env: default_env
     assert_response :success
     # Bootstrap 4 custom-switch visually hides the input; only the label is clickable.
     # If label[for] doesn't match the checkbox id, clicking the toggle does nothing.
@@ -38,7 +42,7 @@ class Operator::SettingsTourWidgetTest < ActionDispatch::IntegrationTest
         tour_widget_thank_you_url: "https://example.com/thanks",
       }
     }
-    assert_redirected_to settings_tour_widget_path
+    assert_redirected_to settings_website_widgets_path(widget: "tour")
     operator = @admin.operator.reload
     assert operator.tour_widget_enabled
     assert_equal "https://example.com/thanks", operator.tour_widget_thank_you_url
@@ -49,5 +53,7 @@ class Operator::SettingsTourWidgetTest < ActionDispatch::IntegrationTest
       operator: { tour_widget_thank_you_url: "javascript:alert(1)" }
     }
     assert_response :unprocessable_entity
+    # Re-rendered on the picker with the tour panel still open.
+    assert_select "#widget-picker a.nav-link.active[data-widget=tour]"
   end
 end

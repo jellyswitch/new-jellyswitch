@@ -20,6 +20,23 @@ RSpec.describe "Embed::OfficeInventory", type: :request do
     expect(response.body).not_to include("jsw-oi")
   end
 
+  it "renders for a settings-page preview token even while disabled, uncached" do
+    operator.update!(office_inventory_enabled: false)
+    make_office(name: "Preview Office")
+
+    get_widget(preview_token: Embed::OfficeInventoryController.preview_token_for(operator))
+
+    expect(response.body).to include("jsw-oi")
+    expect(response.body).to include("Preview Office")
+    expect(response.headers["Cache-Control"]).to include("no-cache")
+  end
+
+  it "ignores a forged preview token" do
+    operator.update!(office_inventory_enabled: false)
+    get_widget(preview_token: "not-a-token")
+    expect(response.body).to include("not enabled")
+  end
+
   it "lists a vacant office with rate, size, and Available now" do
     make_office(name: "Office 12", asking_rate_in_cents: 110_000, description: "Corner light")
     get_widget

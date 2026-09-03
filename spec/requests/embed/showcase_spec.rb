@@ -16,6 +16,29 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.body).not_to include("jsw-sc")
   end
 
+  it "renders for a settings-page preview token even while disabled, uncached" do
+    operator.update!(showcase_enabled: false)
+    create(:day_pass_type, operator: operator, location: location, name: "Preview Pass", quantity: 1, amount_in_cents: 4_000)
+
+    get_widget(preview_token: Embed::ShowcaseController.preview_token_for(operator))
+
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("jsw-sc")
+    expect(response.body).to include("Preview Pass")
+    expect(response.headers["Cache-Control"]).to include("no-cache")
+  end
+
+  it "ignores a preview token for another operator or a forged one" do
+    operator.update!(showcase_enabled: false)
+    other = create(:operator)
+
+    get_widget(preview_token: Embed::ShowcaseController.preview_token_for(other))
+    expect(response.body).to include("not enabled")
+
+    get_widget(preview_token: "not-a-token")
+    expect(response.body).to include("not enabled")
+  end
+
   it "renders day-pass tiers with derived bullets, features, price, and checkout CTA" do
     create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
                            quantity: 1, amount_in_cents: 4_000, included_meeting_room_minutes: 180,

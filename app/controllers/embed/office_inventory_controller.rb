@@ -8,11 +8,19 @@ module Embed
 
     skip_forgery_protection
 
+    include Embed::AdminPreview
+
     before_action :load_operator
 
     def widget
-      expires_in 5.minutes, public: true
-      return render_noop("Office Inventory is not enabled for #{@operator.subdomain}") unless @operator.office_inventory_enabled?
+      # Settings-page preview: signed token, never cached, shows the widget
+      # even while it's disabled. Public traffic keeps the 5-minute cache.
+      if admin_previewing?
+        expires_now
+      else
+        expires_in 5.minutes, public: true
+        return render_noop("Office Inventory is not enabled for #{@operator.subdomain}") unless @operator.office_inventory_enabled?
+      end
 
       visible = @operator.locations.where(visible: true).order(:name)
       @location = @operator.locations.find_by(id: params[:location_id])

@@ -43,39 +43,45 @@ class Operator::SettingsController < Operator::BaseController
   def notifications
     @operator = current_operator
   end
+  # The old Concierge / Tour sub-pages now live as panels of the Website
+  # Widgets picker; keep the URLs working for bookmarks and old links.
   def tour_widget
-    @operator = current_operator
+    redirect_to settings_website_widgets_path(widget: "tour")
   end
+
   def concierge
-    @operator = current_operator
-    @report = Concierge::ConversionReport.new(operator: @operator).call
+    redirect_to settings_website_widgets_path(widget: "concierge")
   end
+
   def update_concierge
     @operator = current_operator
     if @operator.update(concierge_params)
       update_location_concierge_offers
-      redirect_to settings_concierge_path, notice: "Concierge settings saved."
+      redirect_to settings_website_widgets_path(widget: "concierge"), notice: "Concierge settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence
-      render :concierge, status: :unprocessable_entity
+      render_website_widgets("concierge")
     end
   end
-  # Consolidated home for the embed widget family (2026-08-27 plan §11):
-  # shared Look & Feel + Showcase config here; Concierge and Tour keep their
-  # own sub-pages, linked from this tab.
+
+  # One home for the embed widget family (2026-09-02, David): the shared
+  # Look & Feel on top, then a picker — Concierge, Tour Request, Showcase,
+  # Office Inventory — showing one widget's settings, snippets, and preview
+  # at a time instead of a long scroll with two widgets on other pages.
+  WIDGETS = %w[concierge tour showcase offices].freeze
+
   def website_widgets
     @operator = current_operator
-    @cards = ShowcaseCard.where(operator: @operator).order(:location_id, :slot, :display_order)
+    load_website_widgets(params[:widget])
   end
 
   def update_website_widgets
     @operator = current_operator
     if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled, :showcase_button_color, :office_inventory_enabled))
-      redirect_to settings_website_widgets_path, notice: "Website widget settings saved."
+      redirect_to settings_website_widgets_path(widget: params[:widget].presence), notice: "Website widget settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence
-      @cards = ShowcaseCard.where(operator: @operator).order(:location_id, :slot, :display_order)
-      render :website_widgets, status: :unprocessable_entity
+      render_website_widgets(params[:widget])
     end
   end
 
@@ -166,10 +172,10 @@ class Operator::SettingsController < Operator::BaseController
   def update_tour_widget
     @operator = current_operator
     if @operator.update(tour_widget_params)
-      redirect_to settings_tour_widget_path, notice: "Tour widget settings saved."
+      redirect_to settings_website_widgets_path(widget: "tour"), notice: "Tour widget settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence
-      render :tour_widget, status: :unprocessable_entity
+      render_website_widgets("tour")
     end
   end
   def update_modules
@@ -198,6 +204,17 @@ class Operator::SettingsController < Operator::BaseController
   end
 
   private
+
+  def load_website_widgets(widget)
+    @widget = WIDGETS.include?(widget.to_s) ? widget.to_s : WIDGETS.first
+    @cards  = ShowcaseCard.where(operator: @operator).order(:location_id, :slot, :display_order)
+    @report = Concierge::ConversionReport.new(operator: @operator).call
+  end
+
+  def render_website_widgets(widget)
+    load_website_widgets(widget)
+    render :website_widgets, status: :unprocessable_entity
+  end
 
   def current_operator
     current_tenant
