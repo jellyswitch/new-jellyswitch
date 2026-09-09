@@ -78,6 +78,22 @@ class UserMailer < ApplicationMailer
     }.to_json
   end
 
+  # "Your account is ready" — sent by staff (Api::V1::Admin::MembersController
+  # #send_onboarding_email) after they create a member's account by hand.
+  # Admin-created accounts skip the self-signup confirmation + nudge emails,
+  # so without this the person never hears they have a login. Transactional:
+  # no unsubscribe footer, always sends.
+  def account_onboarding_email(user, operator, actor: nil, location: nil)
+    @user = user
+    @operator = operator
+    @actor_name = actor&.name
+    @organization = user.organization
+    @location = location
+    @host = ENV['ASSET_HOST']
+    from_address = location&.sender_from_address || operator.sender_from_address
+    mail to: user.email, subject: "Your #{operator.name} account is ready", from: from_address, reply_to: operator.contact_email
+  end
+
   def event_registration(user, password, event)
     @user = user
     @password = password

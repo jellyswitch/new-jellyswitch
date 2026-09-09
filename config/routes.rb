@@ -243,6 +243,7 @@ Rails.application.routes.draw do
         post 'members/:id/cancel_subscription', to: 'members#cancel_subscription'
         post 'members/:id/cancel_subscription_now', to: 'members#cancel_subscription_now'
         post 'members/:id/reset_password', to: 'members#reset_password'
+        post 'members/:id/send_onboarding_email', to: 'members#send_onboarding_email'
         post 'members/:id/suppress', to: 'members#suppress'
         post 'members/:id/unsuppress', to: 'members#unsuppress'
         post 'members/:id/dismiss_inactive', to: 'members#dismiss_inactive'
