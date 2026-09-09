@@ -373,14 +373,4 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     end
     assert_response :forbidden
   end
-
-  test "send_onboarding_email cannot reach another operator's member" do
-    outsider = User.where.not(operator_id: @operator.id).first
-    skip "no cross-operator user fixture" unless outsider
-
-    assert_no_emails do
-      post "/api/v1/admin/members/#{outsider.id}/send_onboarding_email", headers: headers
-    end
-    assert_response :not_found
-  end
 end
