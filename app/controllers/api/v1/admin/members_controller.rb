@@ -560,6 +560,27 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     render json: { success: true }
   end
 
+  # Staff-triggered "your account is ready" email. Admin-created accounts get
+  # no automatic email at all (Users::Save skips confirmation + nudge for
+  # them), so after creating someone by hand and putting them in their group,
+  # this is how staff tell the person they have a login. Sent synchronously so
+  # a delivery failure comes back to the admin instead of dying in a job.
+  def send_onboarding_email
+    user = current_tenant.users.find(params[:id])
+
+    UserMailer.account_onboarding_email(
+      user, current_tenant, actor: current_api_user, location: user.original_location,
+    ).deliver_now
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :onboarding_email_sent)
+
+    render json: { success: true, sent_to: user.email }
+  rescue ActiveRecord::RecordNotFound
+    raise
+  rescue => e
+    Rails.logger.error("send_onboarding_email failed for user #{params[:id]}: #{e.class}: #{e.message}")
+    render_error("Could not send the email: #{e.message}")
+  end
+
   def invoices
     user = current_tenant.users.find(params[:id])
     invoices = Invoice.where(billable: user, operator: current_tenant).order(created_at: :desc).limit(30)

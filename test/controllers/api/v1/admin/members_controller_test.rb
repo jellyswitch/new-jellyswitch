@@ -344,4 +344,33 @@ class Api::V1::Admin::MembersControllerTest < ActionDispatch::IntegrationTest
     assert body.key?("visit_days"), "usage JSON is missing visit_days"
     assert_operator body["visit_days"], :>=, 1
   end
+
+  # ---- send_onboarding_email ---------------------------------------------
+
+  test "send_onboarding_email delivers the account-ready email and logs who sent it" do
+    assert_emails 1 do
+      post "/api/v1/admin/members/#{@member.id}/send_onboarding_email", headers: headers
+    end
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body["success"]
+    assert_equal @member.email, body["sent_to"]
+
+    mail = ActionMailer::Base.deliveries.last
+    assert_equal [@member.email], mail.to
+    assert_equal "Your Cowork Tahoe account is ready", mail.subject
+    assert_includes mail.body.encoded, "Sierra Nevada Alliance"
+
+    action = Activity.where(user: @member, kind: "admin_action").order(:id).last
+    assert_equal "onboarding_email_sent", action.payload["action"]
+    assert_equal @admin.id, action.payload["actor_id"]
+  end
+
+  test "send_onboarding_email is staff-only" do
+    assert_no_emails do
+      post "/api/v1/admin/members/#{@member.id}/send_onboarding_email", headers: headers_for(@member)
+    end
+    assert_response :forbidden
+  end
 end

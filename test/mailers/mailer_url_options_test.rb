@@ -29,6 +29,9 @@ class MailerUrlOptionsTest < ActiveSupport::TestCase
         user.generate_confirmation_token
         UserMailer.email_confirmation(user, operator, user.raw_confirmation_token)
       }],
+      ["UserMailer#account_onboarding_email", -> {
+        UserMailer.account_onboarding_email(user, operator, actor: users(:cowork_tahoe_admin))
+      }],
     ]
   end
 

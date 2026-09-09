@@ -1,0 +1,29 @@
+<%= render layout: "user_mailer/email_layout" do %>
+  <h1 style="font-size: 20px; margin: 0 0 16px;">Your <%= @operator.name %> account is ready</h1>
+  <p style="margin: 0 0 16px;">Hi <%= @user.name.to_s.split(" ").first.presence || "there" %>,</p>
+  <p style="margin: 0 0 16px;">
+    <%= @actor_name.present? ? "#{@actor_name} at #{@operator.name}" : @operator.name %> set up an account for you<%= " as part of #{@organization.name}" if @organization %>.
+    <% if @location %>Your home location is <strong><%= @location.name %></strong>.<% end %>
+    Here's how to get in:
+  </p>
+
+  <% if @operator.has_mobile_app_links? %>
+    <p style="margin: 0 0 8px;"><strong>1. Download the <%= @operator.name %> app.</strong></p>
+    <%= render "user_mailer/app_links", operator: @operator, host: @host %>
+    <p style="margin: 0 0 16px;"><strong>2. Sign in with this email address:</strong> <%= @user.email %></p>
+  <% else %>
+    <p style="margin: 0 0 16px;"><strong>Sign in with this email address:</strong> <%= @user.email %></p>
+  <% end %>
+
+  <p style="margin: 0 0 16px;">
+    Tap <strong>Email me a login code</strong> on the sign-in screen and we'll send you a one-time code — no password needed.
+    Prefer a password? Tap <strong>Forgot password</strong> to set one.
+  </p>
+
+  <p style="margin: 0 0 16px;">
+    You can also sign in on the web at
+    <a href="<%= home_url(subdomain: @operator.subdomain) %>" style="color: #3498db;"><%= home_url(subdomain: @operator.subdomain) %></a>.
+  </p>
+
+  <p style="margin: 0;">Questions? Just reply to this email<%= " or reach us at #{@operator.contact_email}" if @operator.contact_email.present? %>.</p>
+<% end %>
