@@ -21,6 +21,15 @@
     ".jsw-sc-list li:before{content:'\\2713';position:absolute;left:2px;color:var(--jsw-accent);font-weight:700;}" +
     ".jsw-sc-cta{display:block;text-align:center;background:var(--jsw-button);color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;}" +
     ".jsw-sc-cta.jsw-sc-out{background:#fff;color:var(--jsw-button);border:1.5px solid var(--jsw-button);}" +
+    // The CTA is an <a>, so the host page's own a:hover / a:visited rules
+    // (specificity 0,1,1) beat a bare .jsw-sc-cta (0,1,0) and recolor the
+    // text — on a site whose link hover color is the button color the label
+    // vanished on hover. Pin every link state at (0,3,1) so the widget owns
+    // its button colors; hover feedback is a brightness shift, not a color.
+    ".jsw-sc a.jsw-sc-cta,.jsw-sc a.jsw-sc-cta:link,.jsw-sc a.jsw-sc-cta:visited{color:#fff;text-decoration:none;}" +
+    ".jsw-sc a.jsw-sc-cta:hover,.jsw-sc a.jsw-sc-cta:focus{color:#fff;text-decoration:none;filter:brightness(.9);}" +
+    ".jsw-sc a.jsw-sc-cta.jsw-sc-out,.jsw-sc a.jsw-sc-cta.jsw-sc-out:link,.jsw-sc a.jsw-sc-cta.jsw-sc-out:visited{color:var(--jsw-button);}" +
+    ".jsw-sc a.jsw-sc-cta.jsw-sc-out:hover,.jsw-sc a.jsw-sc-cta.jsw-sc-out:focus{background:var(--jsw-button);color:#fff;filter:none;}" +
     (DATA.font ? ".jsw-sc{font-family:" + DATA.font + ";}" : "");
   var style = document.createElement("style");
   style.textContent = css;

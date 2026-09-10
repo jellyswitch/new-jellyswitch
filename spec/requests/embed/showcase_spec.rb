@@ -56,6 +56,19 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.body).to include("#ff5500")
   end
 
+  it "pins the CTA link states so a host page's a:hover can't hide the label" do
+    create(:day_pass_type, operator: operator, location: location, name: "Coworking Day Pass",
+                           quantity: 1, amount_in_cents: 4_000)
+
+    get_widget(products: "day_passes")
+
+    # The CTA is an <a>; without these the host's a:hover (0,1,1) outranks
+    # .jsw-sc-cta (0,1,0) and recolors the text — invisible when the site's
+    # link hover color is the button color.
+    expect(response.body).to include(".jsw-sc a.jsw-sc-cta:hover,.jsw-sc a.jsw-sc-cta:focus{color:#fff;")
+    expect(response.body).to include(".jsw-sc a.jsw-sc-cta.jsw-sc-out:hover,.jsw-sc a.jsw-sc-cta.jsw-sc-out:focus{background:var(--jsw-button);color:#fff;")
+  end
+
   it "colors the product buttons with the dedicated button color when set" do
     operator.update!(showcase_button_color: "16a34a")
     create(:day_pass_type, operator: operator, location: location, name: "Day Pass", amount_in_cents: 4_000)
