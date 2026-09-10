@@ -69,8 +69,7 @@ module Concierge
             location: context.location, operator: context.operator,
           )
         end
-        context.fail!(error: "sold_out",
-                      message: "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day.")
+        context.fail!(error: "sold_out", message: day_pass_type.sold_out_message(day))
       end
 
       result = Billing::DayPasses::UpdatePaymentAndCreateDayPass.call(

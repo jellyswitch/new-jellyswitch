@@ -21,8 +21,7 @@ class Billing::DayPasses::AllocateDayOffice
       # (nil for a legacy pass whose type has no location of its own).
       context.fail!(
         outcome: :sold_out,
-        message: "#{day_pass.day_pass_type.name.pluralize} are fully booked for " \
-                 "#{day_pass.day.strftime('%B %e')}. Try another day."
+        message: day_pass.day_pass_type.sold_out_message(day_pass.day),
       )
     end
     context.office_hold = hold
