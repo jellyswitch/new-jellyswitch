@@ -216,7 +216,20 @@ class Operator::DayPassTypesControllerTest < ActionDispatch::IntegrationTest
 
     created = DayPassType.order(:id).last
     assert created.office_pool_empty?
-    assert_includes flash[:alert], "Private Office Day Pass +1 has no rooms in its Day Office pool yet"
+    assert_includes flash[:alert], "Heads up: Private Office Day Pass +1 can't be booked yet: no rooms are in its Day Office pool"
+  end
+
+  test "saving a day_office type whose pool room has capacity 0 flashes a heads-up" do
+    room = Room.create!(name: "Meeting Room", operator: @operator, location: @location, capacity: 0)
+
+    post day_pass_types_path,
+         params: {
+           day_pass_type: { name: "Private Office Day Pass +1", amount_in_cents: "125", kind: "day_office" },
+           office_room_positions: { room.id => "1" },
+         },
+         env: default_env
+
+    assert_includes flash[:alert], "Meeting Room has a capacity of 0. Set the capacity under Rooms."
   end
 
   test "updating a day_office type to add a pool room clears the heads-up" do

@@ -142,10 +142,8 @@ class Operator::DayPassTypesController < Operator::BaseController
   # booked — say so at save time, next to the form, instead of letting staff
   # discover it as "fully booked" on a member's profile a week later.
   def warn_if_office_pool_empty!
-    return unless @day_pass_type.office_pool_empty?
-
-    flash[:alert] = "Heads up: #{@day_pass_type.name} has no rooms in its Day Office pool yet, " \
-                    "so it can't be booked until you add some."
+    problem = @day_pass_type.office_pool_problem
+    flash[:alert] = "Heads up: #{problem}" if problem
   end
 
   def sync_office_room_pool!

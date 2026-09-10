@@ -11,7 +11,20 @@ class Billing::DayPasses::AllocateDayOffice
   def call
     return unless day_pass&.day_office?
 
-    hold = DayOffices::Allocator.allocate!(day_pass: day_pass)
+    hold = begin
+      DayOffices::Allocator.allocate!(day_pass: day_pass)
+    rescue ActiveRecord::RecordInvalid => e
+      # The allocator deliberately re-raises anything that isn't an overlap
+      # loss (e.g. a pool room with capacity 0) so a config error can't hide
+      # behind "sold out". Here it becomes a staff-actionable message rather
+      # than a stack trace on the admin's screen. Not :sold_out, so the API
+      # doesn't offer the swap-to-standard fallback for a config problem.
+      context.fail!(
+        outcome: :misconfigured,
+        message: day_pass.day_pass_type.office_pool_problem ||
+                 "Couldn't hold an office: #{e.record.errors.full_messages.to_sentence}.",
+      )
+    end
     if hold.nil?
       # outcome: :sold_out matches the ScheduleDay/bundle vocabulary the api
       # controller already cases on (result.outcome). The fallback standard

@@ -50,6 +50,15 @@ class DayPassTypeSoldOutMessageTest < ActiveSupport::TestCase
                  standard.sold_out_message(@day)
   end
 
+  test "a pool room with capacity 0 is called out by name" do
+    room = Room.create!(name: "Meeting Room", operator: @operator, location: @location, capacity: 0)
+    @office_type.assign_office_rooms!(room.id => 1)
+
+    refute @office_type.office_pool_empty?
+    assert_equal "Private Office Day Pass +1 can't be booked yet: Meeting Room has a capacity of 0. " \
+                 "Set the capacity under Rooms.", @office_type.sold_out_message(@day)
+  end
+
   test "date_text overrides the default date wording (web short_date idiom)" do
     room = Room.create!(name: "Office A", operator: @operator, location: @location)
     @office_type.assign_office_rooms!(room.id => 1)

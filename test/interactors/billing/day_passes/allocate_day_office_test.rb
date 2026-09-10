@@ -96,6 +96,21 @@ class Billing::DayPasses::AllocateDayOfficeTest < ActiveSupport::TestCase
     assert_includes result.message, "Day Offices are fully booked for #{@day.strftime('%B %e')}. Try another day."
   end
 
+  test "misconfigured pool (capacity 0 rooms): fails with a staff-actionable message, persists nothing" do
+    @room_a.update!(capacity: 0)
+    @room_b.update!(capacity: 0)
+
+    result = nil
+    assert_no_difference ["DayPass.count", "Invoice.count", "Reservation.count"] do
+      result = Billing::DayPasses::CreateDayPass.call(**purchase_params(@office_type))
+    end
+
+    assert result.failure?
+    assert_equal :misconfigured, result.outcome
+    assert_equal "Day Office can't be booked yet: Office A and Office B have a capacity of 0. " \
+                 "Set the capacity under Rooms.", result.message
+  end
+
   test "charge failure rollback: a declined charge releases the pool room and leaves no pass" do
     attach_card!(@user)
     # Targets the exact handler Stripe::Invoice#pay hits (POST /v1/invoices/:id/pay)
