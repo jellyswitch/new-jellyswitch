@@ -115,4 +115,20 @@ class TourRequests::SisterSpaceMirrorTest < ActiveSupport::TestCase
     end
     assert_nil source.reload.payload["mirrored_to"]
   end
+
+  test "sister_locations_for offers Cowork Tahoe's visible locations to Untethered only" do
+    hidden = ActsAsTenant.with_tenant(@cowork_tahoe) do
+      @cowork_tahoe.locations.create!(name: "Cowork Tahoe Storage", visible: false)
+    end
+
+    offered = TourRequests::SisterSpaceMirror.sister_locations_for(@untethered)
+    assert_includes offered.map(&:id), @ct_location.id
+    refute_includes offered.map(&:id), hidden.id
+
+    assert_equal [], TourRequests::SisterSpaceMirror.sister_locations_for(@cowork_tahoe)
+    assert_equal [], TourRequests::SisterSpaceMirror.sister_locations_for(nil)
+    assert_equal [], TourRequests::SisterSpaceMirror.sister_locations_for(
+      Operator.create!(name: "Newcomer", subdomain: "newcomer"),
+    )
+  end
 end

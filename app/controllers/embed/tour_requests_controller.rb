@@ -39,7 +39,8 @@ module Embed
       end
 
       permitted = params.permit(:name, :email, :phone, :message, :preferred_time, :location_id)
-      location = @operator.locations.find_by(id: permitted[:location_id])
+      location = @operator.locations.find_by(id: permitted[:location_id]) ||
+                 sister_locations.find { |loc| loc.id == permitted[:location_id].to_i }
 
       if permitted[:email].blank? || permitted[:name].blank?
         flash.now[:error] = "Name and email are required."
@@ -47,32 +48,16 @@ module Embed
         return render(:show, status: :unprocessable_entity)
       end
 
-      user = User.find_or_initialize_by(email: permitted[:email].downcase.strip, operator: @operator)
-      if user.new_record?
-        user.name = permitted[:name]
-        user.original_location_id = location&.id
-        user.admin_created = true
-        user.password = SecureRandom.hex(16)
-        user.phone = permitted[:phone] if permitted[:phone].present?
-      end
-      user.save!
-
-      activity = Activity.log(
-        user: user,
-        operator: @operator,
-        kind: :tour_request,
-        occurred_at: Time.current,
-        subject: location,
-        payload: {
-          "message"        => permitted[:message],
-          "preferred_time" => permitted[:preferred_time].presence,
-          "source"         => "widget",
-          "referrer"       => request.referer,
-        },
-      )
+      # A sister-space location (Untethered's widget offering Cowork Tahoe,
+      # ADR 0030) files the request under THAT operator — its Person, its
+      # timeline, its staff alert — exactly as if it came in through its own
+      # widget. Everything else stays with the widget's operator.
+      owner = location&.operator || @operator
+      activity = ActsAsTenant.with_tenant(owner) { file_request(owner, location, permitted) }
 
       # Untethered-only: Zephyr Cove requests are also logged at Cowork Tahoe
       # (ADR 0030). Runs before the alert so the staff email can link to it.
+      # (A request already filed at Cowork Tahoe matches no rule.)
       TourRequests::SisterSpaceMirror.call(activity)
 
       SendNotificationsJob.perform_later(activity, "TourRequestAlert")
@@ -121,8 +106,43 @@ module Embed
       false
     end
 
+    # The widget's own locations, plus the sister space's for the one
+    # operator that has one (Untethered → Cowork Tahoe, ADR 0030).
     def load_locations
-      @locations = @operator.locations.where(visible: true).order(:name)
+      @locations = @operator.locations.where(visible: true).order(:name).to_a + sister_locations
+    end
+
+    def sister_locations
+      @sister_locations ||= TourRequests::SisterSpaceMirror.sister_locations_for(@operator)
+    end
+
+    # Person + tour_request Activity under `owner`. Runs inside
+    # ActsAsTenant.with_tenant(owner) so the tenant-scoped models line up
+    # even when owner is the sister space rather than the widget's operator.
+    def file_request(owner, location, permitted)
+      user = User.find_or_initialize_by(email: permitted[:email].downcase.strip, operator: owner)
+      if user.new_record?
+        user.name = permitted[:name]
+        user.original_location_id = location&.id
+        user.admin_created = true
+        user.password = SecureRandom.hex(16)
+        user.phone = permitted[:phone] if permitted[:phone].present?
+      end
+      user.save!
+
+      Activity.log(
+        user: user,
+        operator: owner,
+        kind: :tour_request,
+        occurred_at: Time.current,
+        subject: location,
+        payload: {
+          "message"        => permitted[:message],
+          "preferred_time" => permitted[:preferred_time].presence,
+          "source"         => "widget",
+          "referrer"       => request.referer,
+        },
+      )
     end
 
     def allow_framing

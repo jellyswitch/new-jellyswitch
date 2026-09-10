@@ -20,6 +20,27 @@ module TourRequests
       new(activity).call
     end
 
+    # The sister space itself, for the source operator only (nil for everyone
+    # else). Untethered → Cowork Tahoe; David runs both.
+    def self.sister_operator_for(operator)
+      rule = RULES[operator&.subdomain]
+      target = rule && Operator.find_by(subdomain: rule[:target_subdomain])
+      target if target && target.id != operator.id
+    end
+
+    # The sister space's own visible locations, offered as extra choices in
+    # the SOURCE operator's tour widget so a prospect on untethered.space can
+    # ask for a Cowork Tahoe tour directly (Embed::TourRequestsController).
+    # Only an operator named in RULES ever gets extra options: a new operator
+    # or a new Untethered location never surfaces another tenant's space.
+    # Location is tenant-scoped, so the read runs under the sister tenant.
+    def self.sister_locations_for(operator)
+      target = sister_operator_for(operator)
+      return [] unless target
+
+      ActsAsTenant.with_tenant(target) { target.locations.where(visible: true).order(:name).to_a }
+    end
+
     def initialize(activity)
       @activity = activity
     end

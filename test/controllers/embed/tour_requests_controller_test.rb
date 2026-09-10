@@ -155,6 +155,70 @@ class Embed::TourRequestsControllerTest < ActionDispatch::IntegrationTest
     assert_equal 1, tour_alerts.size
   end
 
+  # ---- Untethered's widget offers Cowork Tahoe as a tour location (ADR 0030) --
+
+  def create_untethered!
+    untethered = Operator.create!(name: "Untethered", subdomain: "untethered", tour_widget_enabled: true)
+    locs = ActsAsTenant.with_tenant(untethered) do
+      [
+        untethered.locations.create!(name: "Untethered - Lake Tahoe, NV", city: "Zephyr Cove", visible: true),
+        untethered.locations.create!(name: "Untethered - Fulton, MO", city: "Fulton", visible: true),
+      ]
+    end
+    [untethered, *locs]
+  end
+
+  test "GET show at Untethered lists Cowork Tahoe alongside its own locations" do
+    create_untethered!
+
+    get embed_tour_request_path(operator_subdomain: "untethered")
+
+    assert_response :success
+    assert_select "select[name=location_id] option", count: 3
+    assert_select "select[name=location_id] option[value=?]", @location.id.to_s, text: @location.name
+    assert_select "select[name=location_id] option", text: "Untethered - Lake Tahoe, NV"
+  end
+
+  test "GET show at Cowork Tahoe never lists another operator's locations" do
+    _untethered, zephyr, = create_untethered!
+    @operator.locations.create!(name: "Cowork Tahoe Annex", visible: true) # so the picker renders
+
+    get embed_tour_request_path(operator_subdomain: @operator.subdomain)
+
+    assert_response :success
+    assert_select "select[name=location_id] option[value=?]", zephyr.id.to_s, count: 0
+    assert_select "select[name=location_id] option", text: /Untethered/, count: 0
+  end
+
+  test "POST create at Untethered choosing Cowork Tahoe files the request under Cowork Tahoe" do
+    untethered, = create_untethered!
+
+    assert_difference -> { User.where(operator: @operator).count } => 1,
+                      -> { User.where(operator: untethered).count } => 0,
+                      -> { Activity.where(kind: "tour_request").count } => 1 do
+      post embed_tour_request_path(operator_subdomain: "untethered"), params: {
+        name: "Cross Lake", email: "cross+lake@example.com", phone: "555-0199",
+        message: "Want to see the South Shore space", location_id: @location.id,
+      }
+    end
+    assert_redirected_to embed_tour_request_thank_you_path(operator_subdomain: "untethered")
+
+    activity = Activity.where(kind: "tour_request").last
+    assert_equal @operator.id, activity.operator_id
+    assert_equal @location.id, activity.subject_id
+    assert_equal "Want to see the South Shore space", activity.payload["message"]
+    assert_nil activity.payload["mirrored_from"]
+    assert_nil activity.payload["mirrored_to"]
+
+    user = activity.user
+    assert_equal "cross+lake@example.com", user.email
+    assert_equal @operator.id, user.operator_id
+    assert_equal @location.id, user.original_location_id
+
+    # Cowork Tahoe's staff get the alert, exactly as for their own widget.
+    assert_enqueued_with(job: SendNotificationsJob, args: [activity, "TourRequestAlert"])
+  end
+
   test "POST create at Cowork Tahoe does not mirror anywhere" do
     assert_difference -> { Activity.where(kind: "tour_request").count } => 1 do
       post embed_tour_request_path(operator_subdomain: @operator.subdomain), params: {
