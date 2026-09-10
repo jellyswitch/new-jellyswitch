@@ -502,7 +502,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
   # controller. The web flow words the date differently (short_date) — that's
   # a deliberate per-surface idiom, not drift.
   def sold_out_message(day_pass_type, day)
-    "#{day_pass_type.name.pluralize} are fully booked for #{day.strftime('%B %e')}. Try another day."
+    day_pass_type.sold_out_message(day)
   end
 
   # Structured sold-out response for a Day Office purchase (ADR 0026) — used

@@ -36,6 +36,12 @@ class Billing::DayPasses::SaveDayPass
   end
 
   def rollback
+    # after_create logged "Bought a day pass" the moment the row saved. When a
+    # later organizer step fails (office allocation, the charge), the pass is
+    # unwound here but that timeline entry stayed behind pointing at nothing —
+    # TLH saw three "Bought a day pass · no room time booked" rows from three
+    # failed attempts. Take the log entry down with the pass.
+    Activity.where(subject: context.day_pass).delete_all
     context.day_pass.destroy
   end
 end

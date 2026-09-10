@@ -150,6 +150,44 @@ class DayPassType < ApplicationRecord
     amount_in_cents == 0
   end
 
+  # A Day Office type whose pool has no active rooms can never allocate. From
+  # the allocator's side "no room free today" and "no rooms at all" look the
+  # same (nil), so this is what lets a caller say the honest thing: it's a
+  # configuration gap, not demand. Mirrors the allocator's Room.active filter.
+  def office_pool_empty?
+    day_office? && office_rooms.merge(Room.active).none?
+  end
+
+  # nil when the pool can hold a pass; otherwise one staff-actionable sentence.
+  # Two ways a pool is unusable: no active rooms at all, or a room whose
+  # capacity is 0 (the hold is a 1-attendee reservation, which the room's
+  # capacity validation rejects — TLH's "Meeting Room" shipped with 0 and the
+  # operator saw "Attendee count can't exceed the room's capacity of 0").
+  def office_pool_problem
+    return nil unless day_office?
+
+    rooms = office_rooms.merge(Room.active).to_a
+    if rooms.empty?
+      return "#{name} can't be booked yet: no rooms are in its Day Office pool. Add rooms to it under Day Pass Types."
+    end
+
+    zero = rooms.select { |r| r.capacity.to_i < 1 }
+    return nil if zero.empty?
+
+    "#{name} can't be booked yet: #{zero.map(&:name).to_sentence} #{zero.one? ? 'has' : 'have'} " \
+    "a capacity of 0. Set the capacity under Rooms."
+  end
+
+  # The one place a sold-out / can't-book message is worded, so every surface
+  # (API, web member checkout, admin add, reschedule, concierge, allocation)
+  # says the same thing. `date_text` lets the web flow keep its short_date
+  # idiom. An empty pool is called out as such instead of "fully booked" —
+  # TLH's "Private Office Day Pass +1" said fully booked on every date for a
+  # week because nobody had put rooms in its pool.
+  def sold_out_message(day, date_text: day.strftime("%B %e"))
+    office_pool_problem || "#{name.pluralize} are fully booked for #{date_text}. Try another day."
+  end
+
   # Full-list semantics, mirroring Room#reassign_doors!: `positions` is
   # {room_id => position}; rooms absent from the hash leave the pool. Blank
   # keys (a form's hidden "clear all" input, mirroring reassign_doors!) are

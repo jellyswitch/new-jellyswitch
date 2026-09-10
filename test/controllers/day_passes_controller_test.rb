@@ -217,8 +217,9 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
     @day_pass_type.update!(visible: false)
     # A Day Office type is excluded from suggested_standard_for by kind, so it
     # can never suggest itself. An empty room pool (no assign_office_rooms!)
-    # makes DayOffices::Allocator.available_room nil — sold out with no
-    # reservation/room setup needed.
+    # makes DayOffices::Allocator.available_room nil — unbookable with no
+    # reservation/room setup needed. (Wording is the empty-pool variant of
+    # DayPassType#sold_out_message; the suggestion logic is what's under test.)
     office_type = DayPassType.create!(operator: @user.operator, location: locations(:cowork_tahoe_location),
                                       name: "Solo Office", kind: "day_office", amount_in_cents: 9000,
                                       included_meeting_room_minutes: 0, available: true, visible: true)
@@ -230,7 +231,7 @@ class DayPassesControllerTest < ActionDispatch::IntegrationTest
       } }, env: default_env
     end
 
-    assert_includes flash[:error], "fully booked"
+    assert_includes flash[:error], "no rooms are in its Day Office pool"
     assert_not_includes flash[:error], "is available instead"
   end
 end

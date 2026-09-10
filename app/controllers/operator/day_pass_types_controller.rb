@@ -29,6 +29,7 @@ class Operator::DayPassTypesController < Operator::BaseController
     @day_pass_type = result.day_pass_type
     if result.success?
       sync_office_room_pool!
+      warn_if_office_pool_empty!
       if params[:add_day_pass_type_and_add_another].present?
         turbo_redirect(new_day_pass_type_path, action: "replace")
       else
@@ -52,6 +53,7 @@ class Operator::DayPassTypesController < Operator::BaseController
     if @day_pass_type.update(day_pass_type_update_params)
       sync_office_room_pool!
       flash[:success] = "Day pass type was successfully updated."
+      warn_if_office_pool_empty!
       turbo_redirect(day_pass_type_path(@day_pass_type))
     else
       render :edit, status: 422
@@ -136,6 +138,14 @@ class Operator::DayPassTypesController < Operator::BaseController
   # action's normal redirect proceed instead of raising into the generic
   # rescue => e handler (which would send a misleading "an error occurred"
   # and mask that the type itself is fine).
+  # A Day Office type with no rooms in its pool saves fine but can never be
+  # booked — say so at save time, next to the form, instead of letting staff
+  # discover it as "fully booked" on a member's profile a week later.
+  def warn_if_office_pool_empty!
+    problem = @day_pass_type.office_pool_problem
+    flash[:alert] = "Heads up: #{problem}" if problem
+  end
+
   def sync_office_room_pool!
     if @day_pass_type.day_office?
       @day_pass_type.assign_office_rooms!(office_room_positions_params)
