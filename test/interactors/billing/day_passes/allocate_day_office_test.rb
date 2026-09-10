@@ -96,6 +96,15 @@ class Billing::DayPasses::AllocateDayOfficeTest < ActiveSupport::TestCase
     assert_includes result.message, "Day Offices are fully booked for #{@day.strftime('%B %e')}. Try another day."
   end
 
+  test "a failed purchase leaves no orphan 'Bought a day pass' timeline entry" do
+    fill_pool!
+
+    assert_no_difference -> { Activity.where(user: @user, kind: "day_pass").count } do
+      result = Billing::DayPasses::CreateDayPass.call(**purchase_params(@office_type))
+      assert result.failure?
+    end
+  end
+
   test "misconfigured pool (capacity 0 rooms): fails with a staff-actionable message, persists nothing" do
     @room_a.update!(capacity: 0)
     @room_b.update!(capacity: 0)
