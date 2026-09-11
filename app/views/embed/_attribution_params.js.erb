@@ -1,24 +1,68 @@
-  // Attribution pass-through (Data › Conversions): carry the host page's
-  // campaign tags, ad click IDs, and referrer into the Jellyswitch request so
-  // the visit is credited to the real source instead of "the operator's site".
+  // Attribution (Data › Conversions). The FIRST touch on this site is captured
+  // once per browser (kept 90 days): external referrer, campaign tags, ad click
+  // IDs, landing page. It is carried into the widget iframe and into every link
+  // that leaves for Jellyswitch, so the visit there is credited to the real
+  // source ("one step before" the operator's own site).
+  var JSW_WIDGET_HOST = <%= raw request.host.to_json %>;
+  var JSW_ATTR_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+                       "gclid", "gbraid", "wbraid", "fbclid", "msclkid", "ttclid"];
+  function jswSameSite(url) {
+    try { return new URL(url, window.location.href).host.replace(/^www\./, "") === window.location.host.replace(/^www\./, ""); }
+    catch (e) { return false; }
+  }
+  function jswFirstTouch() {
+    var now = Date.now();
+    try {
+      var raw = localStorage.getItem("jsw-ft");
+      if (raw) { var saved = JSON.parse(raw); if (saved && saved.ts && now - saved.ts < 90 * 86400000) return saved; }
+    } catch (e) {}
+    var ft = { ts: now, land: window.location.href.slice(0, 300) };
+    try {
+      var q = new URLSearchParams(window.location.search);
+      JSW_ATTR_KEYS.forEach(function (k) { var v = q.get(k); if (v) ft[k] = v.slice(0, 200); });
+      if (document.referrer && !jswSameSite(document.referrer)) ft.ref = document.referrer.slice(0, 300);
+    } catch (e) {}
+    try { localStorage.setItem("jsw-ft", JSON.stringify(ft)); } catch (e) {}
+    return ft;
+  }
+  function jswVisitorId() {
+    try {
+      var id = localStorage.getItem("jsw-vid");
+      if (!id) {
+        id = ""; for (var i = 0; i < 32; i++) id += Math.floor(Math.random() * 16).toString(16);
+        localStorage.setItem("jsw-vid", id);
+      }
+      return id;
+    } catch (e) { return ""; }
+  }
   function jswAttributionParams() {
     var out = [];
     try {
-      var q = new URLSearchParams(window.location.search);
-      var keep = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
-                  "gclid", "gbraid", "wbraid", "fbclid", "msclkid", "ttclid"];
-      keep.forEach(function (k) { var v = q.get(k); if (v) out.push(k + "=" + encodeURIComponent(v.slice(0, 200))); });
-      if (document.referrer) {
-        var ref = document.referrer;
-        var sameSite = false;
-        try { sameSite = new URL(ref).host === window.location.host; } catch (e) {}
-        if (!sameSite) out.push("jsw_ref=" + encodeURIComponent(ref.slice(0, 300)));
-      }
+      var ft = jswFirstTouch();
+      JSW_ATTR_KEYS.forEach(function (k) { if (ft[k]) out.push(k + "=" + encodeURIComponent(ft[k])); });
+      if (ft.ref) out.push("jsw_ref=" + encodeURIComponent(ft.ref));
+      var vid = jswVisitorId(); if (vid) out.push("jsw_vid=" + vid);
     } catch (e) {}
     return out.join("&");
   }
   function jswWithAttribution(url) {
+    if (!url || /[?&](utm_[a-z]+|gclid|jsw_ref)=/.test(url)) return url;
     var extra = jswAttributionParams();
     if (!extra) return url;
     return url + (url.indexOf("?") === -1 ? "?" : "&") + extra;
+  }
+  // Decorate any link on the host page that leaves for Jellyswitch (nav
+  // "Join", "Book a room", pricing buttons…) at click time. One installer per
+  // page even if several widgets are present.
+  if (!window.__jswLinkDecorator) {
+    window.__jswLinkDecorator = true;
+    var jswDecorate = function (ev) {
+      var a = ev.target && ev.target.closest ? ev.target.closest("a[href]") : null;
+      if (!a || jswSameSite(a.href)) return;
+      var host = ""; try { host = new URL(a.href, window.location.href).host; } catch (e) { return; }
+      if (!/(^|\.)jellyswitch\.com$/.test(host) && host !== JSW_WIDGET_HOST) return;
+      a.href = jswWithAttribution(a.href);
+    };
+    document.addEventListener("click", jswDecorate, true);
+    document.addEventListener("auxclick", jswDecorate, true);
   }

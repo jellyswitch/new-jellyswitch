@@ -6,6 +6,20 @@
   "use strict";
   if (window.__jswConciergeLauncher) return;
   window.__jswConciergeLauncher = true;
+<%= render "embed/attribution_params" %>
+  // Site tracker: one page-view beacon per page on the operator's site
+  // (SiteVisit — "Website visits" on Data › Conversions). No cookies, no PII.
+  try {
+    if (!navigator.webdriver && !jswSameSite(<%= raw ("https://" + request.host).to_json %>)) {
+      var jswBody = JSON.stringify({ v: jswVisitorId(), u: window.location.href.slice(0, 300), r: (document.referrer || "").slice(0, 300) });
+      var jswTrackUrl = <%= raw embed_track_url(operator_subdomain: @operator.subdomain, host: request.host_with_port).to_json %>;
+      if (navigator.sendBeacon) navigator.sendBeacon(jswTrackUrl, new Blob([jswBody], { type: "text/plain" }));
+      else { var jswX = new XMLHttpRequest(); jswX.open("POST", jswTrackUrl, true); jswX.setRequestHeader("Content-Type", "text/plain"); jswX.send(jswBody); }
+    }
+  } catch (e) {}
+<% unless @concierge_active %>
+  /* Concierge chat is not enabled for <%= @operator.subdomain %> — tracker only. */
+<% else %>
 
   var WIDGET_URL = <%= raw @widget_url.to_json %>;
   var ACCENT = <%= raw @operator.embed_accent_color.to_json %>;
@@ -13,7 +27,6 @@
   var TEASER_TEXT = <%= raw ((@location ? @location.concierge_offer : @operator.concierge_offer_text).presence || @operator.concierge_greeting_text).to_json %>;
   var KEY = "jswcx-" + <%= raw @operator.subdomain.to_json %>;
   var Z = 2147483000;
-<%= render "embed/attribution_params" %>
 
   function remember(name) { try { localStorage.setItem(KEY + name, "1"); } catch (e) {} }
   function remembered(name) { try { return localStorage.getItem(KEY + name) === "1"; } catch (e) { return false; } }
@@ -103,4 +116,5 @@
 
   if (document.body) mount();
   else document.addEventListener("DOMContentLoaded", mount);
+<% end %>
 })();

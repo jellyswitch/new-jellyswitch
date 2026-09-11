@@ -51,11 +51,12 @@ module Embed
     # an iframe snippet) so site owners paste a single line and every page gets
     # the launcher. When the Concierge is off this renders a no-op instead of a
     # 404 so embedded sites never log script errors.
+    # The launcher also carries the site tracker (page-view beacon + link
+    # decoration for Data › Conversions), which runs even when the chat
+    # bubble is switched off — the view returns early after the tracker.
     def launcher
       expires_in 10.minutes, public: true
-      unless @operator.concierge_active?
-        return render(js: "/* Concierge is not enabled for #{@operator.subdomain} */")
-      end
+      @concierge_active = @operator.concierge_active?
 
       # Resolve the location so the teaser can carry a per-location offer.
       @location = @operator.locations.find_by(id: params[:location_id])

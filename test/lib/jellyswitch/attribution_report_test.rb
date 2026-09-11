@@ -96,6 +96,26 @@ module Jellyswitch
       assert_equal 1, report.self_serve[:tracked_purchases], "self-serve share counts paid rows only"
     end
 
+    test "website visits from the launcher beacon show in the funnel and by channel" do
+      report = Jellyswitch::AttributionReport.new(@location, period_days: 90)
+      assert_not report.site_tracker_active?
+
+      SiteVisit.create!(operator: @operator, visitor_id: "a", started_at: 2.days.ago, last_seen_at: 2.days.ago,
+                        channel: "organic_search", referring_domain: "google.com", host: "coworktahoe.com", page_views: 3)
+      SiteVisit.create!(operator: @operator, visitor_id: "a", started_at: 1.day.ago, last_seen_at: 1.day.ago,
+                        channel: "direct", host: "coworktahoe.com")
+      SiteVisit.create!(operator: @operator, visitor_id: "b", started_at: 1.day.ago, last_seen_at: 1.day.ago,
+                        channel: "referral", referring_domain: "yelp.com", host: "coworktahoe.com")
+      SiteVisit.create!(operator: @operator, visitor_id: "old", started_at: 400.days.ago, last_seen_at: 400.days.ago, channel: "direct")
+
+      report = Jellyswitch::AttributionReport.new(@location, period_days: 90)
+      assert report.site_tracker_active?
+      assert_equal 3, report.funnel[:site_visits]
+      assert_equal 2, report.funnel[:site_visitors]
+      assert_equal 1, report.by_channel["organic_search"][:site_visits]
+      assert_equal 1, report.by_channel["referral:yelp.com"][:site_visits]
+    end
+
     test "backfilled rows count toward channels but not the self-serve share" do
       conv(kind: "day_pass", user: @member, amount: 3500, surface: "backfill")
       report = Jellyswitch::AttributionReport.new(@location, period_days: 90)

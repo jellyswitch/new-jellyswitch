@@ -58,3 +58,21 @@ durable record of the conversion itself, and no per-person source.
   first touch or land in the `app` channel.
 - A true counterfactual "lift" is not measurable; the page labels the metric
   as self-serve share, not lift.
+
+## Addendum 2026-09-11 — site tracker ("one step before")
+
+Ahoy only sees the visit to Jellyswitch, and the first touch there is almost
+always the operator's own marketing site. David: "I'm looking for data one
+step before the referral site." The concierge launcher already runs on every
+page of those sites, so it now:
+
+1. Captures the site's first touch once per browser (external referrer, UTM
+   tags, ad click IDs, landing page; `localStorage`, 90 days) and appends it
+   to the widget iframe and to every link that leaves for a Jellyswitch host
+   at click time (`embed/_attribution_params.js.erb`). `Attribution::Classifier`
+   reads `jsw_ref` as the referrer. No GTM work needed.
+2. Sends one page-view beacon per page to `POST /embed/track/:subdomain`
+   (`navigator.sendBeacon`, text/plain, no cookies, no IP stored). Sessions are
+   `SiteVisit` rows (4h window) classified from their own referrer/UTM — the
+   "Website Visits" tile and "Site visits" column on Data › Conversions.
+   The tracker runs even when the chat bubble is disabled.

@@ -16,7 +16,14 @@ end
 class Rack::Attack
   ### Throttle /embed/* POSTs to 5/minute per IP ###
   throttle("embed/ip", limit: 5, period: 1.minute) do |req|
-    req.ip if req.post? && req.path.start_with?("/embed/")
+    req.ip if req.post? && req.path.start_with?("/embed/") && !req.path.start_with?("/embed/track/")
+  end
+
+  ### Page-view beacon: one POST per page on the operator's site ###
+  # A person browsing normally sends a handful a minute; 120/min per IP caps
+  # a flood without dropping shared-IP offices.
+  throttle("embed_track/ip", limit: 120, period: 1.minute) do |req|
+    req.ip if req.post? && req.path.start_with?("/embed/track/")
   end
 
   ### Throttle signup POSTs to 5/minute per IP ###
