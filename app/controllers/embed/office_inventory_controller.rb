@@ -83,7 +83,7 @@ module Embed
     end
 
     def listed_offices
-      @operator.offices.where(location: @location).where(visible: true)
+      @operator.offices.where(location: @location).where(visible: true, hidden_from_website: false)
                .includes(:office_leases).with_attached_photo
                .filter_map do |office|
         availability = office.listed_availability

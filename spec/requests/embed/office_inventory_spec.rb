@@ -78,6 +78,14 @@ it "ignores a forged preview token" do
     expect(response.body).not_to include("Hidden Office")
   end
 
+  it "hides an active office flagged hidden_from_website" do
+    make_office(name: "Office 102", hidden_from_website: true)
+    make_office(name: "Office 103")
+    get_widget
+    expect(response.body).not_to include("Office 102")
+    expect(response.body).to include("Office 103")
+  end
+
   it "renders the empty-state when everything is taken" do
     get_widget
     expect(response.body).to include("spoken for")

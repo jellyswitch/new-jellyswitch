@@ -35,9 +35,15 @@
     <small class="form-text text-muted d-block">Only flip this when a departure is confirmed and public — the website will show "Available from" the current lease's end date. Vacant offices list automatically.</small>
   </div>
 
+  <div class="form-check mb-3">
+    <%= f.check_box :hidden_from_website, class: "form-check-input" %>
+    <%= f.label :hidden_from_website, "Hide from the website's Office Inventory", class: "form-check-label" %>
+    <small class="form-text text-muted d-block">The office stays active in your office list and can still be leased — it just won't be shown on the website widget.</small>
+  </div>
+
   <div class="form-check">
       <%= f.check_box :visible, class: "form-check-input" %>
-      <%= f.label :visible, "Check this box to make this office visible", {class: "form-check-label"} %>
+      <%= f.label :visible, "Active (uncheck to archive this office — it leaves your office list and the website)", {class: "form-check-label"} %>
     </div>
   </div>
 

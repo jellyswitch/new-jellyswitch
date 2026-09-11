@@ -85,7 +85,7 @@ class Operator::OfficesController < Operator::BaseController
 
   def office_params
     p = params.require(:office).permit(:name, :description, :capacity, :square_footage, :photo, :lease, :visible,
-                                       :asking_rate_in_cents, :coming_available)
+                                       :asking_rate_in_cents, :coming_available, :hidden_from_website)
     # The form takes dollars; store cents. Blank clears the rate ("Contact
     # for pricing" on the website).
     if p.key?(:asking_rate_in_cents)
