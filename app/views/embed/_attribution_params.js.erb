@@ -1,0 +1,24 @@
+  // Attribution pass-through (Data › Conversions): carry the host page's
+  // campaign tags, ad click IDs, and referrer into the Jellyswitch request so
+  // the visit is credited to the real source instead of "the operator's site".
+  function jswAttributionParams() {
+    var out = [];
+    try {
+      var q = new URLSearchParams(window.location.search);
+      var keep = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+                  "gclid", "gbraid", "wbraid", "fbclid", "msclkid", "ttclid"];
+      keep.forEach(function (k) { var v = q.get(k); if (v) out.push(k + "=" + encodeURIComponent(v.slice(0, 200))); });
+      if (document.referrer) {
+        var ref = document.referrer;
+        var sameSite = false;
+        try { sameSite = new URL(ref).host === window.location.host; } catch (e) {}
+        if (!sameSite) out.push("jsw_ref=" + encodeURIComponent(ref.slice(0, 300)));
+      }
+    } catch (e) {}
+    return out.join("&");
+  }
+  function jswWithAttribution(url) {
+    var extra = jswAttributionParams();
+    if (!extra) return url;
+    return url + (url.indexOf("?") === -1 ? "?" : "&") + extra;
+  }

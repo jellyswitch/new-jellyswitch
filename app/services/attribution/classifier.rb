@@ -25,9 +25,13 @@ module Attribution
 
     def initialize(referrer: nil, referring_domain: nil, landing_page: nil,
                    utm_source: nil, utm_medium: nil, utm_campaign: nil, surface: "web")
-      @referrer = referrer.to_s
-      @referring_domain = (referring_domain.presence || domain_of(@referrer)).to_s.downcase.delete_prefix("www.")
       @landing_page = landing_page.to_s
+      # Widgets running on the operator's own site pass the HOST page's
+      # referrer along as jsw_ref (the iframe's own referrer is just the
+      # operator's site, which says nothing about where the person came from).
+      host_ref = host_page_referrer
+      @referrer = host_ref.presence || referrer.to_s
+      @referring_domain = (host_ref.present? ? domain_of(host_ref) : (referring_domain.presence || domain_of(@referrer))).to_s.downcase.delete_prefix("www.")
       @utm_source = utm_source.to_s.downcase.presence
       @utm_medium = utm_medium.to_s.downcase.presence
       @utm_campaign = utm_campaign.presence
@@ -86,6 +90,14 @@ module Attribution
 
     def landing_has?(regex)
       @landing_page.match?(regex)
+    end
+
+    def host_page_referrer
+      return nil unless @landing_page.include?("jsw_ref=")
+      query = URI.parse(@landing_page).query.to_s
+      URI.decode_www_form(query).to_h["jsw_ref"].presence
+    rescue URI::InvalidURIError
+      nil
     end
 
     def domain_of(url)

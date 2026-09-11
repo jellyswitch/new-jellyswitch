@@ -35,6 +35,7 @@
   style.textContent = css;
   document.head.appendChild(style);
 
+<%= render "embed/attribution_params" %>
   function el(tag, cls, text) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -58,7 +59,7 @@
       }
       var cta = el("a", "jsw-sc-cta" + (tier.external ? " jsw-sc-out" : ""),
                    tier.external ? "Learn more" : (tier.kind === "plan" ? "Sign up" : "Buy now"));
-      cta.href = tier.cta;
+      cta.href = tier.external ? tier.cta : jswWithAttribution(tier.cta);
       if (tier.external) { cta.rel = "noopener"; }
       card.appendChild(cta);
       grid.appendChild(card);
