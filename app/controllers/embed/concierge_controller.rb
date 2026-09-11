@@ -93,6 +93,7 @@ module Embed
       result = Concierge::PublicCheckout.call(args)
 
       if result.success?
+        record_widget_conversions(result, product, location)
         log_purchase_chat(result.user, product, location)
         # Post-purchase expectations (2026-08-27 plan §6): every brand runs
         # approval_required, so a fresh buyer is created UNAPPROVED and the
@@ -131,7 +132,9 @@ module Embed
 
       location = @operator.locations.find_by(id: permitted[:location_id])
       user = upsert_person(permitted, location)
-      log_chat(user, permitted, location) # keeps the conversion-lift metric working
+      chat = log_chat(user, permitted, location) # keeps the conversion-lift metric working
+      Conversion.record(kind: "chat_lead", operator: @operator, location: location, user: user,
+                        subject: chat.is_a?(Activity) ? chat : nil, surface: "widget", visit: current_visit)
       # Seed the Person's Interest from what they asked about (office /
       # conference room / day pass / membership) so they land on the right list.
       InterestTag.record_from_concierge_intent(user, permitted[:intent])
@@ -148,6 +151,25 @@ module Embed
     end
 
     private
+
+    # Server-side conversion rows for a widget checkout: the purchase itself,
+    # plus a signup for the account it created (deduped on the user, so a
+    # returning buyer doesn't get a second signup). See Conversion.record.
+    def record_widget_conversions(result, product, location)
+      user = result.user
+      return unless user
+      Conversion.record(kind: "signup", operator: @operator, location: location, user: user,
+                        subject: user, surface: "widget", visit: current_visit, occurred_at: user.created_at)
+      # `try` — request specs stub the checkout result with a strict double that
+      # only knows success?/user; a missing product method just means no subject.
+      kind, subject =
+        if product.is_a?(Plan) then ["membership", result.try(:subscription)]
+        elsif product.bundle? then ["day_pass_bundle", result.try(:day_pass_bundle)]
+        else ["day_pass", result.try(:day_pass)]
+        end
+      Conversion.record(kind: kind, operator: @operator, location: location, user: user, subject: subject,
+                        amount_cents: product.amount_in_cents, surface: "widget", visit: current_visit)
+    end
 
     def upsert_person(permitted, location)
       user = User.find_or_initialize_by(email: permitted[:email].downcase.strip, operator: @operator)

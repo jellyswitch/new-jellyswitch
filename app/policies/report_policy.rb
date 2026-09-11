@@ -46,4 +46,8 @@ class ReportPolicy < ApplicationPolicy
   def ltv?
     (admin? || superadmin? || general_manager?)
   end
+
+  def conversions?
+    (admin? || superadmin? || general_manager?)
+  end
 end

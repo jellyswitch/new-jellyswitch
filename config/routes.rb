@@ -841,6 +841,7 @@ Rails.application.routes.draw do
       get :checkins
       get :ltv
       get :room_demand
+      get :conversions
       get :inactive_members
       get :suppressed_members
       post :suppress_marketing

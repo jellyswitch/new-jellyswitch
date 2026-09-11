@@ -369,6 +369,11 @@
           <%= link_to monetization_reports_path(location_id: current_location.id), class: "list-group-item list-group-item-action" do %>
             Monetization
           <% end %>
+          <% if policy(:report).conversions? %>
+            <%= link_to conversions_reports_path, class: "list-group-item list-group-item-action" do %>
+              Conversions
+            <% end %>
+          <% end %>
         <% end %>
       </div>
     </div>

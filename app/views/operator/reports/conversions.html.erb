@@ -1,0 +1,214 @@
+<% title "Conversions" %>
+<% period_label = { "30d" => "30 Days", "90d" => "90 Days", "12m" => "1 Year", "all" => "All Time" }[@period] %>
+<% funnel = @attribution.funnel %>
+<% ss = @attribution.self_serve %>
+<% label = ->(ch) { Jellyswitch::AttributionReport.channel_label(ch) } %>
+
+<%= super_wide_card do %>
+  <div class="mb-3">
+    <%= link_to "&larr; Back to Dashboard".html_safe, reports_path, class: "btn btn-sm btn-outline-secondary" %>
+  </div>
+
+  <h4 class="display-4 text-center">Conversions</h4>
+  <p class="text-center text-muted mb-3">Where <%= current_location.name %>'s signups and purchases come from</p>
+
+  <div class="text-center mb-4" data-controller="period-toggle">
+    <small class="text-muted d-block mb-1">Showing data for:</small>
+    <div class="btn-group" role="group">
+      <% { "30d" => "30 Days", "90d" => "90 Days", "12m" => "1 Year", "all" => "All Time" }.each do |p, l| %>
+        <button class="btn btn-sm <%= @period == p ? 'btn-primary' : 'btn-outline-secondary' %>"
+                data-period-toggle-target="button" data-period="<%= p %>" data-action="period-toggle#select">
+          <%= l %>
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Funnel ── %>
+  <div class="row text-center mb-2">
+    <% [
+      ["Visits", number_with_delimiter(funnel[:visits]), "#{number_with_delimiter(funnel[:visitors])} unique visitors, brand-wide", "text-secondary"],
+      ["Leads", funnel[:leads], "tour requests + concierge chats", "text-info"],
+      ["Signups", funnel[:signups], "accounts created", "text-primary"],
+      ["First Purchases", funnel[:first_purchases], "people who bought for the first time", "text-success"],
+      ["Revenue", number_to_currency(funnel[:revenue], precision: 0), "#{funnel[:purchases]} purchases tracked", "text-success"],
+    ].each do |title, value, sub, color| %>
+      <div class="col-6 col-lg mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold <%= color %>" style="font-size: 1.4rem; white-space: nowrap;"><%= value %></div>
+          <div class="text-muted small"><%= title %> (<%= period_label %>)</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted"><%= sub %></span></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <% if funnel[:visits] > 0 %>
+    <p class="text-center text-muted" style="font-size: 12px;">
+      Visit → signup <%= (100.0 * funnel[:signups] / funnel[:visits]).round(1) %>%
+      <% if funnel[:signups] > 0 %> · signup → first purchase <%= (100.0 * funnel[:first_purchases] / funnel[:signups]).round %>%<% end %>
+    </p>
+  <% end %>
+<% end %>
+
+<%# ── By channel ── %>
+<%= super_wide_card do %>
+  <h5 class="mb-1">By Channel <small class="text-muted">(first touch)</small></h5>
+  <p class="text-muted" style="font-size: 12px;">
+    Each person is credited to the channel that first brought them to your site. Visits are counted for the whole brand; leads, signups, and purchases are for this location.
+  </p>
+  <div class="table-responsive">
+    <table class="table table-sm mb-2">
+      <thead><tr>
+        <th>Channel</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Revenue</th>
+      </tr></thead>
+      <tbody>
+        <% @attribution.by_channel.each do |ch, r| %>
+          <tr>
+            <td>
+              <%= link_to label.call(ch), conversions_reports_path(period: @period, channel: ch), class: (@channel == ch ? "font-weight-bold" : "") %>
+            </td>
+            <td class="text-right"><%= number_with_delimiter(r[:visits]) %></td>
+            <td class="text-right"><%= r[:leads] %></td>
+            <td class="text-right"><%= r[:signups] %></td>
+            <td class="text-right"><%= r[:purchases] %></td>
+            <td class="text-right"><%= number_to_currency(r[:revenue], precision: 0) %></td>
+          </tr>
+        <% end %>
+        <% if @attribution.by_channel.empty? %>
+          <tr><td colspan="6" class="text-muted text-center">Nothing recorded in this period yet.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if @people %>
+    <div class="border rounded p-3 mt-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0">People from <%= label.call(@channel) %> <small class="text-muted">(<%= @people.size %>)</small></h6>
+        <%= link_to "Close", conversions_reports_path(period: @period), class: "btn btn-sm btn-outline-secondary" %>
+      </div>
+      <% if @people.empty? %>
+        <p class="text-muted mb-0" style="font-size: 13px;">No one from this location has this channel as their first touch.</p>
+      <% else %>
+        <div class="list-group list-group-flush">
+          <% @people.each do |person| %>
+            <%= link_to user_path(person), class: "list-group-item list-group-item-action d-flex justify-content-between align-items-center px-0" do %>
+              <span><%= person.name %> <small class="text-muted"><%= person.email %></small></span>
+              <small class="text-muted">
+                <%= [person.acquisition_campaign, person.acquisition_referrer].compact.join(" · ") %>
+                <%= person.acquired_at&.strftime("%b %e, %Y") %>
+              </small>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── By campaign ── %>
+<%= super_wide_card do %>
+  <h5 class="mb-1">By Campaign <small class="text-muted">(UTM tagged links)</small></h5>
+  <% if @attribution.by_campaign.empty? %>
+    <p class="text-muted mb-0" style="font-size: 13px;">
+      No tagged visits yet. Add <code>utm_source</code>, <code>utm_medium</code>, and <code>utm_campaign</code> to the links in your ads, posts, and emails and they will show up here.
+    </p>
+  <% else %>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead><tr>
+          <th>Campaign</th><th>Source</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Revenue</th>
+        </tr></thead>
+        <tbody>
+          <% @attribution.by_campaign.each do |camp, r| %>
+            <tr>
+              <td><%= camp %></td>
+              <td class="text-muted"><%= r[:source] %></td>
+              <td class="text-right"><%= number_with_delimiter(r[:visits]) %></td>
+              <td class="text-right"><%= r[:leads] %></td>
+              <td class="text-right"><%= r[:signups] %></td>
+              <td class="text-right"><%= r[:purchases] %></td>
+              <td class="text-right"><%= number_to_currency(r[:revenue], precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── Self-serve share ── %>
+<%= super_wide_card do %>
+  <h5 class="mb-1">Self-Serve Share <small class="text-muted">(what Jellyswitch closed without staff)</small></h5>
+  <p class="text-muted" style="font-size: 12px;">
+    Purchases members completed themselves on the web, in the app, or through a widget, versus ones staff entered.
+    <% if ss[:tracking_since] %>Tracked live since <%= ss[:tracking_since].strftime("%b %e, %Y") %>; earlier history is not included here.<% end %>
+  </p>
+  <% if ss[:tracked_purchases].zero? %>
+    <p class="text-muted mb-0" style="font-size: 13px;">No live-tracked purchases in this period yet.</p>
+  <% else %>
+    <div class="row text-center mb-3">
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-success" style="font-size: 1.4rem;"><%= ss[:self_serve_share] %>%</div>
+          <div class="text-muted small">of purchases were self-serve</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted"><%= ss[:self_serve_purchases] %> of <%= ss[:tracked_purchases] %></span></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-success" style="font-size: 1.4rem;"><%= ss[:self_serve_revenue_share] %>%</div>
+          <div class="text-muted small">of revenue was self-serve</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted"><%= number_to_currency(ss[:self_serve_revenue], precision: 0) %> of <%= number_to_currency(ss[:tracked_revenue], precision: 0) %></span></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3 mb-3">
+        <div class="border rounded p-3 h-100">
+          <div class="font-weight-bold text-info" style="font-size: 1.4rem;"><%= ss[:after_hours_purchases] %></div>
+          <div class="text-muted small">self-serve purchases after hours</div>
+          <div class="mt-1" style="font-size: 11px;"><span class="text-muted">outside posted hours or on closed days</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Product</th><th class="text-right">Self-serve</th><th class="text-right">Staff-entered</th><th class="text-right">Self-serve revenue</th></tr></thead>
+        <tbody>
+          <% ss[:by_kind].each do |kind, r| %>
+            <tr>
+              <td><%= kind.humanize %></td>
+              <td class="text-right"><%= r[:self_serve] %></td>
+              <td class="text-right"><%= r[:staff] %></td>
+              <td class="text-right"><%= number_to_currency(r[:self_serve_revenue], precision: 0) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+<% end %>
+
+<%# ── Recent ── %>
+<%= super_wide_card do %>
+  <h5 class="mb-2">Recent Conversions</h5>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>When</th><th>Who</th><th>What</th><th>Channel</th><th>Surface</th><th class="text-right">Amount</th></tr></thead>
+      <tbody>
+        <% @attribution.recent.each do |c| %>
+          <tr>
+            <td class="text-muted" style="white-space: nowrap;"><%= c.occurred_at.in_time_zone(current_location.time_zone.presence || "UTC").strftime("%b %e, %l:%M %p") %></td>
+            <td><% if c.user %><%= link_to c.user.name, user_path(c.user) %><% else %><span class="text-muted">—</span><% end %></td>
+            <td><%= c.kind.humanize %></td>
+            <td><%= label.call(c.channel) %><% if c.campaign.present? %> <small class="text-muted">· <%= c.campaign %></small><% end %></td>
+            <td class="text-muted"><%= c.surface %><% unless c.self_serve %> <small>(staff)</small><% end %></td>
+            <td class="text-right"><%= c.amount_cents > 0 ? number_to_currency(c.amount, precision: 0) : "" %></td>
+          </tr>
+        <% end %>
+        <% if @attribution.recent.empty? %>
+          <tr><td colspan="6" class="text-muted text-center">Nothing yet.</td></tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>

@@ -87,7 +87,9 @@ class Operator::OfficeLeasesController < Operator::BaseController
       track_conversion("office_lease",
                        product_name: @office_lease.subscription&.plan&.name,
                        amount_in_cents: @office_lease.subscription&.plan&.amount_in_cents,
-                       transaction_id: "lease_#{result.office_lease.id}")
+                       transaction_id: "lease_#{result.office_lease.id}",
+                       subject: result.office_lease,
+                       user: result.office_lease.organization&.owner)
       turbo_redirect(office_lease_path(result.office_lease))
     else
       flash[:error] = result.message

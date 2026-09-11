@@ -102,6 +102,7 @@ class Api::V1::ReservationsController < Api::V1::BaseController
     )
 
     if result.success?
+      record_api_conversion("room_reservation", subject: result.reservation, amount_in_cents: result.reservation.captured_amount_in_cents)
       render json: reservation_json(result.reservation), status: :created
     elsif result.conflict
       render_conflict(result.message.presence || 'That room was just booked.', result.reservation)

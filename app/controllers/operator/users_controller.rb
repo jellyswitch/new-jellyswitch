@@ -270,6 +270,7 @@ class Operator::UsersController < Operator::BaseController
     result = Users::Create.call(params: user_params, operator: current_tenant, admin_created: is_admin)
 
     if result.success?
+      record_conversion("signup", subject: result.user, user: result.user)
       if is_admin # admin is creating the user
         flash[:success] = "Member #{result.user.name} added."
         if params[:add_member_and_create_another].present?
