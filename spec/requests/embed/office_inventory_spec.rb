@@ -31,7 +31,13 @@ RSpec.describe "Embed::OfficeInventory", type: :request do
     expect(response.headers["Cache-Control"]).to include("no-cache")
   end
 
-  it "ignores a forged preview token" do
+    it "caches public traffic for one minute so catalog edits show up fast" do
+    get_widget
+    expect(response).to have_http_status(:ok)
+    expect(response.headers["Cache-Control"]).to eq("max-age=60, public")
+  end
+
+it "ignores a forged preview token" do
     operator.update!(office_inventory_enabled: false)
     get_widget(preview_token: "not-a-token")
     expect(response.body).to include("not enabled")
