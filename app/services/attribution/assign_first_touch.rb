@@ -31,7 +31,10 @@ module Attribution
         utm_source: visit&.utm_source,
         utm_medium: visit&.utm_medium,
         utm_campaign: visit&.utm_campaign,
-        surface: visit ? surface_for(visit) : @surface,
+        # No visit at all (imported, staff-added, pre-tracking): we don't know.
+        # App signups and widget leads keep their surface — those tell us
+        # where the person came in even without a visit row.
+        surface: visit ? surface_for(visit) : (%w[app widget].include?(@surface) ? @surface : "unknown"),
       )
 
       @user.update_columns(

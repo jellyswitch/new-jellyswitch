@@ -49,7 +49,11 @@ class Conversion < ApplicationRecord
   validates :surface, inclusion: { in: SURFACES }, allow_nil: true
   validates :occurred_at, presence: true
 
-  scope :revenue, -> { where(kind: REVENUE_KINDS) }
+  # A purchase is a revenue-kind row where money changed hands. Free passes,
+  # included/comped room bookings, and $0 plans are still recorded (they're
+  # activity) but never counted as purchases or revenue.
+  scope :revenue, -> { where(kind: REVENUE_KINDS).where("amount_cents > 0") }
+  scope :revenue_kinds, -> { where(kind: REVENUE_KINDS) }
   scope :leads, -> { where(kind: LEAD_KINDS) }
   scope :between, ->(range) { where(occurred_at: range) }
   scope :for_location, ->(location) { where(location_id: location.id) }

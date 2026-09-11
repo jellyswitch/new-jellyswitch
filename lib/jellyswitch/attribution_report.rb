@@ -23,7 +23,11 @@ module Jellyswitch
       "direct"         => "Direct / typed in",
       "app"            => "Mobile app",
       "other_campaign" => "Other tagged campaign",
+      "unknown"        => "Unknown (no visit on record)",
     }.freeze
+    # Referral rows are split per referring domain so the operator's own
+    # marketing site shows as its own line instead of hiding real referrals.
+    REFERRAL_PREFIX = "referral:"
 
     CHANNEL_ORDER = CHANNEL_LABELS.keys.freeze
     MAX_VISIT_DAYS = 365
@@ -39,7 +43,15 @@ module Jellyswitch
     end
 
     def self.channel_label(channel)
-      CHANNEL_LABELS[channel.to_s] || channel.to_s.humanize.presence || "Unknown"
+      key = channel.to_s
+      return "Referral · #{key.delete_prefix(REFERRAL_PREFIX)}" if key.start_with?(REFERRAL_PREFIX)
+      CHANNEL_LABELS[key] || key.humanize.presence || "Unknown"
+    end
+
+    # Group key for a conversion/user/visit: referral rows carry their domain.
+    def self.channel_key(channel, referrer_domain)
+      return "unknown" if channel.blank?
+      channel == "referral" && referrer_domain.present? ? "#{REFERRAL_PREFIX}#{referrer_domain}" : channel
     end
 
     # ── Funnel ────────────────────────────────────────────────────────────
@@ -63,19 +75,23 @@ module Jellyswitch
 
         visit_channels.each { |ch, n| rows[ch][:visits] += n }
 
-        conversions.group(:channel, :kind).count.each do |(channel, kind), n|
-          ch = channel.presence || "direct"
+        conversions.group(:channel, :referrer_domain, :kind).count.each do |(channel, domain, kind), n|
+          ch = self.class.channel_key(channel, domain)
           case kind
           when "signup" then rows[ch][:signups] += n
           when "tour_request", "chat_lead" then rows[ch][:leads] += n
-          else rows[ch][:purchases] += n
+          else rows[ch][:purchases] += n if Conversion::REVENUE_KINDS.include?(kind)
           end
         end
-        conversions.revenue.group(:channel).sum(:amount_cents).each do |channel, cents|
-          rows[channel.presence || "direct"][:revenue] += cents / 100.0
+        # $0 rows are activity, not purchases — take them back out.
+        conversions.revenue_kinds.where(amount_cents: 0).group(:channel, :referrer_domain).count.each do |(channel, domain), n|
+          rows[self.class.channel_key(channel, domain)][:purchases] -= n
+        end
+        conversions.revenue.group(:channel, :referrer_domain).sum(:amount_cents).each do |(channel, domain), cents|
+          rows[self.class.channel_key(channel, domain)][:revenue] += cents / 100.0
         end
 
-        rows.sort_by { |ch, r| [-r[:revenue], -r[:signups], -r[:visits], CHANNEL_ORDER.index(ch) || 99] }.to_h
+        rows.sort_by { |ch, r| [-r[:revenue], -r[:signups], -r[:visits], CHANNEL_ORDER.index(ch.sub(/:.*/, "")) || 99] }.to_h
       end
     end
 
@@ -144,10 +160,21 @@ module Jellyswitch
       conversions.includes(:user).order(occurred_at: :desc).limit(limit)
     end
 
-    # People acquired through a channel (for the drill-down).
+    # People acquired through a channel (for the drill-down). A split referral
+    # key ("referral:coworktahoe.com") narrows to that referring domain.
     def people_for_channel(channel)
-      User.where(operator: operator, original_location_id: location.id, acquisition_channel: channel)
-          .order(acquired_at: :desc).limit(200)
+      scope = User.where(operator: operator, original_location_id: location.id)
+      if channel.to_s.start_with?(REFERRAL_PREFIX)
+        scope = scope.where(acquisition_channel: "referral", acquisition_referrer: channel.to_s.delete_prefix(REFERRAL_PREFIX))
+      else
+        scope = scope.where(acquisition_channel: channel)
+      end
+      scope.order(acquired_at: :desc).limit(200)
+    end
+
+    # Visits are capped at a year even for "All Time" (see MAX_VISIT_DAYS).
+    def visits_capped?
+      period_days > MAX_VISIT_DAYS
     end
 
     def conversions
@@ -164,11 +191,14 @@ module Jellyswitch
       end
     end
 
-    # Brand-level: every visit that landed on this operator's host.
+    # Brand-level: every visit that landed on this operator's host, minus
+    # staff (admins/managers using the admin) — they aren't prospects.
     def visits
       @visits ||= begin
         days = [period_days, MAX_VISIT_DAYS].min
         scope = Ahoy::Visit.where(started_at: days.days.ago.beginning_of_day..Time.current)
+        staff_ids = User.where(operator: operator).where("admin = true OR role IN (?)", %w[admin superadmin general_manager community_manager]).select(:id)
+        scope = scope.where("ahoy_visits.user_id IS NULL OR ahoy_visits.user_id NOT IN (?)", staff_ids)
         if @host.present?
           scope.where("landing_page LIKE ?", "%://#{@host}/%")
         else
@@ -183,9 +213,10 @@ module Jellyswitch
         visits.pluck(:referrer, :referring_domain, :landing_page, :utm_source, :utm_medium, :utm_campaign, :user_agent)
               .each do |ref, dom, land, src, med, camp, ua|
           surface = ua.to_s.include?("Jellyswitch") ? "app" : "web"
-          counts[Attribution::Classifier.call(referrer: ref, referring_domain: dom, landing_page: land,
-                                              utm_source: src, utm_medium: med, utm_campaign: camp,
-                                              surface: surface).channel] += 1
+          c = Attribution::Classifier.call(referrer: ref, referring_domain: dom, landing_page: land,
+                                           utm_source: src, utm_medium: med, utm_campaign: camp,
+                                           surface: surface)
+          counts[self.class.channel_key(c.channel, c.referrer_domain)] += 1
         end
         counts
       end

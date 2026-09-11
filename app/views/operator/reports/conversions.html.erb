@@ -11,6 +11,9 @@
 
   <h4 class="display-4 text-center">Conversions</h4>
   <p class="text-center text-muted mb-3">Where <%= current_location.name %>'s signups and purchases come from</p>
+  <p class="text-center text-muted" style="font-size: 12px;">
+    Purchase value is the list price of each new purchase when it happened (a membership counts once, at signup). For billed revenue see the <%= link_to "Revenue report", revenue_reports_path %>.
+  </p>
 
   <div class="text-center mb-4" data-controller="period-toggle">
     <small class="text-muted d-block mb-1">Showing data for:</small>
@@ -27,11 +30,11 @@
   <%# ── Funnel ── %>
   <div class="row text-center mb-2">
     <% [
-      ["Visits", number_with_delimiter(funnel[:visits]), "#{number_with_delimiter(funnel[:visitors])} unique visitors, brand-wide", "text-secondary"],
+      ["Visits", number_with_delimiter(funnel[:visits]), "#{number_with_delimiter(funnel[:visitors])} unique visitors, brand-wide, staff excluded#{@attribution.visits_capped? ? ', last year only' : ''}", "text-secondary"],
       ["Leads", funnel[:leads], "tour requests + concierge chats", "text-info"],
       ["Signups", funnel[:signups], "accounts created", "text-primary"],
       ["First Purchases", funnel[:first_purchases], "people who bought for the first time", "text-success"],
-      ["Revenue", number_to_currency(funnel[:revenue], precision: 0), "#{funnel[:purchases]} purchases tracked", "text-success"],
+      ["New Purchase Value", number_to_currency(funnel[:revenue], precision: 0), "#{funnel[:purchases]} paid purchases, at list price", "text-success"],
     ].each do |title, value, sub, color| %>
       <div class="col-6 col-lg mb-3">
         <div class="border rounded p-3 h-100">
@@ -59,7 +62,7 @@
   <div class="table-responsive">
     <table class="table table-sm mb-2">
       <thead><tr>
-        <th>Channel</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Revenue</th>
+        <th>Channel</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Purchase value</th>
       </tr></thead>
       <tbody>
         <% @attribution.by_channel.each do |ch, r| %>
@@ -117,7 +120,7 @@
     <div class="table-responsive">
       <table class="table table-sm mb-0">
         <thead><tr>
-          <th>Campaign</th><th>Source</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Revenue</th>
+          <th>Campaign</th><th>Source</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Purchase value</th>
         </tr></thead>
         <tbody>
           <% @attribution.by_campaign.each do |camp, r| %>
@@ -200,9 +203,9 @@
             <td class="text-muted" style="white-space: nowrap;"><%= c.occurred_at.in_time_zone(current_location.time_zone.presence || "UTC").strftime("%b %e, %l:%M %p") %></td>
             <td><% if c.user %><%= link_to c.user.name, user_path(c.user) %><% else %><span class="text-muted">—</span><% end %></td>
             <td><%= c.kind.humanize %></td>
-            <td><%= label.call(c.channel) %><% if c.campaign.present? %> <small class="text-muted">· <%= c.campaign %></small><% end %></td>
+            <td><%= label.call(Jellyswitch::AttributionReport.channel_key(c.channel, c.referrer_domain)) %><% if c.campaign.present? %> <small class="text-muted">· <%= c.campaign %></small><% end %></td>
             <td class="text-muted"><%= c.surface %><% unless c.self_serve %> <small>(staff)</small><% end %></td>
-            <td class="text-right"><%= c.amount_cents > 0 ? number_to_currency(c.amount, precision: 0) : "" %></td>
+            <td class="text-right"><%= c.amount_cents > 0 ? number_to_currency(c.amount, precision: 0) : (c.revenue? ? "free" : "") %></td>
           </tr>
         <% end %>
         <% if @attribution.recent.empty? %>

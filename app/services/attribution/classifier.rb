@@ -9,7 +9,10 @@ module Attribution
   #   paid_search, paid_social, organic_search, social, email, referral,
   #   direct, app, website (own-site widget), other_campaign
   class Classifier
-    CHANNELS = %w[paid_search paid_social organic_search social email referral direct app website other_campaign].freeze
+    CHANNELS = %w[paid_search paid_social organic_search social email referral direct app website other_campaign unknown].freeze
+    # Referrers that are Jellyswitch itself (a visit that expired and resumed,
+    # or a hop between brand hosts) say nothing about where the person came from.
+    SELF_HOST_SUFFIXES = %w[jellyswitch.com lvh.me localhost].freeze
 
     SEARCH_ENGINES = %w[google. bing. duckduckgo. yahoo. ecosia. brave. baidu. yandex. ask.com aol.].freeze
     SOCIAL_DOMAINS = %w[facebook. fb.com instagram. linkedin. lnkd.in t.co twitter. x.com reddit. tiktok. youtube. youtu.be nextdoor. pinterest. threads.net snapchat.].freeze
@@ -69,8 +72,8 @@ module Attribution
       return ["social", "facebook", "social"] if landing_has?(/[?&]fbclid=/)
       return ["paid_social", "tiktok", "paid_social"] if landing_has?(/[?&]ttclid=/)
 
-      # 3. Referrer.
-      if @referring_domain.present?
+      # 3. Referrer (ignoring Jellyswitch's own hosts — see SELF_HOST_SUFFIXES).
+      if @referring_domain.present? && !self_referral?
         return ["organic_search", @referring_domain, "organic"] if SEARCH_ENGINES.any? { |d| @referring_domain.include?(d) }
         return ["social", @referring_domain, "social"] if SOCIAL_DOMAINS.any? { |d| @referring_domain.include?(d) }
         return ["referral", @referring_domain, "referral"]
@@ -80,8 +83,13 @@ module Attribution
       case @surface
       when "app" then ["app", "mobile_app", nil]
       when "widget" then ["website", "website", nil]
+      when "unknown" then ["unknown", nil, nil]
       else ["direct", nil, nil]
       end
+    end
+
+    def self_referral?
+      SELF_HOST_SUFFIXES.any? { |s| @referring_domain == s || @referring_domain.end_with?(".#{s}") }
     end
 
     def paid_hint?
