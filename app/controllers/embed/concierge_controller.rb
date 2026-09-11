@@ -160,10 +160,12 @@ module Embed
       return unless user
       Conversion.record(kind: "signup", operator: @operator, location: location, user: user,
                         subject: user, surface: "widget", visit: current_visit, occurred_at: user.created_at)
+      # `try` — request specs stub the checkout result with a strict double that
+      # only knows success?/user; a missing product method just means no subject.
       kind, subject =
-        if product.is_a?(Plan) then ["membership", result.subscription]
-        elsif product.bundle? then ["day_pass_bundle", result.day_pass_bundle]
-        else ["day_pass", result.day_pass]
+        if product.is_a?(Plan) then ["membership", result.try(:subscription)]
+        elsif product.bundle? then ["day_pass_bundle", result.try(:day_pass_bundle)]
+        else ["day_pass", result.try(:day_pass)]
         end
       Conversion.record(kind: kind, operator: @operator, location: location, user: user, subject: subject,
                         amount_cents: product.amount_in_cents, surface: "widget", visit: current_visit)
