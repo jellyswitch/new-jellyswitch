@@ -13,6 +13,7 @@
   var TEASER_TEXT = <%= raw ((@location ? @location.concierge_offer : @operator.concierge_offer_text).presence || @operator.concierge_greeting_text).to_json %>;
   var KEY = "jswcx-" + <%= raw @operator.subdomain.to_json %>;
   var Z = 2147483000;
+<%= render "embed/attribution_params" %>
 
   function remember(name) { try { localStorage.setItem(KEY + name, "1"); } catch (e) {} }
   function remembered(name) { try { return localStorage.getItem(KEY + name) === "1"; } catch (e) { return false; } }
@@ -63,7 +64,7 @@
     if (!frame) {
       frame = document.createElement("iframe");
       frame.className = "jswcx-frame";
-      frame.src = WIDGET_URL;
+      frame.src = jswWithAttribution(WIDGET_URL);
       frame.title = "Chat with " + NAME;
       frame.setAttribute("allow", "payment");
       panel.appendChild(frame);

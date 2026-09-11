@@ -506,6 +506,9 @@ class UserMailer < ApplicationMailer
       .gsub("{{first_name}}", user.name.split.first)
       .gsub("{{full_name}}", user.name)
       .gsub("{{space_name}}", operator.name)
+    # Tag links so the click lands as an "email" visit credited to this
+    # campaign (Data › Conversions). Author-tagged links are left alone.
+    @body = Campaigns::LinkTagger.call(@body, campaign_step: campaign_step, operator: operator)
     @unsubscribe_url = unsubscribe_url(user)
     from_address = location&.sender_from_address || operator.sender_from_address
     mail to: user.email, subject: campaign_step.subject, from: from_address, reply_to: operator.contact_email

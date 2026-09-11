@@ -47,3 +47,20 @@ class Attribution::ClassifierTest < ActiveSupport::TestCase
     assert_equal "website", classify(surface: "widget").channel
   end
 end
+
+class Attribution::ClassifierHostReferrerTest < ActiveSupport::TestCase
+  test "a widget visit uses the host page's referrer passed as jsw_ref" do
+    land = "https://tml.jellyswitch.com/embed/concierge?jsw_ref=#{CGI.escape('https://www.google.com/')}"
+    r = Attribution::Classifier.call(referrer: "https://coworktahoe.com/", landing_page: land, surface: "widget")
+    assert_equal "organic_search", r.channel
+    assert_equal "google.com", r.referrer_domain
+  end
+
+  test "a widget visit with utm on the host page is the tagged channel" do
+    land = "https://tml.jellyswitch.com/embed/concierge?utm_source=instagram&utm_medium=social&utm_campaign=Open+House"
+    r = Attribution::Classifier.call(referrer: "https://coworktahoe.com/", landing_page: land,
+                                     utm_source: "instagram", utm_medium: "social", utm_campaign: "Open House", surface: "widget")
+    assert_equal "social", r.channel
+    assert_equal "Open House", r.campaign
+  end
+end
