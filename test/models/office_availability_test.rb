@@ -31,4 +31,11 @@ class OfficeAvailabilityTest < ActiveSupport::TestCase
     @office.update!(visible: false)
     assert_nil @office.listed_availability
   end
+
+  test "office hidden from the website stays active but is not listed" do
+    @office.update!(hidden_from_website: true)
+    assert_nil @office.listed_availability
+    assert @office.visible?
+    assert_includes Office.visible, @office
+  end
 end

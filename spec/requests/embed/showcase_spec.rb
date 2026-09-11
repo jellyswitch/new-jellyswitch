@@ -28,7 +28,13 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.headers["Cache-Control"]).to include("no-cache")
   end
 
-  it "ignores a preview token for another operator or a forged one" do
+    it "caches public traffic for one minute so catalog edits show up fast" do
+    get_widget
+    expect(response).to have_http_status(:ok)
+    expect(response.headers["Cache-Control"]).to eq("max-age=60, public")
+  end
+
+it "ignores a preview token for another operator or a forged one" do
     operator.update!(showcase_enabled: false)
     other = create(:operator)
 
@@ -67,6 +73,15 @@ RSpec.describe "Embed::Showcase", type: :request do
     # link hover color is the button color.
     expect(response.body).to include(".jsw-sc a.jsw-sc-cta:hover,.jsw-sc a.jsw-sc-cta:focus{color:#fff;")
     expect(response.body).to include(".jsw-sc a.jsw-sc-cta.jsw-sc-out:hover,.jsw-sc a.jsw-sc-cta.jsw-sc-out:focus{background:var(--jsw-button);color:#fff;")
+  end
+
+  it "clears list bullets on the li itself so host `ul li` rules cannot re-add them" do
+    # Regression: WordPress themes (Salient on untethered.space) set
+    # `ul li{list-style:outside disc}` at (0,0,2) directly on the li. A reset on
+    # the .jsw-sc-list ul alone never reaches the li, so members saw a disc
+    # bullet AND the widget's check mark on every line.
+    get "/embed/showcase/#{operator.subdomain}", params: { products: "day_passes" }
+    expect(response.body).to include(".jsw-sc-list li{list-style:none;")
   end
 
   it "colors the product buttons with the dedicated button color when set" do

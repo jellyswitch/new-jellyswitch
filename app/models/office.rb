@@ -5,6 +5,7 @@
 #  id             :bigint(8)        not null, primary key
 #  capacity       :integer          default(1), not null
 #  description    :text
+#  hidden_from_website :boolean          default(FALSE), not null
 #  name           :string
 #  slug           :string
 #  square_footage :integer          default(0), not null
@@ -115,8 +116,11 @@ class Office < ApplicationRecord
   #           a tenant might renew, and their departure is not public until
   #           staff say so.
   #   nil   — not listed.
+  # `hidden_from_website` keeps an active office off the widget without
+  # archiving it (`visible: false` archives — it leaves the office list too).
   def listed_availability
     return nil unless visible?
+    return nil if hidden_from_website?
 
     lease = office_leases.active.order(end_date: :desc).first
     return :now if lease.nil?

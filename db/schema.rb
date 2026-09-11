@@ -801,6 +801,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_11_170002) do
     t.integer "square_footage", default: 0, null: false
     t.integer "asking_rate_in_cents"
     t.boolean "coming_available", default: false, null: false
+    t.boolean "hidden_from_website", default: false, null: false
     t.index ["location_id"], name: "index_offices_on_location_id"
     t.index ["operator_id"], name: "index_offices_on_operator_id"
   end

@@ -31,7 +31,13 @@ RSpec.describe "Embed::OfficeInventory", type: :request do
     expect(response.headers["Cache-Control"]).to include("no-cache")
   end
 
-  it "ignores a forged preview token" do
+    it "caches public traffic for one minute so catalog edits show up fast" do
+    get_widget
+    expect(response).to have_http_status(:ok)
+    expect(response.headers["Cache-Control"]).to eq("max-age=60, public")
+  end
+
+it "ignores a forged preview token" do
     operator.update!(office_inventory_enabled: false)
     get_widget(preview_token: "not-a-token")
     expect(response.body).to include("not enabled")
@@ -70,6 +76,14 @@ RSpec.describe "Embed::OfficeInventory", type: :request do
     make_office(name: "Hidden Office", visible: false)
     get_widget
     expect(response.body).not_to include("Hidden Office")
+  end
+
+  it "hides an active office flagged hidden_from_website" do
+    make_office(name: "Office 102", hidden_from_website: true)
+    make_office(name: "Office 103")
+    get_widget
+    expect(response.body).not_to include("Office 102")
+    expect(response.body).to include("Office 103")
   end
 
   it "renders the empty-state when everything is taken" do
