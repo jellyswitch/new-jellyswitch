@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_11_170002) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_11_190001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -892,6 +892,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_11_170002) do
     t.integer "building_access_window_minutes", default: 60, null: false
     t.boolean "showcase_enabled", default: false, null: false
     t.boolean "office_inventory_enabled", default: false, null: false
+    t.boolean "conference_rooms_enabled", default: false, null: false
     t.string "showcase_button_color"
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end

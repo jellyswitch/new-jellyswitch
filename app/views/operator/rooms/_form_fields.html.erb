@@ -9,6 +9,12 @@
 </div>
 
 <div class="form-group">
+  <%= f.label :features_text, "Features — one per line (shown in the app and on the website's Conference Rooms widget)" %>
+  <%= f.text_area :features_text, value: Array(f.object.features).join("\n"), rows: 4, class: "form-control",
+                  placeholder: "65\" display with HDMI\nWhiteboard\nVideo conferencing" %>
+</div>
+
+<div class="form-group">
   <%= f.label :capacity,
               "Roughly how many people can sit comfortably in this room?" %>
   <%= f.text_field :capacity, class: "form-control" %>

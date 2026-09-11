@@ -1,0 +1,80 @@
+<%# Inline-DOM Conference Rooms (ADR 0027). A card per rentable room —
+    photo, capacity, hourly rate, description, feature list — with a Book now
+    link into the brand's booking wizard. Classes namespaced jsw-rm; accent
+    from the shared embed-theme. %>
+(function () {
+  var DATA = <%= raw({
+    rooms: @rooms,
+    accent: @operator.embed_accent_color,
+    button: @operator.embed_button_color,
+    font: @operator.embed_font_family.presence,
+  }.to_json) %>;
+  var script = document.currentScript;
+  if (!script) return;
+
+  var css =
+    ".jsw-rm{--jsw-accent:" + DATA.accent + ";--jsw-button:" + DATA.button + ";margin:16px 0;color:inherit;}" +
+    ".jsw-rm *{box-sizing:border-box;}" +
+    ".jsw-rm-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:stretch;}" +
+    ".jsw-rm-card{flex:1 1 280px;max-width:380px;border:1px solid #e5e7eb;border-radius:14px;overflow:hidden;background:#fff;color:#111827;display:flex;flex-direction:column;}" +
+    ".jsw-rm-photo{width:100%;height:190px;object-fit:cover;display:block;}" +
+    ".jsw-rm-body{padding:16px;display:flex;flex-direction:column;flex:1;}" +
+    ".jsw-rm-name{font-weight:700;font-size:1.1em;}" +
+    ".jsw-rm-meta{font-size:.9em;color:#6b7280;margin:4px 0 6px;}" +
+    ".jsw-rm-rate{font-weight:800;font-size:1.2em;margin:2px 0 10px;}" +
+    ".jsw-rm-desc{font-size:.92em;line-height:1.45;margin-bottom:10px;}" +
+    ".jsw-rm-list{list-style:none;margin:0 0 14px;padding:0;flex:1;}" +
+    ".jsw-rm-list li{list-style:none;padding:3px 0 3px 22px;position:relative;font-size:.93em;line-height:1.4;}" +
+    ".jsw-rm-list li:before{content:'\\2713';position:absolute;left:2px;color:var(--jsw-accent);font-weight:700;}" +
+    ".jsw-rm-cta{display:block;text-align:center;background:var(--jsw-button);color:#fff;border-radius:10px;padding:12px;font-weight:700;text-decoration:none;margin-top:auto;}" +
+    // The CTA is an <a>: pin every link state at (0,3,1) so the host page's
+    // own a:hover / a:visited rules can't recolor the label (Showcase lesson).
+    ".jsw-rm a.jsw-rm-cta,.jsw-rm a.jsw-rm-cta:link,.jsw-rm a.jsw-rm-cta:visited{color:#fff;text-decoration:none;}" +
+    ".jsw-rm a.jsw-rm-cta:hover,.jsw-rm a.jsw-rm-cta:focus{color:#fff;text-decoration:none;filter:brightness(.9);}" +
+    ".jsw-rm-empty{border:1px dashed #d1d5db;border-radius:12px;padding:18px;color:#6b7280;font-size:.95em;}" +
+    (DATA.font ? ".jsw-rm{font-family:" + DATA.font + ";}" : "");
+  var style = document.createElement("style");
+  style.textContent = css;
+  document.head.appendChild(style);
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text) e.textContent = text;
+    return e;
+  }
+
+  var root = el("div", "jsw-rm");
+  if (!DATA.rooms.length) {
+    root.appendChild(el("div", "jsw-rm-empty", "No rooms are open for booking right now — check back soon."));
+  }
+  var grid = el("div", "jsw-rm-grid");
+  DATA.rooms.forEach(function (room) {
+    var card = el("div", "jsw-rm-card");
+    if (room.photo_url) {
+      var img = el("img", "jsw-rm-photo");
+      img.src = room.photo_url; img.alt = room.name; img.loading = "lazy";
+      card.appendChild(img);
+    }
+    var body = el("div", "jsw-rm-body");
+    body.appendChild(el("div", "jsw-rm-name", room.name));
+    var meta = [];
+    if (room.capacity) meta.push("Seats " + room.capacity);
+    if (room.square_footage) meta.push(room.square_footage + " sqft");
+    if (meta.length) body.appendChild(el("div", "jsw-rm-meta", meta.join(" · ")));
+    body.appendChild(el("div", "jsw-rm-rate", room.rate_label));
+    if (room.description) body.appendChild(el("div", "jsw-rm-desc", room.description));
+    if (room.bullets && room.bullets.length) {
+      var ul = el("ul", "jsw-rm-list");
+      room.bullets.forEach(function (b) { ul.appendChild(el("li", null, b)); });
+      body.appendChild(ul);
+    }
+    var cta = el("a", "jsw-rm-cta", "Book now");
+    cta.href = room.book_url;
+    body.appendChild(cta);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+  root.appendChild(grid);
+  script.insertAdjacentElement("afterend", root);
+})();

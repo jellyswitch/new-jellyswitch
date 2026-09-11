@@ -293,6 +293,11 @@ The operator's embeddable **live listing of available offices**. An **Office** i
 
 _Avoid_: "office widget" (collides with the Office model and the office interest tag) and "vacancy list" (operator-internal framing; the visitor-facing frame is what they *can get*, not what the operator failed to fill).
 
+### Conference Rooms
+The operator's embeddable **listing of bookable meeting rooms** — the rooms the operator marked **rentable** ("available to rent for non-members"); members-only rooms stay in the app. Each card shows the room's photo, seats, hourly rate (or "Included with a day pass" / "Included with membership" for a $0 room), description, and its **feature list** — the operator's typed room features plus the room's free amenities, the same two lists the app shows — with a **Book now** button that opens the brand site's booking wizard for that room (a new visitor signs up or logs in first and lands back in the wizard). Read-only, like the Showcase: the booking and its price are decided by the wizard, never by the widget. Pinned to a location at a multi-location operator (same setup nudge as the Showcase); themed by the shared embed-theme.
+
+_Avoid_: "meeting room widget" and "room catalog" — the visitor-facing frame is *rooms you can book*, and it deliberately omits rooms they can't.
+
 ## Reservation (room booking)
 
 A booking of one **Room** for one time window. Pricing is decided **server-side at booking** by `ChargeCalculator`, and the charge is **captured then, not at start** (ADR 0010). A Reservation grants a time-bounded **Access window** around its slot — **not** all-day building access (ADR 0013). A priced (group) **Meeting room** is bookable standalone — no Day Pass required.

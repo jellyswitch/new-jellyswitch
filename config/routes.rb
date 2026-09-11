@@ -29,6 +29,13 @@ Rails.application.routes.draw do
       get  "/thank_you", to: "office_inventory#thank_you", as: :office_inventory_thank_you
     end
 
+    # Conference Rooms: inline-DOM cards for the location's rentable meeting
+    # rooms (photo, capacity, rate, features) with a Book now link into the
+    # brand's own booking wizard. Read-only, like the Showcase.
+    scope "rooms/:operator_subdomain" do
+      get "/", to: "rooms#widget", as: :rooms, defaults: { format: :js }
+    end
+
     scope "concierge/:operator_subdomain" do
       get  "/",                       to: "concierge#show", as: :concierge
       get  "/locations/:location_id", to: "concierge#show", as: :concierge_for_location
