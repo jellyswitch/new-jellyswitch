@@ -14,11 +14,11 @@ module Embed
 
     def widget
       # Settings-page preview: signed token, never cached, shows the widget
-      # even while it's disabled. Public traffic keeps the 5-minute cache.
+      # even while it's disabled. Public traffic keeps a 1-minute cache so catalog edits show up fast.
       if admin_previewing?
         expires_now
       else
-        expires_in 5.minutes, public: true
+        expires_in 1.minute, public: true
         return render_noop("Office Inventory is not enabled for #{@operator.subdomain}") unless @operator.office_inventory_enabled?
       end
 

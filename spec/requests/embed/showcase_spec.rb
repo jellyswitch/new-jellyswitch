@@ -28,7 +28,13 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.headers["Cache-Control"]).to include("no-cache")
   end
 
-  it "ignores a preview token for another operator or a forged one" do
+    it "caches public traffic for one minute so catalog edits show up fast" do
+    get_widget
+    expect(response).to have_http_status(:ok)
+    expect(response.headers["Cache-Control"]).to eq("max-age=60, public")
+  end
+
+it "ignores a preview token for another operator or a forged one" do
     operator.update!(showcase_enabled: false)
     other = create(:operator)
 
