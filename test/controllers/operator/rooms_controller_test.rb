@@ -39,6 +39,25 @@ class Operator::RoomsControllerTest < ActionDispatch::IntegrationTest
     assert_equal original_capacity, @room.reload.capacity
   end
 
+  # Conference Rooms widget (2026-09-11): the web room form edits the same
+  # `features` list the mobile admin form does — one line per feature, blank
+  # lines dropped, an emptied box clears the list.
+  test "update persists features typed one per line" do
+    log_in users(:cowork_tahoe_admin)
+    @room.update_columns(features: ["Existing feature"])
+
+    get edit_room_path(@room), env: default_env
+    assert_select "textarea[name='room[features_text]']", text: /Existing feature/
+
+    patch room_path(@room), env: default_env, params: {
+      room: { features_text: "Whiteboard\r\n\r\n  65\" display  \r\nVideo conferencing" },
+    }
+    assert_equal ["Whiteboard", "65\" display", "Video conferencing"], @room.reload.features
+
+    patch room_path(@room), env: default_env, params: { room: { features_text: "" } }
+    assert_equal [], @room.reload.features
+  end
+
   # ADR 0012: the per-room "Counts toward day pass (call room)" toggle must be
   # permitted and persisted by the operator room form.
   test "update persists include_with_day_pass" do

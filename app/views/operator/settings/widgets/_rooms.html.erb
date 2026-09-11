@@ -1,0 +1,30 @@
+<p class="text-muted">
+  A card for each room checked "available to rent for non-members": its photo, seats, hourly rate,
+  description, and feature list (edit these on the room form), with a <strong>Book now</strong>
+  button that opens your booking page for that room — visitors log in or sign up first.
+</p>
+<%= form_with url: settings_update_website_widgets_path, method: :patch, scope: :operator, model: @operator, local: true do |f| %>
+  <%= hidden_field_tag :widget, "rooms" %>
+  <div class="form-check mb-3">
+    <%= f.check_box :conference_rooms_enabled, class: "form-check-input" %>
+    <%= f.label :conference_rooms_enabled, "Enable the Conference Rooms embed", class: "form-check-label" %>
+  </div>
+  <%= f.submit "Save Conference Rooms settings", class: "btn btn-primary mb-3" %>
+<% end %>
+
+<%= render "operator/settings/widgets/script_preview",
+      id: "rooms-preview", title: "Conference Rooms preview", locations: locations,
+      base_url: embed_rooms_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
+                                preview_token: Embed::RoomsController.preview_token_for(@operator)) %>
+
+<hr>
+<h5>Embed snippets</h5>
+<% locations.each do |loc| %>
+  <% rooms_url = embed_rooms_url(operator_subdomain: @operator.subdomain, host: request.host_with_port,
+                                 location_id: (locations.count > 1 ? loc.id : nil)) %>
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="min-width:110px;"><%= loc.name %></span>
+    <input class="form-control" readonly value='<script src="<%= rooms_url %>" async></script>'
+           onclick="this.select();navigator.clipboard.writeText(this.value)">
+  </div>
+<% end %>

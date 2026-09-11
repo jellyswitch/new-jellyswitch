@@ -7,13 +7,13 @@ class Operator::SettingsWebsiteWidgetsTest < ActionDispatch::IntegrationTest
     log_in @admin
   end
 
-  test "renders the shared look & feel form and a picker with all four widgets" do
+  test "renders the shared look & feel form and a picker with all five widgets" do
     get settings_website_widgets_path, env: default_env
     assert_response :success
     assert_select "select[name='operator[embed_font]']"
     assert_select "input[name='operator[embed_accent_override]']"
     assert_select "input[name='operator[showcase_button_color]']"
-    %w[concierge tour showcase offices].each do |key|
+    %w[concierge tour showcase offices rooms].each do |key|
       assert_select "#widget-picker a.nav-link[data-widget=#{key}]"
       assert_select "#widget-#{key}.tab-pane"
     end
@@ -33,9 +33,11 @@ class Operator::SettingsWebsiteWidgetsTest < ActionDispatch::IntegrationTest
     assert_select "#widget-tour iframe[title='Tour widget preview']"
     assert_select "#widget-showcase iframe[title='Showcase preview']"
     assert_select "#widget-offices iframe[title='Office Inventory preview']"
+    assert_select "#widget-rooms iframe[title='Conference Rooms preview']"
     # Script embeds preview through a signed token so they show even while disabled.
     assert_match %r{/embed/showcase/#{@admin.operator.subdomain}\?preview_token=}, response.body
     assert_match %r{/embed/office_inventory/#{@admin.operator.subdomain}\?preview_token=}, response.body
+    assert_match %r{/embed/rooms/#{@admin.operator.subdomain}\?preview_token=}, response.body
   end
 
   test "?widget= picks the open panel" do
@@ -46,6 +48,16 @@ class Operator::SettingsWebsiteWidgetsTest < ActionDispatch::IntegrationTest
 
     get settings_website_widgets_path(widget: "offices"), env: default_env
     assert_select "#widget-offices.tab-pane.active input[name='operator[office_inventory_enabled]']"
+
+    get settings_website_widgets_path(widget: "rooms"), env: default_env
+    assert_select "#widget-rooms.tab-pane.active input[name='operator[conference_rooms_enabled]']"
+  end
+
+  test "saving the Conference Rooms panel enables the embed and returns to it" do
+    patch settings_update_website_widgets_path, env: default_env,
+          params: { widget: "rooms", operator: { conference_rooms_enabled: "1" } }
+    assert_redirected_to settings_website_widgets_path(widget: "rooms")
+    assert @admin.operator.reload.conference_rooms_enabled
   end
 
   test "an unknown ?widget= falls back to the first panel" do

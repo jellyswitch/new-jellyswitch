@@ -5,6 +5,7 @@
     { key: "tour",      label: "Tour Request",     icon: "fas fa-calendar-check" },
     { key: "showcase",  label: "Showcase",         icon: "fas fa-th" },
     { key: "offices",   label: "Office Inventory", icon: "fas fa-building" },
+    { key: "rooms",     label: "Conference Rooms", icon: "fas fa-users" },
   ]
   locations = @operator.locations.where(visible: true).order(:name)
 %>
@@ -71,6 +72,9 @@
     </div>
     <div class="tab-pane fade <%= 'show active' if @widget == 'offices' %>" id="widget-offices" role="tabpanel">
       <%= render "operator/settings/widgets/offices", locations: locations %>
+    </div>
+    <div class="tab-pane fade <%= 'show active' if @widget == 'rooms' %>" id="widget-rooms" role="tabpanel">
+      <%= render "operator/settings/widgets/rooms", locations: locations %>
     </div>
   </div>
 

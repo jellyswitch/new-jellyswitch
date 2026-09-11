@@ -66,9 +66,10 @@ class Operator::SettingsController < Operator::BaseController
 
   # One home for the embed widget family (2026-09-02, David): the shared
   # Look & Feel on top, then a picker — Concierge, Tour Request, Showcase,
-  # Office Inventory — showing one widget's settings, snippets, and preview
-  # at a time instead of a long scroll with two widgets on other pages.
-  WIDGETS = %w[concierge tour showcase offices].freeze
+  # Office Inventory, Conference Rooms — showing one widget's settings,
+  # snippets, and preview at a time instead of a long scroll with two
+  # widgets on other pages.
+  WIDGETS = %w[concierge tour showcase offices rooms].freeze
 
   def website_widgets
     @operator = current_operator
@@ -77,7 +78,7 @@ class Operator::SettingsController < Operator::BaseController
 
   def update_website_widgets
     @operator = current_operator
-    if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled, :showcase_button_color, :office_inventory_enabled))
+    if @operator.update(params.require(:operator).permit(:embed_font, :embed_accent_override, :showcase_enabled, :showcase_button_color, :office_inventory_enabled, :conference_rooms_enabled))
       redirect_to settings_website_widgets_path(widget: params[:widget].presence), notice: "Website widget settings saved."
     else
       flash.now[:error] = @operator.errors.full_messages.to_sentence

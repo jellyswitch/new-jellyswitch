@@ -287,4 +287,11 @@ class Room < ApplicationRecord
   def amenity_feature_names
     amenities.features.map(&:name)
   end
+
+  # What the website's Conference Rooms widget lists under a room: the
+  # operator's typed features first, then the room's free amenities — the
+  # same two lists the app shows on a room, so both surfaces agree.
+  def website_bullets
+    (Array(features) + amenity_feature_names).map(&:to_s).map(&:strip).reject(&:blank?).uniq
+  end
 end
