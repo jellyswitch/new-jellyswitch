@@ -155,6 +155,19 @@ class Operator::ReportsController < Operator::BaseController
                                      .count
   end
 
+  # Data › Conversions: attribution funnel by channel/campaign + self-serve
+  # share. Visits are brand-level (Ahoy landing host), the rest is per location.
+  def conversions
+    authorize :report, :conversions?
+    return redirect_to(reports_path, alert: "Pick a location to see conversions.") unless current_location
+
+    @period = %w[30d 90d 12m all].include?(params[:period]) ? params[:period] : "90d"
+    @period_days = { "30d" => 30, "90d" => 90, "12m" => 365, "all" => 3650 }[@period]
+    @attribution = Jellyswitch::AttributionReport.new(current_location, period_days: @period_days, host: request.host)
+    @channel = params[:channel].presence
+    @people = @channel ? @attribution.people_for_channel(@channel) : nil
+  end
+
   def monetization
     @location = Location.find(params[:location_id])
     authorize :report, :monetization?

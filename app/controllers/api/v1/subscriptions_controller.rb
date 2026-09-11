@@ -67,6 +67,7 @@ class Api::V1::SubscriptionsController < Api::V1::BaseController
     end
 
     if result.success?
+      record_api_conversion("membership", subject: result.subscription, amount_in_cents: result.subscription&.plan&.amount_in_cents)
       render json: subscription_json(result.subscription), status: :created
     else
       render_error(result.message || 'Unable to create subscription')

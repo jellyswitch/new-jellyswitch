@@ -27,6 +27,22 @@ class Api::V1::BaseController < ApplicationController
     @current_api_user
   end
 
+  # Server-side conversion log for app purchases (see Conversion.record).
+  # The mobile app has no Ahoy visit, so the row is credited to the buyer's
+  # stored first-touch (or "app" when they signed up in the app). Never raises.
+  def record_api_conversion(kind, subject:, amount_in_cents: nil, user: current_api_user)
+    Conversion.record(
+      kind: kind,
+      operator: current_tenant,
+      location: current_location,
+      user: user,
+      subject: subject,
+      amount_cents: amount_in_cents,
+      surface: "app",
+      actor: current_api_user,
+    )
+  end
+
   def set_tenant_from_header
     subdomain = request.headers['X-Operator-Subdomain']
     if subdomain.present?

@@ -95,7 +95,12 @@ class ApplicationController < ActionController::Base
   # pixels) and carries a `purchase` dataLayer event with product details so
   # GTM/ad platforms can attribute conversions per product. Fires on the page
   # rendered after the purchase redirect (ApplicationHelper#set_tracking_pixels).
-  def track_conversion(product_type, product_name: nil, amount_in_cents: nil, transaction_id: nil)
+  #
+  # Also writes the server-side Conversion row (attribution report). Pass
+  # `subject:` (the purchased record) and `user:` (the buyer — defaults to
+  # current_user) so the row is deduped and credited to the right person.
+  def track_conversion(product_type, product_name: nil, amount_in_cents: nil, transaction_id: nil,
+                       subject: nil, user: nil)
     session[:should_track_pixels] = true
     session[:conversion_event] = {
       product_type: product_type,
@@ -104,5 +109,24 @@ class ApplicationController < ActionController::Base
       currency: "USD",
       transaction_id: transaction_id,
     }.compact
+
+    record_conversion(product_type, subject: subject, user: user, amount_in_cents: amount_in_cents)
+  end
+
+  # Server-side conversion log (see Conversion.record). Never raises.
+  def record_conversion(kind, subject: nil, user: nil, amount_in_cents: nil, occurred_at: Time.current)
+    buyer = user || (respond_to?(:current_user, true) ? current_user : nil)
+    Conversion.record(
+      kind: kind,
+      operator: current_tenant,
+      location: (respond_to?(:current_location, true) ? current_location : nil),
+      user: buyer,
+      subject: subject,
+      amount_cents: amount_in_cents,
+      surface: "web",
+      actor: (respond_to?(:current_user, true) ? current_user : nil),
+      visit: (respond_to?(:current_visit, true) ? current_visit : nil),
+      occurred_at: occurred_at,
+    )
   end
 end

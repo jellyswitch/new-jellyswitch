@@ -178,7 +178,9 @@ class Operator::LandingController < Operator::BaseController
     track_conversion("membership",
                      product_name: subscription&.plan&.name,
                      amount_in_cents: subscription&.plan&.amount_in_cents,
-                     transaction_id: subscription ? "sub_#{subscription.id}" : nil)
+                     transaction_id: subscription ? "sub_#{subscription.id}" : nil,
+                     subject: subscription,
+                     user: subscription&.subscribable.is_a?(User) ? subscription.subscribable : nil)
   end
 
   def find_doors

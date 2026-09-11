@@ -88,7 +88,9 @@ class Operator::SubscriptionsController < Operator::BaseController
       track_conversion("membership",
                        product_name: @subscription.plan&.name,
                        amount_in_cents: @subscription.plan&.amount_in_cents,
-                       transaction_id: "sub_#{@subscription.id}")
+                       transaction_id: "sub_#{@subscription.id}",
+                       subject: @subscription,
+                       user: @subscription.subscribable.is_a?(User) ? @subscription.subscribable : nil)
       turbo_redirect(root_path)
     else
       flash[:error] = result.message

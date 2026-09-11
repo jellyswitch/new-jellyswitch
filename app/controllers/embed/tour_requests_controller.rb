@@ -54,6 +54,8 @@ module Embed
       # widget. Everything else stays with the widget's operator.
       owner = location&.operator || @operator
       activity = ActsAsTenant.with_tenant(owner) { file_request(owner, location, permitted) }
+      Conversion.record(kind: "tour_request", operator: owner, location: location, user: activity&.user,
+                        subject: activity, surface: "widget", visit: current_visit)
 
       # Untethered-only: Zephyr Cove requests are also logged at Cowork Tahoe
       # (ADR 0030). Runs before the alert so the staff email can link to it.

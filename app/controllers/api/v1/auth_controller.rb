@@ -196,6 +196,8 @@ class Api::V1::AuthController < Api::V1::BaseController
     )
 
     if result.success?
+      Conversion.record(kind: "signup", operator: operator, location: result.user.original_location,
+                        user: result.user, subject: result.user, surface: "app")
       token = generate_token(result.user)
       render json: { token: token, user: user_json(result.user), locations: operator.locations.visible.map { |l| { id: l.id, name: l.name } } }, status: :created
     else

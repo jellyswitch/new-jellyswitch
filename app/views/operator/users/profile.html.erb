@@ -13,6 +13,13 @@
         Joined <%= time_ago_in_words(@user.created_at) %> ago
         (<%= @user.created_at.strftime("%b %e, %Y") %>)
       </small>
+      <% if @user.acquisition_channel.present? && policy(:report).conversions? %>
+        <small class="text-muted d-block">
+          <i class="fas fa-bullseye mr-1"></i>Source: <%= Jellyswitch::AttributionReport.channel_label(@user.acquisition_channel) %>
+          <% detail = [@user.acquisition_campaign, @user.acquisition_referrer].compact_blank.first %>
+          <% if detail.present? %>(<%= detail %>)<% end %>
+        </small>
+      <% end %>
     </div>
   </div>
 

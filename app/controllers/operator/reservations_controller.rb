@@ -198,7 +198,9 @@ class Operator::ReservationsController < Operator::BaseController
       track_conversion("room_reservation",
                        product_name: @reservation.room&.name,
                        amount_in_cents: @reservation.captured_amount_in_cents,
-                       transaction_id: "res_#{@reservation.id}")
+                       transaction_id: "res_#{@reservation.id}",
+                       subject: @reservation,
+                       user: @reservation.user)
       if current_user.approved?
         turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
       else
@@ -615,7 +617,9 @@ class Operator::ReservationsController < Operator::BaseController
       track_conversion("room_reservation",
                        product_name: @reservation.room&.name,
                        amount_in_cents: @reservation.captured_amount_in_cents,
-                       transaction_id: "res_#{@reservation.id}")
+                       transaction_id: "res_#{@reservation.id}",
+                       subject: @reservation,
+                       user: @reservation.user)
       turbo_redirect(reservation_path(@reservation), action: restore_if_possible)
     else
       flash[:error] = result.message

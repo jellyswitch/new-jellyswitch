@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_02_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_11_170002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -109,6 +109,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_02_000001) do
     t.datetime "started_at", precision: nil
     t.index ["user_id"], name: "index_ahoy_visits_on_user_id"
     t.index ["visit_token"], name: "index_ahoy_visits_on_visit_token", unique: true
+    t.index ["visitor_token"], name: "index_ahoy_visits_on_visitor_token"
   end
 
   create_table "amenities", force: :cascade do |t|
@@ -279,6 +280,34 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_02_000001) do
     t.index ["subscription_id"], name: "index_comp_days_on_subscription_id"
     t.index ["user_id", "location_id", "occurred_on"], name: "index_comp_days_on_user_id_and_location_id_and_occurred_on"
     t.index ["user_id"], name: "index_comp_days_on_user_id"
+  end
+
+  create_table "conversions", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.bigint "location_id"
+    t.bigint "user_id"
+    t.string "kind", null: false
+    t.string "subject_type"
+    t.bigint "subject_id"
+    t.integer "amount_cents", default: 0, null: false
+    t.string "surface"
+    t.boolean "self_serve", default: true, null: false
+    t.bigint "actor_id"
+    t.bigint "ahoy_visit_id"
+    t.string "channel"
+    t.string "source"
+    t.string "medium"
+    t.string "campaign"
+    t.string "referrer_domain"
+    t.string "landing_page"
+    t.datetime "occurred_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["kind"], name: "index_conversions_on_kind"
+    t.index ["location_id", "occurred_at"], name: "index_conversions_on_location_id_and_occurred_at"
+    t.index ["operator_id", "occurred_at"], name: "index_conversions_on_operator_id_and_occurred_at"
+    t.index ["subject_type", "subject_id", "kind"], name: "index_conversions_on_subject_and_kind", unique: true
+    t.index ["user_id"], name: "index_conversions_on_user_id"
   end
 
   create_table "day_pass_bundle_redemptions", force: :cascade do |t|
@@ -1212,9 +1241,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_02_000001) do
     t.string "login_code_digest"
     t.datetime "login_code_sent_at"
     t.integer "login_code_attempts", default: 0, null: false
+    t.string "acquisition_channel"
+    t.string "acquisition_source"
+    t.string "acquisition_medium"
+    t.string "acquisition_campaign"
+    t.string "acquisition_referrer"
+    t.string "acquisition_landing_page"
+    t.bigint "acquisition_visit_id"
+    t.datetime "acquired_at"
     t.index "operator_id, lower((email)::text)", name: "index_users_on_operator_id_and_lower_email", unique: true
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["home_zip"], name: "index_users_on_home_zip"
+    t.index ["operator_id", "acquisition_channel"], name: "index_users_on_operator_id_and_acquisition_channel"
     t.index ["operator_id", "home_state", "home_city"], name: "index_users_on_operator_home_state_home_city"
     t.index ["operator_id"], name: "index_users_on_operator_id"
     t.index ["point_of_contact_id"], name: "index_users_on_point_of_contact_id"

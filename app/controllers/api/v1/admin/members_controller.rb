@@ -166,6 +166,8 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     )
 
     if result.success?
+      Conversion.record(kind: "signup", operator: current_tenant, location: result.user.original_location || current_location,
+                        user: result.user, subject: result.user, surface: "app", actor: current_api_user)
       render json: member_list_json(result.user), status: :created
     else
       render_error(result.error || 'Failed to create user')

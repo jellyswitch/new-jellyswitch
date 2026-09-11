@@ -101,6 +101,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
       if result.success?
         b = result.day_pass_bundle
+        record_api_conversion("day_pass_bundle", subject: b, amount_in_cents: b.day_pass_type&.amount_in_cents)
         render json: {
           success: true,
           id: b.id,
@@ -190,6 +191,7 @@ class Api::V1::DayPassesController < Api::V1::BaseController
 
     if result.success?
       dp = result.day_pass || DayPass.where(user: current_api_user).order(created_at: :desc).first
+      record_api_conversion("day_pass", subject: dp, amount_in_cents: (dp&.complimentary ? 0 : dp&.day_pass_type&.amount_in_cents))
       render json: {
         success: true,
         id: dp&.id,
