@@ -3,6 +3,7 @@
 <% funnel = @attribution.funnel %>
 <% ss = @attribution.self_serve %>
 <% label = ->(ch) { Jellyswitch::AttributionReport.channel_label(ch) } %>
+<% site_on = @attribution.site_tracker_active? %>
 
 <%= super_wide_card do %>
   <div class="mb-3">
@@ -30,12 +31,13 @@
   <%# ── Funnel ── %>
   <div class="row text-center mb-2">
     <% [
-      ["Visits", number_with_delimiter(funnel[:visits]), "#{number_with_delimiter(funnel[:visitors])} unique visitors, brand-wide, staff excluded#{@attribution.visits_capped? ? ', last year only' : ''}", "text-secondary"],
+      (site_on ? ["Website Visits", number_with_delimiter(funnel[:site_visits]), "#{number_with_delimiter(funnel[:site_visitors])} unique visitors on your site, brand-wide#{@attribution.visits_capped? ? ', last year only' : ''}", "text-secondary"] : nil),
+      ["Jellyswitch Visits", number_with_delimiter(funnel[:visits]), "#{number_with_delimiter(funnel[:visitors])} unique visitors, brand-wide, staff excluded#{@attribution.visits_capped? ? ', last year only' : ''}", "text-secondary"],
       ["Leads", funnel[:leads], "tour requests + concierge chats", "text-info"],
       ["Signups", funnel[:signups], "accounts created", "text-primary"],
       ["First Purchases", funnel[:first_purchases], "people who bought for the first time", "text-success"],
       ["New Purchase Value", number_to_currency(funnel[:revenue], precision: 0), "#{funnel[:purchases]} paid purchases, at list price", "text-success"],
-    ].each do |title, value, sub, color| %>
+    ].compact.each do |title, value, sub, color| %>
       <div class="col-6 col-lg mb-3">
         <div class="border rounded p-3 h-100">
           <div class="font-weight-bold <%= color %>" style="font-size: 1.4rem; white-space: nowrap;"><%= value %></div>
@@ -45,10 +47,16 @@
       </div>
     <% end %>
   </div>
-  <% if funnel[:visits] > 0 %>
+  <% top = site_on ? funnel[:site_visits] : funnel[:visits] %>
+  <% if top > 0 %>
     <p class="text-center text-muted" style="font-size: 12px;">
-      Visit → signup <%= (100.0 * funnel[:signups] / funnel[:visits]).round(1) %>%
+      <%= site_on ? "Website visit" : "Visit" %> → signup <%= (100.0 * funnel[:signups] / top).round(1) %>%
       <% if funnel[:signups] > 0 %> · signup → first purchase <%= (100.0 * funnel[:first_purchases] / funnel[:signups]).round %>%<% end %>
+    </p>
+  <% end %>
+  <% unless site_on %>
+    <p class="text-center text-muted" style="font-size: 12px;">
+      Add the Concierge launcher script to your website (Settings › Website Widgets) and this page will also show your site's visits by channel.
     </p>
   <% end %>
 <% end %>
@@ -57,12 +65,12 @@
 <%= super_wide_card do %>
   <h5 class="mb-1">By Channel <small class="text-muted">(first touch)</small></h5>
   <p class="text-muted" style="font-size: 12px;">
-    Each person is credited to the channel that first brought them to your site. Visits are counted for the whole brand; leads, signups, and purchases are for this location.
+    Each person is credited to the channel that first brought them to your site. Site visits and Jellyswitch visits are counted for the whole brand; leads, signups, and purchases are for this location.
   </p>
   <div class="table-responsive">
     <table class="table table-sm mb-2">
       <thead><tr>
-        <th>Channel</th><th class="text-right">Visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Purchase value</th>
+        <th>Channel</th><% if site_on %><th class="text-right">Site visits</th><% end %><th class="text-right">Jellyswitch visits</th><th class="text-right">Leads</th><th class="text-right">Signups</th><th class="text-right">Purchases</th><th class="text-right">Purchase value</th>
       </tr></thead>
       <tbody>
         <% @attribution.by_channel.each do |ch, r| %>
@@ -70,6 +78,7 @@
             <td>
               <%= link_to label.call(ch), conversions_reports_path(period: @period, channel: ch), class: (@channel == ch ? "font-weight-bold" : "") %>
             </td>
+            <% if site_on %><td class="text-right"><%= number_with_delimiter(r[:site_visits]) %></td><% end %>
             <td class="text-right"><%= number_with_delimiter(r[:visits]) %></td>
             <td class="text-right"><%= r[:leads] %></td>
             <td class="text-right"><%= r[:signups] %></td>
@@ -78,7 +87,7 @@
           </tr>
         <% end %>
         <% if @attribution.by_channel.empty? %>
-          <tr><td colspan="6" class="text-muted text-center">Nothing recorded in this period yet.</td></tr>
+          <tr><td colspan="7" class="text-muted text-center">Nothing recorded in this period yet.</td></tr>
         <% end %>
       </tbody>
     </table>

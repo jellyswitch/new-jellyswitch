@@ -5,6 +5,9 @@ Rails.application.routes.draw do
 
   # Public embeddable tour-request widget (no auth, frame-able, CSRF-skipped).
   namespace :embed do
+    # Marketing-site page-view beacon (SiteVisit) from the concierge launcher.
+    post "track/:operator_subdomain", to: "track#create", as: :track
+
     scope "tour_request/:operator_subdomain" do
       get  "/",                       to: "tour_requests#show",      as: :tour_request
       get  "/locations/:location_id", to: "tour_requests#show",      as: :tour_request_for_location

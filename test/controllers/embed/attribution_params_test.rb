@@ -19,6 +19,7 @@ class Embed::AttributionParamsTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "function jswAttributionParams"
     assert_includes response.body, "frame.src = jswWithAttribution(WIDGET_URL)"
     assert_includes response.body, "jsw_ref="
+    assert_includes response.body, "jsw-ft"
   end
 
   test "showcase CTAs to Jellyswitch are decorated, link-out cards are not" do

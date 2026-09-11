@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_11_190001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_11_193500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -892,8 +892,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_11_190001) do
     t.integer "building_access_window_minutes", default: 60, null: false
     t.boolean "showcase_enabled", default: false, null: false
     t.boolean "office_inventory_enabled", default: false, null: false
-    t.boolean "conference_rooms_enabled", default: false, null: false
     t.string "showcase_button_color"
+    t.boolean "conference_rooms_enabled", default: false, null: false
     t.index ["subdomain"], name: "index_operators_on_subdomain", unique: true
   end
 
@@ -1133,6 +1133,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_11_190001) do
     t.datetime "updated_at", null: false
     t.index ["location_id"], name: "index_showcase_cards_on_location_id"
     t.index ["operator_id"], name: "index_showcase_cards_on_operator_id"
+  end
+
+  create_table "site_visits", force: :cascade do |t|
+    t.bigint "operator_id", null: false
+    t.string "visitor_id", null: false
+    t.string "host"
+    t.string "landing_page"
+    t.string "referrer"
+    t.string "referring_domain"
+    t.string "utm_source"
+    t.string "utm_medium"
+    t.string "utm_campaign"
+    t.string "utm_term"
+    t.string "utm_content"
+    t.string "channel"
+    t.string "source"
+    t.integer "page_views", default: 1, null: false
+    t.datetime "started_at", null: false
+    t.datetime "last_seen_at", null: false
+    t.string "user_agent"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["operator_id", "started_at"], name: "index_site_visits_on_operator_id_and_started_at"
+    t.index ["operator_id", "visitor_id", "last_seen_at"], name: "idx_on_operator_id_visitor_id_last_seen_at_f58149b820"
   end
 
   create_table "subdomains", force: :cascade do |t|

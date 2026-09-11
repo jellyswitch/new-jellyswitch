@@ -57,6 +57,8 @@ module Jellyswitch
     # ── Funnel ────────────────────────────────────────────────────────────
     def funnel
       @funnel ||= {
+        site_visits: site_visits.count,
+        site_visitors: site_visits.distinct.count(:visitor_id),
         visits: visits.count,
         visitors: visits.distinct.count(:visitor_token),
         leads: conversions.leads.where(kind: %w[tour_request chat_lead]).count,
@@ -71,8 +73,11 @@ module Jellyswitch
     # { channel => { visits:, leads:, signups:, purchases:, revenue: } }
     def by_channel
       @by_channel ||= begin
-        rows = Hash.new { |h, k| h[k] = { visits: 0, leads: 0, signups: 0, purchases: 0, revenue: 0.0 } }
+        rows = Hash.new { |h, k| h[k] = { site_visits: 0, visits: 0, leads: 0, signups: 0, purchases: 0, revenue: 0.0 } }
 
+        site_visits.group(:channel, :referring_domain).count.each do |(channel, domain), n|
+          rows[self.class.channel_key(channel, domain)][:site_visits] += n
+        end
         visit_channels.each { |ch, n| rows[ch][:visits] += n }
 
         conversions.group(:channel, :referrer_domain, :kind).count.each do |(channel, domain, kind), n|
@@ -91,7 +96,7 @@ module Jellyswitch
           rows[self.class.channel_key(channel, domain)][:revenue] += cents / 100.0
         end
 
-        rows.sort_by { |ch, r| [-r[:revenue], -r[:signups], -r[:visits], CHANNEL_ORDER.index(ch.sub(/:.*/, "")) || 99] }.to_h
+        rows.sort_by { |ch, r| [-r[:revenue], -r[:signups], -r[:site_visits], -r[:visits], CHANNEL_ORDER.index(ch.sub(/:.*/, "")) || 99] }.to_h
       end
     end
 
@@ -175,6 +180,21 @@ module Jellyswitch
     # Visits are capped at a year even for "All Time" (see MAX_VISIT_DAYS).
     def visits_capped?
       period_days > MAX_VISIT_DAYS
+    end
+
+    # True once the concierge launcher on the operator's site has reported
+    # at least one page view — i.e. the "Website visits" numbers are real.
+    def site_tracker_active?
+      @site_tracker_active = SiteVisit.where(operator: operator).exists? if @site_tracker_active.nil?
+      @site_tracker_active
+    end
+
+    # Sessions on the operator's own marketing site (brand-level, like visits).
+    def site_visits
+      @site_visits ||= begin
+        days = [period_days, MAX_VISIT_DAYS].min
+        SiteVisit.where(operator: operator).between(days.days.ago.beginning_of_day..Time.current)
+      end
     end
 
     def conversions
