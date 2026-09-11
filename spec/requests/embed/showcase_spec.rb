@@ -69,6 +69,15 @@ RSpec.describe "Embed::Showcase", type: :request do
     expect(response.body).to include(".jsw-sc a.jsw-sc-cta.jsw-sc-out:hover,.jsw-sc a.jsw-sc-cta.jsw-sc-out:focus{background:var(--jsw-button);color:#fff;")
   end
 
+  it "clears list bullets on the li itself so host `ul li` rules cannot re-add them" do
+    # Regression: WordPress themes (Salient on untethered.space) set
+    # `ul li{list-style:outside disc}` at (0,0,2) directly on the li. A reset on
+    # the .jsw-sc-list ul alone never reaches the li, so members saw a disc
+    # bullet AND the widget's check mark on every line.
+    get "/embed/showcase/#{operator.subdomain}", params: { products: "day_passes" }
+    expect(response.body).to include(".jsw-sc-list li{list-style:none;")
+  end
+
   it "colors the product buttons with the dedicated button color when set" do
     operator.update!(showcase_button_color: "16a34a")
     create(:day_pass_type, operator: operator, location: location, name: "Day Pass", amount_in_cents: 4_000)
