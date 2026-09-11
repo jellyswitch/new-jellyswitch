@@ -63,6 +63,39 @@ module Jellyswitch
       assert_equal 12, ss[:self_serve_revenue_share]
     end
 
+    test "free rows are activity, not purchases; staff visits are excluded; referrals split by domain" do
+      staff_visit = Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: "s", user: @admin, started_at: 1.day.ago,
+                                        landing_page: "https://tml.jellyswitch.com/reports")
+      Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: "r1", started_at: 1.day.ago,
+                          landing_page: "https://tml.jellyswitch.com/", referrer: "https://coworktahoe.com/", referring_domain: "coworktahoe.com")
+      Ahoy::Visit.create!(visit_token: SecureRandom.uuid, visitor_token: "r2", started_at: 1.day.ago,
+                          landing_page: "https://tml.jellyswitch.com/", referrer: "https://tml.jellyswitch.com/home", referring_domain: "tml.jellyswitch.com")
+
+      Conversion.create!(operator: @operator, location: @location, user: @member, kind: "room_reservation", occurred_at: 1.day.ago,
+                         amount_cents: 0, channel: "referral", referrer_domain: "coworktahoe.com", surface: "app", self_serve: true, actor: @member)
+      Conversion.create!(operator: @operator, location: @location, user: @member, kind: "day_pass", occurred_at: 1.day.ago,
+                         amount_cents: 4000, channel: "referral", referrer_domain: "coworktahoe.com", surface: "web", self_serve: true, actor: @member)
+
+      report = Jellyswitch::AttributionReport.new(@location, period_days: 90, host: "tml.jellyswitch.com")
+      f = report.funnel
+      assert_equal 2, f[:visits], "staff visit excluded"
+      assert_equal 1, f[:purchases], "the free booking is not a purchase"
+      assert_equal 40.0, f[:revenue]
+
+      row = report.by_channel["referral:coworktahoe.com"]
+      assert_equal 1, row[:visits]
+      assert_equal 1, row[:purchases]
+      assert_equal 40.0, row[:revenue]
+      assert_equal 1, report.by_channel["direct"][:visits], "a self-referral is direct"
+      assert_equal "Referral · coworktahoe.com", Jellyswitch::AttributionReport.channel_label("referral:coworktahoe.com")
+
+      @member.update_columns(acquisition_channel: "referral", acquisition_referrer: "coworktahoe.com", original_location_id: @location.id)
+      assert_includes report.people_for_channel("referral:coworktahoe.com"), @member
+      assert_empty report.people_for_channel("referral:untethered.space")
+
+      assert_equal 1, report.self_serve[:tracked_purchases], "self-serve share counts paid rows only"
+    end
+
     test "backfilled rows count toward channels but not the self-serve share" do
       conv(kind: "day_pass", user: @member, amount: 3500, surface: "backfill")
       report = Jellyswitch::AttributionReport.new(@location, period_days: 90)

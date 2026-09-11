@@ -64,3 +64,16 @@ class Attribution::ClassifierHostReferrerTest < ActiveSupport::TestCase
     assert_equal "Open House", r.campaign
   end
 end
+
+class Attribution::ClassifierAccuracyTest < ActiveSupport::TestCase
+  test "a referrer that is Jellyswitch itself is not a referral" do
+    r = Attribution::Classifier.call(referrer: "https://tml.jellyswitch.com/home", landing_page: "https://tml.jellyswitch.com/login")
+    assert_equal "direct", r.channel
+    r = Attribution::Classifier.call(referrer: "https://untethered.jellyswitch.com/", landing_page: "https://tml.jellyswitch.com/")
+    assert_equal "direct", r.channel
+  end
+
+  test "surface unknown is its own channel" do
+    assert_equal "unknown", Attribution::Classifier.call(surface: "unknown").channel
+  end
+end

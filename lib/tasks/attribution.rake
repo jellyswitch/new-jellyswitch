@@ -13,6 +13,28 @@
 # per (subject, kind). Backfilled rows carry surface="backfill" so the report
 # can tell "self-serve" (unknown for history) from live-tracked rows.
 namespace :attribution do
+  desc "Re-run the classifier on every user's stored first visit and resync conversion snapshots (after classifier changes)"
+  task restamp: :environment do
+    ActiveRecord::Base.logger = nil
+    operators = ENV["OPERATOR"].present? ? Operator.where(id: ENV["OPERATOR"]) : Operator.all
+    operators.find_each do |operator|
+      changed = 0
+      User.unscoped.where(operator_id: operator.id).find_each do |user|
+        before = [user.acquisition_channel, user.acquisition_referrer]
+        Attribution::AssignFirstTouch.call(user, surface: "web", force: true)
+        user.reload
+        next if before == [user.acquisition_channel, user.acquisition_referrer]
+        changed += 1
+        Conversion.unscoped.where(user_id: user.id).update_all(
+          channel: user.acquisition_channel, source: user.acquisition_source, medium: user.acquisition_medium,
+          campaign: user.acquisition_campaign, referrer_domain: user.acquisition_referrer,
+          landing_page: user.acquisition_landing_page,
+        )
+      end
+      puts "[attribution] #{operator.name} (#{operator.id}): restamped #{changed} users"
+    end
+  end
+
   desc "Stamp first-touch attribution on users and rebuild historical conversions"
   task backfill: :environment do
     ActiveRecord::Base.logger = nil

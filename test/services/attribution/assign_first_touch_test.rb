@@ -50,3 +50,22 @@ class Attribution::AssignFirstTouchTest < ActiveSupport::TestCase
     assert_equal other.created_at.to_i, other.acquired_at.to_i
   end
 end
+
+class Attribution::AssignFirstTouchNoVisitTest < ActiveSupport::TestCase
+  setup do
+    setup_initial_user_fixtures
+    @user = users(:cowork_tahoe_member)
+    @user.update_columns(acquired_at: nil, acquisition_channel: nil)
+  end
+
+  test "a user with no visit on record is unknown, not direct" do
+    Attribution::AssignFirstTouch.call(@user, surface: "web")
+    assert_equal "unknown", @user.reload.acquisition_channel
+    assert_nil @user.acquisition_visit_id
+  end
+
+  test "an app signup with no web visit stays app" do
+    Attribution::AssignFirstTouch.call(@user, surface: "app")
+    assert_equal "app", @user.reload.acquisition_channel
+  end
+end
