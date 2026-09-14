@@ -602,4 +602,41 @@ class UserTest < ActiveSupport::TestCase
     refute result.success?
     assert_match "already been taken", result.message
   end
+  test "current_location defaults to original_location when built outside signup" do
+    location = locations(:cowork_tahoe_location)
+    user = User.new(
+      name: "Widget Stub",
+      email: "widget-stub@example.com",
+      operator: operators(:cowork_tahoe),
+      original_location_id: location.id,
+      password: "secret-stub-password",
+      admin_created: true
+    )
+
+    user.save!
+
+    assert_equal location, user.current_location
+  end
+
+  test "current_location is left alone when it already differs from original_location" do
+    original = locations(:cowork_tahoe_location)
+    annex = original.dup
+    annex.name = "Cowork Tahoe Annex"
+    annex.save!(validate: false)
+
+    user = users(:cowork_tahoe_member)
+    user.update!(original_location_id: original.id, current_location_id: annex.id)
+    user.update!(name: "Renamed")
+
+    assert_equal annex, user.reload.current_location
+  end
+
+  test "current_location can still be cleared explicitly after creation" do
+    user = users(:cowork_tahoe_member)
+    assert user.original_location_id.present?
+
+    user.update!(current_location: nil)
+
+    assert_nil user.reload.current_location_id
+  end
 end

@@ -47,8 +47,11 @@ class CreateInvoice
     if location.present?
       params[:location_id] = location.id
     else
-      # Hail mary effort to find location, since this is triggered from a webhook
-      params[:location_id] = billable.location&.id
+      # Triggered from a webhook with no location in hand. The Stripe customer
+      # is per-location (UserPaymentProfile), so it pins the location exactly;
+      # billable.location (users.current_location) is only a fallback — a fresh
+      # signup can have a payment profile before current_location is ever set.
+      params[:location_id] = resolve_location_id(billable, customer)
     end
 
     invoice = Invoice.create!(params)
@@ -56,11 +59,25 @@ class CreateInvoice
     context.invoice = invoice
 
     result = Billing::Invoices::AddCreditsToSubscribable.call(
-      invoice: invoice
+      invoice: invoice,
+      stripe_invoice: stripe_invoice
     )
 
     if !result.success?
       context.fail!(message: result.message)
     end
+  end
+
+  private
+
+  def resolve_location_id(billable, stripe_customer_id)
+    if billable.is_a?(User)
+      profile_location_id = UserPaymentProfile
+        .where(user_id: billable.id, stripe_customer_id: stripe_customer_id)
+        .pick(:location_id)
+      return profile_location_id if profile_location_id
+    end
+
+    billable.location&.id || billable.try(:original_location)&.id
   end
 end
