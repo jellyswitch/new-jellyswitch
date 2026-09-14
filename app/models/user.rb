@@ -146,6 +146,13 @@ class User < ApplicationRecord
   # web signup minted a new account). case_sensitive backstops any path that
   # skips normalization.
   before_validation { self.email = email&.downcase }
+  # A user's current location defaults to where they first showed up. Signup
+  # already did this in Users::Save, but the widget stubs (tour request,
+  # concierge, office inventory, sister-space mirror) build the User directly
+  # and only set original_location — and a stub can become a paying member
+  # via the login-code path without ever passing through signup, leaving
+  # current_location nil (prod user 78211 / the invoice.finalized 500).
+  before_validation { self.current_location_id ||= original_location_id }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id, case_sensitive: false }, presence: true
   # Shape check only (something@something, no spaces/extra @) — a strict RFC
