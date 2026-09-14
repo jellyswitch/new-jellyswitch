@@ -152,7 +152,9 @@ class User < ApplicationRecord
   # and only set original_location — and a stub can become a paying member
   # via the login-code path without ever passing through signup, leaving
   # current_location nil (prod user 78211 / the invoice.finalized 500).
-  before_validation { self.current_location_id ||= original_location_id }
+  # Create-only: an explicit later update to nil (staff unassigned from a
+  # location) must stick.
+  before_validation(on: :create) { self.current_location_id ||= original_location_id }
   validates :password, length: { minimum: 6 }, on: :create, presence: true
   validates :email, uniqueness: { scope: :operator_id, case_sensitive: false }, presence: true
   # Shape check only (something@something, no spaces/extra @) — a strict RFC

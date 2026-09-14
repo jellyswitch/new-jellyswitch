@@ -630,4 +630,13 @@ class UserTest < ActiveSupport::TestCase
 
     assert_equal annex, user.reload.current_location
   end
+
+  test "current_location can still be cleared explicitly after creation" do
+    user = users(:cowork_tahoe_member)
+    assert user.original_location_id.present?
+
+    user.update!(current_location: nil)
+
+    assert_nil user.reload.current_location_id
+  end
 end
