@@ -39,6 +39,7 @@ module Embed
 
       @mode = PRODUCT_MODES.include?(params[:products]) ? params[:products] : "all"
       @sections = build_sections
+      @image_url = showcase_image_url
       render :widget
     end
 
@@ -90,6 +91,15 @@ module Embed
           featured: false, bullets: [c.description].compact_blank, cta: c.url, external: true,
         }
       end
+    end
+
+    # Google requires `image` on Product markup before it will show any rich
+    # result; without it every tier lands in Search Console's Merchant
+    # listings report as invalid (untethered.space, 2026-09-16). Location photo
+    # first (it depicts what is being sold), then the brand mark.
+    def showcase_image_url
+      attachment = [@location.photo, @operator.logo_image, @operator.app_icon_image].find(&:attached?)
+      attachment && rails_blob_url(attachment, host: request.host_with_port)
     end
 
     def checkout_url(extra)
