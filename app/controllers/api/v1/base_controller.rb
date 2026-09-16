@@ -17,7 +17,8 @@ class Api::V1::BaseController < ApplicationController
 
     begin
       payload = JWT.decode(token, jwt_secret, true, algorithm: 'HS256').first
-      @current_api_user = User.find(payload['user_id'])
+      @current_api_user  = User.find(payload['user_id'])
+      @api_token_payload = payload
     rescue JWT::DecodeError, ActiveRecord::RecordNotFound
       render_unauthorized
     end
@@ -25,6 +26,14 @@ class Api::V1::BaseController < ApplicationController
 
   def current_api_user
     @current_api_user
+  end
+
+  # Which client minted the bearer token. nil for the phone apps (their tokens
+  # carry no claim); "garmin" for tokens issued by Api::V1::GarminController#pair.
+  # Lets endpoints label side effects (door punches) without trusting a client-
+  # supplied param.
+  def api_client
+    @api_token_payload&.dig('client')
   end
 
   # Server-side conversion log for app purchases (see Conversion.record).

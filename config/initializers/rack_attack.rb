@@ -74,6 +74,14 @@ class Rack::Attack
     end
   end
 
+  ### Throttle Garmin watch pairing to 10/minute per IP ###
+  # /api/v1/garmin/pair is unauthenticated by design (the watch has no token
+  # yet) and takes a 6-digit code that lives 10 minutes. 10/min caps a guesser
+  # at ~100 tries per code lifetime against a 1-in-1,000,000 space.
+  throttle("api/v1/garmin_pair/ip", limit: 10, period: 1.minute) do |req|
+    req.ip if req.post? && req.path == "/api/v1/garmin/pair"
+  end
+
   ### Custom response for throttled requests ###
   self.throttled_responder = lambda do |env|
     [429, { "Content-Type" => "text/plain" }, ["Too many requests. Please wait a minute and try again."]]

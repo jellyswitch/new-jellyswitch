@@ -85,7 +85,10 @@ class Api::V1::DoorsController < Api::V1::BaseController
     end
 
     begin
-      result = perform_unlock(door: door, user: user, location: location, method: "manual")
+      # "garmin" punches come from the watch app (token claim, not a param) so
+      # the activity feed / punch history can tell a wrist unlock from a phone tap.
+      result = perform_unlock(door: door, user: user, location: location,
+                              method: api_client == "garmin" ? "garmin" : "manual")
       # Kisi answers 2xx only when the door actually fired. A controller-offline
       # blip (fac001, Zephyr Cove 2026-08-13 / 2026-08-27) comes back as a non-2xx
       # the client wraps in success:false — before this check the member was told

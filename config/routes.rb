@@ -75,6 +75,10 @@ Rails.application.routes.draw do
       get 'me', to: 'users#me'
       patch 'me', to: 'users#update'
       post 'me/push_token', to: 'users#register_push_token'
+      # Garmin watch pairing: the phone app mints a short-lived code, the watch
+      # app trades it for a long-lived token (Api::V1::GarminController).
+      post 'me/garmin_pairing_code', to: 'garmin#pairing_code'
+      post 'garmin/pair',            to: 'garmin#pair'
 
       get 'dashboard', to: 'dashboard#show'
       get 'onboarding_status', to: 'dashboard#onboarding_status'
