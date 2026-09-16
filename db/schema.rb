@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_11_193500) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_16_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1275,7 +1275,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_11_193500) do
     t.string "acquisition_landing_page"
     t.bigint "acquisition_visit_id"
     t.datetime "acquired_at"
+    t.string "garmin_pairing_code_digest"
+    t.datetime "garmin_pairing_code_expires_at"
     t.index "operator_id, lower((email)::text)", name: "index_users_on_operator_id_and_lower_email", unique: true
+    t.index ["garmin_pairing_code_digest"], name: "index_users_on_garmin_pairing_code_digest", unique: true, where: "(garmin_pairing_code_digest IS NOT NULL)"
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"
     t.index ["home_zip"], name: "index_users_on_home_zip"
     t.index ["operator_id", "acquisition_channel"], name: "index_users_on_operator_id_and_acquisition_channel"
