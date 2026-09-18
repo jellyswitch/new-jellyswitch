@@ -460,15 +460,18 @@ class UserMailer < ApplicationMailer
     mail to: @user.email, subject: subject, from: from_address, reply_to: @operator.contact_email
   end
 
-  # Resends a receipt to the customer for an existing invoice. Triggered
-  # manually by an admin via the "Email receipt to customer" button when
-  # a member asks for a copy. Body includes the Stripe-hosted receipt
-  # URL (or Stripe Invoice PDF for subscription-backed invoices), where
-  # the customer can hit Stripe's own Download as PDF.
-  def invoice_receipt_email(invoice)
+  # Receipt for a paid invoice. Sent automatically after every successful
+  # charge (Billing::Invoices::ChargeInvoice) and on demand by an admin via
+  # the "Email receipt to customer" button (requested: true), which only
+  # changes the intro copy. Body includes the Stripe-hosted receipt URL
+  # (or Stripe Invoice PDF for subscription-backed invoices), where the
+  # customer can hit Stripe's own Download as PDF.
+  def invoice_receipt_email(invoice, requested: false)
     @invoice = invoice
+    @requested = requested
     @operator = invoice.operator
     @location = invoice.location
+    @user = invoice.billable if invoice.billable.is_a?(User)
     @recipient_email = invoice.billable.email
     @amount_cents = invoice.amount_paid.to_i.nonzero? || invoice.amount_due.to_i
     @receipt_url = invoice.pdf_url
