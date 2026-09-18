@@ -8,6 +8,9 @@ class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
         name: org.name,
         member_count: org.users.count,
         active_lease: org.has_active_lease?,
+        # Can be put on a lease: mirrors the web New Office Lease form, which
+        # only offers organizations with a Stripe customer or out-of-band billing.
+        billing_ready: org.stripe_customer_id.present? || org.out_of_band?,
       }
     }
   end

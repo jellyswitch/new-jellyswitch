@@ -1002,6 +1002,12 @@ class User < ApplicationRecord
 
   # payment profile methods
   def payment_profile_for_location(location)
+    # Callers inside the Stripe layer (StripeUtils#create_stripe_subscription →
+    # StripeSubscription::DefaultSubscription#subscription_args) hand us the
+    # Location::StripeOperator delegator, not the record. Looking up by it
+    # happens to work, but creating the profile raises AssociationTypeMismatch
+    # for any billing contact who doesn't have a profile at this location yet.
+    location = location.__getobj__ if location.is_a?(SimpleDelegator)
     payment_profile = user_payment_profiles.find_or_create_by(location: location)
 
     if payment_profile.previously_new_record?

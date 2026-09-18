@@ -29,7 +29,9 @@ class Billing::Leasing::SaveOfficeLease
     if office_lease.save
       context.office_lease = office_lease
     else
-      context.fail!(message: 'Could not create lease')
+      # Surface the model's own message (e.g. the overlap guard) instead of a
+      # generic one, so the web flash and the mobile alert say what's wrong.
+      context.fail!(message: office_lease.errors.full_messages.to_sentence.presence || 'Could not create lease')
     end
   end
 
