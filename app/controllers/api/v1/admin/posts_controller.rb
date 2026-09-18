@@ -15,8 +15,13 @@ class Api::V1::Admin::PostsController < Api::V1::Admin::BaseController
     }
   end
 
+  # Moderation delete from the mobile admin. Scoped to current_location so a
+  # manager can only remove posts on the bulletin board they run — Post.find
+  # on a bare id would let any admin delete any operator's post.
   def destroy
-    post = Post.find(params[:id])
+    post = Post.find_by(id: params[:id], location: current_location)
+    return render json: { error: 'Not found' }, status: :not_found unless post
+
     post.destroy
 
     render json: { success: true }
