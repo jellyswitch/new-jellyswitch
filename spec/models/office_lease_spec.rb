@@ -290,4 +290,47 @@ RSpec.describe OfficeLease, type: :model do
       expect(org.owner.activities.where(kind: "office_lease")).to exist
     end
   end
+
+  describe "overlap validation (lining up the next tenant on an occupied office)" do
+    let(:office) { create(:office, visible: true) }
+    let(:org) { create(:organization) }
+    let!(:current_lease) do
+      create(:office_lease, office: office, start_date: Date.new(2026, 1, 1), end_date: Date.new(2026, 12, 31))
+    end
+
+    it "allows a lease that starts the day the current one ends (renewal-style touching)" do
+      lease = build(:office_lease, organization: org, office: office, start_date: Date.new(2026, 12, 31), end_date: Date.new(2027, 12, 31))
+      expect(lease).to be_valid
+    end
+
+    it "allows a lease that starts after the current one ends" do
+      lease = build(:office_lease, organization: org, office: office, start_date: Date.new(2027, 1, 15), end_date: Date.new(2028, 1, 15))
+      expect(lease).to be_valid
+    end
+
+    it "rejects a lease whose dates overlap the current one" do
+      lease = build(:office_lease, organization: org, office: office, start_date: Date.new(2026, 11, 1), end_date: Date.new(2027, 11, 1))
+      expect(lease).not_to be_valid
+      expect(lease.errors[:base].join).to include("already has a lease from 01/01/2026 to 12/31/2026")
+    end
+
+    it "rejects a lease that fully contains the current one" do
+      lease = build(:office_lease, organization: org, office: office, start_date: Date.new(2025, 6, 1), end_date: Date.new(2027, 6, 1))
+      expect(lease).not_to be_valid
+      expect(lease.errors[:base].join).to include("overlaps these dates")
+    end
+
+    it "does not check other offices" do
+      lease = build(:office_lease, organization: org, office: create(:office, visible: true), start_date: Date.new(2026, 6, 1), end_date: Date.new(2027, 6, 1))
+      expect(lease).to be_valid
+    end
+
+    it "only runs on create, so editing an existing lease's end date is unaffected" do
+      later = create(:office_lease, office: office, start_date: Date.new(2027, 1, 1), end_date: Date.new(2027, 12, 31))
+      # Extending the current lease into the later one is an edit, not a create.
+      current_lease.end_date = Date.new(2027, 3, 1)
+      expect(current_lease).to be_valid
+      expect(later).to be_valid
+    end
+  end
 end

@@ -260,8 +260,12 @@ class Operator::OfficeLeasesController < Operator::BaseController
     @users = User.for_space(current_tenant).originally_at_location(current_location).non_superadmins.approved.visible.order(:name)
   end
 
+  # All visible offices at this location, not just vacant ones: a lease may be
+  # created ahead of time for an office whose current lease is ending. The
+  # overlap validation on OfficeLease keeps two leases from covering the same
+  # dates.
   def find_offices
-    @offices = Office.available_for_lease
+    @offices = current_location.offices.visible.order(:name)
   end
 
   def find_plans

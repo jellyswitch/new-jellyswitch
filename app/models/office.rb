@@ -94,6 +94,14 @@ class Office < ApplicationRecord
     office_leases.active.first
   end
 
+  # Label for the New Office Lease picker. Occupied offices stay selectable so
+  # an admin can line up the next tenant before the current lease ends; the
+  # date tells them when the office frees up.
+  def lease_picker_label
+    lease = active_lease
+    lease ? "#{name} (leased until #{lease.end_date.strftime('%m/%d/%Y')})" : name
+  end
+
   def has_photo?
     photo.attached?
   end

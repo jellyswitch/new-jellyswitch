@@ -51,6 +51,7 @@ class OfficeLease < ApplicationRecord
   belongs_to :location
 
   validate :must_have_leasee
+  validate :dates_do_not_overlap_existing_lease, on: :create
 
   acts_as_scopable :operator, :location
 
@@ -182,6 +183,29 @@ class OfficeLease < ApplicationRecord
     if organization_id.blank? && user_id.blank?
       errors.add(:base, "Must have either an organization or a user")
     end
+  end
+
+  # The office picker lists occupied offices so a lease can be lined up ahead
+  # of the current tenant leaving. This keeps the new lease from overlapping
+  # one already on the office. Touching is allowed (a renewal starts on the day
+  # the current lease ends) and only creation is checked, so terminations and
+  # other edits of existing rows are unaffected.
+  def dates_do_not_overlap_existing_lease
+    return if office_id.blank? || start_date.blank? || end_date.blank?
+
+    overlapping = OfficeLease.where(office_id: office_id)
+      .where("start_date < ? AND end_date > ?", end_date, start_date)
+      .order(:start_date)
+      .first
+    return unless overlapping
+
+    fmt = ->(d) { d.strftime("%m/%d/%Y") }
+    errors.add(
+      :base,
+      "#{office.name} already has a lease from #{fmt.call(overlapping.start_date)} to " \
+      "#{fmt.call(overlapping.end_date)} that overlaps these dates. " \
+      "Start this lease on or after #{fmt.call(overlapping.end_date)}."
+    )
   end
 
   def cull_office_interest_tags

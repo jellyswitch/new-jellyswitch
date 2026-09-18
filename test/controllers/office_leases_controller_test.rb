@@ -13,6 +13,18 @@ class OfficeLeasesControllerTest < ActionDispatch::IntegrationTest
     WebMock.reset!
   end
 
+  test "new lease form lists occupied offices with their lease end date" do
+    log_in users(:cowork_tahoe_admin)
+
+    get new_office_lease_path, env: default_env
+
+    assert_response :success
+    lease = office_leases(:office_23b_lease)
+    assert_select "select#office_lease_office_id option",
+      text: "Office 23B (leased until #{lease.end_date.strftime('%m/%d/%Y')})"
+    assert_select "select#office_lease_office_id option", text: "Free Office"
+  end
+
   test "should cancel office lease now to operator" do
     @user = users(:cowork_tahoe_member)
     @office_lease_plan = office_leases(:office_23b_lease)

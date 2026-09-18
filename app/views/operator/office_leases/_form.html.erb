@@ -44,7 +44,7 @@
 
   <div class="form-group">
     <%= f.label :office, "Office being leased" %>
-    <%= f.collection_select :office_id, @offices, :id, :name, { prompt: '' }, { class: "form-control" } %>
+    <%= f.select :office_id, @offices.map { |o| [o.lease_picker_label, o.id] }, { prompt: '' }, { class: "form-control" } %>
   </div>
 
   <%= f.fields_for :subscription do |ff| %>
