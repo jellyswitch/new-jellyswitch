@@ -433,6 +433,57 @@ class User < ApplicationRecord
   scope :unapproved, -> { where(approved: false) }
   scope :archived, -> { where(archived: true) }
   scope :visible, -> { where(archived: false) }
+  scope :banned, -> { where.not(banned_at: nil) }
+
+  # ---- Ban -----------------------------------------------------------------
+  # Archive is a soft delete that keeps every member ability (archived users
+  # can still log in, buy a membership, book). A ban is the operator saying
+  # "not welcome here": archive + unapprove, drop from every marketing list,
+  # and refuse purchases and in-app messaging. The marker is its own column
+  # so a plain Unarchive can't lift it — only lift_ban! does.
+  BANNED_MESSAGE = "Your account has been disabled by staff.".freeze
+  BANNED_MARKETING_REASON = "Banned by staff".freeze
+
+  belongs_to :banned_by, class_name: "User", optional: true
+
+  def banned?
+    banned_at.present?
+  end
+
+  def ban!(by:)
+    attrs = {
+      banned_at: Time.current,
+      banned_by_id: by&.id,
+      archived: true,
+      approved: false,
+      updated_at: Time.current,
+    }
+    # Don't overwrite a suppression the member already had (e.g. "Unsubscribed")
+    # — lift_ban! only clears the suppression the ban itself set.
+    unless marketing_suppressed?
+      attrs[:marketing_suppressed] = true
+      attrs[:marketing_suppressed_reason] = BANNED_MARKETING_REASON
+    end
+    update_columns(attrs)
+  end
+
+  # Restores the account to a normal, approved, visible member. Marketing
+  # suppression is cleared only if the ban set it, so a member who had
+  # unsubscribed before being banned stays unsubscribed.
+  def lift_ban!
+    attrs = {
+      banned_at: nil,
+      banned_by_id: nil,
+      archived: false,
+      approved: true,
+      updated_at: Time.current,
+    }
+    if marketing_suppressed_reason == BANNED_MARKETING_REASON
+      attrs[:marketing_suppressed] = false
+      attrs[:marketing_suppressed_reason] = nil
+    end
+    update_columns(attrs)
+  end
 
   # A new signup sits in the approval queue for APPROVAL_QUEUE_DAYS. After that,
   # with no action taken, it drops off the queue and is treated as a "cold lead"

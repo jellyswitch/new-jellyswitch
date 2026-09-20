@@ -5,6 +5,12 @@ class Billing::Subscription::SaveSubscription
   delegate :subscription, :user, :location, :start_day, to: :context
 
   def call
+    # Banned accounts may not buy back in (archived ones still can — archive
+    # is a soft delete, ban is a refusal). See User#ban!.
+    if user.respond_to?(:banned?) && user.banned?
+      context.fail!(message: User::BANNED_MESSAGE)
+    end
+
     unless user.card_added_for_location?(location) || user.out_of_band? || user.bill_to_organization?
       context.fail!(message: "Can't add a subscription for someone with no billing info on file.")
     end

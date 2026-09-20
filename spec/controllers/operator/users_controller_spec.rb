@@ -426,6 +426,69 @@ RSpec.describe Operator::UsersController, type: :controller do
     end
   end
 
+  describe "POST #ban" do
+    before do
+      allow(controller).to receive(:current_user).and_return(admin_user)
+    end
+
+    it "bans the user, logs the action, and unapproves them" do
+      post :ban, params: { user_id: test_user.id }
+      test_user.reload
+      expect(test_user).to be_banned
+      expect(test_user.banned_by).to eq(admin_user)
+      expect(test_user.archived).to be true
+      expect(test_user.approved).to be false
+      expect(test_user.marketing_suppressed).to be true
+      expect(Activity.where(user: test_user, kind: "admin_action").last.payload["action"]).to eq("banned")
+    end
+
+    it "refuses to ban an active member" do
+      allow_any_instance_of(User).to receive(:member_at_operator?).and_return(true)
+      post :ban, params: { user_id: test_user.id }
+      expect(test_user.reload).not_to be_banned
+      expect(flash[:error]).to match(/active member/)
+    end
+  end
+
+  describe "GET #about for a banned user" do
+    render_views
+    before do
+      allow(controller).to receive(:current_user).and_return(admin_user)
+      test_user.ban!(by: admin_user)
+    end
+
+    it "shows the ban badge and Lift Ban instead of Unarchive" do
+      get :about, params: { user_id: test_user.id }
+      expect(response.body).to include("Lift Ban")
+      expect(response.body).to include("Banned by #{admin_user.name}")
+      expect(response.body).not_to include("Unarchive")
+    end
+  end
+
+  describe "POST #lift_ban" do
+    before do
+      allow(controller).to receive(:current_user).and_return(admin_user)
+      test_user.ban!(by: admin_user)
+    end
+
+    it "lifts the ban and re-approves the user" do
+      post :lift_ban, params: { user_id: test_user.id }
+      test_user.reload
+      expect(test_user).not_to be_banned
+      expect(test_user.archived).to be false
+      expect(test_user.approved).to be true
+      expect(Activity.where(user: test_user, kind: "admin_action").last.payload["action"]).to eq("ban_lifted")
+    end
+
+    it "unarchive does not quietly lift a ban" do
+      post :unarchive, params: { user_id: test_user.id }
+      test_user.reload
+      expect(test_user).to be_banned
+      expect(test_user.archived).to be true
+      expect(flash[:error]).to match(/Lift Ban/)
+    end
+  end
+
   describe "POST #credit_card" do
     before do
       allow(controller).to receive(:current_user).and_return(admin_user)

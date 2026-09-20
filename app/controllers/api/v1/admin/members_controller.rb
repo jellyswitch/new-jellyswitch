@@ -82,6 +82,9 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       },
       marketing_suppressed: user.marketing_suppressed,
       marketing_suppressed_reason: user.marketing_suppressed_reason,
+      banned: user.banned?,
+      banned_at: user.banned_at&.iso8601,
+      banned_by_name: user.banned_by&.name,
       inactive_dismissed_at: user.inactive_dismissed_at&.iso8601,
       point_of_contact_id: user.point_of_contact_id,
       point_of_contact_name: user.point_of_contact&.name,
@@ -217,8 +220,34 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     render json: { success: true, archived: true }
   end
 
+  # Ban = archive + unapprove + marketing suppression + purchase/message
+  # refusal, with a sticky marker only lift_ban clears (web twin:
+  # Operator::UsersController#ban).
+  def ban
+    user = current_tenant.users.find(params[:id])
+    return render json: { success: true, banned: true } if user.banned?
+    if user.member_at_operator?(current_tenant)
+      return render_error("Cannot ban an active member. End their membership first.")
+    end
+
+    user.ban!(by: current_api_user)
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :banned)
+    user.feed_items.where("blob->>'type' = ?", "new-user").destroy_all
+
+    render json: { success: true, banned: true }
+  end
+
+  def lift_ban
+    user = current_tenant.users.find(params[:id])
+    user.lift_ban!
+    Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :ban_lifted)
+
+    render json: { success: true, banned: false }
+  end
+
   def unarchive
     user = current_tenant.users.find(params[:id])
+    return render_error("This member is banned. Lift the ban instead.") if user.banned?
     user.update!(archived: false)
     Activity.log_admin_action(user: user, actor: current_api_user, operator: current_tenant, action: :unarchived)
 

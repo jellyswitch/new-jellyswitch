@@ -247,6 +247,8 @@ Rails.application.routes.draw do
         post 'members/:id/unapprove', to: 'members#unapprove'
         post 'members/:id/archive', to: 'members#archive'
         post 'members/:id/unarchive', to: 'members#unarchive'
+        post 'members/:id/ban', to: 'members#ban'
+        post 'members/:id/lift_ban', to: 'members#lift_ban'
         post 'members/:id/add_credits', to: 'members#add_credits'
         post 'members/:id/change_payment', to: 'members#change_payment'
         post 'members/:id/assign_subscription', to: 'members#assign_subscription'
@@ -978,6 +980,8 @@ Rails.application.routes.draw do
     get :admin_invoices, to: "operator/users#admin_invoices"
     get :approve, to: "operator/users#approve"
     get :archive, to: "operator/users#archive"
+    post :ban, to: "operator/users#ban"
+    post :lift_ban, to: "operator/users#lift_ban"
     get :billing, to: "operator/users#edit_billing"
     post :billing, to: "operator/users#update_billing"
     get :bill_to_organization, to: "operator/users#bill_to_organization"

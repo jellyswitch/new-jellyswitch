@@ -11,6 +11,7 @@ class Api::V1::UsersController < Api::V1::BaseController
       twitter: user.twitter,
       website: user.website,
       approved: user.approved?,
+      banned: user.banned?,
       role: user.role,
       admin: user.admin?,
       superadmin: user.superadmin?,

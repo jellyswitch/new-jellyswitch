@@ -306,6 +306,9 @@ class Api::V1::AuthController < Api::V1::BaseController
       email: user.email,
       phone: user.phone,
       approved: user.approved?,
+      # Staff-disabled account: the app shows User::BANNED_MESSAGE instead of
+      # the Get Started purchase options.
+      banned: user.banned?,
       role: user.role,
       admin: user.admin?,
       superadmin: user.superadmin?,

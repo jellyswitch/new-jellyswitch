@@ -21,6 +21,14 @@ class UserPolicy < ApplicationPolicy
     admin?
   end
 
+  def ban?
+    admin?
+  end
+
+  def lift_ban?
+    admin?
+  end
+
   def search?
     has_admin_right?
   end
