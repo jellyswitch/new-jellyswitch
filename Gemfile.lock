@@ -313,7 +313,7 @@ GEM
       bigdecimal
       i18n (~> 1.9)
     msgpack (1.8.4)
-    multi_json (1.15.0)
+    multi_json (1.21.1)
     multi_xml (0.8.1)
       bigdecimal (>= 3.1, < 5)
     net-http (0.4.1)
@@ -526,10 +526,11 @@ GEM
       railties (>= 6.0.0)
     stringio (3.2.0)
     stripe (5.55.0)
-    stripe-ruby-mock (4.0.0)
+    stripe-ruby-mock (5.0.0)
       dante (>= 0.2.0)
+      drb (>= 2.0.4, < 3)
       multi_json (~> 1.0)
-      stripe (> 5, < 12)
+      stripe (> 5, < 14)
     suo (0.4.0)
       dalli
       msgpack
