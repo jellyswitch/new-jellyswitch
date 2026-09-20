@@ -68,6 +68,10 @@ class FeedbackReply < ApplicationRecord
   end
 
   def author_not_archived
-    errors.add(:base, MemberFeedback::ARCHIVED_AUTHOR_MESSAGE) if user&.archived?
+    if user&.banned?
+      errors.add(:base, User::BANNED_MESSAGE)
+    elsif user&.archived?
+      errors.add(:base, MemberFeedback::ARCHIVED_AUTHOR_MESSAGE)
+    end
   end
 end

@@ -9,6 +9,8 @@ class Billing::DayPasses::SaveDayPass
       context.fail!(message: "No such user with ID #{user_id}")
     end
     context.user = user
+    # Banned accounts may not buy back in. See User#ban!.
+    context.fail!(message: User::BANNED_MESSAGE) if user.banned?
 
     day_pass_type = DayPassType.find_by(id: params[:day_pass_type].to_i)
     if day_pass_type.nil?

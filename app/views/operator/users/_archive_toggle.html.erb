@@ -1,9 +1,18 @@
-<% if user.archived? %>
+<% if user.banned? %>
+  <div class="text-danger small mb-2" data-acc="banned-badge">
+    <i class="fas fa-ban"></i>
+    Banned<%= " by #{user.banned_by.name}" if user.banned_by %><%= " on #{user.banned_at.strftime('%b %-d, %Y')}" if user.banned_at %>
+  </div>
+  <%= button_to "Lift Ban", user_lift_ban_path(user), method: :post, class: "btn btn-block btn-sm btn-outline-danger", form: { data: { turbo_confirm: "Lift the ban on #{user.name}? They become an active, approved member again and go back on marketing lists." } }, data: {acc: 'lift-ban-member'} %>
+<% elsif user.archived? %>
   <%= link_to "Unarchive", user_unarchive_path(user), class: "btn btn-block btn-sm btn-outline-danger", data: {acc: 'unarchive-member'} %>
+  <%= button_to "Ban Member", user_ban_path(user), method: :post, class: "btn btn-block btn-sm btn-danger mt-2", form: { data: { turbo_confirm: "Ban #{user.name}? They will lose access, will not be able to buy passes or memberships, cannot message the team through the app, and will be removed from all email lists. An admin can lift this later." } }, data: {acc: 'ban-member'} %>
 <% else %>
   <% if user.member_at_operator?(current_tenant) %>
     <%= link_to "Cannot archive an active member", "#", class: "btn btn-block btn-sm btn-outline-secondary disabled" %>
+    <%= link_to "Cannot ban an active member", "#", class: "btn btn-block btn-sm btn-outline-secondary disabled mt-2" %>
   <% else %>
     <%= link_to "Archive", user_archive_path(user), class: "btn btn-block btn-sm btn-outline-success", data: {acc: 'archive-member'} %>
+    <%= button_to "Ban Member", user_ban_path(user), method: :post, class: "btn btn-block btn-sm btn-danger mt-2", form: { data: { turbo_confirm: "Ban #{user.name}? They will lose access, will not be able to buy passes or memberships, cannot message the team through the app, and will be removed from all email lists. An admin can lift this later." } }, data: {acc: 'ban-member'} %>
   <% end %>
 <% end %>

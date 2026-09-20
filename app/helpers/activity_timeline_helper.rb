@@ -67,6 +67,8 @@ module ActivityTimelineHelper
   ADMIN_ACTION_VERBS = {
     "archived"     => "Archived",
     "unarchived"   => "Unarchived",
+    "banned"       => "Banned",
+    "ban_lifted"   => "Lifted ban",
     "approved"     => "Approved",
     "unapproved"   => "Unapproved",
     "self_deleted" => "Deleted their account",

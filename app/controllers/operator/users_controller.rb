@@ -475,9 +475,44 @@ class Operator::UsersController < Operator::BaseController
     turbo_redirect(user_path(@user))
   end
 
+  # Ban = archive + unapprove + marketing suppression + purchase/message
+  # refusal, with a sticky marker only lift_ban clears. Like archive, it
+  # refuses an active member: end the membership first so Stripe stops
+  # billing someone we've just told isn't welcome.
+  def ban
+    find_user(:user_id)
+    authorize @user
+
+    if @user.banned?
+      flash[:notice] = "This member is already banned."
+    elsif @user.member_at_operator?(current_tenant)
+      flash[:error] = "Cannot ban an active member. End their membership first."
+    else
+      @user.ban!(by: current_user)
+      Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :banned)
+      @user.feed_items.where("blob->>'type' = ?", "new-user").destroy_all
+      flash[:success] = "Member banned. They can no longer buy, book, or message through the app, and are off all marketing lists."
+    end
+    turbo_redirect(user_path(@user))
+  end
+
+  def lift_ban
+    find_user(:user_id)
+    authorize @user
+    @user.lift_ban!
+    Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :ban_lifted)
+    flash[:success] = "Ban lifted. The member is active and approved again."
+    turbo_redirect(user_path(@user))
+  end
+
   def unarchive
     find_user(:user_id)
     authorize @user
+    if @user.banned?
+      flash[:error] = "This member is banned. Use Lift Ban instead."
+      turbo_redirect(user_path(@user))
+      return
+    end
     @user.update_columns(archived: false, approved: true)
     Activity.log_admin_action(user: @user, actor: current_user, operator: current_tenant, action: :unarchived)
     flash[:success] = "User unarchived."
