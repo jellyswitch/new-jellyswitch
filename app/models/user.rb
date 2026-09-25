@@ -219,6 +219,15 @@ class User < ApplicationRecord
   # so the work stays in SQL — one LIMIT-1 index probe per anchor against
   # (user_id, kind, occurred_at) — rather than plucking the member's entire
   # punch history into Ruby, which grew unboundedly with account age.
+  # The location a member is "at" for the mobile API: their in-app Change
+  # Location pick (current_location) wins, else where they signed up. Only a
+  # location of the member's own operator counts — a few superadmin/legacy rows
+  # point current_location at another operator's space. Mirrors the web's
+  # SessionsHelper#current_location, which has always honored the switch.
+  def active_location
+    [current_location, original_location].find { |loc| loc && loc.operator_id == operator_id }
+  end
+
   def milestone_door_punch_ids
     activities.where(kind: DOOR_MILESTONE_ANCHOR_KINDS)
               .joins(MILESTONE_DOOR_PUNCH_JOIN)

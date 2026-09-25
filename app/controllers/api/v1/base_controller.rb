@@ -96,7 +96,7 @@ class Api::V1::BaseController < ApplicationController
   end
 
   def current_location
-    current_api_user&.original_location || current_api_user&.current_location
+    current_api_user&.active_location
   end
 
   def render_unauthorized
