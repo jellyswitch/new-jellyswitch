@@ -18,7 +18,10 @@ module Notifiable
 
     def message
       start = datetime_in.strftime("%-l:%M %p")
-      "You can get into #{room.location.name} now — your #{room.name} booking starts at #{start}."
+      # Building access only — the room itself may still be booked by someone
+      # else until start. "Get into ... now" was read as room access (9/25).
+      "The building is open to you now. Your #{room.name} booking starts at #{start} — " \
+        "please wait until then to use the room, as it may be in use."
     end
 
     def recipients
