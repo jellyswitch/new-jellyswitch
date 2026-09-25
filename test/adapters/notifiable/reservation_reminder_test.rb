@@ -7,12 +7,20 @@ class Notifiable::ReservationReminderTest < ActiveSupport::TestCase
   end
 
   # Phase 6 / ADR 0013: the booker reminder is the access-window "come back" push.
-  test "message says the building is open, not the room" do
+  test "paid booking: says the building is open and to wait for the room" do
+    @reservation.paid = true
     msg = Notifiable::ReservationReminder.new(@reservation).send(:message)
-    assert_match(/building is open/i, msg)
-    assert_match(/wait until then to use the room/i, msg)
-    assert_includes msg, @room.name
-    assert_no_match(/get into/i, msg)
+    assert_includes msg, "You now have access to #{@room.location.name}."
+    assert_includes msg, "Your #{@room.name} booking starts at"
+    assert_match(/Please wait until then to use the room, since it may be in use\./, msg)
+  end
+
+  test "unpaid booking (day pass/member): room start time only, no access line" do
+    @reservation.paid = false
+    msg = Notifiable::ReservationReminder.new(@reservation).send(:message)
+    assert msg.start_with?("Your #{@room.name} booking starts at"), msg
+    assert_match(/Please wait until then to use the room, since it may be in use\./, msg)
+    assert_no_match(/access/i, msg)
   end
 
   test "recipients is the booker" do
