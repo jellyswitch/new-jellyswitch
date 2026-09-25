@@ -5,7 +5,7 @@ class JellyswitchMail < MailHatch
   def initialize(operator, dry_run: false)
     @operator = operator
     super(
-      api_key: "JJQe43a&u=W9F3+t&PkVKZ(^P2uiaH>jkfj%{KVMarnuiT4cKQxR4D4XQ2q2fs&M",
+      api_key: ENV['MAILHATCH_API_KEY'],
       brand_color: "#ff9900", 
       debug: true,
       dry_run: dry_run,
