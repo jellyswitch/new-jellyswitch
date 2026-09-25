@@ -27,6 +27,8 @@ class SendReservationReminderJob < ApplicationJob
                          .update_all(arrival_notified_at: Time.current).zero?
 
     SendNotificationsJob.perform_now(reservation, "ReservationReminder")
+    # Same words by email, so there's a copy to look back on (push disappears).
+    UserMailer.reservation_arrival_email(reservation.id).deliver_later unless reservation.user&.email_bounced?
   rescue => e
     Honeybadger.notify(e)
     Rails.logger.error("SendReservationReminderJob failed: #{e.class}: #{e.message}")

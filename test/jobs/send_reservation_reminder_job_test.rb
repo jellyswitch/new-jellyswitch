@@ -1,6 +1,7 @@
 require "test_helper"
 
 class SendReservationReminderJobTest < ActiveSupport::TestCase
+  include ActionMailer::TestHelper
   setup do
     @room = rooms(:small_meeting_room)
     @room.reservations.delete_all
@@ -59,5 +60,22 @@ class SendReservationReminderJobTest < ActiveSupport::TestCase
     SendReservationReminderJob.perform_now(res.id)
     SendReservationReminderJob.perform_now(res.id) # second copy no-ops via the marker
     assert_not_nil res.reload.arrival_notified_at
+  end
+
+  # 9/25: the push is also emailed so the booker has a copy to look back on.
+  test "emails the push text alongside the push" do
+    @room.location.operator.update!(building_access_window_minutes: 60)
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 50.minutes.from_now, minutes: 60)
+    SendNotificationsJob.stubs(:perform_now)
+    assert_enqueued_email_with UserMailer, :reservation_arrival_email, args: [res.id] do
+      SendReservationReminderJob.perform_now(res.id)
+      SendReservationReminderJob.perform_now(res.id) # duplicate job → no second email
+    end
+    assert_enqueued_emails 1
+  end
+
+  test "no email when the push is skipped" do
+    res = Reservation.create!(user: @user, room: @room, datetime_in: 3.hours.from_now, minutes: 60)
+    assert_no_enqueued_emails { SendReservationReminderJob.perform_now(res.id) }
   end
 end
