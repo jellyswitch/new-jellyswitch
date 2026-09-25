@@ -439,6 +439,24 @@ class UserMailer < ApplicationMailer
   # right after a successful capture, so the member has a paper trail
   # of the actual charge. `kind` is :capture (default) or :extension —
   # the only behavioral difference is the subject line.
+  # Email copy of the access-window push (SendReservationReminderJob) — same text.
+  def reservation_arrival_email(reservation_id)
+    reservation = Reservation.find_by(id: reservation_id)
+    return if reservation.nil? || reservation.cancelled?
+
+    @user = reservation.user
+    @location = reservation.room.location
+    @operator = @location.operator
+    @reservation = reservation
+    @message = Notifiable::ReservationReminder.new(reservation).message
+    @host = ENV['ASSET_HOST']
+    @unsubscribe_url = unsubscribe_url(@user)
+    from_address = @location&.sender_from_address || @operator.sender_from_address
+    start = reservation.datetime_in.strftime("%-l:%M %p")
+
+    mail to: @user.email, subject: "Your #{reservation.room.name} booking starts at #{start}", from: from_address, reply_to: @operator.contact_email
+  end
+
   def meeting_room_charged(reservation_id, amount_cents, kind: :capture)
     reservation = Reservation.find_by(id: reservation_id)
     return if reservation.nil?
