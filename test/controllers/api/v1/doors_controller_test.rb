@@ -39,9 +39,14 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
     }
   end
 
-  test "active member unlock logs manual DoorPunch" do
-    assert_difference -> { DoorPunch.where(method: "manual").count }, 2 do
-      post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@member)
+  # Exactly ONE punch (and one timeline activity) per unlock. From 8/27 to
+  # 9/25 perform_unlock inserted a second row after the Kisi call — 2,153
+  # duplicate punches in prod.
+  test "active member unlock logs exactly one manual DoorPunch" do
+    assert_difference -> { DoorPunch.where(method: "manual").count }, 1 do
+      assert_difference -> { Activity.where(subject_type: "DoorPunch").count }, 1 do
+        post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@member)
+      end
     end
 
     assert_response :success
@@ -61,9 +66,11 @@ class Api::V1::DoorsControllerTest < ActionDispatch::IntegrationTest
       headers: { "Content-Type" => "application/json" },
     )
 
-    assert_difference -> { DoorPunch.where(method: "manual").count }, 2 do
+    assert_difference -> { DoorPunch.where(method: "manual").count }, 1 do
       post "/api/v1/doors/#{@door.id}/unlock", headers: headers(@member)
     end
+    assert_equal ["failed"], DoorPunch.where(method: "manual", door: @door).pluck(:status),
+                 "a failed unlock must not also leave an 'unlocked' row"
 
     assert_response :success # 200 + success:false is the shape every app surface alerts on
     body = JSON.parse(response.body)

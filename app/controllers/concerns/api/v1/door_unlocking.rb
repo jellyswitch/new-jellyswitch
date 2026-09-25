@@ -113,7 +113,13 @@ module Api::V1::DoorUnlocking
 
   def perform_unlock(door:, user:, location:, method:)
     room_entry = door.room_lock?
-    DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method, room_entry: room_entry)
+    # ONE punch per unlock: created "pending", then reconciled with Kisi's answer
+    # below — the same shape as the auto-unlock path (KisiUnlockJob). Until
+    # 2026-09-25 this inserted a second row after the Kisi call, so every manual
+    # unlock since 8/27 logged two punches + two timeline activities, and a
+    # Kisi failure still left an "unlocked" row behind.
+    punch = DoorPunch.create!(user: user, door: door, operator: current_tenant, method: method,
+                              room_entry: room_entry, status: "pending")
     # Bundle burn-on-entry is a BUILDING-entry semantic — a Room Entry
     # never spends a pass (ADR 0021; the holder's reservation already
     # granted access anyway).
@@ -127,16 +133,17 @@ module Api::V1::DoorUnlocking
     end
     # Routed through Kisi::Client so the manual /doors/:id/unlock path
     # benefits from the same persistent connection the async job uses.
-    result = Kisi::Client.unlock(door)
-    # Record what Kisi actually answered, mirroring KisiUnlockJob's
-    # reconciliation: a Kisi-side refusal (controller offline, fac001) is a
-    # "failed" punch. Before this, the row said "unlocked" with the error
-    # buried in json — and the member was told the door opened.
-    DoorPunch.create!(
-      user: user, door: door, operator: current_tenant, method: method,
+    begin
+      result = Kisi::Client.unlock(door)
+    rescue => e
+      punch.update(status: "failed")
+      raise e
+    end
+    # Record what Kisi actually answered: a Kisi-side refusal (controller
+    # offline, fac001) is a "failed" punch, never a false "unlocked".
+    punch.update!(
       json: result[:parsed] || result[:body],
       status: result[:success] ? "unlocked" : "failed",
-      room_entry: room_entry,
     )
     result
   end
