@@ -17,13 +17,15 @@ class Billing::DayPassBundles::CreateStripeInvoiceForBundle
       description: day_pass_bundle.charge_description
     }, creds.merge(idempotency_key: "bundle-item-#{day_pass_bundle.id}"))
 
-    # Out-of-band customers pay via mailed invoice (send_invoice / days_until_due).
+    # Out-of-band customers pay via mailed invoice (send_invoice / days_until_due);
+    # auto_advance: true because ChargeBundleInvoice skips them, so nothing else
+    # would ever finalize + send it (it would sit in Stripe draft forever).
     # In-band customers are charged immediately by ChargeBundleInvoice (charge_automatically,
     # auto_advance: false so we finalize + pay synchronously).
     invoice_args = if day_pass_bundle.billable.out_of_band?
       {
         customer: day_pass_bundle.billable.stripe_customer_id_for_location(location),
-        auto_advance: false,
+        auto_advance: true,
         billing: "send_invoice",
         days_until_due: 30
       }
