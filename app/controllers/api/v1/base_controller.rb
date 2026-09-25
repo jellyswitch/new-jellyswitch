@@ -19,6 +19,7 @@ class Api::V1::BaseController < ApplicationController
       payload = JWT.decode(token, jwt_secret, true, algorithm: 'HS256').first
       @current_api_user  = User.find(payload['user_id'])
       @api_token_payload = payload
+      log_api_caller
     rescue JWT::DecodeError, ActiveRecord::RecordNotFound
       render_unauthorized
     end
@@ -26,6 +27,17 @@ class Api::V1::BaseController < ApplicationController
 
   def current_api_user
     @current_api_user
+  end
+
+  # One line per authenticated request, tagged with the request_id like every
+  # Rails line and matching the router's request_id — so "what did this
+  # member's phone do on app open?" is answerable from logs (router lines only
+  # carry an IP). ua tells okhttp (Android) from CFNetwork/Darwin (iOS).
+  def log_api_caller
+    Rails.logger.info(
+      "api_user=#{@current_api_user.id} op=#{@current_api_user.operator_id} " \
+      "client=#{api_client || 'app'} ua=#{request.user_agent.to_s.first(80).inspect}"
+    )
   end
 
   # Which client minted the bearer token. nil for the phone apps (their tokens
