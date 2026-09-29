@@ -108,6 +108,18 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert_includes item["day"], (Date.current + 7).strftime("%B")
   end
 
+  test "an office_lease_created card carries the action text and lease sentence" do
+    feed_item = FeedItem.create!(
+      operator: @operator, location: @location, user: @admin,
+      blob: { "type" => "office_lease_created", "text" => "Scott Lowe leased Office 300 · $698.98/mo" },
+    )
+
+    item = fetch_item(feed_item)
+    assert_equal "office_lease_created", item["type"]
+    assert_equal "leased an office", item["action_text"]
+    assert_equal "Scott Lowe leased Office 300 · $698.98/mo", item["body"]
+  end
+
   test "day-pass overage on a free room shows the overage charge, not $0" do
     feed_item = nil
     expected_cents = 6000 # 120 min used − 60 included = 60 min over; $60/hr overage

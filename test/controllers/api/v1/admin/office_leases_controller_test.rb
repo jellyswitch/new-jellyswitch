@@ -64,6 +64,16 @@ class Api::V1::Admin::OfficeLeasesControllerTest < ActionDispatch::IntegrationTe
     body = JSON.parse(response.body)
     assert_equal "Free Office", body["office_name"]
     assert_equal "upcoming", body["status"]
+
+    # Admin feed card at the lease's location, naming the organization.
+    card = FeedItem.where("blob->>'type' = ?", "office_lease_created").order(:id).last
+    assert card, "expected an office_lease_created feed item"
+    assert_equal "Sierra Nevada Alliance leased Free Office · $700.00/mo", card.blob["text"]
+    assert_equal lease.id, card.blob["office_lease_id"]
+    assert_equal locations(:cowork_tahoe_location), card.location
+    assert_equal @operator, card.operator
+    assert_equal users(:cowork_tahoe_admin), card.user # org owner
+    assert_equal "leased an office", card.action_text
   end
 
   test "creates an individual lease and defaults dates" do
@@ -84,6 +94,28 @@ class Api::V1::Admin::OfficeLeasesControllerTest < ActionDispatch::IntegrationTe
     assert_equal Date.current, lease.start_date
     assert_equal Date.current + 1.year, lease.end_date
     assert_equal Date.current, lease.initial_invoice_date
+
+    card = FeedItem.where("blob->>'type' = ?", "office_lease_created").order(:id).last
+    assert_equal "#{users(:cowork_tahoe_member).name} leased Free Office · $500.00/mo", card.blob["text"]
+    assert_equal users(:cowork_tahoe_member), card.user
+  end
+
+  test "lease creation still succeeds when the feed card fails" do
+    raiser = ->(*) { raise "feed boom" }
+    FeedItemCreator.stub(:create_feed_item, raiser) do
+      assert_difference("OfficeLease.count", 1) do
+        post "/api/v1/admin/office_leases", headers: headers, params: {
+          office_lease: {
+            office_id: offices(:free_office).id,
+            user_id: users(:cowork_tahoe_member).id,
+            amount_in_cents: 50000,
+          },
+        }.to_json
+      end
+    end
+
+    assert_response :created
+    assert_equal 0, FeedItem.where("blob->>'type' = ?", "office_lease_created").count
   end
 
   test "rejects a lease that overlaps the office's current lease with the model's message" do

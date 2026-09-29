@@ -7,6 +7,7 @@ class Billing::Leasing::CreateOfficeLease
     Billing::Leasing::SaveOfficeLease,
     Billing::Leasing::CreateStripeSubscription,
     Billing::Leasing::ChargeDeposit,
-    Billing::Leasing::ScheduleLeaseEmails
+    Billing::Leasing::ScheduleLeaseEmails,
+    Billing::Leasing::CreateFeedItem
   )
 end

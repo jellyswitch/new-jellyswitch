@@ -131,6 +131,8 @@ class FeedItem < ApplicationRecord
       "had a payment failure"
     when "lease_renewal"
       "has a lease renewal proposal"
+    when "office_lease_created"
+      "leased an office"
     when "membership_paused"
       "paused their membership"
     when "membership_unpaused"

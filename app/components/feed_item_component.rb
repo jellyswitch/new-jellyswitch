@@ -58,6 +58,8 @@ class FeedItemComponent < ApplicationComponent
       true
     when "lease_renewal"
       true
+    when "office_lease_created"
+      true
     when "demand-miss"
       true
     when "day-office-sold-out"
@@ -89,7 +91,7 @@ class FeedItemComponent < ApplicationComponent
       FeedItems::MembershipUnpaused
     when "membership_updated"
       FeedItems::MembershipUpdated
-    when "payment_failed", "lease_renewal", "demand-miss", "daily-digest", "day-office-sold-out"
+    when "payment_failed", "lease_renewal", "office_lease_created", "demand-miss", "daily-digest", "day-office-sold-out"
       FeedItems::MembershipCancellation # reuses feed_item_text partial
     else
       "operator/feed_items/#{feed_item.type.underscore}_feed_item"

@@ -11,6 +11,17 @@ class FeedItemsControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "renders an office_lease_created card on the web feed" do
+    FeedItem.create!(
+      operator: @user.operator, location: @user.original_location, user: @user,
+      blob: { "type" => "office_lease_created", "text" => "Scott Lowe leased Office 300 · $698.98/mo" },
+    )
+    get feed_items_path, env: default_env
+    assert_response :success
+    assert_includes response.body, "leased an office"
+    assert_includes response.body, "Scott Lowe leased Office 300 · $698.98/mo"
+  end
+
   test "should create a new feed item and redirect back to index (web)" do
     post feed_items_path( params: { feed_item: { text: "This is a management note" } }), env: default_env
     assert_redirected_to controller: "operator/feed_items", action: "index"
