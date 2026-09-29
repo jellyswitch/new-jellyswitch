@@ -38,7 +38,7 @@ class Api::V1::GarminController < Api::V1::BaseController
     # Single use: burn the code before handing out a token.
     user.update_columns(garmin_pairing_code_digest: nil, garmin_pairing_code_expires_at: nil)
 
-    location = user.original_location || user.current_location
+    location = user.active_location
     render json: {
       token:     garmin_token(user),
       name:      user.name,

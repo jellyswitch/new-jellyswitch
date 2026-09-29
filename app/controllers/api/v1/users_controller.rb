@@ -20,12 +20,12 @@ class Api::V1::UsersController < Api::V1::BaseController
       # unconfirmed members from logging in).
       email_confirmed: user.email_confirmed?,
       needs_email_confirmation: user.needs_email_confirmation?,
-      location: user.original_location&.name,
+      location: user.active_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
       profile_photo_url: (user.profile_photo.attached? ? url_for(user.profile_photo) : nil rescue nil),
       credit_balance: user.credit_balance,
-      location_id: user.current_location_id || user.original_location_id,
+      location_id: user.active_location&.id,
       operator_subdomain: user.operator.subdomain,
       features: location_features(user),
       # Scope to .visible so hidden locations (test scratchpads, archived

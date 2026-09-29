@@ -39,6 +39,19 @@ class Api::V1::Admin::BaseController < Api::V1::BaseController
     render json: { error: 'Forbidden' }, status: :forbidden unless allowed_location_ids.include?(location.id)
   end
 
+  # The member API follows the caller's Change Location pick (User#active_location).
+  # For staff that pick only counts inside their boundary; otherwise stay at
+  # their home location, as before the pick was honored — without this fallback
+  # an admin who switched to an unmanaged location got 403 on EVERY admin call.
+  # With no home location, keep the out-of-bounds one so enforce_location_scope!
+  # still refuses (never fall through to nil, which the guard lets pass).
+  def current_location
+    location = super
+    return location if location.nil? || current_api_user&.superadmin? || allowed_location_ids.include?(location.id)
+
+    current_api_user.original_location || location
+  end
+
   # The admin API's one definition of a staff user's location boundary:
   # locations they manage (location_managements) plus their own home location.
   # Used both for the caller's own location (enforce_location_scope! above) and

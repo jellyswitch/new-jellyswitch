@@ -317,7 +317,7 @@ class Api::V1::AuthController < Api::V1::BaseController
       # members anymore).
       email_confirmed: user.email_confirmed?,
       needs_email_confirmation: user.needs_email_confirmation?,
-      location: user.original_location&.name,
+      location: user.active_location&.name,
       operator: user.operator.name,
       has_profile_photo: user.has_profile_photo?,
       # Match /me's logic so the mobile client can make correct routing
