@@ -71,7 +71,7 @@ class Operator::InvoicesController < Operator::BaseController
       return
     end
 
-    UserMailer.invoice_receipt_email(@invoice).deliver_later
+    UserMailer.invoice_receipt_email(@invoice, requested: true).deliver_later
     flash[:success] = "Receipt emailed to #{recipient}."
     turbo_redirect(referrer_or_root, action: "replace")
   end
