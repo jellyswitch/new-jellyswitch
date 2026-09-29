@@ -59,7 +59,8 @@ class Notifiable::Default < SimpleDelegator
   end
 
   def android
-    if operator.android_push_notification_key.attached? && operator.firebase_project_id.present?
+    key_attached = operator.android_push_notification_key.attached?
+    if key_attached && operator.firebase_project_id.present?
       recipients.each do |user|
         puts "Pushing android notification to #{user.name}: #{message}"
         if user.android_token.present?
@@ -72,14 +73,14 @@ class Notifiable::Default < SimpleDelegator
       end
     else
       puts "Operator #{operator.name} has no firebase server key."
-      alert_missing_push_config(:android)
+      alert_missing_push_config(:android, firebase_key_attached: key_attached)
     end
   end
 
   # A skipped send is a silent failure when real devices are registered —
   # that's how a brand can launch with tokens piling up and zero pushes ever
   # delivered. Alert Honeybadger, but at most once per operator/platform/day.
-  def alert_missing_push_config(platform)
+  def alert_missing_push_config(platform, firebase_key_attached: nil)
     token_column = platform == :ios ? :ios_token : :android_token
     registered = operator.users.where.not(token_column => [nil, ""]).count
     return if registered.zero?
@@ -96,11 +97,13 @@ class Notifiable::Default < SimpleDelegator
         operator_name: operator.name,
         platform: platform,
         registered_token_count: registered,
-        apns_env_configured: apns_configured?,
-        bundle_id_present: operator.bundle_id.present?,
-        firebase_project_id_present: operator.firebase_project_id.present?,
-        firebase_key_attached: operator.android_push_notification_key.attached?
-      }
+      }.merge(
+        if platform == :ios
+          { apns_env_configured: apns_configured?, bundle_id_present: operator.bundle_id.present? }
+        else
+          { firebase_project_id_present: operator.firebase_project_id.present?, firebase_key_attached: firebase_key_attached }
+        end
+      )
     )
   end
   
