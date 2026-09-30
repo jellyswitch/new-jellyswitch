@@ -478,7 +478,7 @@ GEM
       ffi (~> 1.12)
       logger
     ruby2_keywords (0.0.5)
-    rubyzip (3.2.2)
+    rubyzip (3.4.0)
     safely_block (0.3.0)
       errbase (>= 0.1.1)
     sassc (2.4.0)
