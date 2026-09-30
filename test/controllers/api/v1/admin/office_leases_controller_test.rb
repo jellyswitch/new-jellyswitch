@@ -40,15 +40,19 @@ class Api::V1::Admin::OfficeLeasesControllerTest < ActionDispatch::IntegrationTe
     start_on = Date.current + 10.days
 
     before = OfficeLease.count
-    post "/api/v1/admin/office_leases", headers: headers, params: {
-      office_lease: {
-        office_id: offices(:free_office).id,
-        organization_id: organizations(:sierra_nevada_organization).id,
-        amount_in_cents: 70000,
-        start_date: start_on.to_s,
-        end_date: (start_on + 1.year).to_s,
-      },
-    }.to_json
+    # The deposit Stripe charge isn't under test here — only the card text.
+    Billing::Leasing::ChargeDeposit.stub(:call!, nil) do
+      post "/api/v1/admin/office_leases", headers: headers, params: {
+        office_lease: {
+          office_id: offices(:free_office).id,
+          organization_id: organizations(:sierra_nevada_organization).id,
+          amount_in_cents: 70000,
+          deposit_amount_in_cents: 150000,
+          start_date: start_on.to_s,
+          end_date: (start_on + 1.year).to_s,
+        },
+      }.to_json
+    end
 
     assert_response :created, response.body
     assert_equal before + 1, OfficeLease.count
@@ -68,7 +72,7 @@ class Api::V1::Admin::OfficeLeasesControllerTest < ActionDispatch::IntegrationTe
     # Admin feed card at the lease's location, naming the organization.
     card = FeedItem.where("blob->>'type' = ?", "office_lease_created").order(:id).last
     assert card, "expected an office_lease_created feed item"
-    assert_equal "Sierra Nevada Alliance leased Free Office · $700.00/mo", card.blob["text"]
+    assert_equal "Sierra Nevada Alliance leased Free Office · $700.00/mo · $1,500.00 one-time deposit", card.blob["text"]
     assert_equal lease.id, card.blob["office_lease_id"]
     assert_equal locations(:cowork_tahoe_location), card.location
     assert_equal @operator, card.operator
@@ -96,6 +100,7 @@ class Api::V1::Admin::OfficeLeasesControllerTest < ActionDispatch::IntegrationTe
     assert_equal Date.current, lease.initial_invoice_date
 
     card = FeedItem.where("blob->>'type' = ?", "office_lease_created").order(:id).last
+    # No deposit → no deposit clause.
     assert_equal "#{users(:cowork_tahoe_member).name} leased Free Office · $500.00/mo", card.blob["text"]
     assert_equal users(:cowork_tahoe_member), card.user
   end
