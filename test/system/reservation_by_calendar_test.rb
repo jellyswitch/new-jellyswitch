@@ -198,7 +198,10 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
 
     assert_text_for_date(Time.current.strftime("%Y-%m-%d"), "3 reservations")
 
-    assert_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d"), "1 reservation")
+    # On the last day of a month "tomorrow" isn't in the month grid the
+    # calendar opens on, so only check it when it's visible.
+    tomorrow_visible = Time.current.tomorrow.month == Time.current.month
+    assert_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d"), "1 reservation") if tomorrow_visible
 
     # Filter by first room
     select @room.name, from: "room-filter"
@@ -206,7 +209,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     # Verify filtered counts
     assert_text_for_date(Time.current.strftime("%Y-%m-%d"), "2 reservations")
 
-    assert_no_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d"))
+    assert_no_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d")) if tomorrow_visible
 
     # Filter by second room
     select @other_room.name, from: "room-filter"
@@ -214,7 +217,7 @@ class ReservationByCalendarTest < ApplicationSystemTestCase
     # Verify filtered counts again
     assert_text_for_date(Time.current.strftime("%Y-%m-%d"), "1 reservation")
 
-    assert_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d"), "1 reservation")
+    assert_text_for_date(Time.current.tomorrow.strftime("%Y-%m-%d"), "1 reservation") if tomorrow_visible
 
     # Verify filter persists through month navigation
     find(".fc-next-button").click
