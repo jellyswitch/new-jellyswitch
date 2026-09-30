@@ -243,7 +243,7 @@ GEM
     groupdate (6.1.0)
       activesupport (>= 5.2)
     hashdiff (1.2.1)
-    honeybadger (6.5.3)
+    honeybadger (6.9.0)
       logger
       ostruct
     htmlentities (4.3.4)
