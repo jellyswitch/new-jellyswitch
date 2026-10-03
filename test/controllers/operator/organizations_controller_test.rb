@@ -27,6 +27,35 @@ class Operator::OrganizationsControllerTest < ActionDispatch::IntegrationTest
     assert_includes response.body, "Imported Ownerless LLC"
     assert_includes response.body, "No owner assigned"
   end
+  # Regression (Seth, Untethered Fulton, 2026-10-03): the show page's
+  # Archive/Unarchive buttons PATCHed /organizations/:id/edit, which has no
+  # PATCH route — every click 404'd and the group stayed put since 3/30.
+  test "archive and unarchive buttons target the update route" do
+    org = Organization.create!(name: "Archive Me LLC", operator: @operator, location: locations(:cowork_tahoe_location), owner: @admin)
+
+    log_in @admin
+    get organization_path(org), env: default_env
+    assert_response :success
+    assert_includes response.body, "Archive Group"
+    assert_not_includes response.body, "#{edit_organization_path(org)}?organization"
+    assert_includes response.body, %(href="#{organization_path(org, organization: { visible: false })}")
+  end
+
+  test "PATCH visible=false archives the group and visible=true restores it" do
+    org = Organization.create!(name: "Archive Me LLC", operator: @operator, location: locations(:cowork_tahoe_location), owner: @admin)
+
+    log_in @admin
+    # Stripe customer sync isn't under test here.
+    Operator.any_instance.stubs(:update_organization_customer_details).returns(true)
+
+    patch organization_path(org, organization: { visible: false }), env: default_env
+    assert_redirected_to organization_path(org)
+    assert_not org.reload.visible?
+
+    patch organization_path(org, organization: { visible: true }), env: default_env
+    assert org.reload.visible?
+  end
+
   # Seth (Untethered Fulton, 2026-10-03): the group "Add members" picker listed
   # every member of the operator, both spaces mixed. Now only the group's space.
   test "add members picker only lists members of the group's space" do
