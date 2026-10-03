@@ -8,6 +8,8 @@ class Api::V1::Admin::DoorsController < Api::V1::Admin::BaseController
 
   def index
     doors = Door.where(operator: current_tenant).includes(:beacons).order(:name)
+    # One list per space, like the web Doors page (current_location.doors).
+    doors = doors.where(location: current_location) if current_location
 
     render json: doors.map { |d| door_json(d) }
   end
