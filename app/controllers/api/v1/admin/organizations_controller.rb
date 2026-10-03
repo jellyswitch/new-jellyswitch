@@ -1,6 +1,7 @@
 class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
   def index
-    orgs = Organization.where(operator: current_tenant).order(:name)
+    # One list per space, like the web Groups page (Organization.for_location).
+    orgs = Organization.where(operator: current_tenant).for_location(current_location).order(:name)
 
     render json: orgs.map { |org|
       {
