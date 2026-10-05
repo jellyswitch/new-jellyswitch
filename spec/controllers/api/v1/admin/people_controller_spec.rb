@@ -109,10 +109,10 @@ RSpec.describe Api::V1::Admin::PeopleController, type: :controller do
   end
 
   describe "GET #index with from filter" do
-    let!(:local_member) { create(:user, operator: operator, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
-    let!(:reno_member)  { create(:user, operator: operator, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
-    let!(:bay_member)   { create(:user, operator: operator, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
-    let!(:no_geo)       { create(:user, operator: operator, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
+    let!(:local_member) { create(:user, operator: operator, original_location: location, role: :unassigned, name: "Local", home_city: "South Lake Tahoe", home_state: "CA") }
+    let!(:reno_member)  { create(:user, operator: operator, original_location: location, role: :unassigned, name: "Reno",  home_city: "Reno",            home_state: "NV") }
+    let!(:bay_member)   { create(:user, operator: operator, original_location: location, role: :unassigned, name: "Bay",   home_city: "Oakland",         home_state: "CA") }
+    let!(:no_geo)       { create(:user, operator: operator, original_location: location, role: :unassigned, name: "NoGeo", home_city: nil,               home_state: nil) }
 
     before do
       location.update!(city: "South Lake Tahoe", state: "CA")

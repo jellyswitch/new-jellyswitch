@@ -1,8 +1,11 @@
 class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
   def index
+    # One list per space (Untethered = Lake Tahoe + Fulton under one operator),
+    # matching #unapproved and the web member lists.
     users = current_tenant.users
                           .where(approved: true, archived: false)
                           .where.not(role: 'admin')
+                          .originally_at_location(current_location)
                           .order(:name)
 
     users = search_users(users) if params[:q].present?
@@ -37,6 +40,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     users = current_tenant.users
                           .where(archived: true)
                           .where.not(role: 'admin')
+                          .originally_at_location(current_location)
                           .order(:name)
 
     users = search_users(users) if params[:q].present?
