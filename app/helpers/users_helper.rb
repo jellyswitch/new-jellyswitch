@@ -1,20 +1,25 @@
 module UsersHelper
   include Pagy::Backend
 
+  # Fields that grant power or access. Only staff of the current location may
+  # set them: a member editing their own profile (UserPolicy#update? lets users
+  # update themselves) goes through this same method, and could otherwise PATCH
+  # themselves to admin / approved / 24-7 door access.
+  PRIVILEGED_USER_PARAMS = [
+    :approved, :admin, :role, :always_allow_building_access, :access_only,
+    { managed_location_ids: [] }
+  ].freeze
+
   def user_params
-    result = params.require(:user).permit(
+    permitted = [
       :name, :email, :phone, :password, :password_confirmation,
       :bio, :linkedin, :twitter, :website, :profile_photo,
-      :approved, :admin, :add_member, :add_member_and_create_another,
-      :always_allow_building_access, :role, :original_location_id, :current_location_id,
+      :add_member, :add_member_and_create_another,
+      :original_location_id, :current_location_id,
       :marketing_consent, :terms_accepted, :preferred_room_id, :preferred_meeting_duration,
-      managed_location_ids: []
-    )
-    # Access-only grants 24/7 door access, so only staff may set it — a member
-    # editing their own profile goes through this same params method.
-    if current_user&.admin_or_manager?(current_location) && params[:user].key?(:access_only)
-      result[:access_only] = params[:user][:access_only]
-    end
+    ]
+    permitted += PRIVILEGED_USER_PARAMS if current_user&.admin_or_manager?(current_location)
+    result = params.require(:user).permit(*permitted)
     result[:original_location_id] = current_location.id if current_location && result[:original_location_id].blank?
     result
   end
