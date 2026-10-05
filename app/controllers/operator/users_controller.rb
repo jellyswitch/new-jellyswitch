@@ -17,7 +17,7 @@ class Operator::UsersController < Operator::BaseController
   def index
     @pagy, @users = find_approved_users
     @unapproved_users = find_unapproved_users
-    @archived_users_count = User.for_space(current_tenant).archived.count
+    @archived_users_count = User.for_space(current_tenant).excluding_access_only.archived.count
     authorize @users
   end
 
@@ -25,7 +25,7 @@ class Operator::UsersController < Operator::BaseController
     @query = params[:query]
     @pagy, @users = find_approved_users(@query)
     @unapproved_users = find_unapproved_users
-    @archived_users_count = User.for_space(current_tenant).archived.count
+    @archived_users_count = User.for_space(current_tenant).excluding_access_only.archived.count
     authorize @users
     render :index
   end

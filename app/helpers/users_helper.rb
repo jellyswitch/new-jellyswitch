@@ -10,6 +10,11 @@ module UsersHelper
       :marketing_consent, :terms_accepted, :preferred_room_id, :preferred_meeting_duration,
       managed_location_ids: []
     )
+    # Access-only grants 24/7 door access, so only staff may set it — a member
+    # editing their own profile goes through this same params method.
+    if current_user&.admin_or_manager?(current_location) && params[:user].key?(:access_only)
+      result[:access_only] = params[:user][:access_only]
+    end
     result[:original_location_id] = current_location.id if current_location && result[:original_location_id].blank?
     result
   end
@@ -31,9 +36,9 @@ module UsersHelper
     if query.present?
       user_ids = User.search(query, fields: [:name, :email]).map(&:id)
       filtered_users = User.where(id: user_ids)
-      pagy(filtered_users.for_space(current_tenant).originally_at_location(current_location).approved.visible.order("name"))
+      pagy(filtered_users.for_space(current_tenant).originally_at_location(current_location).excluding_access_only.approved.visible.order("name"))
     else
-      pagy(User.for_space(current_tenant).originally_at_location(current_location).approved.visible.order("name"))
+      pagy(User.for_space(current_tenant).originally_at_location(current_location).excluding_access_only.approved.visible.order("name"))
     end
   end
 
@@ -41,14 +46,14 @@ module UsersHelper
   # most recent first. Older signups drop off here and surface under cold leads.
   def find_unapproved_users
     User.for_space(current_tenant).originally_at_location(current_location)
-        .awaiting_approval.order(created_at: :desc)
+        .excluding_access_only.awaiting_approval.order(created_at: :desc)
   end
 
   # Cold leads: unapproved signups that sat past the approval window with no
   # action taken. Same list, older slice — a filter on the members page.
   def find_cold_leads
     User.for_space(current_tenant).originally_at_location(current_location)
-        .cold_leads.order(created_at: :desc)
+        .excluding_access_only.cold_leads.order(created_at: :desc)
   end
 
   def set_unapproved_users
@@ -60,13 +65,13 @@ module UsersHelper
   end
 
   def find_archived_users
-    User.for_space(current_tenant).originally_at_location(current_location).archived.order("name")
+    User.for_space(current_tenant).originally_at_location(current_location).excluding_access_only.archived.order("name")
   end
 
   def find_archived_users_with_search(query = nil)
     if query.present?
       user_ids = User.search(query, fields: [:name, :email]).map(&:id)
-      pagy(User.where(id: user_ids).for_space(current_tenant).originally_at_location(current_location).archived.order("name"))
+      pagy(User.where(id: user_ids).for_space(current_tenant).originally_at_location(current_location).excluding_access_only.archived.order("name"))
     else
       pagy(find_archived_users)
     end

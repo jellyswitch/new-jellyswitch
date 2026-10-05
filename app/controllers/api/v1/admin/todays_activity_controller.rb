@@ -93,7 +93,8 @@ class Api::V1::Admin::TodaysActivityController < Api::V1::Admin::BaseController
     booking_user_ids = (paid_bookings.distinct.pluck(:user_id) +
                         todays_day_passes.distinct.pluck(:user_id) +
                         member_bookings.distinct.pluck(:user_id)).uniq.compact
-    walk_in_user_ids = arrived_at_by_user.keys.compact
+    # Access-only people (couriers, cleaning staff) aren't visitors.
+    walk_in_user_ids = User.where(id: arrived_at_by_user.keys.compact).excluding_access_only.pluck(:id)
     visitor_count = (booking_user_ids + walk_in_user_ids).uniq.count
 
     # Walk-ins-only list — members here today not already shown under bookings.

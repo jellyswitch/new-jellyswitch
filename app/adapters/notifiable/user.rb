@@ -3,6 +3,8 @@ module Notifiable
     private
 
     def create_feed_item
+      # Access-only people (couriers, cleaning staff) aren't member signups.
+      return if access_only?
       # Idempotent: skip if a new-user FeedItem already exists for this user.
       # SendNotificationsJob is invoked both on signup AND on admin approval,
       # which previously produced two "X signed up" rows on the dashboard for
@@ -23,7 +25,7 @@ module Notifiable
     end
 
     def should_send_notification?
-      operator.signup_notifications?
+      operator.signup_notifications? && !access_only?
     end
 
     def message

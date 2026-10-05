@@ -17,7 +17,7 @@ module Concierge
     end
 
     def call
-      member_ids   = @operator.users.members.where(archived: [false, nil]).pluck(:id)
+      member_ids   = @operator.users.members.excluding_access_only.where(archived: [false, nil]).pluck(:id)
       chatter_ids  = chat_activities.distinct.pluck(:user_id) & member_ids
       purchaser_ids = Activity.where(operator: @operator, kind: PURCHASE_KINDS, user_id: member_ids)
                               .distinct.pluck(:user_id)

@@ -3,6 +3,7 @@
 # Table name: users
 #
 #  id                            :bigint(8)        not null, primary key
+#  access_only                   :boolean          default(FALSE), not null
 #  admin                         :boolean          default(FALSE), not null
 #  always_allow_building_access  :boolean          default(FALSE), not null
 #  android_token                 :string
@@ -443,6 +444,12 @@ class User < ApplicationRecord
   scope :archived, -> { where(archived: true) }
   scope :visible, -> { where(archived: false) }
   scope :banned, -> { where.not(banned_at: nil) }
+  # "Access only" people (couriers, cleaning staff): can unlock their home
+  # space's doors 24/7 (Permissions#access_only_at?) but are NOT members —
+  # every member list, count and marketing audience applies
+  # excluding_access_only. Staff find them on People > Access only.
+  scope :access_only_people, -> { where(access_only: true) }
+  scope :excluding_access_only, -> { where(access_only: false) }
 
   # ---- Ban -----------------------------------------------------------------
   # Archive is a soft delete that keeps every member ability (archived users
@@ -516,7 +523,7 @@ class User < ApplicationRecord
   scope :mentionable, -> {
     base = where(archived: [false, nil])
     base.where(role: [User::ADMIN, User::GENERAL_MANAGER, User::COMMUNITY_MANAGER])
-        .or(base.where(role: User::UNASSIGNED, approved: true))
+        .or(base.where(role: User::UNASSIGNED, approved: true, access_only: false))
   }
   scope :non_superadmins, -> { where.not(role: User::SUPERADMIN) }
   scope :for_space, ->(operator) { where("operator_id = ?", operator.id) }
@@ -529,7 +536,8 @@ class User < ApplicationRecord
   # not unsubscribed, not bounced, not operator-suppressed. Replaces the inlined
   # triad that Campaign#build_recipient_query and the automation job had drifted
   # on (the job was missing marketing_suppressed).
-  scope :marketing_sendable, -> { where(email_opted_out: false, email_bounced: false, marketing_suppressed: false) }
+  # Access-only people (couriers, cleaning staff) are never marketed to.
+  scope :marketing_sendable, -> { where(email_opted_out: false, email_bounced: false, marketing_suppressed: false, access_only: false) }
 
   # Interest-tag audience targeting (ADR 0022). `products` are InterestTag
   # product keys (office / day_pass / membership / meeting_room).
@@ -587,6 +595,7 @@ class User < ApplicationRecord
            :has_active_reservation?,
            :allowed_in?,
            :allowed_in_for_door_access?,
+           :access_only_at?,
            :should_charge_for_reservation?,
            :should_charge_for_room?,
            :can_see_all_rooms?,
@@ -872,7 +881,7 @@ class User < ApplicationRecord
   end
 
   def self.lease_options_for_select(operator, location)
-    User.for_space(operator).originally_at_location(location).non_superadmins.approved.visible.order(:name).all.map do |user|
+    User.for_space(operator).originally_at_location(location).non_superadmins.excluding_access_only.approved.visible.order(:name).all.map do |user|
       option_helper(user)
     end
   end
@@ -888,6 +897,7 @@ class User < ApplicationRecord
     all_users = User.for_space(operator)
                     .originally_at_location(location)
                     .non_superadmins
+                    .excluding_access_only
                     .visible
                     .includes(:organization, :subscriptions, :day_passes, :reservations)
                     .order(:name)

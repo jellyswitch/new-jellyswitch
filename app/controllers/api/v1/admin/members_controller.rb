@@ -3,6 +3,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     users = current_tenant.users
                           .where(approved: true, archived: false)
                           .where.not(role: 'admin')
+                          .excluding_access_only # couriers/cleaners aren't members
                           .order(:name)
 
     users = search_users(users) if params[:q].present?
@@ -19,6 +20,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     scope = current_tenant.users
                           .where(approved: false, archived: false)
                           .where.not(role: 'admin')
+                          .excluding_access_only
                           .originally_at_location(current_location)
                           .recent_signup # drop off after APPROVAL_QUEUE_DAYS -> cold leads
     scope = search_users(scope) if params[:q].present?
@@ -37,6 +39,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
     users = current_tenant.users
                           .where(archived: true)
                           .where.not(role: 'admin')
+                          .excluding_access_only
                           .order(:name)
 
     users = search_users(users) if params[:q].present?
@@ -77,6 +80,7 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       organization_name: user.try(:organization)&.try(:name),
       organization_owner: user.organization.present? && user.organization.owner_id == user.id,
       always_allow_building_access: user.always_allow_building_access,
+      access_only: user.access_only,
       day_passes: user.day_passes.where(operator: current_tenant).order(day: :desc).limit(10).map { |dp|
         { id: dp.id, date: dp.day&.strftime("%B %e, %Y"), type_name: dp.day_pass_type&.name }
       },
@@ -818,15 +822,16 @@ class Api::V1::Admin::MembersController < Api::V1::Admin::BaseController
       plan_name: active_sub&.plan&.name,
       has_profile_photo: user.has_profile_photo?,
       marketing_suppressed: user.marketing_suppressed,
+      access_only: user.access_only,
     }
   end
 
   def user_params
-    params.permit(:name, :email, :phone, :password, :bio, :role)
+    params.permit(:name, :email, :phone, :password, :bio, :role, :access_only)
   end
 
   def user_update_params
-    params.permit(:name, :email, :phone, :bio, :role)
+    params.permit(:name, :email, :phone, :bio, :role, :access_only)
   end
 
   # Server-side ceiling on role grants — the web edit form enforces this by

@@ -3,6 +3,7 @@
 # Table name: users
 #
 #  id                            :bigint(8)        not null, primary key
+#  access_only                   :boolean          default(FALSE), not null
 #  admin                         :boolean          default(FALSE), not null
 #  always_allow_building_access  :boolean          default(FALSE), not null
 #  android_token                 :string

@@ -168,7 +168,7 @@ module Jellyswitch
     # People acquired through a channel (for the drill-down). A split referral
     # key ("referral:coworktahoe.com") narrows to that referring domain.
     def people_for_channel(channel)
-      scope = User.where(operator: operator, original_location_id: location.id)
+      scope = User.where(operator: operator, original_location_id: location.id).excluding_access_only
       if channel.to_s.start_with?(REFERRAL_PREFIX)
         scope = scope.where(acquisition_channel: "referral", acquisition_referrer: channel.to_s.delete_prefix(REFERRAL_PREFIX))
       else
@@ -198,7 +198,13 @@ module Jellyswitch
     end
 
     def conversions
-      @conversions ||= Conversion.for_location(location).between(range)
+      # Access-only people (couriers, cleaning staff) aren't customers — an
+      # admin creating one records a "signup" conversion we don't count.
+      @conversions ||= begin
+        base = Conversion.for_location(location).between(range)
+        base.where(user_id: nil)
+            .or(base.where.not(user_id: User.where(operator: operator).access_only_people.select(:id)))
+      end
     end
 
     private

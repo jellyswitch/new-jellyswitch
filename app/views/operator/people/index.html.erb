@@ -123,6 +123,11 @@
                   · Owner: <%= person.point_of_contact.name %>
                 <% end %>
               </div>
+              <% if @stage == "access_only" %>
+                <div class="text-muted small">
+                  <%= person.email %><%= " · #{person.phone}" if person.phone.present? %>
+                </div>
+              <% end %>
               <% if person.home_city.present? || person.home_zip.present? %>
                 <div class="text-muted small">
                   From:
