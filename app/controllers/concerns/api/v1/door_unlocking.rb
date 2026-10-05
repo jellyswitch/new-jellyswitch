@@ -29,6 +29,9 @@ module Api::V1::DoorUnlocking
     # Access-only people (couriers, cleaning staff): 24/7 at their home space
     # only — same leg as Permissions#has_building_access? (PR #668 lockstep).
     return true if user.access_only_at?(location)
+    # Per-person "Always allow building access" — the Keys list honored it but
+    # this gate didn't, so the doors showed and the tap failed.
+    return true if user.always_allow_at?(location)
 
     zone  = location&.time_zone.presence || "UTC"
     today = Time.current.in_time_zone(zone).to_date

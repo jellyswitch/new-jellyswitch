@@ -36,7 +36,8 @@ module Permissions
     superadmin? ||
     has_active_reservation? ||
     has_rsvp? ||
-    access_only_at?(location)
+    access_only_at?(location) ||
+    always_allow_at?(location)
   end
 
   # "Access only" people — couriers, cleaning staff, etc. (users.access_only).
@@ -49,6 +50,16 @@ module Permissions
   # their approval/payment gates (PR #668 lockstep invariant).
   def access_only_at?(location)
     access_only? && !archived? && location.present? && original_location_id == location.id
+  end
+
+  # The per-person "Always allow building access" checkbox (users column) —
+  # 24/7 at the person's HOME space. Was honored only by the Keys list, so the
+  # app showed doors whose unlock then failed; it now sits in every door gate
+  # like access_only_at?. A person with no home space keeps operator-wide access
+  # (legacy rows), as before.
+  def always_allow_at?(location)
+    always_allow_building_access? &&
+      (original_location_id.nil? || location.nil? || original_location_id == location.id)
   end
 
   def has_active_reservation?
@@ -207,7 +218,7 @@ module Permissions
     # surface. Lifts itself the moment the past-due invoice is paid.
     return false if payment_suspended?
 
-    always_allow_building_access? ||
+    always_allow_at?(location) ||
     access_only_at?(location) ||
     has_building_access_day_pass?(location) ||
     has_building_access_membership?(location) ||
