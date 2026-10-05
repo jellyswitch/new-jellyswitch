@@ -257,7 +257,7 @@ class Operator::OfficeLeasesController < Operator::BaseController
   end
 
   def find_users
-    @users = User.for_space(current_tenant).originally_at_location(current_location).non_superadmins.approved.visible.order(:name)
+    @users = User.for_space(current_tenant).originally_at_location(current_location).non_superadmins.excluding_access_only.approved.visible.order(:name)
   end
 
   # All visible offices at this location, not just vacant ones: a lease may be

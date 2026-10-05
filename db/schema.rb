@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_20_180000) do
+ActiveRecord::Schema[7.2].define(version: 2026_10_05_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "plpgsql"
@@ -1279,6 +1279,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_20_180000) do
     t.datetime "garmin_pairing_code_expires_at"
     t.datetime "banned_at"
     t.bigint "banned_by_id"
+    t.boolean "access_only", default: false, null: false
     t.index "operator_id, lower((email)::text)", name: "index_users_on_operator_id_and_lower_email", unique: true
     t.index ["garmin_pairing_code_digest"], name: "index_users_on_garmin_pairing_code_digest", unique: true, where: "(garmin_pairing_code_digest IS NOT NULL)"
     t.index ["home_state", "home_city"], name: "index_users_on_home_state_and_home_city"

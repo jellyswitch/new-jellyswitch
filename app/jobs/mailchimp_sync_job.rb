@@ -23,7 +23,7 @@ class MailchimpSyncJob < ApplicationJob
         operator.locations.each do |location|
           next unless location.visible?
 
-          users = User.for_space(operator).originally_at_location(location).visible
+          users = User.for_space(operator).originally_at_location(location).visible.excluding_access_only
           users.find_each do |user|
             upsert_to_mailchimp(user, operator)
           rescue => e
@@ -35,6 +35,7 @@ class MailchimpSyncJob < ApplicationJob
   end
 
   def sync_single_user(user)
+    return if user.access_only? # couriers/cleaners aren't marketed to
     operator = user.operator
     return unless operator.mailchimp_api_key.present? && operator.mailchimp_audience_id.present?
 

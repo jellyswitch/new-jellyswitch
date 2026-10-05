@@ -26,6 +26,10 @@ module Api::V1::DoorUnlocking
     # admin_or_manager early return above).
     return false if user.payment_suspended?
 
+    # Access-only people (couriers, cleaning staff): 24/7 at their home space
+    # only — same leg as Permissions#has_building_access? (PR #668 lockstep).
+    return true if user.access_only_at?(location)
+
     zone  = location&.time_zone.presence || "UTC"
     today = Time.current.in_time_zone(zone).to_date
 

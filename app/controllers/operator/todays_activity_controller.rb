@@ -59,7 +59,8 @@ class Operator::TodaysActivityController < Operator::BaseController
     # Total visitors expected — distinct across bookings + walk-ins
     day_pass_user_ids = @day_passes.map(&:user_id)
     reservation_user_ids = @all_reservations.map(&:user_id)
-    walk_in_user_ids = @arrived_at_by_user.keys.compact
+    # Access-only people (couriers, cleaning staff) aren't visitors.
+    walk_in_user_ids = User.where(id: @arrived_at_by_user.keys.compact).excluding_access_only.pluck(:id)
     @total_visitors = (day_pass_user_ids + reservation_user_ids + walk_in_user_ids).uniq.count
 
     # Walk-ins shown in their own section: members here today who AREN'T

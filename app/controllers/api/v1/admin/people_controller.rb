@@ -8,7 +8,7 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
     owned_by_me = ActiveModel::Type::Boolean.new.cast(params[:owned_by_me]) == true
 
     # One list per space, like the web People page (originally_at_location).
-    base = current_tenant.users.visible.non_superadmins.originally_at_location(current_location)
+    base = current_tenant.users.visible.non_superadmins.originally_at_location(current_location).excluding_access_only
     base = base.in_stage(stage) unless stage == "all"
     base = base.where(point_of_contact_id: current_api_user.id) if owned_by_me
 
@@ -35,7 +35,7 @@ class Api::V1::Admin::PeopleController < Api::V1::Admin::BaseController
       base = base.where("users.name ILIKE :q OR users.email ILIKE :q", q: "%#{query}%")
     end
 
-    available_states = current_tenant.users.visible.non_superadmins.originally_at_location(current_location)
+    available_states = current_tenant.users.visible.non_superadmins.originally_at_location(current_location).excluding_access_only
                                      .where.not(home_state: nil)
                                      .distinct
                                      .pluck(:home_state).sort

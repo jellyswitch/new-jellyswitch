@@ -35,7 +35,20 @@ module Permissions
     admin_of_location?(location) ||
     superadmin? ||
     has_active_reservation? ||
-    has_rsvp?
+    has_rsvp? ||
+    access_only_at?(location)
+  end
+
+  # "Access only" people — couriers, cleaning staff, etc. (users.access_only).
+  # Not members, but they open their HOME space's doors (original_location)
+  # 24/7: no membership, pass or reservation needed, and never another space
+  # of the same operator. Archived access-only people lose access. This leg
+  # sits in all three door gates — has_building_access? (Keys list),
+  # allowed_in_for_door_access? (legacy web open) and
+  # Api::V1::DoorUnlocking#user_can_access_building? (every unlock) — below
+  # their approval/payment gates (PR #668 lockstep invariant).
+  def access_only_at?(location)
+    access_only? && !archived? && location.present? && original_location_id == location.id
   end
 
   def has_active_reservation?
@@ -195,6 +208,7 @@ module Permissions
     return false if payment_suspended?
 
     always_allow_building_access? ||
+    access_only_at?(location) ||
     has_building_access_day_pass?(location) ||
     has_building_access_membership?(location) ||
     has_building_access_lease? ||

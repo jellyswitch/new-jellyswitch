@@ -159,6 +159,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       user = day_pass.user
       next unless user
       next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
+      next if user.access_only?
       next if user.has_active_subscription?
       next if returned_since?(user, day_pass.day)
 
@@ -192,6 +193,7 @@ class AutomatedWorkflowsJob < ApplicationJob
       user = reservation.user
       next unless user
       next if user.email_opted_out? || user.email_bounced? || user.marketing_suppressed?
+      next if user.access_only?
       next if user.has_active_subscription?
       next if returned_since?(user, reservation.datetime_in.to_date)
 

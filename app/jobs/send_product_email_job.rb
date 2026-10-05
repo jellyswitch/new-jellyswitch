@@ -49,7 +49,7 @@ class SendProductEmailJob < ApplicationJob
       # recipient may have unsubscribed in the interim — re-check at send time.
       # Onboarding is transactional (welcome / "your booking is confirmed") and
       # always sends. SpamGuard only checks frequency, not opt-out.
-      if email_type != "onboarding" && (user.email_opted_out? || user.marketing_suppressed?)
+      if email_type != "onboarding" && (user.email_opted_out? || user.marketing_suppressed? || user.access_only?)
         ProductEmailSend.create!(
           operator: operator, user: user, sendable: sendable,
           email_type: email_type, status: "skipped",

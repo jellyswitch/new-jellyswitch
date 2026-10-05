@@ -194,7 +194,7 @@ class Api::V1::Admin::ReportsController < Api::V1::Admin::BaseController
   end
 
   def ltv
-    active_count = current_tenant.users.where(approved: true, archived: false).count
+    active_count = current_tenant.users.where(approved: true, archived: false).excluding_access_only.count
     total_paid = Invoice.where(operator: current_tenant).sum(:amount_paid)
     avg_ltv = active_count > 0 ? (total_paid.to_f / active_count).round : 0
     render json: { average_ltv: avg_ltv, active_members: active_count }

@@ -54,6 +54,14 @@
       <%= f.label :always_allow_building_access, class: "form-check-label" %>
       <%= f.check_box :always_allow_building_access, class: "form-check-box" %>
     </div>
+
+    <% if current_user.admin_or_manager?(current_location) %>
+      <div class="form-group">
+        <%= f.label :access_only, "Access only (couriers, cleaning, etc.)", class: "form-check-label" %>
+        <%= f.check_box :access_only, class: "form-check-box" %>
+        <small class="form-text text-muted">Can unlock the doors 24/7. Not a member: hidden from member lists, counts and emails.</small>
+      </div>
+    <% end %>
   <% end %>
 
   <h2>Contact Information</h2>

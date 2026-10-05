@@ -9,6 +9,9 @@ class Operator::PeopleController < Operator::BaseController
     "signup_only" => "Signed up",
     "past_member" => "Past members",
     "quiet" => "Quiet",
+    # Not a lifecycle stage: couriers, cleaning staff, etc. (users.access_only).
+    # They're hidden from every other tab and only listed here.
+    "access_only" => "Access only",
   }.freeze
 
   STAGE_BADGE_CLASSES = {
@@ -34,7 +37,11 @@ class Operator::PeopleController < Operator::BaseController
     # cohort that signed up at that location.
     base_scope = current_tenant.users.originally_at_location(current_location)
                                      .visible.non_superadmins
-    base_scope = base_scope.in_stage(@stage) unless @stage == "all"
+    base_scope = case @stage
+                 when "access_only" then base_scope.access_only_people
+                 when "all" then base_scope.excluding_access_only
+                 else base_scope.excluding_access_only.in_stage(@stage)
+                 end
     base_scope = base_scope.where(point_of_contact_id: current_user.id) if @owned_by_me
 
     # Interest-tag filter (ADR 0022) — the audience dimension behind "Message
@@ -73,6 +80,7 @@ class Operator::PeopleController < Operator::BaseController
 
     @available_states = current_tenant.users.originally_at_location(current_location)
                                       .visible.non_superadmins
+                                      .excluding_access_only
                                       .where.not(home_state: nil)
                                       .distinct
                                       .pluck(:home_state).sort

@@ -29,7 +29,7 @@ module Jellyswitch
           "Stripe Customer ID"
         ]
 
-        operator.users.originally_at_location(location).map do |user|
+        operator.users.originally_at_location(location).excluding_access_only.map do |user|
           subscription = user.subscriptions.active.first
           if subscription.present?
             subscription = subscription.pretty_name
@@ -63,7 +63,7 @@ module Jellyswitch
       # Exclude archived and unapproved users
       subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
       oob_ids = out_of_band_members.select(:id)
-      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).visible.approved
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).visible.approved.excluding_access_only
     end
 
     def active_member_count
@@ -80,7 +80,7 @@ module Jellyswitch
       subscribed_ids = Subscription.where(plan: plans.individual.nonzero, active: true, subscribable_type: 'User').select(:subscribable_id)
       oob_ids = out_of_band_members.select(:id)
       lease_member_ids = active_lease_members.select(:id)
-      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).or(User.where(id: lease_member_ids)).visible.approved
+      User.where(id: subscribed_ids).or(User.where(id: oob_ids)).or(User.where(id: lease_member_ids)).visible.approved.excluding_access_only
     end
 
     def total_active_member_count
@@ -207,7 +207,7 @@ module Jellyswitch
     alias avg_mrr avg_monthly_revenue
 
     def all_members
-      users.members.non_superadmins.order("name")
+      users.members.non_superadmins.excluding_access_only.order("name")
     end
 
     def all_member_count
@@ -833,10 +833,17 @@ module Jellyswitch
       ((booked_minutes / 60.0) / available_hours * 100).round(1)
     end
 
+    # Door punches at this location, minus access-only people (couriers,
+    # cleaning staff) — they open the doors but aren't visitors/members.
+    def visitor_door_punches
+      DoorPunch.where(door: location.doors)
+               .where.not(user_id: User.where(operator_id: operator.id).access_only_people.select(:id))
+    end
+
     def avg_daily_visitors(period_days = 30, range: nil)
       return 0 unless location
       range, days = resolve_period(period_days, range)
-      visitor_days = DoorPunch.where(door: location.doors)
+      visitor_days = visitor_door_punches
         .where(created_at: range)
         .count("DISTINCT (DATE(created_at), user_id)")
       (visitor_days.to_f / [days, 1].max).round(1)
@@ -851,7 +858,7 @@ module Jellyswitch
       return 0 if member_count == 0
 
       range, days = resolve_period(period_days, range)
-      total_visit_days = DoorPunch.where(door: location.doors)
+      total_visit_days = visitor_door_punches
         .where(created_at: range)
         .count("DISTINCT (DATE(created_at), user_id)")
 
@@ -876,7 +883,7 @@ module Jellyswitch
     def new_signups_count(period_days = 30)
       User.for_space(operator)
         .originally_at_location(location)
-        .approved.visible
+        .approved.visible.excluding_access_only
         .where("users.created_at > ?", period_days.days.ago)
         .count
     end
@@ -998,7 +1005,7 @@ module Jellyswitch
 
     def peak_hours_heatmap(period_days = 30)
       return {} unless location
-      punches = DoorPunch.where(door: location.doors)
+      punches = visitor_door_punches
         .where("created_at > ?", period_days.days.ago)
 
       heatmap = {}
@@ -1101,7 +1108,7 @@ module Jellyswitch
 
     def peak_busiest_day(period_days = 30)
       return nil unless location
-      counts = DoorPunch.where(door: location.doors)
+      counts = visitor_door_punches
         .where("created_at > ?", period_days.days.ago)
         .group("DATE(created_at)")
         .count
