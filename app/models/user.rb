@@ -601,6 +601,7 @@ class User < ApplicationRecord
            :allowed_in?,
            :allowed_in_for_door_access?,
            :access_only_at?,
+           :always_allow_at?,
            :should_charge_for_reservation?,
            :should_charge_for_room?,
            :can_see_all_rooms?,
