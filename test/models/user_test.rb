@@ -639,4 +639,18 @@ class UserTest < ActiveSupport::TestCase
 
     assert_nil user.reload.current_location_id
   end
+
+  # Kathy Groves (Untethered Fulton, 10/5) signed up as
+  # "mailto:kgroves@untethered.space"; SMTP rejected it with a 501.
+  test "email drops a pasted mailto: prefix and surrounding spaces" do
+    user = User.new(email: "  mailto:KGroves@Example.com ")
+    assert_equal "KGroves@Example.com", user.email
+
+    assert_equal "plain@example.com", User.new(email: "plain@example.com").email
+  end
+
+  test "email lookups are normalized the same way" do
+    user = users(:cowork_tahoe_member)
+    assert_equal user, User.find_by(email: "mailto:#{user.email}", operator_id: user.operator_id)
+  end
 end
