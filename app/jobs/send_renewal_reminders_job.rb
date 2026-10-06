@@ -2,7 +2,10 @@ class SendRenewalRemindersJob < ApplicationJob
   queue_as :default
 
   def perform
-    Operator.find_each do |operator|
+    # Closed (out-of-business) operators resolve to the TEST Stripe key (see
+    # Location#stripe_secret_key), so their live-mode subscriptions 404 on
+    # every lookup — skip them.
+    Operator.where.not(billing_state: "closed").find_each do |operator|
       ActsAsTenant.with_tenant(operator) do
         Subscription.renewal_reminder_candidates.find_each do |subscription|
           next unless subscription.has_stripe_subscription?

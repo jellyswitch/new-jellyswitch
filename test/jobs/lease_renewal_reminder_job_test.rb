@@ -48,6 +48,16 @@ class LeaseRenewalReminderJobTest < ActiveSupport::TestCase
     assert_not_nil lease.reload.renewal_notice_sent_at, "the lease should be stamped so it isn't re-notified"
   end
 
+  test "a closed (out-of-business) operator's leases are never warned" do
+    lease = build_lease(auto_renew: false, end_date: 30.days.from_now.to_date)
+    @operator.update_columns(billing_state: "closed")
+
+    LeaseRenewalReminderJob.perform_now
+
+    assert_empty recipients
+    assert_nil lease.reload.renewal_notice_sent_at
+  end
+
   test "a fixed-term lease already notified this term is not warned again" do
     build_lease(auto_renew: false, end_date: 30.days.from_now.to_date, notice_sent_at: 1.day.ago)
 

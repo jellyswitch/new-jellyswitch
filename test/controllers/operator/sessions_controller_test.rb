@@ -23,6 +23,14 @@ class Operator::SessionsControllerTest < ActionDispatch::IntegrationTest
     assert_response :redirect
   end
 
+  # Scanners also send a `session` hash with a password but no email —
+  # params[:session] is present, so the old guard let `.downcase` hit nil.
+  test "POST /login with session hash missing email does not 500" do
+    post "/login", params: { session: { password: "x" } }, env: default_env
+
+    assert_response :redirect
+  end
+
   test "POST /login with bad credentials still flashes and redirects" do
     post "/login",
       params: { session: { email: @admin.email, password: "wrong-password" } },

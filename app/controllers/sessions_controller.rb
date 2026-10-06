@@ -9,7 +9,7 @@ class SessionsController < ApplicationController
 
     # Bots/scanners POST to /login with no (or an empty) `session` param,
     # which Rails drops entirely — guard so we redirect instead of 500ing on nil.
-    if params[:session].blank?
+    if params.dig(:session, :email).blank?
       flash[:error] = "Please enter your email and password."
       turbo_redirect(operator_login_path, action: "replace")
       return
@@ -56,7 +56,7 @@ class SessionsController < ApplicationController
 
     # Same nil-param guard as `create` — a POST to /real_login with no
     # `session` param would otherwise raise on `params[:session][:email]`.
-    if params[:session].blank?
+    if params.dig(:session, :email).blank?
       flash[:error] = "Please enter your email and password."
       turbo_redirect(password_form_path, action: "replace")
       return

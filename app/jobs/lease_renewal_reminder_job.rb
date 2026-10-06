@@ -2,7 +2,8 @@ class LeaseRenewalReminderJob < ApplicationJob
   queue_as :default
 
   def perform
-    Operator.find_each do |operator|
+    # Skip closed (out-of-business) operators — never email their members.
+    Operator.where.not(billing_state: "closed").find_each do |operator|
       ActsAsTenant.with_tenant(operator) do
         process_operator(operator)
       end
