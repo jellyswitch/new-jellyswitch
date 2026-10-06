@@ -24,6 +24,20 @@ class SessionsControllerTest < ActionDispatch::IntegrationTest
 
   # Same guard on the password step (real_login -> real_create), which also
   # dereferences params[:session][:email] / params[:session][:password].
+  # Scanners also send a `session` hash with a password but no email —
+  # params[:session] is present, so the old guard let `.downcase` hit nil.
+  test "POST /login with session hash missing email does not 500" do
+    post "/login", params: { session: { password: "x" } }, env: default_env
+
+    assert_response :redirect
+  end
+
+  test "POST /real_login with session hash missing email does not 500" do
+    post "/real_login", params: { session: { password: "x" } }, env: default_env
+
+    assert_response :redirect
+  end
+
   test "POST /real_login with no session param does not 500" do
     post "/real_login", env: default_env
 
