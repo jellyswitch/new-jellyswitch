@@ -36,5 +36,10 @@
     <div class="col">
       <%= link_to "Download PDF", invoice.pdf_url, class: "btn btn-block btn-primary" %>
     </div>
+    <% if invoice.paid? && policy(invoice).receipt? %>
+      <div class="col">
+        <%= link_to "View Receipt", invoice_receipt_path(invoice), class: "btn btn-block btn-outline-primary", target: "_blank", data: { turbo: false } %>
+      </div>
+    <% end %>
   </div>
 </div>

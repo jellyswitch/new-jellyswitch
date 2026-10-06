@@ -104,6 +104,28 @@ class Invoice < ApplicationRecord
     nil
   end
 
+  # Stripe-hosted payment receipt (includes the invoice line items) for a
+  # paid invoice. Subscription invoices expose their charge on the Stripe
+  # invoice; PaymentIntent-backed ones go through the PI. Out-of-band /
+  # manually marked-paid invoices have no charge → nil.
+  def receipt_url
+    return nil unless paid?
+
+    if stripe_payment_intent_id.present?
+      stripe_charge_receipt_url
+    elsif stripe_invoice_id.present? && location.present?
+      charge = stripe_invoice&.charge
+      charge_id = charge.respond_to?(:id) ? charge.id : charge
+      return nil if charge_id.blank?
+      Stripe::Charge.retrieve(charge_id, {
+        api_key: location.stripe_secret_key,
+        stripe_account: location.stripe_user_id,
+      }).receipt_url
+    end
+  rescue
+    nil
+  end
+
   def stripe_charge_receipt_url
     return nil unless stripe_payment_intent_id.present? && location.present?
     creds = {

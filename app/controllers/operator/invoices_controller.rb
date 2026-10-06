@@ -54,6 +54,23 @@ class Operator::InvoicesController < Operator::BaseController
     turbo_redirect(referrer_or_root, action: "replace")
   end
 
+  # Member-facing: redirect to the Stripe-hosted receipt for their own paid
+  # invoice. Not scoped to current_location — members see invoices from
+  # every location of this operator on their invoices page.
+  def receipt
+    @invoice = Invoice.where(operator: current_tenant).find(params[:invoice_id])
+    authorize @invoice
+
+    url = @invoice.receipt_url
+    if url.blank?
+      flash[:error] = "No card receipt is available for this invoice."
+      turbo_redirect(referrer_or_root, action: "replace")
+      return
+    end
+
+    redirect_to url, allow_other_host: true
+  end
+
   def email_receipt
     find_invoice(:invoice_id)
     authorize @invoice

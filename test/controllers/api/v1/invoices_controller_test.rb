@@ -101,4 +101,38 @@ class Api::V1::InvoicesControllerTest < ActionDispatch::IntegrationTest
     post "/api/v1/invoices/0/charge", headers: headers
     assert_response :not_found
   end
+
+  # --- receipt ---
+
+  test "receipt returns the Stripe receipt url for the member's paid invoice" do
+    paid = invoices(:paid_invoice)
+    Invoice.any_instance.stubs(:receipt_url).returns("https://pay.stripe.com/receipts/abc")
+
+    get "/api/v1/invoices/#{paid.id}/receipt", headers: headers
+    assert_response :success
+    assert_equal "https://pay.stripe.com/receipts/abc", JSON.parse(response.body)["receipt_url"]
+  end
+
+  test "receipt is forbidden for someone else's invoice" do
+    paid = invoices(:paid_invoice)
+    Invoice.any_instance.stubs(:receipt_url).returns("https://pay.stripe.com/receipts/abc")
+
+    get "/api/v1/invoices/#{paid.id}/receipt", headers: headers(user: users(:cowork_tahoe_non_member))
+    assert_response :forbidden
+  end
+
+  test "receipt refuses an unpaid invoice" do
+    @invoice.update_columns(status: "open")
+
+    get "/api/v1/invoices/#{@invoice.id}/receipt", headers: headers
+    assert_response :unprocessable_entity
+  end
+
+  test "receipt 404s when no card receipt exists (e.g. marked paid out of band)" do
+    paid = invoices(:paid_invoice)
+    Invoice.any_instance.stubs(:receipt_url).returns(nil)
+
+    get "/api/v1/invoices/#{paid.id}/receipt", headers: headers
+    assert_response :not_found
+  end
 end
