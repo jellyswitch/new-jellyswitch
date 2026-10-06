@@ -6,7 +6,8 @@ class SendCommitmentRenewalNoticesJob < ApplicationJob
   # SendRenewalRemindersJob (the 7-day routine billing reminder). Stripe-
   # independent: the term boundary is derived locally from start_date.
   def perform
-    Operator.find_each do |operator|
+    # Skip closed (out-of-business) operators — never email their members.
+    Operator.where.not(billing_state: "closed").find_each do |operator|
       ActsAsTenant.with_tenant(operator) do
         notice_days = operator.commitment_notice_days || 30
         next if notice_days <= 0

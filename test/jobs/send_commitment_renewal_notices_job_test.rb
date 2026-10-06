@@ -20,6 +20,15 @@ class SendCommitmentRenewalNoticesJobTest < ActiveSupport::TestCase
     end
   end
 
+  test "does not email members of a closed (out-of-business) operator" do
+    @operator.update!(commitment_notice_days: @days_out)
+    @operator.update_columns(billing_state: "closed")
+    Rails.cache.clear # the dedup key from another test would mask the skip
+    assert_emails 0 do
+      SendCommitmentRenewalNoticesJob.perform_now
+    end
+  end
+
   test "does not email when the boundary is outside the notice window" do
     @operator.update!(commitment_notice_days: @days_out + 10)
     assert_emails 0 do
