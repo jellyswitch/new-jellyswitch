@@ -108,6 +108,39 @@ class Api::V1::Admin::FeedControllerTest < ActionDispatch::IntegrationTest
     assert_includes item["day"], (Date.current + 7).strftime("%B")
   end
 
+  # Voiding an open invoice and refunding a paid one share Refunds::Save,
+  # which writes a 'refund' card either way — the card must say which.
+  def refund_card_for(invoice)
+    @operator.update!(refund_notifications: true)
+    Invoice.any_instance.stubs(:description).returns("Membership")
+    FeedItem.create!(
+      operator: @operator, location: @location, user: invoice.billable,
+      blob: { "type" => "refund", "invoice_id" => invoice.id },
+    )
+  end
+
+  test "a refund card for a voided invoice says voided, not refunded" do
+    invoice = invoices(:member_invoice)
+    invoice.update_columns(status: "void")
+
+    feed_item = refund_card_for(invoice)
+    item = fetch_item(feed_item)
+    assert_equal "had an invoice voided", item["action_text"]
+    assert_equal true, item["voided"]
+    assert_equal "had an invoice voided", feed_item.action_text
+  end
+
+  test "a refund card for a refunded invoice still says refunded" do
+    invoice = invoices(:paid_invoice)
+    invoice.update_columns(status: "refunded")
+
+    feed_item = refund_card_for(invoice)
+    item = fetch_item(feed_item)
+    assert_equal "was issued a refund", item["action_text"]
+    assert_equal false, item["voided"]
+    assert_equal "was issued a refund", feed_item.action_text
+  end
+
   test "an office_lease_created card carries the action text and lease sentence" do
     feed_item = FeedItem.create!(
       operator: @operator, location: @location, user: @admin,

@@ -293,7 +293,8 @@ class Api::V1::Admin::FeedController < Api::V1::Admin::BaseController
     when 'refund'
       inv = Invoice.find_by(id: fi.blob['invoice_id'])
       base.merge(
-        action_text: 'was issued a refund',
+        action_text: inv&.void? ? 'had an invoice voided' : 'was issued a refund',
+        voided: inv&.void? || false,
         amount: inv&.amount_due,
         description: inv&.try(:description),
       )
