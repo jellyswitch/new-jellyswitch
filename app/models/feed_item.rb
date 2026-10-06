@@ -102,7 +102,9 @@ class FeedItem < ApplicationRecord
     when "feedback"
       "sent a message"
     when "refund"
-      "was issued a refund"
+      # Voiding an open invoice runs through the same Refunds::Save path and
+      # writes the same 'refund' card — word it from the invoice's status.
+      invoice&.void? ? "had an invoice voided" : "was issued a refund"
     when "subscription"
       "became a member"
     when "day-pass"
