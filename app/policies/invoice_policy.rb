@@ -38,6 +38,12 @@ class InvoicePolicy < ApplicationPolicy
     (admin? || general_manager? || superadmin?) && billing_enabled?
   end
 
+  def receipt?
+    return false unless user.present? && record.paid?
+    owner = record.billable_type == "User" && record.billable_id == user.id
+    owner || ((admin? || general_manager? || superadmin?) && billing_enabled?)
+  end
+
   def email_receipt?
     (admin? || general_manager? || superadmin?) && billing_enabled?
   end

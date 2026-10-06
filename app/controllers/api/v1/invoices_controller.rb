@@ -30,6 +30,21 @@ class Api::V1::InvoicesController < Api::V1::BaseController
     render_error('Invoice not found', status: :not_found)
   end
 
+  # Fetched on tap rather than embedded in #index — each lookup is a live
+  # Stripe round-trip.
+  def receipt
+    invoice = Invoice.where(operator: current_tenant).find(params[:id])
+    return render_error('Not your invoice', status: :forbidden) unless invoice.billable == current_api_user
+    return render_error('Receipts are only available for paid invoices.') unless invoice.paid?
+
+    url = invoice.receipt_url
+    return render_error('No card receipt is available for this invoice.', status: :not_found) if url.blank?
+
+    render json: { receipt_url: url }
+  rescue ActiveRecord::RecordNotFound
+    render_error('Invoice not found', status: :not_found)
+  end
+
   private
 
   def invoice_json(inv)

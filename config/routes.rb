@@ -180,6 +180,7 @@ Rails.application.routes.draw do
       resources :invoices, only: [:index] do
         member do
           post :charge
+          get :receipt
         end
       end
 
@@ -673,6 +674,7 @@ Rails.application.routes.draw do
     end
     get :charge
     post :email_receipt
+    get :receipt
   end
   resources :locations, controller: "operator/locations" do
     get :allow_hourly, to: "operator/locations#allow_hourly"
