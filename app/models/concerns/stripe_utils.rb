@@ -48,6 +48,28 @@ module StripeUtils
     stripe_request(stripe_customer, :retrieve, id)
   end
 
+  # First usable card on a Stripe customer: a legacy card source, else the
+  # customer's default PaymentMethod, else any attached card PaymentMethod
+  # (same order as #charge_invoice). Cards saved via SetupIntent or while
+  # paying a Stripe-hosted invoice exist only as PaymentMethods, so a
+  # sources-only check reports "no card" for them. Returns an object
+  # responding to #last4, or nil.
+  def first_card_for(stripe_customer)
+    return nil unless stripe_customer
+
+    source = stripe_customer.try(:sources)&.data&.find { |s| s.object == "card" }
+    return source if source
+
+    creds = { api_key: stripe_secret_key, stripe_account: stripe_user_id }
+    default_pm = stripe_customer.try(:invoice_settings)&.default_payment_method
+    if default_pm.present?
+      pm = default_pm.is_a?(String) ? Stripe::PaymentMethod.retrieve(default_pm, creds) : default_pm
+      return pm.card if pm.try(:card)
+    end
+
+    Stripe::PaymentMethod.list({ customer: stripe_customer.id, type: "card", limit: 1 }, creds).data.first&.card
+  end
+
   def retrieve_stripe_invoice(invoice)
     stripe_request(stripe_invoice, :retrieve, id: invoice.stripe_invoice_id)
   end

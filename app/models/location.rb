@@ -282,6 +282,7 @@ class Location < ApplicationRecord
 
   delegate :create_stripe_customer,
            :retrieve_stripe_customer,
+           :first_card_for,
            :create_stripe_invoice_item,
            :create_stripe_invoice,
            :retrieve_stripe_invoice,
