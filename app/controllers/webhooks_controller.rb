@@ -96,6 +96,7 @@ class WebhooksController < ApplicationController
       # passes, room bookings) backfill home_zip going forward. No frontend
       # change needed — Stripe already passes the postal_code.
       capture_home_zip_from_charge(@event)
+      mark_card_on_file_from_charge(@event)
       ok
 
     when "charge.refunded", "refund.created", "charge.refund.updated"
@@ -241,6 +242,34 @@ class WebhooksController < ApplicationController
     user.update_columns(home_zip: postal_code)
   rescue StandardError => e
     Rails.logger.warn("capture_home_zip_from_charge: #{e.class}: #{e.message}")
+  end
+
+  # A member who saves their card while paying (Stripe-hosted invoice page,
+  # SetupIntent) ends up with a card in Stripe but card_added=false locally,
+  # so staff screens say "no card on file". On a successful card charge, flip
+  # the payer's profile at that connected account to true once Stripe
+  # actually holds a saved card. Only ever false → true; a one-off charge that
+  # didn't save the card leaves the customer with none, so nothing changes.
+  def mark_card_on_file_from_charge(event)
+    charge = event.data.object
+    customer_id = charge.try(:customer)
+    connected_account = event.try(:account)
+    return unless customer_id.present? && connected_account.present?
+    return unless charge.try(:payment_method_details).try(:type) == "card"
+
+    UserPaymentProfile.includes(:location, :user)
+                      .joins(:location)
+                      .where(stripe_customer_id: customer_id, card_added: false,
+                             locations: { stripe_user_id: connected_account })
+                      .each do |profile|
+      location = profile.location
+      next unless location.first_card_for(location.retrieve_stripe_customer(profile.user)).present?
+
+      profile.update!(card_added: true)
+      profile.user.update_columns(card_added: true)
+    end
+  rescue StandardError => e
+    Rails.logger.warn("mark_card_on_file_from_charge: #{e.class}: #{e.message}")
   end
 
   def report_error(msg, meth=nil)

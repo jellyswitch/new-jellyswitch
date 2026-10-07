@@ -97,8 +97,12 @@ class Organization < ApplicationRecord
     out_of_band? || (has_stripe_customer_for_location?(location) && card_added?)
   end
 
+  # Any legacy source counts (as before); otherwise look for a card saved as a
+  # PaymentMethod, which the sources list never includes.
   def card_added
-    stripe_customer.sources["data"].count > 0
+    customer = stripe_customer
+    return false unless customer
+    customer.sources["data"].count > 0 || location.first_card_for(customer).present?
   end
 
   def card_added?
@@ -121,25 +125,8 @@ class Organization < ApplicationRecord
   end
 
   def card_last_4_digits(location)
-    stripe_customer = stripe_customer_for_location(location)
-    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
-      if stripe_customer.sources.data.count < 1
-        nil
-      else
-        cards = stripe_customer.sources.data.select { |source| source.object == "card" }
-        if cards.first
-          if cards.first.respond_to? :last4
-            cards.first.last4
-          else
-            nil
-          end
-        else
-          nil
-        end
-      end
-    else
-      nil
-    end
+    # Organizations are tied to their own location (see stripe_customer).
+    self.location.first_card_for(stripe_customer_for_location(location))&.try(:last4)
   end
 
   def payment_method

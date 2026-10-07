@@ -985,26 +985,7 @@ class User < ApplicationRecord
   end
 
   def card_last_4_digits(location)
-    stripe_customer = stripe_customer_for_location(location)
-
-    if stripe_customer && stripe_customer.sources && stripe_customer.sources.data
-      if stripe_customer.sources.data.count < 1
-        nil
-      else
-        cards = stripe_customer.sources.data.select { |source| source.object == "card" }
-        if cards.first
-          if cards.first.respond_to? :last4
-            cards.first.last4
-          else
-            nil
-          end
-        else
-          nil
-        end
-      end
-    else
-      nil
-    end
+    location.first_card_for(stripe_customer_for_location(location))&.try(:last4)
   end
 
   def payment_method
