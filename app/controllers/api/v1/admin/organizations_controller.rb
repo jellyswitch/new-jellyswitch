@@ -1,4 +1,11 @@
 class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
+  # Scope the by-id lookups explicitly. Organization is acts_as_tenant, so the
+  # API's ActsAsTenant.current_tenant already kept these inside the operator
+  # (raising RecordNotFound), but nothing enforced the LOCATION boundary: an
+  # admin confined to one location could read or rename another location's
+  # group by walking ids. Not-found and out-of-bounds both answer a JSON 404.
+  before_action :set_organization, only: %i[show update]
+
   def index
     # One list per space, like the web Groups page (Organization.for_location).
     orgs = Organization.where(operator: current_tenant).for_location(current_location).order(:name)
@@ -17,7 +24,7 @@ class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
   end
 
   def show
-    org = Organization.find(params[:id])
+    org = @organization
 
     members = org.users.map { |u|
       { id: u.id, name: u.name, email: u.email, role: u.role }
@@ -65,7 +72,7 @@ class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
   end
 
   def update
-    org = Organization.find(params[:id])
+    org = @organization
 
     if org.update(organization_params)
       render json: { id: org.id, name: org.name }
@@ -75,6 +82,17 @@ class Api::V1::Admin::OrganizationsController < Api::V1::Admin::BaseController
   end
 
   private
+
+  # Same boundary as reservations#find_reservation: the caller's operator, and
+  # for non-superadmins only groups at locations they manage or their home
+  # location. Groups with no location are legacy data that every location
+  # shows (HasLocation.for_location), so they stay reachable.
+  def set_organization
+    scope = Organization.where(operator: current_tenant)
+    scope = scope.where(location_id: allowed_location_ids + [nil]) unless current_api_user.superadmin?
+    @organization = scope.find_by(id: params[:id])
+    render_error("Organization not found", status: :not_found) unless @organization
+  end
 
   def organization_params
     params.permit(:name, :website, :visible)
